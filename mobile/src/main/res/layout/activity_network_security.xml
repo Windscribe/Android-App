@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout style="@style/MatchMatchContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <include layout="@layout/nav_bar" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_network_list"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="@dimen/reg_16dp"
+        android:layout_marginEnd="@dimen/reg_16dp"
+        android:layout_marginStart="@dimen/margin_16"
+        android:layout_marginTop="@dimen/reg_24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/nav_bar" />
+
+    <TextView
+        android:id="@+id/tv_no_network_list"
+        style="@style/ProgressText"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

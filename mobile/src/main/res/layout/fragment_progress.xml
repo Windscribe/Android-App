@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/progress_fragment_container"
+    style="@style/MatchMatchContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="?overlayDialogBackgroundColor">
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="@style/ProgressBar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+
+        />
+
+    <TextView
+        android:id="@+id/progressLabel"
+        style="@style/ProgressText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/progressBar" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

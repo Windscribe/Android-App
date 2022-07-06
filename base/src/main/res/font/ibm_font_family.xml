@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<font-family xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- regular -->
+    <font
+        android:font="@font/ibm_plex_sans_regular"
+        android:fontStyle="normal"
+        android:fontWeight="400"
+
+        app:font="@font/ibm_plex_sans_regular"
+        app:fontStyle="normal"
+        app:fontWeight="400"
+        tools:targetApi="o" />
+
+    <!-- italic -->
+
+
+    <!-- bold -->
+    <font
+        android:font="@font/ibm_plex_sans_bold"
+        android:fontStyle="normal"
+        android:fontWeight="700"
+
+        app:font="@font/ibm_plex_sans_bold"
+        app:fontStyle="normal"
+        app:fontWeight="700"
+        tools:targetApi="o" />
+
+</font-family>

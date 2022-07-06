@@ -1,0 +1,6 @@
+apply plugin: 'org.owasp.dependencycheck'
+
+//Disable false positives in dependency vulnerability check
+dependencyCheck {
+    suppressionFile file("dependency-suppression.xml").toString()
+}

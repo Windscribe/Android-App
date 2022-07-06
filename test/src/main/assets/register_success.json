@@ -1,0 +1,18 @@
+{
+  "data": {
+    "user_id": "test_id",
+    "session_auth_hash": "-x-x-x-x-x-x-x--x",
+    "username": "test",
+    "traffic_used": 0,
+    "traffic_max": 2147483648,
+    "status": 1,
+    "email": null,
+    "email_status": 0,
+    "billing_plan_id": 0,
+    "is_premium": 0,
+    "reg_date": 1643689106,
+    "last_reset": null,
+    "loc_rev": 7777,
+    "loc_hash": "-x-x-x-x-x-x-x--x"
+  }
+}

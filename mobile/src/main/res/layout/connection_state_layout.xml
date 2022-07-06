@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/connection_state_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+
+    >
+
+
+    <!--Connection state-->
+    <TextView
+        android:id="@+id/tv_connection_state"
+        android:layout_width="32dp"
+        android:layout_height="20dp"
+        android:layout_marginStart="@dimen/margin_16"
+        android:background="@drawable/ic_connecting_status_bg"
+        android:fontFamily="@font/ibm_font_family"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:text="@string/OFF"
+        android:textColor="@color/colorWhite"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_goneMarginLeft="@dimen/reg_16dp" />
+
+    <ProgressBar
+        android:id="@+id/connecting_icon"
+        android:layout_width="@dimen/reg_16dp"
+        android:layout_height="@dimen/reg_16dp"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/tv_connection_state"
+        app:layout_constraintEnd_toEndOf="@id/tv_connection_state"
+        app:layout_constraintStart_toStartOf="@id/tv_connection_state"
+        app:layout_constraintTop_toTopOf="@id/tv_connection_state" />
+
+
+    <!--Protocol view-->
+    <TextView
+        android:id="@+id/tv_protocol"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:textColor="@color/colorWhite50"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@id/tv_connection_state"
+        app:layout_constraintStart_toEndOf="@id/tv_connection_state"
+        app:layout_constraintTop_toTopOf="@id/tv_connection_state" />
+
+
+    <!--divider view-->
+    <ImageView
+        android:id="@+id/tv_divider"
+        android:layout_width="2dp"
+        android:layout_height="@dimen/reg_10dp"
+        android:layout_marginStart="8dp"
+        android:background="@color/colorWhite15"
+        android:contentDescription="@string/image_description"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@id/tv_connection_state"
+        app:layout_constraintStart_toEndOf="@id/tv_protocol"
+        app:layout_constraintTop_toTopOf="@id/tv_connection_state" />
+
+
+    <!--Port view-->
+    <TextView
+        android:id="@+id/tv_port"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:textColor="@color/colorWhite50"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@id/tv_connection_state"
+        app:layout_constraintStart_toEndOf="@id/tv_divider"
+        app:layout_constraintTop_toTopOf="@id/tv_connection_state" />
+
+    <!--preferred protocol on-->
+    <ImageView
+        android:id="@+id/img_preferred_protocol_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:contentDescription="@string/image_description"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@id/tv_connection_state"
+        app:layout_constraintStart_toEndOf="@id/tv_port"
+        app:layout_constraintTop_toTopOf="@id/tv_connection_state" />
+
+    <!--divider view-->
+    <ImageView
+        android:id="@+id/tv_decoy_divider"
+        android:layout_width="2dp"
+        android:layout_height="@dimen/reg_10dp"
+        android:layout_marginStart="8dp"
+        android:background="@color/colorWhite15"
+        android:contentDescription="@string/image_description"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/tv_connection_state"
+        app:layout_constraintStart_toEndOf="@id/img_preferred_protocol_status"
+        app:layout_constraintTop_toTopOf="@id/tv_connection_state" />
+
+    <!--Port view-->
+    <TextView
+        android:id="@+id/tv_decoy_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:textColor="@color/colorNeonGreen"
+        android:fontFamily="@font/ibm_plex_sans_bold"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        android:includeFontPadding="false"
+        android:text="@string/decoy"
+        app:layout_constraintBottom_toBottomOf="@id/tv_connection_state"
+        app:layout_constraintStart_toEndOf="@id/tv_decoy_divider"
+        app:layout_constraintTop_toTopOf="@id/tv_connection_state" />
+
+    <ImageView
+        android:id="@+id/img_decoy_traffic_arrow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/image_description"
+        android:visibility="gone"
+        android:src="@drawable/ic_light_arrow_forward"
+        app:layout_constraintBottom_toBottomOf="@id/tv_decoy_label"
+        app:layout_constraintStart_toEndOf="@id/tv_decoy_label"
+        app:layout_constraintTop_toTopOf="@id/tv_decoy_label" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,266 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout style="@style/MatchMatchContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <include layout="@layout/nav_bar" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_status"
+        style="@style/MenuItemContainer"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_16"
+        android:nextFocusDown="@id/cl_about"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/nav_bar">
+
+        <TextView
+            android:id="@+id/tv_status_label"
+            style="@style/MenuItemLabel"
+            android:layout_marginStart="@dimen/margin_8"
+            android:text="@string/status"
+            app:layout_constraintBottom_toBottomOf="@id/img_status_arrow"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/img_status_arrow" />
+
+        <ImageView
+            android:id="@+id/img_status_arrow"
+            style="@style/ForwardArrowIcon"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            style="@style/divider"
+            android:layout_marginTop="@dimen/padding_14"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tv_status_label"
+            app:layout_constraintTop_toBottomOf="@id/tv_status_label" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_about"
+        style="@style/MenuItemContainer"
+        android:layout_height="wrap_content"
+        android:nextFocusDown="@id/cl_privacy"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_status">
+
+        <TextView
+            android:id="@+id/tv_about_label"
+            style="@style/MenuItemLabel"
+            android:layout_marginStart="@dimen/margin_8"
+            android:text="@string/about_us"
+            app:layout_constraintBottom_toBottomOf="@id/img_about_arrow"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/img_about_arrow" />
+
+        <ImageView
+            android:id="@+id/img_about_arrow"
+            style="@style/ForwardArrowIcon"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            style="@style/divider"
+            android:layout_marginTop="@dimen/padding_14"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tv_about_label"
+            app:layout_constraintTop_toBottomOf="@id/tv_about_label" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_privacy"
+        style="@style/MenuItemContainer"
+        android:layout_height="wrap_content"
+        android:nextFocusDown="@id/cl_term"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_about">
+
+        <TextView
+            android:id="@+id/tv_privacy_label"
+            style="@style/MenuItemLabel"
+            android:layout_marginStart="@dimen/margin_8"
+            android:text="@string/privacy_policy"
+            app:layout_constraintBottom_toBottomOf="@id/img_privacy_arrow"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/img_privacy_arrow" />
+
+        <ImageView
+            android:id="@+id/img_privacy_arrow"
+            style="@style/ForwardArrowIcon"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            style="@style/divider"
+            android:layout_marginTop="@dimen/padding_14"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tv_privacy_label"
+            app:layout_constraintTop_toBottomOf="@id/tv_privacy_label" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_term"
+        style="@style/MenuItemContainer"
+        android:layout_height="wrap_content"
+        android:nextFocusDown="@id/cl_blog"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_privacy">
+
+        <TextView
+            android:id="@+id/tv_term_label"
+            style="@style/MenuItemLabel"
+            android:layout_marginStart="@dimen/margin_8"
+            android:text="@string/terms_title"
+            app:layout_constraintBottom_toBottomOf="@id/img_term_arrow"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/img_term_arrow" />
+
+        <ImageView
+            android:id="@+id/img_term_arrow"
+            style="@style/ForwardArrowIcon"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            style="@style/divider"
+            android:layout_marginTop="@dimen/padding_14"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tv_term_label"
+            app:layout_constraintTop_toBottomOf="@id/tv_term_label" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_blog"
+        style="@style/MenuItemContainer"
+        android:layout_height="wrap_content"
+        android:nextFocusDown="@id/cl_job"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_term">
+
+        <TextView
+            android:id="@+id/tv_blog_label"
+            style="@style/MenuItemLabel"
+            android:layout_marginStart="@dimen/margin_8"
+            android:text="@string/blog"
+            app:layout_constraintBottom_toBottomOf="@id/img_blog_arrow"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/img_blog_arrow" />
+
+        <ImageView
+            android:id="@+id/img_blog_arrow"
+            style="@style/ForwardArrowIcon"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            style="@style/divider"
+            android:layout_marginTop="@dimen/padding_14"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tv_blog_label"
+            app:layout_constraintTop_toBottomOf="@id/tv_blog_label" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_job"
+        style="@style/MenuItemContainer"
+        android:layout_height="wrap_content"
+        android:nextFocusDown="@id/cl_job"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_blog">
+
+        <TextView
+            android:id="@+id/tv_job_label"
+            style="@style/MenuItemLabel"
+            android:layout_marginStart="@dimen/margin_8"
+            android:text="@string/jobs"
+            app:layout_constraintBottom_toBottomOf="@id/img_job_arrow"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/img_job_arrow" />
+
+        <ImageView
+            android:id="@+id/img_job_arrow"
+            style="@style/ForwardArrowIcon"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            style="@style/divider"
+            android:layout_marginTop="@dimen/padding_14"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tv_job_label"
+            app:layout_constraintTop_toBottomOf="@id/tv_job_label" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_licence"
+        android:visibility="visible"
+        style="@style/MenuItemContainer"
+        android:layout_height="wrap_content"
+        android:nextFocusDown="@id/cl_licence"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_job">
+
+        <TextView
+            android:id="@+id/tv_licence_label"
+            style="@style/MenuItemLabel"
+            android:layout_marginStart="@dimen/margin_8"
+            android:text="@string/software_licenses"
+            app:layout_constraintBottom_toBottomOf="@id/img_licence_arrow"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/img_licence_arrow" />
+
+        <ImageView
+            android:id="@+id/img_licence_arrow"
+            style="@style/ForwardArrowIcon"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            style="@style/divider"
+            android:layout_marginTop="@dimen/padding_14"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tv_licence_label"
+            app:layout_constraintTop_toBottomOf="@id/tv_licence_label" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

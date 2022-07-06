@@ -1,0 +1,4 @@
+Change Log:
+1. Dynamic server list.
+2. Region based Suggested protocols.
+3. Updated hardcoded domains and hash domain timeouts.

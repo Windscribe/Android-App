@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<manifest package="com.windscribe.tv"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="false" />
+
+    <uses-feature
+        android:name="android.hardware.screen.landscape"
+        android:required="true" />
+
+    <application
+        android:name="com.windscribe.tv.windscribe.TVApplication"
+        android:allowBackup="false"
+        android:banner="@drawable/tv_banner"
+        android:fullBackupContent="false"
+        android:hardwareAccelerated="true"
+        android:icon="@mipmap/ws_launcher"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:supportsRtl="false"
+        android:extractNativeLibs="true"
+        android:roundIcon="@mipmap/ws_launcher"
+        android:theme="@style/AppTheme.NoActionBar"
+        tools:ignore="GoogleAppIndexingWarning"
+        tools:targetApi="m">
+        <activity android:name="com.windscribe.tv.moredata.GetMoreDataActivity" />
+        <activity
+            android:name="com.windscribe.tv.settings.SplitTunnelingHelpActivity"
+            android:theme="@style/overlay_screen" />
+        <activity
+            android:name="com.windscribe.tv.welcome.WelcomeActivity"
+            android:theme="@style/overlay_screen" />
+        <activity
+            android:name="com.windscribe.tv.disconnectalert.DisconnectActivity"
+            android:launchMode="singleTop"
+            android:theme="@style/overlay_screen" />
+        <activity android:name="com.windscribe.tv.rate.RateMyAppActivity" />
+        <activity android:name="com.windscribe.tv.serverlist.detail.DetailActivity" />
+        <activity
+            android:name="com.windscribe.tv.serverlist.overlay.OverlayActivity"
+            android:theme="@style/overlay_screen" />
+        <activity
+            android:name="com.windscribe.tv.support.HelpActivity"
+            android:theme="@style/overlay_screen" />
+        <activity
+            android:name="com.windscribe.tv.settings.SettingActivity"
+            android:theme="@style/overlay_screen" />
+        <activity
+            android:name="com.windscribe.tv.upgrade.UpgradeActivity"
+            android:theme="@style/overlay_screen" />
+        <activity
+            android:name="com.windscribe.tv.splash.SplashActivity"
+            android:banner="@drawable/tv_banner"
+            android:exported="true"
+            android:icon="@drawable/tv_banner"
+            android:logo="@drawable/tv_banner"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.WindLauncher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.windscribe.tv.email.AddEmailActivity"
+            android:theme="@style/overlay_screen" />
+        <activity
+            android:name="com.windscribe.tv.windscribe.WindscribeActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name="com.windscribe.tv.news.NewsFeedActivity"
+            android:theme="@style/overlay_screen" />
+        <activity android:name="com.windscribe.tv.confirmemail.ConfirmActivity" />
+
+        <activity
+            android:name="com.windscribe.vpn.backend.utils.VPNPermissionActivity"
+            android:autoRemoveFromRecents="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/blinkt.dialog" />
+
+    </application>
+
+
+</manifest>
