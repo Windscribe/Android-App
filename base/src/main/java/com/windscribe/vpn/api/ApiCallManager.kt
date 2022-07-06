@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory
 import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.log
 
 @Singleton
 class ApiCallManager @Inject constructor(
@@ -157,7 +158,7 @@ class ApiCallManager @Inject constructor(
             hostType: HostType = HostType.API,
             modelType: Class<T>,
             protect: Boolean = false,
-            service: (ApiService, Map<String, String>) -> Single<ResponseBody>
+            service: (ApiService, Map<String, String>, Boolean) -> Single<ResponseBody>
     ): Single<GenericResponseClass<T?, ApiErrorResponse?>> {
         try {
             val params = createQueryMap(extraParams, authRequired)
@@ -235,7 +236,7 @@ class ApiCallManager @Inject constructor(
                                     DomainFailOverUtil.setDomainBlocked(DomainType.Hashed3)
                                     val services = getApiServicesWithAccessIp(params)
                                     return@onErrorResumeNext services.flatMap { apiService ->
-                                        return@flatMap service.invoke(apiService[0], params)
+                                        return@flatMap service.invoke(apiService[0], params, true)
                                     }
                                 } else {
                                     throw WindScribeException("Direct ip domain 1 blocked.")
@@ -253,7 +254,7 @@ class ApiCallManager @Inject constructor(
                                     DomainFailOverUtil.setDomainBlocked(DomainType.DirectIp1)
                                     val services = getApiServicesWithAccessIp(params)
                                     return@onErrorResumeNext services.flatMap { apiService ->
-                                        return@flatMap service.invoke(apiService[1], params)
+                                        return@flatMap service.invoke(apiService[1], params, true)
                                     }
                                 } else {
                                     throw WindScribeException("Direct ip domain 2 blocked.")
@@ -284,16 +285,16 @@ class ApiCallManager @Inject constructor(
         } ?: false
     }
 
-    private fun callOrSkip(service: (ApiService, Map<String, String>) -> Single<ResponseBody>, domainType: DomainType, domain: String, protect: Boolean, params: Map<String, String>): Single<ResponseBody> {
+    private fun callOrSkip(service: (ApiService, Map<String, String>, Boolean) -> Single<ResponseBody>, domainType: DomainType, domain: String, protect: Boolean, params: Map<String, String>): Single<ResponseBody> {
         return if (DomainFailOverUtil.isAccessible(domainType)) {
-            service.invoke(apiFactory.createApi(domain, protect), params)
+            service.invoke(apiFactory.createApi(domain, protect), params, false)
         } else {
             return Single.error(Throwable())
         }
     }
 
     override fun getWebSession(extraParams: Map<String, String>?): Single<GenericResponseClass<WebSession?, ApiErrorResponse?>> {
-        return call(extraParams, modelType = WebSession::class.java) { apiService, params ->
+        return call(extraParams, modelType = WebSession::class.java) { apiService, params, _ ->
             apiService.getWebSession(params)
         }
     }
@@ -302,18 +303,22 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = AddEmailResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.postUserEmailAddress(params)
         }
     }
 
     override fun checkConnectivityAndIpAddress(extraParams: Map<String, String>?): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
         return call(
-                authRequired = false,
+                authRequired = true,
                 hostType = HostType.CHECK_IP,
                 modelType = String::class.java
-        ) { apiService, _ ->
-            apiService.connectivityTestAndIp()
+        ) { apiService, params,  directIp ->
+            if(directIp){
+                apiService.connectivityTestAndIpDirectIp()
+            }else{
+                apiService.connectivityTestAndIp()
+            }
         }
     }
 
@@ -321,7 +326,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = ClaimAccountResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.claimAccount(params)
         }
     }
@@ -330,7 +335,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = BestLocationResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.getBestLocation(params)
         }
     }
@@ -339,7 +344,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = BillingPlanResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.getBillingPlans(params)
         }
     }
@@ -348,7 +353,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = GetMyIpResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.getMyIP(params)
         }
     }
@@ -357,7 +362,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = NewsFeedNotification::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.getNotifications(params)
         }
     }
@@ -366,7 +371,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = PortMapResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.getPortMaps(params)
         }
     }
@@ -375,7 +380,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = RegToken::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.getReg(params)
         }
     }
@@ -384,7 +389,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = String::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.getServerConfig(params)
         }
     }
@@ -393,7 +398,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = ServerCredentialsResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.getServerCredentials(params)
         }
     }
@@ -402,7 +407,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = ServerCredentialsResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.getServerCredentialsForIKev2(params)
         }
     }
@@ -417,8 +422,12 @@ class ApiCallManager @Inject constructor(
         return call(
                 hostType = HostType.ASSET,
                 modelType = String::class.java
-        ) { apiService, _ ->
-            apiService.getServerList(billingPlan, locHash, alcList, overriddenCountryCode)
+        ) { apiService, params, directIp ->
+            if (directIp){
+                apiService.getServerListDirectIp(billingPlan, locHash, alcList, overriddenCountryCode)
+            } else {
+                apiService.getServerList(billingPlan, locHash, alcList, overriddenCountryCode)
+            }
         }
     }
 
@@ -427,7 +436,7 @@ class ApiCallManager @Inject constructor(
                 extraParams,
                 modelType = UserSessionResponse::class.java,
                 protect = protect
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.getSession(params)
         }
     }
@@ -436,7 +445,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = UserSessionResponse::class.java,
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.getSession(params)
         }
     }
@@ -445,7 +454,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = UserSessionResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.getSession(params)
         }
     }
@@ -454,7 +463,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = StaticIPResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.getStaticIPList(params)
         }
     }
@@ -463,7 +472,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = UserLoginResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.userLogin(params)
         }
     }
@@ -472,7 +481,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = String::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.recordAppInstall(params)
         }
     }
@@ -481,7 +490,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = AddEmailResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.resendUserEmailAddress(params)
         }
     }
@@ -490,7 +499,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 map,
                 modelType = TicketResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.sendTicket(params)
         }
     }
@@ -499,7 +508,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = UserRegistrationResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.userRegistration(params)
         }
     }
@@ -508,7 +517,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = String::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.verifyPayment(params)
         }
     }
@@ -517,7 +526,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = VerifyExpressLoginResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.verifyExpressLoginCode(params)
         }
     }
@@ -528,7 +537,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = XPressLoginCodeResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.generateXPressLoginCode(params)
         }
     }
@@ -539,7 +548,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = XPressLoginVerifyResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.verifyXPressLoginCode(params)
         }
     }
@@ -548,7 +557,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = GenericSuccess::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.postAppLog(params)
         }
     }
@@ -557,7 +566,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = GenericSuccess::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.postPromoPaymentConfirmation(params)
         }
     }
@@ -568,7 +577,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = GenericSuccess::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.updateRobertSettings(params)
         }
     }
@@ -579,7 +588,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = GenericSuccess::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.syncRobert(params)
         }
     }
@@ -590,7 +599,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = RobertSettingsResponse::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.getRobertSettings(params)
         }
     }
@@ -599,7 +608,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = GenericSuccess::class.java
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.deleteSession(params)
         }
     }
@@ -608,7 +617,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = WgConnectResponse::class.java, protect = protect
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.wgConnect(params)
         }
     }
@@ -617,7 +626,7 @@ class ApiCallManager @Inject constructor(
         return call(
                 extraParams,
                 modelType = WgInitResponse::class.java, protect = protect
-        ) { apiService, params ->
+        ) { apiService, params, _ ->
             apiService.wgInit(params)
         }
     }
