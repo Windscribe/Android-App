@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<resources>
+
+    <!-- White -->
+    <color name="colorWhite15">#26FFFFFF</color>
+    <color name="colorWhite16">#29FFFFFF</color>
+    <color name="colorWhite20">#33FFFFFF</color>
+    <color name="colorWhite24">#3DFFFFFF</color>
+    <color name="colorWhite25">#25FFFFFF</color>
+    <color name="colorWhite40">#66FFFFFF</color>
+    <color name="colorWhite48">#7AFFFFFF</color>
+    <color name="colorWhite50">#80FFFFFF</color>
+    <color name="colorWhite">#ffffff</color>
+
+    <!-- Dark Blue -->
+    <color name="colorDeepBlue15">#26020D1C</color>
+    <color name="colorDeepBlue25">#40020D1C</color>
+    <color name="colorDeepBlue40">#66020D1C</color>
+    <color name="colorDeepBlue90">#E6020D1C</color>
+    <color name="colorDeepBlue95">#F2020D1C</color>
+    <color name="colorDeepBlue96">#F5020D1C</color>
+    <color name="colorDeepBlue97">#F7020D1C</color>
+    <color name="colorDeepBlue">#020D1C</color>
+
+    <!--Special -->
+    <color name="colorBlack">#000000</color>
+    <color name="colorBlue">#304FFE</color>
+    <color name="colorNeonGreen">#55FF8A</color>
+    <color name="colorNavyBlue">#1A3880</color>
+    <color name="colorLightBlue">#A0FEDA</color>
+    <color name="colorYellow">#FFEF02</color>
+    <color name="colorRed">#FF3B3B</color>
+    <color name="colorRed20">#33FF3B3B</color>
+    <color name="sea_green">#55ff8a</color>
+
+    <!-- Primary -->
+    <color name="colorPrimary">#006AFF</color>
+    <color name="ascent_color">#4285F4</color>
+
+</resources>

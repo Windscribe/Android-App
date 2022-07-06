@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.1.xsd">
+    <suppress>
+        <cve>CVE-2021-36373</cve>
+        <cve>CVE-2021-36374</cve>
+        <cve>CVE-2017-13098</cve>
+        <cve>CVE-2018-1000180</cve>
+        <cve>CVE-2018-1000613</cve>
+        <cve>CVE-2020-26939</cve>
+        <cve>CVE-2021-35515</cve>
+        <cve>CVE-2021-35516</cve>
+        <cve>CVE-2021-35517</cve>
+        <cve>CVE-2021-36090</cve>
+        <cve>CVE-2021-29425</cve>
+        <cve>CVE-2020-13956</cve>
+        <cve>CVE-2019-17571</cve>
+        <cve>CVE-2020-9488</cve>
+        <cve>CVE-2020-29582</cve>
+        <cve>CVE-2020-15824</cve>
+        <cve>CVE-2020-11022</cve>
+        <cve>CVE-2020-11023</cve>
+    </suppress>
+</suppressions>

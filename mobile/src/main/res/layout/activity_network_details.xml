@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout style="@style/MatchMatchContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <include layout="@layout/nav_bar" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_network_detail"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/nav_bar">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_begin="@dimen/margin_16" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_end="@dimen/margin_16" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_begin="8dp" />
+
+        <TextView
+            android:id="@+id/autoSecureLabel"
+            style="@style/MenuItemLabelTwo"
+            android:layout_marginTop="@dimen/reg_32dp"
+            android:text="@string/auto_secure"
+            app:layout_constraintStart_toStartOf="@id/guideline_start"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/auto_secure_toggle"
+            style="@style/MenuToggle"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="@id/autoSecureLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/autoSecureLabel" />
+
+        <ImageView
+            android:id="@+id/auto_secure_divider"
+            style="@style/PreferenceDivider"
+            android:layout_marginTop="@dimen/margin_8"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline_start"
+            app:layout_constraintTop_toBottomOf="@id/autoSecureLabel" />
+
+        <TextView
+            android:id="@+id/autoSecureDescription"
+            style="@style/MenuActionDescription"
+            android:layout_width="0dp"
+            android:text="@string/auto_secure_description"
+            app:layout_constraintEnd_toEndOf="@id/guideline_end"
+            app:layout_constraintStart_toStartOf="@id/guideline_start"
+            app:layout_constraintTop_toBottomOf="@id/auto_secure_divider" />
+
+
+        <TextView
+            android:id="@+id/preferredProtocolLabel"
+            style="@style/MenuItemLabelTwo"
+            android:text="@string/preferred_protocol"
+            app:layout_constraintStart_toStartOf="@id/guideline_start"
+            app:layout_constraintTop_toBottomOf="@id/autoSecureDescription" />
+
+        <ImageView
+            android:id="@+id/preferred_protocol_toggle"
+            style="@style/MenuToggle"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="@id/preferredProtocolLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/preferredProtocolLabel" />
+
+
+        <ImageView
+            android:id="@+id/preferred_protocol_divider"
+            style="@style/PreferenceDivider"
+            android:layout_marginTop="@dimen/margin_16"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline_start"
+            app:layout_constraintTop_toBottomOf="@id/preferredProtocolLabel" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_8dp"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="start|center"
+            android:includeFontPadding="false"
+            android:text="@string/preferred_protocol_description"
+            android:textColor="@color/colorWhite50"
+            android:textSize="12sp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@id/guideline_end"
+            app:layout_constraintStart_toStartOf="@id/guideline_start"
+            app:layout_constraintTop_toBottomOf="@id/preferred_protocol_divider" />
+
+        <!--PROTOCOL -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_protocol"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_8dp"
+            app:layout_constraintEnd_toEndOf="@id/guideline_end"
+            app:layout_constraintStart_toStartOf="@id/guideline_start"
+            app:layout_constraintTop_toBottomOf="@id/preferred_protocol_divider">
+
+            <TextView
+                android:id="@+id/tv_protocol_label"
+                style="@style/MenuItemSpinnerLabel"
+                android:text="@string/protocol"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/img_protocol_drop_down_btn"
+                style="@style/MenuDropDownIcon"
+                android:layout_marginEnd="0dp"
+                android:contentDescription="@string/image_description"
+                app:layout_constraintBottom_toBottomOf="@id/tv_protocol_label"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tv_protocol_label" />
+
+            <TextView
+                android:id="@+id/tv_current_protocol"
+                style="@style/MenuItemLabelThree"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/img_protocol_drop_down_btn"
+                app:layout_constraintRight_toLeftOf="@id/img_protocol_drop_down_btn"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Spinner
+                android:id="@+id/spinner_protocol"
+                style="@style/MenuSpinner"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ImageView
+            android:id="@+id/protocol_divider"
+            style="@style/PreferenceDivider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline_start"
+            app:layout_constraintTop_toBottomOf="@id/cl_protocol" />
+        <!--PORT -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_port"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_8dp"
+            app:layout_constraintEnd_toEndOf="@id/guideline_end"
+            app:layout_constraintStart_toStartOf="@id/guideline_start"
+            app:layout_constraintTop_toBottomOf="@id/protocol_divider">
+
+            <TextView
+                android:id="@+id/tv_port_label"
+                style="@style/MenuItemSpinnerLabel"
+                android:text="@string/port"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/img_port_drop_down_btn"
+                style="@style/MenuDropDownIcon"
+                android:layout_marginEnd="0dp"
+                android:contentDescription="@string/image_description"
+                app:layout_constraintBottom_toBottomOf="@id/tv_port_label"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tv_port_label" />
+
+            <TextView
+                android:id="@+id/tv_current_port"
+                style="@style/MenuItemLabelThree"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/img_port_drop_down_btn"
+                app:layout_constraintRight_toLeftOf="@id/img_port_drop_down_btn"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Spinner
+                android:id="@+id/spinner_port"
+                style="@style/MenuSpinner"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <ImageView
+            android:id="@+id/port_divider"
+            style="@style/PreferenceDivider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline_start"
+            app:layout_constraintTop_toBottomOf="@id/cl_port" />
+
+        <TextView
+            android:id="@+id/forgetNetworkLabel"
+            style="@style/MenuItemLabel"
+            android:layout_marginTop="@dimen/margin_16"
+            android:text="@string/forget_network"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/port_divider" />
+
+        <ImageView
+            style="@style/PreferenceDivider"
+            android:layout_marginStart="@dimen/margin_16"
+            android:layout_marginTop="@dimen/reg_16dp"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/forgetNetworkLabel" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_error"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/nav_bar">
+
+
+        <TextView
+            android:id="@+id/error"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_32dp"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:padding="@dimen/reg_16dp"
+            android:text="@string/retry"
+            android:textColor="@color/colorWhite50"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

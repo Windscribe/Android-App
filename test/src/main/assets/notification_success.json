@@ -1,0 +1,33 @@
+{
+  "data": {
+    "notifications": [
+      {
+        "id": 47,
+        "title": "We're Open Source",
+        "message": "<p>Here is a little known fact (until you see this message) - Windscribe Windows\/Mac\/Linux apps are open source. Click the link below to see the Github repository. You can build your own custom version of Windscribe, add a feature, or fix a bug if you spot one. Our browser extensions are open source too by the way.<\/p>\n\n<p><a href=\"https:\/\/github.com\/Windscribe\/desktop-v2\" target=\"_blank\" class=\"ncta\">View Source Code<\/a><\/p>",
+        "date": 1642092962,
+        "perm_free": 1,
+        "perm_pro": 1,
+        "popup": 0
+      },
+      {
+        "id": 46,
+        "title": "Bored? There is a solution",
+        "message": "<p>COVID sucks. Your favorite places are closed, and you are probably bored out of your mind. There is a solution - Windscribe. We unblock over 220 streaming services in most countries. Connect to a Windscribe location and stream. It's as simple as that. Found a service that doesn't work? Let us know and we will unblock it for you.<\/p>\n\n<p><a href=\"https:\/\/feedback.windscribe.com\/\" target=\"_blank\" class=\"ncta\">Make a Suggestion<\/a><\/p>",
+        "date": 1640712090,
+        "perm_free": 1,
+        "perm_pro": 1,
+        "popup": 0
+      },
+      {
+        "id": 43,
+        "title": "Happy Holidays!",
+        "message": "<p>The holiday season is upon us, and given the world situation, it is not going to be a fun one. To brighten up your day, just slightly, we have made a short film. Click the link below to see it. Happy holidays from Windscribe!<\/p>\n<p><a href=\"https:\/\/www.youtube.com\/watch?v=uU0SsHsUUfw\" target=\"_blank\" class=\"ncta\">Watch Our Film<\/a><\/p>",
+        "date": 1640131600,
+        "perm_free": 1,
+        "perm_pro": 1,
+        "popup": 0
+      }
+    ]
+  }
+}
