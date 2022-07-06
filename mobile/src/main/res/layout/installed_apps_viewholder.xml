@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/app_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/padding_16"
+        android:layout_marginLeft="@dimen/padding_16"
+        android:layout_marginRight="@dimen/padding_16"
+        android:layout_marginStart="@dimen/padding_16"
+        android:fontFamily="@font/ibm_font_family"
+        android:textColor="?attr/inputTextColor"
+        android:textSize="@dimen/text_size_14"
+        app:layout_constraintBottom_toBottomOf="@+id/app_logo"
+        app:layout_constraintEnd_toStartOf="@id/img_check"
+        app:layout_constraintLeft_toRightOf="@id/app_logo"
+        app:layout_constraintStart_toEndOf="@id/app_logo"
+        app:layout_constraintTop_toTopOf="@id/app_logo" />
+
+    <ImageView
+        android:id="@+id/app_logo"
+        android:layout_width="@dimen/reg_24dp"
+        android:layout_height="@dimen/reg_24dp"
+        android:layout_marginBottom="13dp"
+        android:layout_marginStart="@dimen/margin_16"
+        android:layout_marginTop="13dp"
+        android:contentDescription="@null"
+        android:scaleType="centerInside"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        style="@style/PreferenceDivider"
+        android:layout_marginBottom="0dp"
+        android:contentDescription="@null"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/app_logo" />
+
+    <ImageView
+        android:id="@+id/field_line_location"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginStart="@dimen/padding_8"
+        android:layout_marginTop="@dimen/padding_8"
+        android:background="@color/colorWhite40"
+        android:contentDescription="@null"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/app_logo" />
+
+
+    <ImageView
+        android:id="@+id/img_check"
+        android:layout_width="@dimen/reg_16dp"
+        android:layout_height="@dimen/reg_16dp"
+        android:layout_marginEnd="@dimen/reg_16dp"
+        android:contentDescription="@string/image_description"
+        android:scaleType="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_checkmark_off" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

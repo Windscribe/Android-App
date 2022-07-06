@@ -1,0 +1,349 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout style="@style/MatchMatchContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <include layout="@layout/nav_bar" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_general"
+        style="@style/MenuItemContainer"
+        android:layout_marginTop="@dimen/margin_16"
+        android:nextFocusDown="@id/cl_account"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/nav_bar">
+
+        <ImageView
+            android:id="@+id/img_preference_icon"
+            style="@style/IconStyle"
+            android:contentDescription="@string/image_description"
+            android:src="@drawable/ic_preferences_icon"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_preference_label"
+            style="@style/MenuItemLabel"
+            android:text="@string/general"
+            app:layout_constraintBottom_toBottomOf="@id/img_preference_icon"
+            app:layout_constraintStart_toEndOf="@+id/img_preference_icon"
+            app:layout_constraintTop_toTopOf="@id/img_preference_icon" />
+
+        <ImageView
+            style="@style/ForwardArrowIcon"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="@id/img_preference_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/img_preference_icon" />
+
+        <ImageView
+            style="@style/divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/img_preference_icon" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_account"
+        style="@style/MenuItemContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_general">
+
+        <ImageView
+            android:id="@+id/img_account_icon"
+            style="@style/IconStyle"
+            android:contentDescription="@string/image_description"
+            android:src="@drawable/ic_myaccount_icon"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_account_label"
+            style="@style/MenuItemLabel"
+            android:text="@string/my_account"
+            app:layout_constraintBottom_toBottomOf="@id/img_account_icon"
+            app:layout_constraintStart_toEndOf="@+id/img_account_icon"
+            app:layout_constraintTop_toTopOf="@id/img_account_icon" />
+
+        <ImageView
+            style="@style/ForwardArrowIcon"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="@id/img_account_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/img_account_icon" />
+
+        <ImageView
+            style="@style/divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/img_account_icon" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_connection"
+        style="@style/MenuItemContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_robert">
+
+        <ImageView
+            android:id="@+id/img_connection_icon"
+            style="@style/IconStyle"
+            android:contentDescription="@string/image_description"
+            android:src="@drawable/ic_connection_icon"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_connection_label"
+            style="@style/MenuItemLabel"
+            android:text="@string/connection"
+            app:layout_constraintBottom_toBottomOf="@id/img_connection_icon"
+            app:layout_constraintStart_toEndOf="@+id/img_connection_icon"
+            app:layout_constraintTop_toTopOf="@id/img_connection_icon" />
+
+        <ImageView
+            style="@style/ForwardArrowIcon"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="@id/img_connection_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/img_connection_icon" />
+
+        <ImageView
+            android:id="@+id/img_connection_divider"
+            style="@style/divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/img_connection_icon" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_robert"
+        style="@style/MenuItemContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_account">
+
+        <ImageView
+            android:id="@+id/img_robert_icon"
+            style="@style/IconStyle"
+            android:contentDescription="@string/image_description"
+            android:src="@drawable/ic_robert"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_robert_label"
+            style="@style/MenuItemLabel"
+            android:text="@string/robert"
+            app:layout_constraintBottom_toBottomOf="@id/img_robert_icon"
+            app:layout_constraintStart_toEndOf="@+id/img_robert_icon"
+            app:layout_constraintTop_toTopOf="@id/img_robert_icon" />
+
+        <ImageView
+            style="@style/ForwardArrowIcon"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="@id/img_robert_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/img_robert_icon" />
+
+        <ImageView
+            android:id="@+id/img_robert_divider"
+            style="@style/divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/img_robert_icon" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_help"
+        style="@style/MenuItemContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_connection">
+
+        <ImageView
+            android:id="@+id/img_help_icon"
+            style="@style/IconStyle"
+            android:contentDescription="@string/image_description"
+            android:src="@drawable/ic_helpme_icon"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_help_label"
+            style="@style/MenuItemLabel"
+            android:text="@string/help_me"
+            app:layout_constraintBottom_toBottomOf="@id/img_help_icon"
+            app:layout_constraintStart_toEndOf="@+id/img_help_icon"
+            app:layout_constraintTop_toTopOf="@id/img_help_icon" />
+
+
+        <ImageView
+            style="@style/ForwardArrowIcon"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="@id/img_help_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/img_help_icon" />
+
+
+        <ImageView
+            style="@style/divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/img_help_icon" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_about"
+        style="@style/MenuItemContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_help">
+
+        <ImageView
+            android:id="@+id/img_about_icon"
+            style="@style/IconStyle"
+            android:contentDescription="@string/image_description"
+            android:src="@drawable/ic_about"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_about_label"
+            style="@style/MenuItemLabel"
+            android:text="@string/about"
+            app:layout_constraintBottom_toBottomOf="@id/img_about_icon"
+            app:layout_constraintStart_toEndOf="@+id/img_about_icon"
+            app:layout_constraintTop_toTopOf="@id/img_about_icon" />
+
+
+        <ImageView
+            android:id="@+id/img_about_arrow"
+            style="@style/ForwardArrowIcon"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="@id/img_about_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/img_about_icon" />
+
+
+        <ImageView
+            style="@style/divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/img_about_icon" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_sign"
+        style="@style/MenuItemContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_about">
+
+        <ImageView
+            android:id="@+id/img_sign_icon"
+            style="@style/IconStyle"
+            android:contentDescription="@string/image_description"
+            android:src="@drawable/ic_sign_out"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_sign_label"
+            style="@style/MenuItemLabel"
+            android:text="@string/logout"
+            app:layout_constraintBottom_toBottomOf="@id/img_sign_icon"
+            app:layout_constraintStart_toEndOf="@+id/img_sign_icon"
+            app:layout_constraintTop_toTopOf="@id/img_sign_icon" />
+
+
+        <ImageView
+            style="@style/divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/img_sign_icon" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <Button
+        android:id="@+id/login"
+        style="@style/NoBackgroundButtonBold"
+        android:layout_marginBottom="@dimen/margin_16"
+        android:enabled="true"
+        android:text="@string/login"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/cl_data_status"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/setupAccount"
+        style="@style/NextButton"
+        android:layout_marginBottom="@dimen/margin_16"
+        android:enabled="true"
+        android:text="@string/account_set_up"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/login"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/addEmail"
+        style="@style/NextButton"
+        android:layout_marginBottom="@dimen/margin_16"
+        android:enabled="true"
+        android:text="@string/add_email"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/cl_data_status"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/confirmEmail"
+        style="@style/NextButton"
+        android:layout_marginBottom="@dimen/margin_16"
+        android:enabled="true"
+        android:text="@string/confirm_your_email"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/cl_data_status"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <include
+        layout="@layout/upgrade_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

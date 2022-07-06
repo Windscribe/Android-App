@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/sign_up_container"
+    style="@style/MatchMatchContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <include layout="@layout/nav_bar" />
+
+    <TextView
+        android:id="@+id/page_description"
+        style="@style/PageDescription"
+        android:text="@string/sign_up_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nav_bar" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_78"
+        style="@style/WrapWrapContainer"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.78" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_98"
+        style="@style/WrapWrapContainer"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.98" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/margin_24"
+        app:layout_constraintBottom_toTopOf="@+id/guide_78"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/page_description">
+
+        <androidx.constraintlayout.widget.ConstraintLayout style="@style/MatchWrapContainer">
+
+            <TextView
+                android:id="@+id/username_hint"
+                style="@style/InputHintText"
+                android:layout_marginTop="0dp"
+                android:labelFor="@id/username"
+                android:text="@string/choose_username"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/username_error"
+                style="@style/InputErrorIcon"
+                android:contentDescription="@string/username"
+                app:layout_constraintBottom_toBottomOf="@id/username_hint"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/username_hint" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/username"
+                style="@style/InputBox"
+                android:autofillHints="username"
+                android:contentDescription="@string/username"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/username_hint" />
+
+
+            <TextView
+                android:id="@+id/password_hint"
+                style="@style/InputHintText"
+                android:labelFor="@id/password"
+                android:text="@string/choose_password"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/username" />
+
+            <ImageView
+                android:id="@+id/password_error"
+                style="@style/InputErrorIcon"
+                android:contentDescription="@string/password"
+                app:layout_constraintBottom_toBottomOf="@id/password_hint"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/password_hint" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/password"
+                style="@style/InputBox"
+                android:autofillHints="password"
+                android:contentDescription="@string/password"
+                android:inputType="textPassword"
+                android:paddingEnd="@dimen/padding_48"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/password_hint"
+                tools:ignore="RtlSymmetry" />
+
+            <TextView
+                android:id="@+id/password_description"
+                style="@style/InputDescription"
+                android:layout_width="0dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:gravity="left"
+                android:text="@string/password_requirement"
+                app:layout_constraintEnd_toEndOf="@id/password"
+                app:layout_constraintStart_toStartOf="@id/password"
+                app:layout_constraintTop_toBottomOf="@+id/password" />
+
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/password_visibility_toggle"
+                style="@style/InputVisibilityIcon"
+                android:contentDescription="@string/password"
+                app:layout_constraintBottom_toBottomOf="@id/password"
+                app:layout_constraintEnd_toEndOf="@id/password"
+                app:layout_constraintTop_toTopOf="@id/password" />
+
+            <TextView
+                android:id="@+id/email_hint"
+                style="@style/InputHintText"
+                android:labelFor="@id/email"
+                android:text="@string/email"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/password_description" />
+
+            <TextView
+                style="@style/InputSubHintText"
+                android:text="@string/optional"
+                app:layout_constraintBottom_toBottomOf="@id/email_hint"
+                app:layout_constraintStart_toEndOf="@id/email_hint"
+                app:layout_constraintTop_toTopOf="@id/email_hint" />
+
+            <ImageView
+                android:id="@+id/email_error"
+                style="@style/InputErrorIcon"
+                android:contentDescription="@string/email"
+                app:layout_constraintBottom_toBottomOf="@id/email_hint"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/email_hint" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/email"
+                style="@style/InputBox"
+                android:contentDescription="@string/email"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/email_hint" />
+
+            <TextView
+                android:id="@+id/email_sub_description"
+                style="@style/OverlayInputDescription"
+                android:text="@string/get_10_gb"
+                app:layout_constraintBottom_toBottomOf="@id/email"
+                app:layout_constraintEnd_toEndOf="@id/email"
+                app:layout_constraintTop_toTopOf="@id/email" />
+
+            <TextView
+                android:id="@+id/email_description"
+                style="@style/InputDescription"
+                android:text="@string/email_description"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/email" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+    <Button
+        android:id="@+id/loginButton"
+        style="@style/NextButton"
+        android:layout_marginBottom="@dimen/margin_8"
+        app:layout_constraintBottom_toTopOf="@id/set_up_later_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/set_up_later_button"
+        style="@style/NoBackgroundButtonBold"
+        android:layout_marginBottom="0dp"
+        android:text="@string/set_up_later"
+        app:layout_constraintBottom_toTopOf="@id/guide_98"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

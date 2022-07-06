@@ -1,0 +1,18 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="16dp"
+    android:height="16dp"
+    android:viewportWidth="16"
+    android:viewportHeight="16">
+    <path
+        android:pathData="M5.2929,3.2929C5.6534,2.9324 6.2206,2.9047 6.6129,3.2097L6.7071,3.2929L11.4142,8L6.7071,12.7071C6.3166,13.0976 5.6834,13.0976 5.2929,12.7071C4.9324,12.3466 4.9047,11.7794 5.2097,11.3871L5.2929,11.2929L8.585,8L5.2929,4.7071C4.9324,4.3466 4.9047,3.7794 5.2097,3.3871L5.2929,3.2929Z"
+        android:strokeAlpha="0.5"
+        android:strokeWidth="1"
+        android:fillColor="#FFFFFF"
+        android:fillType="nonZero"
+        android:strokeColor="#00000000"
+        android:fillAlpha="0.5" />
+</vector>

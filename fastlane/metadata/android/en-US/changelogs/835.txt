@@ -1,0 +1,5 @@
+Change Log: (Staging)
+1. Decoy traffic #46 (Only on staging us-013.windscribe.dev. Make sure other nodes are disabled)
+2. Russian Language #15
+3. PaymentWall payments for Russian users. #55 (Set your phone to airplane mode, turn on wifi and set Russian timezone)
+4. Miner issues: #39 #44 #47 #56 

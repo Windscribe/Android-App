@@ -1,0 +1,5 @@
+Change Log: (Staging)
+1. Network throttling improvements.
+2. Gradual update to decoy traffic max and min trend.
+3. Wg crash fixed.
+4. Minor issues: #68 #75 #76 #77

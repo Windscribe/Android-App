@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorDeepBlue96"
+    tools:context="com.windscribe.tv.support.HelpActivity">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline25"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent=".25" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline75"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent=".75" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/reg_24dp"
+        android:fontFamily="@font/ibm_plex_sans_bold"
+        android:text="@string/support"
+        android:textColor="@color/colorWhite25"
+        android:textSize="@dimen/text_size_48"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <TextView
+        android:id="@+id/support_url"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/ibm_plex_sans_bold"
+        android:gravity="center"
+        android:text="@string/support_url"
+        android:textColor="@color/colorWhite"
+        android:textSize="@dimen/text_size_32"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/guideline75"
+        app:layout_constraintStart_toStartOf="@id/guideline25"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.4" />
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/reg_24dp"
+        android:alpha=".40"
+        android:fontFamily="@font/ibm_plex_sans_regular"
+        android:gravity="center"
+        android:text="@string/support_content"
+        android:textColor="@color/colorWhite"
+        android:textSize="@dimen/text_size_21"
+        app:layout_constraintEnd_toEndOf="@id/guideline75"
+        app:layout_constraintStart_toStartOf="@id/guideline25"
+        app:layout_constraintTop_toBottomOf="@id/support_url" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

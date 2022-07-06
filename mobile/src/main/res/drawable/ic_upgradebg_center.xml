@@ -1,0 +1,16 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="224dp"
+    android:height="32dp"
+    android:viewportHeight="32"
+    android:viewportWidth="224">
+    <path
+        android:fillColor="#020D1C"
+        android:fillType="nonZero"
+        android:pathData="M-35,32L-20.8,10.691C-16.349,4.012 -8.854,0 -0.828,0L224.828,0C232.854,0 240.349,4.012 244.8,10.691L259,32L259,32L-35,32Z"
+        android:strokeColor="#00000000"
+        android:strokeWidth="1" />
+</vector>

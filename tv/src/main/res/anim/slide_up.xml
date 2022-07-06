@@ -1,0 +1,14 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    <translate
+        android:duration="300"
+        android:fromYDelta="90%"
+        android:toYDelta="0" />
+    <alpha
+        android:duration="300"
+        android:fromAlpha="0.0"
+        android:toAlpha="1.0" />
+</set>

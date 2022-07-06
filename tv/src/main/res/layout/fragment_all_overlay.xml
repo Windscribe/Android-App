@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorDeepBlue96"
+    android:focusable="false">
+
+    <com.windscribe.tv.serverlist.fragments.CustomVerticalGridView
+        android:id="@+id/all_server_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/reg_56"
+        android:layout_marginTop="@dimen/reg_16dp"
+        android:columnWidth="200dp" />
+
+
+    <TextView
+        android:id="@+id/state_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/reg_16dp"
+        android:drawablePadding="@dimen/reg_16dp"
+        android:focusable="false"
+        android:fontFamily="@font/ibm_plex_sans_regular"
+        android:textColor="@color/colorWhite"
+        android:textSize="@dimen/text_size_21" />
+
+</FrameLayout>

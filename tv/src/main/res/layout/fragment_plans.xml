@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/payment_overlay_background"
+    tools:context="com.windscribe.tv.upgrade.UpgradeActivity">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline50"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent=".50" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/topView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline70"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent=".70" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_32dp"
+            android:fontFamily="@font/ibm_plex_sans_bold"
+            android:text="@string/upgrade_title"
+            android:textColor="@color/colorWhite"
+            android:textSize="32sp"
+            app:layout_constraintEnd_toStartOf="@id/guideline70"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/reg_56"
+            android:layout_marginTop="@dimen/reg_32dp"
+            android:layout_marginEnd="@dimen/reg_16dp"
+            android:src="@drawable/ic_pro_icon_with_logo"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/reg_24dp"
+        android:layout_marginTop="@dimen/reg_48dp"
+        android:layout_marginEnd="@dimen/reg_24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/guideline50"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topView">
+
+        <ImageView
+            android:id="@+id/icon1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_4dp"
+            android:src="@drawable/ic_pro_check_icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/title1"
+            style="@style/payment_feature_item"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:includeFontPadding="false"
+            android:text="@string/benefit_unlimited_data"
+            app:layout_constraintStart_toEndOf="@id/icon1"
+            app:layout_constraintTop_toTopOf="parent"
+
+            />
+
+        <TextView
+            android:id="@+id/detail1"
+            style="@style/payment_feature_detail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:paddingStart="@dimen/reg_16dp"
+            android:paddingEnd="@dimen/reg_16dp"
+            android:text="@string/no_bandwidth_interruptions_stay_protected_forever"
+            app:layout_constraintStart_toEndOf="@id/icon1"
+            app:layout_constraintTop_toBottomOf="@id/title1" />
+
+        <ImageView
+            android:id="@+id/icon2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:src="@drawable/ic_pro_check_icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/detail1"
+
+            />
+
+        <TextView
+            android:id="@+id/title2"
+            style="@style/payment_feature_item"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:includeFontPadding="false"
+            android:text="@string/all_locations"
+            app:layout_constraintStart_toEndOf="@id/icon2"
+            app:layout_constraintTop_toBottomOf="@id/detail1" />
+
+        <TextView
+            android:id="@+id/detail2"
+            style="@style/payment_feature_detail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:paddingStart="@dimen/reg_16dp"
+            android:paddingEnd="@dimen/reg_16dp"
+            android:text="@string/servers_in_over_60_countries_and_110_cities"
+            app:layout_constraintStart_toEndOf="@id/icon2"
+            app:layout_constraintTop_toBottomOf="@id/title2" />
+
+        <ImageView
+            android:id="@+id/icon3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:src="@drawable/ic_pro_check_icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/detail2" />
+
+        <TextView
+            android:id="@+id/title3"
+            style="@style/payment_feature_item"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:includeFontPadding="false"
+            android:text="@string/robert"
+            app:layout_constraintStart_toEndOf="@id/icon3"
+            app:layout_constraintTop_toBottomOf="@id/detail2" />
+
+        <TextView
+            style="@style/payment_feature_detail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:paddingStart="@dimen/reg_16dp"
+            android:paddingEnd="@dimen/reg_16dp"
+            android:text="@string/robert_detail"
+            app:layout_constraintStart_toEndOf="@id/icon1"
+            app:layout_constraintTop_toBottomOf="@id/title3" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/guideline50"
+        app:layout_constraintTop_toBottomOf="@id/topView">
+
+        <TextView
+            android:id="@+id/planTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_32dp"
+            android:fontFamily="@font/ibm_plex_sans_bold"
+            android:gravity="start|center_vertical"
+            android:letterSpacing=".13"
+            android:text="@string/pricing"
+            android:textColor="@color/colorWhite50"
+            android:textSize="@dimen/text_size_16"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/promoSticker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_32dp"
+            android:layout_marginEnd="@dimen/reg_32dp"
+            android:drawablePadding="@dimen/padding_8"
+            android:fontFamily="@font/ibm_plex_sans_regular"
+            android:gravity="end|center_vertical"
+            android:textColor="@color/sea_green"
+            android:textSize="@dimen/text_size_18"
+            android:visibility="gone"
+            app:drawableLeftCompat="@drawable/ic_check"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/planContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/planTitle" />
+
+        <TextView
+            android:id="@+id/errorBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/reg_16dp"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:fontFamily="@font/ibm_plex_sans_regular"
+            android:gravity="center"
+            android:textColor="@color/colorRed"
+            android:textSize="@dimen/text_size_21"
+            app:layout_constraintTop_toBottomOf="@id/restorePurchase" />
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/restorePurchase"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_56"
+            android:layout_marginTop="@dimen/reg_16dp"
+            android:layout_marginEnd="@dimen/reg_48dp"
+            android:background="@drawable/payment_btn_background"
+            android:focusable="true"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/planContainer">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="start|center_vertical"
+                android:fontFamily="@font/ibm_plex_sans_bold"
+                android:gravity="start|center_vertical"
+                android:paddingStart="@dimen/reg_24dp"
+                android:paddingEnd="19dp"
+                android:text="@string/restore_purchase"
+                android:textColor="@color/sea_green"
+                android:textSize="@dimen/text_size_14"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

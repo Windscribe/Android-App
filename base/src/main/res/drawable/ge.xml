@@ -1,0 +1,25 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="500dp"
+    android:height="250dp"
+    android:viewportWidth="500"
+    android:viewportHeight="250">
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M0 0h500v250H0z"
+        android:strokeWidth="1" />
+    <path
+        android:fillColor="#FF0000"
+        android:fillType="evenOdd"
+        android:pathData="M104.667 76h16.667l-2.564-19.231 19.231 2.564V42.666L118.77 45.23l2.564-19.231h-16.667l2.564 19.231L88 42.666v16.667l19.231-2.564zm274 0h16.667l-2.564-19.231 19.231 2.564V42.666L392.77 45.23l2.564-19.231h-16.667l2.564 19.231L362 42.666v16.667l19.231-2.564zm-274 148h16.667l-2.564-19.231 19.231 2.564v-16.667l-19.231 2.564 2.564-19.231h-16.667l2.564 19.231L88 190.666v16.667l19.231-2.564zm274 0h16.667l-2.564-19.231 19.231 2.564v-16.667l-19.231 2.564 2.564-19.231h-16.667l2.564 19.231L362 190.666v16.667l19.231-2.564zM227 0h46v250h-46z"
+        android:strokeWidth="1" />
+    <path
+        android:fillColor="#FF0000"
+        android:fillType="evenOdd"
+        android:pathData="M0 102h500v46H0z"
+        android:strokeWidth="1" />
+</vector>

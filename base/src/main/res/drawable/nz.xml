@@ -1,0 +1,70 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="500dp"
+    android:height="250dp"
+    android:viewportWidth="500.0"
+    android:viewportHeight="250.0">
+    <path
+        android:fillColor="#00247D"
+        android:fillType="evenOdd"
+        android:pathData="M0 250h500V0H0z" />
+    <path
+        android:fillColor="#CC142B"
+        android:fillType="evenOdd"
+        android:pathData="M379.94 201.85l7.72-5.61h-9.55l-2.95-9.09-2.95 9.09h-9.55l7.73 5.6-2.95 9.1 7.72-5.62 7.73 5.61z" />
+    <path
+        android:fillColor="#FFF"
+        android:fillType="evenOdd"
+        android:pathData="M375.16 179.68l-2.2 6.76-2.43 7.49h-14.98l5.75 4.17 6.37 4.63-2.43 7.49-2.2 6.76 5.75-4.18 6.37-4.63 6.37 4.63 5.75 4.18-2.2-6.76-2.43-7.49 6.37-4.63 5.75-4.17h-14.98l-2.43-7.49-2.2-6.76zm0 7.47l2.95 9.09h9.55l-7.72 5.6 2.95 9.1-7.73-5.62-7.72 5.61 2.95-9.08-7.73-5.61h9.55l2.95-9.09z" />
+    <path
+        android:fillColor="#CC142B"
+        android:fillType="evenOdd"
+        android:pathData="M379.94 51.91l7.72-5.61h-9.55l-2.95-9.08-2.95 9.08h-9.55l7.73 5.61-2.95 9.08 7.72-5.61 7.73 5.61z" />
+    <path
+        android:fillColor="#FFF"
+        android:fillType="evenOdd"
+        android:pathData="M375.16 29.74l-2.2 6.76-2.43 7.49h-14.98l5.75 4.18 6.37 4.62-2.43 7.49-2.2 6.76 5.75-4.18 6.37-4.62 6.37 4.62 5.75 4.18-2.2-6.76-2.43-7.49 6.37-4.62 5.75-4.18h-14.98l-2.43-7.49-2.2-6.76zm0 7.48l2.95 9.08h9.55l-7.72 5.61 2.95 9.08-7.73-5.61-7.72 5.61 2.95-9.08-7.73-5.61h9.55l2.95-9.08z" />
+    <path
+        android:fillColor="#CC142B"
+        android:fillType="evenOdd"
+        android:pathData="M430.17 95.49l7.72-5.61h-9.55l-2.95-9.09-2.95 9.09h-9.55l7.73 5.6-2.95 9.09 7.72-5.61 7.73 5.61z" />
+    <path
+        android:fillColor="#FFF"
+        android:fillType="evenOdd"
+        android:pathData="M425.4 73.32l-2.2 6.76-2.44 7.48H405.8l5.74 4.18 6.37 4.63-2.43 7.49-2.2 6.76 5.75-4.18 6.37-4.63 6.37 4.63 5.75 4.18-2.2-6.76-2.43-7.49 6.37-4.63 5.75-4.18h-14.98l-2.43-7.48-2.2-6.76zm0 7.47l2.94 9.08h9.55l-7.72 5.62 2.95 9.08-7.73-5.61-7.72 5.61 2.95-9.08-7.73-5.62h9.55l2.95-9.08z" />
+    <path
+        android:fillColor="#CC142B"
+        android:fillType="evenOdd"
+        android:pathData="M322.17 110.16l7.72-5.62h-9.54l-2.96-9.08-2.95 9.08h-9.55l7.73 5.62-2.95 9.08 7.72-5.61 7.73 5.61z" />
+    <path
+        android:fillColor="#FFF"
+        android:fillType="evenOdd"
+        android:pathData="M317.4 87.99l-2.2 6.76-2.43 7.48h-14.98l5.75 4.18 6.36 4.63-2.43 7.49-2.2 6.76 5.76-4.18 6.36-4.63 6.37 4.63 5.75 4.18-2.2-6.76-2.43-7.49 6.37-4.63 5.75-4.18h-14.98l-2.43-7.48-2.2-6.76zm0 7.47l2.95 9.08h9.54l-7.72 5.62 2.95 9.08-7.73-5.61-7.72 5.6 2.95-9.07-7.73-5.62h9.55l2.95-9.08z" />
+    <path
+        android:fillColor="#000"
+        android:fillType="evenOdd"
+        android:pathData="M125 63L250 0 125 63zm0 0L0 0l125 63zm0 0l125 63-125-63zM0 126l125-63L0 126z" />
+    <path
+        android:fillColor="#FFF"
+        android:fillType="evenOdd"
+        android:pathData="M219 0l-94 47L31 0H0v16l94 46-94 47v16h31l94-47 94 47h31v-16l-94-47 94-46V0z" />
+    <path
+        android:fillColor="#000"
+        android:fillType="evenOdd"
+        android:pathData="M250.11 0.36L125.14 62.85 250.1 0.35zM125.14 62.85zm0 0L0.16 125.33l124.98-62.48z" />
+    <path
+        android:fillColor="#CC142B"
+        android:fillType="evenOdd"
+        android:pathData="M229 0L125 52v10L0 0v10l104 52h21L0 125h21l104-52V62L250 0h-21zM125 62l125 62v-10L146 62h-21z" />
+    <path
+        android:fillColor="#FFF"
+        android:fillType="evenOdd"
+        android:pathData="M102 0v39H0v47h102v39h46V86h102V39H148V0z" />
+    <path
+        android:fillColor="#CC142B"
+        android:fillType="evenOdd"
+        android:pathData="M111 0v48H0v29h111v48h28V77h111V48H139V0z" />
+</vector>

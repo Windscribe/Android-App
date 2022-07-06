@@ -1,0 +1,83 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/decoy_traffic_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="@dimen/margin_8"
+    app:layout_constraintTop_toBottomOf="@id/cl_decoy_traffic">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_fake_traffic_volume"
+        style="@style/MenuItemContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tv_fake_traffic_volume_label"
+            style="@style/MenuItemSpinnerLabel"
+            android:text="@string/fake_traffic_volume"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_current_fake_traffic_volume"
+            style="@style/MenuItemLabelThree"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="@id/tv_fake_traffic_volume_label"
+            app:layout_constraintEnd_toStartOf="@id/img_fake_traffic_volume_drop_down_btn"
+            app:layout_constraintTop_toTopOf="@id/tv_fake_traffic_volume_label" />
+
+
+        <Spinner
+            android:id="@+id/spinner_fake_traffic_volume"
+            style="@style/MenuSpinner"
+            android:layout_marginEnd="@dimen/margin_16"
+            app:layout_constraintBottom_toBottomOf="@id/tv_fake_traffic_volume_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_fake_traffic_volume_label" />
+
+        <ImageView
+            android:id="@+id/img_fake_traffic_volume_drop_down_btn"
+            style="@style/MenuDropDownIcon"
+            android:layout_marginEnd="0dp"
+            android:layout_margin="@dimen/margin_16"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="@id/spinner_fake_traffic_volume"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/spinner_fake_traffic_volume" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/img_potential_traffic_divider"
+        style="@style/PreferenceDivider"
+        android:contentDescription="@string/image_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_fake_traffic_volume" />
+
+    <TextView
+        android:id="@+id/tv_potential_traffic_label"
+        style="@style/MenuItemSpinnerLabel"
+        android:layout_marginStart="@dimen/margin_16"
+        android:text="@string/potential_data_use"
+        app:layout_constraintTop_toBottomOf="@id/img_potential_traffic_divider"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_current_potential_traffic"
+        style="@style/MenuItemLabelThree"
+        android:textSize="16sp"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:layout_marginStart="@dimen/margin_16"
+        app:layout_constraintTop_toTopOf="@id/tv_potential_traffic_label"
+        app:layout_constraintBottom_toBottomOf="@id/tv_potential_traffic_label"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

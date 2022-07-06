@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<com.windscribe.tv.serverlist.customviews.SettingFocusAware xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorDeepBlue96"
+    android:fillViewport="true">
+    <!--Guidelines-->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline25"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent=".25" />
+
+    <TextView
+        android:id="@+id/version"
+        style="@style/preference_item_static_end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/reg_24dp"
+        android:layout_marginTop="@dimen/reg_40dp"
+        android:layout_marginEnd="@dimen/reg_40dp"
+        android:textColor="@color/colorWhite40"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+
+        />
+
+    <TextView
+        android:id="@+id/title"
+        style="@style/overlay_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:includeFontPadding="false"
+        android:text="@string/preference"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+
+        />
+
+    <TextView
+        android:id="@+id/gradient"
+        android:layout_width="0dp"
+        android:layout_height="100dp"
+        android:background="@drawable/scroll_view_background"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/scrollView"
+        app:layout_constraintTop_toBottomOf="@id/title" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="@dimen/reg_24dp"
+        android:layout_marginBottom="@dimen/reg_12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/guideline25"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title">
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceHeaderItemMain
+            android:id="@+id/general"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:focusable="true"
+            android:fontFamily="@font/ibm_plex_sans_bold"
+            android:text="@string/general"
+            android:gravity="left|center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceHeaderItemMain
+            android:id="@+id/account"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_6dp"
+            android:focusable="true"
+            android:gravity="left|center"
+            android:fontFamily="@font/ibm_plex_sans_bold"
+            android:text="@string/account"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/general" />
+
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceHeaderItemMain
+            android:id="@+id/connection"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_6dp"
+            android:focusable="true"
+            android:gravity="left|center"
+            android:fontFamily="@font/ibm_plex_sans_bold"
+            android:text="@string/connection"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/account" />
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceHeaderItemMain
+            android:id="@+id/debug_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_6dp"
+            android:focusable="true"
+            android:fontFamily="@font/ibm_plex_sans_bold"
+            android:text="@string/view_log"
+            android:gravity="left|center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/connection" />
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceHeaderItemMain
+            android:id="@+id/debug_send"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_6dp"
+            android:focusable="true"
+            android:fontFamily="@font/ibm_plex_sans_regular"
+            android:gravity="left|center"
+            android:text="@string/send_log"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/debug_view" />
+
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceHeaderItemMain
+            android:id="@+id/logout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_6dp"
+            android:focusable="true"
+            android:fontFamily="@font/ibm_plex_sans_regular"
+            android:gravity="left|center"
+            android:text="@string/sign_out"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/debug_send" />
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceHeaderItemMain
+            android:id="@+id/get_more_data"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_6dp"
+            android:focusable="true"
+            android:fontFamily="@font/ibm_plex_sans_regular"
+            android:gravity="left|center"
+            android:text="@string/get_more_data"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/debug_view" />
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceHeaderItemMain
+            android:id="@+id/login"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_6dp"
+            android:focusable="true"
+            android:fontFamily="@font/ibm_plex_sans_regular"
+            android:gravity="left|center"
+            android:text="@string/text_login"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintVertical_bias="1.0" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fadeScrollbars="false"
+        android:fadingEdge="horizontal"
+        android:fadingEdgeLength="@dimen/reg_24dp"
+
+        android:overScrollMode="never"
+        android:requiresFadingEdge="horizontal"
+        android:scrollbarFadeDuration="800"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/guideline25"
+        app:layout_constraintTop_toBottomOf="@id/title"
+
+        >
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:focusable="false">
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</com.windscribe.tv.serverlist.customviews.SettingFocusAware>

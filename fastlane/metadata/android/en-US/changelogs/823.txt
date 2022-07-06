@@ -1,0 +1,2 @@
+Change Log:
+1. Auto logout on deleted account #128

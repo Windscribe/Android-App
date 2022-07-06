@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<com.windscribe.tv.serverlist.customviews.OverlayFocusAware xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/overlayParent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorDeepBlue96"
+    android:focusable="false">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="@dimen/reg_40dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/headerMax"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="200dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/headerMin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="@dimen/reg_56" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/BrowseRow"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:descendantFocusability="beforeDescendants"
+        android:focusable="false"
+        android:tag="browse_row"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+
+        >
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/headerRow"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/header_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/headerMin"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/header_item_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/header_item_all"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/reg_56"
+                android:layout_marginTop="@dimen/reg_16dp"
+                android:background="@drawable/side_menu_gradient"
+                android:focusable="true"
+                android:minHeight="@dimen/reg_56"
+                android:nextFocusRight="@id/server_item"
+                android:nextFocusDown="@id/header_item_fav"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/header_item_all_bar"
+                    android:layout_width="@dimen/reg_4dp"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="@dimen/reg_10dp"
+                    android:layout_marginBottom="@dimen/reg_10dp"
+                    android:background="@drawable/header_selected_strip"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/header_item_all_icon"
+                    android:layout_width="@dimen/reg_24dp"
+                    android:layout_height="@dimen/reg_24dp"
+                    android:layout_marginStart="@dimen/reg_14dp"
+                    android:layout_marginEnd="@dimen/reg_14dp"
+                    android:alpha="1.0"
+                    android:src="@drawable/ic_all_icon"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/header_item_all_text"
+                    app:layout_constraintStart_toEndOf="@id/header_item_all_bar"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/header_item_all_text"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/reg_56"
+                    android:alpha="1.0"
+                    android:fontFamily="@font/ibm_plex_sans_bold"
+                    android:gravity="left|center"
+                    android:maxHeight="@dimen/reg_56"
+                    android:paddingStart="@dimen/reg_16dp"
+                    android:paddingEnd="@dimen/reg_16dp"
+                    android:text="@string/all"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="@dimen/text_size_21"
+                    app:layout_constraintBottom_toBottomOf="@id/header_item_all_icon"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/header_item_all_icon"
+                    app:layout_constraintTop_toTopOf="@id/header_item_all_icon"
+                    app:layout_constraintVertical_bias=".55"
+
+                    />
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/header_item_fav"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/reg_56"
+                android:layout_marginTop="@dimen/reg_16dp"
+                android:background="@drawable/side_menu_gradient"
+                android:focusable="true"
+                android:minHeight="@dimen/reg_56"
+                android:nextFocusRight="@id/server_item"
+                android:nextFocusUp="@id/header_item_all"
+                android:nextFocusDown="@id/header_item_wind"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/header_item_all">
+
+                <ImageView
+                    android:id="@+id/header_item_fav_bar"
+                    android:layout_width="@dimen/reg_4dp"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="@dimen/reg_10dp"
+                    android:layout_marginBottom="@dimen/reg_10dp"
+                    android:background="@drawable/header_selected_strip"
+                    android:visibility="invisible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+
+                    />
+
+                <ImageView
+                    android:id="@+id/header_item_fav_icon"
+                    android:layout_width="@dimen/reg_24dp"
+                    android:layout_height="@dimen/reg_24dp"
+                    android:layout_marginStart="@dimen/reg_14dp"
+                    android:layout_marginEnd="@dimen/reg_14dp"
+                    android:alpha=".40"
+                    android:src="@drawable/ic_fav_nav_icon"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/header_item_fav_text"
+                    app:layout_constraintStart_toEndOf="@id/header_item_fav_bar"
+                    app:layout_constraintTop_toTopOf="parent"
+
+                    />
+
+                <TextView
+                    android:id="@+id/header_item_fav_text"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/reg_56"
+                    android:alpha=".40"
+                    android:fontFamily="@font/ibm_plex_sans_bold"
+                    android:gravity="left|center"
+                    android:maxHeight="@dimen/reg_56"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="0dp"
+                    android:text="@string/favourite"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="@dimen/text_size_21"
+                    app:layout_constraintBottom_toBottomOf="@id/header_item_fav_icon"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/header_item_fav_icon"
+                    app:layout_constraintTop_toTopOf="@id/header_item_fav_icon"
+                    app:layout_constraintVertical_bias=".55" />
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/header_item_wind"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/reg_56"
+                android:layout_marginTop="@dimen/reg_16dp"
+                android:background="@drawable/side_menu_gradient"
+                android:focusable="true"
+                android:minHeight="@dimen/reg_56"
+                android:nextFocusRight="@id/server_item"
+                android:nextFocusUp="@id/header_item_fav"
+                android:nextFocusDown="@id/header_item_static"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/header_item_fav">
+
+                <ImageView
+                    android:id="@+id/header_item_wind_bar"
+                    android:layout_width="@dimen/reg_4dp"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="@dimen/reg_10dp"
+                    android:layout_marginBottom="@dimen/reg_10dp"
+                    android:background="@drawable/header_selected_strip"
+                    android:visibility="invisible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/header_item_wind_icon"
+                    android:layout_width="@dimen/reg_24dp"
+                    android:layout_height="@dimen/reg_24dp"
+                    android:layout_marginStart="@dimen/reg_14dp"
+                    android:layout_marginEnd="@dimen/reg_14dp"
+                    android:alpha=".40"
+                    android:src="@drawable/ic_flix_icon"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/header_item_wind_text"
+                    app:layout_constraintStart_toEndOf="@id/header_item_wind_bar"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/header_item_wind_text"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/reg_56"
+                    android:alpha=".40"
+                    android:fontFamily="@font/ibm_plex_sans_bold"
+                    android:gravity="left|center"
+                    android:maxHeight="@dimen/reg_56"
+                    android:paddingStart="@dimen/reg_16dp"
+                    android:paddingEnd="@dimen/reg_16dp"
+                    android:text="@string/windflix"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="@dimen/text_size_21"
+                    app:layout_constraintBottom_toBottomOf="@id/header_item_wind_icon"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/header_item_wind_icon"
+                    app:layout_constraintTop_toTopOf="@id/header_item_wind_icon"
+                    app:layout_constraintVertical_bias=".55" />
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/header_item_static"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/reg_56"
+                android:layout_marginTop="@dimen/reg_16dp"
+                android:background="@drawable/side_menu_gradient"
+                android:focusable="true"
+                android:minHeight="@dimen/reg_56"
+                android:nextFocusRight="@id/server_item"
+                android:nextFocusUp="@id/header_item_wind"
+                android:nextFocusDown="@id/header_item_static"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/header_item_wind"
+
+                >
+
+                <ImageView
+                    android:id="@+id/header_item_static_bar"
+                    android:layout_width="@dimen/reg_4dp"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="@dimen/reg_10dp"
+                    android:layout_marginBottom="@dimen/reg_10dp"
+                    android:background="@drawable/header_selected_strip"
+                    android:visibility="invisible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/header_item_static_icon"
+                    android:layout_width="@dimen/reg_24dp"
+                    android:layout_height="@dimen/reg_24dp"
+                    android:layout_marginStart="@dimen/reg_14dp"
+                    android:layout_marginEnd="@dimen/reg_14dp"
+                    android:alpha=".40"
+                    android:src="@drawable/ic_static_ip"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/header_item_static_text"
+                    app:layout_constraintStart_toEndOf="@id/header_item_static_bar"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/header_item_static_text"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/reg_56"
+                    android:alpha=".40"
+                    android:fontFamily="@font/ibm_plex_sans_bold"
+                    android:gravity="left|center"
+                    android:maxHeight="@dimen/reg_56"
+                    android:paddingStart="@dimen/reg_16dp"
+                    android:paddingEnd="@dimen/reg_16dp"
+                    android:text="@string/static_ip"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="@dimen/text_size_21"
+                    app:layout_constraintBottom_toBottomOf="@id/header_item_static_icon"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/header_item_static_icon"
+                    app:layout_constraintTop_toTopOf="@id/header_item_static_icon"
+                    app:layout_constraintVertical_bias=".55" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.windscribe.tv.serverlist.customviews.OverlayFocusAware>

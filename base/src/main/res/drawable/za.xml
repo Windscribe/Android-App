@@ -1,0 +1,38 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="500dp"
+    android:height="250dp"
+    android:viewportWidth="500.0"
+    android:viewportHeight="250.0">
+    <path
+        android:fillColor="#002395"
+        android:fillType="evenOdd"
+        android:pathData="M0 250h500V0H0z" />
+    <path
+        android:fillColor="#DE3831"
+        android:fillType="evenOdd"
+        android:pathData="M0 125h500V0H0z" />
+    <path
+        android:fillColor="#000"
+        android:fillType="evenOdd"
+        android:pathData="M0 0v250l187.48-124.98L0 0zm187.48 125.02H375 187.48z" />
+    <path
+        android:fillColor="#FFF"
+        android:fillType="evenOdd"
+        android:pathData="M0.03 0L0 40.1l127.38 84.92L0 209.9v40.06l60.14 0.03 137.45-91.66L500 158.67V92l-302.41-0.34L60.14 0z" />
+    <path
+        android:fillColor="#000"
+        android:fillType="evenOdd"
+        android:pathData="M0 250l188-125.02L0 0z" />
+    <path
+        android:fillColor="#FFB612"
+        android:fillType="evenOdd"
+        android:pathData="M0 0.03V40.1L127.73 125 0 209.9v40.06l0.03 0.03L188 124.98 0.03 0z" />
+    <path
+        android:fillColor="#007A4D"
+        android:fillType="evenOdd"
+        android:pathData="M0 0v24.05l151.4 100.97L0 225.95V250h36.06l157.51-105H500v-40.03H193.57L36.06 0z" />
+</vector>

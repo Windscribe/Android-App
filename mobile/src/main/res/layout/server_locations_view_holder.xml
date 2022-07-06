@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+
+    <ImageView
+        android:id="@+id/flag_background"
+        android:layout_width="29dp"
+        android:layout_height="@dimen/reg_14dp"
+        android:layout_marginBottom="14dp"
+        android:layout_marginStart="19dp"
+        android:layout_marginTop="18dp"
+        android:background="?attr/nodeListFlagBackgroundColor"
+        android:contentDescription="@null"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <TextView
+        android:id="@+id/country_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/padding_16"
+        android:fontFamily="@font/ibm_font_family"
+        android:textSize="@dimen/text_size_14"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/country_flag"
+        app:layout_constraintLeft_toRightOf="@id/country_flag"
+        app:layout_constraintStart_toEndOf="@id/country_flag"
+        app:layout_constraintTop_toTopOf="@id/country_flag" />
+
+    <ImageView
+        android:id="@+id/country_flag"
+        android:layout_width="@dimen/reg_32dp"
+        android:layout_height="@dimen/reg_14dp"
+        android:layout_marginBottom="13dp"
+        android:layout_marginStart="@dimen/margin_16"
+        android:layout_marginTop="13dp"
+        android:contentDescription="@null"
+        android:scaleType="centerInside"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/img_pro_badge"
+        android:layout_width="29dp"
+        android:layout_height="@dimen/reg_14dp"
+        android:contentDescription="@null"
+        app:layout_constraintBottom_toTopOf="@id/flag_background"
+        app:layout_constraintEnd_toStartOf="@id/flag_background"
+        app:layout_constraintStart_toStartOf="@id/flag_background"
+        app:layout_constraintTop_toTopOf="@id/flag_background" />
+
+
+    <ImageView
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginStart="@dimen/padding_8"
+        android:background="?attr/dividerHorizontalColor"
+        android:contentDescription="@null"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/divider"
+        app:layout_constraintStart_toStartOf="@id/country_flag" />
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        app:trackThickness="2dp"
+        android:id="@+id/server_health"
+        android:visibility="gone"
+        android:progress="0"
+        app:trackColor="@android:color/transparent"
+        app:indicatorColor="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="@id/divider"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="@dimen/margin_32"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <ImageView
+        android:id="@+id/field_line_location"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginStart="@dimen/padding_8"
+        android:background="?attr/navigationStripColor"
+        android:contentDescription="@null"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/country_flag" />
+
+
+    <ImageView
+        android:id="@+id/img_drop_down"
+        android:layout_width="48dp"
+        android:layout_height="0dp"
+        android:contentDescription="@string/image_description"
+        android:scaleType="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/fragment_container"
+    style="@style/MatchMatchContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <include layout="@layout/nav_bar" />
+
+
+    <include
+        android:id="@+id/cl_login_layout"
+        layout="@layout/account_login_info"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_16"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/nav_bar" />
+
+    <ImageView
+        style="@style/PreferenceDivider"
+        android:contentDescription="@string/image_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_login_layout" />
+
+
+    <include
+        android:id="@+id/cl_account_info_layout"
+        layout="@layout/account_account_info"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_16"
+        android:layout_marginTop="@dimen/margin_16"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_login_layout" />
+
+    <ImageView
+        android:id="@+id/edit_divider"
+        style="@style/PreferenceDivider"
+        android:contentDescription="@string/image_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_account_info_layout" />
+
+    <TextView
+        android:id="@+id/tv_edit_account"
+        style="@style/MenuItemLabel"
+        android:layout_width="0dp"
+        android:paddingTop="@dimen/padding_16"
+        android:paddingBottom="@dimen/padding_16"
+        android:text="@string/edit_account"
+        android:gravity="left"
+        app:layout_constraintEnd_toStartOf="@id/edit_arrow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/edit_divider" />
+
+
+    <ImageView
+        android:id="@+id/edit_end_divider"
+        style="@style/PreferenceDivider"
+        android:contentDescription="@string/image_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_edit_account" />
+
+    <ImageView
+        android:id="@+id/edit_arrow"
+        style="@style/ForwardArrowIcon"
+        android:contentDescription="@string/image_description"
+        app:layout_constraintBottom_toBottomOf="@id/tv_edit_account"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tv_edit_account" />
+
+    <ProgressBar
+        android:id="@+id/edit_progress"
+        style="@style/SmallProgressCircle"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@id/edit_arrow"
+        app:layout_constraintEnd_toEndOf="@id/edit_arrow"
+        app:layout_constraintTop_toTopOf="@id/edit_arrow" />
+
+    <TextView
+        android:id="@+id/x_press_login_title"
+        style="@style/MenuItemTitle"
+        android:layout_marginStart="@dimen/margin_16"
+        android:layout_marginTop="@dimen/margin_16"
+        android:text="@string/other"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/edit_end_divider" />
+
+    <TextView
+        android:id="@+id/tv_x_press_login"
+        style="@style/MenuItemLabel"
+        android:layout_marginTop="@dimen/margin_16"
+        android:text="@string/x_press_login"
+        android:layout_marginStart="0dp"
+        app:layout_constraintEnd_toStartOf="@id/edit_arrow"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/x_press_login_title" />
+
+    <ImageView
+        android:id="@+id/x_press_login_arrow"
+        style="@style/ForwardArrowIcon"
+        android:contentDescription="@string/image_description"
+        app:layout_constraintBottom_toBottomOf="@id/tv_x_press_login"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/tv_x_press_login"
+        app:layout_constraintTop_toTopOf="@id/tv_x_press_login" />
+
+    <ImageView
+        style="@style/PreferenceDivider"
+        android:layout_marginTop="@dimen/margin_16"
+        android:contentDescription="@string/image_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_x_press_login" />
+</androidx.constraintlayout.widget.ConstraintLayout>

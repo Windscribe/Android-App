@@ -1,0 +1,451 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<resources>
+    <!--- User-->
+    <string name="username_empty">用户名为空！</string>
+    <string name="password_empty">密码为空！</string>
+    <string name="enter_username">请输入用户名！</string>
+    <string name="enter_password">请输入密码！</string>
+    <string name="password_too_short">密码太短！</string>
+    <string name="login_credential_error">你的用户名或密码出错了 :(</string>
+    <string name="sign_out">退出登录</string>
+    <string name="username">用户名</string>
+    <string name="password">密码</string>
+    <string name="login_with_username">用户名中不得包含特殊字符或使用Email地址。</string>
+    <string name="weak_password">你的密码必须包含至少一个大写和一个小写字母。</string>
+    <string name="small_password">你的密码必须至少为8个字符。</string>
+    <string name="password_requirement">8个或8个以上字符，且包含至少一个大写和一个小写字母。</string>
+    <string name="failed_network_alert">我们尽力了，但由于某种原因，我们无法使用该网络为你连接。</string>
+    <string name="fa_required_error">需要两步验证代码</string>
+    <string name="fa_invalid_error">两步验证代码无效</string>
+    <string name="login">登录</string>
+    <string name="two_fa">两步验证代码</string>
+    <string name="two_fa_description">如果启用两步验证，请使用身份验证应用程序生成代码。</string>
+    <string name="forgot_password">忘记密码？</string>
+    <string name="next">继续</string>
+    <string name="sign_up">免费注册</string>
+    <string name="sign_up_description">保卫你的帐号，在任何设备上使用你的设置，并获取更多流量。</string>
+    <string name="choose_username">选择用户名</string>
+    <string name="choose_password">选择密码</string>
+    <string name="email_description"><![CDATA[仅用于密码找回，更新和推广。没有垃圾邮件]]></string>
+    <string name="sign_up_failed_network_alert">我们尽力了，但由于某种原因，我们无法使用这个网络为你注册。</string>
+
+    <!--Api -->
+    <string name="backup_api_end_point">正在尝试备份API端点...</string>
+    <string name="signing_in">正在登录…</string>
+    <string name="signing_up">正在注册…</string>
+    <string name="getting_session">正在获取会话...</string>
+    <string name="getting_port_maps">正在获取端口映射...</string>
+    <string name="getting_server_config">正在获取服务器配置...</string>
+    <string name="getting_server_credentials">正在获取服务器凭据...</string>
+    <string name="getting_best_location">正在获取最佳位置…</string>
+    <string name="getting_server_list">正在获取服务器列表...</string>
+    <string name="preparing_your_dashboard">正在准备你的控制面板...</string>
+    <string name="trying_static_endpoint">正在尝试静态端点...</string>
+    <string name="getting_reg_token">正在获取注册令牌...</string>
+
+    <!--- Email-->
+    <string name="invalid_email_format">Email无效！</string>
+    <string name="email_empty">Email为空！</string>
+    <string name="email">Email</string>
+    <string name="confirm_your_email">确认你的Email</string>
+    <string name="confirm_email">确认Email</string>
+    <string name="resend_verification_email">重新发送验证Email</string>
+    <string name="change_email">更改Email</string>
+
+    <!--Network -->
+    <string name="no_internet">没有互联网！</string>
+    <string name="no_network_detected">未检测到网络！</string>
+    <string name="this_network_hates_us">这个网络讨厌我们</string>
+
+    <!-- Upgrade-->
+    <string name="upgrade">升级</string>
+    <string name="upgrade_case_normal">升级</string>
+    <string name="renew_plan">续订套餐</string>
+    <string name="you_ve_been_downgraded_to_free_for_now">你暂时被降级到\n免费计划</string>
+    <string name="you_ve_violated_our_terms">你的帐号已\n被禁用，原因是违反了\n我们的条款</string>
+    <string name="you_r_pro_plan_expired">你的Pro套餐已过期！</string>
+    <string name="you_re_out_of_data">你没有数据流量了</string>
+    <string name="you_ve_been_banned">你已被封号</string>
+    <string name="upgrade_later">我稍后升级</string>
+    <string name="upgrade_to_stay_protected">升级以继续\n获得保护或等到\n下个月流量重置</string>
+    <string name="get_more_data">获取更多流量</string>
+    <string name="data_left">%1$.2fGB剩余</string>
+    <string name="gb_month">- GB/月</string>
+    <string name="warning_no_email_pro_account">添加Email，以便在忘记密码的情况下找回你的帐号。</string>
+    <string name="free_reason_to_confirm">请确认你的Email以获得10GB/月的流量</string>
+    <string name="pro_reason_to_confirm">请确认你的Email以保护你的帐号</string>
+
+    <!-- Connection states -->
+    <string name="connected">已连接</string>
+    <string name="connected_lowercase">已连接</string>
+    <string name="connecting">正在连接 </string>
+    <string name="connecting_to">正在连接至%s</string>
+    <string name="connected_to">已连接至%s</string>
+    <string name="disconnecting">正在断开连接</string>
+    <string name="disconnected">已断开连接</string>
+    <string name="tunnel_test_failed">连接失败…</string>
+    <string name="checking_connectivity">正在检查连接...</string>
+    <string name="connectivity_test_failed">连接测试失败...</string>
+    <string name="best_location">最佳位置</string>
+
+    <!--Connection preference-->
+    <string name="connection_mode">连接模式</string>
+    <string name="preferred_protocol">首选协议</string>
+    <string name="protocol">协议</string>
+    <string name="port">端口</string>
+    <string name="connection_automatic">自动</string>
+    <string name="connection_manual">手动</string>
+    <string name="go_to_settings">前往设置</string>
+    <string name="always_on_not_supported">此功能需要Android版本7.0+</string>
+    <string name="packet_size">数据包大小</string>
+    <string name="lan_by_pass">允许局域网流量</string>
+    <string name="gps_spoofing">GPS干扰</string>
+    <string name="natKeepAlive">IKE keepalive功能</string>
+    <string name="keep_alive">保持活跃</string>
+    <string name="auto_detecting">正在自动检测…</string>
+
+    <!-- Account-->
+    <string name="plan_pro">Pro</string>
+    <string name="expiry_date">到期日</string>
+    <string name="reset_date">重置日期</string>
+    <string name="gb_per_month"> GB/月</string>
+    <string name="my_account">帐号</string>
+    <string name="cancel">取消</string>
+    <string name="edit_account">编辑帐号</string>
+    <string name="info">信息</string>
+    <string name="plan">套餐</string>
+    <string name="please_login">连接前请先登录！</string>
+    <string name="please_login_to_see_account_details">注册或登录以查看你的帐号详细信息，并保护你的偏好设置。</string>
+
+    <!-- Billing-->
+    <string name="billing_unavailable">此设备无法使用Play结算</string>
+    <string name="item_unavailable">你请求的项目不可用。\n请通过https://windscribe.com/support联系客服支持！</string>
+    <string name="billing_service_unavailable">计费服务不可用。请检查你的网络连接，然后重试！</string>
+    <string name="unknown_billing_error">未知错误。请通过https://windscribe.com/support联系客服支持！</string>
+    <string name="fatal_error">无法连接到计费服务...请检查你的网络连接！</string>
+    <string name="unable_to_process_request">我们无法处理你的请求。请再试一次！</string>
+    <string name="play_store_updating">Play商店正在更新！请在更新完成后尝试。</string>
+    <string name="purchase_cancelled">购买已取消！</string>
+    <string name="purchase_successful">购买成功！</string>
+    <string name="_2gb_left">2GB剩余</string>
+
+    <!-- Notification/Status Strings -->
+    <string name="state_connecting">正在连接</string>
+    <string name="state_wait">正在等待服务器回复</string>
+    <string name="state_auth">正在验证</string>
+    <string name="state_get_config">正在获取客户端配置</string>
+    <string name="state_assign_ip">正在分配IP地址</string>
+    <string name="state_add_routes">正在添加路线</string>
+    <string name="state_connected">已连接</string>
+    <string name="state_disconnected">断开</string>
+    <string name="state_reconnecting">正在重新连接</string>
+    <string name="state_exiting">正在退出</string>
+    <string name="state_noprocess">未运行</string>
+    <string name="state_resolve">正在解析主机名</string>
+    <string name="state_tcp_connect">正在连接 (TCP)</string>
+    <string name="state_auth_failed">身份验证失败</string>
+    <string name="state_no_network">正在等待可用网络</string>
+
+    <!--News feed -->
+    <string name="news_feed">新闻提要</string>
+    <string name="news_feed_welcome">在这里你可以阅读各类公告和一般Windscribe相关新闻。也许甚至是美味的蛋糕，每个人都喜欢蛋糕！</string>
+    <string name="news_feed_welcome_title">欢迎使用WINDSCRIBE</string>
+
+    <!-- Rate dialog -->
+    <string name="rate_the_app">评价Windscribe</string>
+    <string name="may_be_later">以后再说</string>
+    <string name="never_ask_again">走开</string>
+    <string name="rate_message">你喜欢Windscribe吗？当然喜欢了。在Play商店中给我们评分，我们会非常爱你。</string>
+
+    <!-- GPS spoofing -->
+    <string name="gps_spoofing_explain">此功能需要你修改自己的Android设置。请按照接下来的几个步骤来激活它。</string>
+    <string name="let_s_do_it">我们开始吧</string>
+    <string name="unlock_developer_mode">解锁开发者选项</string>
+    <string name="unlock_developer_mode_explain">打开“设置”并找到“关于手机”部分。在“软件信息”中找到内部版本号，然后点击7次。</string>
+    <string name="open_settings">打开“设置”</string>
+    <string name="add_to_mock_location">选择“模拟位置应用程序”</string>
+    <string name="add_to_mock_location_explain">解锁后，转到“设置”中的“开发者选项”。在“调试”下，选择Windscribe作为“模拟位置应用程序”。</string>
+    <string name="you_are_done">大功告成！</string>
+    <string name="gps_spoofing_success">你的GPS位置将与你的VPN位置相同。</string>
+    <string name="gps_spoofing_not_set">无法启用GPS干扰</string>
+    <string name="gps_spoofing_error">请尝试再次按照指南激活它。</string>
+
+    <!--Ghost mode -->
+    <string name="add_email">添加Email</string>
+    <string name="unlimited_data">无限流量</string>
+    <string name="preferences">偏好设置</string>
+    <string name="optional">（可选）</string>
+    <string name="get_10_gb">获得10GB/月</string>
+    <string name="plans">套餐</string>
+    <string name="pro">Pro</string>
+    <string name="benefits">优势</string>
+    <string name="pricing">定价</string>
+    <string name="all_locations">所有位置</string>
+    <string name="robert">R.O.B.E.R.T.</string>
+    <string name="terms"><![CDATA[你可以按年或者按月订阅，也可以在购买后转到App Store帐号设置来关闭。所有价格均包含适用税费。]]></string>
+    <string name="terms_policy"><b>使用条款 </b> &amp; <b>隐私政策。</b></string>
+    <string name="account_set_up">帐号设置</string>
+    <string name="account_set_up_description">保卫你的帐号，并可在任何设备上使用此帐号设置。</string>
+    <string name="continue_free_10gb_mo">获得免费10GB/月</string>
+    <string name="continue_without_email">不提供Email，继续使用</string>
+    <string name="no_email_warning">不提供Email的话，你的免费帐号流量将限制为2GB/月，并且你将无法重置密码。</string>
+    <string name="get_started">开始使用</string>
+    <!-- Actions -->
+    <string name="error_try_again">重试时出错！</string>
+    <string name="please_wait">请稍等…</string>
+    <string name="resend">重发</string>
+    <string name="loading">正在加载...</string>
+    <string name="retry">重试</string>
+    <string name="try_again">再试一次</string>
+    <string name="close">关闭</string>
+    <string name="contact_support">联系支持</string>
+    <string name="set_up_later">稍后设置</string>
+    <string name="back">返回</string>
+    <string name="ok">好的</string>
+
+    <!-- Log -->
+    <string name="view_log">查看调试日志</string>
+    <string name="send_log">发送调试日志</string>
+    <string name="send_charon_log">发送IkEv2日志</string>
+    <string name="sent_thanks">已发谢谢！</string>
+    <string name="sending_log">正在发送日志…</string>
+    <string name="export_log">导出日志</string>
+
+    <!--Home -->
+    <string name="no_favourites">没有收藏夹</string>
+    <string name="no_custom_configs">通过自定义配置，你可以连接到任何OpenVPN或Wireguard服务器。只需添加一个有效的配置文件，它就会出现在此选项卡中。</string>
+    <string name="add_profile">添加VPN配置文件</string>
+    <string name="add_static_ip">添加静态IP</string>
+    <string name="check_status">检查状态</string>
+    <string name="under_maintenance">此位置正在维护</string>
+    <string name="check_status_description">稍后再试或转到我们的“状态”页面了解更多信息</string>
+    <string name="added_to_favourites">添加到收藏夹</string>
+    <string name="add_vpn_config">添加自定义配置</string>
+
+    <!--Main Menu-->
+    <string name="general">一般</string>
+    <string name="account">帐号</string>
+    <string name="connection">连接</string>
+    <string name="debug">调试</string>
+    <string name="help_me">帮帮我！</string>
+    <string name="logout">退出登录</string>
+    <string name="preference">偏好设置</string>
+    <string name="logout_alert_description">你确定要退出Windscribe吗？</string>
+
+    <!--General Settings-->
+    <string name="sort_by">位置顺序</string>
+    <string name="display_latency">显示延迟</string>
+    <string name="preferred_language">语言</string>
+    <string name="theme">外观</string>
+    <string name="show_timer_in_notifications">通知统计</string>
+    <string name="haptic_setting_label">触觉反馈</string>
+    <string name="version">版本</string>
+    <string name="show_location_health">显示位置负载</string>
+
+
+    <!-- Split tunneling -->
+    <string name="split_tunneling_feature">选择在连接时要从Windscribe VPN中排除或包括哪些应用</string>
+    <string name="mode">模式</string>
+    <string name="split_tunneling">拆分隧道</string>
+    <string name="off">关闭</string>
+    <string name="on">开启</string>
+    <string name="feature_tunnel_mode_exclusive">下面选择的应用程序在连接时不通过Windscribe</string>
+    <string name="feature_tunnel_mode_inclusive">下面选择的应用程序在连接时会通过Windscribe</string>
+    <string name="apps">应用</string>
+
+    <!--Always on -->
+    <string name="always_on">始终开启VPN</string>
+    <string name="always_on_warning">选择\"始终开启\" VPN，即可允许Android控制VPN连接并确保除非VPN隧道启动，否则任何数据都无法离开设备。</string>
+    <string name="always_on_setting">Android 10+ 设备需要为Windscribe配置“始终开启VPN”，即可在设备开机时自动启动。</string>
+
+    <!-- Network security -->
+    <string name="forget_network">忘记网络</string>
+    <string name="network_secured">受保护</string>
+    <string name="network_unsecured">未受保护</string>
+    <string name="preferred_protocol_description">如果你在连接时遇到问题，请为此网络选择默认协议</string>
+    <string name="unknown">未知网络</string>
+    <string name="loading_network_list">正在加载网络列表\n请稍等…</string>
+    <string name="no_saved_network_list">没有保存的网络列表！</string>
+    <string name="network_options">网络选项</string>
+    <string name="auto_secure">自动保护</string>
+    <string name="auto_secure_description">当你连接到此网络时，Windscribe将自动打开。</string>
+
+    <!--Auto connect on boot-->
+    <string name="auto_start_on_boot">开机自动连接</string>
+    <string name="enable_start_on_boot">启用开机启动</string>
+
+    <!--Location permission -->
+    <string name="grant_permission">授予权限</string>
+    <string name="reason_for_location_permission">Windscribe在后台运行时需要位置权限，才能正常使用“网络白名单”功能。需要此权限来访问Wifi网络名称。此权限仅用于此功能以及GPS干扰功能。你的位置数据不会离开你的设备，也不会用于其他任何用途。</string>
+    <string name="location_permission_for_ssid">需要位置权限，才可设置首选协议和自动连接。</string>
+    <string name="disclaimer">免责声明</string>
+    <string name="location_permission">位置权限</string>
+
+    <!-- Features -->
+    <string name="feature1">服务器遍布100多个位置</string>
+    <string name="feature2">屏蔽广告和恶意软件</string>
+    <string name="feature3">没有日志记录</string>
+    <string name="feature4">解锁流媒体</string>
+
+    <!--Help -->
+    <string name="knowledge_base">知识库</string>
+    <string name="knowledge_base_description">你需要了解的有关Windscribe的所有信息。</string>
+    <string name="talk_to_garry">与Garry交谈</string>
+    <string name="talk_to_garry_description">没有Siri那么聪明，但仍然可以回答问题。</string>
+    <string name="send_ticket">发送服务工单</string>
+    <string name="send_ticket_description">遇到问题了？给我们发一个服务工单。</string>
+    <string name="community_support">社区支持</string>
+    <string name="community_support_description">向其他用户寻求帮助以及帮助他人的最佳场所。</string>
+
+
+    <!--Send ticket -->
+    <string name="how_to_send_ticket">填写以下信息，我们的一位客服代理将很快亲自回复你™</string>
+    <string name="category">类别</string>
+    <string name="email_reason_for_contact">便于我们与你联系，我们不会将其用于其他任何用途</string>
+    <string name="what_is_the_issue">有什么问题？</string>
+    <string name="message">消息</string>
+    <string name="subject">主题</string>
+
+    <!--Config -->
+    <string name="edit_config_file">编辑配置文件</string>
+    <string name="name">姓名</string>
+    <string name="save_credentials">保存登录凭据？</string>
+    <string name="update">更新</string>
+    <string name="enter_credentials">输入凭据</string>
+    <string name="connect">连接</string>
+
+    <!--Debug -->
+    <string name="send_debug_log">发送调试日志</string>
+    <string name="send_ikev2_log">发送IKEv2日志</string>
+
+    <!--Home -->
+    <string name="failed">失败</string>
+    <string name="next_in_up">“距离下一次：%d"</string>
+    <string name="step_1_3">步骤 1/3</string>
+    <string name="step_2_3">步骤 2/3</string>
+    <string name="remove_from_favourites">从收藏夹中删除</string>
+    <string name="config_added">添加到配置</string>
+
+    <string name="app_background">应用程序背景</string>
+    <string name="disconnected_lower_case">已断开连接</string>
+    <string name="connected_lower_case">已连接</string>
+    <string name="x_press_login">懒人登录</string>
+    <string name="other">其他</string>
+
+    <!-- About -->
+    <string name="about">关于</string>
+    <string name="about_us">关于我们</string>
+    <string name="status">状态</string>
+    <string name="privacy_policy">隐私政策</string>
+    <string name="terms_title">条款</string>
+    <string name="blog">博客</string>
+    <string name="jobs">工作</string>
+    <string name="software_licenses">软件许可证</string>
+
+
+    <!-- ********** TV ************* -->
+
+    <!-- UPGRADE STRINGS -->
+    <string name="benefit_unlimited_data">无限流量</string>
+    <string name="choose_plan">选择套餐</string>
+    <string name="monthly">包月</string>
+    <string name="yearly">包年 - 节省 55%</string>
+    <string name="upgrade_title">你值得拥有的绝对不止有限的隐私。</string>
+    <string name="text_login">登录</string>
+    <string name="text_sign_up">注册</string>
+
+    <!-- Log -->
+    <string name="sending_debug_log">正在发送调试日志\n请稍等…</string>
+    <string name="app_log_submitted">谢谢！应用日志已提交。</string>
+    <string name="log_submission_failed">提交日志文件时出错！</string>
+
+    <!-- Home -->
+    <string name="add_your_email_address">添加邮箱，防止你忘记密码。我们甚至会为你提供10GB的流量。</string>
+    <string name="locations">地点</string>
+    <string name="notifications">通知</string>
+    <string name="support">支持</string>
+    <string name="support_content">针对所有与客服支援相关的问题，请在你的手机或电脑上访问上述地址。</string>
+    <string name="add_email_title">添加Email</string>
+
+    <!-- Upgrade -->
+    <string name="upgradeNoData">看起来你已经用完了宝贵的隐私</string>
+    <string name="upgradeToUnlock">你值得拥有的绝对不止有限的隐私</string>
+    <string name="restore_purchase">恢复购买</string>
+    <string name="servers_in_over_60_countries_and_110_cities">服务器遍布60多个国家和110个城市</string>
+    <string name="no_bandwidth_interruptions_stay_protected_forever">没有带宽中断。永远受到保护</string>
+
+
+    <string name="skip">跳过</string>
+    <string name="robert_detail">在你所有设备上的屏蔽恶意软件和广告。</string>
+
+
+    <!-- Settings -->
+    <string name="settings">设置</string>
+    <string name="sort_type">位置排序方式</string>
+    <string name="split_routing">拆分路由</string>
+    <string name="exclusive_mode">独家</string>
+    <string name="disabled">关闭</string>
+    <string name="apps_to_exclude">要排除的应用程序</string>
+    <string name="apps_to_include">要包括的应用程序</string>
+    <string name="lan_traffic">局域网流量</string>
+    <string name="allow">允许</string>
+    <string name="block">屏蔽</string>
+    <string name="start_on_boot">开机启动</string>
+    <string name="split_routing_content" translatable="false">选择在连接时要从Windscribe VPN中排除或包括哪些应用</string>
+    <string name="show_system_apps">显示系统应用</string>
+
+    <!-- Login -->
+    <string name="login_label" translatable="false">如果你已经有一个帐号</string>
+    <string name="ghost_account_sign_up" translatable="false">注册或登录以查看你的帐号详细信息并保护你的偏好</string>
+    <string name="ghost_account_claim" translatable="false">认领你的帐号以防止失去Pro订阅状态</string>
+    <string name="claim_account" translatable="false">认领帐号</string>
+    <string name="reason_to_get_more_data" translatable="false">“注册并将流量增加到10GB/月，或者升级计划并完全摆脱流量限制。”</string>
+    <string name="sign_up_to_get_10" translatable="false">注册 - 10GB/月</string>
+    <string name="get_pro" translatable="false">订阅Pro - 无限流量</string>
+    <string name="add_email_pro" translatable="false">添加Email</string>
+    <string name="text_two_fa" translatable="false">需要两步验证才可继续。使用身份验证应用程序生成代码。</string>
+    <string name="free_reason_to_add_email" translatable="false">请添加你的Email以获得10GB/月的流量</string>
+    <string name="pro_reason_to_add_email" translatable="false">请添加你的Email以保护你的帐号</string>
+    <string name="confirm_email_title" translatable="false">确认Email</string>
+    <string name="back_uppercase" translatable="false">返回</string>
+    <string name="Error" translatable="false">错误</string>
+    <string name="text_account_set_up" translatable="false">注册</string>
+    <string name="xpress_login" translatable="false">懒人登录</string>
+    <string name="web_login_description" translatable="false">请在任何设备前往 <b>https://windscribe.com/lazy</b> 并输入下面的代码。</string>
+    <string name="app_login_description" translatable="false">在手机或平板电脑上打开Windscribe Android应用程序，转到偏好设置（左上角），在“帐号”下选择“懒人登录”并输入下面的代码。</string>
+    <string name="or" translatable="false">或者</string>
+    <string name="generate_code" translatable="false">生成代码</string>
+    <string name="manual_login" translatable="false">手动登录</string>
+    <string name="keep_your_secrets">保护你的\n秘密。</string>
+    <string name="reset_password_description">请访问windscribe.com来重置你的密码</string>
+    <string name="support_url">windscribe.com/support</string>
+    <string name="enter_code">输入代码</string>
+    <string name="enter">输入</string>
+
+    <!-- Server list -->
+    <string name="ping_time">%dMS</string>
+    <string name="trying_next_protocol">“距离下一次协议尝试：%d"</string>
+    <string name="all">全部</string>
+    <string name="favourite">收藏</string>
+    <string name="windflix">Windflix</string>
+    <string name="static_ip">静态IP</string>
+    <string name="disconnect_alert_no_network" translatable="false">Windscribe VPN隧道由于网络连接原因而暂停 - 请检查你的网络设置</string>
+    <string name="node_under_construction_text" translatable="false">此位置正在维护中。请稍后再试，或转到我们的状态页面了解更多信息。 https://windscribe.com/status</string>
+    <string name="load_loading" translatable="false">正在加载</string>
+    <string name="load_nothing_found" translatable="false">尚无收藏内容</string>
+    <string name="load_error" translatable="false">加载出错。</string>
+    <string name="select_location">请先选择位置！</string>
+
+    <!-- Actions -->
+    <string name="text_ok">好的</string>
+
+    <!--Robert -->
+    <string name="robert_description">R.O.B.E.R.T.是一个可定制的服务器端域和IP屏蔽工具。切换开关，即可选择你希望在所有设备上应用的屏蔽列表。</string>
+    <string name="learn_more">了解更多</string>
+    <string name="manage_custom_rules">管理自定义规则</string>
+    <string name="blocking">屏蔽</string>
+    <string name="allowing">允许</string>
+</resources>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetLeft="-2dp"
+    android:insetTop="-2dp"
+    android:insetBottom="-2dp">
+    <shape>
+        <stroke
+            android:width="2dp"
+            android:color="@color/colorWhite15" />
+        <solid android:color="@color/colorDeepBlue90" />
+        <padding
+            android:bottom="2dp"
+            android:left="2dp"
+            android:right="2dp"
+            android:top="2dp" />
+    </shape>
+</inset>

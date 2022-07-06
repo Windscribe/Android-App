@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<!--<layer-list>-->
+<rotate xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromDegrees="0"
+    android:toDegrees="720">
+    <layer-list>
+        <item android:drawable="@drawable/ic_connection_spinner_icon" />
+    </layer-list>
+</rotate>
+
+
+
+
+

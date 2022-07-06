@@ -1,0 +1,39 @@
+{
+  "data": {
+    "static_ips": [
+      {
+        "id": 14596,
+        "ip_id": 74756,
+        "static_ip": "-x-x-x-x-x-x-x--x",
+        "type": "dc",
+        "name": "US West",
+        "country_code": "US",
+        "short_name": "US-W",
+        "city_name": "Los Angeles",
+        "server_id": 579,
+        "expiry": "2022-01-31",
+        "status": 1,
+        "connect_ip": "-x-x-x-x-x-x-x--x",
+        "wg_ip": "-x-x-x-x-x-x-x--x",
+        "wg_pubkey": "-x-x-x-x-x-x-x--x",
+        "ovpn_x509": "-x-x-x-x-x-x-x--xm"
+      }
+    ],
+    "devices": [
+      {
+        "id": 7180,
+        "device_uuid": "-x-x-x-x-x-x-x--x",
+        "user_id": 3733130,
+        "device_name": "Android 1",
+        "device_type": "client"
+      },
+      {
+        "id": 8936,
+        "device_uuid": "-x-x-x-x-x-x-x--x",
+        "user_id": 3733130,
+        "device_name": "Android 54",
+        "device_type": "client"
+      }
+    ]
+  }
+}

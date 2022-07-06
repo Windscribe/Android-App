@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/colorWhite40">
+    <item>
+        <selector>
+            <item
+                android:drawable="@drawable/ic_show_password"
+                android:state_checked="true" />
+            <item
+                android:drawable="@drawable/ic_hide_password"
+                android:state_checked="false" />
+        </selector>
+    </item>
+</ripple>

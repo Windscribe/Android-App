@@ -1,0 +1,3 @@
+Change Log:
+
+1. Fixed user account status not updating from session worker.

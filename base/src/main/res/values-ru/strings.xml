@@ -1,0 +1,450 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<resources>
+    <!--- User-->
+    <string name="username_empty">Пустое имя пользователя!</string>
+    <string name="password_empty">Пустой пароль</string>
+    <string name="enter_username">Пожалуйста, введите имя пользователя!</string>
+    <string name="enter_password">Пожалуйста, введите пароль!</string>
+    <string name="password_too_short">Пароль слишком короткий!</string>
+    <string name="login_credential_error">Неверное имя пользователя или пароль :(</string>
+    <string name="sign_out">Выйти</string>
+    <string name="username">Имя пользователя</string>
+    <string name="password">Пароль</string>
+    <string name="login_with_username">Имя пользователя не может содержать специальные символы или e-mail.</string>
+    <string name="weak_password">Ваш пароль должен содержать хотя бы одну заглавную и строчную буквы.</string>
+    <string name="small_password">Пароль не может быть короче 8 символов.</string>
+    <string name="password_requirement">Не менее 8 символов, содержащих как минимум одну заглавную и одну строчную буквы.</string>
+    <string name="failed_network_alert">Мы сделали все возможное, но по какой-то причине не может подключить вас к этой сети.</string>
+    <string name="fa_required_error">Требуется код двухфакторной аутентификации</string>
+    <string name="fa_invalid_error">Неверный код двухфакторной аутентификации</string>
+    <string name="login">Войти</string>
+    <string name="two_fa">Код двухфакторной аутентификации</string>
+    <string name="two_fa_description">Используйте приложение для аутентификации, чтобы сгенерировать код, если эта функция включена.</string>
+    <string name="forgot_password">Забыли пароль?</string>
+    <string name="next">Продолжить</string>
+    <string name="sign_up">Зарегистрируйтесь бесплатно</string>
+    <string name="sign_up_description">Защитите свой аккаунт, используйте свои настройки на любом устройстве и получите больше трафика.</string>
+    <string name="choose_username">Выберите имя пользователя</string>
+    <string name="choose_password">Выберите пароль</string>
+    <string name="email_description"><![CDATA[Только для восстановления пароля, обновлений и промо-акций. Никакого спама!]]></string>
+    <string name="sign_up_failed_network_alert">Мы сделали все возможное, но по какой-то причине не можем зарегистрировать вас в этой сети.</string>
+
+    <!--Api -->
+    <string name="backup_api_end_point">Попытка резервного копирования конечной точки API.</string>
+    <string name="signing_in">Вход&#8230;</string>
+    <string name="signing_up">Регистрация&#8230;</string>
+    <string name="getting_session">Начало сеанса&#8230;</string>
+    <string name="getting_port_maps">Получение карт портов&#8230;</string>
+    <string name="getting_server_config">Получение конфигурации сервера&#8230;</string>
+    <string name="getting_server_credentials">Получение учетных данных сервера&#8230;</string>
+    <string name="getting_best_location">Получение лучшего местоположения&#8230;</string>
+    <string name="getting_server_list">Получение списка серверов &#8230;</string>
+    <string name="preparing_your_dashboard">Подготовка панели управления&#8230;</string>
+    <string name="trying_static_endpoint">Попытка подключения к статической конечной точке&#8230;</string>
+    <string name="getting_reg_token">Получение токена для регистрации&#8230;</string>
+
+    <!--- Email-->
+    <string name="invalid_email_format">Неверный e-mail!</string>
+    <string name="email_empty">Пустой e-mail!</string>
+    <string name="email">E-mail</string>
+    <string name="confirm_your_email">Подтвердите свой e-mail</string>
+    <string name="confirm_email">Подтвердить e-mail</string>
+    <string name="resend_verification_email">Отправить ещё один e-mail с подтверждением</string>
+    <string name="change_email">Изменить e-mail</string>
+
+    <!--Network -->
+    <string name="no_internet">НЕТ ПОДКЛЮЧЕНИЯ!</string>
+    <string name="no_network_detected">Нет сети!</string>
+    <string name="this_network_hates_us">Эта сеть блокирует нас</string>
+
+    <!-- Upgrade-->
+    <string name="upgrade">УЛУЧШЕНИЕ</string>
+    <string name="upgrade_case_normal">Улучшение</string>
+    <string name="renew_plan">Возобновить тарифный план</string>
+    <string name="you_ve_been_downgraded_to_free_for_now">Мы переведем вас на \nбесплатный тариф</string>
+    <string name="you_ve_violated_our_terms">Ваш аккаунт был отключен из-за \nнарушения правил</string>
+    <string name="you_r_pro_plan_expired">Срок действия вашего тарифа Pro истёк!</string>
+    <string name="you_re_out_of_data">У вас закончился доступный трафик</string>
+    <string name="you_ve_been_banned">Вы заблокированы</string>
+    <string name="upgrade_later">Я улучшу тариф позже</string>
+    <string name="upgrade_to_stay_protected">Улучшите тариф, чтобы оставаться \nпод нашей защитой, или подождите \nследующего месяца.</string>
+    <string name="get_more_data">БОЛЬШЕ ТРАФИКА</string>
+    <string name="data_left">Осталось %1$.2f Гб</string>
+    <string name="gb_month">- Гб/месяц</string>
+    <string name="warning_no_email_pro_account">Укажите e-mail, чтобы восстановить аккаунт, если забудете пароль.</string>
+    <string name="free_reason_to_confirm">Пожалуйста, подтвердите e-mail, чтобы получить 10 Гб/месяц бесплатно</string>
+    <string name="pro_reason_to_confirm">Пожалуйста, подтвердите e-mail, чтобы защитить свой аккаунт.</string>
+
+    <!-- Connection states -->
+    <string name="connected">ПОДКЛЮЧЕНО</string>
+    <string name="connected_lowercase">Подключено</string>
+    <string name="connecting">ИДЁТ ПОДКЛЮЧЕНИЕ&#160;</string>
+    <string name="connecting_to">Идёт подключение к %s</string>
+    <string name="connected_to">Подключено к %s</string>
+    <string name="disconnecting">ОТКЛЮЧЕНИЕ</string>
+    <string name="disconnected">ОТКЛЮЧЕНО</string>
+    <string name="tunnel_test_failed">ПОДКЛЮЧЕНИЕ НЕ УДАЛОСЬ&#8230;</string>
+    <string name="checking_connectivity">Проверка подключения&#8230;</string>
+    <string name="connectivity_test_failed">Не удалось проверить подключение&#8230;</string>
+    <string name="best_location">Лучшее местоположение</string>
+
+    <!--Connection preference-->
+    <string name="connection_mode">Режим подключения</string>
+    <string name="preferred_protocol">Предпочтительный протокол</string>
+    <string name="protocol">Протокол</string>
+    <string name="port">Порт</string>
+    <string name="connection_automatic">Авто</string>
+    <string name="connection_manual">Вручную</string>
+    <string name="go_to_settings">Перейти к настройкам</string>
+    <string name="always_on_not_supported">Для этой функции необходим Android версии 7.0 и выше</string>
+    <string name="packet_size">Размер пакета</string>
+    <string name="lan_by_pass">Разрешить трафик сети LAN</string>
+    <string name="gps_spoofing">Подделка GPS</string>
+    <string name="natKeepAlive">IKE keepalive</string>
+    <string name="keep_alive">проверка активности</string>
+    <string name="auto_detecting">Автоматическое обнаружение …</string>
+
+    <!-- Account-->
+    <string name="plan_pro">Pro</string>
+    <string name="expiry_date">Срок действия</string>
+    <string name="reset_date">Сбросить дату</string>
+    <string name="gb_per_month">&#160;Гб/месяц</string>
+    <string name="my_account">Аккаунт</string>
+    <string name="cancel">Отмена</string>
+    <string name="edit_account">Изменить аккаунт</string>
+    <string name="info">ИНФО</string>
+    <string name="plan">ТАРИФ</string>
+    <string name="please_login">Пожалуйста, войдите для подключения!</string>
+    <string name="please_login_to_see_account_details"> Зарегистрируйтесь или войдите, чтобы посмотреть детали аккаунта и защитить свои интересы.</string>
+
+    <!-- Billing-->
+    <string name="billing_unavailable">Оплата в Google Play недоступна на этом устройстве.</string>
+    <string name="item_unavailable">Ваш запрос сейчас недоступен. \nПожалуйста, свяжитесь с техподдержкой по адресу https://windscribe.com/support!</string>
+    <string name="billing_service_unavailable">Платежный сервис недоступен. Пожалуйста, проверьте подключение к сети и попробуйте еще раз!</string>
+    <string name="unknown_billing_error">Неизвестная ошибка. Пожалуйста, свяжитесь с техподдержкой на https://windscribe.com/support!</string>
+    <string name="fatal_error">Невозможно связаться с платежным сервисом&#8230;Пожалуйста, проверьте подключение!</string>
+    <string name="unable_to_process_request">Нам не удалось выполнить ваш запрос. Пожалуйста, попробуйте еще раз!</string>
+    <string name="play_store_updating">Идёт обновление в Play store! Пожалуйста, попробуйте ещё раз, когда обновление завершится.</string>
+    <string name="purchase_cancelled">Оплата отменена!</string>
+    <string name="purchase_successful">Оплата прошла успешно!</string>
+    <string name="_2gb_left">ОСТАЛОСЬ 2Гб</string>
+
+    <!-- Notification/Status Strings -->
+    <string name="state_connecting">Подключение</string>
+    <string name="state_wait">Ожидание ответа сервера</string>
+    <string name="state_auth">Аутентификация</string>
+    <string name="state_get_config">Получение настроек клиента</string>
+    <string name="state_assign_ip">Назначение IP адресов</string>
+    <string name="state_add_routes">Добавление маршрутов</string>
+    <string name="state_connected">Подключено</string>
+    <string name="state_disconnected">Отключено</string>
+    <string name="state_reconnecting">Переподключение</string>
+    <string name="state_exiting">Выход</string>
+    <string name="state_noprocess">Не работает</string>
+    <string name="state_resolve">Преобразование хост-имён</string>
+    <string name="state_tcp_connect">Подключение (TCP)</string>
+    <string name="state_auth_failed">Аутентификация не удалась</string>
+    <string name="state_no_network">В ожидании подходящей сети</string>
+
+    <!--News feed -->
+    <string name="news_feed">Лента новостей</string>
+    <string name="news_feed_welcome">Здесь вы можете найти объявления и новости Windscribe. А может быть, даже вкусняшки. Все любят вкусняшки! </string>
+    <string name="news_feed_welcome_title">ДОБРО ПОЖАЛОВАТЬ В WINDSCRIBE</string>
+
+    <!-- Rate dialog -->
+    <string name="rate_the_app">Оцените Windscribe</string>
+    <string name="may_be_later">Может, позже</string>
+    <string name="never_ask_again">Отстаньте!</string>
+    <string name="rate_message">Вам нравится Windscribe? Наверняка! Оцените нас в Play Store, и мы будем любить вас вечно!</string>
+
+    <!-- GPS spoofing -->
+    <string name="gps_spoofing_explain">Эта функция требует изменить настройки вашего телефона. Пожалуйста, следуйте инструкции, чтобы включить ее.</string>
+    <string name="let_s_do_it">Сделаем это!</string>
+    <string name="unlock_developer_mode">Разблокируйте Параметры разработчика</string>
+    <string name="unlock_developer_mode_explain">Откройте Настройки и найдите опцию "О телефоне". Найдите номер сборки и нажмите на него 7 раз.</string>
+    <string name="open_settings">Откройте настройки</string>
+    <string name="add_to_mock_location">Выберите приложение Mock Location</string>
+    <string name="add_to_mock_location_explain">После разблокировки перейдите в "Режим разработчика" в Настройках. Под "Отладкой" выберите Windscribe “Mock location app”.</string>
+    <string name="you_are_done">Готово!</string>
+    <string name="gps_spoofing_success">Ваше GPS-местоположение будет таким же, как и VPN-локация.</string>
+    <string name="gps_spoofing_not_set">Не удалось включить подделку GPS</string>
+    <string name="gps_spoofing_error">Пожалуйста, попробуйте еще раз пройти рекомендованные шаги, чтобы активировать функцию.</string>
+
+    <!--Ghost mode -->
+    <string name="add_email">Добавить E-mail</string>
+    <string name="unlimited_data">Безлимитный трафик</string>
+    <string name="preferences">Предпочтения</string>
+    <string name="optional">(Не обязательно)</string>
+    <string name="get_10_gb">Получите 10Гб/мес.</string>
+    <string name="plans">Тарифные планы</string>
+    <string name="pro">Pro</string>
+    <string name="benefits">Преимущества</string>
+    <string name="pricing">ЦЕНЫ</string>
+    <string name="all_locations">Все местоположения</string>
+    <string name="robert">R.O.B.E.R.T.</string>
+    <string name="terms"><![CDATA[Подписаться можно на месяц или на год. Позже можно отключить подписку в настройках App Store. Все цены включают налоги.]]></string>
+    <string name="terms_policy"><b>Правила пользования.</b> &amp; <b>Политика конфиденциальности.</b></string>
+    <string name="account_set_up">Настройка аккаунта</string>
+    <string name="account_set_up_description">Защитите свой аккаунт и используйте его на любом устройстве.</string>
+    <string name="continue_free_10gb_mo">Получите 10Гб/месяц бесплатно</string>
+    <string name="continue_without_email">Продолжить без ввода E-mail</string>
+    <string name="no_email_warning">Без ввода e-mail вы получите бесплатно только 2Гб/месяц. Кроме того, вы не сможете изменить пароль.</string>
+    <string name="get_started">Начнём!</string>
+
+    <!-- Actions -->
+    <string name="error_try_again">Ошибка! Попробуйте еще раз!</string>
+    <string name="please_wait">Пожалуйста, подождите&#8230;</string>
+    <string name="resend">Отправить еще раз</string>
+    <string name="loading">Загрузка..</string>
+    <string name="retry">Повторить</string>
+    <string name="try_again">Попробовать еще раз</string>
+    <string name="close">Закрыть</string>
+    <string name="contact_support">Связаться с техподдержкой</string>
+    <string name="set_up_later">Настроить позже</string>
+    <string name="back">Назад</string>
+    <string name="ok">OK</string>
+
+    <!-- Log -->
+    <string name="view_log">Посмотреть журнал отладки</string>
+    <string name="send_log">Отправить журнал отладки</string>
+    <string name="send_charon_log">Отправить IkEv2-журнал</string>
+    <string name="sent_thanks">Отправлено, спасибо!</string>
+    <string name="sending_log">Журнал отправляется…</string>
+    <string name="export_log">Экспортировать журнал</string>
+
+    <!--Home -->
+    <string name="no_favourites">Нет избранного</string>
+    <string name="no_custom_configs">Пользовательские настройки позволят вам подключаться к любому открытому VPN или Wireguard-серверу. Просто добавьте верный файл с настройками и сервер появится в этом списке.</string>
+    <string name="add_profile">Добавить VPN-профиль</string>
+    <string name="add_static_ip">Добавить статический IP</string>
+    <string name="check_status">Проверить статус</string>
+    <string name="under_maintenance">Это местоположение на техобслуживании.</string>
+    <string name="check_status_description">Попробуйте позже или перейдите на нашу страницу Статусов, чтобы узнать больше</string>
+    <string name="added_to_favourites">Добавить в избранное</string>
+    <string name="add_vpn_config">Добавить настройки пользователя</string>
+
+    <!--Main Menu-->
+    <string name="general">Главная</string>
+    <string name="account">Аккаунт</string>
+    <string name="connection">Подключение</string>
+    <string name="debug">Отладка</string>
+    <string name="help_me">Помощь</string>
+    <string name="logout">Выйти</string>
+    <string name="preference">Предпочтения</string>
+    <string name="logout_alert_description">Вы уверены, что хотите выйти из Windscribe?</string>
+
+    <!--General Settings-->
+    <string name="sort_by">Порядок местоположений</string>
+    <string name="display_latency">Показывать задержку</string>
+    <string name="preferred_language">Язык</string>
+    <string name="theme">Внешний вид</string>
+    <string name="show_timer_in_notifications">Статистика уведомлений</string>
+    <string name="haptic_setting_label">Тактильный возврат</string>
+    <string name="version">Версия</string>
+    <string name="show_location_health">Показать загрузку местоположения</string>
+
+    <!-- Split tunneling -->
+    <string name="split_tunneling_feature">Выберите, какие приложения должны работать через Windscribe, когда он включен, а какие нет.</string>
+    <string name="mode">Режим</string>
+    <string name="split_tunneling">Раздельное туннеллирование</string>
+    <string name="off">Выкл.</string>
+    <string name="on">Вкл.</string>
+    <string name="feature_tunnel_mode_exclusive">Приложения из списка ниже не будут работать через Windscribe, если он включен.</string>
+    <string name="feature_tunnel_mode_inclusive">Приложения из списка ниже будут работать через Windscribe, если он включен.</string>
+    <string name="apps">ПРИЛОЖЕНИЯ</string>
+
+    <!--Always on -->
+    <string name="always_on">Всегда включать VPN</string>
+    <string name="always_on_warning">\"Всегда включать\" VPN позволяет Android контролировать VPN-соединение, а пользователю быть уверенным, что никакие данные не покидают устройство, кроме как через безопасный VPN-туннель.</string>
+    <string name="always_on_setting">Устройства с Android версии 10 и выше требуют, чтобы функция "Всегда включать VPN" была настроена для запуска Windscribe при загрузке устройства.</string>
+
+    <!-- Network security -->
+    <string name="forget_network">Забыть сеть</string>
+    <string name="network_secured">Защищено</string>
+    <string name="network_unsecured">Не защищено</string>
+    <string name="preferred_protocol_description">Выберите протокол по умолчанию для этой сети, если у вас возникли проблемы с подключением.</string>
+    <string name="unknown">Неизвестная сеть</string>
+    <string name="loading_network_list">Загрузка списка сетей.\nПожалуйста, подождите.</string>
+    <string name="no_saved_network_list">Нет сохраненного списка сетей!</string>
+    <string name="network_options">Параметры сети</string>
+    <string name="auto_secure">Автоматическая защита</string>
+    <string name="auto_secure_description">Windscribe  будет автоматически включаться, когда вы подключитесь к этой сети.</string>
+
+    <!--Auto connect on boot-->
+    <string name="auto_start_on_boot">Автоподключение при загрузке</string>
+    <string name="enable_start_on_boot">Включить запуск при загрузке</string>
+
+    <!--Location permission -->
+    <string name="grant_permission">Предоставить разрешение</string>
+    <string name="reason_for_location_permission">Когда Windscribe работает в фоновом режиме, ему нужно разрешение на определение вашего местоположения, чтобы функция \"Белый список сетей\" могла работать. Эти данные требуются для доступа к именам WiFi-сетей. Это разрешение используется только для этой функции и для функции подделки GPS. Данные о вашем местоположении не покинут ваше устройство и не будут использованы ни для чего другого.</string>
+    <string name="location_permission_for_ssid">Разрешение на определение местоположения необходимо для настройки предпочитаемых протоколов и автоматического подключения.</string>
+    <string name="disclaimer">Отказ от ответственности</string>
+    <string name="location_permission">Разрешение на определение местоположения</string>
+
+    <!-- Features -->
+    <string name="feature1">Серверы более чем в 100 местах</string>
+    <string name="feature2">Блокировка рекламы и вредоносного ПО</string>
+    <string name="feature3">Никаких записей вашей активности</string>
+    <string name="feature4">Доступен стриминг</string>
+
+    <!--Help -->
+    <string name="knowledge_base">База знаний</string>
+    <string name="knowledge_base_description">Все, что вам нужно знать о Windscribe.</string>
+    <string name="talk_to_garry">Поговорите с Гарри</string>
+    <string name="talk_to_garry_description">Не так умен, как Сири, но все же сможет ответить на ваши вопросы.</string>
+    <string name="send_ticket">Отправить вопрос</string>
+    <string name="send_ticket_description">Остались вопросы? Отправьте их нам.</string>
+    <string name="community_support">Поддержка сообщества</string>
+    <string name="community_support_description">Лучшие места, чтобы попросить о помощи или помочь другим.</string>
+
+    <!--Send ticket -->
+    <string name="how_to_send_ticket">Заполните поля ниже и один из сотрудников нашей техподдержки скоро вам ответит.</string>
+    <string name="category">Категории</string>
+    <string name="email_reason_for_contact">Так мы сможем с вами связаться. Мы не будет использовать ваш e-mail для каких-либо других целей.</string>
+    <string name="what_is_the_issue">В чем проблема?</string>
+    <string name="message">Сообщение</string>
+    <string name="subject">Тема</string>
+
+    <!--Config -->
+    <string name="edit_config_file">Редактировать файл конфигурации</string>
+    <string name="name">имя</string>
+    <string name="save_credentials">Сохранить учетные данные?</string>
+    <string name="update">Обновление</string>
+    <string name="enter_credentials">Ввести учетные данные</string>
+    <string name="connect">Подключение</string>
+
+    <!--Debug -->
+    <string name="send_debug_log">Отправить журнал отладки</string>
+    <string name="send_ikev2_log">Отправить IKEv2-журнал</string>
+
+    <!--Home -->
+    <string name="failed">ОШИБКА</string>
+    <string name="next_in_up">"Далее %d"</string> ?? /sorry, i can't understand what "%d" is/
+    <string name="step_1_3">Шаг 1/3</string>
+    <string name="step_2_3">Шаг 2/3</string>
+    <string name="remove_from_favourites">Удалить из Избранного</string>
+    <string name="config_added">Добавить в Конфигурацию</string>
+    <string name="app_background">Фон</string>
+    <string name="disconnected_lower_case">Отключено</string>
+    <string name="connected_lower_case">Подключено</string>
+    <string name="x_press_login">Ленивый вход</string>
+    <string name="other">ДРУГОЕ</string>
+
+    <!-- About -->
+    <string name="about">O Windscribe</string>
+    <string name="about_us">О нас</string>
+    <string name="status">Статус</string>
+    <string name="privacy_policy">Политика конфиденциальности</string>
+    <string name="terms_title">Правила</string>
+    <string name="blog">Блог</string>
+    <string name="jobs">Вакансии</string>
+    <string name="software_licenses">Лицензия на ПО</string>
+
+    <!-- ********** TV ************* -->
+
+    <!-- UPGRADE STRINGS -->
+    <string name="benefit_unlimited_data">Безлимитный трафик</string>
+    <string name="choose_plan">ВЫБРАТЬ ТАРИФНЫЙ ПЛАН</string>
+    <string name="monthly">НА МЕСЯЦ</string>
+    <string name="yearly">НА ГОД - НА 55% ДЕШЕВЛЕ</string>
+    <string name="upgrade_title">Вы заслуживаете безопасности без ограничений.</string>
+    <string name="text_login">Вход</string>
+    <string name="text_sign_up">Регистрация</string>
+
+    <!-- Log -->
+    <string name="sending_debug_log">Отправляем отчет об ошибках\nПожалуйста, подождите.&#8230;</string>
+    <string name="app_log_submitted">Спасибо! Отчет отправлен.</string>
+    <string name="log_submission_failed">Ошибка отправки файла!</string>
+
+    <!-- Home -->
+    <string name="add_your_email_address">Добавьте адрес электронной почты на тот случай, если вы забудете пароль. А мы за это бесплатно дадим вам 10Гб.</string>
+    <string name="locations">Местоположения</string>
+    <string name="notifications">Уведомления</string>
+    <string name="support">Техподдержка</string>
+    <string name="support_content">По всем вопросам, связанным с техподдержкой, перейдите с телефона или компьютера по указанному выше адресу.</string>
+    <string name="add_email_title">Добавить E-mail</string>
+
+    <!-- Upgrade -->
+    <string name="upgradeNoData">Похоже, драгоценная конфиденциальность закончилась!</string>
+    <string name="upgradeToUnlock">Вы заслуживаете безопасность и конфиденциальность без ограничений</string>
+    <string name="restore_purchase">Восстановить покупки</string>
+    <string name="servers_in_over_60_countries_and_110_cities">Сервера в 60 странах и 110 городах</string>
+    <string name="no_bandwidth_interruptions_stay_protected_forever">Никаких обрывов связи. Вы всегда будете под нашей защитой.</string>
+    <string name="skip">Пропустить</string>
+    <string name="robert_detail">Блокирует вредоносное ПО и рекламу на всех ваших устройствах.</string>
+
+    <!-- Settings -->
+    <string name="settings">Настройки</string>
+    <string name="sort_type">Упорядочить местоположения по</string>
+    <string name="split_routing">Раздельная маршрутизация</string>
+    <string name="exclusive_mode">Исключения</string>
+    <string name="disabled">Выкл.</string>
+    <string name="apps_to_exclude">Исключить эти приложения</string>
+    <string name="apps_to_include">Включить эти приложения</string>
+    <string name="lan_traffic">Lan-трафик</string>
+    <string name="allow">Разрешить</string>
+    <string name="block">Запретить</string>
+    <string name="start_on_boot">Запуск при загрузке</string>
+    <string name="split_routing_content" translatable="false">Выберите, какие приложения будут работать через Windscribe, когда он включен, а какие нет.</string>
+    <string name="show_system_apps">Показать системные приложения</string>
+
+
+    <!-- Login -->
+    <string name="login_label" translatable="false">Если у вас уже есть аккаунт</string>
+    <string name="ghost_account_sign_up" translatable="false">Зарегистрируйтесь или войдите, чтобы посмотреть детали вашего аккаунта или защитить свои интересы</string>
+    <string name="ghost_account_claim" translatable="false">Подтвердите свою учетную запись, чтобы предотвратить потерю вашего PRO-статуса</string>
+    <string name="claim_account" translatable="false">Подтвердить учетную запись</string>
+    <string name="reason_to_get_more_data" translatable="false">"Зарегистрируйтесь, чтобы получить 10 Гб в месяц, или улучшите аккаунт, чтобы избавиться от ограничений"</string>
+    <string name="sign_up_to_get_10" translatable="false">Зарегистрироваться - 10Гб/месяц</string>
+    <string name="get_pro" translatable="false">Подключить Pro-аккаунт - Без ограничений</string>
+    <string name="add_email_pro" translatable="false">Добавить E-mail</string>
+    <string name="text_two_fa" translatable="false">Чтобы продолжить, нужна двухфакторная аутентификация. Используйте приложение для аутентификации, чтобы сгенерировать код.</string>
+    <string name="free_reason_to_add_email" translatable="false">Пожалуйста, добавьте e-mail, чтобы получить 10 Гб/месяц.</string>
+    <string name="pro_reason_to_add_email" translatable="false">Пожалуйста, добавьте e-mail, чтобы защитить свой аккаунт.</string>
+    <string name="confirm_email_title" translatable="false">Подтвердить E-mail</string>
+    <string name="back_uppercase" translatable="false">Назад</string>
+    <string name="Error" translatable="false">Ошибка</string>
+    <string name="text_account_set_up" translatable="false">Зарегистрироваться</string>
+    <string name="xpress_login" translatable="false">Ленивый вход</string>
+    <string name="web_login_description" translatable="false">Перейдите по ссылке: <b>https://windscribe.com/lazy</b> на любом устройстве и введите код.</string>
+    <string name="app_login_description" translatable="false">Используя приложение Windscribe для Android на вашем телефоне или планшете, перейдите в Предпочтения (вверху слева), выберите "Ленивый вход" под надписью "Аккаунт" и введите код, который вы видите ниже.</string>
+    <string name="or" translatable="false">ИЛИ</string>
+    <string name="generate_code" translatable="false">Сгенерировать код</string>
+    <string name="manual_login" translatable="false">Войти вручную</string>
+    <string name="keep_your_secrets">Сохраните ваши \nсекреты.</string>
+    <string name="reset_password_description">Пожалуйста, зайдите на windscribe.com, чтобы сбросить пароль.</string>
+    <string name="support_url">windscribe.com/support</string>
+    <string name="enter_code">Введите код</string>
+    <string name="enter">Войти</string>
+
+    <!-- Server list -->
+    <string name="ping_time">%d MS</string>
+    <string name="trying_next_protocol">"Попробовать следующий протокол через %d"</string>
+    <string name="all">Все</string>
+    <string name="favourite">Избранное</string>
+    <string name="windflix">Windflix</string>
+    <string name="static_ip">Статический IP</string>
+    <string name="disconnect_alert_no_network" translatable="false">Работа Windscribe VPN-туннеля приостановлена из-за отсутствия подключения к сети. Пожалуйста, проверьте настройки сети.</string>
+    <string name="node_under_construction_text" translatable="false">Это местоположение на техобслуживании. Попробуйте позже или зайдите на страницу Статусов, чтобы получить дополнительную информацию. https://windscribe.com/status</string>
+    <string name="load_loading" translatable="false">Загрузка</string>
+    <string name="load_nothing_found" translatable="false">Здесь не на что смотреть</string>
+    <string name="load_error" translatable="false">Ошибка загрузки.</string>
+    <string name="select_location">Пожалуйста, сначала выберите местоположение!</string>
+
+    <!-- Actions -->
+    <string name="text_ok">OK</string>
+
+    <!--Robert -->
+    <string name="robert_description">R.O.B.E.R.T. — это настраиваемый серверный домен и инструмент блокировки IP-адресов. Выберите "черные" списки, которые вы хотите заблокировать на всех своих устройствах, нажав переключатель.</string>
+    <string name="learn_more">Узнать больше</string>
+    <string name="manage_custom_rules">Управление правилами пользователя</string>
+    <string name="blocking">Заблокировано</string>
+    <string name="allowing">Разрешается</string>
+    <string name="as_much_as_bandwidth_you_like">Довольно понятно. Используйте столько пропускной способности, сколько хотите.</string>
+    <string name="access_to_multiple_servers">Доступ к серверам в более чем 60 странах и 111 центрам обработки данных.</string>
+    <string name="ad_malware_blocker">Лучшее вредоносное ПО и блокировщик рекламы, которое вы когда-либо использовали. Серьезно.</string>
+
+</resources>

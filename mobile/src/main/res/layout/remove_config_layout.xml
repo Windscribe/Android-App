@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+
+    <TextView
+        android:id="@+id/config_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="13dp"
+        android:layout_marginTop="13dp"
+        android:fontFamily="@font/ibm_font_family"
+        android:textColor="?attr/nodeListGroupTextColor"
+        android:textSize="@dimen/text_size_14"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/config_item_strength_bar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/config_item_strength_bar"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginEnd="@dimen/reg_32dp"
+        android:contentDescription="@null"
+        android:scaleType="centerInside"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/config_item_edit"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_network_ping_black_3_bar"
+        app:tint="?attr/pingBarColor" />
+
+    <TextView
+        android:id="@+id/tv_config_item_strength"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/reg_32dp"
+        android:background="?attr/alphaBlueDrawable"
+        android:contentDescription="@null"
+        android:fontFamily="@font/ibm_font_family"
+        android:paddingBottom="4dp"
+        android:paddingEnd="@dimen/reg_8dp"
+        android:paddingLeft="@dimen/reg_8dp"
+        android:paddingRight="@dimen/reg_8dp"
+        android:paddingStart="@dimen/reg_8dp"
+        android:paddingTop="4dp"
+        android:text="@string/empty_dash"
+        android:textColor="?attr/nodeStrengthTextColor"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/config_name"
+        app:layout_constraintEnd_toStartOf="@id/config_item_edit"
+        app:layout_constraintTop_toTopOf="@id/config_name" />
+
+    <ImageView
+        android:id="@+id/config_item_edit"
+        android:layout_width="@dimen/reg_32dp"
+        android:layout_height="@dimen/reg_32dp"
+        android:layout_marginEnd="@dimen/reg_32dp"
+        android:contentDescription="@null"
+        android:padding="@dimen/reg_8dp"
+        android:scaleType="centerInside"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/config_item_delete"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_edit_icon_white"
+        app:tint="?attr/pingBarColor" />
+
+
+    <ImageView
+        android:id="@+id/config_item_delete"
+        android:layout_width="@dimen/reg_32dp"
+        android:layout_height="@dimen/reg_32dp"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:contentDescription="@null"
+        android:padding="@dimen/reg_8dp"
+        android:scaleType="centerInside"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_garbage_icon"
+        app:tint="?attr/pingBarColor" />
+
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="@dimen/padding_8"
+        android:background="?attr/dividerHorizontalColor"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

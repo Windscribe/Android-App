@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.windscribe.mobile.gpsspoofing.fragments.GpsSpoofingStart">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginEnd="56dp"
+        android:layout_marginStart="56dp">
+
+        <ImageView
+            android:id="@+id/feature_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/image_description"
+            android:src="@drawable/ic_network_security_feature_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/feature_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_32dp"
+            android:fontFamily="@font/ibm_plex_sans_bold"
+            android:gravity="center"
+            android:text="@string/unlock_developer_mode"
+            android:textColor="#ffffff"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/feature_icon" />
+
+        <TextView
+            android:id="@+id/feature_explain"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_16dp"
+            android:fontFamily="@font/ibm_plex_sans_regular"
+            android:text="@string/unlock_developer_mode_explain"
+            android:textColor="@color/colorWhite50"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/feature_title" />
+
+        <TextView
+            android:id="@+id/open_setting"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_32dp"
+            android:background="@drawable/modal_location_permission_states"
+            android:clickable="true"
+            android:focusable="true"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="center"
+            android:paddingBottom="14dp"
+            android:paddingTop="14dp"
+            android:text="@string/open_settings"
+            android:textColor="@color/colorDeepBlue95"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/feature_explain" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/swipe_menu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="64dp"
+            android:orientation="horizontal"
+            android:weightSum="3"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/open_setting">
+
+            <ImageView
+                android:id="@+id/previous"
+                android:layout_width="@dimen/reg_48dp"
+                android:layout_height="@dimen/reg_48dp"
+                android:layout_gravity="center"
+                android:background="@drawable/arrow_background_circular"
+                android:contentDescription="@string/image_description"
+                android:padding="@dimen/reg_16dp"
+                android:src="@drawable/ic_back_arrow"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/ibm_plex_sans_regular"
+                android:gravity="center"
+                android:text="@string/step_1_3"
+                android:textColor="#fff"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/next"
+                app:layout_constraintStart_toEndOf="@id/previous"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/next"
+                android:layout_width="@dimen/reg_48dp"
+                android:layout_height="@dimen/reg_48dp"
+                android:layout_gravity="center"
+                android:background="@drawable/arrow_background_circular"
+                android:contentDescription="@string/image_description"
+                android:padding="@dimen/reg_16dp"
+                android:src="@drawable/ic_forward_arrow_white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/close"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_16dp"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="center"
+            android:padding="14dp"
+            android:text="@string/close"
+            android:textColor="@color/colorWhite40"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/swipe_menu" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>

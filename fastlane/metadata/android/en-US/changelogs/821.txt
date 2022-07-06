@@ -1,0 +1,2 @@
+Change Log:
+1. Hotfix for server list unable to load.

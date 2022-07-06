@@ -1,0 +1,8 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<ScrollView style="@style/MatchMatchContainer">
+
+    <include layout="@layout/connection_layout" />
+</ScrollView>

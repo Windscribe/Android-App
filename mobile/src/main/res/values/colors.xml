@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<resources>
+    <!-- Deep Blue -->
+    <color name="colorDeepBlue0">#00020D1C</color>
+    <color name="colorDeepBlue5">#0D020D1C</color>
+    <color name="colorDeepBlue10">#1A020D1C</color>
+    <color name="colorDeepBlue15">#26020D1C</color>
+    <color name="colorDeepBlue25">#40020D1C</color>
+    <color name="colorDeepBlue35">#59020D1C</color>
+    <color name="colorDeepBlue40">#66020D1C</color>
+    <color name="colorDeepBlue50">#80020D1C</color>
+    <color name="colorDeepBlue80">#CC020D1C</color>
+    <color name="colorDeepBlue90">#E6020D1C</color>
+    <color name="colorDeepBlue95">#F2020D1C</color>
+    <color name="colorDeepBlue">#020D1C</color>
+    <!-- White -->
+    <color name="colorWhite5">#0DFFFFFF</color>
+    <color name="colorWhite10">#19ffffff</color>
+    <color name="colorWhite15">#26FFFFFF</color>
+    <color name="colorWhite25">#40FFFFFF</color>
+    <color name="colorWhite40">#66FFFFFF</color>
+    <color name="colorWhite50">#80FFFFFF</color>
+    <color name="colorWhite80">#CCFFFFFF</color>
+    <color name="colorWhite90">#E6FFFFFF</color>
+    <color name="colorWhite95">#F2FFFFFF</color>
+    <color name="colorWhite">#FFFFFF</color>
+    <!--Black -->
+    <color name="colorBlack5">#0D000000</color>
+    <color name="colorBlack">#000000</color>
+    <!-- Special -->
+    <color name="colorPrimary">#006aff</color>
+    <color name="colorFlagGradient">#202e59</color>
+    <color name="colorFlagGradient50">#80202E59</color>
+    <color name="connectedHeaderColor">#012E6E</color>
+    <color name="disconnectedHeaderColor">#28323c</color>
+
+    <color name="colorYellow">#FFEF02</color>
+    <color name="colorRed">#FF3B3B</color>
+    <color name="colorLightBlue">#A0FEDA</color>
+    <color name="colorNeonGreen">#55ff8a</color>
+    <color name="colorNeonGreen10">#1A54FF8A</color>
+    <color name="colorNavyBlue">#1A3880</color>
+    <color name="colorBlue">#4285F4</color>
+    <color name="darkGray">#343434</color>
+
+    <!--Dead code Requires more refactor-->
+    <color name="colorBackgroundDark">#0e1927</color>
+    <color name="colorBlueDark">#18222f</color>
+
+</resources>

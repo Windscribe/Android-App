@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/payment_overlay_background">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent=".40">
+
+        <ImageView
+            android:id="@+id/img_rate_icon"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_marginTop="@dimen/padding_32"
+            android:contentDescription="@null"
+            android:focusable="false"
+            app:layout_constraintBottom_toTopOf="@id/title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:srcCompat="@drawable/ic_wind_rate_icon" />
+
+        <TextView
+            android:id="@+id/title"
+            style="@style/Base.TextAppearance.AppCompat.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:fontFamily="@font/ibm_font_family"
+            android:padding="@dimen/padding_8"
+            android:text="@string/app_name"
+            android:textColor="@color/colorWhite"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/rateText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/img_rate_icon"
+
+            />
+
+        <TextView
+            android:id="@+id/rateText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/reg_32dp"
+            android:focusable="false"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="center"
+            android:text="@string/rate_message"
+            android:textColor="@color/colorWhite50"
+            android:textSize="21sp"
+            app:layout_constraintBottom_toTopOf="@+id/rateMeNow"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/title" />
+
+        <TextView
+            android:id="@+id/rateMeNow"
+            style="@style/ButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/reg_16dp"
+            android:background="@drawable/payment_btn_background"
+            android:focusable="true"
+            android:fontFamily="@font/ibm_font_family"
+            android:padding="@dimen/padding_16"
+            android:text="@string/rate_the_app"
+            android:textAllCaps="false"
+            android:textColor="@color/sea_green"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/rateMeLater"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rateText"
+            app:layout_constraintWidth_percent=".80" />
+
+        <TextView
+            android:id="@+id/rateMeLater"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_16"
+            android:layout_marginBottom="@dimen/reg_16dp"
+            android:background="@drawable/payment_btn_background"
+            android:focusable="true"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="center"
+            android:padding="@dimen/padding_16"
+            android:text="@string/may_be_later"
+            android:textAllCaps="false"
+            android:textColor="@color/sea_green"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/neverAskAgain"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rateMeNow"
+            app:layout_constraintWidth_percent=".80" />
+
+        <TextView
+            android:id="@+id/neverAskAgain"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_8"
+            android:layout_marginBottom="@dimen/reg_16dp"
+            android:background="@drawable/payment_btn_background"
+            android:focusable="true"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="center"
+            android:padding="@dimen/padding_16"
+            android:text="@string/never_ask_again"
+            android:textAllCaps="false"
+            android:textColor="@color/sea_green"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rateMeLater"
+            app:layout_constraintWidth_percent=".80" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

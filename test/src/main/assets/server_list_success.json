@@ -1,0 +1,153 @@
+{
+  "data": [
+    {
+      "id": 38,
+      "name": "Canada East",
+      "country_code": "CA",
+      "status": 1,
+      "premium_only": 0,
+      "short_name": "CA",
+      "p2p": 0,
+      "tz": "America\/Toronto",
+      "tz_offset": "-4,EST",
+      "loc_type": "normal",
+      "dns_hostname": "ca.windscribe.dev",
+      "groups": [
+        {
+          "id": 96,
+          "city": "Toronto",
+          "nick": "Skydome",
+          "pro": 1,
+          "gps": "43.59,-79.76",
+          "tz": "America\/Toronto",
+          "wg_pubkey": "+5ta9Dsla9GJBcJtrB07erjVgirfTfWNkTsT6KsLQEE=",
+          "ovpn_x509": "yyz-96.windscribe.dev",
+          "ping_ip": "181.215.52.26",
+          "link_speed": "10000",
+          "nodes": [
+            {
+              "ip": "181.215.52.30",
+              "ip2": "181.215.52.31",
+              "ip3": "181.215.52.32",
+              "hostname": "ca-004.whiskergalaxy.dev",
+              "weight": 1,
+              "health": 0
+            }
+          ],
+          "health": 0
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "name": "United States",
+      "country_code": "US",
+      "status": 1,
+      "premium_only": 0,
+      "short_name": "US",
+      "p2p": 1,
+      "tz": "America\/Chicago",
+      "tz_offset": "-6,CET",
+      "loc_type": "normal",
+      "dns_hostname": "us.windscribe.dev",
+      "groups": [
+        {
+          "id": 87,
+          "city": "Boston",
+          "nick": "The Wahlberg",
+          "pro": 1,
+          "gps": "42.36,-71.06",
+          "tz": "EST",
+          "wg_pubkey": "M\/kVfITvFaz8i8msJi7C3jsgk45vnbnYLJIOl\/zBsVk=",
+          "ovpn_x509": "bos-87.windscribe.dev",
+          "ping_ip": "181.215.52.3",
+          "link_speed": "1000",
+          "nodes": [
+            {
+              "ip": "181.215.52.2",
+              "ip2": "181.215.52.3",
+              "ip3": "181.215.52.4",
+              "hostname": "us-004.whiskergalaxy.dev",
+              "weight": 1,
+              "health": 0
+            },
+            {
+              "ip": "181.215.52.16",
+              "ip2": "181.215.52.17",
+              "ip3": "181.215.52.18",
+              "hostname": "us-010.whiskergalaxy.dev",
+              "weight": 1,
+              "health": 0
+            }
+          ],
+          "health": 0
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "United Kingdom",
+      "country_code": "GB",
+      "status": 1,
+      "premium_only": 0,
+      "short_name": "GB",
+      "p2p": 1,
+      "tz": "Europe\/London",
+      "tz_offset": "1,UTC",
+      "loc_type": "normal",
+      "force_expand": 1,
+      "dns_hostname": "uk.windscribe.dev"
+    },
+    {
+      "id": 83,
+      "name": "Ghana",
+      "country_code": "GH",
+      "status": 1,
+      "premium_only": 1,
+      "short_name": "GH",
+      "p2p": 1,
+      "tz": "Africa\/Accra",
+      "tz_offset": "0,UTC",
+      "loc_type": "normal",
+      "dns_hostname": "gh-staging.windscribe.com",
+      "groups": [
+        {
+          "id": 103,
+          "city": "Accra",
+          "nick": "Test",
+          "pro": 1,
+          "gps": "5.59,-0.25",
+          "tz": "Africa\/Accra",
+          "wg_pubkey": "wKAvU2GfQlZvJ7dCr5shvpPI8KV41cuECYY2mkKy6mM=",
+          "ovpn_x509": "acc-103.windscribe.dev",
+          "ping_ip": "1.22.3.5",
+          "link_speed": "1000",
+          "nodes": [
+            {
+              "ip": "1.22.3.4",
+              "ip2": "1.22.3.5",
+              "ip3": "1.22.3.6",
+              "hostname": "gh-stg-001.whiskergalaxy.dev",
+              "weight": 1,
+              "health": 0
+            }
+          ],
+          "health": 0
+        }
+      ]
+    }
+  ],
+  "info": {
+    "revision": 2540,
+    "revision_hash": "ba5e8f0f46011bbd1b946d33ca5ad4690ac695da",
+    "changed": 1,
+    "fc": 1
+  },
+  "metadata": {
+    "serviceRequestId": "1644425799164082453",
+    "hostName": "staging",
+    "duration": "0.00369ms",
+    "logStatus": null,
+    "md5": "18173c383de2cc52bc692f9d624516c6"
+  }
+}

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.constraintlayout.widget.Barrier
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="tv_favorite_item_strength,favorite_item_strength_bar"
+        app:barrierDirection="start"
+        android:id="@+id/end_barrier" />
+
+    <ImageView
+        android:id="@+id/img_favorite_in_favorites"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:contentDescription="@string/image_description"
+        android:scaleType="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/faved_icon"
+        app:tint="?attr/wdSecondaryColor" />
+
+
+    <TextView
+        android:id="@+id/favorite_city_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="13dp"
+        android:layout_marginTop="13dp"
+        android:fontFamily="@font/ibm_font_family"
+        android:textColor="?attr/nodeListGroupTextColor"
+        android:textSize="@dimen/text_size_14"
+        app:layout_constraintBottom_toBottomOf="@id/img_favorite_in_favorites"
+        app:layout_constraintStart_toEndOf="@id/img_favorite_in_favorites"
+        app:layout_constraintTop_toTopOf="@id/img_favorite_in_favorites" />
+
+    <ImageView
+        android:id="@+id/link_speed"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:contentDescription="@string/image_description"
+        android:scaleType="centerInside"
+        app:layout_constraintBottom_toBottomOf="@id/favorite_item_strength_bar"
+        app:layout_constraintEnd_toEndOf="@id/end_barrier"
+        app:layout_constraintTop_toTopOf="@id/favorite_item_strength_bar"
+        app:srcCompat="@drawable/ic_ten_gb"
+        android:visibility="invisible"
+        app:tint="?attr/wdSecondaryColor" />
+
+    <ImageView
+        android:id="@+id/favorite_item_strength_bar"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:contentDescription="@string/image_description"
+        android:scaleType="centerInside"
+        app:layout_constraintBottom_toBottomOf="@id/favorite_city_name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/favorite_city_name"
+        app:srcCompat="@drawable/ic_network_ping_black_3_bar"
+        app:tint="?attr/wdSecondaryColor" />
+
+    <TextView
+        android:id="@+id/tv_favorite_item_strength"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:background="?attr/alphaBlueDrawable"
+        android:contentDescription="@null"
+        android:fontFamily="@font/ibm_font_family"
+        android:paddingBottom="4dp"
+        android:paddingEnd="@dimen/reg_8dp"
+        android:paddingLeft="@dimen/reg_8dp"
+        android:paddingRight="@dimen/reg_8dp"
+        android:paddingStart="@dimen/reg_8dp"
+        android:paddingTop="4dp"
+        android:text="@string/empty_dash"
+        android:textColor="?attr/nodeStrengthTextColor"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/favorite_city_name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/favorite_city_name" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="@dimen/padding_8"
+        android:background="?attr/dividerHorizontalColor"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/divider"
+        app:layout_constraintStart_toStartOf="@id/img_favorite_in_favorites" />
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        app:trackThickness="2dp"
+        android:id="@+id/server_health"
+        android:visibility="gone"
+        android:progress="0"
+        app:trackColor="@android:color/transparent"
+        app:indicatorColor="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="@id/divider"
+        app:layout_constraintEnd_toEndOf="@id/end_barrier"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+

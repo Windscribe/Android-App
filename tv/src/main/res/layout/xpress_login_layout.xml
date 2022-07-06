@@ -1,0 +1,90 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    app:layout_constraintEnd_toStartOf="@id/right_container"
+    app:layout_constraintStart_toStartOf="parent">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent=".10" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent=".90" />
+
+    <TextView
+        android:id="@+id/express_login_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:fontFamily="@font/ibm_plex_sans_bold"
+        android:gravity="center"
+        android:text="@string/xpress_login"
+        android:textColor="@color/colorWhite"
+        android:textSize="@dimen/text_size_24"
+        app:layout_constraintEnd_toEndOf="@id/guide_end"
+        app:layout_constraintStart_toStartOf="@id/guide_start"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <TextView
+        android:id="@+id/web_login_description"
+        style="@style/loginDescriptionStyle"
+        android:layout_width="0dp"
+        android:layout_marginTop="@dimen/reg_40dp"
+        android:text="@string/web_login_description"
+        app:layout_constraintEnd_toEndOf="@id/guide_end"
+        app:layout_constraintStart_toStartOf="@id/guide_start"
+        app:layout_constraintTop_toBottomOf="@id/express_login_title" />
+
+    <TextView
+        android:id="@+id/or"
+        style="@style/loginDescriptionStyle"
+        android:layout_marginTop="@dimen/reg_24dp"
+        android:fontFamily="@font/ibm_plex_sans_bold"
+        android:text="@string/or"
+        app:layout_constraintEnd_toEndOf="@id/guide_end"
+        app:layout_constraintStart_toStartOf="@id/guide_start"
+        app:layout_constraintTop_toBottomOf="@id/web_login_description" />
+
+    <TextView
+        android:id="@+id/app_login_description"
+        style="@style/loginDescriptionStyle"
+        android:layout_marginTop="@dimen/reg_40dp"
+        android:text="@string/app_login_description"
+        app:layout_constraintEnd_toEndOf="@id/guide_end"
+        app:layout_constraintStart_toStartOf="@id/guide_start"
+        app:layout_constraintTop_toBottomOf="@id/or" />
+
+    <Button
+        android:id="@+id/generate_code"
+        style="@style/LoginButtonStyle"
+        android:layout_width="0dp"
+        android:layout_marginStart="90dp"
+        android:layout_marginTop="@dimen/reg_40dp"
+        android:layout_marginEnd="90dp"
+        android:text="@string/generate_code"
+        app:layout_constraintEnd_toEndOf="@id/guide_end"
+        app:layout_constraintStart_toStartOf="@id/guide_start"
+        app:layout_constraintTop_toBottomOf="@id/app_login_description" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/secret_code"
+        style="@style/secretCodeStyle"
+        android:layout_marginTop="@dimen/reg_40dp"
+        app:layout_constraintEnd_toEndOf="@id/guide_end"
+        app:layout_constraintStart_toStartOf="@id/guide_start"
+        app:layout_constraintTop_toBottomOf="@id/app_login_description" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

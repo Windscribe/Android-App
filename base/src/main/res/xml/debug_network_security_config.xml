@@ -1,0 +1,13 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+<!--    <debug-overrides>-->
+<!--        <trust-anchors>-->
+<!--            &lt;!&ndash; Trust user added CAs while debuggable only &ndash;&gt;-->
+<!--            <certificates src="user" />-->
+<!--        </trust-anchors>-->
+<!--    </debug-overrides>-->
+</network-security-config>

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorDeepBlue90"
+
+    >
+
+
+    <TextView
+        android:id="@+id/infoTitle"
+        style="@style/preference_item_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/info"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/usernameLabel"
+        style="@style/preference_item_static"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/reg_16dp"
+        android:layout_marginTop="@dimen/reg_24dp"
+        android:text="@string/username"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/infoTitle" />
+
+    <TextView
+        android:id="@+id/username"
+        style="@style/preference_item_static_end"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/reg_24dp"
+        android:layout_marginTop="@dimen/reg_24dp"
+        android:layout_marginEnd="@dimen/reg_40dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/usernameLabel"
+        app:layout_constraintTop_toBottomOf="@id/infoTitle" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/emailContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/reg_32dp"
+        android:layout_marginEnd="@dimen/reg_24dp"
+        android:background="@drawable/account_item_background"
+        android:focusable="true"
+        android:paddingTop="@dimen/reg_8dp"
+        android:paddingEnd="@dimen/reg_16dp"
+        android:paddingBottom="@dimen/reg_8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/usernameLabel"
+
+        >
+
+        <TextView
+            android:id="@+id/emailLabel"
+            style="@style/preference_item_static"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:focusable="false"
+            android:text="@string/email"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/email_underline_mask"
+            style="@style/preference_item_static_end"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:text="@string/add_email_pro"
+            android:textColor="@color/colorWhite40"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/emailLabel"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/confirmContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/reg_24dp"
+        android:background="@drawable/account_item_background"
+        android:focusable="true"
+        android:paddingTop="@dimen/reg_8dp"
+        android:paddingEnd="@dimen/reg_16dp"
+        android:paddingBottom="@dimen/reg_8dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/emailContainer">
+
+        <TextView
+            style="@style/preference_item_static"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:focusable="false"
+            android:text="@string/confirm_email"
+            android:textColor="@color/colorYellow"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            style="@style/preference_item_static_end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:text="@string/resend"
+            android:textColor="@color/colorWhite40"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/planTitle"
+        style="@style/preference_item_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/reg_24dp"
+        android:text="@string/plan"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/confirmContainer" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/planContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/reg_24dp"
+        android:layout_marginEnd="@dimen/reg_24dp"
+        android:background="@drawable/account_item_background"
+        android:focusable="true"
+        android:paddingTop="@dimen/reg_8dp"
+        android:paddingEnd="@dimen/reg_16dp"
+        android:paddingBottom="@dimen/reg_8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/expiryLabel"
+
+        >
+
+        <TextView
+            android:id="@+id/planLabel"
+            style="@style/preference_item_static"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:text=""
+            android:textColor="@color/colorWhite40"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent=".5" />
+
+        <TextView
+            android:id="@+id/plan"
+            style="@style/preference_item_static_end"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:text="@string/upgrade_case_normal"
+            android:textColor="@color/colorWhite40"
+            app:layout_constraintEnd_toStartOf="@id/proIcon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent=".4" />
+
+        <ImageView
+            android:id="@+id/proIcon"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:alpha=".40"
+            android:paddingStart="@dimen/reg_8dp"
+            android:src="@drawable/pro_loc_icon"
+            app:layout_constraintBottom_toBottomOf="@id/plan"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/plan" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <TextView
+        android:id="@+id/expiryLabel"
+        style="@style/preference_item_static"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/reg_16dp"
+        android:layout_marginTop="@dimen/reg_24dp"
+        android:text="@string/expiry_date"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/planTitle"
+
+        />
+
+    <TextView
+        android:id="@+id/expiry"
+        style="@style/preference_item_static_end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/reg_24dp"
+        android:layout_marginTop="@dimen/reg_24dp"
+        android:layout_marginEnd="@dimen/reg_40dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/planTitle" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

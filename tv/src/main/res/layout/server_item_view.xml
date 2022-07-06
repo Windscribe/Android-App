@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/server_item"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:alpha="0.4"
+    android:descendantFocusability="blocksDescendants"
+    android:focusable="true"
+    android:padding="@dimen/reg_12dp">
+
+    <ImageView
+        android:id="@+id/imageBackground"
+        android:layout_width="@dimen/reg_200"
+        android:layout_height="@dimen/reg_100"
+        android:layout_marginStart="7dp"
+        android:layout_marginTop="7dp"
+        android:alpha="0.4"
+        android:background="@color/colorWhite"
+        android:contentDescription="@null"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/image"
+        app:layout_constraintTop_toTopOf="@id/image" />
+
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/image"
+        android:layout_width="@dimen/reg_200"
+        android:layout_height="@dimen/reg_100"
+        android:contentDescription="@null"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <TextView
+        android:id="@+id/label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/reg_16dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/ibm_plex_sans_bold"
+        android:gravity="center"
+        android:letterSpacing="0.05"
+        android:maxLines="1"
+        android:textAllCaps="true"
+        android:textColor="@color/colorWhite"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/image" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+

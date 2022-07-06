@@ -1,0 +1,9 @@
+Change Log:
+
+Logo duplication on splash #116
+Plan item alignment #118
+Robert rules for gambling website fb88.com #123
+Missing server list on random occasions.
+Wireguard not disconnecting on expired or banned account in the background.
+Wireguard only update config if interface address changes.
+updated api calls , polling data and extras params based on agreed api doc.

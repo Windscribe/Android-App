@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:focusable="false"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/plan"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/reg_56"
+        android:layout_marginTop="@dimen/padding_16"
+        android:layout_marginEnd="@dimen/reg_48dp"
+        android:background="@drawable/promo_action_button_background"
+        android:focusable="true"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/label"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/reg_56"
+            android:layout_gravity="start|center_vertical"
+            android:fontFamily="@font/ibm_plex_sans_bold"
+            android:gravity="start|center_vertical"
+            android:lines="1"
+            android:paddingStart="19dp"
+            android:text="@string/monthly"
+            android:textColor="@color/colorWhite48"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/price"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/reg_56"
+            android:layout_gravity="end"
+            android:fontFamily="@font/ibm_plex_sans_regular"
+            android:gravity="end|center_vertical"
+            android:lines="1"
+            android:paddingEnd="19dp"
+            android:textColor="@color/colorWhite48"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/back"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/reg_56"
+        android:layout_gravity="start|center_vertical"
+        android:layout_marginTop="@dimen/padding_16"
+        android:layout_marginEnd="@dimen/reg_48dp"
+        android:focusable="true"
+        android:fontFamily="@font/ibm_plex_sans_bold"
+        android:gravity="center"
+        android:lines="1"
+        android:paddingStart="19dp"
+        android:text="@string/back"
+        android:textColor="@color/colorWhite48"
+        android:textSize="18sp" />
+
+
+</androidx.appcompat.widget.LinearLayoutCompat>

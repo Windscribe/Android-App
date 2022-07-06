@@ -1,0 +1,78 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="16dp"
+    android:height="16dp"
+    android:viewportWidth="16"
+    android:viewportHeight="16">
+    <path
+        android:pathData="M0,0h5v5h-5z"
+        android:strokeWidth="1"
+        android:fillColor="?attr/wdPrimaryColor"
+        android:fillType="evenOdd"
+        android:strokeColor="#00000000" />
+    <path
+        android:pathData="M0,5h5v5h-5z"
+        android:strokeAlpha="0.501932"
+        android:strokeWidth="1"
+        android:fillColor="?attr/wdPrimaryColor"
+        android:fillType="evenOdd"
+        android:strokeColor="#00000000"
+        android:fillAlpha="0.501932" />
+    <path
+        android:pathData="M0,10h5v5h-5z"
+        android:strokeAlpha="0.25207448"
+        android:strokeWidth="1"
+        android:fillColor="?attr/wdPrimaryColor"
+        android:fillType="evenOdd"
+        android:strokeColor="#00000000"
+        android:fillAlpha="0.25207448" />
+    <path
+        android:pathData="M5,0h5v5h-5z"
+        android:strokeAlpha="0.50267684"
+        android:strokeWidth="1"
+        android:fillColor="?attr/wdPrimaryColor"
+        android:fillType="evenOdd"
+        android:strokeColor="#00000000"
+        android:fillAlpha="0.50267684" />
+    <path
+        android:pathData="M5,5h5v5h-5z"
+        android:strokeAlpha="0.74995494"
+        android:strokeWidth="1"
+        android:fillColor="?attr/wdPrimaryColor"
+        android:fillType="evenOdd"
+        android:strokeColor="#00000000"
+        android:fillAlpha="0.74995494" />
+    <path
+        android:pathData="M5,10h5v5h-5z"
+        android:strokeWidth="1"
+        android:fillColor="?attr/wdPrimaryColor"
+        android:fillType="evenOdd"
+        android:strokeColor="#00000000" />
+    <path
+        android:pathData="M10,0h5v5h-5z"
+        android:strokeAlpha="0.25103325"
+        android:strokeWidth="1"
+        android:fillColor="?attr/wdPrimaryColor"
+        android:fillType="evenOdd"
+        android:strokeColor="#00000000"
+        android:fillAlpha="0.25103325" />
+    <path
+        android:pathData="M10,5h5v5h-5z"
+        android:strokeAlpha="0.2498583"
+        android:strokeWidth="1"
+        android:fillColor="?attr/wdPrimaryColor"
+        android:fillType="evenOdd"
+        android:strokeColor="#00000000"
+        android:fillAlpha="0.2498583" />
+    <path
+        android:pathData="M10,10h5v5h-5z"
+        android:strokeAlpha="0.50183976"
+        android:strokeWidth="1"
+        android:fillColor="?attr/wdPrimaryColor"
+        android:fillType="evenOdd"
+        android:strokeColor="#00000000"
+        android:fillAlpha="0.50183976" />
+</vector>

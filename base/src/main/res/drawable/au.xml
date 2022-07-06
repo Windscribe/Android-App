@@ -1,0 +1,42 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="500dp"
+    android:height="250dp"
+    android:viewportWidth="500.0"
+    android:viewportHeight="250.0">
+    <path
+        android:fillColor="#00008B"
+        android:fillType="evenOdd"
+        android:pathData="M0 250h500V0H0z" />
+    <path
+        android:fillColor="#000"
+        android:fillType="evenOdd"
+        android:pathData="M124.5 62.25L249 0 124.5 62.25zm0 0L0 0l124.5 62.25zm0 0L249 124.5 124.5 62.25zM0 124.5l124.5-62.25L0 124.5z" />
+    <path
+        android:fillColor="#FFF"
+        android:fillType="evenOdd"
+        android:pathData="M217.67 0.01l-93.17 46.6L31.31 0.02 0.01 0 0 15.67l93.2 46.57L0 108.84v15.66h31.32l93.18-46.6 93.17 46.6h31.31l0.02-15.64-93.22-46.62 93.19-46.57L248.98 0z" />
+    <path
+        android:fillColor="#000"
+        android:fillType="evenOdd"
+        android:pathData="M249 0L124.5 62.25 249 0zM124.5 62.25L0 0l124.5 62.25zM0 124.5l124.5-62.25L0 124.5zm124.5-62.25L249 124.5 124.5 62.25z" />
+    <path
+        android:fillColor="#ff0000"
+        android:fillType="evenOdd"
+        android:pathData="M228.16 0L124.5 51.83v10.41L0 0v10.43l103.6 51.81h20.9L0 124.48l20.8 0.02 103.7-51.83V62.24L248.97 0h-20.82zM124.5 62.24L249 124.48l0.01-10.42-103.66-51.8 0.04-0.02H124.5z" />
+    <path
+        android:fillColor="#FFF"
+        android:fillType="evenOdd"
+        android:pathData="M101.19 0v38.94H0v46.7h101.19v38.86h46.65V85.64H249v-46.7H147.84V0z" />
+    <path
+        android:fillColor="#ff0000"
+        android:fillType="evenOdd"
+        android:pathData="M111 0v48H0v29h111v48h27V77h111V48H138V0z" />
+    <path
+        android:fillColor="#FFF"
+        android:fillType="evenOdd"
+        android:pathData="M125 149.4l7.2 22.3 21.95-8.3-13 19.52 20.2 11.96-23.4 2.03 3.23 23.21L125 203.14l-16.18 16.98 3.22-23.2-23.4-2.04 20.2-11.96-13-19.51 21.97 8.3zm249 40.84l3.45 10.68 10.53-3.97-6.23 9.34 9.68 5.73-11.21 0.97 1.54 11.11-7.76-8.13-7.75 8.13 1.54-11.11-11.22-0.97 9.69-5.73-6.23-9.34 10.53 3.97zm-61.75-98.61l3.45 10.68 10.53-3.97-6.23 9.35 9.68 5.72-11.22 0.97 1.55 11.12-7.76-8.13-7.76 8.13 1.55-11.12-11.22-0.97 9.68-5.72-6.23-9.35 10.53 3.97zM374 23.9l3.45 10.69 10.53-3.98-6.23 9.35 9.68 5.72-11.21 0.98 1.54 11.1-7.76-8.12-7.75 8.13 1.54-11.11-11.22-0.98 9.69-5.72-6.23-9.35 10.53 3.98zm55.78 50.8l3.45 10.68 10.53-3.97-6.23 9.34 9.68 5.73-11.22 0.97 1.55 11.12-7.76-8.14-7.76 8.14 1.55-11.12-11.22-0.97 9.68-5.73-6.23-9.34 10.53 3.97zm-30.38 49.8l2.74 6.7 7.22 0.53-5.53 4.67 1.73 7.03-6.16-3.82-6.15 3.82 1.73-7.03-5.54-4.67 7.23-0.53z" />
+</vector>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/cl_node_locations"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.constraintlayout.widget.Barrier
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="signal_strength_bar,tv_signal_strength"
+        app:barrierDirection="start"
+        android:id="@+id/end_barrier" />
+
+    <ImageView
+        android:id="@+id/img_favorite"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:clickable="true"
+        android:contentDescription="@string/image_description"
+        android:focusable="true"
+        android:scaleType="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_goneMarginLeft="@dimen/padding_16"
+        app:layout_goneMarginStart="@dimen/padding_16"
+        app:srcCompat="@drawable/modal_add_to_favs"
+        app:tint="?attr/wdSecondaryColor" />
+
+
+    <TextView
+        android:id="@+id/node_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="13dp"
+        android:layout_marginTop="13dp"
+        android:fontFamily="@font/ibm_font_family"
+        android:textColor="?attr/nodeListGroupTextColor"
+        android:textSize="@dimen/text_size_14"
+        app:layout_constraintBottom_toBottomOf="@id/img_favorite"
+        app:layout_constraintStart_toEndOf="@id/img_favorite"
+        app:layout_constraintTop_toTopOf="@id/img_favorite" />
+
+    <ImageView
+        android:id="@+id/link_speed"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:contentDescription="@string/image_description"
+        android:scaleType="centerInside"
+        app:layout_constraintBottom_toBottomOf="@id/signal_strength_bar"
+        app:layout_constraintEnd_toEndOf="@id/end_barrier"
+        app:layout_constraintTop_toTopOf="@id/signal_strength_bar"
+        app:srcCompat="@drawable/ic_ten_gb"
+        android:visibility="invisible"
+        app:tint="?attr/wdSecondaryColor" />
+
+
+    <ImageView
+        android:id="@+id/signal_strength_bar"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:contentDescription="@string/image_description"
+        android:scaleType="centerInside"
+        app:layout_constraintBottom_toBottomOf="@id/img_favorite"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/img_favorite"
+        app:srcCompat="@drawable/ic_network_ping_black_3_bar"
+        app:tint="?attr/wdSecondaryColor" />
+
+
+    <TextView
+        android:id="@+id/tv_signal_strength"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:background="?attr/alphaBlueDrawable"
+        android:gravity="center_vertical"
+        android:paddingBottom="4dp"
+        android:paddingEnd="@dimen/reg_8dp"
+        android:paddingLeft="@dimen/reg_8dp"
+        android:paddingRight="@dimen/reg_8dp"
+        android:paddingStart="@dimen/reg_8dp"
+        android:paddingTop="4dp"
+        android:text="@string/empty_dash"
+        android:textColor="?attr/nodeStrengthTextColor"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/img_favorite"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/img_favorite" />
+
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginStart="20dp"
+        android:background="?attr/dividerHorizontalColor"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/divider"
+        app:layout_constraintStart_toStartOf="@id/img_favorite" />
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        app:trackThickness="2dp"
+        android:id="@+id/server_health"
+        android:visibility="gone"
+        android:progress="0"
+        app:trackColor="@android:color/transparent"
+        app:indicatorColor="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="@id/divider"
+        app:layout_constraintEnd_toEndOf="@id/end_barrier"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+

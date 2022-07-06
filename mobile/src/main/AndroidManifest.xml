@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<manifest package="com.windscribe.mobile"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="LockedOrientationActivity">
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission
+        android:name="android.permission.ACCESS_MOCK_LOCATION"
+        tools:ignore="MockLocation,ProtectedPermissions" />
+
+    <application
+        android:name=".windscribe.PhoneApplication"
+        android:allowBackup="false"
+        android:icon="@mipmap/ws_launcher"
+        android:roundIcon="@mipmap/ws_launcher"
+        android:supportsRtl="false"
+        android:extractNativeLibs="true"
+        android:theme="@style/DarkTheme"
+        tools:targetApi="m">
+        <activity
+            android:name=".robert.RobertSettingsActivity"
+            android:screenOrientation="portrait"
+            android:exported="false" />
+        <activity android:name=".about.AboutActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".ticket.SendTicketActivity"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".help.HelpActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".confirmemail.ConfirmActivity" />
+        <activity
+            android:name=".welcome.WelcomeActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".gpsspoofing.GpsSpoofingSettingsActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Transparent" />
+        <activity
+            android:name="com.windscribe.vpn.backend.utils.VPNPermissionActivity"
+            android:autoRemoveFromRecents="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/blinkt.dialog" />
+        <activity android:name=".networksecurity.networkdetails.NetworkDetailsActivity"
+            android:screenOrientation="portrait"
+            />
+        <activity
+            android:name=".debug.DebugViewActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".splash.SplashActivity"
+            android:exported="true"
+            android:theme="@style/AppTheme.WindLauncher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".email.AddEmailActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".windscribe.WindscribeActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".mainmenu.MainMenuActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".newsfeedactivity.NewsFeedActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".upgradeactivity.UpgradeActivity" />
+        <activity
+            android:name=".account.AccountActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".generalsettings.GeneralSettingsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".connectionsettings.ConnectionSettingsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".splittunneling.SplitTunnelingActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".networksecurity.NetworkSecurityActivity"
+            android:screenOrientation="portrait"/>
+    </application>
+
+</manifest>

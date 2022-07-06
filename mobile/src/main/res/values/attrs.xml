@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<resources>
+    <!--Colors -->
+    <declare-styleable name="AppearanceMode">
+        <attr name="nodeListBackground" format="color" />
+        <attr name="nodeListGroupTextColorSelected" format="color" />
+        <attr name="nodeListGroupTextColor" format="color" />
+        <attr name="nodeListFlagBackgroundColor" format="color" />
+        <attr name="pingBarColor" format="color" />
+        <attr name="favColor" format="color" />
+        <attr name="navigationStripColor" format="color" />
+        <attr name="dividerHorizontalColor" format="color" />
+        <attr name="navigationStripDividerColor" format="color" />
+        <attr name="bottomBarConnectedColor" format="color" />
+        <attr name="bottomBarConnectingColor" format="color" />
+        <attr name="nodeStrengthTextColor" format="color" />
+        <attr name="nodeStrengthTextBackgroundColor" format="color" />
+        <attr name="notificationBackground" format="color" />
+        <attr name="notificationTextColor" format="color" />
+        <attr name="progressBarColor" format="color" />
+        <attr name="toolBarColorDisConnected" format="color" />
+        <attr name="toolBarColorConnecting" format="color" />
+        <attr name="serverListSearchView" format="color" />
+        <attr name="containerBackground" format="color" />
+        <attr name="backButtonBackgroundColor" format="color" />
+        <attr name="backButtonIconColor" format="color" />
+        <attr name="navBarTitleTextColor" format="color" />
+        <attr name="preferenceIconColor" format="color" />
+        <attr name="preferenceItemLabelColor" format="color" />
+        <attr name="preferenceForwardArrowColor" format="color" />
+        <attr name="preferenceDividerColor" format="color" />
+        <attr name="preferenceItemTitleColor" format="color" />
+        <attr name="preferenceItemLabelTwoColor" format="color" />
+        <attr name="preferenceItemLabelThreeColor" format="color" />
+        <attr name="preferenceItemLabelFiveColor" format="color" />
+        <attr name="debugViewTextColor" format="color" />
+        <attr name="dropDownIconColor" format="color" />
+        <attr name="iconRippleColor" format="color" />
+        <attr name="toggleIconColor" format="color" />
+        <attr name="toggleIconFillColor" format="color" />
+        <attr name="preferenceItemActionColor" format="color" />
+        <attr name="requiredLabelColor" format="color" />
+        <attr name="inputTextHintColor" format="color" />
+        <attr name="inputDescriptionColor" format="color" />
+        <attr name="inputBoxBackground" format="color" />
+        <attr name="largeInputHintColor" format="color" />
+        <attr name="inputTextColor" format="color" />
+        <attr name="continueButtonDisabledBackground" format="color" />
+        <attr name="warningTextColor" format="color" />
+        <attr name="warningTitleColor" format="color" />
+        <attr name="warningIconColor" format="color" />
+        <attr name="noBackgroundButtonTextColor" format="color" />
+        <attr name="searchIconColor" format="color" />
+        <attr name="searchTextColor" format="color" />
+        <attr name="checkMarkDisabledColor" format="color" />
+        <attr name="menuItemTabSelectionMaskColor" format="color" />
+        <attr name="menuItemTabNotSelectedColor" format="color" />
+        <attr name="menuItemTabLabelColor" format="color" />
+        <attr name="overlayContainerBackground" format="color" />
+        <attr name="progressTextColor" format="color" />
+        <attr name="progressBarTint" format="color" />
+        <attr name="pageDescriptionTextColor" format="color" />
+        <attr name="serverListUnderMaintenanceIconColor" format="color" />
+        <attr name="toolTipDialogBackgroundColor" format="color" />
+        <attr name="toolTipDialogTextColor" format="color" />
+        <attr name="menu_edit_background" format="color" />
+        <attr name="wdSecondaryColor" format="color" />
+        <attr name="wdPrimaryColor" format="color" />
+        <attr name="wdPrimaryColor10" format="color" />
+        <attr name="overlayDialogBackgroundColor" format="color" />
+        <attr name="wdPrimaryInvertedColor" format="color"/>
+    </declare-styleable>
+    <!--Icons -->
+    <declare-styleable name="DrawableIcon">
+        <attr name="proBadge" format="integer" />
+        <attr name="expand_list_icon" format="integer" />
+        <attr name="construction_list_icon" format="integer" />
+        <attr name="close_list_icon" format="integer" />
+        <attr name="backgroundColorDrawable" format="integer" />
+        <attr name="normalButtonStateDrawable" format="integer" />
+        <attr name="alphaBlueDrawable" format="integer" />
+    </declare-styleable>
+</resources>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout style="@style/MatchMatchContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/tv_send_log"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+
+        <ImageView
+            android:id="@+id/img_protocol_failed_network_feature_icon"
+            style="@style/WarningIcon"
+            android:layout_width="@dimen/reg_80dp"
+            android:layout_height="@dimen/reg_80dp"
+            android:contentDescription="@string/image_description"
+            android:src="@drawable/ic_attention_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <TextView
+            android:id="@+id/tv_unknown_error"
+            style="@style/WarningText"
+            android:layout_marginEnd="@dimen/margin_60"
+            android:layout_marginStart="@dimen/margin_60"
+            android:layout_marginTop="@dimen/reg_16dp"
+            android:gravity="center"
+            android:text="@string/failed_network_alert"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/img_protocol_failed_network_feature_icon" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <Button
+        android:id="@+id/tv_send_log"
+        style="@style/WarningActionButton"
+        android:text="@string/export_log"
+        app:layout_constraintBottom_toTopOf="@id/tv_contact_support"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/tv_contact_support"
+        style="@style/WarningActionButton"
+        android:text="@string/contact_support"
+        app:layout_constraintBottom_toTopOf="@id/tv_cancel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/tv_cancel"
+        style="@style/NoBackgroundButtonBold"
+        android:text="@string/close"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

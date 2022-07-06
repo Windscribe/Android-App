@@ -1,0 +1,33 @@
+/*
+ * Copyright (c) 2021 Windscribe Limited.
+ */
+package com.windscribe.vpn.serverlist.entity
+
+import java.util.ArrayList
+import java.util.HashMap
+
+class ServerListData {
+    var bestLocation: CityAndRegion? = null
+    var favourites: List<Favourite> = ArrayList()
+        get() = field
+    var flags: Map<String, Int>? = null
+        get() = if (field == null) {
+            HashMap()
+        } else field
+    var pingTimes: List<PingTime> = ArrayList()
+        get() = field
+    var isProUser = false
+    private var showLatencyInMs = false
+    var isShowLocationHealthEnabled = false
+        private set
+    val isShowLatencyInBar: Boolean
+        get() = !showLatencyInMs
+
+    fun setShowLatencyInMs(showLatencyInMs: Boolean) {
+        this.showLatencyInMs = showLatencyInMs
+    }
+
+    fun setShowLocationHealth(showLocationHealth: Boolean) {
+        isShowLocationHealthEnabled = showLocationHealth
+    }
+}
