@@ -126,6 +126,7 @@ object PreferencesKeyConstants {
     const val KEEP_ALIVE = "keep_alive"
     const val KEEP_ALIVE_MODE_AUTO = "keep_alive_mode_auto"
     const val BLUR_IP = "blur_ip"
+    const val BLUR_NETWORK_NAME = "blur_network_name"
     const val LAST_SELECTED_SERVER_TAB = "last_selected_server_tab"
     const val WIRE_GUARD_CONFIG = "wire_guard_config"
     const val PORT_MAP_VERSION = "port_map_version"

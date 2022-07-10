@@ -282,6 +282,7 @@ class WindscribePresenterImpl @Inject constructor(
         // Notifications
         updateNotificationCount()
         windscribeView.setIpBlur(interactor.getAppPreferenceInterface().blurIp)
+        windscribeView.setNetworkNameBlur(interactor.getAppPreferenceInterface().blurNetworkName)
         addNotificationChangeListener()
         calculateFlagDimensions()
         interactor.getUserRepository().user.value?.let {
@@ -721,6 +722,12 @@ class WindscribePresenterImpl @Inject constructor(
         val blurIp = !interactor.getAppPreferenceInterface().blurIp
         interactor.getAppPreferenceInterface().blurIp = blurIp
         windscribeView.setIpBlur(blurIp)
+    }
+
+    override fun toggleBlurNetworkName() {
+        val blurNetworkName = !interactor.getAppPreferenceInterface().blurNetworkName
+        interactor.getAppPreferenceInterface().blurNetworkName = blurNetworkName
+        windscribeView.setNetworkNameBlur(blurNetworkName)
     }
 
     override fun onLanguageChanged() {
