@@ -17,7 +17,7 @@
     <string name="weak_password">Your Password must contain at least one uppercase and lowercase.</string>
     <string name="small_password">Your password must be at least 8 characters.</string>
     <string name="password_requirement">8 or more characters with at least one uppercase and lowercase</string>
-    <string name="failed_network_alert">Well we gave it our best shot, we just couldn’t connect you on this network for some reason.</string>
+    <string name="failed_network_alert">Well we gave it our best shot, we just couldn’t connect you on this network for some reason. Check your internet connection.</string>
     <string name="fa_required_error">2FA code is required</string>
     <string name="fa_invalid_error">Invalid 2FA code</string>
     <string name="login">Login</string>

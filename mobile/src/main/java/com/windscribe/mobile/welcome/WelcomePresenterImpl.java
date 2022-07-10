@@ -216,7 +216,9 @@ public class WelcomePresenterImpl implements WelcomePresenter {
                                     new DisposableSingleObserver<GenericResponseClass<UserLoginResponse, ApiErrorResponse>>() {
                                         @Override
                                         public void onError(@NotNull Throwable e) {
-                                            mPresenterLog.debug("User login error..." + e.getMessage());
+                                            if(e instanceof Exception){
+                                                mPresenterLog.debug("Login Error: "+WindError.getInstance().rxErrorToString((Exception)e));
+                                            }
                                             onLoginFailedWithNoError();
                                         }
 
