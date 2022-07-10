@@ -88,4 +88,5 @@ interface WindscribePresenter {
     suspend fun observeDecoyTrafficState()
     fun setAdapters()
     fun onDecoyTrafficBadgeClick()
+    fun toggleBlurNetworkName()
 }
