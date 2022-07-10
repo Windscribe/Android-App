@@ -59,7 +59,8 @@ interface WindscribeView {
     fun setCountryFlag(flagIconResource: Int)
     fun setFavouriteAdapter(favouriteAdapter: FavouriteAdapter?)
     fun setIpAddress(ipAddress: String)
-    fun setIpBlur(blurIp: Boolean)
+    fun setIpBlur(blur: Boolean)
+    fun setNetworkNameBlur(blur: Boolean)
     fun setLastConnectionState(state: ConnectionUiState)
     fun setMainConstraints(customBackground: Boolean)
     fun setNetworkLayout(

@@ -727,9 +727,18 @@ class WindscribeActivity :
         presenter.onMenuButtonClicked()
     }
 
-    @OnClick(R.id.network_icon, R.id.network_name)
-    fun onNetworkNameClick() {
+    @OnClick(R.id.network_icon)
+    fun onNetworkIconClick() {
         checkLocationPermission(R.id.cl_windscribe_main, NETWORK_NAME_PERMISSION)
+    }
+
+    @OnClick(R.id.network_name)
+    fun onNetworkNameClick() {
+        if (textViewConnectedNetworkName?.text?.equals("Unknown Network") == true){
+            checkLocationPermission(R.id.cl_windscribe_main, NETWORK_NAME_PERMISSION)
+        }else{
+            presenter.toggleBlurNetworkName()
+        }
     }
 
     override fun onNetworkStateChanged() {
@@ -1040,7 +1049,6 @@ class WindscribeActivity :
 
     override fun permissionGranted(requestCode: Int) {
         presenter.reloadNetworkInfo()
-        presenter.onNetworkStateChanged()
         if (requestCode == REQUEST_LOCATION_PERMISSION_FOR_PREFERRED_NETWORK) {
             presenter.setProtocolPreferred()
         }
@@ -1120,10 +1128,23 @@ class WindscribeActivity :
         runOnUiThread { textViewIpAddress?.text = ipAddress }
     }
 
-    override fun setIpBlur(blurIp: Boolean) {
+    override fun setIpBlur(blur: Boolean) {
         textViewIpAddress?.let {
             it.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
-            if (blurIp) {
+            if (blur) {
+                val radius = it.textSize / 3
+                val filter = BlurMaskFilter(radius, BlurMaskFilter.Blur.NORMAL)
+                it.paint.maskFilter = filter
+            } else {
+                it.paint.maskFilter = null
+            }
+        }
+    }
+
+    override fun setNetworkNameBlur(blur: Boolean) {
+        textViewConnectedNetworkName?.let {
+            it.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+            if (blur) {
                 val radius = it.textSize / 3
                 val filter = BlurMaskFilter(radius, BlurMaskFilter.Blur.NORMAL)
                 it.paint.maskFilter = filter
