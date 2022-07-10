@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.transition.Slide;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -102,7 +103,7 @@ public class WelcomeActivity extends BaseActivity
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
             @NonNull int[] grantResults) {
         if (requestCode == REQUEST_PERMISSION_CODE) {
-            if (permissionGranted()) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 presenter.exportLog();
             } else {
                 showToast("Please provide storage permission");
@@ -126,11 +127,7 @@ public class WelcomeActivity extends BaseActivity
 
     @Override
     public void exportLog() {
-        if (permissionGranted()) {
-            presenter.exportLog();
-        } else {
-            askForPermission();
-        }
+        presenter.exportLog();
     }
 
     @Override
@@ -378,20 +375,5 @@ public class WelcomeActivity extends BaseActivity
                 .getAbsoluteGravity(GravityCompat.END, getResources().getConfiguration().getLayoutDirection());
         fragment.setEnterTransition(new Slide(direction).addTarget(R.id.welcome_container));
         replaceFragment(fragment, false);
-    }
-
-    void askForPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSION_CODE);
-        }
-    }
-
-    boolean permissionGranted() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED;
-        } else {
-            return true;
-        }
     }
 }
