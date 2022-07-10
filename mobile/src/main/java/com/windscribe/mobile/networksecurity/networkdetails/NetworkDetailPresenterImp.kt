@@ -7,22 +7,25 @@ import android.content.Context
 import com.windscribe.mobile.R
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.ActivityInteractorImpl.PortMapLoadCallback
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PortMapResponse
 import com.windscribe.vpn.api.response.PortMapResponse.PortMap
-import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_IKev2
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
+import com.windscribe.vpn.services.DeviceStateService
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
-import kotlinx.coroutines.launch
+import org.slf4j.LoggerFactory
 
 class NetworkDetailPresenterImp @Inject constructor(
     private val networkView: NetworkDetailView,
     private val interactor: ActivityInteractor
 ) : NetworkDetailPresenter {
+
+    private val logger = LoggerFactory.getLogger("network_detail_p")
 
     override fun onDestroy() {
         if (!interactor.getCompositeDisposable().isDisposed) {
@@ -175,10 +178,11 @@ class NetworkDetailPresenterImp @Inject constructor(
         interactor.getAppPreferenceInterface().whitelistOverride = false
         val networkInfo = networkView.networkInfo
         if (networkInfo == null) {
-            networkView.showToast("Check location permission")
+            networkView.showToast("Make sure location permission is set Allow all the time")
             return
         }
         networkInfo.isAutoSecureOn = !networkInfo.isAutoSecureOn
+        logger.debug("Auto secure toggle: ${!networkInfo.isAutoSecureOn}")
         interactor.getCompositeDisposable().add(
             interactor.saveNetwork(networkInfo)
                 .subscribeOn(Schedulers.io())
@@ -186,13 +190,17 @@ class NetworkDetailPresenterImp @Inject constructor(
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableSingleObserver<NetworkInfo?>() {
                     override fun onError(ignored: Throwable) {
-                        networkView.showToast("Error...")
+                        logger.debug("Auto secure toggle: ${!networkInfo.isAutoSecureOn}")
+                        networkView.showToast("Failed to save network details.")
                     }
 
                     override fun onSuccess(updatedNetwork: NetworkInfo) {
+                        logger.debug("SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port}")
                         networkView.networkInfo = updatedNetwork
                         networkView.setAutoSecureToggle(updatedNetwork.isAutoSecureOn)
-                        reconnect()
+                        logger.debug("Reloading network info.")
+                        interactor.getNetworkInfoManager().reload(true)
+                        DeviceStateService.enqueueWork(appContext)
                     }
                 })
         )
@@ -230,25 +238,5 @@ class NetworkDetailPresenterImp @Inject constructor(
             }
         }
         return PROTO_IKev2
-    }
-
-    private fun reconnect() {
-        try {
-            networkView.networkInfo?.let {
-                val currentNetworkName = WindUtilities.getNetworkName()
-                val detailNetworkName = it.networkName
-                val autoSecure = it.isAutoSecureOn
-                val shouldBeConnected = interactor.getAppPreferenceInterface()
-                    .globalUserConnectionPreference
-                if (shouldBeConnected && currentNetworkName == detailNetworkName && autoSecure) {
-                    interactor.getVPNController().connect()
-                } else if (!autoSecure) {
-                    interactor.getMainScope().launch {
-                        interactor.getVPNController().disconnect(waitForNextProtocol = true)
-                    }
-                }
-            }
-        } catch (ignored: Exception) {
-        }
     }
 }
