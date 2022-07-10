@@ -35,7 +35,7 @@ class BootSessionService : JobIntentWorkAroundService() {
             if (interactor.preferenceHelper.autoStartOnBoot) {
                 logger.debug("Device rebooted and Auto start on boot is true, attempting to connect.")
                 interactor.preferenceHelper.globalUserConnectionPreference = true
-                vpnController.connect()
+                vpnController.connect(alwaysOnVPN = true)
             }
         }
     }
