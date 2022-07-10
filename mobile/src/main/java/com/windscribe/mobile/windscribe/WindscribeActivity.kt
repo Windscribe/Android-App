@@ -1926,10 +1926,6 @@ class WindscribeActivity :
         }
     }
 
-    override fun stopNetworkService() {
-        stopService(appContext)
-    }
-
     override fun updateLocationName(nodeName: String, nodeNickName: String) {
         logger.info("Updating selected location. Name: $nodeName Nickname: $nodeNickName")
         textViewLocationName?.text = nodeName
