@@ -76,6 +76,7 @@ class NetworkWhiteListService : Service(), NetworkInfoListener {
             return
         }
         networkInfo?.let {
+            logger.debug("SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelist override: ${interactor.preferenceHelper.whitelistOverride}")
             if (!it.isAutoSecureOn) {
                 onTrustedNetworkFound()
             } else {
@@ -85,8 +86,8 @@ class NetworkWhiteListService : Service(), NetworkInfoListener {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        startForeground(NotificationConstants.SERVICE_NOTIFICATION_ID, notificationBuilder.buildNotification(UnsecuredNetwork))
         if (intent.action != null && intent.action == DISCONNECT_ACTION) {
-            startForeground(NotificationConstants.SERVICE_NOTIFICATION_ID, notificationBuilder.buildNotification(UnsecuredNetwork))
             stopService()
             return START_NOT_STICKY
         }
@@ -100,13 +101,11 @@ class NetworkWhiteListService : Service(), NetworkInfoListener {
 
     private fun onTrustedNetworkFound() {
         scope.launch {
-            logger.debug("Network is unsecured")
-            windVpnController.disconnect()
+            windVpnController.disconnect(waitForNextProtocol = true)
         }
     }
 
     private fun onUntrustedNetworkFound() {
-        logger.debug("Network is secured")
         networkInfoManager.removeNetworkInfoListener(this)
         interactor.preferenceHelper.globalUserConnectionPreference = true
         windVpnController.connect()

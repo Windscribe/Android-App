@@ -107,7 +107,6 @@ interface WindscribeView {
     fun showToast(toastMessage: String)
     fun startVpnConnectedAnimation(state: ConnectedAnimationState)
     fun startVpnConnectingAnimation(state: ConnectingAnimationState)
-    fun stopNetworkService()
     fun updateLocationName(nodeName: String, nodeNickName: String)
     fun updateProgressView(text: String)
     fun updateSearchAdapter(serverListData: ServerListData)
