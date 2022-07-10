@@ -73,11 +73,14 @@ class WindCustomApiFactory @Inject constructor(
         }
     }
 
-    private fun getUnsafeOkHttpClient(): OkHttpClient.Builder {
+    private fun getUnsafeOkHttpClient(): OkHttpClient.Builder? {
         // Load CAs from an InputStream
         // (could be from a resource or ByteArrayInputStream or ...)
         val cf: CertificateFactory = CertificateFactory.getInstance("X.509")
         // From https://www.washington.edu/itconnect/security/ca/load-der.crt
+        if(BuildConfig.API_STATIC_CERT.isEmpty()){
+            return null
+        }
         val caInput: InputStream = Base64.decode(BuildConfig.API_STATIC_CERT).inputStream()
         val ca: X509Certificate = caInput.use {
             cf.generateCertificate(it) as X509Certificate
