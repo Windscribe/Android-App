@@ -5,10 +5,9 @@
 package com.windscribe.vpn.backend
 
 import com.windscribe.vpn.ServiceInteractor
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.constants.PreferencesKeyConstants
-import com.windscribe.vpn.decoytraffic.DecoyTrafficController
-import com.windscribe.vpn.state.AppLifeCycleObserver.Companion.isInForeground
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -122,15 +121,19 @@ abstract class VpnBackend(private val mainScope: CoroutineScope, val stateManage
     }
 
     private fun failedConnectivityTest() {
+        connectivityTestJob.clear()
+        connectionJob?.cancel()
         // If app is in foreground, try other protocols.
-        if (isInForeground && !reconnecting) {
+        if (reconnecting.not()) {
             mainScope.launch {
-                connectivityTestJob.clear()
-                connectionJob?.cancel()
-                deactivate()
-                delay(DISCONNECT_DELAY)
                 vpnLogger.debug("Connectivity test failed.")
-                protocolManager.protocolFailed()
+                appContext.vpnController.disconnect()
+                delay(DISCONNECT_DELAY)
+            }.invokeOnCompletion {
+                if(vpnServiceInteractor.preferenceHelper.isConnectingToConfiguredLocation().not()){
+                    vpnServiceInteractor.preferenceHelper.globalUserConnectionPreference = true
+                    protocolManager.protocolFailed()
+                }
             }
         } else {
             vpnLogger.debug("Connectivity test failed in background.")

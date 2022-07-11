@@ -486,38 +486,7 @@ class WindscribeActivity :
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == FILE_PICK_REQUEST && resultCode == RESULT_OK && data != null) {
-            try {
-                val fileUri = data.data
-                val inputStream = contentResolver.openInputStream(fileUri!!)
-                val content = CharStreams.toString(InputStreamReader(inputStream, Charsets.UTF_8))
-                val documentFile = DocumentFile.fromSingleUri(this, fileUri)
-                if (documentFile != null) {
-                    val fileName = documentFile.name
-                    if (fileName != null && fileName.endsWith(".conf") or fileName.endsWith(".ovpn")) {
-                        var username = ""
-                        var password = ""
-                        try {
-                            val configParser = OpenVPNConfigParser()
-                            username =
-                                configParser.getEmbeddedUsername(InputStreamReader(inputStream))
-                            password =
-                                configParser.getEmbeddedPassword(InputStreamReader(inputStream))
-                        } catch (ignored: Exception) {
-                        }
-                        logger.info("Successfully read file.")
-                        presenter.onConfigFileContentReceived(
-                            fileName,
-                            content,
-                            username,
-                            password
-                        )
-                    } else {
-                        showToast("Choose valid .ovpn or .conf file.")
-                    }
-                }
-            } catch (e: IOException) {
-                logger.info(e.toString())
-            }
+            presenter.loadConfigFile(data)
         }
         super.onActivityResult(requestCode, resultCode, data)
     }

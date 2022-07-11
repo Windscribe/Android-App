@@ -84,12 +84,8 @@ class VpnBackendHolder(
     }
 
     suspend fun disconnect() {
-        activeBackend?.let {
-            if (it.active) {
-                vpnLogger.debug("Active VPN Backend found.")
-                // Disconnect from this backend and deactivate it.
-                it.disconnect()
-            }
+        activeBackend?.disconnect() ?: kotlin.run {
+            vpnLogger.debug("VPN backend not found.")
         }
     }
 }
