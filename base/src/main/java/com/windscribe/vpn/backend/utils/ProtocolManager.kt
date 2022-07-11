@@ -92,7 +92,7 @@ class ProtocolManager(
                 } else {
                     delay(10000)
                 }
-                if (serviceInteractor.preferenceHelper.globalUserConnectionPreference) {
+                if (serviceInteractor.preferenceHelper.globalUserConnectionPreference && serviceInteractor.preferenceHelper.isConnectingToConfiguredLocation().not()) {
                     logger.debug("Next protocol: $config")
                     setNextProtocolConfig(config)
                     appContext.vpnController.connect()
