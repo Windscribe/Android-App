@@ -4,6 +4,7 @@
 package com.windscribe.mobile.windscribe
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import com.windscribe.vpn.serverlist.entity.ConfigFile
 
@@ -26,10 +27,10 @@ interface WindscribePresenter {
     fun onAutoSecureToggleClick()
     fun onCheckNodeStatusClick()
     fun onConfigFileContentReceived(
-        name: String,
-        content: String,
-        username: String,
-        password: String
+            name: String,
+            content: String,
+            username: String,
+            password: String
     )
 
     fun onConnectClicked()
@@ -89,4 +90,5 @@ interface WindscribePresenter {
     fun setAdapters()
     fun onDecoyTrafficBadgeClick()
     fun toggleBlurNetworkName()
+    fun loadConfigFile(data: Intent)
 }

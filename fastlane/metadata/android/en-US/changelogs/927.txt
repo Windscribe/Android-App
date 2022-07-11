@@ -1,0 +1,7 @@
+* Fixed Auto secure.
+* Log export + permission issue.
+* Hide network name.
+* Check for username and password for OpenVPN custom configs.
+* Do not allow files large than 5KB in configs.
+* Do not allow same name files in configs
+* Change selected config location if removed.
