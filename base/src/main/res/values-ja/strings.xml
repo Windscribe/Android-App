@@ -4,224 +4,224 @@
 
 <resources>
     <!--- User-->
-    <string name="username_empty">ユーザー名が空です！</string>
-    <string name="password_empty">パスワードが空です！</string>
-    <string name="enter_username">ユーザー名を入力してください！</string>
-    <string name="enter_password">パスワードを入力してください！</string>
-    <string name="password_too_short">短すぎます！</string>
-    <string name="login_credential_error">ユーザー名またはパスワードに問題があります:(</string>
+    <string name="username_empty">ユーザー名が入力されていません!</string>
+    <string name="password_empty">パスワードが入力されていません!</string>
+    <string name="enter_username">ユーザー名を入力して下さい!</string>
+    <string name="enter_password">パスワードを入力してください!</string>
+    <string name="password_too_short">パスワードが短すぎます!</string>
+    <string name="login_credential_error">ユーザー名もしくはパスワードが間違っています(^^;)</string>
     <string name="sign_out">サインアウト</string>
     <string name="username">ユーザー名</string>
     <string name="password">パスワード</string>
-    <string name="login_with_username">ユーザ名フィールドには特殊文字やメールアドレスは使えません。</string>
-    <string name="weak_password">パスワードには、大文字と小文字を1つ以上入れてください。</string>
-    <string name="small_password">パスワードは8文字以上にしてください。</string>
-    <string name="password_requirement">大文字と小文字を1つ以上含む8文字以上の文字列</string>
-    <string name="failed_network_alert">ベストショットを差し上げましたが、何らかの理由でこのネットワークに接続できませんでした。</string>
-    <string name="fa_required_error">二要素認証コードが必要です</string>
-    <string name="fa_invalid_error">無効な二要素認証コード</string>
+    <string name="login_with_username">ユーザー名に特殊文字又はメールアドレスの使用はできません</string>
+    <string name="weak_password">パスワードには大文字と小文字の両方が含まれている必要があります</string>
+    <string name="small_password">パスワードは最低8文字以上入力してください</string>
+    <string name="password_requirement">大文字と小文字を含む8文字以上の半角英数字</string>
+    <string name="failed_network_alert">ネットワークに接続するためにできる限りの手を尽くしましたが、何らかの理由で接続できませんでした(;´･ω･)</string>
+    <string name="fa_required_error">2要素認証コードが必要です</string>
+    <string name="fa_invalid_error">無効な2要素認証コード</string>
     <string name="login">ログイン</string>
-    <string name="two_fa">二要素認証コード</string>
-    <string name="two_fa_description">有効になっている場合は、認証アプリでコードを生成します。</string>
-    <string name="forgot_password">パスワードをお忘れですか？</string>
-    <string name="next">続行</string>
-    <string name="sign_up">無料で登録</string>
-    <string name="sign_up_description">アカウントを保護すると、どのデバイスからも設定にアクセスしてより多くのデータを取得できます。</string>
+    <string name="two_fa">2要素認証コード</string>
+    <string name="two_fa_description">既に2要素認証の有効化を完了している場合は, 認証アプリを使用してコードを生成してください</string>
+    <string name="forgot_password">パスワードをお忘れですか?</string>
+    <string name="next">次へ</string>
+    <string name="sign_up">無料登録</string>
+    <string name="sign_up_description">アカウント保護でボーナスデータをゲット(´･Д･)」更にお持ちのどのデバイスからもユーザーアカウントへのアクセスが可能に!</string>
     <string name="choose_username">ユーザー名を選択</string>
-    <string name="choose_password">パスワードを選択します</string>
-    <string name="email_description"><![CDATA[パスワードの復元、更新、プロモーションのみ。スパムなし]]></string>
-    <string name="sign_up_failed_network_alert">ベストショットを差し上げましたが、何らかの理由でこのネットワークを使って登録できませんでした。</string>
+    <string name="choose_password">パスワードを選択</string>
+    <string name="email_description"><![CDATA[メールアドレスはプロモーションやメールマガジンの配信、もしくはパスワードの復元時のみ使用。スパムメールへの使用は一切行いません。]]></string>
+    <string name="sign_up_failed_network_alert">できる限りの手を尽くしましたが、何らかの理由でお使いのネットワークを介してお客様の情報を新規登録することができませんでした(;´･ω･)</string>
 
     <!--Api -->
-    <string name="backup_api_end_point">APIエンドポイントのバックアップ試行中...</string>
-    <string name="signing_in">サインイン中...</string>
-    <string name="signing_up">登録中...</string>
-    <string name="getting_session">セッション取得中...</string>
-    <string name="getting_port_maps">ポートマップ取得中...</string>
-    <string name="getting_server_config">サーバー設定を取得中...</string>
-    <string name="getting_server_credentials">サーバー認証情報を取得中...</string>
-    <string name="getting_best_location">最高のロケーションを取得中...</string>
-    <string name="getting_server_list">サーバーリストを取得中...</string>
-    <string name="preparing_your_dashboard">ダッシュボード準備中...</string>
-    <string name="trying_static_endpoint">静的エンドポイントを試行中...</string>
-    <string name="getting_reg_token">登録トークン取得中...</string>
+    <string name="backup_api_end_point">APIエンドポイントのバックアップを試行中&#8230;</string>
+    <string name="signing_in">サインイン中&#8230;</string>
+    <string name="signing_up">登録中&#8230;</string>
+    <string name="getting_session">セッション取得中&#8230;</string>
+    <string name="getting_port_maps">ポートマップ取得中&#8230;</string>
+    <string name="getting_server_config">サーバー設定取得中&#8230;</string>
+    <string name="getting_server_credentials">サーバー認証情報取得中&#8230;</string>
+    <string name="getting_best_location">最適なロケーション情報を取得中&#8230;</string>
+    <string name="getting_server_list">サーバーリストを取得中&#8230;</string>
+    <string name="preparing_your_dashboard">ダッシュボードを準備中&#8230;</string>
+    <string name="trying_static_endpoint">静的エンドポイントを試行中&#8230;</string>
+    <string name="getting_reg_token">登録トークンを取得中&#8230;</string>
 
     <!--- Email-->
-    <string name="invalid_email_format">無効なメールアドレスです！</string>
-    <string name="email_empty">メールアドレスが空です！</string>
+    <string name="invalid_email_format">無効なメールアドレスです!</string>
+    <string name="email_empty">メールアドレスを入力してください!</string>
     <string name="email">メールアドレス</string>
-    <string name="confirm_your_email">メールアドレスを確認</string>
-    <string name="confirm_email">メールアドレスを確認</string>
-    <string name="resend_verification_email">確認メールを再送信</string>
+    <string name="confirm_your_email">メールアドレスを再度入力してください</string>
+    <string name="confirm_email">メールアドレスを再度入力してください</string>
+    <string name="resend_verification_email">確認メール再送信</string>
     <string name="change_email">メールアドレスを変更</string>
 
     <!--Network -->
-    <string name="no_internet">インターネットがありません！</string>
-    <string name="no_network_detected">ネットワーク検出なしです！</string>
-    <string name="this_network_hates_us">このネットワークは私たちを嫌っています</string>
+    <string name="no_internet">インターネットに接続されていません!</string>
+    <string name="no_network_detected">ネットワークが検出されませんでした!</string>
+    <string name="this_network_hates_us">どうやらこのネットワークはWindscribeを嫌っているようです┐(´-｀)┌</string>
 
     <!-- Upgrade-->
     <string name="upgrade">アップグレード</string>
     <string name="upgrade_case_normal">アップグレード</string>
     <string name="renew_plan">プランを更新</string>
-    <string name="you_ve_been_downgraded_to_free_for_now">現在、無料版に\nダウングレードされています</string>
-    <string name="you_ve_violated_our_terms">あなたのアカウントは\n弊社の諸条件違反のため\n無効になりました</string>
-    <string name="you_r_pro_plan_expired">Pro版プランの有効期限が切れました！</string>
-    <string name="you_re_out_of_data">データ容量がなくなりました</string>
-    <string name="you_ve_been_banned">あなたは禁止されました</string>
+    <string name="you_ve_been_downgraded_to_free_for_now">現在契約プランがダウングレードされました \nto 無料プラン</string>
+    <string name="you_ve_violated_our_terms">あなたのアカウントは\n弊社の諸条件違反のため\n無効化されました</string>
+    <string name="you_r_pro_plan_expired">Proプランの有効期限が切れました！!</string>
+    <string name="you_re_out_of_data">データの使用上限に達しました</string>
+    <string name="you_ve_been_banned">あなたは出禁になりました</string>
     <string name="upgrade_later">後でアップグレード</string>
-    <string name="upgrade_to_stay_protected">今すぐアップグレードして\n保護状態をキープするか\n次月のリセットまでお待ちください</string>
-    <string name="get_more_data">データをさらに取得</string>
-    <string name="data_left">%1$.2fGB残</string>
+    <string name="upgrade_to_stay_protected">今すぐアップグレードして\n保護状態をキープするか\n翌月のリセットまでお待ちください</string>
+    <string name="get_more_data">データを追加</string>
+    <string name="data_left">残り%1$.2f GB</string>
     <string name="gb_month">- GB/月</string>
-    <string name="warning_no_email_pro_account">パスワードを忘れた場合に備えるため、メールアドレスを追加してアカウントを回復できるようにしましょう。</string>
-    <string name="free_reason_to_confirm">10GB/月を取得するには、メールアドレスをご確認ください</string>
-    <string name="pro_reason_to_confirm">アカウントを保護するには、メールアドレスをご確認ください</string>
+    <string name="warning_no_email_pro_account">メールアドレスを追加することでパスワードを忘れた時にアカウントを復元することができます。</string>
+    <string name="free_reason_to_confirm">無料で10GB/月のボーナスデータを取得するにはメールアドレスを確定してください</string>
+    <string name="pro_reason_to_confirm">アカウントを保護するにはメールアドレスを確定してください</string>
 
     <!-- Connection states -->
     <string name="connected">接続済</string>
     <string name="connected_lowercase">接続済</string>
-    <string name="connecting">接続中 </string>
-    <string name="connecting_to">%sに接続中...</string>
-    <string name="connected_to">%sに接続済...</string>
-    <string name="disconnecting">切断中</string>
-    <string name="disconnected">切断済</string>
-    <string name="tunnel_test_failed">接続に失敗しました...</string>
-    <string name="checking_connectivity">接続性を確認中...</string>
-    <string name="connectivity_test_failed">接続性テストが失敗しました...</string>
-    <string name="best_location">最高のロケーション</string>
+    <string name="connecting">接続中&#160;</string>
+    <string name="connecting_to">%sに接続中</string>
+    <string name="connected_to">%sに接続済</string>
+    <string name="切断済ing">切断中</string>
+    <string name="切断済ed">切断済</string>
+    <string name="tunnel_test_failed">接続に失敗しました&#8230;</string>
+    <string name="checking_connectivity">接続を確認中&#8230;</string>
+    <string name="connectivity_test_failed">接続テストに失敗しました&#8230;</string>
+    <string name="best_location">最適なロケーション</string>
 
     <!--Connection preference-->
     <string name="connection_mode">接続モード</string>
-    <string name="preferred_protocol">優先プロトコル</string>
+    <string name="preferred_protocol">優プロトコル</string>
     <string name="protocol">プロトコル</string>
     <string name="port">ポート</string>
     <string name="connection_automatic">自動</string>
     <string name="connection_manual">マニュアル</string>
-    <string name="go_to_settings">設定に行く</string>
+    <string name="go_to_settings">設定へ行く</string>
     <string name="always_on_not_supported">この機能を使うには、Androidバージョン7.0以降が必要です</string>
     <string name="packet_size">パケットサイズ</string>
     <string name="lan_by_pass">LANトラフィックを許可</string>
-    <string name="gps_spoofing">GPSなりすまし</string>
-    <string name="natKeepAlive">IKEキープアライブ</string>
+    <string name="gps_spoofing">GPSスプーフィング</string>
+    <string name="natKeepAlive">IKE キープアライブ</string>
     <string name="keep_alive">キープアライブ</string>
-    <string name="auto_detecting">自動検出中...</string>
+    <string name="auto_detecting">自動検出中…</string>
 
     <!-- Account-->
-    <string name="plan_pro">Pro版</string>
+    <string name="plan_pro">Pro</string>
     <string name="expiry_date">有効期限</string>
-    <string name="reset_date">日付をリセット</string>
-    <string name="gb_per_month"> GB/月</string>
+    <string name="reset_date">データ使用量リセット日</string>
+    <string name="gb_per_month">&#160;GB/月</string>
     <string name="my_account">アカウント</string>
     <string name="cancel">キャンセル</string>
-    <string name="edit_account">アカウントを編集</string>
-    <string name="info">情報</string>
-    <string name="plan">プラン</string>
-    <string name="please_login">接続するにはまずログインしてください！</string>
-    <string name="please_login_to_see_account_details">登録またはログインしてアカウント詳細を表示し、環境設定を保護します</string>
+    <string name="edit_account">アカウント編集</string>
+    <string name="info">インフォメーション</string>
+    <string name="plan">契約中のプラン</string>
+    <string name="please_login">接続するにはまずログインしてください!</string>
+    <string name="please_login_to_see_account_details">アカウント詳細の確認やお好みの設定を保持するには登録またはログインしてください。</string>
 
     <!-- Billing-->
-    <string name="billing_unavailable">このデバイスでは、Google Playの課金システムは使えません</string>
-    <string name="item_unavailable">リクエストしたアイテムは利用できません。\nサポート (https://windscribe.com/support) にお問い合わせください！</string>
-    <string name="billing_service_unavailable">課金サービスを利用できません。ネットワーク接続を確認して、再試行してください！</string>
-    <string name="unknown_billing_error">不明なエラー。サポート (https://windscribe.com/support) にお問い合わせください！</string>
-    <string name="fatal_error">料金請求サービスに接続できませんでした...ネットワーク接続をご確認ください！</string>
-    <string name="unable_to_process_request">リクエストを処理できませんでした。再試行してください！</string>
-    <string name="play_store_updating">プレイストアの更新中です！更新が完了したらもう一度お試しください。</string>
-    <string name="purchase_cancelled">購入がキャンセルされました！</string>
-    <string name="purchase_successful">正常に購入できました！</string>
+    <string name="billing_unavailable">このデバイスでは、Google Playの課金システムはご利用頂けません</string>
+    <string name="item_unavailable">ご希望のアイテムはご利用いただけません。\nhttps://windscribe.com/support より弊社サポートチームまでお問い合わせください。</string>
+    <string name="billing_service_unavailable">現在決済サービスをご利用頂けません。 ネットワーク接続を確認して再度お試しください！</string>
+    <string name="unknown_billing_error">エラー: https://windscribe.com/support より弊社サポートチームまでお問い合わせください!</string>
+    <string name="fatal_error">決済サービスへ接続できませんでした。&#8230;ネットワーク接続をご確認ください!</string>
+    <string name="unable_to_process_request">リクエストを処理できませんでした。再度お試しください!</string>
+    <string name="play_store_updating">Google Playストアのアップデート中です! アップデート完了後に再度お試しください。</string>
+    <string name="purchase_cancelled">購入がキャンセルされました!</string>
+    <string name="purchase_successful">購入が完了しました!</string>
     <string name="_2gb_left">残り2GB</string>
 
     <!-- Notification/Status Strings -->
     <string name="state_connecting">接続中</string>
-    <string name="state_wait">サーバーの応答待機中</string>
-    <string name="state_auth">認証確認中</string>
-    <string name="state_get_config">クライアント設定取得中</string>
-    <string name="state_assign_ip">IPアドレス割り当て中</string>
+    <string name="state_wait">サーバーからの応答待機中</string>
+    <string name="state_auth">認証中</string>
+    <string name="state_get_config">クライアント設定を取得中</string>
+    <string name="state_assign_ip">IPアドレスを割り当て中</string>
     <string name="state_add_routes">ルート追加中</string>
-    <string name="state_connected">接続済</string>
-    <string name="state_disconnected">切断</string>
+    <string name="state_connected">接続済み</string>
+    <string name="state_disconnected">切断済</string>
     <string name="state_reconnecting">再接続中</string>
     <string name="state_exiting">終了中</string>
-    <string name="state_noprocess">動作していません</string>
-    <string name="state_resolve">ホスト名解決中</string>
+    <string name="state_noprocess">稼働していません</string>
+    <string name="state_resolve">ホスト名を解決中</string>
     <string name="state_tcp_connect">接続中 (TCP)</string>
     <string name="state_auth_failed">認証失敗</string>
-    <string name="state_no_network">使用可能なネットワークを待機中</string>
+    <string name="state_no_network">利用可能なネットワークを待機中</string>
 
     <!--News feed -->
     <string name="news_feed">ニュースフィード</string>
-    <string name="news_feed_welcome">Windscribeに関するお知らせや一般的なニュースは、こちらでご覧になれます。おそらくおいしいケーキも。皆ケーキが大好きです！</string>
-    <string name="news_feed_welcome_title">Windscribeへようこそ</string>
+    <string name="news_feed_welcome">Windscribeに関するお知らせやその他のニュースはこちらから。多分皆大好きな美味しいケーキの情報も。。。ﾅﾝﾃﾞﾔﾈﾝッ（・д・）ノ゛</string>
+    <string name="news_feed_welcome_title">WELCOME TO WINDSCRIBE</string>
 
     <!-- Rate dialog -->
     <string name="rate_the_app">Windscribeを評価</string>
-    <string name="may_be_later">後にする</string>
-    <string name="never_ask_again">やめる</string>
-    <string name="rate_message">Windscribeに満足していますか？そうでしょう。プレイストアで評価してくださると嬉しいです。</string>
+    <string name="may_be_later">多分後で</string>
+    <string name="never_ask_again">一生評価しない</string>
+    <string name="rate_message">Windscribeの利用に満足していますか？ﾊ—( \'ﾛ\')/\'ﾛ\')/\'ﾛ\')/\'ﾛ\')/ｰｰｲ!!! Google PlayストアでWinscribeを評価しましょう！（and WE\'LL LOVE YOU LOOOONG TIME(*´з`)）.</string>
 
     <!-- GPS spoofing -->
     <string name="gps_spoofing_explain">この機能を使用するには、Androidの設定を変更する必要があります。次の手順で有効化してください。</string>
-    <string name="let_s_do_it">さあやりましょう</string>
-    <string name="unlock_developer_mode">開発者向けオプションをロック解除</string>
-    <string name="unlock_developer_mode_explain">「設定」を開き、[端末情報] セクションを探します。[ソフトウェア情報] でビルド番号を見つけ、7回タップします。</string>
-    <string name="open_settings">設定を開く</string>
-    <string name="add_to_mock_location">モックロケーションアプリを選択</string>
-    <string name="add_to_mock_location_explain">ロックを解除したら、「設定」の[開発者向けオプション] に移動します。[デバッグ] で、[モックロケーションアプリケーション] として「Windscribe」を選択します。</string>
-    <string name="you_are_done">完了しました！</string>
-    <string name="gps_spoofing_success">GPSロケーションはVPNロケーションと同じになります。</string>
-    <string name="gps_spoofing_not_set">GPSなりすましを有効化できませんでした</string>
-    <string name="gps_spoofing_error">もう一度ガイドに従って有効にしてください。</string>
+    <string name="let_s_do_it">さて、やりますか</string>
+    <string name="unlock_developer_mode">開発者向けオプションを表示する</string>
+    <string name="unlock_developer_mode_explain">「設定」を開き、「端末情報」、「ソフトウェア情報」をタップ。表示された「ビルド番号」を7回連続でタップします。</string>
+    <string name="open_settings">「設定」を開く</string>
+    <string name="add_to_mock_location">仮の現在地情報（疑似ロケーション）を有効化する</string>
+    <string name="add_to_mock_location_explain">仮の現在地情報（疑似ロケーション）を有効かしたら, 「設定」の「開発者向けオプション」を開く。  「デバッグ」セクションでWindscribeを仮の現在地情報アプリとして選択。</string>
+    <string name="you_are_done">これで設定完了です!</string>
+    <string name="gps_spoofing_success">お使いのデバイスのGPS位置情報はVPNの位置情報と同じになります。</string>
+    <string name="gps_spoofing_not_set">GPSスプーフィングを有効化できませんでした。</string>
+    <string name="gps_spoofing_error">手順に従ってもう一度有効化設定をお試しください。</string>
 
     <!--Ghost mode -->
     <string name="add_email">メールアドレスを追加</string>
-    <string name="unlimited_data">無制限のデータ通信容量</string>
-    <string name="preferences">環境設定</string>
+    <string name="unlimited_data">データ量無制限</string>
+    <string name="preferences">設定</string>
     <string name="optional">(任意)</string>
-    <string name="get_10_gb">10GB/月を獲得</string>
+    <string name="get_10_gb">10GB/月を取得</string>
     <string name="plans">プラン</string>
-    <string name="pro">Pro版</string>
+    <string name="pro">Pro</string>
     <string name="benefits">サービス内容</string>
     <string name="pricing">価格</string>
     <string name="all_locations">すべてのロケーション</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[月額プランは、月や年単位で管理することも、購入後にApp Storeのアカウント設定から無効化することもできます。価格はすべて税込みです。]]></string>
-    <string name="terms_policy"><b>利用規約 </b> &amp; <b>プライバシーポリシー。</b></string>
+    <string name="terms"><![CDATA[月額プランは、月/年単位で管理することも、購入後にApp Storeのアカウント設定からキャンセルすることもできます。価格はすべて税込みです。]]></string>
+    <string name="terms_policy"><b>利用規約 </b> &amp; <b>プライバシーポリシー</b></string>
     <string name="account_set_up">アカウント設定</string>
-    <string name="account_set_up_description">あなたのアカウントを保護すればどのデバイスからもアクセスできます。</string>
-    <string name="continue_free_10gb_mo">10GB/月を無料で獲得</string>
-    <string name="continue_without_email">メールアドレスなしで続行</string>
-    <string name="no_email_warning">メールアドレスがない場合、無料アカウントは2GB/月に制限され、パスワードをリセットできません。</string>
+    <string name="account_set_up_description">アカウントを保護することでお持ちのどのデバイスからもユーザーアカウントへのアクセスが可能になります</string>
+    <string name="continue_free_10gb_mo">無料の10GB/月を獲得</string>
+    <string name="continue_without_email">メールアドレスを設定せずに続行</string>
+    <string name="no_email_warning">メールアドレスを設定しない場合、 無料アカウントのデータ使用料は2GB/月に制限され、パスワードをリセットできません。</string>
     <string name="get_started">開始する</string>
     <!-- Actions -->
-    <string name="error_try_again">エラーです。再試行してください！</string>
-    <string name="please_wait">お待ちください...</string>
+    <string name="error_try_again">エラー!再度お試しください</string>
+    <string name="please_wait">お待ちください&#8230;</string>
     <string name="resend">再送</string>
     <string name="loading">読み込み中..</string>
     <string name="retry">再試行</string>
-    <string name="try_again">再試行する</string>
+    <string name="try_again">再試行</string>
     <string name="close">閉じる</string>
     <string name="contact_support">サポートに問い合わせる</string>
-    <string name="set_up_later">後で設定</string>
+    <string name="set_up_later">後で設定する</string>
     <string name="back">戻る</string>
     <string name="ok">OK</string>
 
     <!-- Log -->
-    <string name="view_log">デバッグログを見る</string>
+    <string name="view_log">デバッグログを確認</string>
     <string name="send_log">デバッグログを送信</string>
     <string name="send_charon_log">IkEv2ログを送信</string>
-    <string name="sent_thanks">送信済です。ありがとう！</string>
-    <string name="sending_log">ログを送信中...</string>
+    <string name="sent_thanks">送信完了!( ﾟДﾟ)b サンクス!</string>
+    <string name="sending_log">ログを送信中…</string>
     <string name="export_log">ログをエクスポート</string>
 
     <!--Home -->
     <string name="no_favourites">お気に入りなし</string>
-    <string name="no_custom_configs">カスタム設定を使えば任意のOpenVPNまたはWireguardサーバーに接続できます。有効な設定ファイルを追加するだけで、このタブに表示されます。</string>
-    <string name="add_profile">VPNプロフィールを追加</string>
-    <string name="add_static_ip">静的IPを追加</string>
-    <string name="check_status">ステータス確認</string>
-    <string name="under_maintenance">このロケーションはメンテナンス中です</string>
-    <string name="check_status_description">後で再試行するか、ステータスページで詳細をご確認ください</string>
+    <string name="no_custom_configs">カスタム設定の使用で任意のOpenVPNやWireguardのサーバーに接続できるようになります。有効な設定ファイルを追加するだけでこのタブに表示されます。</string>
+    <string name="add_profile">VPNプロフィールを設定</string>
+    <string name="add_static_ip">静的IPアドレスを追加</string>
+    <string name="check_status">ステータスを確認</string>
+    <string name="under_maintenance">このロケーションは現在メンテナンス中です</string>
+    <string name="check_status_description">後で再試行するかステータスページで詳細をご確認ください</string>
     <string name="added_to_favourites">お気に入りに追加済み</string>
     <string name="add_vpn_config">カスタム設定を追加</string>
 
@@ -230,26 +230,26 @@
     <string name="account">アカウント</string>
     <string name="connection">接続</string>
     <string name="debug">デバッグ</string>
-    <string name="help_me">助けて！</string>
+    <string name="help_me">ヘルプ!</string>
     <string name="logout">ログアウト</string>
     <string name="preference">環境設定</string>
     <string name="logout_alert_description">Windscribeからログアウトしてもよろしいですか？</string>
 
     <!--General Settings-->
-    <string name="sort_by">ロケーションの順序</string>
-    <string name="display_latency">レイテンシーを表示</string>
+    <string name="sort_by">ロケーションで並べ替え</string>
+    <string name="display_latency">レイテンシ（通信遅延時間）を表示</string>
     <string name="preferred_language">言語</string>
-    <string name="theme">外観</string>
+    <string name="theme">テーマ</string>
     <string name="show_timer_in_notifications">通知ステータス</string>
     <string name="haptic_setting_label">触覚フィードバック</string>
-    <string name="version">バージョン</string>
-    <string name="show_location_health">ロケーションロードを表示</string>
+    <string name="version">Version</string>
+    <string name="show_location_health">各ロケーションの負荷状態を確認</string>
 
 
     <!-- Split tunneling -->
     <string name="split_tunneling_feature">接続時にWindscribeから除外または含めるアプリを選択します</string>
     <string name="mode">モード</string>
-    <string name="split_tunneling">トンネリングを分割</string>
+    <string name="split_tunneling">スプリットトネリング</string>
     <string name="off">オフ</string>
     <string name="on">オン</string>
     <string name="feature_tunnel_mode_exclusive">以下で選択したアプリは、接続時にWindscribeを経由しません</string>
@@ -257,62 +257,63 @@
     <string name="apps">アプリ</string>
 
     <!--Always on -->
-    <string name="always_on">VPNを常時オン</string>
-    <string name="always_on_warning">「常時接続」VPNでは、AndroidはVPN接続を制御し、VPNトンネルが立ち上がっていない限り、デバイスからデータを送信できないようにします。</string>
+    <string name="always_on">VPN常時オン</string>
+    <string name="always_on_warning">\"常に接続\" VPNに常に接続する場合、AndroidがVPNを制御し、VPNの仮想トンネルが起動していない場合にデバイスからデータを送信できません。</string>
     <string name="always_on_setting">Android 10以降のデバイスでは、デバイス起動時にWindscribeを起動するよう常時接続VPNを設定する必要があります。</string>
 
     <!-- Network security -->
     <string name="forget_network">ネットワークを削除</string>
-    <string name="network_secured">安全性保証済</string>
-    <string name="network_unsecured">安全性未保証</string>
-    <string name="preferred_protocol_description">接続に問題がある場合は、このネットワークのデフォルトプロトコルを選択します</string>
+    <string name="network_secured">ネットワークは保護されています</string>
+    <string name="network_unsecured">ネットワークは保護されていません　</string>
+    <string name="preferred_protocol_description">接続に問題がある場合、このネットワークのデフォルトのプロトコルを選択します</string>
     <string name="unknown">不明なネットワーク</string>
-    <string name="loading_network_list">ネットワークリストを読み込み中です\nお待ちください...</string>
+	<string name="loading_network_list">ネットワークリストを読み込み中です\nお待ちください...</string>
     <string name="no_saved_network_list">保存されたネットワークリストはありません！</string>
     <string name="network_options">ネットワークオプション</string>
-    <string name="auto_secure">自動セキュリティ</string>
+    <string name="auto_secure">自動保護</string>
     <string name="auto_secure_description">このネットワークに接続すると、Windscribeが自動的にオンになります。</string>
 
+
     <!--Auto connect on boot-->
-    <string name="auto_start_on_boot">ブートで自動接続</string>
-    <string name="enable_start_on_boot">スタートオンブートを有効化</string>
+    <string name="auto_start_on_boot">起動時に自動接続</string>
+    <string name="enable_start_on_boot">「起動時に開始」を有効化</string>
 
     <!--Location permission -->
-    <string name="grant_permission">許可を付与</string>
-    <string name="reason_for_location_permission">Windscribeでは「ネットワークホワイトリスト」機能を動作させるため、バックグラウンドで実行している間、位置情報の許可が必要です。この権限はWi-Fiネットワーク名へのアクセスに必要です。この許可は、GPSなりすまし機能だけでなく、この機能にも使われます。ロケーションデータはデバイスから離れることはなく、他の用途には使われません。</string>
-    <string name="location_permission_for_ssid">優先プロトコルと自動接続を設定するには、ロケーション権限が必要です。</string>
-    <string name="disclaimer">免責条項</string>
-    <string name="location_permission">ロケーション許可</string>
+    <string name="grant_permission">権限付与</string>
+    <string name="reason_for_location_permission">\”ネットワークホワイトリスト\”機能動作させるために、Windscribeがバックグラウンドで実行中に位置情報を利用する必要があります。この権限はWi-fiのネットワーク名にアクセスするために必要であり、ネットワークホワイトリスト機能だけでなく、GPSスプーフィング機能にも利用されます。位置情報がデバイス外へ送信されることはなく、他の用途への使用も一切ございません。</string>
+    <string name="location_permission_for_ssid">優先プロトコルに自動で接続するには位置情報の権限が必要です。</string>
+    <string name="disclaimer">免責事項</string>
+    <string name="location_permission">位置情報許可</string>
 
     <!-- Features -->
-    <string name="feature1">100を超えるロケーションにあるサーバー</string>
+    <string name="feature1">サーバーの設置場所は100か所以上</string>
     <string name="feature2">広告とマルウェアをブロック</string>
-    <string name="feature3">ノーログ</string>
+    <string name="feature3">ログを出力しない</string>
     <string name="feature4">ストリーミングのロックを解除</string>
 
     <!--Help -->
     <string name="knowledge_base">ナレッジベース</string>
-    <string name="knowledge_base_description">Windscribeについて知るべきことすべて。</string>
-    <string name="talk_to_garry">Garryに話しかける</string>
-    <string name="talk_to_garry_description">Siriほど賢くはありませんが、質問には答えられるでしょう。</string>
+    <string name="knowledge_base_description">Windscribeのすべて</string>
+    <string name="talk_to_garry">Garryに聞いてみる</string>
+    <string name="talk_to_garry_description">Siriほど賢くはないけど一応質問には答えられます。</string>
     <string name="send_ticket">チケットを送信</string>
-    <string name="send_ticket_description">お手上げですか？私たちにチケットを送信</string>
-    <string name="community_support">コミュニティサポート</string>
-    <string name="community_support_description">他ユーザーからサポートが得られる一番の場所。</string>
+    <string name="send_ticket_description">まだ答えが見つかりませんか? 私たち（人間）にチケットを送信</string>
+    <string name="community_support">コミュニティーサポート</string>
+    <string name="community_support_description">ほかのWindscribeユーザーに助けてもらったり、助けてあげたりできるとっておきの場所。</string>
 
 
     <!--Send ticket -->
-    <string name="how_to_send_ticket">以下のフィールドに入力してください。サポート担当者がすぐにご連絡いたします。™</string>
+    <string name="how_to_send_ticket">下記空欄を記入してください。私たちのサポートチームがすぐにご連絡差し上げます。™</string>
     <string name="category">カテゴリー</string>
-    <string name="email_reason_for_contact">あなたに連絡できますが、他の用途には使いません</string>
-    <string name="what_is_the_issue">どんな問題がありますか？</string>
+    <string name="email_reason_for_contact">個人情報につきましては、お客様へご連絡する目的以外には一切の利用を行いません。</string>
+    <string name="what_is_the_issue">問題はなんですか？</string>
     <string name="message">メッセージ</string>
     <string name="subject">件名</string>
 
     <!--Config -->
     <string name="edit_config_file">設定ファイルを編集</string>
     <string name="name">名前</string>
-    <string name="save_credentials">認証情報を保存しますか？</string>
+    <string name="save_credentials">認証情報を保存しますか?</string>
     <string name="update">アップデート</string>
     <string name="enter_credentials">認証情報を入力</string>
     <string name="connect">接続</string>
@@ -322,130 +323,130 @@
     <string name="send_ikev2_log">IkEv2ログを送信</string>
 
     <!--Home -->
-    <string name="failed">失敗</string>
-    <string name="next_in_up">"次のアップは%d"</string>
+    <string name="failed">接続失敗</string>
+    <string name="next_in_up">"%d秒後に再試行"</string>
     <string name="step_1_3">ステップ1/3</string>
     <string name="step_2_3">ステップ2/3</string>
-    <string name="remove_from_favourites">お気に入りから削除済み</string>
-    <string name="config_added">設定に追加済み</string>
+    <string name="remove_from_favourites">お気に入りから除外済み</string>
+    <string name="config_added">設定に追加</string>
 
-    <string name="app_background">アプリのバックグラウンド</string>
-    <string name="disconnected_lower_case">切断済</string>
-    <string name="connected_lower_case">接続済</string>
-    <string name="x_press_login">レイジーログイン</string>
+    <string name="app_background">背景画像（壁紙）</string>
+    <string name="disconnected_lower_case">切断済み</string>
+    <string name="connected_lower_case">接続済み</string>
+    <string name="x_press_login">ものぐさログイン</string>
     <string name="other">その他</string>
 
     <!-- About -->
-    <string name="about">情報</string>
-    <string name="about_us">私たちについて</string>
-    <string name="status">ステータス</string>
+    <string name="about">企業情報</string>
+    <string name="about_us">Windscribeについて</string>
+    <string name="status">Status</string>
     <string name="privacy_policy">プライバシーポリシー</string>
-    <string name="terms_title">諸条件</string>
-    <string name="blog">ブログ</string>
-    <string name="jobs">求人</string>
+    <string name="terms_title">利用規約</string>
+    <string name="blog">Blog</string>
+    <string name="jobs">採用情報</string>
     <string name="software_licenses">ソフトウェアライセンス</string>
 
 
     <!-- ********** TV ************* -->
 
     <!-- UPGRADE STRINGS -->
-    <string name="benefit_unlimited_data">無制限のデータ通信容量</string>
+    <string name="benefit_unlimited_data">データ無制限</string>
     <string name="choose_plan">プランを選択</string>
-    <string name="monthly">月々</string>
-    <string name="yearly">年単位 - 55%割引</string>
-    <string name="upgrade_title">あなたには限られたプライバシー以上の価値があります。</string>
+    <string name="monthly">月額プラン</string>
+    <string name="yearly">年額プラン - 55%割引</string>
+    <string name="upgrade_title">データ無制限プランで無限のプライバシーを！</string>
     <string name="text_login">ログイン</string>
-    <string name="text_sign_up">登録</string>
+    <string name="text_sign_up">新規登録</string>
 
     <!-- Log -->
-    <string name="sending_debug_log">デバッグログを送信中です\nお待ちください...</string>
-    <string name="app_log_submitted">ありがとう！アプリログが送信されました。</string>
-    <string name="log_submission_failed">ログファイル送信エラーです！</string>
+    <string name="sending_debug_log">デバッグログ送信中\nお待ちください&#8230;</string>
+    <string name="app_log_submitted">アプリログ送信完了!( ﾟДﾟ)b サンクス!</string>
+    <string name="log_submission_failed">ログ送信エラー!</string>
 
     <!-- Home -->
-    <string name="add_your_email_address">パスワードを忘れた場合に備えるため、メールアドレスを追加してください。10GBも差し上げます。</string>
+    <string name="add_your_email_address">パスワードを忘れた時にリセットできるようにメールアドレスを登録しましょう。 ついでに10GBのボーナスデータをゲット(´･Д･)」</string>
     <string name="locations">ロケーション</string>
     <string name="notifications">通知</string>
     <string name="support">サポート</string>
-    <string name="support_content">サポート関連のお問い合わせはすべて、お使いのスマートフォンまたはコンピューターの上記のアドレスにアクセスしてください。</string>
-    <string name="add_email_title">メールアドレスを追加</string>
+    <string name="support_content">すべてのサポート関連のお問い合わせは、お使いの携帯電話もしくはコンピューターより上記のURLにアクセスしてください。</string>
+    <string name="add_email_title">メールアドレス追加</string>
 
     <!-- Upgrade -->
-    <string name="upgradeNoData">あなたは貴重なプライバシーを失っているようです</string>
-    <string name="upgradeToUnlock">あなたには限られたプライバシー以上の価値があります</string>
-    <string name="restore_purchase">購入を復元</string>
-    <string name="servers_in_over_60_countries_and_110_cities">60か国以上110か所のサーバー</string>
-    <string name="no_bandwidth_interruptions_stay_protected_forever">回線容量中断なし。保護された状態を永久キープ</string>
+    <string name="upgradeNoData">残念ながらプライバシーが保護されていないようです( ;∀;)</string>
+    <string name="upgradeToUnlock">無制限のプライバシーを手に入れましょう</string>
+    <string name="restore_purchase">購入を復元する</string>
+    <string name="servers_in_over_60_countries_and_110_cities">サーバーの配置場所は60カ国、110都市以上</string>
+    <string name="no_bandwidth_interruptions_stay_protected_forever">帯域幅が切断される心配なし！ 永久に保護された状態をキープ</string>
 
 
     <string name="skip">スキップ</string>
-    <string name="robert_detail">すべてのデバイスでマルウェアと広告をブロックします。</string>
+    <string name="robert_detail">マルウェアと広告をすべてのデバイスからブロック</string>
 
 
     <!-- Settings -->
     <string name="settings">設定</string>
-    <string name="sort_type">ロケーションを並べ替え</string>
-    <string name="split_routing">ルーティングを分割</string>
-    <string name="exclusive_mode">独占的</string>
-    <string name="disabled">オフ</string>
-    <string name="apps_to_exclude">除外アプリ</string>
-    <string name="apps_to_include">含めるアプリ</string>
-    <string name="lan_traffic">LANトラフィック</string>
+    <string name="sort_type">ロケーションで並べ替え</string>
+    <string name="split_routing">スプリットトネリング</string>
+    <string name="exclusive_mode">独占</string>
+    <string name="disabled">Off</string>
+    <string name="apps_to_exclude">Windscribeを適用しないアプリ</string>
+    <string name="apps_to_include">Windxcribeを適用するアプリ</string>
+    <string name="lan_traffic">Lan traffic</string>
     <string name="allow">許可</string>
     <string name="block">ブロック</string>
-    <string name="start_on_boot">スタートオンブート</string>
-    <string name="split_routing_content" translatable="false">接続時にWindscribeから除外または含めるアプリを選択します</string>
+    <string name="start_on_boot">デバイス起動時にWindscribeを起動</string>
+    <string name="split_routing_content" translatable="false">接続時にどのアプリにWindoscribeを適用するかを選択</string>
     <string name="show_system_apps">システムアプリを表示</string>
 
     <!-- Login -->
     <string name="login_label" translatable="false">すでにアカウントをお持ちの場合</string>
-    <string name="ghost_account_sign_up" translatable="false">登録またはログインしてアカウント詳細を表示し、環境設定を保護します</string>
-    <string name="ghost_account_claim" translatable="false">Proステータスを失わないためアカウントを要求します</string>
-    <string name="claim_account" translatable="false">アカウントを請求</string>
-    <string name="reason_to_get_more_data" translatable="false">"登録して10GB/月に増やすか、アップグレードして無制限にするかのどちらかをお選びください。"</string>
-    <string name="sign_up_to_get_10" translatable="false">登録 - 10GB/月</string>
-    <string name="get_pro" translatable="false">Pro版を獲得 - 無制限</string>
-    <string name="add_email_pro" translatable="false">メールアドレスを追加</string>
-    <string name="text_two_fa" translatable="false">進むには二要素認証が必要です。認証アプリを使ってコードを生成します。</string>
-    <string name="free_reason_to_add_email" translatable="false">10GB/月を取得するには、メールアドレスを追加してください</string>
-    <string name="pro_reason_to_add_email" translatable="false">アカウントを保護するには、メールアドレスを追加してください</string>
-    <string name="confirm_email_title" translatable="false">メールアドレスを確認</string>
+    <string name="ghost_account_sign_up" translatable="false">アカウントの詳細を表示、またはお好み設定を保存するには新規登録またはログインしてください</string>
+    <string name="ghost_account_claim" translatable="false">proステータスを維持するためにはアカウントを申請してください</string>
+    <string name="claim_account" translatable="false">アカウントを申請する</string>
+    <string name="reason_to_get_more_data" translatable="false">"新規登録して10GB/月を取得するか、アップグレードしてデータ容量のリミットからから解放されましょう。"</string>
+    <string name="sign_up_to_get_10" translatable="false">新規登録 - 10GB/月</string>
+    <string name="get_pro" translatable="false">Pro - データ無制限</string>
+    <string name="add_email_pro" translatable="false">メールアドレス追加</string>
+    <string name="text_two_fa" translatable="false">次に進むには2要素認証が必要です。認証アプリを使用してコードを生成してください。</string>
+    <string name="free_reason_to_add_email" translatable="false">10GB/月のデータ容量を取得するにはメールアドレスを登録してください</string>
+    <string name="pro_reason_to_add_email" translatable="false">アカウントを保護するにはメールアドレスを登録してください</string>
+    <string name="confirm_email_title" translatable="false">メールアドレスを確定</string>
     <string name="back_uppercase" translatable="false">戻る</string>
     <string name="Error" translatable="false">エラー</string>
-    <string name="text_account_set_up" translatable="false">登録</string>
-    <string name="xpress_login" translatable="false">レイジーログイン</string>
-    <string name="web_login_description" translatable="false">移動 <b>https://windscribe.com/lazy</b> デバイスで以下のコードを入力します。</string>
-    <string name="app_login_description" translatable="false">スマートフォンまたはタブレットでWindscribe Androidアプリを使って、「環境設定」 (左上) に移動し、「アカウント」で[レイジーログイン]を選択して、以下のコードを入力します。</string>
-    <string name="or" translatable="false">または</string>
+    <string name="text_account_set_up" translatable="false">新規登録</string>
+    <string name="xpress_login" translatable="false">ものぐさログイン</string>
+    <string name="web_login_description" translatable="false">お使いのデバイスから<b>https://windscribe.com/lazy</b>にアクセスして下記のコードを入力してください。</string>
+    <string name="app_login_description" translatable="false">お使いの携帯電話やタブレットからWindscribeのアンドロイド版アプリを使用して、画面左上にある「設定」から「アカウント」配下にある「ものぐさログイン」を選択し、下記のコードを入力。</string>
+    <string name="or" translatable="false">もしくは</string>
     <string name="generate_code" translatable="false">コードを生成</string>
     <string name="manual_login" translatable="false">マニュアルログイン</string>
-    <string name="keep_your_secrets">秘密を\n守る</string>
-    <string name="reset_password_description">パスワードをリセットするには、windscribe.comにアクセスしてください</string>
+    <string name="keep_your_secrets">あなたの秘密を\n墓場まで</string>
+    <string name="reset_password_description">パスワードのリセットはwindscribe.comにアクセスしてください</string>
     <string name="support_url">windscribe.com/support</string>
     <string name="enter_code">コードを入力</string>
-    <string name="enter">入力</string>
+    <string name="enter">確定</string>
 
     <!-- Server list -->
-    <string name="ping_time">%dMS</string>
-    <string name="trying_next_protocol">"%dで次のプロトコルを試行します"</string>
+    <string name="ping_time">%dミリ秒</string>
+    <string name="trying_next_protocol">"%d秒後に再試行"</string>
     <string name="all">すべて</string>
     <string name="favourite">お気に入り</string>
     <string name="windflix">Windflix</string>
-    <string name="static_ip">静的IP</string>
-    <string name="disconnect_alert_no_network" translatable="false">ネットワーク接続がないため、Windscribe VPNトンネルは一時停止中です。ネットワーク設定をご確認ください</string>
-    <string name="node_under_construction_text" translatable="false">このロケーションはメンテナンス中です。後で再試行するか、ステータスページ (https://windscribe.com/status) で詳細をご確認ください。</string>
+    <string name="static_ip">静的IPアドレス</string>
+    <string name="disconnected_alert_no_network" translatable="false">ネットワーク接続が不安定なためWindscribeのVPNトンネルが一時停止しています - お使いのネットワーク接続をご確認ください</string>
+    <string name="node_under_construction_text" translatable="false">このロケーションはメンテナンス中です。 後ほどお試し頂くかステータスページ（https://windscribe.com/status）で詳細をご確認ください</string>
     <string name="load_loading" translatable="false">読み込み中</string>
-    <string name="load_nothing_found" translatable="false">ここで見るものは何もありません</string>
-    <string name="load_error" translatable="false">読み込み中のエラーです。</string>
-    <string name="select_location">まずロケーションを選択してください！</string>
+    <string name="load_nothing_found" translatable="false">何も表示するものがありません</string>
+    <string name="load_error" translatable="false">読み込みに失敗しました</string>
+    <string name="select_location">ロケーションを選択してください!</string>
 
     <!-- Actions -->
     <string name="text_ok">OK</string>
 
     <!--Robert -->
-    <string name="robert_description">R.O.B.E.R.T.はカスタマイズ可能なサーバー側ドメインおよびIPブロックツールです。スイッチを切り替えて、すべてのデバイスに適用するブロックリストを選択します。</string>
-    <string name="learn_more">もっと見る</string>
-    <string name="manage_custom_rules">カスタムルールを管理</string>
+    <string name="robert_description">R.O.B.E.R.T.はカスタム設定可能なサーバサイドのドメインおよびIPアドレスをブロックする機能です。お使いのすべてのデバイスに適用されるブロックリストを選択からブロックしたいSelect the block lists you wish to apply on all your devices by toggling the switch.</string>
+    <string name="learn_more">詳細表示</string>
+    <string name="manage_custom_rules">カスタムルール設定</string>
     <string name="blocking">ブロック中</string>
     <string name="allowing">許可中</string>
 </resources>
