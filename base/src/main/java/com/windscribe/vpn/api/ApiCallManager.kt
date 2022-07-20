@@ -4,6 +4,7 @@
 package com.windscribe.vpn.api
 
 import com.windscribe.vpn.BuildConfig
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.ApiConstants.APP_VERSION
@@ -12,6 +13,7 @@ import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkKeyConstants.API_HOST_ASSET
 import com.windscribe.vpn.constants.NetworkKeyConstants.API_HOST_CHECK_IP
 import com.windscribe.vpn.constants.NetworkKeyConstants.API_HOST_GENERIC
+import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.exceptions.WindScribeException
 import io.reactivex.Single
@@ -97,6 +99,9 @@ class ApiCallManager @Inject constructor(
                     .flatMap { access ->
                         access.dataClass?.let {
                             return@flatMap Single.fromCallable {
+                                accessIps = mutableListOf(it.hosts[0],it.hosts[1])
+                                appContext.preference.setStaticAccessIp(PreferencesKeyConstants.ACCESS_API_IP_1, it.hosts[0])
+                                appContext.preference.setStaticAccessIp(PreferencesKeyConstants.ACCESS_API_IP_2, it.hosts[1])
                                 listOf(
                                         customApiFactory.createCustomCertApi("https://${it.hosts[0]}"),
                                         customApiFactory.createCustomCertApi("https://${it.hosts[1]}")
