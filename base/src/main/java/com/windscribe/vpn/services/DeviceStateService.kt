@@ -11,16 +11,17 @@ import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.WindUtilities
+import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
-import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Inject
 
 class DeviceStateService : JobIntentWorkAroundService() {
 
@@ -36,41 +37,43 @@ class DeviceStateService : JobIntentWorkAroundService() {
     @Inject
     lateinit var vpnConnectionStateManager: VPNConnectionStateManager
 
-    private val logger = LoggerFactory.getLogger("network_state_service")
+    private val logger = LoggerFactory.getLogger("network_status")
     private val stateBoolean = AtomicBoolean()
+    private val compositeDisposable = CompositeDisposable()
     override fun onCreate() {
         super.onCreate()
         stateBoolean.set(true)
         appContext.serviceComponent.inject(this)
     }
 
-    override fun onDestroy() {
-        interactor.compositeDisposable.dispose()
-        super.onDestroy()
-    }
-
     override fun onHandleWork(intent: Intent) {
         if (stateBoolean.getAndSet(false)) {
             val networkInfo = WindUtilities.getUnderLayNetworkInfo()
+            if (networkInfo!=null){
+                logger.debug("Network: ${networkInfo.detailedState} | VPN: ${vpnConnectionStateManager.state.value.status.name}")
+            }
             if (networkInfo != null && networkInfo.isConnected && vpnConnectionStateManager.isVPNActive()) {
+                logger.debug("New network detected. VPN is connected. Checking for SSID.")
                 addToKnownNetworks()
             }
         }
     }
 
     private fun addToKnownNetworks() {
+        compositeDisposable.clear()
         try {
             val networkName = WindUtilities.getNetworkName()
-            interactor.compositeDisposable.add(
+            compositeDisposable.add(
                     interactor.getNetwork(networkName)
                             .onErrorResumeNext {
+                                logger.debug("Saving $networkName(SSID) to database.")
                                 interactor
                                         .addNetworkToKnown(networkName).flatMap {
                                             interactor
                                                     .getNetwork(networkName)
                                         }
                             }.subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
+                            .observeOn(Schedulers.io())
                             .subscribeWith(
                                     object : DisposableSingleObserver<NetworkInfo?>() {
                                         override fun onError(ignored: Throwable) {
@@ -81,22 +84,22 @@ class DeviceStateService : JobIntentWorkAroundService() {
                                         override fun onSuccess(
                                                 networkInfo: NetworkInfo
                                         ) {
-                                            if (!networkInfo.isAutoSecureOn && !interactor
-                                                            .preferenceHelper.whitelistOverride
-                                            ) {
+                                            logger.debug("SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelist override: ${interactor.preferenceHelper.whitelistOverride}")
+                                            if (networkInfo.isAutoSecureOn.not() && interactor.preferenceHelper.whitelistOverride.not()) {
                                                 logger.debug(
-                                                        "Underlying network to current vpn connection is unsecured. Starting standby service."
+                                                        "${networkInfo.networkName} is unsecured. Starting network whitelist service."
                                                 )
                                                 scope.launch {
                                                     vpnController.disconnect(true)
                                                 }
                                             }
-                                            interactor.compositeDisposable.dispose()
+                                            compositeDisposable.clear()
                                         }
                                     })
             )
-        } catch (e: Exception) {
-            logger.debug("unable to get network name.")
+        } catch (e: WindScribeException) {
+            logger.debug(e.message)
+            compositeDisposable.clear()
         }
     }
 

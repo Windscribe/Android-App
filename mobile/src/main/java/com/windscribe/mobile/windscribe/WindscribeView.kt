@@ -59,7 +59,8 @@ interface WindscribeView {
     fun setCountryFlag(flagIconResource: Int)
     fun setFavouriteAdapter(favouriteAdapter: FavouriteAdapter?)
     fun setIpAddress(ipAddress: String)
-    fun setIpBlur(blurIp: Boolean)
+    fun setIpBlur(blur: Boolean)
+    fun setNetworkNameBlur(blur: Boolean)
     fun setLastConnectionState(state: ConnectionUiState)
     fun setMainConstraints(customBackground: Boolean)
     fun setNetworkLayout(
@@ -107,7 +108,6 @@ interface WindscribeView {
     fun showToast(toastMessage: String)
     fun startVpnConnectedAnimation(state: ConnectedAnimationState)
     fun startVpnConnectingAnimation(state: ConnectingAnimationState)
-    fun stopNetworkService()
     fun updateLocationName(nodeName: String, nodeNickName: String)
     fun updateProgressView(text: String)
     fun updateSearchAdapter(serverListData: ServerListData)

@@ -486,38 +486,7 @@ class WindscribeActivity :
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == FILE_PICK_REQUEST && resultCode == RESULT_OK && data != null) {
-            try {
-                val fileUri = data.data
-                val inputStream = contentResolver.openInputStream(fileUri!!)
-                val content = CharStreams.toString(InputStreamReader(inputStream, Charsets.UTF_8))
-                val documentFile = DocumentFile.fromSingleUri(this, fileUri)
-                if (documentFile != null) {
-                    val fileName = documentFile.name
-                    if (fileName != null && fileName.endsWith(".conf") or fileName.endsWith(".ovpn")) {
-                        var username = ""
-                        var password = ""
-                        try {
-                            val configParser = OpenVPNConfigParser()
-                            username =
-                                configParser.getEmbeddedUsername(InputStreamReader(inputStream))
-                            password =
-                                configParser.getEmbeddedPassword(InputStreamReader(inputStream))
-                        } catch (ignored: Exception) {
-                        }
-                        logger.info("Successfully read file.")
-                        presenter.onConfigFileContentReceived(
-                            fileName,
-                            content,
-                            username,
-                            password
-                        )
-                    } else {
-                        showToast("Choose valid .ovpn or .conf file.")
-                    }
-                }
-            } catch (e: IOException) {
-                logger.info(e.toString())
-            }
+            presenter.loadConfigFile(data)
         }
         super.onActivityResult(requestCode, resultCode, data)
     }
@@ -727,9 +696,18 @@ class WindscribeActivity :
         presenter.onMenuButtonClicked()
     }
 
-    @OnClick(R.id.network_icon, R.id.network_name)
-    fun onNetworkNameClick() {
+    @OnClick(R.id.network_icon)
+    fun onNetworkIconClick() {
         checkLocationPermission(R.id.cl_windscribe_main, NETWORK_NAME_PERMISSION)
+    }
+
+    @OnClick(R.id.network_name)
+    fun onNetworkNameClick() {
+        if (textViewConnectedNetworkName?.text?.equals("Unknown Network") == true){
+            checkLocationPermission(R.id.cl_windscribe_main, NETWORK_NAME_PERMISSION)
+        }else{
+            presenter.toggleBlurNetworkName()
+        }
     }
 
     override fun onNetworkStateChanged() {
@@ -1040,7 +1018,6 @@ class WindscribeActivity :
 
     override fun permissionGranted(requestCode: Int) {
         presenter.reloadNetworkInfo()
-        presenter.onNetworkStateChanged()
         if (requestCode == REQUEST_LOCATION_PERMISSION_FOR_PREFERRED_NETWORK) {
             presenter.setProtocolPreferred()
         }
@@ -1120,10 +1097,23 @@ class WindscribeActivity :
         runOnUiThread { textViewIpAddress?.text = ipAddress }
     }
 
-    override fun setIpBlur(blurIp: Boolean) {
+    override fun setIpBlur(blur: Boolean) {
         textViewIpAddress?.let {
             it.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
-            if (blurIp) {
+            if (blur) {
+                val radius = it.textSize / 3
+                val filter = BlurMaskFilter(radius, BlurMaskFilter.Blur.NORMAL)
+                it.paint.maskFilter = filter
+            } else {
+                it.paint.maskFilter = null
+            }
+        }
+    }
+
+    override fun setNetworkNameBlur(blur: Boolean) {
+        textViewConnectedNetworkName?.let {
+            it.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+            if (blur) {
                 val radius = it.textSize / 3
                 val filter = BlurMaskFilter(radius, BlurMaskFilter.Blur.NORMAL)
                 it.paint.maskFilter = filter
@@ -1924,10 +1914,6 @@ class WindscribeActivity :
                 valueAnimator.start()
             }
         }
-    }
-
-    override fun stopNetworkService() {
-        stopService(appContext)
     }
 
     override fun updateLocationName(nodeName: String, nodeNickName: String) {

@@ -4,6 +4,8 @@
 
 package com.windscribe.vpn.backend.utils
 
+import android.app.ActivityManager
+import android.content.Context.ACTIVITY_SERVICE
 import android.content.Intent
 import android.net.VpnService
 import androidx.work.Data
@@ -38,15 +40,12 @@ import com.windscribe.vpn.serverlist.entity.Node
 import com.windscribe.vpn.services.NetworkWhiteListService
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.Lazy
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collectLatest
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
-import org.slf4j.LoggerFactory
+
 
 @Singleton
 open class WindVpnController @Inject constructor(
@@ -263,13 +262,15 @@ open class WindVpnController @Inject constructor(
             if (WindStunnelUtility.isStunnelRunning) {
                 WindStunnelUtility.stopLocalTunFromAppContext(appContext)
             }
-            if (vpnConnectionStateManager.state.value.status == Status.UnsecuredNetwork) {
+            if(checkServiceRunning(NetworkWhiteListService::class.java)){
                 stopNetworkWhiteListService()
             }
             vpnBackendHolder.disconnect()
+            if (waitForNextProtocol.not() || reconnecting.not()){
+                interactor.preferenceHelper.globalUserConnectionPreference = false
+            }
             if (!reconnecting) {
                 interactor.preferenceHelper.whitelistOverride = false
-                interactor.preferenceHelper.globalUserConnectionPreference = false
                 try {
                     withTimeout(500) {
                         vpnConnectionStateManager.state.collectLatest {
@@ -287,7 +288,6 @@ open class WindVpnController @Inject constructor(
             if(vpnBackendHolder.activeBackend == null){
                 interactor.preferenceHelper.isReconnecting = false
             }
-            logger.debug("VPN Disconnected.")
             if (waitForNextProtocol) {
                 interactor.preferenceHelper.globalUserConnectionPreference = true
                 vpnConnectionStateManager.setState(VPNState(Status.UnsecuredNetwork))
@@ -295,6 +295,18 @@ open class WindVpnController @Inject constructor(
             }
             error?.let { item -> handleError(item) }
         }
+    }
+
+    private fun checkServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager: ActivityManager? = appContext.getSystemService(ACTIVITY_SERVICE) as ActivityManager?
+        if (manager!= null){
+            for (service in manager.getRunningServices(Int.MAX_VALUE)) {
+                if (serviceClass.name == service.service.className) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 
     private fun handleError(error: CallResult.Error) {
