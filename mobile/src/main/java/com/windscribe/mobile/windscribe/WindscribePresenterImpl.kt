@@ -6,12 +6,15 @@ package com.windscribe.mobile.windscribe
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Pair
 import android.view.View
 import androidx.core.content.ContextCompat
+import androidx.documentfile.provider.DocumentFile
+import com.google.common.io.CharStreams
 import com.windscribe.mobile.R
 import com.windscribe.mobile.adapter.ConfigAdapter
 import com.windscribe.mobile.adapter.FavouriteAdapter
@@ -44,6 +47,7 @@ import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.Util.getSavedLocation
 import com.windscribe.vpn.backend.VPNState
+import com.windscribe.vpn.backend.openvpn.OpenVPNConfigParser
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
 import com.windscribe.vpn.backend.utils.ProtocolConfig
 import com.windscribe.vpn.backend.utils.SelectedLocationType
@@ -113,7 +117,12 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
+import java.io.BufferedInputStream
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
 
 class WindscribePresenterImpl @Inject constructor(
         private var windscribeView: WindscribeView,
@@ -282,6 +291,7 @@ class WindscribePresenterImpl @Inject constructor(
         // Notifications
         updateNotificationCount()
         windscribeView.setIpBlur(interactor.getAppPreferenceInterface().blurIp)
+        windscribeView.setNetworkNameBlur(interactor.getAppPreferenceInterface().blurNetworkName)
         addNotificationChangeListener()
         calculateFlagDimensions()
         interactor.getUserRepository().user.value?.let {
@@ -321,6 +331,7 @@ class WindscribePresenterImpl @Inject constructor(
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeWith(object : DisposableSingleObserver<List<ConfigFile>>() {
                             override fun onError(e: Throwable) {
+                                checkSelectedLocationForChange()
                                 windscribeView.hideRecyclerViewProgressBar()
                                 windscribeView.setConfigLocListAdapter(null)
                                 logger.debug("Error getting config locations..")
@@ -374,9 +385,38 @@ class WindscribePresenterImpl @Inject constructor(
                                     )
                                 }
                                 windscribeView.hideRecyclerViewProgressBar()
+                                checkSelectedLocationForChange()
                             }
                         })
         )
+    }
+
+    private fun checkSelectedLocationForChange() {
+        interactor.getMainScope().launch {
+            val lastSelected = Util.getLastSelectedLocation(appContext)?.cityId ?: -1
+            val nextLocation = interactor.getLocationProvider().updateLocation()
+            if (lastSelected != nextLocation) {
+                if (interactor.getVpnConnectionStateManager().state.value.status != VPNState.Status.Disconnected) {
+                    interactor.getVPNController().disconnect()
+                }
+                interactor.getLocationProvider().setSelectedCity(nextLocation)
+                interactor.getCompositeDisposable().add(interactor.getCityAndRegionByID(nextLocation)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe { cityAndRegion, _ ->
+                            if (cityAndRegion != null) {
+                                val coordinatesArray = cityAndRegion.city.coordinates.split(",".toRegex()).toTypedArray()
+                                selectedLocation = LastSelectedLocation(
+                                        cityAndRegion.city.getId(),
+                                        cityAndRegion.city.nodeName, cityAndRegion.city.nickName,
+                                        cityAndRegion.region.countryCode,
+                                        coordinatesArray[0], coordinatesArray[1]
+                                )
+                                updateLocationUI(selectedLocation, true)
+                            }
+                        })
+            }
+        }
     }
 
     override suspend fun observeAllLocations() {
@@ -626,7 +666,11 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun onConfigFileClicked(configFile: ConfigFile) {
-        connectToConfiguredLocation(configFile.getPrimaryKey())
+        if(configFile.username.isEmpty() && WindUtilities.getConfigType(configFile.content) == WindUtilities.ConfigType.OpenVPN){
+            windscribeView.openProvideUsernameAndPasswordDialog(configFile)
+        }else{
+            connectToConfiguredLocation(configFile.getPrimaryKey())
+        }
     }
 
     override fun onConfigFileContentReceived(
@@ -721,6 +765,12 @@ class WindscribePresenterImpl @Inject constructor(
         val blurIp = !interactor.getAppPreferenceInterface().blurIp
         interactor.getAppPreferenceInterface().blurIp = blurIp
         windscribeView.setIpBlur(blurIp)
+    }
+
+    override fun toggleBlurNetworkName() {
+        val blurNetworkName = !interactor.getAppPreferenceInterface().blurNetworkName
+        interactor.getAppPreferenceInterface().blurNetworkName = blurNetworkName
+        windscribeView.setNetworkNameBlur(blurNetworkName)
     }
 
     override fun onLanguageChanged() {
@@ -2658,5 +2708,59 @@ class WindscribePresenterImpl @Inject constructor(
 
     override fun onDecoyTrafficBadgeClick() {
         windscribeView.openConnectionActivity()
+    }
+
+    override fun loadConfigFile(data: Intent) {
+        try {
+            val fileUri = data.data
+            val inputStream = appContext.contentResolver.openInputStream(fileUri!!)
+            inputStream?.use {
+                val documentFile = DocumentFile.fromSingleUri(appContext, fileUri)
+                val fileName = validatedConfigFileName(documentFile) ?: return
+                val content = CharStreams.toString(InputStreamReader(inputStream))
+                var username = ""
+                var password = ""
+                try {
+                    val configParser = OpenVPNConfigParser()
+                    username =
+                            configParser.getEmbeddedUsername(InputStreamReader(inputStream))
+                    password =
+                            configParser.getEmbeddedPassword(InputStreamReader(inputStream))
+                } catch (ignored: Exception) {
+                }
+                logger.info("Successfully read file.")
+                onConfigFileContentReceived(
+                        fileName,
+                        content,
+                        username,
+                        password
+                )
+            }
+
+        } catch (e: IOException) {
+            logger.info(e.toString())
+        }
+    }
+
+    private fun validatedConfigFileName(documentFile: DocumentFile?) : String? {
+        if (documentFile == null){
+            windscribeView.showToast("Choose a valid config file")
+            return null
+        }
+        if (documentFile.length() > 1024 * 5){
+            windscribeView.showToast("File is larger than 5KB")
+            return null
+        }
+        val fileName = documentFile.name
+        val existingFile = configAdapter?.configFiles?.firstOrNull { it.name == fileName }
+        if(existingFile !=null ){
+            windscribeView.showToast("A file with same name already exists")
+            return null
+        }
+        if (fileName != null && fileName.endsWith(".conf") or fileName.endsWith(".ovpn")) {
+            return fileName
+        }
+        windscribeView.showToast("Choose valid .ovpn or .conf file.")
+        return null
     }
 }

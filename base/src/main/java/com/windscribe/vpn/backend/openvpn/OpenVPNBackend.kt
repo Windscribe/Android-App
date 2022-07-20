@@ -112,6 +112,7 @@ class OpenVPNBackend(
                     updateState(VPNState(VPNState.Status.Disconnected, VPNState.Error.GenericError))
                 }
                 ConnectionStatus.LEVEL_AUTH_FAILED -> {
+                    serviceInteractor.preferenceHelper.isReconnecting = false
                     updateState(VPNState(VPNState.Status.Disconnected, VPNState.Error.AuthenticationError))
                 }
                 ConnectionStatus.LEVEL_WAITING_FOR_USER_INPUT -> {

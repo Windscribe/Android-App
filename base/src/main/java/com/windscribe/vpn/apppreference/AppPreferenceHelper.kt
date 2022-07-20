@@ -59,6 +59,11 @@ class AppPreferenceHelper(
         set(blurIp) {
             preference.put(PreferencesKeyConstants.BLUR_IP, blurIp)
         }
+    override var blurNetworkName: Boolean
+        get() = preference.getBoolean(PreferencesKeyConstants.BLUR_NETWORK_NAME, false)
+        set(blurNetworkName) {
+            preference.put(PreferencesKeyConstants.BLUR_NETWORK_NAME, blurNetworkName)
+        }
     override var connectedFlagPath: String?
         get() = preference.getString(PreferencesKeyConstants.CONNECTED_FLAG_PATH, null)
         set(path) {
