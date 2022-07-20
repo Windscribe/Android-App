@@ -17,7 +17,7 @@
     <string name="weak_password">Your Password must contain at least one uppercase and lowercase.</string>
     <string name="small_password">Your password must be at least 8 characters.</string>
     <string name="password_requirement">8 or more characters with at least one uppercase and lowercase</string>
-    <string name="failed_network_alert">Well we gave it our best shot, we just couldn’t connect you on this network for some reason.</string>
+    <string name="failed_network_alert">Well we gave it our best shot, we just couldn’t connect you on this network for some reason. Check your internet connection.</string>
     <string name="fa_required_error">2FA code is required</string>
     <string name="fa_invalid_error">Invalid 2FA code</string>
     <string name="login">Login</string>
@@ -402,31 +402,31 @@
     <string name="allow">Allow</string>
     <string name="block">Block</string>
     <string name="start_on_boot">Start on boot</string>
-    <string name="split_routing_content" translatable="false">Choose which apps to exclude or include from Windscribe when connected</string>
+    <string name="split_routing_content">Choose which apps to exclude or include from Windscribe when connected</string>
     <string name="show_system_apps">Show system apps</string>
 
     <!-- Login -->
-    <string name="login_label" translatable="false">If you already have an account</string>
-    <string name="ghost_account_sign_up" translatable="false">Sign Up or login to view your account details and safeguard your preferences</string>
-    <string name="ghost_account_claim" translatable="false">Claim your account to prevent loss of pro status</string>
-    <string name="claim_account" translatable="false">Claim Account</string>
-    <string name="reason_to_get_more_data" translatable="false">"Either sign up to increase it to 10GB/Month, or upgrade it and get rid of the limits completely. "</string>
-    <string name="sign_up_to_get_10" translatable="false">Sign up - 10GB/Month</string>
-    <string name="get_pro" translatable="false">Get Pro - Unlimited</string>
-    <string name="add_email_pro" translatable="false">Add Email</string>
-    <string name="text_two_fa" translatable="false">2FA require to proceed. Use an authentication app to generate the code.</string>
-    <string name="free_reason_to_add_email" translatable="false">Please add your email to get 10GB/month</string>
-    <string name="pro_reason_to_add_email" translatable="false">Please add your email to protect your account</string>
-    <string name="confirm_email_title" translatable="false">Confirm Email</string>
-    <string name="back_uppercase" translatable="false">Back</string>
-    <string name="Error" translatable="false">Error</string>
-    <string name="text_account_set_up" translatable="false">Sign Up</string>
-    <string name="xpress_login" translatable="false">Lazy Login</string>
-    <string name="web_login_description" translatable="false">Go to <b>https://windscribe.com/lazy</b> on any device and enter the code below.</string>
-    <string name="app_login_description" translatable="false">Using your Windscribe Android app on your phone or tablet, go to Preferences (Top left), under “Account” choose “Lazy Login” and enter the code below.</string>
-    <string name="or" translatable="false">OR</string>
-    <string name="generate_code" translatable="false">Generate Code</string>
-    <string name="manual_login" translatable="false">Manual Login</string>
+    <string name="login_label">If you already have an account</string>
+    <string name="ghost_account_sign_up">Sign Up or login to view your account details and safeguard your preferences</string>
+    <string name="ghost_account_claim">Claim your account to prevent loss of pro status</string>
+    <string name="claim_account">Claim Account</string>
+    <string name="reason_to_get_more_data">"Either sign up to increase it to 10GB/Month, or upgrade it and get rid of the limits completely. "</string>
+    <string name="sign_up_to_get_10">Sign up - 10GB/Month</string>
+    <string name="get_pro">Get Pro - Unlimited</string>
+    <string name="add_email_pro">Add Email</string>
+    <string name="text_two_fa">2FA require to proceed. Use an authentication app to generate the code.</string>
+    <string name="free_reason_to_add_email">Please add your email to get 10GB/month</string>
+    <string name="pro_reason_to_add_email">Please add your email to protect your account</string>
+    <string name="confirm_email_title">Confirm Email</string>
+    <string name="back_uppercase">Back</string>
+    <string name="Error">Error</string>
+    <string name="text_account_set_up">Sign Up</string>
+    <string name="xpress_login">Lazy Login</string>
+    <string name="web_login_description">Go to <b>https://windscribe.com/lazy</b> on any device and enter the code below.</string>
+    <string name="app_login_description">Using your Windscribe Android app on your phone or tablet, go to Preferences (Top left), under “Account” choose “Lazy Login” and enter the code below.</string>
+    <string name="or">OR</string>
+    <string name="generate_code">Generate Code</string>
+    <string name="manual_login">Manual Login</string>
     <string name="keep_your_secrets">Keep Your\nSecrets.</string>
     <string name="reset_password_description">Please visit windscribe.com to reset your password</string>
     <string name="support_url">windscribe.com/support</string>
@@ -440,11 +440,11 @@
     <string name="favourite">Favourite</string>
     <string name="windflix">Windflix</string>
     <string name="static_ip">Static IP</string>
-    <string name="disconnect_alert_no_network" translatable="false">Windscribe VPN tunnel is paused due to no network connectivity - please check your network settings</string>
-    <string name="node_under_construction_text" translatable="false">This Location is Under Maintenance. Try again later or go to our Status page for more info. https://windscribe.com/status</string>
-    <string name="load_loading" translatable="false">Loading</string>
-    <string name="load_nothing_found" translatable="false">Nothing to see here</string>
-    <string name="load_error" translatable="false">Error loading.</string>
+    <string name="disconnect_alert_no_network">Windscribe VPN tunnel is paused due to no network connectivity - please check your network settings</string>
+    <string name="node_under_construction_text">This Location is Under Maintenance. Try again later or go to our Status page for more info. https://windscribe.com/status</string>
+    <string name="load_loading">Loading</string>
+    <string name="load_nothing_found">Nothing to see here</string>
+    <string name="load_error">Error loading.</string>
     <string name="select_location">Please select a location first!</string>
 
     <!-- Actions -->

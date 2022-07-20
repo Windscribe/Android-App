@@ -13,6 +13,7 @@ import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.constants.NotificationConstants
 import com.wireguard.android.backend.GoBackend
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class WireGuardWrapperService : GoBackend.VpnService() {
@@ -62,5 +63,9 @@ class WireGuardWrapperService : GoBackend.VpnService() {
     fun close() {
         stopForeground(false)
         stopSelf()
+    }
+
+    override fun onRevoke() {
+        wireguardBackend.scope.launch { vpnController.disconnect() }
     }
 }
