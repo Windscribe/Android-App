@@ -72,7 +72,11 @@ class LocationRepository @Inject constructor(
     }
 
     suspend fun updateLocation():Int{
-        return update().await()
+        return try {
+            update().await()
+        }catch (e: WindScribeException){
+            -1
+        }
     }
 
     private val freeNode: Single<Int>

@@ -16,6 +16,9 @@ interface ApiService {
     @GET("/")
     fun connectivityTestAndIp(): Single<ResponseBody>
 
+    @GET("/checkip")
+    fun connectivityTestAndIpDirectIp(): Single<ResponseBody>
+
     @GET("/ApiAccessIps")
     fun getAccessIps(@QueryMap params: Map<String, String>?): Single<ResponseBody>
 
@@ -50,6 +53,14 @@ interface ApiService {
 
     @GET("/serverlist/mob-v2/{plan}/{loc_rev}")
     fun getServerList(
+            @Path("plan") billing_plan: String?,
+            @Path("loc_rev") locRev: String?,
+            @Query("alc") alcList: String?,
+            @Query("country_override") country_override: String?
+    ): Single<ResponseBody>
+
+    @GET("/assets/serverlist/mob-v2/{plan}/{loc_rev}")
+    fun getServerListDirectIp(
             @Path("plan") billing_plan: String?,
             @Path("loc_rev") locRev: String?,
             @Query("alc") alcList: String?,
