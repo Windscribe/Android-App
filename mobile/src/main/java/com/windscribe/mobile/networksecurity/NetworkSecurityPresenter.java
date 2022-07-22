@@ -18,7 +18,13 @@ public interface NetworkSecurityPresenter {
 
     void onNetworkSecuritySelected(NetworkInfo networkInfo);
 
+    void onCurrentNetworkClick();
+
     void setTheme(Context context);
 
     void setupNetworkListAdapter();
+
+    void init();
+
+    void onAutoSecureToggleClick();
 }

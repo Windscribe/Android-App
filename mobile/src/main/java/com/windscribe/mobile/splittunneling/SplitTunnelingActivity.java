@@ -29,12 +29,15 @@ import androidx.transition.AutoTransition;
 import com.windscribe.mobile.R;
 import com.windscribe.mobile.adapter.InstalledAppsAdapter;
 import com.windscribe.mobile.base.BaseActivity;
+import com.windscribe.mobile.custom_view.preferences.ExpandableToggleView;
+import com.windscribe.mobile.custom_view.preferences.SplitRoutingModeView;
 import com.windscribe.mobile.di.ActivityModule;
 import com.windscribe.mobile.di.DaggerActivityComponent;
 import com.windscribe.vpn.Windscribe;
 import com.windscribe.vpn.backend.utils.WindVpnController;
 import com.windscribe.vpn.commonutils.ThemeUtils;
 import com.windscribe.vpn.constants.AnimConstants;
+import com.windscribe.vpn.constants.FeatureExplainer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,12 +52,6 @@ import butterknife.OnClick;
 import butterknife.OnItemSelected;
 
 public class SplitTunnelingActivity extends BaseActivity implements SplitTunnelingView {
-
-    @BindView(R.id.tv_current_tunnel_mode)
-    TextView currentRoutingMode;
-
-    @BindView(R.id.img_tunnel_toggle_btn)
-    ImageView imgTunnelToggle;
 
     @BindView(R.id.nav_title)
     TextView mActivityTitle;
@@ -80,12 +77,9 @@ public class SplitTunnelingActivity extends BaseActivity implements SplitTunneli
 
     @BindView(R.id.searchView)
     SearchView searchView;
-
-    @BindView(R.id.spinner_tunnel_mode)
-    Spinner splitRoutingModeSpinner;
-
-    @BindView(R.id.tv_tunnel_mode_description)
-    TextView tunnelModeDescription;
+    
+    @BindView(R.id.cl_switch)
+    ExpandableToggleView modeToggleView;
 
     @Inject
     WindVpnController windVpnController;
@@ -115,6 +109,23 @@ public class SplitTunnelingActivity extends BaseActivity implements SplitTunneli
         });
         setUpCustomSearchBox();
         mActivityTitle.setText(getString(R.string.split_tunneling));
+        setupCustomLayoutDelegates();
+    }
+
+    private void setupCustomLayoutDelegates() {
+        modeToggleView.setDelegate(new ExpandableToggleView.Delegate() {
+            @Override
+            public void onToggleClick() {
+                mSplitPresenter.onToggleButtonClicked();
+            }
+
+            @Override
+            public void onExplainClick() {
+
+            }
+        });
+        SplitRoutingModeView splitRoutingModeView = (SplitRoutingModeView)modeToggleView.getChildView();
+        splitRoutingModeView.setDelegate(mode -> mSplitPresenter.onNewRoutingModeSelected(mode));
     }
 
     @Override
@@ -131,7 +142,6 @@ public class SplitTunnelingActivity extends BaseActivity implements SplitTunneli
     @Override
     public void hideTunnelSettingsLayout() {
         mSplitViewLog.info("Setting up layout for split tunnel settings on..");
-        mConstraintSetTunnel.setVisibility(R.id.cl_mode, ConstraintSet.GONE);
         mConstraintSetTunnel.setVisibility(R.id.cl_app_list, ConstraintSet.GONE);
         minimizeIcon.setVisibility(View.GONE);
         mConstraintSetTunnel.setVisibility(R.id.minimize_icon, ConstraintSet.GONE);
@@ -176,36 +186,20 @@ public class SplitTunnelingActivity extends BaseActivity implements SplitTunneli
         onBackPressed();
     }
 
+    @OnClick(R.id.learn_more)
+    public void onLearMoreClick(){
+        openURLInBrowser(FeatureExplainer.SPLIT_TUNNELING);
+    }
+
     @Override
     public void onBackPressed() {
         mSplitPresenter.onBackPressed();
         super.onBackPressed();
     }
 
-    @OnClick({R.id.tv_current_tunnel_mode, R.id.img_tunnel_drop_down_btn})
-    public void onCurrentTunnelModeClick() {
-        splitRoutingModeSpinner.performClick();
-    }
-
-    @OnItemSelected(R.id.spinner_tunnel_mode)
-    public void onNewRoutingModeSelected(View view, @SuppressWarnings("unused") int position) {
-        if (view != null) {
-            ((TextView) view.findViewById(R.id.tv_drop_down)).setText("");
-        }
-        if (mSplitPresenter != null) {
-            mSplitPresenter.onNewRoutingModeSelected(splitRoutingModeSpinner.getSelectedItem().toString());
-        }
-    }
-
     @Override
     public boolean onSearchRequested() {
         return false;
-    }
-
-    @OnClick(R.id.img_tunnel_toggle_btn)
-    public void onToggleButtonClick() {
-        mSplitViewLog.info("User clicked on split tunnel toggle button...");
-        mSplitPresenter.onToggleButtonClicked();
     }
 
     @Override
@@ -223,23 +217,18 @@ public class SplitTunnelingActivity extends BaseActivity implements SplitTunneli
 
     @Override
     public void setSplitModeTextView(String mode, int textDescription) {
-        currentRoutingMode.setText(mode);
-        tunnelModeDescription.setText(getString(textDescription));
+        modeToggleView.setDescription(textDescription);
     }
 
     @Override
     public void setSplitRoutingModeAdapter(String[] modes, String savedMode) {
-        ArrayAdapter<String> routeModeAdapter = new ArrayAdapter<>(this, R.layout.drop_down_layout, R.id.tv_drop_down,
-                modes);
-        splitRoutingModeSpinner.setAdapter(routeModeAdapter);
-        splitRoutingModeSpinner.setSelected(false);
-        splitRoutingModeSpinner.setSelection(routeModeAdapter.getPosition(savedMode));
-        currentRoutingMode.setText(savedMode);
+        SplitRoutingModeView splitRoutingModeView = (SplitRoutingModeView)modeToggleView.getChildView();
+        splitRoutingModeView.setAdapter(savedMode, modes);
     }
 
     @Override
     public void setupToggleImage(Integer resourceId) {
-        imgTunnelToggle.setImageResource(resourceId);
+       modeToggleView.setToggleImage(resourceId);
     }
 
     @Override
@@ -258,7 +247,6 @@ public class SplitTunnelingActivity extends BaseActivity implements SplitTunneli
     @Override
     public void showTunnelSettingsLayout() {
         mSplitViewLog.info("Setting up layout for split tunnel settings on..");
-        mConstraintSetTunnel.setVisibility(R.id.cl_mode, ConstraintSet.VISIBLE);
         mConstraintSetTunnel.setVisibility(R.id.cl_app_list, ConstraintSet.VISIBLE);
 
         //Start transition
@@ -308,16 +296,16 @@ public class SplitTunnelingActivity extends BaseActivity implements SplitTunneli
     private void minimizeTopView(boolean minimize) {
         mSplitViewLog.info("Setting up layout to max.." + minimize);
         if (minimize) {
-            mConstraintSetTunnel.setVisibility(R.id.cl_mode, ConstraintSet.GONE);
+            mConstraintSetTunnel.setMargin(R.id.cl_app_list, ConstraintSet.TOP, (int) getResources().getDimension(R.dimen.reg_16dp));
             mConstraintSetTunnel.setVisibility(R.id.cl_top_bar, ConstraintSet.GONE);
             mConstraintSetTunnel.setVisibility(R.id.cl_switch, ConstraintSet.GONE);
             mConstraintSetTunnel.setVisibility(R.id.cl_app_list, ConstraintSet.VISIBLE);
         } else {
+            mConstraintSetTunnel.setMargin(R.id.cl_app_list, ConstraintSet.TOP, 0);
             mConstraintSetTunnel.setVisibility(R.id.minimize_icon, ConstraintSet.GONE);
             mConstraintSetTunnel.setVisibility(R.id.cl_top_bar, ConstraintSet.VISIBLE);
             mConstraintSetTunnel.setVisibility(R.id.cl_switch, ConstraintSet.VISIBLE);
             mConstraintSetTunnel.setVisibility(R.id.cl_app_list, ConstraintSet.VISIBLE);
-            mConstraintSetTunnel.setVisibility(R.id.cl_mode, ConstraintSet.VISIBLE);
 
         }
         //Start transition
@@ -383,8 +371,8 @@ public class SplitTunnelingActivity extends BaseActivity implements SplitTunneli
 
         // Search text
         TextView searchText = searchView.findViewById(androidx.appcompat.R.id.search_src_text);
-        searchText.setTextColor(ThemeUtils.getColor(this, R.attr.searchTextColor, R.color.colorWhite));
-        searchText.setHintTextColor(ThemeUtils.getColor(this, R.attr.searchTextColor, R.color.colorWhite));
+        searchText.setTextColor(ThemeUtils.getColor(this, R.attr.wdSecondaryColor, R.color.colorWhite));
+        searchText.setHintTextColor(ThemeUtils.getColor(this, R.attr.wdSecondaryColor, R.color.colorWhite));
         searchText.setTextSize(Dimension.SP, 12);
         Typeface typeface = ResourcesCompat.getFont(this, R.font.ibm_plex_sans_bold);
         searchText.setTypeface(typeface);

@@ -104,7 +104,7 @@
     <string name="lan_by_pass">Allow LAN traffic</string>
     <string name="gps_spoofing">GPS Spoofing</string>
     <string name="natKeepAlive">IKE keepalive</string>
-    <string name="keep_alive">keep alive</string>
+    <string name="keep_alive">Keep Alive</string>
     <string name="auto_detecting">Auto detecting …</string>
     <string name="decoy_traffic">Decoy Traffic</string>
     <string name="decoy_traffic_mode">Decoy Traffic Mode</string>
@@ -251,7 +251,7 @@
     <string name="show_timer_in_notifications">Notification Stats</string>
     <string name="haptic_setting_label">Haptic Feedback</string>
     <string name="version">Version</string>
-    <string name="show_location_health">Show Location Load</string>
+    <string name="show_location_health">Location Load</string>
 
 
     <!-- Split tunneling -->
@@ -461,4 +461,28 @@
     <string name="ad_malware_blocker">Best malware and ad-blocker you will ever use. Seriously.</string>
     <string name="exclusive">Exclusive</string>
     <string name="inclusive">Inclusive</string>
+    <string name="explain_me" translatable="false">Explain me!</string>
+    
+    <string name="network_options_description">Windscribe will auto-disconnect when you join an unsecured wifi network.</string>
+    <string name="auto_secure_new_networks">Auto-Secure new networks</string>
+    <string name="auto_secure_new_networks_description">Connect automatically on new Wi-Fi networks</string>
+    <string name="auto_secure_description_secondary">Connect automatically on this Wi-Fi network to
+last chosen location.</string>
+    <string name="preferred_protocol_description_secondary">Choose the best protocol for this network. This overrides all global connection settings.</string>
+    <!-- General-->
+    <string name="location_order_description">Arrange the location list in ascending order of the alphabet, geography, or latency.</string>
+    <string name="latency_display_description">Display latency as signal strength bars or in milliseconds.</string>
+    <string name="language_description">Localize Windscribe to supported languages.</string>
+    <string name="app_background_description">Customize the in-app connection screen.</string>
+    <string name="notification_stats_description">Show traffic stats in the notification.</string>
+    <string name="location_load_description">Display the location load as a bar. The shorter the bar, the lesser the load on the location (with respect to the location\'s total capacity).</string>
+    <string name="haptic_feedback_description">Physical responses(Vibration) to user actions</string>
+    <!-- Connection-->
+    <string name="connection_mode_description">Choose whether to let Windscribe automatically pick a protocol / port combination most optimal for your setup, or to manually do it yourself.</string>
+    <string name="packet_size_description">Choose whether to let Windscribe decide the MTU for your connection, or to manually override.</string>
+    <string name="allow_lan_description">Choose whether to allow access to resources on the same network (like file servers, printers, media boxes, etc.) while connected to Windscribe.</string>
+    <string name="keep_alive_description">Sends NAT keepalive packets regularly to its peer to keep the NAT session alive, so that the peer can access the device(IKEv2 Only)</string>
+    <string name="appearance_description">Light or Dark. Choose a side, and choose wisely.</string>-->
+    <string name="auto_connect_on_boot_description">Automatically connect to the last connected location the device starts.</string>
+    <string name="gps_spoofing_description">Spoof your device\'s GPS coordinates.</string>
 </resources>

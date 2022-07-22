@@ -81,8 +81,11 @@ public class GeneralSettingsPresenterImpl implements GeneralSettingsPresenter {
     }
 
     @Override
-    public void onCustomFlagToggleButtonClicked() {
-        setAppBackground(!mGeneralSettingsInteractor.getAppPreferenceInterface().isCustomBackground());
+    public void onCustomFlagToggleButtonClicked(String value) {
+        boolean newValue = value.equals("Custom");
+        if(newValue != mGeneralSettingsInteractor.getAppPreferenceInterface().isCustomBackground()){
+            setAppBackground(newValue);
+        }
     }
 
     @Override
@@ -162,7 +165,7 @@ public class GeneralSettingsPresenterImpl implements GeneralSettingsPresenter {
             mPresenterLog.info("Saving selected latency type");
             mGeneralSettingsInteractor.getAppPreferenceInterface().setLatencyType(latencyType);
             mGeneralSettingsView.setLatencyType(latencyType);
-            updateList();
+            updateServerList();
         }
     }
 
@@ -187,7 +190,7 @@ public class GeneralSettingsPresenterImpl implements GeneralSettingsPresenter {
         } else {
             mGeneralSettingsInteractor.saveSelection(selection);
             mGeneralSettingsView.setSelectionTextView(selection);
-            updateList();
+            updateServerList();
         }
     }
 
@@ -292,12 +295,10 @@ public class GeneralSettingsPresenterImpl implements GeneralSettingsPresenter {
     private void setAppBackground(boolean custom) {
         if (custom) {
             mGeneralSettingsInteractor.getAppPreferenceInterface().setCustomBackground(true);
-            mGeneralSettingsView.setupCustomFlagToggleImage(R.drawable.ic_toggle_button_on);
-            mGeneralSettingsView.setupAppBackgroundLayoutExpanded();
+            mGeneralSettingsView.setupCustomFlagAdapter("Custom", new String[]{"Flags", "Custom"});
         } else {
             mGeneralSettingsInteractor.getAppPreferenceInterface().setCustomBackground(false);
-            mGeneralSettingsView.setupCustomFlagToggleImage(R.drawable.ic_toggle_button_off);
-            mGeneralSettingsView.setupAppBackgroundLayoutCollapsed();
+            mGeneralSettingsView.setupCustomFlagAdapter("Flags", new String[]{"Flags", "Custom"});
         }
         String disconnectedFlagPath = mGeneralSettingsInteractor.getAppPreferenceInterface()
                 .getDisConnectedFlagPath();
@@ -308,7 +309,7 @@ public class GeneralSettingsPresenterImpl implements GeneralSettingsPresenter {
                 .setConnectedFlagPath(connectedFlagPath != null ? Uri.parse(connectedFlagPath).getPath() : "");
     }
 
-    private void updateList() {
+    private void updateServerList() {
         mGeneralSettingsInteractor.getServerListUpdater().load();
         mGeneralSettingsInteractor.getStaticListUpdater().load();
     }

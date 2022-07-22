@@ -90,10 +90,8 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
 
         if (mConnSettingsInteractor.getAppPreferenceInterface().isDecoyTrafficOn()) {
             mConnSettingsView.setDecoyTrafficToggle(R.drawable.ic_toggle_button_on);
-            mConnSettingsView.setDecoyTrafficContainerVisibility(true);
         } else {
             mConnSettingsView.setDecoyTrafficToggle(R.drawable.ic_toggle_button_off);
-            mConnSettingsView.setDecoyTrafficContainerVisibility(false);
         }
         setDecoyTrafficParameters();
     }
@@ -116,7 +114,6 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
         setUpAutoModePorts();
         setupPacketSizeMode();
         setUpKeepAlive();
-
     }
 
     @Override
@@ -154,7 +151,6 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
     public void onDecoyTrafficClick() {
         if (mConnSettingsInteractor.getAppPreferenceInterface().isDecoyTrafficOn()) {
             mConnSettingsView.setDecoyTrafficToggle(R.drawable.ic_toggle_button_off);
-            mConnSettingsView.setDecoyTrafficContainerVisibility(false);
             mConnSettingsInteractor.getAppPreferenceInterface().setDecoyTrafficOn(false);
             mConnSettingsInteractor.getAppPreferenceInterface().setPacketSize(1500);
             mPresenterLog.info("Setting decoy traffic to false");
@@ -167,7 +163,6 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
     @Override
     public void turnOnDecoyTraffic() {
         mConnSettingsView.setDecoyTrafficToggle(R.drawable.ic_toggle_button_on);
-        mConnSettingsView.setDecoyTrafficContainerVisibility(true);
         mConnSettingsInteractor.getAppPreferenceInterface().setDecoyTrafficOn(true);
         mPresenterLog.info("Setting decoy traffic to true");
         if(mConnSettingsInteractor.getVpnConnectionStateManager().isVPNConnected()){
@@ -186,7 +181,6 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
     @Override
     public void onFakeTrafficVolumeSelected(String label) {
         mConnSettingsInteractor.getAppPreferenceInterface().setFakeTrafficVolume(FakeTrafficVolume.valueOf(label));
-        mConnSettingsView.setTrafficLowerLimit(label);
         resetPotentialTrafficInfo();
     }
 
@@ -196,10 +190,6 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
         if (!CONNECTION_MODE_AUTO.equals(mConnSettingsInteractor.getSavedConnectionMode())) {
             mConnSettingsInteractor.saveConnectionMode(PreferencesKeyConstants.CONNECTION_MODE_AUTO);
             mConnSettingsInteractor.getAppPreferenceInterface().setChosenProtocol(null);
-            mConnSettingsView
-                    .setupLayoutForAutoMode(mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabLabelColor),
-                            mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabNotSelectedColor));
-
             setUpAutoModePorts();
             mConnSettingsInteractor.getProtocolManager().loadProtocolConfigs();
         }
@@ -210,9 +200,7 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
         //Save connection mode to preference only if a different connection mode is selected
         if (!CONNECTION_MODE_MANUAL.equals(mConnSettingsInteractor.getSavedConnectionMode())) {
             mConnSettingsInteractor.saveConnectionMode(PreferencesKeyConstants.CONNECTION_MODE_MANUAL);
-            mConnSettingsView
-                    .setupLayoutForManualMode(mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabLabelColor),
-                            mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabNotSelectedColor));
+            mConnSettingsView.setKeepAliveContainerVisibility(mConnSettingsInteractor.getAppPreferenceInterface().getSavedProtocol().equals(PROTO_IKev2));
         }
     }
 
@@ -236,9 +224,7 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
         boolean keepAliveSizeModeAuto = mConnSettingsInteractor.getAppPreferenceInterface().isKeepAliveModeAuto();
         if (!keepAliveSizeModeAuto) {
             mConnSettingsInteractor.getAppPreferenceInterface().setKeepAliveModeAuto(true);
-            mConnSettingsView.setupLayoutForKeepAliveModeAuto(
-                    mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabLabelColor),
-                    mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabNotSelectedColor));
+            mConnSettingsView.setKeepAliveModeAdapter("Auto", new String[]{"Auto", "Manual"});
         }
     }
 
@@ -248,9 +234,7 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
         if (keepAliveSizeModeAuto) {
             setKeepAlive(mConnSettingsInteractor.getAppPreferenceInterface().getKeepAlive());
             mConnSettingsInteractor.getAppPreferenceInterface().setKeepAliveModeAuto(false);
-            mConnSettingsView.setupLayoutForKeepAliveModeManual(
-                    mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabLabelColor),
-                    mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabNotSelectedColor));
+            mConnSettingsView.setKeepAliveModeAdapter("Manual", new String[]{"Auto", "Manual"});
         }
     }
 
@@ -265,9 +249,6 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
         boolean packetSizeModeAuto = mConnSettingsInteractor.getAppPreferenceInterface().isPackageSizeModeAuto();
         if (!packetSizeModeAuto) {
             mConnSettingsInteractor.getAppPreferenceInterface().setPacketSizeModeToAuto(true);
-            mConnSettingsView.setupLayoutForPackageSizeModeAuto(
-                    mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabLabelColor),
-                    mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabNotSelectedColor));
         }
     }
 
@@ -276,9 +257,6 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
         boolean packetSizeModeAuto = mConnSettingsInteractor.getAppPreferenceInterface().isPackageSizeModeAuto();
         if (packetSizeModeAuto) {
             mConnSettingsInteractor.getAppPreferenceInterface().setPacketSizeModeToAuto(false);
-            mConnSettingsView.setupLayoutForPackageSizeModeManual(
-                    mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabLabelColor),
-                    mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabNotSelectedColor));
         }
     }
 
@@ -347,7 +325,6 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
             } else {
                 mPresenterLog.info("Saving selected protocol...");
                 mConnSettingsInteractor.saveProtocol(protocol);
-                mConnSettingsView.setProtocolTextView(heading);
                 setPortMapAdapter(heading);
                 mConnSettingsInteractor.getProtocolManager().loadProtocolConfigs();
             }
@@ -362,21 +339,16 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
 
     @Override
     public void saveKeepAlive(String keepAlive) {
-        if (mConnSettingsView != null) {
-            mConnSettingsInteractor.getAppPreferenceInterface().setKeepAlive(keepAlive);
-        }
+        mConnSettingsInteractor.getAppPreferenceInterface().setKeepAlive(keepAlive);
     }
 
     @Override
     public void setKeepAlive(String keepAlive) {
-        if (mConnSettingsView != null) {
-            mConnSettingsView.setKeepAlive(keepAlive);
-            mConnSettingsInteractor.getAppPreferenceInterface().setKeepAlive(keepAlive);
-        }
+        mConnSettingsInteractor.getAppPreferenceInterface().setKeepAlive(keepAlive);
     }
 
     @Override
-    public void setPacketSizeManual(String size) {
+    public void setPacketSize(String size) {
         mConnSettingsInteractor.getAppPreferenceInterface().setPacketSize(Integer.parseInt(size));
     }
 
@@ -395,39 +367,36 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
         mPresenterLog.debug("Setting auto mode ports.");
         mConnSettingsInteractor.loadPortMap(portMapResponse -> {
             for (PortMapResponse.PortMap portMap : portMapResponse.getPortmap()) {
-                if (portMap.getProtocol().equals(PROTO_IKev2) && mConnSettingsInteractor.getIKev2Port() == null) {
-                    mConnSettingsInteractor.getAppPreferenceInterface().saveIKEv2Port(portMap.getPorts().get(0));
+                if (portMap.getProtocol().equals(PROTO_IKev2)) {
+                    mConnSettingsInteractor.getIKev2Port();
                 }
-                if (portMap.getProtocol().equals(PROTO_UDP) && mConnSettingsInteractor.getSavedUDPPort() == null) {
-                    mConnSettingsInteractor.saveUDPPort(portMap.getPorts().get(0));
+                if (portMap.getProtocol().equals(PROTO_UDP)) {
+                    mConnSettingsInteractor.getSavedUDPPort();
                 }
-                if (portMap.getProtocol().equals(PROTO_TCP) && mConnSettingsInteractor.getSavedTCPPort() == null) {
-                    mConnSettingsInteractor.saveTCPPort(portMap.getPorts().get(0));
+                if (portMap.getProtocol().equals(PROTO_TCP)) {
+                    mConnSettingsInteractor.getSavedTCPPort();
                 }
-                if (portMap.getProtocol().equals(PROTO_STEALTH)
-                        && mConnSettingsInteractor.getSavedSTEALTHPort() == null) {
-                    mConnSettingsInteractor.saveSTEALTHPort(portMap.getPorts().get(0));
+                if (portMap.getProtocol().equals(PROTO_STEALTH)) {
+                    mConnSettingsInteractor.getSavedSTEALTHPort();
                 }
-                if (portMap.getProtocol().equals(PROTO_WIRE_GUARD)
-                        && mConnSettingsInteractor.getWireGuardPort() == null) {
-                    mConnSettingsInteractor.getAppPreferenceInterface().saveWireGuardPort(portMap.getPorts().get(0));
+                if (portMap.getProtocol().equals(PROTO_WIRE_GUARD)) {
+                    mConnSettingsInteractor.getWireGuardPort();
                 }
             }
             String savedProtocol = mConnSettingsInteractor.getSavedProtocol();
             String savedConnectionMode = mConnSettingsInteractor.getSavedConnectionMode();
-            boolean isAutoKeepAlive = mConnSettingsInteractor.getAppPreferenceInterface().isKeepAliveModeAuto();
             mConnSettingsView.setKeepAliveContainerVisibility(
-                    savedProtocol.equals(PROTO_IKev2) && savedConnectionMode.equals(CONNECTION_MODE_MANUAL),
-                    isAutoKeepAlive);
+                    savedProtocol.equals(PROTO_IKev2) && savedConnectionMode.equals(CONNECTION_MODE_MANUAL));
+            setUpKeepAlive();
         });
     }
 
     public void setUpKeepAlive() {
         boolean isKeepAliveModeAuto = mConnSettingsInteractor.getAppPreferenceInterface().isKeepAliveModeAuto();
         if (isKeepAliveModeAuto) {
-            mConnSettingsView.setupLayoutForKeepAliveModeAuto(
-                    mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabLabelColor),
-                    mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabNotSelectedColor));
+            mConnSettingsView.setKeepAliveModeAdapter("Auto", new String[]{"Auto", "Manual"});
+        }else{
+            mConnSettingsView.setKeepAliveModeAdapter("Manual", new String[]{"Auto", "Manual"});
         }
         String keepAliveTime = mConnSettingsInteractor.getAppPreferenceInterface().getKeepAlive();
         mConnSettingsView.setKeepAlive(keepAliveTime);
@@ -437,28 +406,17 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
     public void setupLayoutBasedOnConnectionMode() {
         setGpsSpoofingMenu();
         String savedConnectionMode = mConnSettingsInteractor.getSavedConnectionMode();
-        if (PreferencesKeyConstants.CONNECTION_MODE_AUTO
-                .equals(savedConnectionMode)) {
-            mPresenterLog.info("Saved connection mode is " + savedConnectionMode);
-            mConnSettingsView
-                    .setupLayoutForAutoMode(mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabLabelColor),
-                            mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabNotSelectedColor));
-        } else {
-            mPresenterLog
-                    .info("Saved connection mode is " + savedConnectionMode + ". No need to change layout settings." +
-                            " Continue with manual mode as default");
-
-            setProtocolAdapter();
-        }
+        mConnSettingsView.setupConnectionModeAdapter(savedConnectionMode,new String[]{"Auto","Manual"});
+        setProtocolAdapter();
     }
 
 
     public void setupPacketSizeMode() {
         boolean packetSizeModeAuto = mConnSettingsInteractor.getAppPreferenceInterface().isPackageSizeModeAuto();
         if (packetSizeModeAuto) {
-            mConnSettingsView.setupLayoutForPackageSizeModeAuto(
-                    mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabLabelColor),
-                    mConnSettingsInteractor.getThemeColor(R.attr.menuItemTabNotSelectedColor));
+            mConnSettingsView.setupPacketSizeModeAdapter("Auto", new String[]{"Auto", "Manual"});
+        }else{
+            mConnSettingsView.setupPacketSizeModeAdapter("Manual", new String[]{"Auto", "Manual"});
         }
         int packetSize = mConnSettingsInteractor.getAppPreferenceInterface().getPacketSize();
         mConnSettingsView.setPacketSize(String.valueOf(packetSize));
@@ -660,10 +618,8 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
             }
             String savedProtocol = mConnSettingsInteractor.getSavedProtocol();
             String savedConnectionMode = mConnSettingsInteractor.getSavedConnectionMode();
-            boolean isKeepAliveAuto = mConnSettingsInteractor.getAppPreferenceInterface().isKeepAliveModeAuto();
             mConnSettingsView.setKeepAliveContainerVisibility(
-                    savedProtocol.equals(PROTO_IKev2) && savedConnectionMode.equals(CONNECTION_MODE_MANUAL),
-                    isKeepAliveAuto);
+                    savedProtocol.equals(PROTO_IKev2) && savedConnectionMode.equals(CONNECTION_MODE_MANUAL));
         });
     }
 

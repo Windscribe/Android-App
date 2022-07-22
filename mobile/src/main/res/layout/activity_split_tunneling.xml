@@ -14,7 +14,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/margin_16"
-        android:layout_marginStart="@dimen/margin_16"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -25,113 +24,48 @@
             style="@style/MenuActionDescription"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/reg_48dp"
-            android:layout_marginLeft="@dimen/reg_48dp"
-            android:layout_marginRight="@dimen/reg_48dp"
-            android:layout_marginStart="@dimen/reg_48dp"
             android:layout_marginTop="@dimen/margin_16"
+            android:layout_marginStart="@dimen/reg_16dp"
             android:fontFamily="@font/ibm_font_family"
             android:gravity="center_vertical|left"
             android:includeFontPadding="false"
             android:text="@string/split_tunneling_feature"
             android:textAlignment="viewStart"
             android:textSize="12sp"
+            android:background="@drawable/preference_rounded_stroke_background"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/nav_bar" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_switch"
-        style="@style/MenuItemContainer"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cl_top_bar">
-
-        <TextView
-            android:id="@+id/tv_split_tunneling_label"
-            style="@style/MenuItemLabelTwo"
-            android:text="@string/split_tunneling"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/nav_bar"
+            android:id="@+id/page_description"
+            />
 
         <ImageView
-            android:id="@+id/img_tunnel_toggle_btn"
-            style="@style/MenuToggle"
-            android:contentDescription="@string/image_description"
-            app:layout_constraintBottom_toBottomOf="@id/tv_split_tunneling_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/ExplainIcon"
+            android:id="@+id/learn_more"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tv_split_tunneling_label" />
+            app:layout_constraintTop_toTopOf="@id/page_description"
+            app:layout_constraintBottom_toBottomOf="@id/page_description"
+            />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_mode"
+    <com.windscribe.mobile.custom_view.preferences.ExpandableToggleView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/margin_16"
-        android:layout_marginStart="@dimen/margin_16"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cl_switch">
-
-        <TextView
-            style="@style/MenuItemLabelTwo"
-            android:text="@string/mode"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/img_tunnel_drop_down_btn"
-            style="@style/MenuDropDownIcon"
-            android:layout_marginEnd="0dp"
-            android:contentDescription="@string/image_description"
-            app:layout_constraintBottom_toBottomOf="@+id/tv_current_tunnel_mode"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/tv_current_tunnel_mode" />
-
-        <TextView
-            android:id="@+id/tv_current_tunnel_mode"
-            style="@style/MenuItemLabelThree"
-            android:text="@string/exclusive"
-            app:layout_constraintEnd_toStartOf="@id/img_tunnel_drop_down_btn"
-            app:layout_constraintRight_toLeftOf="@id/img_tunnel_drop_down_btn"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <Spinner
-            android:id="@+id/spinner_tunnel_mode"
-            style="@style/MenuSpinner"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-
-        <TextView
-            android:id="@+id/tv_tunnel_mode_description"
-            style="@style/MenuActionDescription"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/reg_48dp"
-            android:layout_marginLeft="@dimen/reg_48dp"
-            android:layout_marginRight="@dimen/reg_48dp"
-            android:layout_marginStart="@dimen/reg_48dp"
-
-            android:layout_marginTop="16dp"
-            android:fontFamily="@font/ibm_font_family"
-
-            android:gravity="center_vertical|left"
-            android:includeFontPadding="false"
-            android:text="@string/feature_tunnel_mode_exclusive"
-            android:textAlignment="viewStart"
-            android:textSize="12sp"
-            android:textStyle="normal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/spinner_tunnel_mode" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_top_bar"
+        android:id="@+id/cl_switch"
+        app:ExpandableToggleShowRightIcon="false"
+        app:ExpandableToggleViewDescription="@string/feature_tunnel_mode_exclusive"
+        app:ExpandableToggleViewLeftIcon="@drawable/ic_split_routing"
+        app:ExpandableToggleViewChildType="SplitTunnelMode"
+        android:layout_marginTop="@dimen/margin_16"
+        app:ExpandableToggleViewTitle="@string/split_tunneling"
+        app:ExpandableToggleHideExplainViewOnCollapse="true"
+        />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_app_list"
@@ -143,8 +77,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cl_mode"
-
+        app:layout_constraintTop_toBottomOf="@id/cl_switch"
         >
 
 
@@ -161,34 +94,43 @@
             android:letterSpacing="0.2"
             android:text="@string/apps"
             android:textAlignment="viewStart"
-            android:textColor="@color/colorWhite40"
+            android:textColor="?attr/wdSecondaryColor"
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_apps_label"
+            app:layout_constraintBottom_toBottomOf="@id/recycler_view_app_list"
+            android:background="@drawable/preferences_rounded_corner_background"
+            android:layout_marginTop="@dimen/reg_16dp"
+            />
         <androidx.appcompat.widget.SearchView
             android:id="@+id/searchView"
             android:layout_width="0dp"
             android:layout_height="32dp"
-            android:layout_marginEnd="@dimen/reg_16dp"
-            android:layout_marginStart="@dimen/reg_8dp"
-            android:layout_marginTop="@dimen/reg_16dp"
-            android:background="@drawable/search_bar_background"
+            android:layout_marginTop="@dimen/reg_28dp"
+            app:submitBackground="@android:color/transparent"
+            app:queryBackground="@android:color/transparent"
             android:visibility="invisible"
             app:closeIcon="@drawable/ic_clear_icon"
             app:layout_constraintEnd_toStartOf="@id/minimize_icon"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_apps_label"
-            app:searchIcon="@drawable/ic_search_icon" />
+            app:searchIcon="@drawable/ic_search_icon"
+            />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/minimize_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/reg_8dp"
+            android:layout_marginEnd="@dimen/reg_16dp"
             android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="@id/searchView"
             app:layout_constraintEnd_toEndOf="parent"
@@ -201,9 +143,9 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginBottom="@dimen/reg_16dp"
-            android:layout_marginTop="@dimen/reg_16dp"
             android:orientation="vertical"
             android:paddingBottom="@dimen/reg_16dp"
+            android:layout_marginTop="@dimen/margin_8"
             android:scrollbars="none"
             android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
