@@ -34,6 +34,7 @@
         app:ToggleTitle="@string/auto_secure_new_networks"
         app:ToggleLeftIcon="@drawable/ic_auto_secure_icon"
         android:layout_marginTop="@dimen/margin_16"
+        android:visibility="gone"
         app:ToggleShowRightIcon="false"
         app:ToggleDescription="@string/auto_secure_new_networks_description"
         />
