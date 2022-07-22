@@ -2,343 +2,163 @@
   ~ Copyright (c) 2021 Windscribe Limited.
   -->
 
-<ScrollView android:layout_width="match_parent"
-    android:layout_height="match_parent"
+<androidx.constraintlayout.widget.ConstraintLayout
     style="@style/MatchMatchContainer"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_settings_general"
-        style="@style/MatchMatchContainer">
-
         <include layout="@layout/nav_bar" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/cl_selection_settings"
-            style="@style/MenuItemContainer"
-            android:layout_marginTop="@dimen/margin_16"
-            app:layout_constraintEnd_toEndOf="parent"
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/nav_bar">
-
-            <TextView
-                android:id="@+id/tv_selection_label"
-                style="@style/MenuItemLabelTwo"
-                android:text="@string/sort_by"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageView
-                android:id="@+id/img_selection_drop_down_btn"
-                style="@style/MenuDropDownIcon"
-                android:importantForAccessibility="no"
-                app:layout_constraintBottom_toBottomOf="@id/tv_selection_label"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/tv_selection_label" />
-
-            <TextView
-                android:id="@+id/tv_current_selection"
-                style="@style/MenuItemLabelThree"
-                android:importantForAccessibility="no"
-                app:layout_constraintEnd_toStartOf="@id/img_selection_drop_down_btn"
-                app:layout_constraintRight_toLeftOf="@id/img_selection_drop_down_btn"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <Spinner
-                android:id="@+id/spinner_selection"
-                style="@style/MenuSpinner"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <ImageView
-            android:id="@+id/img_list_selection_divider"
-            style="@style/PreferenceDivider"
-            android:importantForAccessibility="no"
+            app:layout_constraintTop_toBottomOf="@id/nav_bar"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_selection_settings" />
+            >
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+                <com.windscribe.mobile.custom_view.preferences.DropDownView
+                    android:id="@+id/cl_selection_settings"
+                    android:layout_marginTop="@dimen/reg_24dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    app:DropDownTitle="@string/sort_by"
+                    app:DropDownDescription="@string/location_order_description"
+                    app:DropDownLeftIcon="@drawable/ic_sort_location"
+                    app:DropDownShowRightIcon="false"
+                    />
 
-        <!--LATENCY-->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/cl_latency_settings"
-            style="@style/MenuItemContainer"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/img_list_selection_divider">
+                <com.windscribe.mobile.custom_view.preferences.DropDownView
+                    android:id="@+id/cl_latency_settings"
+                    android:layout_marginTop="@dimen/margin_16"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/cl_selection_settings"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    app:DropDownTitle="@string/display_latency"
+                    app:DropDownLeftIcon="@drawable/ic_latency_display"
+                    app:DropDownDescription="@string/latency_display_description"
+                    app:DropDownShowRightIcon="false"
+                    />
 
-            <TextView
-                android:id="@+id/tv_latency_label"
-                style="@style/MenuItemLabelTwo"
-                android:text="@string/display_latency"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                <com.windscribe.mobile.custom_view.preferences.DropDownView
+                    android:id="@+id/cl_language_settings"
+                    android:layout_marginTop="@dimen/margin_16"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/cl_latency_settings"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    app:DropDownTitle="@string/preferred_language"
+                    app:DropDownDescription="@string/language_description"
+                    app:DropDownLeftIcon="@drawable/ic_language"
+                    app:DropDownShowRightIcon="false"
+                    />
 
+                <com.windscribe.mobile.custom_view.preferences.DropDownView
+                    android:id="@+id/cl_theme_settings"
+                    android:layout_marginTop="@dimen/margin_16"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/cl_language_settings"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    app:DropDownTitle="@string/theme"
+                    app:DropDownDescription="@string/appearance_description"
+                    app:DropDownLeftIcon="@drawable/ic_appearance"
+                    app:DropDownShowRightIcon="false"
+                    />
 
-            <ImageView
-                android:id="@+id/img_latency_drop_down_btn"
-                style="@style/MenuDropDownIcon"
-                android:importantForAccessibility="no"
-                app:layout_constraintBottom_toBottomOf="@id/tv_latency_label"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/tv_latency_label" />
+                <com.windscribe.mobile.custom_view.preferences.AppBackgroundView
+                    android:id="@+id/cl_app_background_settings"
+                    android:layout_marginTop="@dimen/margin_16"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/cl_theme_settings"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    />
 
-            <TextView
-                android:id="@+id/tv_current_latency"
-                style="@style/MenuItemLabelThree"
-                android:text="@string/bars"
-                app:layout_constraintEnd_toStartOf="@id/img_latency_drop_down_btn"
-                app:layout_constraintRight_toLeftOf="@id/img_latency_drop_down_btn"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                <com.windscribe.mobile.custom_view.preferences.ToggleView
+                    android:id="@+id/cl_notification_settings"
+                    android:layout_marginTop="@dimen/margin_16"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/cl_app_background_settings"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    app:ToggleTitle="@string/show_timer_in_notifications"
+                    app:ToggleLeftIcon="@drawable/ic_notification_stats"
+                    app:ToggleDescription="@string/notification_stats_description"
+                    app:ToggleShowRightIcon="false"
+                    />
 
-            <Spinner
-                android:id="@+id/spinner_latency"
-                style="@style/MenuSpinner"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                <com.windscribe.mobile.custom_view.preferences.ToggleView
+                    android:id="@+id/cl_show_health"
+                    android:layout_marginTop="@dimen/margin_16"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/cl_notification_settings"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    app:ToggleTitle="@string/show_location_health"
+                    app:ToggleLeftIcon="@drawable/ic_location_load"
+                    app:ToggleShowRightIcon="false"
+                    app:ToggleDescription="@string/location_load_description"
+                    />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <com.windscribe.mobile.custom_view.preferences.ToggleView
+                    android:id="@+id/cl_haptic_settings"
+                    android:layout_marginTop="@dimen/margin_16"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/cl_show_health"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    app:ToggleTitle="@string/haptic_setting_label"
+                    app:ToggleLeftIcon="@drawable/ic_haptic"
+                    app:ToggleShowRightIcon="false"
+                    app:ToggleDescription="@string/haptic_feedback_description"
+                    />
 
-        <ImageView
-            android:id="@+id/img_selection_settings_divider"
-            style="@style/PreferenceDivider"
-            android:importantForAccessibility="no"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_latency_settings" />
+                <!--Version-->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    style="@style/MenuItemContainer"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginTop="@dimen/margin_16"
+                    android:layout_marginEnd="@dimen/margin_16"
+                    android:background="@drawable/preference_rounded_stroke_background"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/cl_haptic_settings">
 
+                    <TextView
+                        android:id="@+id/tv_version_label"
+                        style="@style/MenuItemLabelTwo"
+                        android:text="@string/version"
+                        android:padding="0dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
-        <!--LANGUAGE-->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/cl_language_settings"
-            style="@style/MenuItemContainer"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/img_selection_settings_divider">
+                    <TextView
+                        android:id="@+id/tv_version_selection"
+                        style="@style/MenuItemLabelThree"
+                        android:padding="0dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/tv_version_label"
+                        app:layout_constraintBottom_toBottomOf="@id/tv_version_label" />
 
-            <TextView
-                android:id="@+id/tv_language_label"
-                style="@style/MenuItemLabelTwo"
-                android:text="@string/preferred_language"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </ScrollView>
 
-            <ImageView
-                android:id="@+id/img_language_drop_down_btn"
-                style="@style/MenuDropDownIcon"
-                android:importantForAccessibility="no"
-                app:layout_constraintBottom_toBottomOf="@id/tv_language_label"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/tv_language_label" />
-
-            <TextView
-                android:id="@+id/tv_current_language"
-                style="@style/MenuItemLabelThree"
-                android:text="@string/english"
-                app:layout_constraintEnd_toStartOf="@id/img_language_drop_down_btn"
-                app:layout_constraintRight_toLeftOf="@id/img_language_drop_down_btn"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <Spinner
-                android:id="@+id/spinner_language"
-                style="@style/MenuSpinner"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-        <ImageView
-            style="@style/PreferenceDivider"
-            android:importantForAccessibility="no"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_language_settings" />
-
-        <!--Theme selection-->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/cl_theme_settings"
-            style="@style/MenuItemContainer"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_language_settings">
-
-            <TextView
-                android:id="@+id/tv_theme_label"
-                style="@style/MenuItemLabelTwo"
-                android:text="@string/theme"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageView
-                android:id="@+id/img_theme_drop_down_btn"
-                style="@style/MenuDropDownIcon"
-                android:importantForAccessibility="no"
-                app:layout_constraintBottom_toBottomOf="@id/tv_theme_label"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/tv_theme_label" />
-
-            <TextView
-                android:id="@+id/tv_theme_selection"
-                style="@style/MenuItemLabelThree"
-                app:layout_constraintEnd_toStartOf="@id/img_theme_drop_down_btn"
-                app:layout_constraintRight_toLeftOf="@id/img_theme_drop_down_btn"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <Spinner
-                android:id="@+id/spinner_theme"
-                style="@style/MenuSpinner"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <ImageView
-            android:id="@+id/img_theme_settings_divider"
-            style="@style/PreferenceDivider"
-            android:importantForAccessibility="no"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_theme_settings" />
-
-
-        <!--LATENCY-->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/cl_notification_settings"
-            style="@style/MenuItemContainer"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/img_theme_settings_divider">
-
-            <TextView
-                android:id="@+id/tv_notification_label"
-                style="@style/MenuItemLabelTwo"
-                android:text="@string/show_timer_in_notifications"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageView
-                android:id="@+id/img_notification_toggle_btn"
-                style="@style/MenuToggle"
-                android:importantForAccessibility="no"
-                app:layout_constraintBottom_toBottomOf="@id/tv_notification_label"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/tv_notification_label" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <ImageView
-            android:id="@+id/img_notification_settings_divider"
-            style="@style/PreferenceDivider"
-            android:importantForAccessibility="no"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_notification_settings" />
-
-        <!--Haptic feedback-->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/cl_haptic_settings"
-            style="@style/MenuItemContainer"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/img_notification_settings_divider">
-
-            <TextView
-                android:id="@+id/tv_haptic_label"
-                style="@style/MenuItemLabelTwo"
-                android:text="@string/haptic_setting_label"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageView
-                android:id="@+id/img_haptic_toggle_btn"
-                style="@style/MenuToggle"
-                android:importantForAccessibility="no"
-                app:layout_constraintBottom_toBottomOf="@id/tv_haptic_label"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/tv_haptic_label" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-        <ImageView
-            style="@style/PreferenceDivider"
-            android:importantForAccessibility="no"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/nav_button"
-            app:layout_constraintTop_toBottomOf="@id/cl_haptic_settings" />
-
-        <!--Custom flag-->
-        <include layout="@layout/app_background_tab" />
-
-        <!--Haptic feedback-->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/cl_show_health"
-            style="@style/MenuItemContainer"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_app_background_settings">
-
-            <TextView
-                android:id="@+id/tv_show_health_label"
-                style="@style/MenuItemLabelTwo"
-                android:text="@string/show_location_health"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageView
-                android:id="@+id/img_show_health_toggle_btn"
-                style="@style/MenuToggle"
-                android:importantForAccessibility="no"
-                app:layout_constraintBottom_toBottomOf="@id/tv_show_health_label"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/tv_show_health_label" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <ImageView
-            android:id="@+id/show_health_divider"
-            style="@style/PreferenceDivider"
-            android:importantForAccessibility="no"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_show_health" />
-
-        <!--Version-->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            style="@style/MenuItemContainer"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/show_health_divider">
-
-            <TextView
-                android:id="@+id/tv_version_label"
-                style="@style/MenuItemLabelTwo"
-                android:text="@string/version"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/tv_version_selection"
-                style="@style/MenuItemLabelThree"
-                android:layout_marginEnd="@dimen/margin_8"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/tv_version_label"
-                app:layout_constraintBottom_toBottomOf="@id/tv_version_label" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-</ScrollView>

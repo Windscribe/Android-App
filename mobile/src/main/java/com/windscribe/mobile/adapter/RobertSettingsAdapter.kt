@@ -12,19 +12,19 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.windscribe.mobile.R
 import com.windscribe.mobile.adapter.RobertSettingsAdapter.RobertSettingsViewHolder
+import com.windscribe.vpn.api.response.RobertFilter
 import com.windscribe.vpn.commonutils.ThemeUtils
 
 data class RobertSetting(var filter: String, var enabled: Boolean)
 
 interface RobertAdapterListener {
-
-    fun settingChanged(originalList: List<RobertSetting>, data: List<String>, position: Int)
+    fun settingChanged(originalList: List<RobertFilter>, filter: RobertFilter, position: Int)
 }
 
 class RobertSettingsAdapter(private val robertAdapterListener: RobertAdapterListener) :
     RecyclerView.Adapter<RobertSettingsViewHolder>() {
 
-    var data: List<RobertSetting> = mutableListOf()
+    var data: List<RobertFilter> = mutableListOf()
     var settingUpdateInProgress = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RobertSettingsViewHolder {
@@ -36,14 +36,13 @@ class RobertSettingsAdapter(private val robertAdapterListener: RobertAdapterList
         holder.toggle.setOnClickListener {
             if (settingUpdateInProgress) return@setOnClickListener
             val originalList = ArrayList(data.map { it.copy() })
-            data[holder.adapterPosition].enabled = !data[holder.adapterPosition].enabled
-            val selected = data.filter {
-                it.enabled
-            }.map {
-                it.filter
-            }.toList()
+            if( data[holder.adapterPosition].status== 1){
+                data[holder.adapterPosition].status = 0
+            }else{
+                data[holder.adapterPosition].status = 1
+            }
             settingUpdateInProgress = true
-            robertAdapterListener.settingChanged(originalList, selected, holder.adapterPosition)
+            robertAdapterListener.settingChanged(originalList,data[holder.adapterPosition], holder.adapterPosition)
             notifyItemChanged(holder.adapterPosition)
         }
         holder.bind(data[position])
@@ -65,23 +64,13 @@ class RobertSettingsAdapter(private val robertAdapterListener: RobertAdapterList
             Pair("competitors", R.drawable.ic_other_vpn),
             Pair("cryptominers", R.drawable.ic_crypto)
         )
-        var labelMap = mapOf(
-            Pair("malware", "Malware"),
-            Pair("ads", "Ads + Trackers"),
-            Pair("social", "Social Networks"),
-            Pair("porn", "Porn"),
-            Pair("gambling", "Gambling"),
-            Pair("fakenews", "Fake News + Clickbait"),
-            Pair("competitors", "Other VPNs"),
-            Pair("cryptominers", "Cryptominers")
-        )
 
         var toggle: ImageView = itemView.findViewById(R.id.toggle)
         var icon: ImageView = itemView.findViewById(R.id.icon)
         var filter: TextView = itemView.findViewById(R.id.filter)
         var allow: TextView = itemView.findViewById(R.id.allow)
-        fun bind(robertSetting: RobertSetting) {
-            if (robertSetting.enabled) {
+        fun bind(robertSetting: RobertFilter) {
+            if (robertSetting.status == 1) {
                 toggle.setImageResource(R.drawable.ic_toggle_button_on)
                 allow.setText(R.string.blocking)
                 allow.setTextColor(itemView.context.resources.getColor(R.color.colorNeonGreen))
@@ -96,14 +85,10 @@ class RobertSettingsAdapter(private val robertAdapterListener: RobertAdapterList
                     )
                 )
             }
-            iconMap[robertSetting.filter]?.let {
+            iconMap[robertSetting.id]?.let {
                 icon.setImageResource(it)
             }
-            labelMap[robertSetting.filter]?.let {
-                filter.text = it
-            } ?: run {
-                filter.text = robertSetting.filter.replaceFirstChar { it.uppercase() }
-            }
+            filter.text = robertSetting.title
         }
     }
 }

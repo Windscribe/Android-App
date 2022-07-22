@@ -8,96 +8,63 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/end_barrier"
-        android:layout_width="1dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/margin_16"
-        app:barrierDirection="left"
-        app:constraint_referenced_ids="img_pro_icon_settings,empty_view_holder"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <TextView
         android:id="@+id/tv_account_info_label"
         style="@style/MenuItemTitle"
         android:text="@string/plan"
+        android:layout_marginStart="@dimen/margin_32"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-
-    <TextView
-        android:id="@+id/tv_plan_data"
-        style="@style/MenuItemLabelFive"
-        android:text="@string/gb_month"
-        app:layout_constraintStart_toStartOf="@id/tv_account_info_label"
-        app:layout_constraintTop_toBottomOf="@id/tv_account_info_label" />
-
-
-    <TextView
-        android:id="@+id/tv_upgrade_info"
-        style="@style/MenuItemLabelFour"
-        android:layout_marginEnd="0dp"
-        android:includeFontPadding="false"
-        android:text="@string/upgrade_case_normal"
-        android:textColor="@color/colorNeonGreen"
-        app:layout_constraintBottom_toBottomOf="@id/tv_plan_data"
-        app:layout_constraintEnd_toStartOf="@id/end_barrier"
-        app:layout_constraintTop_toTopOf="@id/tv_plan_data" />
-
-    <TextView
-        android:id="@+id/empty_view_holder"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/margin_16"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <ImageView
-        android:id="@+id/img_pro_icon_settings"
-        style="@style/IconStyle"
-        android:layout_width="16dp"
-        android:layout_height="16dp"
-        android:layout_marginEnd="@dimen/reg_16dp"
-        android:contentDescription="@string/image_description"
-        android:padding="0dp"
-        android:src="@drawable/ic_pro_icon_green"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="@id/tv_upgrade_info"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tv_upgrade_info" />
-
-    <ImageView
-        android:id="@+id/img_plan_data_divider"
-        style="@style/PreferenceDivider"
-        android:layout_marginStart="0dp"
-        android:layout_marginTop="@dimen/margin_16"
-        android:contentDescription="@string/image_description"
-        app:layout_constraintEnd_toEndOf="parent"
+    <androidx.constraintlayout.widget.ConstraintLayout
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_plan_data" />
-
-
-    <TextView
-        android:id="@+id/tv_reset_date_label"
-        style="@style/MenuItemLabelFive"
-        android:text="@string/reset_date"
-        app:layout_constraintStart_toStartOf="@id/tv_account_info_label"
-        app:layout_constraintTop_toBottomOf="@id/img_plan_data_divider" />
-
-
-    <TextView
-        android:id="@+id/tv_reset_date"
-        style="@style/MenuItemLabelFour"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tv_reset_date_label" />
+        app:layout_constraintTop_toBottomOf="@id/tv_account_info_label"
+        style="@style/preferenceRoundedBackground">
 
-    <Space
-        android:layout_width="0dp"
-        android:layout_height="@dimen/margin_16"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_reset_date_label" />
+        <TextView
+            android:id="@+id/tv_upgrade_info"
+            style="@style/MenuItemLabelHalfOpacity"
+            android:includeFontPadding="false"
+            android:text="@string/upgrade_case_normal"
+            android:textColor="@color/colorNeonGreen"
+            app:layout_constraintBottom_toBottomOf="@id/tv_plan_data"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_plan_data" />
 
+        <TextView
+            android:id="@+id/tv_plan_data"
+            style="@style/MenuItemLabelFive"
+            android:layout_marginTop="0dp"
+            android:text="@string/gb_month"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/img_plan_data_divider"
+            style="@style/PreferenceDivider"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="@dimen/margin_16"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_plan_data" />
+
+
+        <TextView
+            android:id="@+id/tv_reset_date_label"
+            style="@style/MenuItemLabelFive"
+            android:text="@string/reset_date"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/img_plan_data_divider" />
+
+
+        <TextView
+            android:id="@+id/tv_reset_date"
+            style="@style/MenuItemLabelHalfOpacity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_reset_date_label" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
