@@ -65,12 +65,14 @@ class OpenVPNBackend(
     }
 
     override suspend fun disconnect() {
-        vpnLogger.debug("Stopping Open VPN Service.")
-        connectionJob?.cancel()
-        trafficCounter.stop()
-        startOpenVPN(OpenVPNService.PAUSE_VPN)
-        delay(DISCONNECT_DELAY)
-        deactivate()
+        if(active){
+            vpnLogger.debug("Stopping Open VPN Service.")
+            connectionJob?.cancel()
+            trafficCounter.stop()
+            startOpenVPN(OpenVPNService.PAUSE_VPN)
+            delay(DISCONNECT_DELAY)
+            deactivate()
+        }
     }
 
     private fun startOpenVPN(action: String?) {

@@ -12,6 +12,7 @@
     <TextView
         android:id="@+id/network_name"
         style="@style/MenuItemLabelTwo"
+        android:textColor="?attr/wdSecondaryColor"
         android:layout_marginStart="@dimen/margin_16"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -19,7 +20,8 @@
     <TextView
         android:id="@+id/tv_current_protection"
         style="@style/MenuItemLabelThree"
-        android:layout_marginEnd="@dimen/reg_8dp"
+        android:paddingEnd="0dp"
+        android:layout_marginEnd="0dp"
         app:layout_constraintBottom_toBottomOf="@id/network_name"
         app:layout_constraintEnd_toStartOf="@id/img_network_protection_drop_down_btn"
         app:layout_constraintTop_toTopOf="@id/network_name" />
@@ -35,6 +37,7 @@
 
 
     <ImageView
+        android:id="@+id/divider"
         style="@style/PreferenceDivider"
         android:contentDescription="@string/image_description"
         android:importantForAccessibility="no"

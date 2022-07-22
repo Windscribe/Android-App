@@ -152,8 +152,10 @@ object PreferencesKeyConstants {
     const val FUTURE_SELECTED_CITY = "future_selected_city"
     const val USER_INTENDED_DISCONNECT = "user_intended_disconnect"
     const val ROBERT_SETTINGS = "robert_settings"
+    const val ROBERT_FILTERS = "robert_filters"
     const val SHOW_LOCATION_HEALTH = "show_location_health"
     const val WG_LOCAL_PARAMS = "wg_local_params"
     const val DECOY_TRAFFIC = "decoy_traffic"
     const val FAKE_TRAFFIC_VOLUME = "fake_traffic_volume"
+    const val AUTO_SECURE_NEW_NETWORKS = "auto_secure_new_networks"
 }

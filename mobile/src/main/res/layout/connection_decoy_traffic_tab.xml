@@ -10,12 +10,20 @@
     android:paddingBottom="@dimen/margin_8"
     app:layout_constraintTop_toBottomOf="@id/cl_decoy_traffic">
 
+    <ImageView
+        android:id="@+id/decoy_traffic_divider"
+        style="@style/PreferenceDivider"
+        android:contentDescription="@string/image_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_fake_traffic_volume"
         style="@style/MenuItemContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/decoy_traffic_divider">
 
         <TextView
             android:id="@+id/tv_fake_traffic_volume_label"
@@ -51,6 +59,16 @@
             app:layout_constraintBottom_toBottomOf="@id/spinner_fake_traffic_volume"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/spinner_fake_traffic_volume" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:id="@+id/clickable_area"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tv_current_fake_traffic_volume"
+            />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

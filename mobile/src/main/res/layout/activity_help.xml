@@ -12,342 +12,151 @@
         android:id="@+id/tool_bar"
         layout="@layout/nav_bar" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/knowledge_base_container"
-        style="@style/MenuItemContainer"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_marginTop="20dp"
-        android:paddingTop="@dimen/padding_14"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tool_bar">
-
-
-        <ImageView
-            android:id="@+id/knowledge_base_title_icon"
-            style="@style/MenuActionTitleIcon"
-            android:src="@drawable/ic_apple"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="@id/knowledge_base_icon"
-            app:layout_constraintTop_toTopOf="@+id/knowledge_base_icon" />
-
-        <TextView
-            android:id="@+id/knowledge_base_title"
-            style="@style/MenuActionTitle"
-            android:text="@string/knowledge_base"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@id/knowledge_base_title_icon" />
-
-        <ImageView
-            android:id="@+id/knowledge_base_icon"
-            style="@style/ForwardArrowIcon"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="@dimen/reg_12dp"
-            app:layout_constraintTop_toTopOf="@id/knowledge_base_title"
-            app:layout_constraintVertical_bias="1.0" />
-
-        <TextView
-            android:id="@+id/knowledge_base_description"
-            style="@style/MenuActionDescription"
-            android:text="@string/knowledge_base_description"
-            app:layout_constraintStart_toStartOf="@id/knowledge_base_title"
-            app:layout_constraintTop_toBottomOf="@id/knowledge_base_title" />
-
-        <ImageView
-            style="@style/MenuActionDivider"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/knowledge_base_title_icon"
-            android:layout_marginStart="@dimen/margin_8"
-            app:layout_constraintTop_toBottomOf="@id/knowledge_base_description" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/garry_container"
-        style="@style/MenuItemContainer"
-        android:layout_width="match_parent"
-        android:paddingTop="@dimen/padding_14"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/knowledge_base_container">
-
-        <ImageView
-            android:id="@+id/garry_title_icon"
-            style="@style/MenuActionTitleIcon"
-            android:src="@drawable/ic_garry"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="@id/garry_icon"
-            app:layout_constraintTop_toTopOf="@id/garry_icon" />
-
-        <TextView
-            android:id="@+id/garry_title"
-            style="@style/MenuActionTitle"
-            android:text="@string/talk_to_garry"
-            app:layout_constraintStart_toEndOf="@id/garry_title_icon"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/garry_icon"
-            style="@style/ForwardArrowIcon"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="@dimen/reg_12dp"
-            app:layout_constraintTop_toTopOf="@+id/garry_title" />
-
-        <TextView
-            android:id="@+id/garry_description"
-            style="@style/MenuActionDescription"
-            android:layout_width="0dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginEnd="@dimen/margin_16"
-            android:text="@string/talk_to_garry_description"
-            app:layout_constraintStart_toStartOf="@id/garry_title"
-            app:layout_constraintTop_toBottomOf="@id/garry_title" />
-
-        <ImageView
-            style="@style/MenuActionDivider"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/garry_title_icon"
-            android:layout_marginStart="@dimen/margin_8"
-            app:layout_constraintTop_toBottomOf="@id/garry_description" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/ticket_container"
-        style="@style/MenuItemContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="@dimen/padding_14"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/garry_container">
-
-        <ImageView
-            android:id="@+id/ticket_title_icon"
-            style="@style/MenuActionTitleIcon"
-            android:src="@drawable/ic_ticket"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="@id/ticket_icon"
-            app:layout_constraintTop_toTopOf="@id/ticket_icon" />
-
-        <TextView
-            android:id="@+id/ticket_title"
-            style="@style/MenuActionTitle"
-            android:text="@string/send_ticket"
-            app:layout_constraintStart_toEndOf="@id/ticket_title_icon"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/ticket_icon"
-            style="@style/ForwardArrowIcon"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="@dimen/reg_12dp"
-            app:layout_constraintTop_toTopOf="@id/ticket_title" />
-
-        <TextView
-            android:id="@+id/ticket_description"
-            style="@style/MenuActionDescription"
-            android:text="@string/send_ticket_description"
-            app:layout_constraintStart_toStartOf="@id/ticket_title"
-            app:layout_constraintTop_toBottomOf="@id/ticket_title" />
-
-        <ImageView
-            style="@style/MenuActionDivider"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/ticket_title_icon"
-            android:layout_marginStart="@dimen/margin_8"
-            app:layout_constraintTop_toBottomOf="@id/ticket_description" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/community_container"
-        style="@style/MenuItemContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:clickable="false"
-        android:paddingTop="@dimen/padding_14"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ticket_container">
-
-        <ImageView
-            android:id="@+id/community_title_icon"
-            style="@style/MenuActionTitleIcon"
-            android:src="@drawable/ic_community"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="@dimen/reg_12dp"
-            app:layout_constraintTop_toTopOf="@id/community_title" />
-
-        <TextView
-            android:id="@+id/community_title"
-            style="@style/MenuActionTitle"
-            android:text="@string/community_support"
-            app:layout_constraintStart_toEndOf="@id/community_title_icon"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:layout_width="0dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginEnd="@dimen/margin_16"
-            style="@style/MenuActionDescription"
-            android:text="@string/community_support_description"
-            app:layout_constraintStart_toStartOf="@id/community_title"
-            app:layout_constraintTop_toBottomOf="@id/community_title" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/reddit_container"
-        style="@style/MenuItemContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="@dimen/margin_16"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/community_container">
-
-        <TextView
-            android:id="@+id/reddit_title"
-            style="@style/MenuActionTitle"
-            android:layout_marginStart="@dimen/margin_32"
-            android:fontFamily="@font/ibm_plex_sans_regular"
-            android:text="@string/reddit"
-            app:layout_constraintBottom_toBottomOf="@id/reddit_icon"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/reddit_icon" />
-
-        <ImageView
-            style="@style/MenuActionDivider"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/reddit_title"
-            app:layout_constraintTop_toBottomOf="@id/reddit_title" />
-
-        <ImageView
-            android:id="@+id/reddit_icon"
-            style="@style/ForwardArrowIcon"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/discord_container"
-        style="@style/MenuItemContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="@dimen/margin_16"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/reddit_container">
-
-        <TextView
-            android:id="@+id/discord_title"
-            style="@style/MenuActionTitle"
-            android:layout_marginStart="@dimen/margin_32"
-            android:fontFamily="@font/ibm_plex_sans_regular"
-            android:text="@string/discord"
-            app:layout_constraintBottom_toBottomOf="@id/discord_icon"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/discord_icon" />
-
-        <ImageView
-            style="@style/MenuActionDivider"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="@dimen/margin_8"
-            app:layout_constraintTop_toBottomOf="@id/discord_title" />
-
-        <ImageView
-            android:id="@+id/discord_icon"
-            style="@style/ForwardArrowIcon"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_debug_view"
-        style="@style/MenuItemContainer"
+        app:layout_constraintTop_toBottomOf="@id/tool_bar"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/discord_container">
+        >
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+            <com.windscribe.mobile.custom_view.preferences.SingleLinkExplainView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="@dimen/reg_24dp"
+                android:id="@+id/knowledge"
+                app:Title="@string/knowledge_base"
+                app:Description="@string/knowledge_base_description"
+                app:LeftIcon="@drawable/ic_apple"
+                />
 
-        <ImageView
-            android:id="@+id/debug_view_title_icon"
-            style="@style/MenuActionTitleIcon"
-            android:clickable="false"
-            android:src="@drawable/ic_view_log"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            <com.windscribe.mobile.custom_view.preferences.SingleLinkExplainView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/knowledge"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="@dimen/reg_16dp"
+                android:id="@+id/garry"
+                app:Title="@string/talk_to_garry"
+                app:Description="@string/talk_to_garry_description"
+                app:LeftIcon="@drawable/ic_garry"
+                />
 
-        <TextView
-            android:id="@+id/tv_view_label"
-            style="@style/MenuActionTitle"
-            android:clickable="false"
-            android:text="@string/view_log"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/debug_view_title_icon"
-            app:layout_constraintTop_toTopOf="parent" />
+            <com.windscribe.mobile.custom_view.preferences.MultipleLinkExplainView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/sendTicket"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="@dimen/reg_16dp"
+                android:id="@+id/community"
+                app:MultiLinkTitle="@string/community_support"
+                app:MultiLinkDescription="@string/community_support_description"
+                app:MultiLinkLeftIcon="@drawable/ic_community"
+                app:FirstItemTitle="@string/reddit"
+                app:SecondItemTitle="@string/discord"
+                />
 
-        <ImageView
-            style="@style/ForwardArrowIcon"
-            android:clickable="false"
-            android:contentDescription="@string/image_description"
-            app:layout_constraintBottom_toBottomOf="@id/tv_view_label"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tv_view_label" />
+            <com.windscribe.mobile.custom_view.preferences.SingleLinkExplainView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/garry"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="@dimen/reg_16dp"
+                android:id="@+id/sendTicket"
+                app:Title="@string/send_ticket"
+                app:Description="@string/send_ticket_description"
+                app:LeftIcon="@drawable/ic_ticket"
+                />
 
-        <ImageView
-            style="@style/MenuActionDivider"
-            android:layout_marginStart="@dimen/margin_8"
-            android:clickable="false"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/cl_debug_view"
+                style="@style/MenuItemContainer"
+                android:background="@drawable/preferences_rounded_corner_background"
+                android:layout_marginTop="@dimen/padding_16"
+                android:layout_marginStart="@dimen/margin_16"
+                android:layout_marginEnd="@dimen/margin_16"
+                android:padding="@dimen/padding_16"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/community">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <ImageView
+                    android:id="@+id/debug_view_title_icon"
+                    style="@style/MenuActionTitleIcon"
+                    android:clickable="false"
+                    android:src="@drawable/ic_view_log"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_debug_send"
-        style="@style/MenuItemContainer"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cl_debug_view">
+                <TextView
+                    android:id="@+id/tv_view_label"
+                    style="@style/MenuActionTitle"
+                    android:clickable="false"
+                    android:text="@string/view_log"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/debug_view_title_icon"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/debug_send_title_icon"
-            style="@style/MenuActionTitleIcon"
-            android:src="@drawable/ic_send_log_icon"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <TextView
-            android:id="@+id/tv_send_label"
-            style="@style/MenuActionTitle"
-            android:text="@string/send_log"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/debug_send_title_icon"
-            app:layout_constraintTop_toTopOf="parent" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/cl_debug_send"
+                style="@style/MenuItemContainer"
+                android:padding="@dimen/padding_16"
+                android:layout_marginTop="@dimen/padding_16"
+                android:layout_marginStart="@dimen/margin_16"
+                android:layout_marginEnd="@dimen/margin_16"
+                android:background="@drawable/preferences_rounded_corner_background"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cl_debug_view">
 
-        <ProgressBar
-            android:id="@+id/debug_progress"
-            style="@style/SmallProgressCircle"
-            android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+                <ImageView
+                    android:id="@+id/debug_send_title_icon"
+                    style="@style/MenuActionTitleIcon"
+                    android:src="@drawable/ic_send_log_icon"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/tv_debug_progress_label"
-            style="@style/MenuItemLabelFour"
-            android:text="@string/sent_thanks"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@id/tv_send_label"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tv_send_label" />
+                <TextView
+                    android:id="@+id/tv_send_label"
+                    style="@style/MenuActionTitle"
+                    android:text="@string/send_log"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/debug_send_title_icon"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            style="@style/MenuActionDivider"
-            android:layout_marginStart="@dimen/margin_8"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <ProgressBar
+                    android:id="@+id/debug_progress"
+                    style="@style/SmallProgressCircle"
+                    android:visibility="invisible"
+                    android:layout_marginEnd="0dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tv_debug_progress_label"
+                    style="@style/MenuItemLabelFour"
+                    android:text="@string/sent_thanks"
+                    android:visibility="gone"
+                    android:layout_marginEnd="0dp"
+                    app:layout_constraintBottom_toBottomOf="@id/tv_send_label"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/tv_send_label" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

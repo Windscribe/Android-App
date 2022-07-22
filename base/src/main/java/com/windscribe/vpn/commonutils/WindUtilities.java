@@ -102,7 +102,7 @@ public class WindUtilities {
                         : Windscribe.getAppContext().getResources().getString(R.string.unknown);
             }
 
-            return networkInfo.getType() == ConnectivityManager.TYPE_WIFI ?
+           String networkName =  networkInfo.getType() == ConnectivityManager.TYPE_WIFI ?
                     quoteReplacedNetworkName : networkInfo.getType() == ConnectivityManager.TYPE_MOBILE ?
                     (quoteReplacedNetworkName.contains(".") ? (quoteReplacedNetworkName.split("\\.", 3).length > 1 ?
                             quoteReplacedNetworkName.split("\\.", 3)[1].toUpperCase()
@@ -110,10 +110,13 @@ public class WindUtilities {
                     networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET ? "Ethernet"
                             : Windscribe.getAppContext().getResources().getString(R.string.unknown);
 
-
+          if(networkName.equals("<unknown ssid>")){
+              throw new NoNetworkException("App tried to access network name in the background and Location permission is only available for while in use.");
+          }else{
+              return networkName;
+          }
         }
         throw new NoNetworkException("No network is connected");
-
     }
 
     public static int getRandomNode(int size) {

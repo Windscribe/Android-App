@@ -33,12 +33,7 @@ import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
-import com.windscribe.vpn.workers.worker.CredentialsWorker
-import com.windscribe.vpn.workers.worker.NotificationWorker
-import com.windscribe.vpn.workers.worker.RobertSyncWorker
-import com.windscribe.vpn.workers.worker.ServerListWorker
-import com.windscribe.vpn.workers.worker.SessionWorker
-import com.windscribe.vpn.workers.worker.StaticIpWorker
+import com.windscribe.vpn.workers.worker.*
 import dagger.Component
 import javax.inject.Named
 import javax.inject.Singleton
@@ -109,4 +104,6 @@ interface ApplicationComponent {
     fun inject(sessionWorker: SessionWorker)
     fun inject(notificationWorker: NotificationWorker)
     fun inject(robertSyncWorker: RobertSyncWorker)
+    fun inject(googlePendingReceiptValidator: GooglePendingReceiptValidator)
+    fun inject(amazonPendingReceiptValidator: AmazonPendingReceiptValidator)
 }

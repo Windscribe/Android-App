@@ -33,6 +33,10 @@ class NetworkDetailPresenterImp @Inject constructor(
         }
     }
 
+    override fun init(){
+        networkView.setActivityTitle(interactor.getResourceString(R.string.network_options))
+    }
+
     override fun onPortSelected(port: String) {
         val networkInfo = networkView.networkInfo
         networkInfo?.let {
@@ -103,14 +107,14 @@ class NetworkDetailPresenterImp @Inject constructor(
     }
 
     override fun setNetworkDetails(name: String) {
-        networkView.hideError()
+        networkView.setNetworkDetailError(false, null)
         interactor.getCompositeDisposable().add(
             interactor.getNetwork(name)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableSingleObserver<NetworkInfo?>() {
                     override fun onError(ignored: Throwable) {
-                        networkView.setNetworkDetailError("Network name not found.")
+                        networkView.setNetworkDetailError(true, "Network name not found.")
                     }
 
                     override fun onSuccess(networkInfo: NetworkInfo) {

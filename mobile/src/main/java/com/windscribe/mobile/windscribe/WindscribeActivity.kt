@@ -41,12 +41,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.res.ResourcesCompat
-import androidx.documentfile.provider.DocumentFile
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionManager
 import androidx.viewpager.widget.ViewPager
-import androidx.viewpager.widget.ViewPager.GONE
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import butterknife.BindView
 import butterknife.OnClick
@@ -58,8 +56,6 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import com.google.common.base.Charsets
-import com.google.common.io.CharStreams
 import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup
 import com.windscribe.mobile.R
 import com.windscribe.mobile.adapter.ConfigAdapter
@@ -96,7 +92,6 @@ import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.welcome.WelcomeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
-import com.windscribe.vpn.backend.openvpn.OpenVPNConfigParser
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.ThemeUtils
 import com.windscribe.vpn.constants.AnimConstants
@@ -112,17 +107,11 @@ import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.ServerListData
 import com.windscribe.vpn.serverlist.interfaces.ListViewClickListener
-import com.windscribe.vpn.services.NetworkWhiteListService.Companion.stopService
-import com.windscribe.vpn.services.verify.VerifyAmazonPurchaseService
-import com.windscribe.vpn.services.verify.VerifyGooglePurchaseService
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.DeviceStateManager.DeviceStateListener
 import com.windscribe.vpn.state.PreferenceChangeObserver
-import java.io.IOException
-import java.io.InputStreamReader
 import javax.inject.Inject
 import javax.inject.Named
-import kotlin.math.log
 import org.slf4j.LoggerFactory
 
 class WindscribeActivity :
@@ -502,21 +491,7 @@ class WindscribeActivity :
             setLanguage()
             presenter.onHotStart()
         }
-        val pkgManager = packageManager
-        val installerPackageName = pkgManager.getInstallerPackageName(packageName)
-        if (installerPackageName != null && installerPackageName.startsWith("com.amazon")) {
-            VerifyAmazonPurchaseService.enqueueWork(
-                appContext,
-                Intent(appContext, VerifyAmazonPurchaseService::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
-        } else {
-            VerifyGooglePurchaseService.enqueueWork(
-                appContext,
-                Intent(appContext, VerifyGooglePurchaseService::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
-        }
+        appContext.workManager.checkPendingAccountUpgrades()
     }
 
     override fun onStop() {

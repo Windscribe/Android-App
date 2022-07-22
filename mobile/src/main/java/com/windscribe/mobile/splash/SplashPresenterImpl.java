@@ -5,6 +5,7 @@
 package com.windscribe.mobile.splash;
 
 
+import static com.windscribe.vpn.Windscribe.appContext;
 import static com.windscribe.vpn.constants.BillingConstants.GP_PACKAGE_NAME;
 import static com.windscribe.vpn.constants.BillingConstants.GP_PRODUCT_ID;
 import static com.windscribe.vpn.constants.BillingConstants.PURCHASED_ITEM;
@@ -164,83 +165,19 @@ public class SplashPresenterImpl implements SplashPresenter {
         final String sessionHash = mInteractor.getAppPreferenceInterface().getSessionHash();
         if (sessionHash != null) {
             mPresenterLog.info("Session auth hash present. User is already logged in...");
-            if (mView.isConnectedToNetwork()) {
-                //Start an intent service here to get session data and other data
-                mPresenterLog.info("Found active network connectivity. Updating application data...");
-                if (mInteractor.getAppPreferenceInterface().getResponseString(PURCHASED_ITEM) != null) {
-                    mPresenterLog.info("Found pending purchase token, making purchase verification call...");
-                    final Map<String, String> purchaseMap = new HashMap<>();
-                    mInteractor.getCompositeDisposable().add(
-                            Single.fromCallable(() -> new Gson().fromJson(mInteractor.getAppPreferenceInterface()
-                                    .getResponseString(PURCHASED_ITEM), ItemPurchased.class)).flatMap(
-                                    (Function<ItemPurchased, SingleSource<GenericResponseClass<String, ApiErrorResponse>>>) itemPurchased -> {
-                                        purchaseMap.put(GP_PACKAGE_NAME, itemPurchased.getPackageName());
-                                        purchaseMap.put(GP_PRODUCT_ID, itemPurchased.getProductId());
-                                        purchaseMap.put(PURCHASE_TOKEN, itemPurchased.getPurchaseToken());
-                                        return mInteractor.getApiCallManager()
-                                                .verifyPayment(purchaseMap);
-                                    }).subscribeOn(Schedulers.io())
-                                    .observeOn(Schedulers.io())
-                                    .subscribeWith(
-                                            new DisposableSingleObserver<GenericResponseClass<String, ApiErrorResponse>>() {
-                                                @Override
-                                                public void onError(@NotNull Throwable e) {
-                                                    mPresenterLog
-                                                            .debug("Error while retrying payment verification. " +
-                                                                    WindError.getInstance()
-                                                                            .convertThrowableToString(e));
-                                                    if (shouldShowAccountSetUp()) {
-                                                        mView.navigateToAccountSetUp();
-                                                    } else {
-                                                        mView.navigateToHome();
-                                                    }
-                                                }
-
-                                                @Override
-                                                public void onSuccess(
-                                                        @NotNull GenericResponseClass<String, ApiErrorResponse> paymentVerificationResponse) {
-                                                    if (paymentVerificationResponse.getDataClass() != null) {
-                                                        mPresenterLog.info("Payment verification successful. "
-                                                                + paymentVerificationResponse.getDataClass()
-                                                                + " - Removing purchased item from storage.");
-                                                        mInteractor.getAppPreferenceInterface()
-                                                                .removeResponseData(PURCHASED_ITEM);
-                                                    } else if (paymentVerificationResponse.getErrorClass() != null) {
-                                                        mPresenterLog
-                                                                .debug("Payment verification failed. Server error response..."
-                                                                        + paymentVerificationResponse.getErrorClass()
-                                                                        .toString() + "- Retry on next start...");
-                                                    }
-                                                    if (shouldShowAccountSetUp()) {
-                                                        mView.navigateToAccountSetUp();
-                                                    } else {
-                                                        mView.navigateToHome();
-                                                    }
-                                                }
-                                            }));
-                } else {
-                    mPresenterLog.info("No pending purchase ID...");
-                    if (shouldShowAccountSetUp()) {
-                        mView.navigateToAccountSetUp();
-                    } else {
-                        mView.navigateToHome();
-                    }
-                }
-
-            } else {
+            if (!mView.isConnectedToNetwork()) {
                 mPresenterLog.info("NO ACTIVE NETWORK FOUND! Starting home activity with stale data.");
-                if (shouldShowAccountSetUp()) {
-                    mView.navigateToAccountSetUp();
-                } else {
-                    mView.navigateToHome();
-                }
+            }
+            if (shouldShowAccountSetUp()) {
+                mView.navigateToAccountSetUp();
+            } else {
+                mView.navigateToHome();
             }
         } else {
             //Goto Login/Registration Activity
             mPresenterLog.info("Session auth hash not present. User not logged in...");
             mView.navigateToLogin();
         }
-
     }
 
     // Move SessionAuth to secure preferences
