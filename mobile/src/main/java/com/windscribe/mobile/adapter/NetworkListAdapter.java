@@ -45,8 +45,9 @@ public class NetworkListAdapter extends RecyclerView.Adapter<NetworkListViewHold
         holder.tvProtection.setText(protectionStatus);
 
         holder.itemView.setOnClickListener(v -> mAdapterActionListener.onItemSelected(networkInfo));
-
-
+        if(position == getItemCount()-1){
+            holder.dividerView.setVisibility(View.GONE);
+        }
     }
 
     @NonNull

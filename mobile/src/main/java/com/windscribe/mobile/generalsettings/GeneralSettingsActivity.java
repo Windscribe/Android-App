@@ -9,26 +9,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.documentfile.provider.DocumentFile;
-import androidx.transition.Fade;
-import androidx.transition.TransitionManager;
 
 import com.windscribe.mobile.R;
 import com.windscribe.mobile.base.BaseActivity;
 import com.windscribe.mobile.custom_view.CustomDialog;
+import com.windscribe.mobile.custom_view.preferences.DropDownView;
+import com.windscribe.mobile.custom_view.preferences.AppBackgroundView;
+import com.windscribe.mobile.custom_view.preferences.ToggleView;
 import com.windscribe.mobile.di.ActivityModule;
 import com.windscribe.mobile.mainmenu.MainMenuActivity;
 import com.windscribe.mobile.windscribe.WindscribeActivity;
+import com.windscribe.vpn.constants.NetworkKeyConstants;
 import com.windscribe.vpn.state.PreferenceChangeObserver;
 
 import org.apache.commons.io.IOUtils;
@@ -44,122 +42,41 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.OnItemSelected;
 
 public class GeneralSettingsActivity extends BaseActivity implements GeneralSettingsView {
 
-    @BindView(R.id.app_background_label)
-    TextView appBackgroundLabel;
-
+    private final String TAG = "gen_settings_a";
+    private final Logger mGeneralSettingsLog = LoggerFactory.getLogger(TAG);
     @BindView(R.id.cl_app_background_settings)
-    ConstraintLayout clAppBackground;
-
-    @BindView(R.id.connected_flag_location_edit_view)
-    TextView connectedFlagPathEditView;
-
-    @BindView(R.id.connected_flag_label)
-    TextView connectedFlagPathLabel;
-
-    @BindView(R.id.connected_flag_size)
-    TextView connectedFlagSizeLabel;
-
-    final ConstraintSet constraintAppBackgroundCollapsed = new ConstraintSet();
-
-    final ConstraintSet constraintAppBackgroundExpanded = new ConstraintSet();
-
-    @BindView(R.id.custom_background_toggle)
-    ImageView customBackgroundToggle;
-
-    @BindView(R.id.disconnected_flag_location_edit_view)
-    TextView disconnectedFlagPathEditView;
-
-    @BindView(R.id.disconnected_flag_label)
-    TextView disconnectedFlagPathLabel;
-
-    @BindView(R.id.disconnected_flag_size)
-    TextView disconnectedFlagSizeLabel;
-
+    AppBackgroundView appBackgroundDropDown;
+    @BindView(R.id.cl_selection_settings)
+    DropDownView locationSelectionDropDown;
+    @BindView(R.id.cl_language_settings)
+    DropDownView languageDropDown;
+    @BindView(R.id.cl_latency_settings)
+    DropDownView latencyDropDown;
+    @BindView(R.id.cl_theme_settings)
+    DropDownView themeDropDown;
+    @BindView(R.id.cl_notification_settings)
+    ToggleView notificationToggle;
+    @BindView(R.id.cl_show_health)
+    ToggleView locationLoadToggle;
+    @BindView(R.id.cl_haptic_settings)
+    ToggleView hapticToggle;
     @BindView(R.id.nav_button)
     ImageView imgGeneralBackButton;
-
-    @BindView(R.id.img_haptic_toggle_btn)
-    ImageView imgHapticToggle;
-
-    @BindView(R.id.img_notification_toggle_btn)
-    ImageView imgNotificationToggle;
-
-    @BindView(R.id.cl_settings_general)
-    ConstraintLayout mConstraintLayoutGeneral;
-
     @Inject
     GeneralSettingsPresenter mGeneralPresenter;
-
-    @Inject
-    CustomDialog mSendDebugDialog;
-
     @Inject
     PreferenceChangeObserver mPreferenceChangeObserver;
-
-    @BindView(R.id.tv_selection_label)
-    TextView selectionLabelTextView;
-
-    @BindView(R.id.img_show_health_toggle_btn)
-    ImageView showHealthToggle;
-
-    @BindView(R.id.spinner_language)
-    Spinner spinnerLanguage;
-
-    @BindView(R.id.spinner_latency)
-    Spinner spinnerLatency;
-
-    @BindView(R.id.spinner_selection)
-    Spinner spinnerSelection;
-
-    @BindView(R.id.spinner_theme)
-    Spinner spinnerTheme;
-
-    @BindView(R.id.img_theme_drop_down_btn)
-    ImageView themeDropDown;
-
-    @BindView(R.id.tv_theme_selection)
-    TextView themeSelection;
-
+    @Inject
+    CustomDialog mSendDebugDialog;
     @BindView(R.id.nav_title)
     TextView tvActivityTitle;
-
-    @BindView(R.id.tv_current_language)
-    TextView tvCurrentLanguage;
-
-    @BindView(R.id.tv_current_latency)
-    TextView tvCurrentLatency;
-
-    @BindView(R.id.tv_current_selection)
-    TextView tvCurrentSelection;
-
-    @BindView(R.id.tv_haptic_label)
-    TextView tvHapticLabel;
-
-    @BindView(R.id.tv_language_label)
-    TextView tvLanguageLabel;
-
-    @BindView(R.id.tv_latency_label)
-    TextView tvLatencyLabel;
-
-    @BindView(R.id.tv_notification_label)
-    TextView tvNotificationLabel;
-
-    @BindView(R.id.tv_theme_label)
-    TextView tvThemeLabel;
-
     @BindView(R.id.tv_version_label)
     TextView tvVersionLabel;
-
     @BindView(R.id.tv_version_selection)
     TextView versionSelection;
-
-    private final String TAG = "gen_settings_a";
-
-    private final Logger mGeneralSettingsLog = LoggerFactory.getLogger(TAG);
 
     public static Intent getStartIntent(Context context) {
         return new Intent(context, GeneralSettingsActivity.class);
@@ -168,12 +85,11 @@ public class GeneralSettingsActivity extends BaseActivity implements GeneralSett
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAppBackgroundTab();
         setActivityModule(new ActivityModule(this, this)).inject(this);
         setContentLayout(R.layout.activity_general_settings, true);
+        setUpCustomViewDelegates();
         mGeneralSettingsLog.info("Setting up layout based on saved mode settings...");
         mGeneralPresenter.setupInitialLayout();
-
     }
 
     @Override
@@ -235,104 +151,87 @@ public class GeneralSettingsActivity extends BaseActivity implements GeneralSett
         onBackPressed();
     }
 
-    @OnClick(R.id.connected_flag_edit_button)
-    public void onConnectedFlagEditClick() {
-        mGeneralSettingsLog.info("User clicked on connected flag edit button...");
-        mGeneralPresenter.onConnectedFlagEditClicked(CONNECTED_FLAG_PATH_PICK_REQUEST);
-    }
+    public void setUpCustomViewDelegates() {
+        locationSelectionDropDown.setDelegate(new DropDownView.Delegate() {
+            @Override
+            public void onItemSelect(@NonNull String value) {
+                mGeneralPresenter.onSelectionSelected(value);
+            }
+            @Override
+            public void onExplainClick() { }
+        });
+        latencyDropDown.setDelegate(new DropDownView.Delegate() {
+            @Override
+            public void onItemSelect(@NonNull String value) {
+                mGeneralPresenter.onLatencyTypeSelected(value);
+            }
 
-    @OnClick({R.id.tv_current_language, R.id.img_language_drop_down_btn})
-    public void onCurrentLanguageClick() {
-        mGeneralSettingsLog.info("User clicked to open port adapter..");
-        spinnerLanguage.performClick();
-    }
+            @Override
+            public void onExplainClick() {}
+        });
+        languageDropDown.setDelegate(new DropDownView.Delegate() {
+            @Override
+            public void onItemSelect(@NonNull String value) {
+                mGeneralPresenter.onLanguageSelected(value);
+            }
 
-    @OnClick({R.id.tv_current_latency, R.id.img_latency_drop_down_btn})
-    public void onCurrentLatencyClick() {
-        mGeneralSettingsLog.info("User clicked to latency type adapter..");
-        spinnerLatency.performClick();
-    }
+            @Override
+            public void onExplainClick() {}
+        });
+        themeDropDown.setDelegate(new DropDownView.Delegate() {
+            @Override
+            public void onItemSelect(@NonNull String value) {
+                mGeneralPresenter.onThemeSelected(value);
+            }
 
-    @OnClick({R.id.tv_current_selection, R.id.img_selection_drop_down_btn})
-    public void onCurrentSelectionClick() {
-        mGeneralSettingsLog.info("User clicked to open selection adapter..");
-        spinnerSelection.performClick();
-    }
+            @Override
+            public void onExplainClick() {}
+        });
+        notificationToggle.setDelegate(new ToggleView.Delegate() {
+            @Override
+            public void onToggleClick() {
+                mGeneralPresenter.onNotificationToggleButtonClicked();
+            }
 
-    @OnClick(R.id.disconnected_flag_edit_button)
-    public void onDisconnectedFlagEditClick() {
-        mGeneralSettingsLog.info("User clicked on disconnected flag edit button...");
-        mGeneralPresenter.onDisconnectedFlagEditClicked(DISCONNECTED_FLAG_PATH_PICK_REQUEST);
-    }
+            @Override
+            public void onExplainClick() {}
+        });
+        locationLoadToggle.setDelegate(new ToggleView.Delegate() {
+            @Override
+            public void onToggleClick() {
+                mGeneralPresenter.onShowHealthToggleClicked();
+            }
 
-    @SuppressWarnings("unused")
-    @OnItemSelected(R.id.spinner_language)
-    public void onLanguageSelected(View view, int position) {
-        if (view != null) {
-            ((TextView) view.findViewById(R.id.tv_drop_down)).setText("");
-            mGeneralPresenter.onLanguageSelected(spinnerLanguage.getSelectedItem().toString());
-        }
-    }
+            @Override
+            public void onExplainClick() {}
+        });
+        hapticToggle.setDelegate(new ToggleView.Delegate() {
+            @Override
+            public void onToggleClick() {
+                mGeneralPresenter.onHapticToggleButtonClicked();
+            }
 
-    @SuppressWarnings("unused")
-    @OnItemSelected(R.id.spinner_latency)
-    public void onLatencySelected(View view, int position) {
-        if (view != null) {
-            ((TextView) view.findViewById(R.id.tv_drop_down)).setText("");
-        }
-        if (mGeneralPresenter != null) {
-            mGeneralPresenter.onLatencyTypeSelected(spinnerLatency.getSelectedItem().toString());
-        }
-    }
+            @Override
+            public void onExplainClick() {}
+        });
+        appBackgroundDropDown.setDelegate(new AppBackgroundView.Delegate() {
+            @Override
+            public void onItemSelect(@NonNull String value) {
+                mGeneralPresenter.onCustomFlagToggleButtonClicked(value);
+            }
 
-    @SuppressWarnings("unused")
-    @OnItemSelected(R.id.spinner_selection)
-    public void onListSelectionSelected(View view, int position) {
-        if (view != null) {
-            ((TextView) view.findViewById(R.id.tv_drop_down)).setText("");
-            mGeneralPresenter.onSelectionSelected(spinnerSelection.getSelectedItem().toString());
-        }
-    }
+            @Override
+            public void onFirstRightIconClick() {
+                mGeneralSettingsLog.info("User clicked on disconnected flag edit button...");
+                mGeneralPresenter.onDisconnectedFlagEditClicked(DISCONNECTED_FLAG_PATH_PICK_REQUEST);
+            }
 
-    @OnClick(R.id.img_show_health_toggle_btn)
-    public void onShowHealthToggleClick() {
-        mGeneralSettingsLog.info("User clicked on show health toggle button...");
-        mGeneralPresenter.onShowHealthToggleClicked();
-    }
-
-    @SuppressWarnings("unused")
-    @OnItemSelected(R.id.spinner_theme)
-    public void onThemeSelected(View view, int position) {
-        if (view != null) {
-            ((TextView) view.findViewById(R.id.tv_drop_down)).setText("");
-        }
-        if (mGeneralPresenter != null) {
-            mGeneralPresenter.onThemeSelected(spinnerTheme.getSelectedItem().toString());
-        }
-    }
-
-    @OnClick({R.id.img_theme_drop_down_btn, R.id.tv_theme_selection})
-    public void onThemeSelectionClick() {
-        mGeneralSettingsLog.info("User clicked theme adapter..");
-        spinnerTheme.performClick();
-    }
-
-    @OnClick(R.id.custom_background_toggle)
-    public void onToggleCustomFlagClick() {
-        mGeneralSettingsLog.info("User clicked on Custom background toggle...");
-        mGeneralPresenter.onCustomFlagToggleButtonClicked();
-    }
-
-    @OnClick(R.id.img_haptic_toggle_btn)
-    public void onToggleHapticClick() {
-        mGeneralSettingsLog.info("User clicked on haptic toggle button...");
-        mGeneralPresenter.onHapticToggleButtonClicked();
-    }
-
-    @OnClick(R.id.img_notification_toggle_btn)
-    public void onToggleNotificationClick() {
-        mGeneralSettingsLog.info("User clicked on notification toggle button...");
-        mGeneralPresenter.onNotificationToggleButtonClicked();
+            @Override
+            public void onSecondRightIconClick() {
+                mGeneralSettingsLog.info("User clicked on connected flag edit button...");
+                mGeneralPresenter.onConnectedFlagEditClicked(CONNECTED_FLAG_PATH_PICK_REQUEST);
+            }
+        });
     }
 
     @Override
@@ -358,19 +257,19 @@ public class GeneralSettingsActivity extends BaseActivity implements GeneralSett
 
     @Override
     public void resetTextResources(String title, String sortBy, String latencyDisplay, String language,
-            String appearance, String notificationState, String hapticFeedback, String version, String connected,
-            String disconnected, String appBackground) {
+                                   String appearance, String notificationState, String hapticFeedback, String version, String connected,
+                                   String disconnected, String appBackground) {
         tvActivityTitle.setText(title);
-        selectionLabelTextView.setText(sortBy);
-        tvLatencyLabel.setText(latencyDisplay);
-        tvLanguageLabel.setText(language);
-        tvThemeLabel.setText(appearance);
-        tvNotificationLabel.setText(notificationState);
-        tvHapticLabel.setText(hapticFeedback);
+        locationSelectionDropDown.setTitle(sortBy);
+        latencyDropDown.setTitle(latencyDisplay);
+        languageDropDown.setTitle(language);
+        themeDropDown.setTitle(appearance);
+        notificationToggle.setTitle(notificationState);
+        hapticToggle.setTitle(hapticFeedback);
         tvVersionLabel.setText(version);
-        appBackgroundLabel.setText(appBackground);
-        connectedFlagPathLabel.setText(connected);
-        disconnectedFlagPathLabel.setText(disconnected);
+        appBackgroundDropDown.setTitle(appBackground);
+        appBackgroundDropDown.setFirstItemDescription(disconnected);
+        appBackgroundDropDown.setSecondItemDescription(connected);
     }
 
     @Override
@@ -385,120 +284,84 @@ public class GeneralSettingsActivity extends BaseActivity implements GeneralSett
 
     @Override
     public void setConnectedFlagPath(final String path) {
-        connectedFlagPathEditView.setText(path);
+        appBackgroundDropDown.setSecondItemDescription(path);
     }
 
     @Override
     public void setDisconnectedFlagPath(final String path) {
-        disconnectedFlagPathEditView.setText(path);
+        appBackgroundDropDown.setFirstItemDescription(path);
     }
 
     @Override
     public void setFlagSizeLabel(String label) {
-        connectedFlagSizeLabel.setText(label);
-        disconnectedFlagSizeLabel.setText(label);
+        appBackgroundDropDown.setFirstItemTitle(label);
+        appBackgroundDropDown.setSecondItemTitle(label);
     }
 
     @Override
     public void setLanguageTextView(String language) {
-        tvCurrentLanguage.setText(language);
+        languageDropDown.setCurrentValue(language);
         reloadApp();
     }
 
     @Override
     public void setLatencyType(String latencyType) {
-        tvCurrentLatency.setText(latencyType);
+        latencyDropDown.setCurrentValue(latencyType);
     }
 
     @Override
     public void setSelectionTextView(String selection) {
-        tvCurrentSelection.setText(selection);
+        locationSelectionDropDown.setCurrentValue(selection);
     }
 
     @Override
     public void setThemeTextView(String theme) {
-        themeSelection.setText(theme);
+        themeDropDown.setCurrentValue(theme);
         reloadApp();
     }
 
     @Override
-    public void setupAppBackgroundLayoutCollapsed() {
-        Fade autoTransition = new Fade();
-        autoTransition.setDuration(500);
-        TransitionManager.beginDelayedTransition(clAppBackground, autoTransition);
-        constraintAppBackgroundCollapsed.applyTo(clAppBackground);
-    }
-
-    @Override
-    public void setupAppBackgroundLayoutExpanded() {
-        Fade autoTransition = new Fade();
-        autoTransition.setDuration(500);
-        TransitionManager.beginDelayedTransition(clAppBackground, autoTransition);
-        constraintAppBackgroundExpanded.applyTo(clAppBackground);
-    }
-
-    @Override
-    public void setupCustomFlagToggleImage(final int ic_toggle_button_off) {
-        customBackgroundToggle.setImageResource(ic_toggle_button_off);
+    public void setupCustomFlagAdapter(String saved, String[] options) {
+        appBackgroundDropDown.setAdapter(saved, options);
     }
 
     @Override
     public void setupHapticToggleImage(int ic_toggle_button_off) {
-        imgHapticToggle.setImageResource(ic_toggle_button_off);
+        hapticToggle.setToggleImage(ic_toggle_button_off);
     }
 
     @Override
     public void setupLanguageAdapter(String savedLanguage, String[] languages) {
         mGeneralSettingsLog.info("Setting up language adapter...");
-        ArrayAdapter<String> languageAdapter = new ArrayAdapter<>(this, R.layout.drop_down_layout,
-                R.id.tv_drop_down, languages);
-        spinnerLanguage.setAdapter(languageAdapter);
-        spinnerLanguage.setSelected(false);
-        spinnerLanguage.setSelection(languageAdapter.getPosition(savedLanguage));
-        tvCurrentLanguage.setText(savedLanguage);
+        languageDropDown.setAdapter(savedLanguage, languages);
     }
 
     @Override
     public void setupLatencyAdapter(String savedLatency, String[] latencyTypes) {
         mGeneralSettingsLog.info("Setting up latency adapter...");
-        ArrayAdapter<String> latencyAdapter = new ArrayAdapter<>(this, R.layout.drop_down_layout,
-                R.id.tv_drop_down, latencyTypes);
-        spinnerLatency.setAdapter(latencyAdapter);
-        spinnerLatency.setSelected(false);
-        spinnerLatency.setSelection(latencyAdapter.getPosition(savedLatency));
-        tvCurrentLatency.setText(savedLatency);
+        latencyDropDown.setAdapter(savedLatency, latencyTypes);
     }
 
     @Override
     public void setupLocationHealthToggleImage(final int image) {
-        showHealthToggle.setImageResource(image);
+        locationLoadToggle.setToggleImage(image);
     }
 
     @Override
     public void setupNotificationToggleImage(int ic_toggle_button_off) {
-        imgNotificationToggle.setImageResource(ic_toggle_button_off);
+        notificationToggle.setToggleImage(ic_toggle_button_off);
     }
 
     @Override
     public void setupSelectionAdapter(String savedSelection, String[] selections) {
         mGeneralSettingsLog.info("Setting up selection adapter...");
-        ArrayAdapter<String> selectionAdapter = new ArrayAdapter<>(this, R.layout.drop_down_layout,
-                R.id.tv_drop_down, selections);
-        spinnerSelection.setAdapter(selectionAdapter);
-        spinnerSelection.setSelected(false);
-        spinnerSelection.setSelection(selectionAdapter.getPosition(savedSelection));
-        tvCurrentSelection.setText(savedSelection);
+        locationSelectionDropDown.setAdapter(savedSelection, selections);
     }
 
     @Override
     public void setupThemeAdapter(String savedTheme, String[] themeList) {
         mGeneralSettingsLog.info("Setting up theme adapter..");
-        ArrayAdapter<String> themeAdapter = new ArrayAdapter<>(this, R.layout.drop_down_layout, R.id.tv_drop_down,
-                themeList);
-        spinnerTheme.setAdapter(themeAdapter);
-        spinnerTheme.setSelected(false);
-        spinnerTheme.setSelection(themeAdapter.getPosition(savedTheme));
-        themeSelection.setText(savedTheme);
+        themeDropDown.setAdapter(savedTheme, themeList);
     }
 
     public void showToast(String toastString) {
@@ -527,25 +390,6 @@ public class GeneralSettingsActivity extends BaseActivity implements GeneralSett
                 .addNextIntent(MainMenuActivity.getStartIntent(this))
                 .addNextIntentWithParentStack(getIntent())
                 .startActivities();
-    }
-
-    private void setAppBackgroundTab() {
-        constraintAppBackgroundCollapsed.clone(this, R.layout.app_background_tab);
-        constraintAppBackgroundExpanded.clone(this, R.layout.app_background_tab);
-        constraintAppBackgroundExpanded.setVisibility(R.id.app_background_settings_divider, ConstraintSet.GONE);
-        constraintAppBackgroundExpanded.setVisibility(R.id.connected_flag_label, ConstraintSet.VISIBLE);
-        constraintAppBackgroundExpanded.setVisibility(R.id.connected_flag_size, ConstraintSet.VISIBLE);
-        constraintAppBackgroundExpanded.setVisibility(R.id.connected_edit_background, ConstraintSet.VISIBLE);
-        constraintAppBackgroundExpanded.setVisibility(R.id.connected_flag_location_edit_view, ConstraintSet.VISIBLE);
-        constraintAppBackgroundExpanded.setVisibility(R.id.connected_flag_edit_button, ConstraintSet.VISIBLE);
-
-        constraintAppBackgroundExpanded.setVisibility(R.id.disconnected_flag_label, ConstraintSet.VISIBLE);
-        constraintAppBackgroundExpanded.setVisibility(R.id.disconnected_flag_size, ConstraintSet.VISIBLE);
-        constraintAppBackgroundExpanded.setVisibility(R.id.disconnected_edit_background, ConstraintSet.VISIBLE);
-        constraintAppBackgroundExpanded
-                .setVisibility(R.id.disconnected_flag_location_edit_view, ConstraintSet.VISIBLE);
-        constraintAppBackgroundExpanded.setVisibility(R.id.disconnected_flag_edit_button, ConstraintSet.VISIBLE);
-
     }
 
     private File uriToFile(Uri fileUri) {

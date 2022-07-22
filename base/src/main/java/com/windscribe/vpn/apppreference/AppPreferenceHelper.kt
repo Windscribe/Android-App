@@ -10,6 +10,7 @@ import com.windscribe.vpn.api.response.NewsFeedNotification
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.backend.utils.ProtocolConfig
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.constants.PreferencesKeyConstants.AUTO_SECURE_NEW_NETWORKS
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DECOY_TRAFFIC
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_IKEV2_PORT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT
@@ -570,12 +571,18 @@ class AppPreferenceHelper(
             preference.put(DECOY_TRAFFIC, value)
         }
 
+    override var isAutoSecureOn: Boolean
+        get() = preference.getBoolean(AUTO_SECURE_NEW_NETWORKS, true)
+        set(value) {
+            preference.put(AUTO_SECURE_NEW_NETWORKS, value)
+        }
+
     override var fakeTrafficVolume: FakeTrafficVolume
         get(){
             val value = preference.getString(FAKE_TRAFFIC_VOLUME, FakeTrafficVolume.High.name)?:FakeTrafficVolume.High.name
             return FakeTrafficVolume.valueOf(value)
-        }
+            }
         set(value) {
-            preference.put(FAKE_TRAFFIC_VOLUME, value.name)
+                preference.put(FAKE_TRAFFIC_VOLUME, value.name)
         }
 }

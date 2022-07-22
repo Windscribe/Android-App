@@ -73,6 +73,7 @@ interface PreferencesHelper {
     var userStatus: Int
     var whitelistOverride: Boolean
     val wireGuardPort: String
+    var isAutoSecureOn : Boolean
     fun isConnectingToConfiguredLocation(): Boolean
     val isConnectingToStaticIp: Boolean
     var isCustomBackground: Boolean
@@ -126,5 +127,6 @@ interface PreferencesHelper {
     fun setUserAccountUpdateRequired(required: Boolean)
     fun setUserIntendedDisconnect(userIntendedDisconnect: Boolean)
     fun userIsInGhostMode(): Boolean
+
     var fakeTrafficVolume:FakeTrafficVolume
 }

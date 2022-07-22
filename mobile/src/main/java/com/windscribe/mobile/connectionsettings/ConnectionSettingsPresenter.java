@@ -50,7 +50,7 @@ public interface ConnectionSettingsPresenter {
 
     void setKeepAlive(String keepAlive);
 
-    void setPacketSizeManual(String size);
+    void setPacketSize(String size);
 
     void setTheme(Context context);
 

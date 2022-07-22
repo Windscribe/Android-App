@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/next_button_warning_enabled" android:state_pressed="true" />
+    <item android:drawable="@drawable/next_button_warning_enabled" android:state_enabled="true" />
+    <item android:drawable="@drawable/next_button_warning_enabled" android:state_focused="true" />
+    <item android:drawable="@drawable/next_button_disabled" android:state_enabled="false" />
+</selector>

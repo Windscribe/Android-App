@@ -94,6 +94,7 @@
         <item name="colorAccent">@color/colorWhite</item>
         <item name="wdPrimaryColor10">@color/colorWhite10</item>
         <item name="wdPrimaryInvertedColor">@color/colorDeepBlue</item>
+        <item name="preferencesRoundedBackgroundColor">@color/colorWhite8</item>
     </style>
 
     <!--Light Theme -->
@@ -172,6 +173,7 @@
         <item name="colorAccent">@color/colorDeepBlue</item>
         <item name="wdPrimaryColor10">@color/colorDeepBlue10</item>
         <item name="wdPrimaryInvertedColor">@color/colorWhite</item>
+        <item name="preferencesRoundedBackgroundColor">@color/colorDeepBlue8</item>
     </style>
 
     <style name="AppTheme.WindLauncher">
@@ -356,6 +358,10 @@
         <item name="android:background">@drawable/next_button_ripple</item>
     </style>
 
+    <style name="NextButtonWarning" parent="NextButton">
+        <item name="android:background">@drawable/next_button_warning_ripple</item>
+    </style>
+
     <style name="WarningActionButton" parent="NextButton">
         <item name="android:background">@drawable/warning_action_ripple</item>
         <item name="android:layout_marginBottom">@dimen/margin_16</item>
@@ -391,13 +397,12 @@
     </style>
 
     <style name="RobertPageDescription" parent="PageDescription">
-        <item name="android:layout_marginStart">@dimen/margin_16</item>
-        <item name="android:layout_marginEnd">65dp</item>
-        <item name="android:layout_marginTop">@dimen/margin_32</item>
+        <item name="android:layout_marginStart">0dp</item>
+        <item name="android:layout_marginEnd">0dp</item>
+        <item name="android:layout_marginTop">0dp</item>
         <item name="android:textColor">?attr/wdSecondaryColor</item>
         <item name="android:textSize">@dimen/text_size_12</item>
         <item name="android:gravity">start</item>
-        <item name="android:layout_gravity">center</item>
         <item name="fontFamily">@font/ibm_plex_sans_regular</item>
     </style>
 
@@ -578,6 +583,25 @@
         <item name="android:contentDescription">@string/image_description</item>
     </style>
 
+    <style name="LinkArrowIcon" parent="WrapWrapContainer">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">@dimen/reg_16dp</item>
+        <item name="android:layout_marginEnd">@dimen/margin_16</item>
+        <item name="android:layout_marginRight">@dimen/margin_16</item>
+        <item name="android:scaleType">fitEnd</item>
+        <item name="android:src">@drawable/link_arrow_icon</item>
+        <item name="android:contentDescription">@string/image_description</item>
+    </style>
+
+    <style name="ExplainIcon" parent="LinkArrowIcon">
+        <item name="android:src">@drawable/ic_explain_me</item>
+        <item name="android:background">@drawable/ripple_round</item>
+        <item name="android:padding">@dimen/padding_8</item>
+        <item name="android:layout_marginEnd">@dimen/margin_8</item>
+        <item name="android:layout_marginRight">@dimen/margin_8</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
     <style name="MenuItemLabel" parent="WrapWrapContainer">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -593,13 +617,14 @@
 
     <style name="MenuItemLabelNoStartMargin" parent="MenuItemLabel">
         <item name="android:layout_marginStart">0dp</item>
+        <item name="android:layout_marginLeft">0dp</item>
     </style>
 
     <style name="MenuItemContainer">
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">@dimen/reg_60dp</item>
+        <item name="android:layout_height">@dimen/reg_52dp</item>
         <item name="android:layout_marginStart">@dimen/margin_16</item>
-        <item name="android:background">@drawable/menu_item_states</item>
+        <item name="android:background">@drawable/ripple_square</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
     </style>
@@ -704,8 +729,13 @@
         <item name="android:text">--</item>
         <item name="android:textColor">?attr/preferenceItemLabelFiveColor</item>
         <item name="android:textSize">16sp</item>
-
     </style>
+
+    <style name="MenuItemLabelHalfOpacity" parent="MenuItemLabelFour">
+        <item name="android:textColor">?attr/wdSecondaryColor</item>
+    </style>
+
+
 
     <style name="MenuItemLabelFive" parent="WrapWrapContainer">
         <item name="android:layout_marginTop">@dimen/margin_16</item>
@@ -714,6 +744,26 @@
         <item name="android:textColor">?attr/preferenceItemLabelFiveColor</item>
         <item name="android:textSize">16sp</item>
         <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="preferenceRoundedBackground" parent="ConstraintWrapContainer">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/preferences_rounded_corner_background</item>
+        <item name="android:layout_marginTop">@dimen/margin_16</item>
+        <item name="android:layout_marginEnd">@dimen/margin_16</item>
+        <item name="android:layout_marginStart">@dimen/margin_16</item>
+        <item name="android:layout_marginBottom">@dimen/margin_16</item>
+        <item name="android:paddingStart">@dimen/padding_16</item>
+        <item name="android:paddingTop">@dimen/padding_16</item>
+        <item name="android:paddingBottom">@dimen/padding_16</item>
+    </style>
+
+    <style name="preferenceRoundedBackgroundLowTopMargin" parent="preferenceRoundedBackground">
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:layout_marginBottom">0dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
     </style>
 
     <style name="MenuAttentionContainer">

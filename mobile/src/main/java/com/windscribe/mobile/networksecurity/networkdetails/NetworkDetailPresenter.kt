@@ -15,4 +15,5 @@ interface NetworkDetailPresenter {
     fun setTheme(context: Context)
     fun toggleAutoSecure()
     fun togglePreferredProtocol()
+    fun init()
 }
