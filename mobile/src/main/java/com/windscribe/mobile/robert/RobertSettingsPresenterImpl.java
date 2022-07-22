@@ -21,8 +21,11 @@ import com.windscribe.vpn.api.CreateHashMap;
 import com.windscribe.vpn.api.response.ApiErrorResponse;
 import com.windscribe.vpn.api.response.GenericResponseClass;
 import com.windscribe.vpn.api.response.GenericSuccess;
+import com.windscribe.vpn.api.response.RobertFilter;
+import com.windscribe.vpn.api.response.RobertFilterResponse;
 import com.windscribe.vpn.api.response.RobertSettingsResponse;
 import com.windscribe.vpn.api.response.WebSession;
+import com.windscribe.vpn.constants.FeatureExplainer;
 import com.windscribe.vpn.constants.NetworkKeyConstants;
 import com.windscribe.vpn.constants.PreferencesKeyConstants;
 import com.windscribe.vpn.exceptions.WindScribeException;
@@ -90,7 +93,7 @@ public class RobertSettingsPresenterImpl implements RobertSettingsPresenter, Rob
 
     @Override
     public void onLearnMoreClick() {
-        mRobertSettingsView.openUrl(NetworkKeyConstants.getWebsiteLink(NetworkKeyConstants.ROBERT));
+        mRobertSettingsView.openUrl(FeatureExplainer.ROBERT);
     }
 
     @Override
@@ -104,14 +107,12 @@ public class RobertSettingsPresenterImpl implements RobertSettingsPresenter, Rob
     }
 
     @Override
-    public void settingChanged(@NonNull List<RobertSetting> originalList, @NonNull final List<String> enabledFilters,
-            int position) {
+    public void settingChanged(@NonNull List<RobertFilter> originalList, RobertFilter robertFilter, int position) {
         mRobertSettingsAdapter.setSettingUpdateInProgress(true);
         mRobertSettingsView.showProgress();
         Map<String, String> paramMap = new HashMap<>();
-        for (String filter : enabledFilters) {
-            paramMap.put(String.format("blocklists[%s]", filter), filter);
-        }
+        paramMap.put("filter", robertFilter.getId());
+        paramMap.put("status", String.valueOf(robertFilter.getStatus()));
         mPresenterLog.debug(String.format("Changing robert setting list to %S", paramMap.toString()));
         mRobertSettingsInteractor.getCompositeDisposable()
                 .add(mRobertSettingsInteractor.getApiCallManager().updateRobertSettings(paramMap)
@@ -123,24 +124,15 @@ public class RobertSettingsPresenterImpl implements RobertSettingsPresenter, Rob
                         ));
     }
 
-    private List<RobertSetting> apiResponseToRobertSettings(RobertSettingsResponse response) {
-        List<RobertSetting> robertSettings = new ArrayList<>();
-        for (String filter : Objects.requireNonNull(response.getList())) {
-            robertSettings
-                    .add(new RobertSetting(filter, Objects.requireNonNull(response.getSettings()).contains(filter)));
-        }
-        return robertSettings;
-    }
-
-    private void handleRobertLoadSettingResponse(List<RobertSetting> robertSettings) {
+    private void handleRobertLoadSettingResponse(List<RobertFilter> robertFilters) {
         mRobertSettingsView.hideProgress();
         mRobertSettingsAdapter = new RobertSettingsAdapter(this);
-        mRobertSettingsAdapter.setData(robertSettings);
+        mRobertSettingsAdapter.setData(robertFilters);
         mRobertSettingsView.setAdapter(mRobertSettingsAdapter);
     }
 
     private void handleRobertSettingUpdateResponse(GenericResponseClass<GenericSuccess, ApiErrorResponse> response,
-            @NonNull List<RobertSetting> originalList, int position) {
+            @NonNull List<RobertFilter> originalList, int position) {
         mRobertSettingsAdapter.setSettingUpdateInProgress(false);
         if (response.getDataClass() != null) {
             mRobertSettingsView.hideProgress();
@@ -153,7 +145,7 @@ public class RobertSettingsPresenterImpl implements RobertSettingsPresenter, Rob
         }
     }
 
-    private void handleRobertSettingsUpdateError(String error, List<RobertSetting> originalList, int position) {
+    private void handleRobertSettingsUpdateError(String error, List<RobertFilter> originalList, int position) {
         mRobertSettingsAdapter.setSettingUpdateInProgress(false);
         mRobertSettingsView.hideProgress();
         mRobertSettingsView.showToast(error);
@@ -180,22 +172,21 @@ public class RobertSettingsPresenterImpl implements RobertSettingsPresenter, Rob
         }
     }
 
-    private Single<List<RobertSetting>> loadFromDatabase(Throwable throwable) throws WindScribeException {
+    private Single<List<RobertFilter>> loadFromDatabase(Throwable throwable) throws WindScribeException {
         String json = mRobertSettingsInteractor.getAppPreferenceInterface()
-                .getResponseString(PreferencesKeyConstants.ROBERT_SETTINGS);
+                .getResponseString(PreferencesKeyConstants.ROBERT_FILTERS);
         if (json == null) {
             throw new WindScribeException(throwable.getLocalizedMessage());
         }
-        return Single.just(new Gson().fromJson(json, new TypeToken<List<RobertSetting>>() {
+        return Single.just(new Gson().fromJson(json, new TypeToken<List<RobertFilter>>() {
         }.getType()));
     }
 
     private void loadSettings() {
         mRobertSettingsView.showProgress();
         mRobertSettingsInteractor.getCompositeDisposable().add(
-                mRobertSettingsInteractor.getApiCallManager().getRobertSettings(null)
-                        .flatMap(
-                                (Function<GenericResponseClass<RobertSettingsResponse, ApiErrorResponse>, SingleSource<List<RobertSetting>>>) this::saveToDatabase)
+                mRobertSettingsInteractor.getApiCallManager().getRobertFilters(null)
+                        .flatMap((Function<GenericResponseClass<RobertFilterResponse, ApiErrorResponse>, SingleSource<List<RobertFilter>>>) this::saveToDatabase)
                         .onErrorResumeNext(this::loadFromDatabase)
                         .subscribeOn(Schedulers.io())
                         .delaySubscription(1, TimeUnit.SECONDS)
@@ -219,14 +210,14 @@ public class RobertSettingsPresenterImpl implements RobertSettingsPresenter, Rob
         return uri.toString();
     }
 
-    private Single<List<RobertSetting>> saveToDatabase(
-            GenericResponseClass<RobertSettingsResponse, ApiErrorResponse> response)
+    private Single<List<RobertFilter>> saveToDatabase(
+            GenericResponseClass<RobertFilterResponse, ApiErrorResponse> response)
             throws WindScribeException {
         if (response.getDataClass() != null) {
-            List<RobertSetting> robertSettings = apiResponseToRobertSettings(response.getDataClass());
+            List<RobertFilter> robertSettings = response.getDataClass().getFilters();
             String json = new Gson().toJson(robertSettings);
             mRobertSettingsInteractor.getAppPreferenceInterface()
-                    .saveResponseStringData(PreferencesKeyConstants.ROBERT_SETTINGS, json);
+                    .saveResponseStringData(PreferencesKeyConstants.ROBERT_FILTERS, json);
             return Single.just(robertSettings);
         }
         if (response.getErrorClass() != null) {

@@ -3,14 +3,8 @@
  */
 package com.windscribe.tv.upgrade
 
-import android.content.Intent
 import com.amazon.device.iap.PurchasingService
-import com.amazon.device.iap.model.FulfillmentResult
-import com.amazon.device.iap.model.Product
-import com.amazon.device.iap.model.ProductType
-import com.amazon.device.iap.model.PurchaseResponse
-import com.amazon.device.iap.model.Receipt
-import com.amazon.device.iap.model.UserData
+import com.amazon.device.iap.model.*
 import com.android.billingclient.api.BillingClient.BillingResponseCode
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
@@ -18,13 +12,8 @@ import com.google.gson.Gson
 import com.windscribe.tv.R
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.api.response.ApiErrorResponse
-import com.windscribe.vpn.api.response.BillingPlanResponse
+import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.api.response.BillingPlanResponse.BillingPlans
-import com.windscribe.vpn.api.response.GenericResponseClass
-import com.windscribe.vpn.api.response.GenericSuccess
-import com.windscribe.vpn.api.response.PushNotificationAction
-import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.billing.AmazonProducts
 import com.windscribe.vpn.billing.AmazonPurchase
 import com.windscribe.vpn.billing.GoogleProducts
@@ -51,8 +40,6 @@ import com.windscribe.vpn.exceptions.InvalidSessionException
 import com.windscribe.vpn.exceptions.UnknownException
 import com.windscribe.vpn.localdatabase.tables.UserStatusTable
 import com.windscribe.vpn.model.User
-import com.windscribe.vpn.services.verify.VerifyAmazonPurchaseService
-import com.windscribe.vpn.services.verify.VerifyGooglePurchaseService
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.SingleSource
@@ -80,11 +67,7 @@ class UpgradePresenterImpl @Inject constructor(
         // Start the background service to verify purchase before destroying
         if (mPurchase != null) {
             logger.info("Starting purchase verification service...")
-            VerifyGooglePurchaseService.enqueueWork(
-                appContext,
-                Intent(appContext, VerifyGooglePurchaseService::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
+            appContext.workManager.checkPendingAccountUpgrades()
         }
         interactor.getCompositeDisposable().clear()
     }
@@ -276,49 +259,24 @@ class UpgradePresenterImpl @Inject constructor(
         logger.info(purchaseMap.toString())
         interactor.getCompositeDisposable().add(
             interactor.getApiCallManager()
-                .verifyPayment(purchaseMap)
+                .verifyPurchaseReceipt(purchaseMap)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(
                     object :
-                        DisposableSingleObserver<GenericResponseClass<String?, ApiErrorResponse?>?>() {
+                        DisposableSingleObserver<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>?>() {
                         override fun onError(e: Throwable) {
                             logger.debug("Payment verification failed. " + instance.convertThrowableToString(e))
                             upgradeView.showBillingErrorDialog("Payment verification failed!")
                         }
 
-                        override fun onSuccess(
-                            paymentVerificationResponse: GenericResponseClass<String?, ApiErrorResponse?>
-                        ) {
+                        override fun onSuccess(paymentVerificationResponse: GenericResponseClass<GenericSuccess?, ApiErrorResponse?>) {
                             when {
                                 paymentVerificationResponse.dataClass != null -> {
-                                    try {
-                                        val res = JSONObject(
-                                            paymentVerificationResponse.dataClass
-                                        )
-                                        val error = res.getInt("errorCode")
-                                        logger.info("Payment verification code :$error")
-                                        if (error == 4005) {
-                                            // showBillingError(paymentVerificationResponse.getErrorClass());
-                                            upgradeView.showBillingErrorDialog(res.toString())
-                                            return
-                                        }
-                                        if (error == 500) {
-                                            showBillingError(paymentVerificationResponse.errorClass)
-                                            return
-                                        }
-                                    } catch (e: JSONException) {
-                                        logger.info("Unable parse Error code from response.")
-                                    }
-                                    logger.info(
-                                        "Payment verification successful. " +
-                                            paymentVerificationResponse.dataClass +
-                                            " - Removing purchased item from storage."
-                                    )
+                                    logger.info("Payment verification successful. ")
                                     interactor.getAppPreferenceInterface().removeResponseData(PURCHASED_ITEM)
                                     // Item purchased and verified
-                                    logger
-                                        .info("Setting item purchased to null & upgrading user account")
+                                    logger.info("Setting item purchased to null & upgrading user account")
                                     mPurchase = null
                                     upgradeUserAccount()
                                     setPurchaseFlowState(PurchaseState.FINISHED)
@@ -358,11 +316,7 @@ class UpgradePresenterImpl @Inject constructor(
             PurchaseResponse.RequestStatus.ALREADY_PURCHASED -> {
                 logger
                     .debug("onPurchaseResponse: already purchased, running verify service.")
-                VerifyAmazonPurchaseService.enqueueWork(
-                    appContext,
-                    Intent(appContext, VerifyAmazonPurchaseService::class.java)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                )
+                interactor.getWorkManager().checkPendingAccountUpgrades()
                 upgradeView.goBackToMainActivity()
             }
             PurchaseResponse.RequestStatus.INVALID_SKU -> {
@@ -394,11 +348,7 @@ class UpgradePresenterImpl @Inject constructor(
             }
             BillingResponseCode.ITEM_ALREADY_OWNED -> {
                 logger.debug("Item already owned by user: Running verify Purchase service.")
-                VerifyGooglePurchaseService.enqueueWork(
-                    appContext,
-                    Intent(appContext, VerifyGooglePurchaseService::class.java)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                )
+                appContext.workManager.checkPendingAccountUpgrades()
             }
             else -> {
                 setPurchaseFlowState(PurchaseState.FINISHED)
@@ -796,62 +746,28 @@ class UpgradePresenterImpl @Inject constructor(
         logger.info(purchaseMap.toString())
         interactor.getCompositeDisposable().add(
             interactor.getApiCallManager()
-                .verifyPayment(purchaseMap)
+                .verifyPurchaseReceipt(purchaseMap)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(
-                    object :
-                        DisposableSingleObserver<GenericResponseClass<String?, ApiErrorResponse?>?>() {
+                    object : DisposableSingleObserver<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>?>() {
                         override fun onError(e: Throwable) {
-                            logger
-                                .debug(
-                                    "Payment verification failed. " + instance
-                                        .convertThrowableToString(e)
-                                )
+                            logger.debug("Payment verification failed. " + instance.convertThrowableToString(e))
                             upgradeView.showBillingErrorDialog("Payment verification failed!")
                         }
 
-                        override fun onSuccess(
-                            paymentVerificationResponse: GenericResponseClass<String?, ApiErrorResponse?>
-                        ) {
+                        override fun onSuccess(paymentVerificationResponse: GenericResponseClass<GenericSuccess?, ApiErrorResponse?>) {
                             when {
                                 paymentVerificationResponse.dataClass != null -> {
-                                    try {
-                                        val res = JSONObject(
-                                            paymentVerificationResponse.dataClass
-                                        )
-                                        val error = res.getInt("errorCode")
-                                        logger.debug(res.toString())
-                                        logger.info("Payment verification code :$error")
-                                        if (error == 4005) {
-                                            upgradeView.showBillingErrorDialog(
-                                                "Unknown error while verifying payment contact support."
-                                            )
-                                            return
-                                        }
-                                        if (error == 500) {
-                                            upgradeView.showBillingErrorDialog(
-                                                "Unknown error while verifying payment contact support."
-                                            )
-                                            return
-                                        }
-                                    } catch (e: JSONException) {
-                                        logger.info("Unable parse Error code from response.")
-                                    }
-                                    logger.info(
-                                        "Payment verification successful. " +
-                                            paymentVerificationResponse.dataClass +
-                                            " - Removing purchased item from storage."
-                                    )
+                                    logger.info("Payment verification successful.")
                                     interactor.getAppPreferenceInterface()
-                                        .removeResponseData(AMAZON_PURCHASED_ITEM)
+                                            .removeResponseData(AMAZON_PURCHASED_ITEM)
                                     // Item purchased and verified
-                                    logger
-                                        .info("Setting item purchased to null & upgrading user account")
+                                    logger.info("Setting item purchased to null & upgrading user account")
                                     mPurchase = null
                                     PurchasingService.notifyFulfillment(
-                                        amazonPurchase.receiptId,
-                                        FulfillmentResult.FULFILLED
+                                            amazonPurchase.receiptId,
+                                            FulfillmentResult.FULFILLED
                                     )
                                     upgradeUserAccount()
                                     setPurchaseFlowState(PurchaseState.FINISHED)

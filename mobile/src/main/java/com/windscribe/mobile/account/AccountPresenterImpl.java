@@ -236,13 +236,13 @@ public class AccountPresenterImpl implements AccountPresenter {
         mAccountView.setUsername(user.getUserName());
         switch (user.getEmailStatus()){
             case NoEmail:
-                mAccountView.setEmail(mAccountInteractor.getResourceString(R.string.add_email));
+                mAccountView.setEmail(mAccountInteractor.getResourceString(R.string.add_email),mAccountInteractor.getColorResource(R.color.colorNeonGreen));
                 break;
             case EmailProvided:
                 mAccountView.setEmailConfirm(user.getEmail());
                 break;
             case Confirmed:
-                mAccountView.setEmail(user.getEmail());
+                mAccountView.setEmail(user.getEmail(), mAccountInteractor.getThemeColor(R.attr.wdSecondaryColor));
         }
         if(user.getMaxData() == -1L){
             mAccountView.setPlanName(mAccountInteractor.getResourceString(R.string.unlimited_data));

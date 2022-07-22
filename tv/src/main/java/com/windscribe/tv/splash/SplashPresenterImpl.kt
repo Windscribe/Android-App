@@ -132,71 +132,9 @@ class SplashPresenterImpl @Inject constructor(
             logger.info("Session auth hash present. User is already logged in...")
             if (WindUtilities.isOnline()) {
                 PingTestService.startPingTestService()
-                logger.info("Found active network connectivity. Updating application data...")
-                if (interactor.getAppPreferenceInterface()
-                    .getResponseString(PURCHASED_ITEM) != null
-                ) {
-                    logger.info("Found pending purchase token, making purchase verification call...")
-                    val purchaseMap: MutableMap<String, String> = HashMap()
-                    interactor.getCompositeDisposable().add(
-                        Single.fromCallable {
-                            Gson().fromJson(
-                                interactor.getAppPreferenceInterface()
-                                    .getResponseString(PURCHASED_ITEM),
-                                ItemPurchased::class.java
-                            )
-                        }.flatMap { itemPurchased: ItemPurchased ->
-                            purchaseMap[GP_PACKAGE_NAME] = itemPurchased.packageName
-                            purchaseMap[GP_PRODUCT_ID] = itemPurchased.productId
-                            purchaseMap[PURCHASE_TOKEN] = itemPurchased.purchaseToken
-                            interactor.getApiCallManager()
-                                .verifyPayment(purchaseMap)
-                        }.subscribeOn(Schedulers.io())
-                            .observeOn(Schedulers.io())
-                            .subscribeWith(
-                                object :
-                                    DisposableSingleObserver<GenericResponseClass<String?, ApiErrorResponse?>?>() {
-                                    override fun onError(e: Throwable) {
-                                        logger
-                                            .debug(
-                                                "Error while retrying payment verification. " +
-                                                    instance
-                                                        .convertThrowableToString(e)
-                                            )
-                                        splashView.navigateToHome()
-                                    }
-
-                                    override fun onSuccess(
-                                        paymentVerificationResponse: GenericResponseClass<String?, ApiErrorResponse?>
-                                    ) {
-                                        if (paymentVerificationResponse.dataClass != null) {
-                                            logger.info(
-                                                "Payment verification successful. " +
-                                                    paymentVerificationResponse.dataClass +
-                                                    " - Removing purchased item from storage."
-                                            )
-                                            interactor.getAppPreferenceInterface()
-                                                .removeResponseData(PURCHASED_ITEM)
-                                        } else if (paymentVerificationResponse.errorClass != null) {
-                                            logger
-                                                .debug(
-                                                    "Payment verification failed. Server error response..." +
-                                                        paymentVerificationResponse.errorClass
-                                                            .toString() + "- Retry on next start..."
-                                                )
-                                        }
-                                        splashView.navigateToHome()
-                                    }
-                                })
-                    )
-                } else {
-                    logger.info("No pending purchase ID...")
-                    splashView.navigateToHome()
-                }
-            } else {
-                logger.info("NO ACTIVE NETWORK FOUND! Starting home activity with stale data.")
-                splashView.navigateToHome()
+                interactor.getWorkManager().checkPendingAccountUpgrades()
             }
+            splashView.navigateToHome()
         } else {
             // Goto Login/Registration Activity
             logger.info("Session auth hash not present. User not logged in...")

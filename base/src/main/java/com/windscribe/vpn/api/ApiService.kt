@@ -131,8 +131,11 @@ interface ApiService {
     @GET("/Robert/settings")
     fun getRobertSettings(@QueryMap params: Map<String, String>?): Single<ResponseBody>
 
+    @GET("/Robert/filters")
+    fun getRobertFilters(@QueryMap params: Map<String, String>?): Single<ResponseBody>
+
     @FormUrlEncoded
-    @PUT("/Robert/settings")
+    @PUT("/Robert/filter")
     fun updateRobertSettings(@FieldMap params: Map<String, String>?): Single<ResponseBody>
 
     @FormUrlEncoded

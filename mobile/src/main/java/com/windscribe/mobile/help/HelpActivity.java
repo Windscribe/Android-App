@@ -15,6 +15,8 @@ import android.widget.Toast;
 
 import com.windscribe.mobile.R;
 import com.windscribe.mobile.base.BaseActivity;
+import com.windscribe.mobile.custom_view.preferences.SingleLinkExplainView;
+import com.windscribe.mobile.custom_view.preferences.MultipleLinkExplainView;
 import com.windscribe.mobile.debug.DebugViewActivity;
 import com.windscribe.mobile.di.ActivityModule;
 import com.windscribe.mobile.ticket.SendTicketActivity;
@@ -53,6 +55,19 @@ public class HelpActivity extends BaseActivity implements HelpView {
         setActivityModule(new ActivityModule(this, this)).inject(this);
         setContentLayout(R.layout.activity_help,true);
         helpPresenter.init();
+        addClickListeners();
+    }
+
+    private void addClickListeners() {
+        SingleLinkExplainView knowledgeBtn = findViewById(R.id.knowledge);
+        knowledgeBtn.onClick(v -> helpPresenter.onKnowledgeBaseClick());
+        SingleLinkExplainView garryBtn = findViewById(R.id.garry);
+        garryBtn.onClick(v -> helpPresenter.onGarryClick());
+        SingleLinkExplainView ticketBtn = findViewById(R.id.sendTicket);
+        ticketBtn.onClick(v -> helpPresenter.onSendTicketClick());
+        MultipleLinkExplainView communityBtn = findViewById(R.id.community);
+        communityBtn.onFirstItemClick(v -> helpPresenter.onRedditClick());
+        communityBtn.onSecondItemClick(v -> helpPresenter.onDiscordClick());
     }
 
     @Override
@@ -65,36 +80,11 @@ public class HelpActivity extends BaseActivity implements HelpView {
         super.onBackPressed();
     }
 
-    @OnClick(R.id.discord_container)
-    public void onDiscordClick() {
-        helpPresenter.onDiscordClick();
-    }
-
-    @OnClick(R.id.garry_container)
-    public void onGarryClick() {
-        helpPresenter.onGarryClick();
-    }
-
-    @OnClick(R.id.knowledge_base_container)
-    public void onKnowledgeBaseClick() {
-        helpPresenter.onKnowledgeBaseClick();
-    }
-
-    @OnClick(R.id.reddit_container)
-    public void onRedditClick() {
-        helpPresenter.onRedditClick();
-    }
-
     @OnClick({R.id.cl_debug_send, R.id.tv_send_label})
     public void onSendDebugClicked() {
         if (!logSent) {
             helpPresenter.onSendDebugClicked();
         }
-    }
-
-    @OnClick(R.id.ticket_container)
-    public void onSendTicketClick() {
-        helpPresenter.onSendTicketClick();
     }
 
     @OnClick({R.id.cl_debug_view})

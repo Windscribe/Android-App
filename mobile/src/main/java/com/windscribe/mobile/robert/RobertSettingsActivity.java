@@ -35,12 +35,6 @@ public class RobertSettingsActivity extends BaseActivity implements RobertSettin
     @BindView(R.id.cl_custom_rules)
     ConstraintLayout clCustomRules;
 
-    @BindView(R.id.custom_rules_divider)
-    ImageView customRulesDivider;
-
-    @BindView(R.id.tv_learn_more)
-    TextView learnMoreView;
-
     @BindView(R.id.nav_title)
     TextView mActivityTitleView;
 
@@ -135,7 +129,7 @@ public class RobertSettingsActivity extends BaseActivity implements RobertSettin
         mPresenter.onCustomRulesClick();
     }
 
-    @OnClick(R.id.cl_learn_more)
+    @OnClick(R.id.learn_more)
     protected void onLearnMoreClick() {
         mPresenter.onLearnMoreClick();
     }

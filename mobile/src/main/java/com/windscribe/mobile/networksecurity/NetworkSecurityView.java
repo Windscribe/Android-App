@@ -9,9 +9,13 @@ import com.windscribe.vpn.localdatabase.tables.NetworkInfo;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 public interface NetworkSecurityView {
 
     void hideProgress();
+
+    void setupCurrentNetwork(@Nullable NetworkInfo networkInfo);
 
     void onAdapterLoadFailed(String showUpdate);
 
@@ -21,5 +25,5 @@ public interface NetworkSecurityView {
 
     void showProgress(String progressTitle);
 
-
+    void setAutoSecureToggle(int resourceId);
 }

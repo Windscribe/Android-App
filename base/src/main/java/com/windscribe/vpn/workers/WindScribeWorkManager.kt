@@ -5,37 +5,22 @@
 package com.windscribe.vpn.workers
 
 import android.content.Context
-import androidx.work.BackoffPolicy
-import androidx.work.Constraints
+import android.content.pm.PackageManager
+import androidx.work.*
 import androidx.work.Constraints.Builder
-import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy.REPLACE
-import androidx.work.ExistingWorkPolicy
-import androidx.work.ListenableWorker
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequest
-import androidx.work.PeriodicWorkRequest
-import androidx.work.WorkManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import com.windscribe.vpn.workers.worker.CredentialsWorker
-import com.windscribe.vpn.workers.worker.NotificationWorker
-import com.windscribe.vpn.workers.worker.RobertSyncWorker
-import com.windscribe.vpn.workers.worker.ServerListWorker
-import com.windscribe.vpn.workers.worker.SessionWorker
-import com.windscribe.vpn.workers.worker.StaticIpWorker
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeUnit.DAYS
-import java.util.concurrent.TimeUnit.HOURS
-import java.util.concurrent.TimeUnit.MINUTES
-import java.util.concurrent.TimeUnit.SECONDS
-import javax.inject.Singleton
+import com.windscribe.vpn.workers.worker.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okio.ByteString.Companion.encodeUtf8
 import org.slf4j.LoggerFactory
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeUnit.*
+import javax.inject.Singleton
 
 /**
  * Handles one off and periodic tasks for app.
@@ -120,6 +105,16 @@ class WindScribeWorkManager(private val context: Context, private val scope: Cor
         WorkManager.getInstance(context).enqueueUniqueWork(NOTIFICATION_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(NotificationWorker::class.java))
     }
 
+    fun checkPendingAccountUpgrades(){
+        val pkgManager: PackageManager = context.packageManager
+        val installerPackageName = pkgManager.getInstallerPackageName(context.packageName)
+        if (installerPackageName != null && installerPackageName.startsWith("com.amazon")) {
+            WorkManager.getInstance(context).enqueueUniqueWork(PENDING_AMAZON_RECEIPT_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(AmazonPendingReceiptValidator::class.java))
+        } else {
+            WorkManager.getInstance(context).enqueueUniqueWork(PENDING_GOGGLE_RECEIPT_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(GooglePendingReceiptValidator::class.java))
+        }
+    }
+
     fun updateSession(inputData: Data = Data.EMPTY) {
         WorkManager.getInstance(context).enqueueUniqueWork(SESSION_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(SessionWorker::class.java, inputData))
     }
@@ -139,5 +134,7 @@ class WindScribeWorkManager(private val context: Context, private val scope: Cor
         const val SERVER_LIST_WORKER_KEY = "com.windscribe.vpn.server_list"
         const val STATIC_IP_WORKER_KEY = "com.windscribe.vpn.static_ip"
         const val CREDENTIALS_WORKER_KEY = "com.windscribe.vpn.credentials"
+        const val PENDING_GOGGLE_RECEIPT_WORKER_KEY = "com.windscribe.vpn.pendingGoogleReceipts"
+        const val PENDING_AMAZON_RECEIPT_WORKER_KEY = "com.windscribe.vpn.pendingAmazonReceipts"
     }
 }

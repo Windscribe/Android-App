@@ -36,11 +36,7 @@ public interface GeneralSettingsView {
 
     void setThemeTextView(String theme);
 
-    void setupAppBackgroundLayoutCollapsed();
-
-    void setupAppBackgroundLayoutExpanded();
-
-    void setupCustomFlagToggleImage(int ic_toggle_button_off);
+    void setupCustomFlagAdapter(String saved, String[] options);
 
     void setupHapticToggleImage(int ic_toggle_button_off);
 

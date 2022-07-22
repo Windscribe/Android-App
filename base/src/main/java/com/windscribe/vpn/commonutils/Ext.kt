@@ -2,6 +2,7 @@ package com.windscribe.vpn.commonutils
 
 import androidx.work.ListenableWorker
 import com.windscribe.vpn.api.response.GenericResponseClass
+import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.repository.CallResult
@@ -22,8 +23,12 @@ object Ext {
     }
 
     suspend fun <T> Single<*>.result(): CallResult<T> {
-        val response = await() as GenericResponseClass<*, *>
-        return response.callResult()
+        return try {
+            val response = await() as GenericResponseClass<*, *>
+            response.callResult()
+        } catch (e: Exception){
+            CallResult.Error(NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API, WindError.instance.rxErrorToString(e))
+        }
     }
 
     fun getFakeTrafficVolumeOptions(): Array<String> {

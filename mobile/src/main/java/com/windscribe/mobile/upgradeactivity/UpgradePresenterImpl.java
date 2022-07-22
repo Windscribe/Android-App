@@ -15,6 +15,7 @@ import static com.android.billingclient.api.BillingClient.BillingResponseCode.IT
 import static com.android.billingclient.api.BillingClient.BillingResponseCode.OK;
 import static com.android.billingclient.api.BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE;
 import static com.android.billingclient.api.BillingClient.BillingResponseCode.USER_CANCELED;
+import static com.windscribe.vpn.Windscribe.appContext;
 import static com.windscribe.vpn.constants.ApiConstants.PAY_ID;
 import static com.windscribe.vpn.constants.ApiConstants.PROMO_CODE;
 import static com.windscribe.vpn.constants.BillingConstants.AMAZON_PURCHASED_ITEM;
@@ -50,6 +51,7 @@ import com.windscribe.vpn.api.CreateHashMap;
 import com.windscribe.vpn.api.response.ApiErrorResponse;
 import com.windscribe.vpn.api.response.BillingPlanResponse;
 import com.windscribe.vpn.api.response.GenericResponseClass;
+import com.windscribe.vpn.api.response.GenericSuccess;
 import com.windscribe.vpn.api.response.PushNotificationAction;
 import com.windscribe.vpn.api.response.UserSessionResponse;
 import com.windscribe.vpn.api.response.WebSession;
@@ -66,8 +68,6 @@ import com.windscribe.vpn.exceptions.GenericApiException;
 import com.windscribe.vpn.exceptions.InvalidSessionException;
 import com.windscribe.vpn.exceptions.UnknownException;
 import com.windscribe.vpn.model.User;
-import com.windscribe.vpn.services.verify.VerifyAmazonPurchaseService;
-import com.windscribe.vpn.services.verify.VerifyGooglePurchaseService;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -123,9 +123,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
         //Start the background service to verify purchase before destroying
         if (mPurchase != null) {
             presenterLog.info("Starting purchase verification service...");
-            VerifyGooglePurchaseService.enqueueWork(Windscribe.getAppContext(),
-                    new Intent(Windscribe.getAppContext(), VerifyGooglePurchaseService.class)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            appContext.workManager.checkPendingAccountUpgrades();
         }
 
         if (!mUpgradeInteractor.getCompositeDisposable().isDisposed()) {
@@ -340,50 +338,25 @@ public class UpgradePresenterImpl implements UpgradePresenter {
             presenterLog.info(purchaseMap.toString());
             mUpgradeInteractor.getCompositeDisposable().add(
                     mUpgradeInteractor.getApiCallManager()
-                            .verifyPayment(purchaseMap)
+                            .verifyPurchaseReceipt(purchaseMap)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribeWith(
-                                    new DisposableSingleObserver<GenericResponseClass<String, ApiErrorResponse>>() {
+                                    new DisposableSingleObserver<GenericResponseClass<GenericSuccess, ApiErrorResponse>>() {
                                         @Override
                                         public void onError(@NotNull Throwable e) {
-                                            presenterLog
-                                                    .debug("Payment verification failed. " + WindError.getInstance()
-                                                            .convertThrowableToString(e));
+                                            presenterLog.debug("Payment verification failed. " + WindError.getInstance().convertThrowableToString(e));
                                             if (mUpgradeView != null) {
                                                 mUpgradeView.showBillingErrorDialog("Payment verification failed!");
                                             }
                                         }
 
                                         @Override
-                                        public void onSuccess(
-                                                @NotNull GenericResponseClass<String, ApiErrorResponse> paymentVerificationResponse) {
+                                        public void onSuccess(@NotNull GenericResponseClass<GenericSuccess, ApiErrorResponse> paymentVerificationResponse) {
                                             if (paymentVerificationResponse.getDataClass() != null) {
-                                                try {
-                                                    JSONObject res = new JSONObject(
-                                                            paymentVerificationResponse.getDataClass());
-                                                    int error = res.getInt("errorCode");
-                                                    presenterLog.info("Payment verification code :" + error);
-                                                    if (error == 4005) {
-                                                        // showBillingError(paymentVerificationResponse.getErrorClass());
-                                                        mUpgradeView.showBillingErrorDialog(res.toString());
-                                                        return;
-                                                    }
-                                                    if (error == 500) {
-                                                        showBillingError(paymentVerificationResponse.getErrorClass());
-                                                        return;
-                                                    }
-                                                } catch (JSONException e) {
-                                                    presenterLog.info("Unable parse Error code from response.");
-                                                }
-                                                presenterLog.info("Payment verification successful. "
-                                                        + paymentVerificationResponse.getDataClass()
-                                                        + " - Removing purchased item from storage.");
-                                                mUpgradeInteractor.getAppPreferenceInterface()
-                                                        .removeResponseData(PURCHASED_ITEM);
+                                                mUpgradeInteractor.getAppPreferenceInterface().removeResponseData(PURCHASED_ITEM);
                                                 //Item purchased and verified
-                                                presenterLog
-                                                        .info("Setting item purchased to null & upgrading user account");
+                                                presenterLog.info("Setting item purchased to null & upgrading user account");
                                                 mPurchase = null;
                                                 upgradeUserAccount();
                                                 setPurchaseFlowState(PurchaseState.FINISHED);
@@ -399,9 +372,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
             //Start the background service to verify purchase before destroying
             if (mPurchase != null) {
                 presenterLog.info("Starting purchase verification service...");
-                VerifyGooglePurchaseService.enqueueWork(Windscribe.getAppContext(),
-                        new Intent(Windscribe.getAppContext(), VerifyGooglePurchaseService.class)
-                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                mUpgradeInteractor.getWorkManager().checkPendingAccountUpgrades();
             }
         }
     }
@@ -423,11 +394,8 @@ public class UpgradePresenterImpl implements UpgradePresenter {
     public void onPurchaseResponseFailure(final PurchaseResponse.RequestStatus requestStatus) {
         switch (requestStatus) {
             case ALREADY_PURCHASED:
-                presenterLog
-                        .debug("onPurchaseResponse: already purchased, running verify service.");
-                VerifyAmazonPurchaseService.enqueueWork(Windscribe.getAppContext(),
-                        new Intent(Windscribe.getAppContext(), VerifyAmazonPurchaseService.class)
-                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                presenterLog.debug("onPurchaseResponse: already purchased, running verify service.");
+                mUpgradeInteractor.getWorkManager().checkPendingAccountUpgrades();
                 mUpgradeView.goBackToMainActivity();
                 break;
             case INVALID_SKU:
@@ -463,9 +431,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
                 break;
             case ITEM_ALREADY_OWNED:
                 presenterLog.debug("Item already owned by user: Running verify Purchase service.");
-                VerifyGooglePurchaseService.enqueueWork(Windscribe.getAppContext(),
-                        new Intent(Windscribe.getAppContext(), VerifyGooglePurchaseService.class)
-                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                appContext.workManager.checkPendingAccountUpgrades();
                 break;
             default:
                 setPurchaseFlowState(PurchaseState.FINISHED);
@@ -795,15 +761,14 @@ public class UpgradePresenterImpl implements UpgradePresenter {
 
             mUpgradeInteractor.getCompositeDisposable().add(
                     mUpgradeInteractor.getApiCallManager()
-                            .verifyPayment(purchaseMap)
+                            .verifyPurchaseReceipt(purchaseMap)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribeWith(
-                                    new DisposableSingleObserver<GenericResponseClass<String, ApiErrorResponse>>() {
+                                    new DisposableSingleObserver<GenericResponseClass<GenericSuccess, ApiErrorResponse>>() {
                                         @Override
                                         public void onError(@NotNull Throwable e) {
-                                            presenterLog
-                                                    .debug("Payment verification failed. " + WindError.getInstance()
+                                            presenterLog.debug("Payment verification failed. " + WindError.getInstance()
                                                             .convertThrowableToString(e));
                                             if (mUpgradeView != null) {
                                                 mUpgradeView.showBillingErrorDialog("Payment verification failed!");
@@ -811,39 +776,14 @@ public class UpgradePresenterImpl implements UpgradePresenter {
                                         }
 
                                         @Override
-                                        public void onSuccess(
-                                                @NotNull GenericResponseClass<String, ApiErrorResponse> paymentVerificationResponse) {
+                                        public void onSuccess(@NotNull GenericResponseClass<GenericSuccess, ApiErrorResponse> paymentVerificationResponse) {
                                             if (paymentVerificationResponse.getDataClass() != null) {
-                                                try {
-                                                    JSONObject res = new JSONObject(
-                                                            paymentVerificationResponse.getDataClass());
-                                                    int error = res.getInt("errorCode");
-                                                    presenterLog.debug(res.toString());
-                                                    presenterLog.info("Payment verification code :" + error);
-                                                    if (error == 4005) {
-                                                        mUpgradeView.showBillingErrorDialog(
-                                                                "Unknown error while verifying payment contact support.");
-                                                        return;
-                                                    }
-                                                    if (error == 500) {
-                                                        mUpgradeView.showBillingErrorDialog(
-                                                                "Unknown error while verifying payment contact support.");
-                                                        return;
-                                                    }
-                                                } catch (JSONException e) {
-                                                    presenterLog.info("Unable parse Error code from response.");
-                                                }
-                                                presenterLog.info("Payment verification successful. "
-                                                        + paymentVerificationResponse.getDataClass()
-                                                        + " - Removing purchased item from storage.");
-                                                mUpgradeInteractor.getAppPreferenceInterface()
-                                                        .removeResponseData(AMAZON_PURCHASED_ITEM);
+                                                presenterLog.info("Payment verification successful.");
+                                                mUpgradeInteractor.getAppPreferenceInterface().removeResponseData(AMAZON_PURCHASED_ITEM);
                                                 //Item purchased and verified
-                                                presenterLog
-                                                        .info("Setting item purchased to null & upgrading user account");
+                                                presenterLog.info("Setting item purchased to null & upgrading user account");
                                                 mPurchase = null;
-                                                PurchasingService.notifyFulfillment(amazonPurchase.getReceiptId(),
-                                                        FulfillmentResult.FULFILLED);
+                                                PurchasingService.notifyFulfillment(amazonPurchase.getReceiptId(), FulfillmentResult.FULFILLED);
                                                 upgradeUserAccount();
                                                 setPurchaseFlowState(PurchaseState.FINISHED);
                                             } else if (paymentVerificationResponse.getErrorClass() != null) {
@@ -857,9 +797,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
             presenterLog.info("Upgrade activity destroy method already completed. Purchase Item: " + mPurchase);
             //Start the background service to verify purchase before destroying
             presenterLog.info("Starting purchase verification service...");
-            VerifyAmazonPurchaseService.enqueueWork(Windscribe.getAppContext(),
-                    new Intent(Windscribe.getAppContext(), VerifyAmazonPurchaseService.class)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            mUpgradeInteractor.getWorkManager().checkPendingAccountUpgrades();
         }
     }
 

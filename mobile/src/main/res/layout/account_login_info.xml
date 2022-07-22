@@ -12,88 +12,99 @@
         android:id="@+id/tv_login_info_label"
         style="@style/MenuItemTitle"
         android:text="@string/info"
+        android:layout_marginStart="@dimen/margin_32"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/tv_username_label"
-        style="@style/MenuItemLabelFive"
-        android:text="@string/username"
-        app:layout_constraintStart_toStartOf="@id/tv_login_info_label"
-        app:layout_constraintTop_toBottomOf="@id/tv_login_info_label" />
-
-    <TextView
-        android:id="@+id/tv_account_username"
-        style="@style/MenuItemLabelFour"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tv_username_label" />
-
-    <ImageView
-        android:id="@+id/img_username_divider"
-        style="@style/PreferenceDivider"
-        android:layout_marginStart="0dp"
-        android:layout_marginTop="@dimen/margin_16"
-        android:contentDescription="@string/image_description"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/tv_login_info_label"
-        app:layout_constraintTop_toBottomOf="@id/tv_account_username" />
-
-
-    <TextView
-        android:id="@+id/tv_email_label"
-        style="@style/MenuItemLabelFive"
-        android:text="@string/email"
-        app:layout_constraintStart_toStartOf="@id/tv_login_info_label"
-        app:layout_constraintTop_toBottomOf="@id/img_username_divider" />
-
-
-    <TextView
-        android:id="@+id/tv_account_email"
-        style="@style/MenuItemLabelFour"
-        android:textColor="@color/colorNeonGreen"
-        app:layout_constraintBottom_toBottomOf="@id/tv_email_label"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tv_email_label" />
-
-    <Space
-        android:id="@+id/bottom_space_login_info"
-        android:layout_width="0dp"
-        android:layout_height="@dimen/margin_16"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_account_email" />
-
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/confirmContainer"
-        style="@style/MenuAttentionContainer"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bottom_space_login_info">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_login_info_label"
+        style="@style/preferenceRoundedBackground">
 
         <TextView
-            style="@style/MenuAttentionLabel"
-            android:text="@string/confirm_your_email"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/tv_username_label"
+            style="@style/MenuItemLabelFive"
+            android:layout_marginTop="0dp"
+            android:text="@string/username"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/tv_send_btn"
-            style="@style/MenuAttentionLabel"
-            android:text="@string/resend"
-            android:textColor="@color/colorDeepBlue50"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/tv_account_username"
+            style="@style/MenuItemLabelHalfOpacity"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="@id/tv_username_label" />
 
-        <ProgressBar
-            android:id="@+id/img_progress"
-            style="@style/SmallProgressCircle"
-            app:layout_constraintBottom_toBottomOf="parent"
+        <ImageView
+            android:id="@+id/img_username_divider"
+            style="@style/PreferenceDivider"
+            android:layout_marginTop="@dimen/margin_16"
+            android:layout_marginStart="0dp"
+            android:contentDescription="@string/image_description"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_account_username" />
 
+
+        <TextView
+            android:id="@+id/tv_email_label"
+            style="@style/MenuItemLabelFive"
+            android:text="@string/email"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/img_username_divider" />
+
+
+        <TextView
+            android:id="@+id/tv_account_email"
+            style="@style/MenuItemLabelHalfOpacity"
+            app:layout_constraintBottom_toBottomOf="@id/tv_email_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_email_label" />
+
+        <Space
+            android:visibility="gone"
+            android:id="@+id/bottom_space_login_info"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/margin_16"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_account_email" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/confirmContainer"
+            android:visibility="gone"
+            style="@style/MenuAttentionContainer"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/margin_16"
+            android:layout_marginEnd="@dimen/margin_16"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/bottom_space_login_info">
+
+            <TextView
+                style="@style/MenuAttentionLabel"
+                android:text="@string/confirm_your_email"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_send_btn"
+                style="@style/MenuAttentionLabel"
+                android:text="@string/resend"
+                android:textColor="@color/colorDeepBlue50"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ProgressBar
+                android:id="@+id/img_progress"
+                style="@style/SmallProgressCircle"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -43,19 +43,7 @@
         style="@style/PreferenceDivider"
         android:layout_marginBottom="0dp"
         android:contentDescription="@null"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/app_logo" />
-
-    <ImageView
-        android:id="@+id/field_line_location"
-        android:layout_width="0dp"
-        android:layout_height="2dp"
-        android:layout_marginStart="@dimen/padding_8"
-        android:layout_marginTop="@dimen/padding_8"
-        android:background="@color/colorWhite40"
-        android:contentDescription="@null"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/app_logo" />
 

@@ -73,6 +73,7 @@
         <attr name="wdPrimaryColor10" format="color" />
         <attr name="overlayDialogBackgroundColor" format="color" />
         <attr name="wdPrimaryInvertedColor" format="color"/>
+        <attr name="preferencesRoundedBackgroundColor" format="color"/>
     </declare-styleable>
     <!--Icons -->
     <declare-styleable name="DrawableIcon">
@@ -84,4 +85,49 @@
         <attr name="normalButtonStateDrawable" format="integer" />
         <attr name="alphaBlueDrawable" format="integer" />
     </declare-styleable>
+    <declare-styleable name="SingleLinkExplainView">
+        <attr format="string" name="Title"/>
+        <attr format="string" name="Description"/>
+        <attr format="reference" name="LeftIcon"/>
+    </declare-styleable>
+    <declare-styleable name="MultipleLinkExplainView">
+        <attr format="string" name="MultiLinkTitle"/>
+        <attr format="string" name="MultiLinkDescription"/>
+        <attr format="reference" name="MultiLinkLeftIcon"/>
+        <attr format="string" name="FirstItemTitle"/>
+        <attr format="string" name="SecondItemTitle"/>
+        <attr format="boolean" name="MultipleLinkShowRightIcon"/>
+    </declare-styleable>
+
+    <declare-styleable name="ExpandableDropDownView">
+        <attr format="string" name="ExpandableDropDownTitle"/>
+        <attr format="string" name="ExpandableDropDownDescription"/>
+        <attr format="reference" name="ExpandableDropDownLeftIcon"/>
+        <attr format="string" name="ExpandableDropDownChildType"/>
+        <attr format="boolean" name="ExpandableDropDownShowRightIcon"/>
+    </declare-styleable>
+
+    <declare-styleable name="ExpandableToggleView">
+        <attr format="string" name="ExpandableToggleViewTitle"/>
+        <attr format="string" name="ExpandableToggleViewDescription"/>
+        <attr format="string" name="ExpandableToggleViewChildType"/>
+        <attr format="boolean" name="ExpandableToggleShowRightIcon"/>
+        <attr format="boolean" name="ExpandableToggleHideExplainViewOnCollapse"/>
+        <attr format="reference" name="ExpandableToggleViewLeftIcon"/>
+    </declare-styleable>
+
+    <declare-styleable name="DropDownView">
+        <attr format="string" name="DropDownTitle"/>
+        <attr format="reference" name="DropDownLeftIcon"/>
+        <attr format="boolean" name="DropDownShowRightIcon"/>
+        <attr format="reference" name="DropDownDescription"/>
+    </declare-styleable>
+
+    <declare-styleable name="ToggleView">
+        <attr format="string" name="ToggleTitle"/>
+        <attr format="reference" name="ToggleLeftIcon"/>
+        <attr format="boolean" name="ToggleShowRightIcon"/>
+        <attr format="reference" name="ToggleDescription"/>
+    </declare-styleable>
+
 </resources>

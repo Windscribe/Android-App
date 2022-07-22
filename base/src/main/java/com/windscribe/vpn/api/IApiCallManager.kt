@@ -3,30 +3,7 @@
  */
 package com.windscribe.vpn.api
 
-import com.windscribe.vpn.api.response.AddEmailResponse
-import com.windscribe.vpn.api.response.ApiErrorResponse
-import com.windscribe.vpn.api.response.BestLocationResponse
-import com.windscribe.vpn.api.response.BillingPlanResponse
-import com.windscribe.vpn.api.response.ClaimAccountResponse
-import com.windscribe.vpn.api.response.GenericResponseClass
-import com.windscribe.vpn.api.response.GenericSuccess
-import com.windscribe.vpn.api.response.GetMyIpResponse
-import com.windscribe.vpn.api.response.NewsFeedNotification
-import com.windscribe.vpn.api.response.PortMapResponse
-import com.windscribe.vpn.api.response.RegToken
-import com.windscribe.vpn.api.response.RobertSettingsResponse
-import com.windscribe.vpn.api.response.ServerCredentialsResponse
-import com.windscribe.vpn.api.response.StaticIPResponse
-import com.windscribe.vpn.api.response.TicketResponse
-import com.windscribe.vpn.api.response.UserLoginResponse
-import com.windscribe.vpn.api.response.UserRegistrationResponse
-import com.windscribe.vpn.api.response.UserSessionResponse
-import com.windscribe.vpn.api.response.VerifyExpressLoginResponse
-import com.windscribe.vpn.api.response.WebSession
-import com.windscribe.vpn.api.response.WgConnectResponse
-import com.windscribe.vpn.api.response.WgInitResponse
-import com.windscribe.vpn.api.response.XPressLoginCodeResponse
-import com.windscribe.vpn.api.response.XPressLoginVerifyResponse
+import com.windscribe.vpn.api.response.*
 import io.reactivex.Single
 
 interface IApiCallManager {
@@ -63,13 +40,14 @@ interface IApiCallManager {
     fun resendUserEmailAddress(extraParams: Map<String, String>? = null): Single<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>>
     fun sendTicket(map: Map<String, String>? = null): Single<GenericResponseClass<TicketResponse?, ApiErrorResponse?>>
     fun signUserIn(extraParams: Map<String, String>? = null): Single<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>
-    fun verifyPayment(extraParams: Map<String, String>? = null): Single<GenericResponseClass<String?, ApiErrorResponse?>>
+    fun verifyPurchaseReceipt(extraParams: Map<String, String>? = null): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>
     fun verifyExpressLoginCode(extraParams: Map<String, String>? = null): Single<GenericResponseClass<VerifyExpressLoginResponse?, ApiErrorResponse?>>
     fun generateXPressLoginCode(extraParams: Map<String, String>? = null): Single<GenericResponseClass<XPressLoginCodeResponse?, ApiErrorResponse?>>
     fun verifyXPressLoginCode(extraParams: Map<String, String>? = null): Single<GenericResponseClass<XPressLoginVerifyResponse?, ApiErrorResponse?>>
     fun postDebugLog(extraParams: Map<String, String>? = null): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>
     fun postPromoPaymentConfirmation(extraParams: Map<String, String>? = null): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>
     fun getRobertSettings(extraParams: Map<String, String>? = null): Single<GenericResponseClass<RobertSettingsResponse?, ApiErrorResponse?>>
+    fun getRobertFilters(extraParams: Map<String, String>? = null): Single<GenericResponseClass<RobertFilterResponse?, ApiErrorResponse?>>
     fun updateRobertSettings(extraParams: Map<String, String>? = null): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>
     fun syncRobert(extraParams: Map<String, String>? = null): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>
     fun deleteSession(extraParams: Map<String, String>? = null): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>

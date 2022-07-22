@@ -16,6 +16,7 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.VPNState.Status.UnsecuredNetwork
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.state.NetworkInfoListener

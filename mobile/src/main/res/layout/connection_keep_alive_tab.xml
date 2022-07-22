@@ -6,81 +6,35 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    app:layout_constraintTop_toBottomOf="@id/img_gps_settings_divider">
-
-    <ImageView
-        android:id="@+id/keep_alive_mask"
-        android:layout_width="0dp"
-        android:layout_height="2dp"
-        android:background="?attr/menuItemTabSelectionMaskColor"
-        android:contentDescription="@null"
-        android:scaleType="fitXY"
-        app:layout_constraintEnd_toEndOf="@id/keep_alive_manual"
-        app:layout_constraintStart_toStartOf="@id/keep_alive_manual"
-        app:layout_constraintTop_toBottomOf="@id/keep_alive_manual"
-
-        />
+    android:layout_height="wrap_content">
 
     <ImageView
         android:id="@+id/keep_alive_divider"
         style="@style/PreferenceDivider"
         android:layout_width="0dp"
         android:layout_height="2dp"
-        android:layout_marginStart="@dimen/padding_24"
+        android:layout_marginStart="@dimen/margin_16"
         android:contentDescription="@null"
         android:scaleType="fitXY"
-        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/keep_alive_manual" />
-
-    <TextView
-        android:id="@+id/keep_alive_auto"
-        style="@style/MenuItemTabLabel"
-        android:text="@string/connection_automatic"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/keep_alive_label" />
-
-    <TextView
-        android:id="@+id/keep_alive_manual"
-        style="@style/MenuItemTabLabel"
-        android:text="@string/connection_manual"
-        app:layout_constraintEnd_toStartOf="@id/keep_alive_auto"
-        app:layout_constraintTop_toTopOf="@id/keep_alive_label" />
-
-    <TextView
-        android:id="@+id/keep_alive_label"
-        style="@style/MenuItemLabelTwo"
-        android:layout_marginStart="@dimen/margin_8"
-        android:text="@string/natKeepAlive"
-        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/keep_alive_divider_edit"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@color/colorWhite5"
-        android:contentDescription="@string/image_description"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/keep_alive_label"
-        app:layout_constraintTop_toBottomOf="@id/keep_alive_divider" />
 
     <EditText
         android:id="@+id/keep_alive_edit_view"
         style="@style/transparentEditableText"
         android:enabled="false"
         android:hint="@string/keep_alive"
+        android:gravity="start"
         android:importantForAutofill="no"
         android:inputType="number"
         android:lines="1"
         android:maxLength="4"
+        android:text="100"
+        android:paddingStart="@dimen/padding_16"
         android:maxLines="1"
-        app:layout_constraintStart_toStartOf="@id/keep_alive_label"
-        app:layout_constraintTop_toBottomOf="@id/keep_alive_label" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
     <ImageView
@@ -94,7 +48,7 @@
         android:scaleType="fitEnd"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/keep_alive_label"
+        app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_edit_icon" />
 
 

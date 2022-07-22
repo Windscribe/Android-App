@@ -72,9 +72,6 @@ public class AccountActivity extends BaseActivity implements AccountView, Accoun
     @BindView(R.id.nav_button)
     ImageView imgAccountBackBtn;
 
-    @BindView(R.id.img_pro_icon_settings)
-    ImageView imgProIconSettings;
-
     @Inject
     AccountPresenter mAccountPresenter;
 
@@ -217,9 +214,10 @@ public class AccountActivity extends BaseActivity implements AccountView, Accoun
     }
 
     @Override
-    public void setEmail(String email) {
+    public void setEmail(String email, int textColor) {
         mActivityLogger.info("Displaying account email ...");
         tvAccountEmail.setText(email);
+        tvAccountEmail.setTextColor(textColor);
         confirmContainer.setVisibility(View.GONE);
     }
 
@@ -260,7 +258,6 @@ public class AccountActivity extends BaseActivity implements AccountView, Accoun
     public void setupLayoutForFreeUser(String upgradeText) {
         mActivityLogger.info("Setting up layout for free user...");
         tvUpgradeInfo.setText(upgradeText);
-        imgProIconSettings.setVisibility(View.GONE);
     }
 
     @Override
@@ -272,7 +269,6 @@ public class AccountActivity extends BaseActivity implements AccountView, Accoun
     public void setupLayoutForPremiumUser(String upgradeText) {
         mActivityLogger.info("Setting up layout for premium user...");
         tvUpgradeInfo.setText(upgradeText);
-        imgProIconSettings.setVisibility(View.VISIBLE);
     }
 
     @Override

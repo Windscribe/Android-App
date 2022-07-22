@@ -7,13 +7,13 @@ import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 
 interface NetworkDetailView {
     var networkInfo: NetworkInfo?
-    fun hideError()
     fun onNetworkDeleted()
     fun onNetworkDetailAvailable(networkInfo: NetworkInfo)
     fun setAutoSecureToggle(autoSecure: Boolean)
-    fun setNetworkDetailError(error: String)
+    fun setNetworkDetailError(show: Boolean, error: String?)
     fun setPreferredProtocolToggle(preferredProtocol: Boolean)
     fun setupPortMapAdapter(port: String, portMap: List<String>)
-    fun setupProtocolAdapter(protocol: String, mProtocols: Array<String>)
+    fun setupProtocolAdapter(protocol: String, protocols: Array<String>)
     fun showToast(message: String)
+    fun setActivityTitle(title: String)
 }
