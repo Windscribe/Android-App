@@ -7,20 +7,20 @@
     android:id="@+id/cl_setting_robert"
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
-    android:layout_marginStart="@dimen/margin_8"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
+    style="@style/preferenceRoundedBackgroundLowTopMargin"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ImageView
         android:id="@+id/icon"
         style="@style/IconStyle"
-        android:layout_marginStart="@dimen/margin_8"
+        android:padding="0dp"
         android:src="@drawable/ic_ads"
         android:contentDescription="@string/image_description"
-        app:layout_constraintBottom_toBottomOf="@id/filter"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/filter" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/filter"
@@ -28,8 +28,7 @@
         android:text="Malware"
         android:inputType="textCapWords"
         android:padding="0dp"
-        android:layout_marginTop="@dimen/reg_14dp"
-        android:layout_marginStart="@dimen/margin_8"
+        android:layout_marginStart="@dimen/margin_16"
         app:layout_constraintStart_toEndOf="@id/icon"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -53,16 +52,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/divider"
-        style="@style/divider"
-        android:contentDescription="@string/image_description"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/allow"
-        android:layout_marginTop="@dimen/reg_14dp"
-        android:layout_marginStart="@dimen/margin_24"
-        app:layout_constraintEnd_toEndOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

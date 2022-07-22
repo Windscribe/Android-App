@@ -7,6 +7,7 @@
     <!-- Deep Blue -->
     <color name="colorDeepBlue0">#00020D1C</color>
     <color name="colorDeepBlue5">#0D020D1C</color>
+    <color name="colorDeepBlue8">#14020D1C</color>
     <color name="colorDeepBlue10">#1A020D1C</color>
     <color name="colorDeepBlue15">#26020D1C</color>
     <color name="colorDeepBlue25">#40020D1C</color>
@@ -19,6 +20,7 @@
     <color name="colorDeepBlue">#020D1C</color>
     <!-- White -->
     <color name="colorWhite5">#0DFFFFFF</color>
+    <color name="colorWhite8">#14FFFFFF</color>
     <color name="colorWhite10">#19ffffff</color>
     <color name="colorWhite15">#26FFFFFF</color>
     <color name="colorWhite25">#40FFFFFF</color>

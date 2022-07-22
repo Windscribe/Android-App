@@ -12,8 +12,6 @@ import com.windscribe.vpn.services.DisconnectService
 import com.windscribe.vpn.services.NetworkWhiteListService
 import com.windscribe.vpn.services.VpnTileService
 import com.windscribe.vpn.services.ping.PingTestService
-import com.windscribe.vpn.services.verify.VerifyAmazonPurchaseService
-import com.windscribe.vpn.services.verify.VerifyGooglePurchaseService
 import dagger.Component
 
 @PerService
@@ -27,7 +25,5 @@ interface ServiceComponent {
     fun inject(pingTestService: PingTestService)
     fun inject(bootSessionService: BootSessionService)
     fun inject(tileService: VpnTileService)
-    fun inject(purchaseService: VerifyGooglePurchaseService)
-    fun inject(amazonPurchaseService: VerifyAmazonPurchaseService)
     fun inject(charonVpnServiceWrapper: CharonVpnServiceWrapper)
 }

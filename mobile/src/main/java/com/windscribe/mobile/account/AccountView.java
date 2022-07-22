@@ -19,7 +19,7 @@ public interface AccountView {
 
     void setActivityTitle(String title);
 
-    void setEmail(String email);
+    void setEmail(String email, int textColor);
 
     void setEmailConfirm(String emailConfirm);
 

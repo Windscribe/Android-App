@@ -18,6 +18,7 @@
     <dimen name="reg_40dp">40dp</dimen>
     <dimen name="reg_48dp">48dp</dimen>
     <dimen name="reg_50dp">50dp</dimen>
+    <dimen name="reg_52dp">52dp</dimen>
     <dimen name="reg_56dp">56dp</dimen>
     <dimen name="reg_60dp">60dp</dimen>
     <dimen name="reg_62dp">62dp</dimen>

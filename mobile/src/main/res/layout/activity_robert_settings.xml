@@ -24,75 +24,64 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <TextView
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:id="@+id/description"
-                android:text="@string/robert_description"
-                android:textSize="@dimen/text_size_12"
-                style="@style/RobertPageDescription" />
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/cl_learn_more"
-                android:paddingTop="@dimen/padding_16"
-                android:background="@drawable/menu_item_states"
-                app:layout_constraintTop_toBottomOf="@id/description"
-                app:layout_constraintStart_toStartOf="parent">
-
+                android:id="@+id/cl_robert_description"
+                android:weightSum="10"
+                android:paddingEnd="@dimen/padding_8"
+                android:layout_margin="@dimen/margin_16"
+                android:layout_marginEnd="0dp"
+                android:background="@drawable/preference_rounded_stroke_background"
+                >
                 <TextView
-                    android:id="@+id/tv_learn_more"
-                    style="@style/MenuItemLabel"
                     android:layout_width="0dp"
-                    android:text="@string/learn_more"
-                    app:layout_constraintEnd_toStartOf="@id/learn_more_arrow"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/description"
+                    android:text="@string/robert_description"
+                    android:textSize="@dimen/text_size_12"
+                    style="@style/RobertPageDescription"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintHorizontal_bias="0.0"
-                    app:layout_constraintTop_toTopOf="parent" />
-
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginEnd="@dimen/margin_8"
+                    app:layout_constraintEnd_toStartOf="@id/learn_more"
+                    />
 
                 <ImageView
-                    android:id="@+id/learn_more_divider"
-                    style="@style/PreferenceDivider"
-                    android:contentDescription="@string/image_description"
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical"
+                    style="@style/ExplainIcon"
+                    android:scaleType="center"
+                    android:id="@+id/learn_more"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginTop="@dimen/margin_16"
-                    app:layout_constraintTop_toBottomOf="@id/tv_learn_more" />
-
-                <ImageView
-                    android:id="@+id/learn_more_arrow"
-                    style="@style/ForwardArrowIcon"
-                    android:contentDescription="@string/image_description"
-                    app:layout_constraintBottom_toBottomOf="@id/tv_learn_more"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/tv_learn_more" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 
             <androidx.recyclerview.widget.RecyclerView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/recycle_settings_view"
-                app:layout_constraintTop_toBottomOf="@id/cl_learn_more" />
+                app:layout_constraintTop_toBottomOf="@id/cl_robert_description" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:id="@+id/cl_custom_rules"
-                android:paddingTop="@dimen/padding_16"
-                android:background="@drawable/menu_item_states"
+                style="@style/preferenceRoundedBackground"
                 app:layout_constraintTop_toBottomOf="@id/recycle_settings_view"
                 app:layout_constraintStart_toStartOf="parent">
 
                 <TextView
                     android:id="@+id/tv_custom_rules"
-                    style="@style/MenuItemLabel"
+                    style="@style/MenuItemLabelNoStartMargin"
                     android:layout_width="0dp"
                     android:text="@string/manage_custom_rules"
                     app:layout_constraintEnd_toStartOf="@id/custom_rules_arrow"
@@ -102,22 +91,11 @@
 
                 <ImageView
                     android:id="@+id/custom_rules_arrow"
-                    style="@style/ForwardArrowIcon"
+                    style="@style/LinkArrowIcon"
                     android:contentDescription="@string/image_description"
                     app:layout_constraintBottom_toBottomOf="@id/tv_custom_rules"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="@id/tv_custom_rules" />
-
-                <ImageView
-                    android:id="@+id/custom_rules_divider"
-                    style="@style/PreferenceDivider"
-                    android:contentDescription="@string/image_description"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginTop="@dimen/margin_16"
-                    android:layout_marginBottom="@dimen/margin_24"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/tv_custom_rules" />
-
 
                 <ProgressBar
                     android:id="@+id/custom_rules_progress"

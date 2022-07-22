@@ -22,33 +22,21 @@ public interface ConnectionSettingsView {
 
     void setKeepAlive(String keepAlive);
 
-    void setKeepAliveContainerVisibility(boolean visibility, boolean isAuto);
-
     void setLanBypassToggle(int toggleDrawable);
 
     void setPacketSize(String size);
 
-    void setProtocolTextView(String protocolText);
-
     void setSplitTunnelText(String onOff, Integer color);
 
-    void setupLayoutForAutoMode(Integer textViewColorOnFocus, Integer textViewColorOffFocus);
+    void setupConnectionModeAdapter(String savedValue, String[] connectionModes);
 
-    void setupLayoutForKeepAliveModeAuto(Integer textViewColorOnFocus, Integer textViewColorOffFocus);
+    void setupPacketSizeModeAdapter(String savedValue, String[] types);
 
-    void setupLayoutForKeepAliveModeManual(Integer textViewColorOnFocus, Integer textViewColorOffFocus);
-
-    void setupLayoutForManualMode(Integer textViewColorOnFocus, Integer textViewColorOffFocus);
-
-    void setupLayoutForPackageSizeModeAuto(Integer textViewColorOnFocus, Integer textViewColorOffFocus);
-
-    void setupLayoutForPackageSizeModeManual(Integer textViewColorOnFocus, Integer textViewColorOffFocus);
+    void setKeepAliveModeAdapter(String savedValue, String[] types);
 
     void setupPortMapAdapter(String port, List<String> portMap);
 
     void setupProtocolAdapter(String protocol, String[] mProtocols);
-
-    void showAlwaysOnSettingDialog();
 
     void showGpsSpoofing();
 
@@ -56,15 +44,13 @@ public interface ConnectionSettingsView {
 
     void setDecoyTrafficToggle(int toggleDrawable);
 
-    void setDecoyTrafficContainerVisibility(boolean visibility);
-
     void showExtraDataUseWarning();
 
     void setupFakeTrafficVolumeAdapter(String selectedValue, String[] values);
 
-    void setTrafficLowerLimit(String value);
-
     void setPotentialTrafficUse(String value);
 
     void showAutoStartOnBoot();
+
+    void setKeepAliveContainerVisibility(boolean isAutoKeepAlive);
 }

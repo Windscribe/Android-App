@@ -17,7 +17,7 @@ public interface GeneralSettingsPresenter {
 
     void onConnectedFlagPathPicked(String path);
 
-    void onCustomFlagToggleButtonClicked();
+    void onCustomFlagToggleButtonClicked(String value);
 
     void onDestroy();
 

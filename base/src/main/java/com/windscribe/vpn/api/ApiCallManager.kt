@@ -518,10 +518,10 @@ class ApiCallManager @Inject constructor(
         }
     }
 
-    override fun verifyPayment(extraParams: Map<String, String>?): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
+    override fun verifyPurchaseReceipt(extraParams: Map<String, String>?): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>> {
         return call(
                 extraParams,
-                modelType = String::class.java
+                modelType = GenericSuccess::class.java
         ) { apiService, params, _ ->
             apiService.verifyPayment(params)
         }
@@ -606,6 +606,15 @@ class ApiCallManager @Inject constructor(
                 modelType = RobertSettingsResponse::class.java
         ) { apiService, params, _ ->
             apiService.getRobertSettings(params)
+        }
+    }
+
+    override fun getRobertFilters(extraParams: Map<String, String>?): Single<GenericResponseClass<RobertFilterResponse?, ApiErrorResponse?>> {
+        return call(
+                extraParams,
+                modelType = RobertFilterResponse::class.java
+        ) { apiService, params, _ ->
+            apiService.getRobertFilters(params)
         }
     }
 
