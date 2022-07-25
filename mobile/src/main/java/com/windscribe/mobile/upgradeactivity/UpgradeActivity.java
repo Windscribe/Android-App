@@ -6,6 +6,7 @@ package com.windscribe.mobile.upgradeactivity;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static com.android.billingclient.api.BillingClient.SkuType.INAPP;
+import static com.windscribe.vpn.Windscribe.appContext;
 import static com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA;
 
 import android.content.Context;
@@ -100,11 +101,16 @@ public class UpgradeActivity extends BaseActivity
 
         mUpgradeLog.info("OnCreate: Upgrade Activity");
         showProgressBar("Loading Billing Plans...");
-
+        // In app notification promo
         if (getIntent().hasExtra(PROMO_EXTRA)) {
             PushNotificationAction pushNotificationAction = (PushNotificationAction) getIntent()
                     .getSerializableExtra(PROMO_EXTRA);
                 mUpgradePresenter.setPushNotificationAction(pushNotificationAction);
+        }else{
+            // Push notification promo
+            if(appContext.appLifeCycleObserver.getPushNotificationAction() != null){
+                mUpgradePresenter.setPushNotificationAction(appContext.appLifeCycleObserver.getPushNotificationAction());
+            }
         }
         setBillingType();
         if (billingType == BillingType.Amazon) {

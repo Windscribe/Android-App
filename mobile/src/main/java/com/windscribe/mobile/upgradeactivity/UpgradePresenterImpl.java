@@ -515,7 +515,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
     }
 
     @Override
-    public void setPushNotificationAction(final PushNotificationAction pushNotificationAction) {
+    public void setPushNotificationAction(@NonNull PushNotificationAction pushNotificationAction) {
         presenterLog.debug(pushNotificationAction.toString());
         mPushNotificationAction = pushNotificationAction;
     }

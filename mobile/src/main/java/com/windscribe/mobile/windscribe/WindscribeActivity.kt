@@ -953,12 +953,6 @@ class WindscribeActivity :
         startActivity(UpgradeActivity.getStartIntent(this))
     }
 
-    override fun openUpgradeActivity(pushNotificationAction: PushNotificationAction) {
-        val launchIntent = UpgradeActivity.getStartIntent(this)
-        launchIntent.putExtra(PROMO_EXTRA, pushNotificationAction)
-        startActivity(launchIntent)
-    }
-
     override fun performButtonClickHapticFeedback() {
         if (presenter.isHapticFeedbackEnabled) {
             hamburgerIcon?.isHapticFeedbackEnabled = true
