@@ -1,0 +1,2 @@
+1. Fixed text cut offs #114
+2. Promo notification tweaks #226
