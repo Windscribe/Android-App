@@ -29,9 +29,12 @@
             android:id="@+id/tv_fake_traffic_volume_label"
             style="@style/MenuItemSpinnerLabel"
             android:text="@string/fake_traffic_volume"
+            android:paddingStart="0dp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
 
         <TextView
             android:id="@+id/tv_current_fake_traffic_volume"

@@ -38,7 +38,9 @@
             android:maxLength="4"
             android:maxLines="1"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
 
         <TextView
             android:id="@+id/edit_packet_progress"
@@ -50,7 +52,9 @@
             android:text="@string/auto_detecting"
             android:visibility="invisible"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="@id/edit_packet_size"
+            app:layout_constraintBottom_toBottomOf="@id/edit_packet_size"
+            />
 
         <ImageView
             android:id="@+id/img_auto_fill_packet_size"
