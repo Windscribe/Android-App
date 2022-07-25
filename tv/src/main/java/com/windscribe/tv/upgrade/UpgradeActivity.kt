@@ -65,7 +65,6 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
             val pushNotificationAction = intent
                 .getSerializableExtra(PROMO_EXTRA) as PushNotificationAction?
             pushNotificationAction?.let {
-                if (it.promoCode.isNotEmpty())
                 presenter.setPushNotificationAction(it)
             }
         }

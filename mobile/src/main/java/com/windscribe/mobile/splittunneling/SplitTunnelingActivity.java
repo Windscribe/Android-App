@@ -204,7 +204,7 @@ public class SplitTunnelingActivity extends BaseActivity implements SplitTunneli
 
     @Override
     public void restartConnection() {
-        windVpnController.connect();
+        windVpnController.connect(false);
     }
 
     @Override

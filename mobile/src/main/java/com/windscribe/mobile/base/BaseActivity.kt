@@ -243,5 +243,6 @@ abstract class BaseActivity : AppCompatActivity(), DisclaimerAlertListener {
         const val FILE_PICK_REQUEST = 204
         const val CONNECTED_FLAG_PATH_PICK_REQUEST = 205
         const val DISCONNECTED_FLAG_PATH_PICK_REQUEST = 206
+        const val REQUEST_BACKGROUND_PERMISSION = 207
     }
 }

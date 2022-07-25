@@ -63,14 +63,14 @@ open class WindVpnController @Inject constructor(
 
     private val logger = LoggerFactory.getLogger("vpn_backend")
 
-    private suspend fun createProfile(config: ProtocolConfig): String {
+    private suspend fun createVPNProfile(config: ProtocolConfig): String {
         return when (WindUtilities.getSourceTypeBlocking()) {
             CityLocation -> createVpnProfileFromCity(interactor.preferenceHelper.selectedCity, config)
             StaticIp -> createVpnProfileFromStaticIp(
                     interactor.preferenceHelper.selectedCity,
                     config
             )
-            else -> createProfileFromConfig(interactor.preferenceHelper.selectedCity)
+            else -> createProfileFromCustomConfig(interactor.preferenceHelper.selectedCity)
         }
     }
 
@@ -91,7 +91,7 @@ open class WindVpnController @Inject constructor(
         }
     }
 
-    private fun createProfileFromConfig(selectedCity: Int): String {
+    private fun createProfileFromCustomConfig(selectedCity: Int): String {
         val configFile = interactor.getConfigFile(selectedCity).blockingGet()
         val profile = vpnProfileCreator.createVpnProfileFromConfig(configFile)
         if (!configFile.isRemember) {
@@ -107,16 +107,7 @@ open class WindVpnController @Inject constructor(
         val cityAndRegion = interactor.getCityAndRegionByID(selectedCity)
         val city = cityAndRegion.city
         val nodeSize = city.getNodes().size
-        val selectedNode:Node? = if(interactor.preferenceHelper.isDecoyTrafficOn && BuildConfig.DEV){
-            cityAndRegion.city.nodes.firstOrNull {
-                it.hostname == "us-013.whiskergalaxy.dev"
-            }
-        }else{
-            cityAndRegion.city.getNodes()[WindUtilities.getRandomNode(nodeSize)]
-        }
-        if(selectedNode== null){
-            throw WindScribeException("us-013.whiskergalaxy.dev is not available.")
-        }
+        val selectedNode: Node = cityAndRegion.city.getNodes()[WindUtilities.getRandomNode(nodeSize)]
         val coordinatesArray = city.coordinates.split(",".toRegex()).toTypedArray()
         val ikev2Ip = selectedNode.ip
         val udpIp = selectedNode.ip2
@@ -143,7 +134,7 @@ open class WindVpnController @Inject constructor(
                                 config
                         )
             }
-            PreferencesKeyConstants.PROTO_WIRE_GUARD -> {
+            PROTO_WIRE_GUARD -> {
                 return vpnProfileCreator
                         .createVpnProfileFromWireGuardProfile(
                                 location,
@@ -164,7 +155,7 @@ open class WindVpnController @Inject constructor(
     private suspend fun createVpnProfileFromStaticIp(staticId: Int, config: ProtocolConfig): String {
         val staticRegion = interactor.getStaticRegionByID(staticId).blockingGet()
         val node = staticRegion.staticIpNode
-        appContext.preference.saveCredentials(PreferencesKeyConstants.STATIC_IP_CREDENTIAL,staticRegion.credentials)
+        appContext.preference.saveCredentials(PreferencesKeyConstants.STATIC_IP_CREDENTIAL, staticRegion.credentials)
         val location = LastSelectedLocation(
                 staticRegion.id,
                 staticRegion.cityName,
@@ -187,7 +178,7 @@ open class WindVpnController @Inject constructor(
                                 location, vpnParameters, config
                         )
             }
-            PreferencesKeyConstants.PROTO_WIRE_GUARD -> {
+            PROTO_WIRE_GUARD -> {
                 return vpnProfileCreator
                         .createVpnProfileFromWireGuardProfile(
                                 location, vpnParameters, config
@@ -202,74 +193,111 @@ open class WindVpnController @Inject constructor(
         }
     }
 
-    open fun connect() {
-        connect(false)
+    /**
+     * Connects or reconnect to the VPN
+     * @param alwaysOnVPN if vpn service was launched by system.
+     */
+    open fun connect(alwaysOnVPN: Boolean = false) {
+        when {
+            // Disconnect from VPN and connect to next selected location.
+            vpnBackendHolder.activeBackend != null -> {
+                interactor.preferenceHelper.isReconnecting = true
+                disconnect(reconnecting = true).invokeOnCompletion {
+                    logger.debug("Disconnect job completed")
+                    createProfileAndLaunchService(alwaysOnVPN).invokeOnCompletion {
+                        logger.debug("Connect job completed")
+                    }
+                }
+            }
+            // Stop Network list service and connect
+            vpnConnectionStateManager.state.value.status == Status.UnsecuredNetwork -> {
+                stopNetworkWhiteListService().invokeOnCompletion {
+                    createProfileAndLaunchService(alwaysOnVPN)
+                }
+            }
+            else -> {
+                // Make a fresh connection
+                createProfileAndLaunchService(alwaysOnVPN)
+            }
+        }
     }
 
-    open fun connect(alwaysOnVPN: Boolean = false) {
-        scope.launch {
+    private fun createProfileAndLaunchService(alwaysOnVPN: Boolean = false): Job {
+        return scope.launch {
             try {
-                if (alwaysOnVPN){
-                    userRepository.get().synchronizedReload()
-                }
                 logger.debug("Connecting to VPN.")
-                interactor.preferenceHelper.whitelistOverride = true
                 vpnConnectionStateManager.setState(VPNState(Status.Connecting))
-                val city = locationRepository.updateLocation()
-                locationRepository.setSelectedCity(city)
-                logger.debug("Selected location to connect: $city.")
-                if (vpnBackendHolder.activeBackend != null) {
-                    interactor.preferenceHelper.isReconnecting = true
-                    disconnect(reconnecting = true)
-                } else if (vpnConnectionStateManager.state.value.status == Status.UnsecuredNetwork) {
-                    stopNetworkWhiteListService()
-                }
-                var config: ProtocolConfig = if (alwaysOnVPN) {
-                    ProtocolConfig(
-                            interactor.preferenceHelper.selectedProtocol,
-                            interactor.preferenceHelper.selectedPort,
-                            interactor.preferenceHelper.selectedProtocolType
-                    )
-                } else {
-                    protocolManager.protocolConfigList.value.nextProtocolToConnect
-                }
-                if(interactor.preferenceHelper.isDecoyTrafficOn){
-                    config = ProtocolConfig(PROTO_WIRE_GUARD, interactor.preferenceHelper.wireGuardPort, ProtocolConfig.Type.Manual)
-                }
-                logger.debug("$config.")
-                protocolManager.setSelectedProtocolConfig(config)
-                val profileToConnect = createProfile(config)
+                interactor.preferenceHelper.whitelistOverride = true
+                setLocationToConnect(alwaysOnVPN)
+                val protocolConfig = getProtocolConfigToConnect(alwaysOnVPN)
+                logger.debug("$protocolConfig.")
+                val profileToConnect = createVPNProfile(protocolConfig)
                 logger.debug("Profile: $profileToConnect")
                 logger.debug("Launching VPN Services.")
                 launchVPNService()
             } catch (e: Exception) {
                 scope.launch {
-                    WindError.instance.rxErrorToString(e)
                     if (e is InvalidVPNConfigException) {
-                        disconnect(error = e.error)
+                        disconnect().invokeOnCompletion {
+                            handleVPNError(e.error)
+                        }
                     } else {
-                        logger.debug("Error connecting to VPN: ${e.message}")
-                        disconnect()
+                        logger.debug(WindError.instance.rxErrorToString(e))
+                        disconnect().invokeOnCompletion { }
                     }
                 }
             }
         }
     }
 
-    suspend fun disconnect(waitForNextProtocol: Boolean = false, reconnecting: Boolean = false, error: CallResult.Error? = null) {
+    private fun getProtocolConfigToConnect(alwaysOnVPN: Boolean): ProtocolConfig {
+        var config: ProtocolConfig = if (alwaysOnVPN) {
+            ProtocolConfig(
+                    interactor.preferenceHelper.selectedProtocol,
+                    interactor.preferenceHelper.selectedPort,
+                    interactor.preferenceHelper.selectedProtocolType
+            )
+        } else {
+            protocolManager.protocolConfigList.value.nextProtocolToConnect
+        }
+        //Decoy traffic only works in Wireguard
+        if (interactor.preferenceHelper.isDecoyTrafficOn) {
+            config = ProtocolConfig(PROTO_WIRE_GUARD, interactor.preferenceHelper.wireGuardPort, ProtocolConfig.Type.Manual)
+        }
+        protocolManager.setSelectedProtocolConfig(config)
+        return config
+    }
+
+    private suspend fun setLocationToConnect(alwaysOnVPN: Boolean) {
+        if (alwaysOnVPN) {
+            userRepository.get().synchronizedReload()
+        }
+        val city = locationRepository.updateLocation()
+        locationRepository.setSelectedCity(city)
+        logger.debug("Selected location to connect: $city.")
+    }
+
+    /**
+     * @param waitForNextProtocol Disconnects VPN and starts NetworkWhiteListService.
+     * @param reconnecting only disconnecting to change location/protocol config.
+     * @return Job A cancellable Job
+     * */
+    fun disconnect(waitForNextProtocol: Boolean = false, reconnecting: Boolean = false): Job {
         logger.debug("Disconnecting from VPN: Waiting for next protocol: $waitForNextProtocol Reconnecting: $reconnecting")
-        scope.launch {
+        return scope.launch {
             if (WindStunnelUtility.isStunnelRunning) {
                 WindStunnelUtility.stopLocalTunFromAppContext(appContext)
             }
-            if(checkServiceRunning(NetworkWhiteListService::class.java)){
+            if (isServiceRunning(NetworkWhiteListService::class.java)) {
                 stopNetworkWhiteListService()
             }
             vpnBackendHolder.disconnect()
-            if (waitForNextProtocol.not() || reconnecting.not()){
+            //No intention to reconnect
+            if (waitForNextProtocol.not() || reconnecting.not()) {
                 interactor.preferenceHelper.globalUserConnectionPreference = false
             }
-            if (!reconnecting) {
+            // Force disconnect if state did not change to disconnect
+            if (reconnecting.not()) {
                 interactor.preferenceHelper.whitelistOverride = false
                 try {
                     withTimeout(500) {
@@ -279,27 +307,21 @@ open class WindVpnController @Inject constructor(
                             }
                         }
                     }
-                } catch (e: Exception) {
+                } catch (e: CancellationException) {
                     logger.debug("Sending Disconnect event to UI")
                     vpnConnectionStateManager.setState(VPNState(Status.Disconnected))
                 }
             }
-        }.invokeOnCompletion {
-            if(vpnBackendHolder.activeBackend == null){
-                interactor.preferenceHelper.isReconnecting = false
-            }
-            if (waitForNextProtocol) {
-                interactor.preferenceHelper.globalUserConnectionPreference = true
-                vpnConnectionStateManager.setState(VPNState(Status.UnsecuredNetwork))
-                NetworkWhiteListService.startService(appContext)
-            }
-            error?.let { item -> handleError(item) }
         }
     }
 
-    private fun checkServiceRunning(serviceClass: Class<*>): Boolean {
+    /**
+     * @param serviceClass Service class name
+     * @return return true if service is running
+     */
+    private fun isServiceRunning(serviceClass: Class<*>): Boolean {
         val manager: ActivityManager? = appContext.getSystemService(ACTIVITY_SERVICE) as ActivityManager?
-        if (manager!= null){
+        if (manager != null) {
             for (service in manager.getRunningServices(Int.MAX_VALUE)) {
                 if (serviceClass.name == service.service.className) {
                     return true
@@ -309,14 +331,16 @@ open class WindVpnController @Inject constructor(
         return false
     }
 
-    private fun handleError(error: CallResult.Error) {
+    private fun handleVPNError(error: CallResult.Error) {
         logger.debug("code: ${error.code} error: ${error.errorMessage}")
         when (error.code) {
             ERROR_WG_KEY_LIMIT_EXCEEDED -> {
-                showRetryDialog(error.errorMessage) {
+                showRetryDialog(error.errorMessage, {
                     vpnProfileCreator.wgForceInit.set(true)
                     connect()
-                }
+                }, {
+                    disconnect()
+                })
             }
             ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP, ERROR_WG_UNABLE_TO_GENERATE_PSK -> {
                 showErrorDialog(error.errorMessage)
@@ -325,7 +349,7 @@ open class WindVpnController @Inject constructor(
                 wgConfigRepository.deleteKeys()
                 showErrorDialog(error.errorMessage)
             }
-            EXPIRED_OR_BANNED_ACCOUNT , ERROR_VALID_CONFIG_NOT_FOUND -> {
+            EXPIRED_OR_BANNED_ACCOUNT, ERROR_VALID_CONFIG_NOT_FOUND -> {
                 logger.debug("Forcing session update.")
                 val data = Data.Builder().putBoolean("forceUpdate", true).build()
                 appContext.workManager.updateSession(data)
@@ -333,8 +357,10 @@ open class WindVpnController @Inject constructor(
         }
     }
 
-    private suspend fun stopNetworkWhiteListService() {
-        NetworkWhiteListService.stopService(appContext)
-        delay(100)
+    private fun stopNetworkWhiteListService(): Job {
+        return scope.launch {
+            NetworkWhiteListService.stopService(appContext)
+            delay(100)
+        }
     }
 }
