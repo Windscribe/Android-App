@@ -4,6 +4,7 @@
 
 package com.windscribe.mobile.upgradeactivity;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.amazon.device.iap.model.Product;
@@ -59,7 +60,7 @@ public interface UpgradePresenter {
 
     void setPurchaseFlowState(PurchaseState state);
 
-    void setPushNotificationAction(PushNotificationAction pushNotificationAction);
+    void setPushNotificationAction(@NonNull PushNotificationAction pushNotificationAction);
 
     String regionalPlanIfAvailable(String sku);
 
