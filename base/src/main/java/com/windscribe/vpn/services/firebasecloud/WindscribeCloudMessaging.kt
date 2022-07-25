@@ -8,6 +8,7 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
@@ -23,7 +24,7 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
     private val logger: Logger = LoggerFactory.getLogger("fcm")
     override fun onCreate() {
         super.onCreate()
-        Windscribe.appContext.applicationComponent.inject(this)
+        appContext.applicationComponent.inject(this)
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
@@ -37,11 +38,11 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
             when (payload["type"]) {
                 ACCOUNT_DOWNGRADE -> {
                     logger.info("Received Account downgrade notification, scheduling service task...")
-                    Windscribe.appContext.workManager.updateSession()
+                    appContext.workManager.updateSession()
                 }
                 ACCOUNT_EXPIRED -> {
                     logger.info("Received Account expired notification, scheduling service task...")
-                    Windscribe.appContext.workManager.updateSession()
+                    appContext.workManager.updateSession()
                 }
                 FORCE_DISCONNECT -> {
                     logger.info("Received Force disconnect notification , stopping VPN Services.")
@@ -53,9 +54,9 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
                     logger.info("Received Promo notification , Launching upgrade Activity.")
                     val pushNotificationAction = payloadToPushNotificationAction(payload)
                     if (pushNotificationAction != null) {
-                        val launchIntent = Windscribe.appContext.applicationInterface.upgradeIntent
+                        val launchIntent = appContext.applicationInterface.upgradeIntent
                         launchIntent.addFlags(FLAG_ACTIVITY_NEW_TASK)
-                        launchIntent.putExtra(PROMO_EXTRA, payloadToPushNotificationAction(payload))
+                        appContext.appLifeCycleObserver.pushNotificationAction = pushNotificationAction
                         startActivity(launchIntent)
                     }
                 }

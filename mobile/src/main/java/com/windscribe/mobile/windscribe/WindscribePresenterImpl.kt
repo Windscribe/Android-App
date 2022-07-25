@@ -262,8 +262,9 @@ class WindscribePresenterImpl @Inject constructor(
                     extras.getString("pcpid")!!,
                     extras.getString("promo_code")!!, extras.getString("type")!!
             )
+            appContext.appLifeCycleObserver.pushNotificationAction = pushNotificationAction
             logger.debug("App Launch by push notification with promo action. Taking user to upgrade")
-            windscribeView.openUpgradeActivity(pushNotificationAction)
+            windscribeView.openUpgradeActivity()
         }
     }
 

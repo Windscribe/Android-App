@@ -5,6 +5,8 @@
 package com.windscribe.mobile.newsfeedactivity;
 
 
+import static com.windscribe.vpn.Windscribe.appContext;
+
 import com.windscribe.mobile.adapter.NewsFeedAdapter;
 import com.windscribe.vpn.ActivityInteractor;
 import com.windscribe.vpn.api.response.PushNotificationAction;
