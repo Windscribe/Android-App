@@ -12,8 +12,10 @@ import androidx.lifecycle.Lifecycle.Event.ON_RESUME
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import com.windscribe.vpn.R.string
+import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.DomainFailOverUtil
+import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import java.util.concurrent.atomic.AtomicBoolean
@@ -31,6 +33,13 @@ class AppLifeCycleObserver @Inject constructor(private val workManager: WindScri
     private val logger = LoggerFactory.getLogger("app_life_cycle")
     private val startingFresh = AtomicBoolean(false)
     var overriddenCountryCode: String? = null
+    private var pushNotification : PushNotificationAction? = null
+    var pushNotificationAction:PushNotificationAction?
+    get() = pushNotification
+    set(value){
+        pushNotification = value
+        appContext.workManager.updateNotifications()
+    }
 
     @OnLifecycleEvent(ON_CREATE)
     fun createApp() {
