@@ -40,7 +40,7 @@ open class WindscribeInAppProduct(
     }
 
     fun isPromo(): Boolean {
-        return pushNotificationAction != null
+        return pushNotificationAction != null && pushNotificationAction.promoCode.isNotEmpty()
     }
 
     fun getDiscountLabel(sku: String): String {

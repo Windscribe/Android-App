@@ -116,14 +116,6 @@
             android:name=".bootreceiver.BootSessionService"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
-        <service
-            android:name=".services.verify.VerifyGooglePurchaseService"
-            android:exported="true"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
-        <service
-            android:name=".services.verify.VerifyAmazonPurchaseService"
-            android:exported="true"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <service
             android:name="com.windscribe.vpn.backend.openvpn.OpenVPNWrapperService"
