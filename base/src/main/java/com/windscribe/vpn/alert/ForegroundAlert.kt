@@ -12,18 +12,21 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 const val TITLE = "Error"
 const val POSITIVE_BUTTON_LABEL = "OK"
 const val NEGATIVE_BUTTON_LABEL = "Cancel"
-fun showRetryDialog(message: String, retryCallBack: () -> Unit) {
+fun showRetryDialog(message: String, retryCallBack: () -> Unit, cancelCallBack: () -> Unit) {
     safeDialog {
         val builder = createDialogBuilder(it, message)
         val listener = { dialog: DialogInterface, which: Int ->
             dialog.dismiss()
             if (which == AlertDialog.BUTTON_POSITIVE) {
                 retryCallBack()
+            }else if(which == AlertDialog.BUTTON_NEGATIVE){
+                cancelCallBack()
             }
         }
         with(builder) {
             setPositiveButton(POSITIVE_BUTTON_LABEL, DialogInterface.OnClickListener(function = listener))
             setNegativeButton(NEGATIVE_BUTTON_LABEL, DialogInterface.OnClickListener(function = listener))
+            setOnCancelListener { cancelCallBack() }
             show()
         }
     }
@@ -43,7 +46,7 @@ fun showAlertDialog(message: String, callBack: () -> Unit) {
         val builder = createDialogBuilder(it, message)
         val listener = { dialog: DialogInterface, which: Int ->
             dialog.dismiss()
-            if (which == AlertDialog.BUTTON_NEUTRAL)
+            if (which == AlertDialog.BUTTON_POSITIVE)
                 callBack()
         }
         with(builder) {

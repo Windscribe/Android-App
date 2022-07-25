@@ -4,12 +4,13 @@
 
 package com.windscribe.mobile.connectionsettings;
 
-import static com.windscribe.vpn.Windscribe.appContext;
-
+import android.Manifest;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
@@ -18,7 +19,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 
 import com.windscribe.mobile.R;
 import com.windscribe.mobile.alert.AlwaysOnFragment;
@@ -34,13 +37,12 @@ import com.windscribe.mobile.custom_view.preferences.KeepAliveView;
 import com.windscribe.mobile.custom_view.preferences.PacketSizeView;
 import com.windscribe.mobile.custom_view.preferences.ToggleView;
 import com.windscribe.mobile.di.ActivityModule;
-import com.windscribe.mobile.di.DaggerActivityComponent;
 import com.windscribe.mobile.gpsspoofing.GpsSpoofingSettingsActivity;
 import com.windscribe.mobile.networksecurity.NetworkSecurityActivity;
 import com.windscribe.mobile.splittunneling.SplitTunnelingActivity;
 import com.windscribe.vpn.Windscribe;
+import com.windscribe.vpn.alert.ForegroundAlertKt;
 import com.windscribe.vpn.constants.FeatureExplainer;
-import com.windscribe.vpn.constants.NetworkKeyConstants;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +52,8 @@ import java.util.List;
 import javax.inject.Inject;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
+import kotlin.Unit;
 
 public class ConnectionSettingsActivity extends BaseActivity
         implements ConnectionSettingsView, AlwaysOnFragment.AlwaysOnDialogCallBack, PermissionRationaleListener, ExtraDataUseWarningFragment.CallBack {
@@ -176,7 +178,8 @@ public class ConnectionSettingsActivity extends BaseActivity
             }
 
             @Override
-            public void onExplainClick() { }
+            public void onExplainClick() {
+            }
         });
         decoyTrafficToggleView.setDelegate(new ExpandableToggleView.Delegate() {
             @Override
@@ -190,7 +193,7 @@ public class ConnectionSettingsActivity extends BaseActivity
             }
         });
 
-        DecoyTrafficView decoyTrafficView = (DecoyTrafficView)decoyTrafficToggleView.getChildView();
+        DecoyTrafficView decoyTrafficView = (DecoyTrafficView) decoyTrafficToggleView.getChildView();
         decoyTrafficView.setDelegate(volume -> presenter.onFakeTrafficVolumeSelected(volume));
 
         connectionModeDropDownView.setDelegate(new ExpandableDropDownView.Delegate() {
@@ -316,9 +319,31 @@ public class ConnectionSettingsActivity extends BaseActivity
     @Override
     public void permissionGranted(int requestCode) {
         if (BaseActivity.REQUEST_LOCATION_PERMISSION == requestCode) {
-            startActivity(NetworkSecurityActivity.getStartIntent(this));
+            if (isBackgroundLocationPermissionGranted()) {
+                startActivity(NetworkSecurityActivity.getStartIntent(this));
+            } else {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    ForegroundAlertKt.showAlertDialog("App requires background location permission to access WIFI SSID on Android 11+. If you wish to use this feature, press Okay and select \"Allow all the time\" from the permission dialog.", this::askForBackgroundLocationPermission);
+                }
+            }
         } else if (requestCode == LOCATION_PERMISSION_FOR_SPOOF) {
             presenter.onPermissionProvided();
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private Unit askForBackgroundLocationPermission() {
+        requestPermissions(new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, REQUEST_BACKGROUND_PERMISSION);
+        return null;
+    }
+
+    private boolean isBackgroundLocationPermissionGranted() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return ContextCompat
+                    .checkSelfPermission(Windscribe.getAppContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED;
+        } else {
+            return true;
         }
     }
 
@@ -423,12 +448,12 @@ public class ConnectionSettingsActivity extends BaseActivity
 
     @Override
     public void setupFakeTrafficVolumeAdapter(String selectedValue, String[] values) {
-        ((DecoyTrafficView)decoyTrafficToggleView.getChildView()).setAdapter(selectedValue,values);
+        ((DecoyTrafficView) decoyTrafficToggleView.getChildView()).setAdapter(selectedValue, values);
     }
 
     @Override
     public void setPotentialTrafficUse(String value) {
-        ((DecoyTrafficView)decoyTrafficToggleView.getChildView()).setPotentialTraffic(value);
+        ((DecoyTrafficView) decoyTrafficToggleView.getChildView()).setPotentialTraffic(value);
     }
 
     @Override

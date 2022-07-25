@@ -104,7 +104,6 @@ public class UpgradeActivity extends BaseActivity
         if (getIntent().hasExtra(PROMO_EXTRA)) {
             PushNotificationAction pushNotificationAction = (PushNotificationAction) getIntent()
                     .getSerializableExtra(PROMO_EXTRA);
-            if(!pushNotificationAction.getPromoCode().isEmpty())
                 mUpgradePresenter.setPushNotificationAction(pushNotificationAction);
         }
         setBillingType();
