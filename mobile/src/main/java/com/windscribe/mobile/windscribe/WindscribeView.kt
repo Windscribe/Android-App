@@ -49,7 +49,6 @@ interface WindscribeView {
     fun openProvideUsernameAndPasswordDialog(configFile: ConfigFile)
     fun openStaticIPUrl(url: String)
     fun openUpgradeActivity()
-    fun openUpgradeActivity(pushNotificationAction: PushNotificationAction)
     fun performButtonClickHapticFeedback()
     fun performConfirmConnectionHapticFeedback()
     fun scrollTo(scrollTo: Int)

@@ -3,8 +3,10 @@
  */
 package com.windscribe.vpn.repository
 
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.constants.ApiConstants.PCP_ID
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import io.reactivex.Completable
@@ -21,7 +23,10 @@ class NotificationRepository @Inject constructor(
     private val logger = LoggerFactory.getLogger("notification_updater")
     fun update(): Completable {
         logger.debug("Starting notification data update.")
-        return apiCallManager.getNotifications(null)
+        val params = appContext.appLifeCycleObserver.pushNotificationAction?.pcpID?.let {
+            hashMapOf(Pair(PCP_ID, it))
+        }
+        return apiCallManager.getNotifications(params)
             .flatMapCompletable { response ->
                 response.dataClass?.let { newsfeed ->
                     newsfeed.notifications?.let {
