@@ -16,7 +16,6 @@
         android:id="@+id/icon"
         style="@style/IconStyle"
         android:padding="0dp"
-        android:src="@drawable/ic_ads"
         android:contentDescription="@string/image_description"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

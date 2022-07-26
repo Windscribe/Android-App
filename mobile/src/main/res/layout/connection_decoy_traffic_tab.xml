@@ -7,7 +7,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingBottom="@dimen/margin_8"
     app:layout_constraintTop_toBottomOf="@id/cl_decoy_traffic">
 
     <ImageView
@@ -84,6 +83,7 @@
         app:layout_constraintTop_toBottomOf="@id/cl_fake_traffic_volume" />
 
     <TextView
+        android:layout_height="@dimen/reg_52dp"
         android:id="@+id/tv_potential_traffic_label"
         style="@style/MenuItemSpinnerLabel"
         android:layout_marginStart="@dimen/margin_16"
