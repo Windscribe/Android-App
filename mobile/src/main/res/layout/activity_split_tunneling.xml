@@ -20,35 +20,46 @@
 
         <include layout="@layout/nav_bar" />
 
-        <TextView
-            style="@style/MenuActionDescription"
-            android:layout_width="0dp"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_16"
-            android:layout_marginStart="@dimen/reg_16dp"
-            android:fontFamily="@font/ibm_font_family"
-            android:gravity="center_vertical|left"
-            android:includeFontPadding="false"
-            android:text="@string/split_tunneling_feature"
-            android:textAlignment="viewStart"
-            android:textSize="12sp"
-            android:background="@drawable/preference_rounded_stroke_background"
-            app:layout_constraintEnd_toStartOf="@id/learn_more"
             app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/nav_bar"
-            android:id="@+id/page_description"
-            />
+            android:layout_marginTop="@dimen/margin_16"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:background="@drawable/preference_rounded_stroke_background"
+            >
+            <TextView
+                style="@style/MenuActionDescription"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/ibm_font_family"
+                android:gravity="center_vertical|left"
+                android:includeFontPadding="false"
+                android:text="@string/split_tunneling_feature"
+                android:textAlignment="viewStart"
+                android:textSize="12sp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/learn_more"
+                android:id="@+id/page_description"
+                />
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/ExplainIcon"
-            android:id="@+id/learn_more"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/page_description"
-            app:layout_constraintBottom_toBottomOf="@id/page_description"
-            />
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/ExplainIcon"
+                android:layout_marginEnd="0dp"
+                android:layout_marginRight="0dp"
+                android:id="@+id/learn_more"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/page_description"
+                app:layout_constraintBottom_toBottomOf="@id/page_description"
+                />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

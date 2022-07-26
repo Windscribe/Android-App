@@ -71,7 +71,9 @@
                 style="@style/MenuActionTitle"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="Title"
-                app:layout_constraintStart_toEndOf="@id/left_icon" />
+                app:layout_constraintStart_toEndOf="@id/left_icon"
+                android:includeFontPadding="false"
+                />
 
             <ImageView
                 android:id="@+id/right_icon"
