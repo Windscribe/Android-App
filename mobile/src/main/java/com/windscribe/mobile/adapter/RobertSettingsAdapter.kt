@@ -6,6 +6,7 @@ package com.windscribe.mobile.adapter
 
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.INVISIBLE
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
@@ -58,10 +59,10 @@ class RobertSettingsAdapter(private val robertAdapterListener: RobertAdapterList
             Pair("malware", R.drawable.ic_malware),
             Pair("ads", R.drawable.ic_ads),
             Pair("social", R.drawable.ic_social),
-           // Pair("porn", R.drawable.ic_porn),
+            Pair("porn", R.drawable.ic_porn),
             Pair("gambling", R.drawable.ic_gambling),
             Pair("fakenews", R.drawable.ic_fake_news),
-           // Pair("competitors", R.drawable.ic_other_vpn),
+            Pair("competitors", R.drawable.ic_other_vpn),
             Pair("cryptominers", R.drawable.ic_crypto)
         )
 
@@ -87,6 +88,8 @@ class RobertSettingsAdapter(private val robertAdapterListener: RobertAdapterList
             }
             iconMap[robertSetting.id]?.let {
                 icon.setImageResource(it)
+            }?: kotlin.run { 
+                icon.visibility = INVISIBLE
             }
             filter.text = robertSetting.title
         }
