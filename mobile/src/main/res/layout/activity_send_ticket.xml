@@ -51,6 +51,8 @@
                     style="@style/MenuItemLabelTwo"
                     android:paddingStart="0dp"
                     android:paddingEnd="0dp"
+                    android:paddingTop="@dimen/reg_12dp"
+                    android:paddingBottom="@dimen/reg_12dp"
                     android:layout_marginStart="0dp"
                     android:text="@string/category"
                     app:layout_constraintBottom_toBottomOf="parent"
