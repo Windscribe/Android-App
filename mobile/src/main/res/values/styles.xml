@@ -673,10 +673,10 @@
         <item name="android:gravity">center</item>
         <item name="android:paddingStart">@dimen/padding_8</item>
         <item name="android:paddingLeft">@dimen/padding_8</item>
-        <item name="android:paddingTop">@dimen/reg_16dp</item>
+        <item name="android:paddingTop">@dimen/reg_12dp</item>
         <item name="android:paddingEnd">@dimen/padding_8</item>
         <item name="android:paddingRight">@dimen/padding_8</item>
-        <item name="android:paddingBottom">@dimen/reg_16dp</item>
+        <item name="android:paddingBottom">@dimen/reg_12dp</item>
         <item name="android:textColor">?attr/preferenceItemLabelThreeColor</item>
         <item name="android:textSize">16sp</item>
         <item name="android:includeFontPadding">false</item>
