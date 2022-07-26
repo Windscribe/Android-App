@@ -263,9 +263,7 @@ public class ConnectionSettingsActivity extends BaseActivity
             }
 
             @Override
-            public void onExplainClick() {
-                openURLInBrowser(FeatureExplainer.KEEP_ALIVE);
-            }
+            public void onExplainClick() {}
         });
 
         KeepAliveView keepAliveView = (KeepAliveView) keepAliveExpandableView.getChildView();
