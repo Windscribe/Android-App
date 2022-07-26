@@ -41,6 +41,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionManager
@@ -662,7 +663,9 @@ class WindscribeActivity :
 
     @OnClick(R.id.ip_address)
     fun onIpClick() {
-        presenter.onIpClicked()
+        if(textViewIpAddress?.alpha != 0.0F){
+            presenter.onIpClicked()  
+        }
     }
 
     @OnClick(R.id.img_hamburger_menu)
