@@ -139,7 +139,6 @@ class IKev2VpnBackend(
         if (logFile.exists()) {
             try {
                 val sizeInMb = logFile.length() / (1024 * 1024)
-                vpnLogger.debug(if (sizeInMb > 1) "Resetting charon log file." else "No need to reset charon log file.")
                 if (sizeInMb > 1) {
                     logFile.delete()
                     logFile.createNewFile()

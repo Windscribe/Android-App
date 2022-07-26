@@ -9,7 +9,6 @@ import android.content.Context.ACTIVITY_SERVICE
 import android.content.Intent
 import android.net.VpnService
 import androidx.work.Data
-import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.alert.showErrorDialog
@@ -31,7 +30,6 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.exceptions.InvalidVPNConfigException
-import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.UserRepository
@@ -62,6 +60,8 @@ open class WindVpnController @Inject constructor(
 ) {
 
     private val logger = LoggerFactory.getLogger("vpn_backend")
+    private var disconnectTask: Job? = null
+    private var isConnecting = false
 
     private suspend fun createVPNProfile(config: ProtocolConfig): String {
         return when (WindUtilities.getSourceTypeBlocking()) {
@@ -198,12 +198,13 @@ open class WindVpnController @Inject constructor(
      * @param alwaysOnVPN if vpn service was launched by system.
      */
     open fun connect(alwaysOnVPN: Boolean = false) {
+        if (isConnecting) return
+         isConnecting = true
         when {
             // Disconnect from VPN and connect to next selected location.
             vpnBackendHolder.activeBackend != null -> {
                 interactor.preferenceHelper.isReconnecting = true
                 disconnect(reconnecting = true).invokeOnCompletion {
-                    logger.debug("Disconnect job completed")
                     createProfileAndLaunchService(alwaysOnVPN).invokeOnCompletion {
                         logger.debug("Connect job completed")
                     }
@@ -235,7 +236,9 @@ open class WindVpnController @Inject constructor(
                 logger.debug("Profile: $profileToConnect")
                 logger.debug("Launching VPN Services.")
                 launchVPNService()
+                isConnecting = false
             } catch (e: Exception) {
+                isConnecting = false
                 scope.launch {
                     if (e is InvalidVPNConfigException) {
                         disconnect().invokeOnCompletion {
@@ -274,7 +277,7 @@ open class WindVpnController @Inject constructor(
         }
         val city = locationRepository.updateLocation()
         locationRepository.setSelectedCity(city)
-        logger.debug("Selected location to connect: $city.")
+        logger.debug("Selected location ID to connect: $city.")
     }
 
     /**
@@ -283,8 +286,14 @@ open class WindVpnController @Inject constructor(
      * @return Job A cancellable Job
      * */
     fun disconnect(waitForNextProtocol: Boolean = false, reconnecting: Boolean = false): Job {
+        if(disconnectTask?.isActive == true){
+            return disconnectTask?.job ?: scope.launch {}
+        }
+        if(waitForNextProtocol && isServiceRunning(NetworkWhiteListService::class.java) && vpnConnectionStateManager.state.value.status == Status.UnsecuredNetwork){
+            return scope.launch {}
+        }
         logger.debug("Disconnecting from VPN: Waiting for next protocol: $waitForNextProtocol Reconnecting: $reconnecting")
-        return scope.launch {
+        disconnectTask = scope.launch {
             if (WindStunnelUtility.isStunnelRunning) {
                 WindStunnelUtility.stopLocalTunFromAppContext(appContext)
             }
@@ -307,11 +316,22 @@ open class WindVpnController @Inject constructor(
                             }
                         }
                     }
-                } catch (e: CancellationException) {
-                    logger.debug("Sending Disconnect event to UI")
-                    vpnConnectionStateManager.setState(VPNState(Status.Disconnected))
+                } catch (ignored: Exception){
+                    logger.debug("Successfully disconnected")
+                    checkForReconnect(waitForNextProtocol)
                 }
             }
+        }
+        return disconnectTask ?: scope.launch {  }
+    }
+
+    private fun checkForReconnect(waitForNextProtocol: Boolean){
+        if (waitForNextProtocol) {
+            interactor.preferenceHelper.globalUserConnectionPreference = true
+            vpnConnectionStateManager.setState(VPNState(Status.UnsecuredNetwork))
+            NetworkWhiteListService.startService(appContext)
+        } else {
+            vpnConnectionStateManager.setState(VPNState(Status.Disconnected))
         }
     }
 
