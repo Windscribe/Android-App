@@ -53,7 +53,7 @@
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/name"
             android:layout_width="0dp"
-            android:layout_height="@dimen/reg_32dp"
+            android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/padding_32"
             android:layout_marginLeft="@dimen/padding_32"
             android:layout_marginRight="@dimen/padding_32"
@@ -63,6 +63,7 @@
             android:fontFamily="@font/ibm_font_family"
             android:gravity="start|center_vertical"
             android:hint="@string/name"
+            android:lines="1"
             android:includeFontPadding="false"
             android:inputType="text"
             android:padding="@dimen/reg_8dp"
@@ -79,6 +80,7 @@
             android:layout_height="2dp"
             android:background="?attr/dividerHorizontalColor"
             android:contentDescription="@string/image_description"
+            android:layout_marginTop="@dimen/margin_8"
             app:layout_constraintEnd_toEndOf="@id/name"
             app:layout_constraintStart_toStartOf="@id/name"
             app:layout_constraintTop_toBottomOf="@id/name" />
@@ -87,12 +89,12 @@
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/username"
             android:layout_width="0dp"
-            android:layout_height="@dimen/reg_32dp"
+            android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/padding_32"
             android:layout_marginLeft="@dimen/padding_32"
             android:layout_marginRight="@dimen/padding_32"
             android:layout_marginStart="@dimen/padding_32"
-            android:layout_marginTop="@dimen/padding_16"
+            android:layout_marginTop="@dimen/reg_16dp"
             android:background="@android:color/transparent"
             android:fontFamily="@font/ibm_font_family"
             android:gravity="start|center_vertical"
@@ -113,6 +115,7 @@
             android:layout_height="2dp"
             android:background="?attr/dividerHorizontalColor"
             android:contentDescription="@string/image_description"
+            android:layout_marginTop="@dimen/margin_8"
             app:layout_constraintEnd_toEndOf="@id/username"
             app:layout_constraintStart_toStartOf="@id/username"
             app:layout_constraintTop_toBottomOf="@id/username" />
@@ -120,12 +123,11 @@
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/password"
             android:layout_width="0dp"
-            android:layout_height="@dimen/reg_32dp"
+            android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/padding_32"
             android:layout_marginLeft="@dimen/padding_32"
             android:layout_marginRight="@dimen/padding_32"
             android:layout_marginStart="@dimen/padding_32"
-            android:layout_marginTop="@dimen/padding_16"
             android:background="@android:color/transparent"
             android:fontFamily="@font/ibm_font_family"
             android:gravity="start|center_vertical"
@@ -133,6 +135,7 @@
             android:includeFontPadding="false"
             android:inputType="textPassword"
             android:padding="@dimen/reg_8dp"
+            android:layout_marginTop="@dimen/reg_16dp"
             android:textColor="@color/colorWhite50"
             android:textColorHint="@color/colorWhite"
             android:textSize="16sp"
@@ -142,10 +145,12 @@
             app:layout_constraintTop_toBottomOf="@id/username" />
 
         <ImageView
+            android:id="@+id/password_divider"
             android:layout_width="0dp"
             android:layout_height="2dp"
             android:background="?attr/dividerHorizontalColor"
             android:contentDescription="@string/image_description"
+            android:layout_marginTop="@dimen/margin_8"
             app:layout_constraintEnd_toEndOf="@id/password"
             app:layout_constraintStart_toStartOf="@id/password"
             app:layout_constraintTop_toBottomOf="@id/password" />
@@ -168,7 +173,7 @@
             android:textColor="@color/colorWhite"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/password" />
+            app:layout_constraintTop_toBottomOf="@id/password_divider" />
 
 
         <ImageView
@@ -187,7 +192,7 @@
         <ImageView
             android:layout_width="0dp"
             android:layout_height="2dp"
-            android:layout_marginTop="@dimen/reg_8dp"
+            android:layout_marginTop="@dimen/reg_16dp"
             android:background="?attr/dividerHorizontalColor"
             android:contentDescription="@string/image_description"
             app:layout_constraintEnd_toEndOf="@id/password"

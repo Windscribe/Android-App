@@ -42,6 +42,8 @@ class ExpandableDropDownView @JvmOverloads constructor(
         view.findViewById<TextView>(R.id.label).text = attributes.getString(R.styleable.ExpandableDropDownView_ExpandableDropDownTitle)
         val leftIcon = attributes.getResourceIdOrThrow(R.styleable.ExpandableDropDownView_ExpandableDropDownLeftIcon)
         view.findViewById<ImageView>(R.id.left_icon).setImageResource(leftIcon)
+        val showRightIcon = attributes.getBoolean(R.styleable.ExpandableDropDownView_ExpandableDropDownShowRightIcon, true)
+        view.findViewById<ImageView>(R.id.right_icon).visibility = if (showRightIcon) { VISIBLE} else INVISIBLE
         view.findViewById<ImageView>(R.id.right_icon).setOnClickListener { delegate?.onExplainClick() }
         view.findViewById<ImageView>(R.id.clickable_area).setOnClickListener { spinner?.performClick() }
         spinner?.onItemSelectedListener = this

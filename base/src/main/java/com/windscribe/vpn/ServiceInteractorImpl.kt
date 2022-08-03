@@ -80,7 +80,7 @@ class ServiceInteractorImpl @Inject constructor(
     }
 
     override fun addNetworkToKnown(networkName: String): Single<Long> {
-        val networkInfo = NetworkInfo(networkName, true, false, "UDP", "443")
+        val networkInfo = NetworkInfo(networkName, preferenceHelper.isAutoSecureOn, false, PreferencesKeyConstants.PROTO_IKev2, PreferencesKeyConstants.DEFAULT_IKEV2_PORT)
         return localDbInterface.addNetwork(networkInfo)
     }
 
