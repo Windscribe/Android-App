@@ -4,6 +4,8 @@
 
 package com.windscribe.vpn.state
 
+import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.localdatabase.LocalDbInterface
@@ -18,7 +20,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import javax.inject.Singleton
 
 @Singleton
-class NetworkInfoManager(private val localDbInterface: LocalDbInterface, deviceStateManager: DeviceStateManager) :
+class NetworkInfoManager(private val preferencesHelper: PreferencesHelper, private val localDbInterface: LocalDbInterface, deviceStateManager: DeviceStateManager) :
         DeviceStateListener {
 
     private val compositeDisposable = CompositeDisposable()
@@ -31,7 +33,7 @@ class NetworkInfoManager(private val localDbInterface: LocalDbInterface, deviceS
 
     private fun addNetworkToKnown(networkName: String): Single<Long> {
         val networkInfo = NetworkInfo(
-                networkName, true, false, PreferencesKeyConstants.PROTO_IKev2, PreferencesKeyConstants.DEFAULT_IKEV2_PORT
+                networkName, preferencesHelper.isAutoSecureOn, false, PreferencesKeyConstants.PROTO_IKev2, PreferencesKeyConstants.DEFAULT_IKEV2_PORT
         )
         return localDbInterface.addNetwork(networkInfo)
     }

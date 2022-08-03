@@ -81,12 +81,13 @@ public class EditConfigFileDialog extends Fragment {
             configFile.setName(name);
             configFile.setUsername(username);
             configFile.setPassword(password);
+            configFile.setType(1);
             requestDialogCallback.onConfigFileUpdated(configFile);
 
         });
 
         view.findViewById(R.id.request_alert_cancel).setOnClickListener(
-                view12 -> Objects.requireNonNull(getActivity()).onBackPressed());
+                view12 -> requireActivity().onBackPressed());
 
     }
 

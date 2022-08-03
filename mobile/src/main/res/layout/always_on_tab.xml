@@ -95,6 +95,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto">
             android:layout_height="wrap_content"
             android:layout_width="0dp"
             android:text="@string/open_settings"
+            android:textColor="?attr/wdSecondaryColor"
             android:fontFamily="@font/ibm_plex_sans_regular"
             android:layout_marginEnd="@dimen/reg_12dp"
             android:layout_marginStart="0dp"
