@@ -266,7 +266,7 @@ public class AccountPresenterImpl implements AccountPresenter {
                 Calendar c = Calendar.getInstance();
                 c.setTime(Objects.requireNonNull(lastResetDate));
                 if (!user.isPro()) {
-                    c.add(Calendar.DATE, 30);
+                    c.add(Calendar.MONTH, 1);
                     Date nextResetDate = c.getTime();
                     mAccountView.setResetDate(mAccountInteractor.getResourceString(R.string.reset_date),
                             formatter.format(nextResetDate));
