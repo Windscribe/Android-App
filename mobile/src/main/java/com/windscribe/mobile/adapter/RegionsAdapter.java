@@ -410,7 +410,6 @@ public class RegionsAdapter extends ExpandableRecyclerViewAdapter<RegionViewHold
         holder.imgSignalStrengthBar.setImageTintList(ColorStateList.valueOf(selectedColor));
         holder.imgLinkSpeed.setImageTintList(ColorStateList.valueOf(selectedColor));
         holder.nodeGroupName.setTextColor(ColorStateList.valueOf(selectedColor));
-        holder.tvSignalStrength.setTextColor(ColorStateList.valueOf(selectedColor));
     }
 
     @SuppressLint("ClickableViewAccessibility")

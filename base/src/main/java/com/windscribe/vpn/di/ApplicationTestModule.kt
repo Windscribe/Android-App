@@ -608,10 +608,11 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun providesNetworkInfoManager(
+            preferencesHelper: PreferencesHelper,
             localDbInterface: LocalDbInterface,
             deviceStateManager: DeviceStateManager
     ): NetworkInfoManager {
-        return NetworkInfoManager(localDbInterface, deviceStateManager)
+        return NetworkInfoManager(preferencesHelper, localDbInterface, deviceStateManager)
     }
 
     @Provides
