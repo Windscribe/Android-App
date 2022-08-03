@@ -67,6 +67,7 @@
                 android:layout_width="wrap_content"
                 android:fontFamily="@font/ibm_plex_sans_regular"
                 android:layout_marginStart="0dp"
+                android:textColor="?attr/wdSecondaryColor"
                 android:layout_marginEnd="@dimen/reg_12dp"
                 app:layout_constraintStart_toEndOf="@id/split_tunnel_title"
                 app:layout_constraintEnd_toStartOf="@id/split_tunnel_right_icon"

@@ -12,7 +12,7 @@ import androidx.core.content.res.getResourceIdOrThrow
 import com.windscribe.mobile.R
 
 
-class MultipleLinkExplainView @JvmOverloads constructor(
+class  MultipleLinkExplainView @JvmOverloads constructor(
         context: Context,
         attrs: AttributeSet? = null,
         defStyleAttr: Int = 0
@@ -31,11 +31,10 @@ class MultipleLinkExplainView @JvmOverloads constructor(
     }
 
     fun onFirstItemClick(click: OnClickListener){
-        view.findViewById<AppCompatImageView>(R.id.first_item_right_icon).setOnClickListener(click)
-        view.findViewById<TextView>(R.id.first_item_title).setOnClickListener(click)
+        view.findViewById<AppCompatImageView>(R.id.first_item_tap_area).setOnClickListener(click)
     }
     fun onSecondItemClick(click: OnClickListener){
-        view.findViewById<AppCompatImageView>(R.id.second_item_right_icon).setOnClickListener(click)
-        view.findViewById<TextView>(R.id.second_item_title).setOnClickListener(click)
+        view.findViewById<AppCompatImageView>(R.id.second_item_tap_area).setOnClickListener(click)
+        view.findViewById<AppCompatImageView>(R.id.clip_corner_background).setOnClickListener(click)
     }
 }
