@@ -77,7 +77,7 @@ public class ConnectionSettingsPresenterImpl implements ConnectionSettingsPresen
         } else {
             mPresenterLog.info("Split tunnel settings is OFF");
             mConnSettingsView.setSplitTunnelText(mConnSettingsInteractor.getResourceString(R.string.off),
-                    mConnSettingsInteractor.getColorResource(R.color.colorWhite50));
+                    mConnSettingsInteractor.getThemeColor(R.attr.wdSecondaryColor));
         }
 
         setAutoStartMenu();

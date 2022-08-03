@@ -56,14 +56,18 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/img_preference_icon" />
 
-            <ImageView
-                style="@style/divider"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/img_preference_icon" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ImageView
+            style="@style/divider"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:layout_marginTop="0dp"
+            android:id="@+id/general_divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/cl_general"
+            app:layout_constraintTop_toBottomOf="@id/cl_general"
+            />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_account"
@@ -72,7 +76,7 @@
             android:paddingEnd="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_general">
+            app:layout_constraintTop_toBottomOf="@id/general_divider">
 
             <ImageView
                 android:id="@+id/img_account_icon"
@@ -100,16 +104,18 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/img_account_icon" />
 
-            <ImageView
-                style="@style/divider"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/img_account_icon" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-
+        <ImageView
+            style="@style/divider"
+            android:id="@+id/account_divider"
+            android:layout_marginTop="0dp"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/cl_account"
+            app:layout_constraintTop_toBottomOf="@id/cl_account"
+            />
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_connection"
             style="@style/MenuItemContainer"
@@ -117,7 +123,7 @@
             android:paddingEnd="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_account">
+            app:layout_constraintTop_toBottomOf="@id/account_divider">
 
             <ImageView
                 android:id="@+id/img_connection_icon"
@@ -145,15 +151,18 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/img_connection_icon" />
 
-            <ImageView
-                android:id="@+id/img_connection_divider"
-                style="@style/divider"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/img_connection_icon" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ImageView
+            style="@style/divider"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:layout_marginTop="0dp"
+            android:id="@+id/connection_divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/cl_connection"
+            app:layout_constraintTop_toBottomOf="@id/cl_connection"
+            />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_robert"
@@ -190,16 +199,19 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/img_robert_icon" />
 
-            <ImageView
-                android:id="@+id/img_robert_divider"
-                style="@style/divider"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/img_robert_icon" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+
+        <ImageView
+            style="@style/divider"
+            android:id="@+id/robert_divider"
+            android:layout_marginTop="0dp"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/cl_robert"
+            app:layout_constraintTop_toBottomOf="@id/cl_robert"
+            />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_help"
@@ -237,16 +249,17 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/img_help_icon" />
 
-
-            <ImageView
-                style="@style/divider"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/img_help_icon" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <ImageView
+            style="@style/divider"
+            android:id="@+id/help_divider"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:layout_marginTop="0dp"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/cl_help"
+            app:layout_constraintTop_toBottomOf="@id/cl_help"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_about"
@@ -255,7 +268,7 @@
             android:paddingEnd="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_help">
+            app:layout_constraintTop_toBottomOf="@id/help_divider">
 
             <ImageView
                 android:id="@+id/img_about_icon"
@@ -286,15 +299,16 @@
                 app:layout_constraintTop_toTopOf="@id/img_about_icon" />
 
 
-            <ImageView
-                style="@style/divider"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/img_about_icon" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
-
+        <ImageView
+            style="@style/divider"
+            android:id="@+id/about_divider"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:layout_marginTop="0dp"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/cl_about"
+            app:layout_constraintTop_toBottomOf="@id/cl_about"/>
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_sign"
             style="@style/MenuItemContainer"

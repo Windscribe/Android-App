@@ -85,7 +85,7 @@ class MainMenuPresenterImpl @Inject constructor(
             interactor.getResourceString(R.string.account),
             interactor.getResourceString(R.string.connection),
             interactor.getResourceString(R.string.help_me),
-            interactor.getResourceString(R.string.sign_out),
+            interactor.getResourceString(R.string.logout),
             interactor.getResourceString(R.string.about),
             interactor.getResourceString(R.string.robert)
         )

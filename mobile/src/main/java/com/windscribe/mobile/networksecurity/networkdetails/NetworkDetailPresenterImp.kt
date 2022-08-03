@@ -14,7 +14,10 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_IKev2
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.services.DeviceStateService
+import com.windscribe.vpn.state.NetworkInfoManager
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.functions.Consumer
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
@@ -90,9 +93,11 @@ class NetworkDetailPresenterImp @Inject constructor(
 
     override fun removeNetwork(name: String) {
         interactor.getCompositeDisposable()
-            .add(
-                interactor.removeNetwork(name)
-                    .subscribeOn(Schedulers.io())
+            .add(interactor.removeNetwork(name)
+                .flatMap {
+                    interactor.getNetworkInfoManager().reload(true)
+                    return@flatMap Single.just(it)
+                }.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(object : DisposableSingleObserver<Int?>() {
                         override fun onError(ignored: Throwable) {

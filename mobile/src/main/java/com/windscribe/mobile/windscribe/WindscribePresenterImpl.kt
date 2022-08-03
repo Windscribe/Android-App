@@ -1755,6 +1755,7 @@ class WindscribePresenterImpl @Inject constructor(
                         .subscribeWith(object : DisposableCompletableObserver() {
                             override fun onComplete() {
                                 windscribeView.showToast("Updated profile")
+                                configAdapter?.notifyDataSetChanged()
                             }
 
                             override fun onError(e: Throwable) {
