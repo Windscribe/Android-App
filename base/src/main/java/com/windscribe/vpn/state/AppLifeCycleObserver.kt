@@ -6,38 +6,40 @@ package com.windscribe.vpn.state
 
 import android.os.Build
 import android.os.Build.VERSION
-import androidx.lifecycle.Lifecycle.Event.ON_CREATE
-import androidx.lifecycle.Lifecycle.Event.ON_PAUSE
-import androidx.lifecycle.Lifecycle.Event.ON_RESUME
+import androidx.lifecycle.Lifecycle.Event.*
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import com.windscribe.vpn.R.string
-import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.api.DomainFailOverUtil
+import com.windscribe.vpn.api.ApiCallType
+import com.windscribe.vpn.api.DomainFailOverManager
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.workers.WindScribeWorkManager
+import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.slf4j.LoggerFactory
 
 /**
 Tracks App life cycle
  * */
 @Singleton
-class AppLifeCycleObserver @Inject constructor(private val workManager: WindScribeWorkManager, private val networkInfoManager: NetworkInfoManager) :
-        LifecycleObserver {
+class AppLifeCycleObserver @Inject constructor(
+    private val workManager: WindScribeWorkManager,
+    private val networkInfoManager: NetworkInfoManager,
+    private val domainFailOverManager: DomainFailOverManager
+) :
+    LifecycleObserver {
 
     private val logger = LoggerFactory.getLogger("app_life_cycle")
     private val startingFresh = AtomicBoolean(false)
     var overriddenCountryCode: String? = null
-    private var pushNotification : PushNotificationAction? = null
-    var pushNotificationAction:PushNotificationAction?
-    get() = pushNotification
-    set(value){
-        pushNotification = value
+    private var pushNotification: PushNotificationAction? = null
+    var pushNotificationAction: PushNotificationAction?
+        get() = pushNotification
+        set(value) {
+            pushNotification = value
         appContext.workManager.updateNotifications()
     }
 
@@ -65,7 +67,7 @@ class AppLifeCycleObserver @Inject constructor(private val workManager: WindScri
             logger.debug("Resetting server list country code.")
             overriddenCountryCode = null
         }
-        DomainFailOverUtil.reset()
+        domainFailOverManager.reset(ApiCallType.Other)
         networkInfoManager.reload()
         if (startingFresh.getAndSet(false)) {
             isInForeground = false

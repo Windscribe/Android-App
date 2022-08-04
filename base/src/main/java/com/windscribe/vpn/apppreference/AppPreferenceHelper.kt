@@ -15,15 +15,16 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.DECOY_TRAFFIC
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_IKEV2_PORT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.FAKE_TRAFFIC_VOLUME
+import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_CONNECT_API_FAIL_OVER_STATE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_LOCAL_PARAMS
 import com.windscribe.vpn.constants.VpnPreferenceConstants
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.exceptions.PreferenceException
 import com.windscribe.vpn.repository.WgLocalParams
 import io.reactivex.Single
-import java.util.Date
-import javax.inject.Singleton
 import net.grandcentrix.tray.AppPreferences
+import java.util.*
+import javax.inject.Singleton
 
 @Singleton
 class AppPreferenceHelper(
@@ -578,11 +579,23 @@ class AppPreferenceHelper(
         }
 
     override var fakeTrafficVolume: FakeTrafficVolume
-        get(){
-            val value = preference.getString(FAKE_TRAFFIC_VOLUME, FakeTrafficVolume.High.name)?:FakeTrafficVolume.High.name
+        get() {
+            val value = preference.getString(FAKE_TRAFFIC_VOLUME, FakeTrafficVolume.High.name)
+                ?: FakeTrafficVolume.High.name
             return FakeTrafficVolume.valueOf(value)
-            }
+        }
         set(value) {
-                preference.put(FAKE_TRAFFIC_VOLUME, value.name)
+            preference.put(FAKE_TRAFFIC_VOLUME, value.name)
+        }
+
+    override var wgConnectApiFailOverState: Map<String, Boolean>
+        get() {
+            return preference.getString(WG_CONNECT_API_FAIL_OVER_STATE, null)?.let {
+                val type = object : TypeToken<Map<String, Boolean>>() {}.type
+                return@let Gson().fromJson(it, type)
+            } ?: mapOf()
+        }
+        set(value) {
+            preference.put(WG_CONNECT_API_FAIL_OVER_STATE, Gson().toJson(value))
         }
 }
