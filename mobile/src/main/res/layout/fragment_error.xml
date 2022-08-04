@@ -36,6 +36,7 @@
             android:layout_marginStart="@dimen/margin_60"
             android:layout_marginTop="@dimen/margin_16"
             android:gravity="center"
+            android:focusable="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/warning_icon" />

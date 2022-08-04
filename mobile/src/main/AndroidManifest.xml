@@ -38,8 +38,7 @@
             android:screenOrientation="portrait"/>
         <activity
             android:name=".help.HelpActivity"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize" />
+            android:screenOrientation="portrait" />
         <activity android:name=".confirmemail.ConfirmActivity" />
         <activity
             android:name=".welcome.WelcomeActivity"
@@ -87,7 +86,9 @@
         <activity
             android:name=".newsfeedactivity.NewsFeedActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".upgradeactivity.UpgradeActivity" />
+        <activity
+            android:name=".upgradeactivity.UpgradeActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".account.AccountActivity"
             android:screenOrientation="portrait" />
