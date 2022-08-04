@@ -23,17 +23,17 @@ import org.slf4j.LoggerFactory
 import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.log
 
 @Singleton
 class ApiCallManager @Inject constructor(
-        private val apiFactory: WindApiFactory,
-        private val customApiFactory: WindCustomApiFactory,
-        private val hashedDomains: List<String>,
-        private val authorizationGenerator: AuthorizationGenerator,
-        private var accessIps: List<String>?,
-        private var primaryApiEndpoints: Map<HostType, String>,
-        private var secondaryApiEndpoints: Map<HostType, String>
+    private val apiFactory: WindApiFactory,
+    private val customApiFactory: WindCustomApiFactory,
+    private val hashedDomains: List<String>,
+    private val authorizationGenerator: AuthorizationGenerator,
+    private var accessIps: List<String>?,
+    private var primaryApiEndpoints: Map<HostType, String>,
+    private var secondaryApiEndpoints: Map<HostType, String>,
+    private val domainFailOverManager: DomainFailOverManager
 ) : IApiCallManager {
 
     private val logger = LoggerFactory.getLogger("api_call")
@@ -158,12 +158,13 @@ class ApiCallManager @Inject constructor(
      * @return optional GenericResponseClass<T, ApiErrorResponse>
      */
     fun <T> call(
-            extraParams: Map<String, String>? = null,
-            authRequired: Boolean = true,
-            hostType: HostType = HostType.API,
-            modelType: Class<T>,
-            protect: Boolean = false,
-            service: (ApiService, Map<String, String>, Boolean) -> Single<ResponseBody>
+        extraParams: Map<String, String>? = null,
+        authRequired: Boolean = true,
+        hostType: HostType = HostType.API,
+        modelType: Class<T>,
+        protect: Boolean = false,
+        apiCallType: ApiCallType = ApiCallType.Other,
+        service: (ApiService, Map<String, String>, Boolean) -> Single<ResponseBody>
     ): Single<GenericResponseClass<T?, ApiErrorResponse?>> {
         try {
             val params = createQueryMap(extraParams, authRequired)
@@ -183,24 +184,48 @@ class ApiCallManager @Inject constructor(
                     }
                 }
             }
-            return callOrSkip(service, DomainType.Primary, primaryDomain!!, protect, params)
-                    .onErrorResumeNext {
-                        if (it is HttpException && isErrorBodyValid(it)) {
-                            return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
-                        } else {
-                            DomainFailOverUtil.setDomainBlocked(DomainType.Primary)
-                            return@onErrorResumeNext (callOrSkip(service, DomainType.Secondary, secondaryDomain!!, protect, params))
-                        }
-                    }.onErrorResumeNext {
-                        if (it is HttpException && isErrorBodyValid(it)) {
-                            return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
+            return callOrSkip(
+                apiCallType,
+                service,
+                DomainType.Primary,
+                primaryDomain!!,
+                protect,
+                params
+            )
+                .onErrorResumeNext {
+                    if (it is HttpException && isErrorBodyValid(it)) {
+                        return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
+                    } else {
+                        domainFailOverManager.setDomainBlocked(DomainType.Primary, apiCallType)
+                        return@onErrorResumeNext (callOrSkip(
+                            apiCallType,
+                            service,
+                            DomainType.Secondary,
+                            secondaryDomain!!,
+                            protect,
+                            params
+                        ))
+                    }
+                }.onErrorResumeNext {
+                    if (it is HttpException && isErrorBodyValid(it)) {
+                        return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
                         } else {
                             return@onErrorResumeNext (
                                     if (BuildConfig.DEV || BuildConfig.BACKUP_API_ENDPOINT_STRING.isEmpty()) {
                                         throw WindScribeException("Hash domains are disabled.")
                                     } else {
-                                        DomainFailOverUtil.setDomainBlocked(DomainType.Secondary)
-                                        callOrSkip(service, DomainType.Hashed1, backupApiEndPoint[0], protect, params)
+                                        domainFailOverManager.setDomainBlocked(
+                                            DomainType.Secondary,
+                                            apiCallType
+                                        )
+                                        callOrSkip(
+                                            apiCallType,
+                                            service,
+                                            DomainType.Hashed1,
+                                            backupApiEndPoint[0],
+                                            protect,
+                                            params
+                                        )
                                     }
                                     )
                         }
@@ -212,8 +237,18 @@ class ApiCallManager @Inject constructor(
                                     if (BuildConfig.DEV || BuildConfig.BACKUP_API_ENDPOINT_STRING.isEmpty()) {
                                         throw WindScribeException("Hash domains are disabled.")
                                     } else {
-                                        DomainFailOverUtil.setDomainBlocked(DomainType.Hashed1)
-                                        callOrSkip(service, DomainType.Hashed2, backupApiEndPoint[1], protect, params)
+                                        domainFailOverManager.setDomainBlocked(
+                                            DomainType.Hashed1,
+                                            apiCallType
+                                        )
+                                        callOrSkip(
+                                            apiCallType,
+                                            service,
+                                            DomainType.Hashed2,
+                                            backupApiEndPoint[1],
+                                            protect,
+                                            params
+                                        )
                                     }
                                     )
                         }
@@ -225,8 +260,18 @@ class ApiCallManager @Inject constructor(
                                     if (BuildConfig.DEV || BuildConfig.BACKUP_API_ENDPOINT_STRING.isEmpty()) {
                                         throw WindScribeException("Hash domains are disabled.")
                                     } else {
-                                        DomainFailOverUtil.setDomainBlocked(DomainType.Hashed2)
-                                        callOrSkip(service, DomainType.Hashed3, backupApiEndPoint[2], protect, params)
+                                        domainFailOverManager.setDomainBlocked(
+                                            DomainType.Hashed2,
+                                            apiCallType
+                                        )
+                                        callOrSkip(
+                                            apiCallType,
+                                            service,
+                                            DomainType.Hashed3,
+                                            backupApiEndPoint[2],
+                                            protect,
+                                            params
+                                        )
                                     })
                         }
                     }
@@ -237,8 +282,15 @@ class ApiCallManager @Inject constructor(
                             if (BuildConfig.DEV || BuildConfig.API_STATIC_CERT.isEmpty()) {
                                 throw WindScribeException("Unsafe http client disabled.")
                             } else {
-                                if (DomainFailOverUtil.isAccessible(DomainType.DirectIp1)) {
-                                    DomainFailOverUtil.setDomainBlocked(DomainType.Hashed3)
+                                if (domainFailOverManager.isAccessible(
+                                        DomainType.DirectIp1,
+                                        apiCallType
+                                    )
+                                ) {
+                                    domainFailOverManager.setDomainBlocked(
+                                        DomainType.Hashed3,
+                                        apiCallType
+                                    )
                                     val services = getApiServicesWithAccessIp(params)
                                     return@onErrorResumeNext services.flatMap { apiService ->
                                         return@flatMap service.invoke(apiService[0], params, true)
@@ -255,8 +307,15 @@ class ApiCallManager @Inject constructor(
                             if (BuildConfig.DEV || BuildConfig.API_STATIC_CERT.isEmpty()) {
                                 throw WindScribeException("Unsafe http client disabled.")
                             } else {
-                                if (DomainFailOverUtil.isAccessible(DomainType.DirectIp2)) {
-                                    DomainFailOverUtil.setDomainBlocked(DomainType.DirectIp1)
+                                if (domainFailOverManager.isAccessible(
+                                        DomainType.DirectIp2,
+                                        apiCallType
+                                    )
+                                ) {
+                                    domainFailOverManager.setDomainBlocked(
+                                        DomainType.DirectIp1,
+                                        apiCallType
+                                    )
                                     val services = getApiServicesWithAccessIp(params)
                                     return@onErrorResumeNext services.flatMap { apiService ->
                                         return@flatMap service.invoke(apiService[1], params, true)
@@ -270,7 +329,7 @@ class ApiCallManager @Inject constructor(
                         if (it is HttpException && isErrorBodyValid(it)) {
                             return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
                         } else {
-                            DomainFailOverUtil.reset()
+                            domainFailOverManager.reset(apiCallType)
                             throw WindScribeException("No more endpoints left to try. Giving up.")
                         }
                     }.flatMap {
@@ -290,8 +349,15 @@ class ApiCallManager @Inject constructor(
         } ?: false
     }
 
-    private fun callOrSkip(service: (ApiService, Map<String, String>, Boolean) -> Single<ResponseBody>, domainType: DomainType, domain: String, protect: Boolean, params: Map<String, String>): Single<ResponseBody> {
-        return if (DomainFailOverUtil.isAccessible(domainType)) {
+    private fun callOrSkip(
+        apiCallType: ApiCallType,
+        service: (ApiService, Map<String, String>, Boolean) -> Single<ResponseBody>,
+        domainType: DomainType,
+        domain: String,
+        protect: Boolean,
+        params: Map<String, String>
+    ): Single<ResponseBody> {
+        return if (domainFailOverManager.isAccessible(domainType, apiCallType)) {
             service.invoke(apiFactory.createApi(domain, protect), params, false)
         } else {
             return Single.error(Throwable())
@@ -629,8 +695,10 @@ class ApiCallManager @Inject constructor(
 
     override fun wgConnect(extraParams: Map<String, String>?, protect: Boolean): Single<GenericResponseClass<WgConnectResponse?, ApiErrorResponse?>> {
         return call(
-                extraParams,
-                modelType = WgConnectResponse::class.java, protect = protect
+            extraParams,
+            modelType = WgConnectResponse::class.java,
+            protect = protect,
+            apiCallType = ApiCallType.WgConnect
         ) { apiService, params, _ ->
             apiService.wgConnect(params)
         }
@@ -638,8 +706,10 @@ class ApiCallManager @Inject constructor(
 
     override fun wgInit(extraParams: Map<String, String>?, protect: Boolean): Single<GenericResponseClass<WgInitResponse?, ApiErrorResponse?>> {
         return call(
-                extraParams,
-                modelType = WgInitResponse::class.java, protect = protect
+            extraParams,
+            modelType = WgInitResponse::class.java,
+            protect = protect,
+            apiCallType = ApiCallType.WgConnect
         ) { apiService, params, _ ->
             apiService.wgInit(params)
         }
