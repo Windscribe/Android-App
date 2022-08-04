@@ -22,9 +22,9 @@ import com.windscribe.mobile.holder.FavoriteViewHolder;
 import com.windscribe.vpn.commonutils.ThemeUtils;
 import com.windscribe.vpn.constants.NetworkKeyConstants;
 import com.windscribe.vpn.serverlist.entity.City;
-import com.windscribe.vpn.serverlist.entity.ServerListData;
 import com.windscribe.vpn.serverlist.entity.Favourite;
 import com.windscribe.vpn.serverlist.entity.PingTime;
+import com.windscribe.vpn.serverlist.entity.ServerListData;
 import com.windscribe.vpn.serverlist.interfaces.ListViewClickListener;
 
 import java.util.ArrayList;
@@ -240,7 +240,6 @@ public class FavouriteAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         holder.imgFavoriteItemStrengthBar.setImageTintList(ColorStateList.valueOf(selectedColor));
         holder.imgLinkSpeed.setImageTintList(ColorStateList.valueOf(selectedColor));
         holder.tvFavoriteCityName.setTextColor(ColorStateList.valueOf(selectedColor));
-        holder.tvFavouriteItemStrength.setTextColor(ColorStateList.valueOf(selectedColor));
     }
 
     @SuppressLint("ClickableViewAccessibility")
