@@ -962,7 +962,13 @@ class WindscribeActivity :
     }
 
     override fun permissionGranted(requestCode: Int) {
-        if (requestCode == REQUEST_LOCATION_PERMISSION_FOR_PREFERRED_NETWORK && isBackgroundLocationPermissionGranted(
+        if (requestCode == NETWORK_NAME_PERMISSION) {
+            textViewConnectedNetworkName?.let {
+                if (it.text == "Unknown Network") {
+                    presenter.onNetworkStateChanged()
+                }
+            }
+        } else if (requestCode == REQUEST_LOCATION_PERMISSION_FOR_PREFERRED_NETWORK && isBackgroundLocationPermissionGranted(
                 this
             )
         ) {
