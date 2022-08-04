@@ -6,7 +6,6 @@ package com.windscribe.mobile.adapter
 
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.INVISIBLE
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
@@ -89,7 +88,7 @@ class RobertSettingsAdapter(private val robertAdapterListener: RobertAdapterList
             iconMap[robertSetting.id]?.let {
                 icon.setImageResource(it)
             }?: kotlin.run { 
-                icon.visibility = INVISIBLE
+                icon.setImageResource(R.drawable.ic_preference_placeholder)
             }
             filter.text = robertSetting.title
         }
