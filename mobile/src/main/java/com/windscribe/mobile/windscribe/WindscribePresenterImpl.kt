@@ -490,17 +490,15 @@ class WindscribePresenterImpl @Inject constructor(
                             override fun onSuccess(serverListData: ServerListData) {
                                 val selection = interactor.getAppPreferenceInterface().selection
                                 if (selection == LATENCY_LIST_SELECTION_MODE) {
-                                    regions.sortWith(
-                                            Comparator { o1: StaticRegion, o2: StaticRegion ->
-                                                serverListData.pingTimes
-                                                getPingTimeFromCity(
-                                                        o1.id,
-                                                        serverListData
-                                                ) - getPingTimeFromCity(
-                                                        o2.id, serverListData
-                                                )
-                                            }
-                                    )
+                                    regions.sortWith { o1: StaticRegion, o2: StaticRegion ->
+                                        serverListData.pingTimes
+                                        getPingTimeFromCity(
+                                            o1.id,
+                                            serverListData
+                                        ) - getPingTimeFromCity(
+                                            o2.id, serverListData
+                                        )
+                                    }
                                 } else if (selection == AZ_LIST_SELECTION_MODE) {
                                     Collections.sort(regions, ByStaticRegionName())
                                 }
@@ -531,6 +529,7 @@ class WindscribePresenterImpl @Inject constructor(
                                             interactor.getResourceString(R.string.add_static_ip), ""
                                     )
                                 }
+                                checkSelectedLocationForChange()
                             }
                         })
         )
