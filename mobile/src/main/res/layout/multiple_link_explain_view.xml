@@ -162,10 +162,13 @@
             android:id="@+id/description"
             style="@style/MenuActionDescription"
             android:layout_marginStart="@dimen/margin_16"
+            android:layout_marginEnd="@dimen/reg_16dp"
             android:paddingBottom="@dimen/padding_16"
             android:paddingTop="@dimen/padding_16"
             tools:text="Description"
+            android:layout_width="0dp"
             app:layout_constraintStart_toStartOf="@id/container"
+            app:layout_constraintEnd_toEndOf="@id/container"
             app:layout_constraintTop_toBottomOf="@id/container" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </merge>
