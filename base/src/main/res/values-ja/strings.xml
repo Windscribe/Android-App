@@ -1,8 +1,4 @@
-﻿<!--
-  ~ Copyright (c) 2021 Windscribe Limited.
-  -->
-
-<resources>
+﻿<resources>
     <!--- User-->
     <string name="username_empty">ユーザー名が入力されていません!</string>
     <string name="password_empty">パスワードが入力されていません!</string>
@@ -75,7 +71,7 @@
     <string name="data_left">残り%1$.2f GB</string>
     <string name="gb_month">- GB/月</string>
     <string name="warning_no_email_pro_account">メールアドレスを追加することでパスワードを忘れた時にアカウントを復元することができます。</string>
-    <string name="free_reason_to_confirm">無料で10GB/月のボーナスデータを取得するにはメールアドレスを確定してください</string>
+    <string name="free_reason_to_confirm">無料で10GB/月にアップグレードするにはメールアドレスを確定してください</string>
     <string name="pro_reason_to_confirm">アカウントを保護するにはメールアドレスを確定してください</string>
 
     <!-- Connection states -->
@@ -84,8 +80,6 @@
     <string name="connecting">接続中&#160;</string>
     <string name="connecting_to">%sに接続中</string>
     <string name="connected_to">%sに接続済</string>
-    <string name="切断済ing">切断中</string>
-    <string name="切断済ed">切断済</string>
     <string name="tunnel_test_failed">接続に失敗しました&#8230;</string>
     <string name="checking_connectivity">接続を確認中&#8230;</string>
     <string name="connectivity_test_failed">接続テストに失敗しました&#8230;</string>
@@ -98,19 +92,19 @@
     <string name="port">ポート</string>
     <string name="connection_automatic">自動</string>
     <string name="connection_manual">マニュアル</string>
-    <string name="go_to_settings">設定へ行く</string>
+    <string name="go_to_settings">設定を開く</string>
     <string name="always_on_not_supported">この機能を使うには、Androidバージョン7.0以降が必要です</string>
     <string name="packet_size">パケットサイズ</string>
     <string name="lan_by_pass">LANトラフィックを許可</string>
     <string name="gps_spoofing">GPSスプーフィング</string>
-    <string name="natKeepAlive">IKE キープアライブ</string>
+    <string name="natKeepAlive">IKEキープアライブ</string>
     <string name="keep_alive">キープアライブ</string>
     <string name="auto_detecting">自動検出中…</string>
 
     <!-- Account-->
-    <string name="plan_pro">Pro</string>
+    <string name="plan_pro">Proプラン</string>
     <string name="expiry_date">有効期限</string>
-    <string name="reset_date">データ使用量リセット日</string>
+    <string name="reset_date">データ量リセット日</string>
     <string name="gb_per_month">&#160;GB/月</string>
     <string name="my_account">アカウント</string>
     <string name="cancel">キャンセル</string>
@@ -180,7 +174,7 @@
     <string name="optional">(任意)</string>
     <string name="get_10_gb">10GB/月を取得</string>
     <string name="plans">プラン</string>
-    <string name="pro">Pro</string>
+    <string name="pro">Proプラン</string>
     <string name="benefits">サービス内容</string>
     <string name="pricing">価格</string>
     <string name="all_locations">すべてのロケーション</string>
@@ -191,7 +185,7 @@
     <string name="account_set_up_description">アカウントを保護することでお持ちのどのデバイスからもユーザーアカウントへのアクセスが可能になります</string>
     <string name="continue_free_10gb_mo">無料の10GB/月を獲得</string>
     <string name="continue_without_email">メールアドレスを設定せずに続行</string>
-    <string name="no_email_warning">メールアドレスを設定しない場合、 無料アカウントのデータ使用料は2GB/月に制限され、パスワードをリセットできません。</string>
+    <string name="no_email_warning">メールアドレスを設定しない場合、無料アカウントのデータ使用料は2GB/月に制限され、パスワードをリセットできません。</string>
     <string name="get_started">開始する</string>
     <!-- Actions -->
     <string name="error_try_again">エラー!再度お試しください</string>
@@ -236,13 +230,13 @@
     <string name="logout_alert_description">Windscribeからログアウトしてもよろしいですか？</string>
 
     <!--General Settings-->
-    <string name="sort_by">ロケーションで並べ替え</string>
-    <string name="display_latency">レイテンシ（通信遅延時間）を表示</string>
+    <string name="sort_by">ロケーションを並び替え</string>
+    <string name="display_latency">レイテンシ表示</string>
     <string name="preferred_language">言語</string>
     <string name="theme">テーマ</string>
     <string name="show_timer_in_notifications">通知ステータス</string>
     <string name="haptic_setting_label">触覚フィードバック</string>
-    <string name="version">Version</string>
+    <string name="version">バージョン</string>
     <string name="show_location_health">各ロケーションの負荷状態を確認</string>
 
 
@@ -258,7 +252,7 @@
 
     <!--Always on -->
     <string name="always_on">VPN常時オン</string>
-    <string name="always_on_warning">\"常に接続\" VPNに常に接続する場合、AndroidがVPNを制御し、VPNの仮想トンネルが起動していない場合にデバイスからデータを送信できません。</string>
+    <string name="always_on_warning">VPNに常時接続する場合、AndroidがVPN接続を制御し、VPNの仮想トンネルが起動していない限り、デバイスからデータを送信できません。</string>
     <string name="always_on_setting">Android 10以降のデバイスでは、デバイス起動時にWindscribeを起動するよう常時接続VPNを設定する必要があります。</string>
 
     <!-- Network security -->
@@ -267,7 +261,7 @@
     <string name="network_unsecured">ネットワークは保護されていません　</string>
     <string name="preferred_protocol_description">接続に問題がある場合、このネットワークのデフォルトのプロトコルを選択します</string>
     <string name="unknown">不明なネットワーク</string>
-	<string name="loading_network_list">ネットワークリストを読み込み中です\nお待ちください...</string>
+    <string name="loading_network_list">ネットワークリストを読み込み中です\nお待ちください...</string>
     <string name="no_saved_network_list">保存されたネットワークリストはありません！</string>
     <string name="network_options">ネットワークオプション</string>
     <string name="auto_secure">自動保護</string>
@@ -279,8 +273,8 @@
     <string name="enable_start_on_boot">「起動時に開始」を有効化</string>
 
     <!--Location permission -->
-    <string name="grant_permission">権限付与</string>
-    <string name="reason_for_location_permission">\”ネットワークホワイトリスト\”機能動作させるために、Windscribeがバックグラウンドで実行中に位置情報を利用する必要があります。この権限はWi-fiのネットワーク名にアクセスするために必要であり、ネットワークホワイトリスト機能だけでなく、GPSスプーフィング機能にも利用されます。位置情報がデバイス外へ送信されることはなく、他の用途への使用も一切ございません。</string>
+    <string name="grant_permission">許可</string>
+    <string name="reason_for_location_permission">Windscribeでは\”ネットワークホワイトリスト\”機能を動作させるために、アプリをバックグラウンドで実行中に位置情報を利用する必要があります。この権限はWi-fiのネットワーク名にアクセスするために必要であり、ネットワークホワイトリスト機能だけでなく、GPSスプーフィング機能にも利用されます。位置情報がデバイス外へ送信されることはなく、他の用途への使用も一切ございません。</string>
     <string name="location_permission_for_ssid">優先プロトコルに自動で接続するには位置情報の権限が必要です。</string>
     <string name="disclaimer">免責事項</string>
     <string name="location_permission">位置情報許可</string>
@@ -295,11 +289,11 @@
     <string name="knowledge_base">ナレッジベース</string>
     <string name="knowledge_base_description">Windscribeのすべて</string>
     <string name="talk_to_garry">Garryに聞いてみる</string>
-    <string name="talk_to_garry_description">Siriほど賢くはないけど一応質問には答えられます。</string>
+    <string name="talk_to_garry_description">Siriほど賢くはないけど一応質問には答えられます</string>
     <string name="send_ticket">チケットを送信</string>
-    <string name="send_ticket_description">まだ答えが見つかりませんか? 私たち（人間）にチケットを送信</string>
+    <string name="send_ticket_description">まだ答えが見つかりませんか? 私たち人間にチケットを送信</string>
     <string name="community_support">コミュニティーサポート</string>
-    <string name="community_support_description">ほかのWindscribeユーザーに助けてもらったり、助けてあげたりできるとっておきの場所。</string>
+    <string name="community_support_description">ほかのユーザーに助けてもらったり、助けてあげたりできるとっておきの場所</string>
 
 
     <!--Send ticket -->
@@ -339,10 +333,10 @@
     <!-- About -->
     <string name="about">企業情報</string>
     <string name="about_us">Windscribeについて</string>
-    <string name="status">Status</string>
+    <string name="status">ステータス</string>
     <string name="privacy_policy">プライバシーポリシー</string>
     <string name="terms_title">利用規約</string>
-    <string name="blog">Blog</string>
+    <string name="blog">ブログ</string>
     <string name="jobs">採用情報</string>
     <string name="software_licenses">ソフトウェアライセンス</string>
 
@@ -364,7 +358,7 @@
     <string name="log_submission_failed">ログ送信エラー!</string>
 
     <!-- Home -->
-    <string name="add_your_email_address">パスワードを忘れた時にリセットできるようにメールアドレスを登録しましょう。 ついでに10GBのボーナスデータをゲット(´･Д･)」</string>
+    <string name="add_your_email_address">パスワードを忘れた時にリセットできるようにメールアドレスを登録しましょう。 ついでに無料でデータ量10GB/月にアップグレード(´･Д･)」</string>
     <string name="locations">ロケーション</string>
     <string name="notifications">通知</string>
     <string name="support">サポート</string>
@@ -385,7 +379,7 @@
 
     <!-- Settings -->
     <string name="settings">設定</string>
-    <string name="sort_type">ロケーションで並べ替え</string>
+    <string name="sort_type">ロケーションを並べ替え</string>
     <string name="split_routing">スプリットトネリング</string>
     <string name="exclusive_mode">独占</string>
     <string name="disabled">Off</string>
@@ -405,7 +399,7 @@
     <string name="claim_account" translatable="false">アカウントを申請する</string>
     <string name="reason_to_get_more_data" translatable="false">"新規登録して10GB/月を取得するか、アップグレードしてデータ容量のリミットからから解放されましょう。"</string>
     <string name="sign_up_to_get_10" translatable="false">新規登録 - 10GB/月</string>
-    <string name="get_pro" translatable="false">Pro - データ無制限</string>
+    <string name="get_pro" translatable="false">Proプラン - データ無制限</string>
     <string name="add_email_pro" translatable="false">メールアドレス追加</string>
     <string name="text_two_fa" translatable="false">次に進むには2要素認証が必要です。認証アプリを使用してコードを生成してください。</string>
     <string name="free_reason_to_add_email" translatable="false">10GB/月のデータ容量を取得するにはメールアドレスを登録してください</string>
@@ -433,7 +427,6 @@
     <string name="favourite">お気に入り</string>
     <string name="windflix">Windflix</string>
     <string name="static_ip">静的IPアドレス</string>
-    <string name="disconnected_alert_no_network" translatable="false">ネットワーク接続が不安定なためWindscribeのVPNトンネルが一時停止しています - お使いのネットワーク接続をご確認ください</string>
     <string name="node_under_construction_text" translatable="false">このロケーションはメンテナンス中です。 後ほどお試し頂くかステータスページ（https://windscribe.com/status）で詳細をご確認ください</string>
     <string name="load_loading" translatable="false">読み込み中</string>
     <string name="load_nothing_found" translatable="false">何も表示するものがありません</string>
@@ -444,8 +437,8 @@
     <string name="text_ok">OK</string>
 
     <!--Robert -->
-    <string name="robert_description">R.O.B.E.R.T.はカスタム設定可能なサーバサイドのドメインおよびIPアドレスをブロックする機能です。お使いのすべてのデバイスに適用されるブロックリストを選択からブロックしたいSelect the block lists you wish to apply on all your devices by toggling the switch.</string>
-    <string name="learn_more">詳細表示</string>
+    <string name="robert_description">R.O.B.E.R.T.はカスタム設定可能なサーバー側ドメインおよびIPアドレスをブロックする機能です。下記リストのスイッチを切り替えて、お使いのすべてのデバイスに適用されるブロックリストを作成します。</string>
+    <string name="learn_more">R.O.B.E.R.T.についての詳しくはこちら</string>
     <string name="manage_custom_rules">カスタムルール設定</string>
     <string name="blocking">ブロック中</string>
     <string name="allowing">許可中</string>

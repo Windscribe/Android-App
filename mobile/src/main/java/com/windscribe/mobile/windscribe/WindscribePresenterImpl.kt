@@ -3,16 +3,13 @@
  */
 package com.windscribe.mobile.windscribe
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Pair
 import android.view.View
-import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import com.google.common.io.CharStreams
 import com.windscribe.mobile.R
@@ -22,6 +19,7 @@ import com.windscribe.mobile.base.BaseActivity.Companion.REQUEST_LOCATION_PERMIS
 import com.windscribe.mobile.connectionui.*
 import com.windscribe.mobile.listeners.ProtocolClickListener
 import com.windscribe.mobile.utils.UiUtil.getDataRemainingColor
+import com.windscribe.mobile.utils.UiUtil.locationPermissionAvailable
 import com.windscribe.mobile.windscribe.WindscribeActivity.NetworkLayoutState
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.ActivityInteractorImpl.PortMapLoadCallback
@@ -533,14 +531,6 @@ class WindscribePresenterImpl @Inject constructor(
                             }
                         })
         )
-    }
-
-    private fun locationPermissionAvailable(): Boolean {
-        return (
-                ContextCompat
-                        .checkSelfPermission(appContext, Manifest.permission.ACCESS_FINE_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED
-                )
     }
 
     override fun logoutFromCurrentSession() {
@@ -1735,6 +1725,7 @@ class WindscribePresenterImpl @Inject constructor(
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeOn(Schedulers.io())
                         .subscribeWith(object : DisposableCompletableObserver() {
+                            @SuppressLint("NotifyDataSetChanged")
                             override fun onComplete() {
                                 windscribeView.showToast("Updated profile")
                                 configAdapter?.notifyDataSetChanged()
