@@ -33,38 +33,11 @@ import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
-import com.windscribe.vpn.localdatabase.LocalDatabaseImpl
-import com.windscribe.vpn.localdatabase.LocalDbInterface
-import com.windscribe.vpn.localdatabase.Migrations
-import com.windscribe.vpn.localdatabase.NetworkInfoDao
-import com.windscribe.vpn.localdatabase.PingTestDao
-import com.windscribe.vpn.localdatabase.PopupNotificationDao
-import com.windscribe.vpn.localdatabase.ServerStatusDao
-import com.windscribe.vpn.localdatabase.UserStatusDao
-import com.windscribe.vpn.localdatabase.WindNotificationDao
-import com.windscribe.vpn.localdatabase.WindscribeDatabase
+import com.windscribe.vpn.localdatabase.*
 import com.windscribe.vpn.mocklocation.MockLocationManager
-import com.windscribe.vpn.repository.ConnectionDataRepository
-import com.windscribe.vpn.repository.LocationRepository
-import com.windscribe.vpn.repository.NotificationRepository
-import com.windscribe.vpn.repository.ServerListRepository
-import com.windscribe.vpn.repository.StaticIpRepository
-import com.windscribe.vpn.repository.UserRepository
-import com.windscribe.vpn.repository.WgConfigRepository
-import com.windscribe.vpn.serverlist.dao.CityAndRegionDao
-import com.windscribe.vpn.serverlist.dao.CityDao
-import com.windscribe.vpn.serverlist.dao.CityDetailDao
-import com.windscribe.vpn.serverlist.dao.ConfigFileDao
-import com.windscribe.vpn.serverlist.dao.FavouriteDao
-import com.windscribe.vpn.serverlist.dao.PingTimeDao
-import com.windscribe.vpn.serverlist.dao.RegionAndCitiesDao
-import com.windscribe.vpn.serverlist.dao.RegionDao
-import com.windscribe.vpn.serverlist.dao.StaticRegionDao
-import com.windscribe.vpn.state.AppLifeCycleObserver
-import com.windscribe.vpn.state.DeviceStateManager
-import com.windscribe.vpn.state.NetworkInfoManager
-import com.windscribe.vpn.state.PreferenceChangeObserver
-import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.windscribe.vpn.repository.*
+import com.windscribe.vpn.serverlist.dao.*
+import com.windscribe.vpn.state.*
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import com.wireguard.android.backend.GoBackend
 import dagger.Lazy
@@ -539,16 +512,24 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun providesApiCallManagerInterface(
-            windApiFactory: WindApiFactory,
-            windCustomApiFactory: WindCustomApiFactory,
-            @Named("backupEndPointList") backupEndpoint: List<String>,
-            authorizationGenerator: AuthorizationGenerator,
-            @Named("accessIpList") accessIpList: List<String>,
-            @Named("PrimaryApiEndpointMap") primaryApiEndpointMap : Map<HostType, String>,
-            @Named("SecondaryApiEndpointMap") secondaryApiEndpointMap : Map<HostType, String>,
+        windApiFactory: WindApiFactory,
+        windCustomApiFactory: WindCustomApiFactory,
+        @Named("backupEndPointList") backupEndpoint: List<String>,
+        authorizationGenerator: AuthorizationGenerator,
+        @Named("accessIpList") accessIpList: List<String>,
+        @Named("PrimaryApiEndpointMap") primaryApiEndpointMap : Map<HostType, String>,
+        @Named("SecondaryApiEndpointMap") secondaryApiEndpointMap : Map<HostType, String>,
+        domainFailOverManager: DomainFailOverManager
     ): IApiCallManager {
         return ApiCallManager(
-                windApiFactory, windCustomApiFactory, backupEndpoint, authorizationGenerator, accessIpList, primaryApiEndpointMap, secondaryApiEndpointMap
+            windApiFactory,
+            windCustomApiFactory,
+            backupEndpoint,
+            authorizationGenerator,
+            accessIpList,
+            primaryApiEndpointMap,
+            secondaryApiEndpointMap,
+            domainFailOverManager
         )
     }
 
@@ -570,8 +551,12 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
 
     @Provides
     @Singleton
-    fun providesAppLifeCycleObserver(workManager: WindScribeWorkManager, networkInfoManager: NetworkInfoManager): AppLifeCycleObserver {
-        return AppLifeCycleObserver(workManager, networkInfoManager)
+    fun providesAppLifeCycleObserver(
+        workManager: WindScribeWorkManager,
+        networkInfoManager: NetworkInfoManager,
+        domainFailOverManager: DomainFailOverManager
+    ): AppLifeCycleObserver {
+        return AppLifeCycleObserver(workManager, networkInfoManager, domainFailOverManager)
     }
 
     @Provides
@@ -610,21 +595,29 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun providesNetworkInfoManager(
-            preferencesHelper: PreferencesHelper,
-            localDbInterface: LocalDbInterface,
-            deviceStateManager: DeviceStateManager
+        preferencesHelper: PreferencesHelper,
+        localDbInterface: LocalDbInterface,
+        deviceStateManager: DeviceStateManager
     ): NetworkInfoManager {
         return NetworkInfoManager(preferencesHelper, localDbInterface, deviceStateManager)
     }
 
     @Provides
+    @Singleton
+    fun providesDomainFailOverManager(
+        preferencesHelper: PreferencesHelper
+    ): DomainFailOverManager {
+        return DomainFailOverManager(preferencesHelper)
+    }
+
+    @Provides
     fun providesOkHttpBuilder(): OkHttpClient.Builder {
         return OkHttpClient.Builder()
-                .addNetworkInterceptor {
-                    val url = it.request().url
-                    logger.debug("Request: $url")
-                    it.proceed(it.request())
-                }
+            .addNetworkInterceptor {
+                val url = it.request().url
+                logger.debug("Request: $url")
+                it.proceed(it.request())
+            }
     }
 
     @Provides
