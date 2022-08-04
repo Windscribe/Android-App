@@ -9,7 +9,7 @@ import com.windscribe.vpn.backend.utils.ProtocolConfig
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.repository.WgLocalParams
 import io.reactivex.Single
-import java.util.Date
+import java.util.*
 import javax.inject.Singleton
 
 @Singleton
@@ -33,6 +33,7 @@ interface PreferencesHelper {
     val iKEv2Port: String
     val installedApps: Single<List<String>>
     fun installedApps(): List<String>
+    var wgConnectApiFailOverState: Map<String, Boolean>
     var keepAlive: String
     var lanByPass: Boolean
     var lastConnectedUsingSplit: Boolean
