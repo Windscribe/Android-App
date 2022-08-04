@@ -24,24 +24,13 @@ import android.os.Looper
 import android.provider.Settings
 import android.transition.AutoTransition
 import android.transition.Slide
-import android.view.Gravity
-import android.view.HapticFeedbackConstants
-import android.view.View
-import android.view.ViewTreeObserver
-import android.view.Window
-import android.view.WindowManager
+import android.view.*
 import android.view.animation.AccelerateInterpolator
-import android.widget.ArrayAdapter
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.Spinner
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionManager
@@ -59,27 +48,11 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup
 import com.windscribe.mobile.R
-import com.windscribe.mobile.adapter.ConfigAdapter
-import com.windscribe.mobile.adapter.FavouriteAdapter
-import com.windscribe.mobile.adapter.ProtocolAdapter
-import com.windscribe.mobile.adapter.RegionsAdapter
-import com.windscribe.mobile.adapter.ServerListFragmentPager
-import com.windscribe.mobile.adapter.StaticRegionAdapter
-import com.windscribe.mobile.adapter.StreamingNodeAdapter
-import com.windscribe.mobile.alert.AlertListener
-import com.windscribe.mobile.alert.AllProtocolFailedNetworkFragment
-import com.windscribe.mobile.alert.EditConfigFileDialog
-import com.windscribe.mobile.alert.LocationPermissionRationale
-import com.windscribe.mobile.alert.PermissionRationaleListener
-import com.windscribe.mobile.alert.UsernameAndPasswordRequestDialog
+import com.windscribe.mobile.adapter.*
+import com.windscribe.mobile.alert.*
 import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.connectionsettings.ConnectionSettingsActivity
-import com.windscribe.mobile.connectionui.ConnectedAnimationState
-import com.windscribe.mobile.connectionui.ConnectedState
-import com.windscribe.mobile.connectionui.ConnectingAnimationState
-import com.windscribe.mobile.connectionui.ConnectingState
-import com.windscribe.mobile.connectionui.ConnectionUiState
-import com.windscribe.mobile.connectionui.DisconnectedState
+import com.windscribe.mobile.connectionui.*
 import com.windscribe.mobile.custom_view.CustomDialog
 import com.windscribe.mobile.custom_view.CustomDrawableCrossFadeFactory
 import com.windscribe.mobile.di.ActivityModule
@@ -92,28 +65,26 @@ import com.windscribe.mobile.ratemyapp.RateDialogFragment.RateDialogResponse
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.welcome.WelcomeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.ThemeUtils
 import com.windscribe.vpn.constants.AnimConstants
 import com.windscribe.vpn.constants.AnimConstants.VPN_CONNECTING_ANIMATION_DELAY
-import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.NetworkKeyConstants.getWebsiteLink
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.constants.RateDialogConstants
 import com.windscribe.vpn.constants.RateDialogConstants.PLAY_STORE_URL
-import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
+import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.ServerListData
 import com.windscribe.vpn.serverlist.interfaces.ListViewClickListener
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.DeviceStateManager.DeviceStateListener
 import com.windscribe.vpn.state.PreferenceChangeObserver
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Named
-import org.slf4j.LoggerFactory
 
 class WindscribeActivity :
     BaseActivity(),
@@ -1601,6 +1572,10 @@ class WindscribeActivity :
         serverListData: ServerListData,
         listViewClickListener: ListViewClickListener
     ) {
+        val fragment = supportFragmentManager.findFragmentById(R.id.cl_windscribe_main)
+        if (fragment is SearchFragment) {
+            return
+        }
         try {
             val searchFragment =
                 SearchFragment.newInstance(groups, serverListData, listViewClickListener)
