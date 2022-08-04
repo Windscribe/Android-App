@@ -63,6 +63,8 @@ import com.windscribe.mobile.newsfeedactivity.NewsFeedActivity
 import com.windscribe.mobile.ratemyapp.RateDialogFragment
 import com.windscribe.mobile.ratemyapp.RateDialogFragment.RateDialogResponse
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
+import com.windscribe.mobile.utils.UiUtil.isBackgroundLocationPermissionGranted
+import com.windscribe.mobile.utils.UiUtil.showBackgroundLocationPermissionAlert
 import com.windscribe.mobile.welcome.WelcomeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.utils.WindVpnController
@@ -960,9 +962,14 @@ class WindscribeActivity :
     }
 
     override fun permissionGranted(requestCode: Int) {
-        presenter.reloadNetworkInfo()
-        if (requestCode == REQUEST_LOCATION_PERMISSION_FOR_PREFERRED_NETWORK) {
+        if (requestCode == REQUEST_LOCATION_PERMISSION_FOR_PREFERRED_NETWORK && isBackgroundLocationPermissionGranted(
+                this
+            )
+        ) {
+            presenter.reloadNetworkInfo()
             presenter.setProtocolPreferred()
+        } else {
+            showBackgroundLocationPermissionAlert(this)
         }
         super.permissionGranted(requestCode)
     }

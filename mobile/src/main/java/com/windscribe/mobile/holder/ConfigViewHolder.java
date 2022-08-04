@@ -71,7 +71,6 @@ public class ConfigViewHolder extends RecyclerView.ViewHolder {
     private void setTextAndIconColors(ConfigViewHolder holder, int selectedColor) {
         holder.imgFavoriteItemStrengthBar.setImageTintList(ColorStateList.valueOf(selectedColor));
         holder.configNameView.setTextColor(ColorStateList.valueOf(selectedColor));
-        holder.tvFavouriteItemStrength.setTextColor(ColorStateList.valueOf(selectedColor));
     }
 
     @SuppressLint("ClickableViewAccessibility")

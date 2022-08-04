@@ -10,6 +10,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
@@ -29,6 +30,9 @@ public class ErrorFragment extends Fragment {
 
     @BindView(R.id.error)
     TextView mErrorView;
+
+    @BindView(R.id.close_btn)
+    Button closeBtn;
 
     private @ColorInt
     int backgroundColor = -1;
@@ -66,6 +70,7 @@ public class ErrorFragment extends Fragment {
             view.setBackgroundColor(backgroundColor);
         }
         mErrorView.setText(error);
+        closeBtn.requestFocus();
     }
 
     public void add(String error, AppCompatActivity activity, int container, boolean addToBackStack,
