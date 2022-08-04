@@ -8,15 +8,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="ContentDescription">
 
-    <include
-        android:id="@+id/tool_bar"
-        layout="@layout/nav_bar" />
+    <include layout="@layout/nav_bar" />
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tool_bar"
+        app:layout_constraintTop_toBottomOf="@id/nav_bar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         >

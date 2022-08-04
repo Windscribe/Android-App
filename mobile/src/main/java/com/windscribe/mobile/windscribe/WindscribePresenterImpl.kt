@@ -16,34 +16,17 @@ import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import com.google.common.io.CharStreams
 import com.windscribe.mobile.R
-import com.windscribe.mobile.adapter.ConfigAdapter
-import com.windscribe.mobile.adapter.FavouriteAdapter
-import com.windscribe.mobile.adapter.ProtocolAdapter
-import com.windscribe.mobile.adapter.RegionsAdapter
-import com.windscribe.mobile.adapter.StaticRegionAdapter
-import com.windscribe.mobile.adapter.StreamingNodeAdapter
+import com.windscribe.mobile.adapter.*
 import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.base.BaseActivity.Companion.REQUEST_LOCATION_PERMISSION_FOR_PREFERRED_NETWORK
-import com.windscribe.mobile.connectionui.ConnectedAnimationState
-import com.windscribe.mobile.connectionui.ConnectedState
-import com.windscribe.mobile.connectionui.ConnectingAnimationState
-import com.windscribe.mobile.connectionui.ConnectingState
-import com.windscribe.mobile.connectionui.ConnectionOptions
-import com.windscribe.mobile.connectionui.ConnectionOptionsBuilder
-import com.windscribe.mobile.connectionui.DisconnectedState
-import com.windscribe.mobile.connectionui.FailedProtocol
-import com.windscribe.mobile.connectionui.UnsecuredProtocol
+import com.windscribe.mobile.connectionui.*
 import com.windscribe.mobile.listeners.ProtocolClickListener
 import com.windscribe.mobile.utils.UiUtil.getDataRemainingColor
 import com.windscribe.mobile.windscribe.WindscribeActivity.NetworkLayoutState
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.ActivityInteractorImpl.PortMapLoadCallback
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.api.response.ApiErrorResponse
-import com.windscribe.vpn.api.response.GenericResponseClass
-import com.windscribe.vpn.api.response.GenericSuccess
-import com.windscribe.vpn.api.response.PortMapResponse
-import com.windscribe.vpn.api.response.PushNotificationAction
+import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.Util.getSavedLocation
 import com.windscribe.vpn.backend.VPNState
@@ -71,21 +54,9 @@ import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import com.windscribe.vpn.localdatabase.tables.WindNotification
 import com.windscribe.vpn.model.User
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.CityAndRegion
-import com.windscribe.vpn.serverlist.entity.ConfigFile
-import com.windscribe.vpn.serverlist.entity.Favourite
-import com.windscribe.vpn.serverlist.entity.Group
-import com.windscribe.vpn.serverlist.entity.PingTime
-import com.windscribe.vpn.serverlist.entity.RegionAndCities
-import com.windscribe.vpn.serverlist.entity.ServerListData
-import com.windscribe.vpn.serverlist.entity.StaticRegion
+import com.windscribe.vpn.serverlist.entity.*
 import com.windscribe.vpn.serverlist.interfaces.ListViewClickListener
-import com.windscribe.vpn.serverlist.sort.ByCityName
-import com.windscribe.vpn.serverlist.sort.ByConfigName
-import com.windscribe.vpn.serverlist.sort.ByLatency
-import com.windscribe.vpn.serverlist.sort.ByRegionName
-import com.windscribe.vpn.serverlist.sort.ByStaticRegionName
+import com.windscribe.vpn.serverlist.sort.*
 import com.windscribe.vpn.services.DeviceStateService.Companion.enqueueWork
 import com.windscribe.vpn.services.ping.Ping
 import com.windscribe.vpn.services.ping.PingTestService.Companion.startPingTestService
@@ -103,26 +74,22 @@ import io.reactivex.observers.DisposableCompletableObserver
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subscribers.DisposableSubscriber
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import org.slf4j.LoggerFactory
+import java.io.IOException
+import java.io.InputStreamReader
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
-import java.util.Collections
-import java.util.Date
+import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 import javax.inject.Inject
 import kotlin.math.roundToInt
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import org.apache.commons.io.IOUtils
-import org.slf4j.LoggerFactory
-import java.io.BufferedInputStream
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStreamReader
 
 class WindscribePresenterImpl @Inject constructor(
         private var windscribeView: WindscribeView,
@@ -380,6 +347,7 @@ class WindscribePresenterImpl @Inject constructor(
                                 } else {
                                     windscribeView.setConfigLocListAdapter(null)
                                     logger.debug("No Configured Location found")
+                                    configAdapter = null
                                     windscribeView.showConfigLocAdapterLoadError(
                                             interactor.getResourceString(R.string.no_custom_configs),
                                             0
@@ -1339,6 +1307,7 @@ class WindscribePresenterImpl @Inject constructor(
     override fun onShowConfigLocListClicked() {
         logger.info("Starting show flix location list transition...")
         windscribeView.showListBarSelectTransition(R.id.img_config_loc_list)
+        resetConfigEditState()
     }
 
     override fun onShowFavoritesClicked() {
@@ -1351,11 +1320,25 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.showListBarSelectTransition(R.id.img_server_list_flix)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    private fun resetConfigEditState() {
+        var itemsBeingEdited = 0
+        configAdapter?.configFiles?.filter {
+            it.type == 2
+        }?.forEach {
+            it.type = 1
+            itemsBeingEdited++
+        }
+        if (itemsBeingEdited > 0) {
+            configAdapter?.notifyDataSetChanged()
+        }
+    }
+
     override fun onShowLocationHealthChanged() {
         if (adapter != null) {
             val dataDetails = adapter!!.serverListData
             dataDetails
-                    .setShowLocationHealth(interactor.getAppPreferenceInterface().isShowLocationHealthEnabled)
+                .setShowLocationHealth(interactor.getAppPreferenceInterface().isShowLocationHealthEnabled)
             updateServerListData(dataDetails)
         }
     }
