@@ -18,12 +18,8 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.RadioButton
-import android.widget.RadioGroup
+import android.widget.*
 import android.widget.RadioGroup.OnCheckedChangeListener
-import android.widget.TextView
 import android.widget.TextView.BufferType.SPANNABLE
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.get
@@ -33,9 +29,7 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
 import com.windscribe.mobile.R
-import com.windscribe.mobile.R.layout
-import com.windscribe.mobile.R.string
-import com.windscribe.mobile.R.style
+import com.windscribe.mobile.R.*
 import com.windscribe.vpn.billing.AmazonProducts
 import com.windscribe.vpn.billing.BillingFragmentCallback
 import com.windscribe.vpn.billing.GoogleProducts
@@ -261,7 +255,7 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
     private fun showDialog(message: String) {
         Builder(context, style.tool_tip_dialog)
             .setMessage(message)
-            .setNeutralButton("Okay") { dialog1: DialogInterface, _: Int -> dialog1.cancel() }.show()
+            .setPositiveButton("OK") { dialog1: DialogInterface, _: Int -> dialog1.cancel() }.show()
     }
 
     companion object {

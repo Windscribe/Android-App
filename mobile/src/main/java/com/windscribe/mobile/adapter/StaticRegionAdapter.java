@@ -18,8 +18,8 @@ import com.windscribe.mobile.R;
 import com.windscribe.mobile.holder.StaticRegionHolder;
 import com.windscribe.vpn.commonutils.ThemeUtils;
 import com.windscribe.vpn.constants.NetworkKeyConstants;
-import com.windscribe.vpn.serverlist.entity.ServerListData;
 import com.windscribe.vpn.serverlist.entity.PingTime;
+import com.windscribe.vpn.serverlist.entity.ServerListData;
 import com.windscribe.vpn.serverlist.entity.StaticRegion;
 import com.windscribe.vpn.serverlist.interfaces.ListViewClickListener;
 
@@ -128,7 +128,6 @@ public class StaticRegionAdapter extends RecyclerView.Adapter<StaticRegionHolder
         holder.mImageIpType.setImageTintList(ColorStateList.valueOf(selectedColor));
         holder.mIpCityName.setTextColor(ColorStateList.valueOf(selectedColor));
         holder.mStaticIp.setTextColor(ColorStateList.valueOf(selectedColor));
-        holder.mTextViewPing.setTextColor(ColorStateList.valueOf(selectedColor));
     }
 
     @SuppressLint("ClickableViewAccessibility")

@@ -4,13 +4,10 @@
 
 package com.windscribe.mobile.connectionsettings;
 
-import android.Manifest;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
@@ -19,9 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.ContextCompat;
 
 import com.windscribe.mobile.R;
 import com.windscribe.mobile.alert.AlwaysOnFragment;
@@ -40,8 +35,7 @@ import com.windscribe.mobile.di.ActivityModule;
 import com.windscribe.mobile.gpsspoofing.GpsSpoofingSettingsActivity;
 import com.windscribe.mobile.networksecurity.NetworkSecurityActivity;
 import com.windscribe.mobile.splittunneling.SplitTunnelingActivity;
-import com.windscribe.vpn.Windscribe;
-import com.windscribe.vpn.alert.ForegroundAlertKt;
+import com.windscribe.mobile.utils.UiUtil;
 import com.windscribe.vpn.constants.FeatureExplainer;
 
 import org.slf4j.Logger;
@@ -53,7 +47,6 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import kotlin.Unit;
 
 public class ConnectionSettingsActivity extends BaseActivity
         implements ConnectionSettingsView, AlwaysOnFragment.AlwaysOnDialogCallBack, PermissionRationaleListener, ExtraDataUseWarningFragment.CallBack {
@@ -317,31 +310,17 @@ public class ConnectionSettingsActivity extends BaseActivity
     @Override
     public void permissionGranted(int requestCode) {
         if (BaseActivity.REQUEST_LOCATION_PERMISSION == requestCode) {
-            if (isBackgroundLocationPermissionGranted()) {
+            if (UiUtil.INSTANCE.isBackgroundLocationPermissionGranted(this)) {
                 startActivity(NetworkSecurityActivity.getStartIntent(this));
             } else {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    ForegroundAlertKt.showAlertDialog("App requires background location permission to access WIFI SSID on Android 11+. If you wish to use this feature, press Okay and select \"Allow all the time\" from the permission dialog.", this::askForBackgroundLocationPermission);
-                }
+                UiUtil.INSTANCE.showBackgroundLocationPermissionAlert(this);
             }
         } else if (requestCode == LOCATION_PERMISSION_FOR_SPOOF) {
-            presenter.onPermissionProvided();
-        }
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.Q)
-    private Unit askForBackgroundLocationPermission() {
-        requestPermissions(new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, REQUEST_BACKGROUND_PERMISSION);
-        return null;
-    }
-
-    private boolean isBackgroundLocationPermissionGranted() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            return ContextCompat
-                    .checkSelfPermission(Windscribe.getAppContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED;
-        } else {
-            return true;
+            if (UiUtil.INSTANCE.isBackgroundLocationPermissionGranted(this)) {
+                presenter.onPermissionProvided();
+            } else {
+                UiUtil.INSTANCE.showBackgroundLocationPermissionAlert(this);
+            }
         }
     }
 
