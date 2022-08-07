@@ -3,7 +3,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:id="@+id/packet_size_parent"
-    android:layout_marginTop="4dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ImageView
@@ -19,7 +18,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_packet_size"
         style="@style/MenuItemContainer"
-        android:layout_marginStart="0dp"
+        android:layout_marginStart="16dp"
+        android:paddingStart="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/img_packet_size_settings_divider">
@@ -34,7 +34,7 @@
             android:importantForAutofill="no"
             android:inputType="number"
             android:lines="1"
-            android:paddingStart="@dimen/padding_16"
+            android:paddingStart="0dp"
             android:maxLength="4"
             android:maxLines="1"
             app:layout_constraintStart_toStartOf="parent"

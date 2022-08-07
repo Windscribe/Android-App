@@ -23,7 +23,8 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_status"
             style="@style/MenuItemContainer"
-            android:layout_height="wrap_content"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
             android:nextFocusDown="@id/cl_about"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -32,8 +33,6 @@
             <TextView
                 android:id="@+id/tv_status_label"
                 style="@style/MenuItemLabelNoStartMargin"
-                android:layout_marginStart="0dp"
-                android:paddingStart="0dp"
                 android:text="@string/status"
                 app:layout_constraintBottom_toBottomOf="@id/img_status_arrow"
                 app:layout_constraintStart_toStartOf="parent"
@@ -47,24 +46,28 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <ImageView
-                style="@style/divider"
-                android:layout_marginTop="@dimen/padding_14"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/tv_status_label"
-                app:layout_constraintTop_toBottomOf="@id/tv_status_label" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <ImageView
+            style="@style/divider"
+            android:id="@+id/status_divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="0dp"
+            android:layout_marginStart="@dimen/margin_16"
+            app:layout_constraintTop_toBottomOf="@id/cl_status" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_about"
             style="@style/MenuItemContainer"
-            android:layout_height="wrap_content"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
             android:nextFocusDown="@id/cl_privacy"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_status">
+            app:layout_constraintTop_toBottomOf="@id/status_divider">
 
             <TextView
                 android:id="@+id/tv_about_label"
@@ -82,25 +85,27 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <ImageView
-                style="@style/divider"
-                android:layout_marginTop="@dimen/padding_14"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/tv_about_label"
-                app:layout_constraintTop_toBottomOf="@id/tv_about_label" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <ImageView
+            style="@style/divider"
+            android:id="@+id/about_divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="0dp"
+            android:layout_marginStart="@dimen/margin_16"
+            app:layout_constraintTop_toBottomOf="@id/cl_about" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_privacy"
             style="@style/MenuItemContainer"
-            android:layout_height="wrap_content"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
             android:nextFocusDown="@id/cl_term"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_about">
+            app:layout_constraintTop_toBottomOf="@id/about_divider">
 
             <TextView
                 android:id="@+id/tv_privacy_label"
@@ -118,24 +123,27 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <ImageView
-                style="@style/divider"
-                android:layout_marginTop="@dimen/padding_14"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/tv_privacy_label"
-                app:layout_constraintTop_toBottomOf="@id/tv_privacy_label" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ImageView
+            style="@style/divider"
+            android:id="@+id/privacy_divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="0dp"
+            android:layout_marginStart="@dimen/margin_16"
+            app:layout_constraintTop_toBottomOf="@id/cl_privacy" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_term"
             style="@style/MenuItemContainer"
-            android:layout_height="wrap_content"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
             android:nextFocusDown="@id/cl_blog"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_privacy">
+            app:layout_constraintTop_toBottomOf="@id/privacy_divider">
 
             <TextView
                 android:id="@+id/tv_term_label"
@@ -148,29 +156,34 @@
             <ImageView
                 android:id="@+id/img_term_arrow"
                 style="@style/LinkArrowIcon"
+                android:layout_marginEnd="@dimen/margin_16"
                 android:contentDescription="@string/image_description"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <ImageView
-                style="@style/divider"
-                android:layout_marginTop="@dimen/padding_14"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/tv_term_label"
-                app:layout_constraintTop_toBottomOf="@id/tv_term_label" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ImageView
+            style="@style/divider"
+            android:id="@+id/term_divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="0dp"
+            android:layout_marginStart="@dimen/margin_16"
+            app:layout_constraintTop_toBottomOf="@id/cl_term" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_blog"
             style="@style/MenuItemContainer"
-            android:layout_height="wrap_content"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
             android:nextFocusDown="@id/cl_job"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_term">
+            app:layout_constraintTop_toBottomOf="@id/term_divider">
 
             <TextView
                 android:id="@+id/tv_blog_label"
@@ -183,29 +196,33 @@
             <ImageView
                 android:id="@+id/img_blog_arrow"
                 style="@style/LinkArrowIcon"
+                android:layout_marginEnd="@dimen/margin_16"
                 android:contentDescription="@string/image_description"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <ImageView
-                style="@style/divider"
-                android:layout_marginTop="@dimen/padding_14"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/tv_blog_label"
-                app:layout_constraintTop_toBottomOf="@id/tv_blog_label" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ImageView
+            style="@style/divider"
+            android:id="@+id/blog_divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="0dp"
+            android:layout_marginStart="@dimen/margin_16"
+            app:layout_constraintTop_toBottomOf="@id/cl_blog" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_job"
             style="@style/MenuItemContainer"
-            android:layout_height="wrap_content"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
             android:nextFocusDown="@id/cl_job"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_blog">
+            app:layout_constraintTop_toBottomOf="@id/blog_divider">
 
             <TextView
                 android:id="@+id/tv_job_label"
@@ -218,29 +235,34 @@
             <ImageView
                 android:id="@+id/img_job_arrow"
                 style="@style/LinkArrowIcon"
+                android:layout_marginEnd="@dimen/margin_16"
                 android:contentDescription="@string/image_description"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <ImageView
-                style="@style/divider"
-                android:layout_marginTop="@dimen/padding_14"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/tv_job_label"
-                app:layout_constraintTop_toBottomOf="@id/tv_job_label" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ImageView
+            style="@style/divider"
+            android:id="@+id/job_divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="0dp"
+            android:layout_marginStart="@dimen/margin_16"
+            app:layout_constraintTop_toBottomOf="@id/cl_job" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_licence"
             android:visibility="visible"
             style="@style/MenuItemContainer"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
             android:nextFocusDown="@id/cl_licence"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_job">
+            app:layout_constraintTop_toBottomOf="@id/job_divider">
 
             <TextView
                 android:id="@+id/tv_licence_label"
@@ -253,6 +275,7 @@
             <ImageView
                 android:id="@+id/img_licence_arrow"
                 style="@style/LinkArrowIcon"
+                android:layout_marginEnd="@dimen/margin_16"
                 android:contentDescription="@string/image_description"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

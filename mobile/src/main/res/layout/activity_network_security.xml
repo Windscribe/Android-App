@@ -63,7 +63,7 @@
 
         <ImageView
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="@dimen/reg_48dp"
             android:background="@drawable/preferences_rounded_corner_background"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -78,7 +78,7 @@
             style="@style/MenuItemLabelTwo"
             android:textColor="?attr/wdSecondaryColor"
             android:layout_marginTop="@dimen/reg_16dp"
-            android:layout_marginStart="@dimen/margin_16"
+            android:paddingStart="@dimen/padding_16"
             app:layout_constraintStart_toStartOf="@id/background"
             app:layout_constraintTop_toBottomOf="@id/current_network_title" />
 

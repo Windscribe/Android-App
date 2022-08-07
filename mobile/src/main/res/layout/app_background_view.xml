@@ -261,7 +261,7 @@
             android:layout_marginTop="@dimen/reg_8dp"
             android:id="@+id/description"
             style="@style/MenuActionDescription"
-            android:layout_marginStart="@dimen/margin_8"
+            android:layout_marginStart="@dimen/margin_16"
             android:paddingBottom="@dimen/padding_16"
             android:paddingTop="@dimen/padding_16"
             android:layout_marginEnd="@dimen/margin_8"

@@ -50,7 +50,7 @@
     <string name="invalid_email_format">Invalid email!</string>
     <string name="email_empty">Empty email!</string>
     <string name="email">Email</string>
-    <string name="confirm_your_email">Confirm your email</string>
+    <string name="confirm_your_email">Please confirm your email</string>
     <string name="confirm_email">Confirm Email</string>
     <string name="resend_verification_email">Resend Verification Email</string>
     <string name="change_email">Change Email</string>
@@ -122,7 +122,7 @@
     <string name="gb_per_month">&#160;GB/Month</string>
     <string name="my_account">Account</string>
     <string name="cancel">Cancel</string>
-    <string name="edit_account">Edit Account</string>
+    <string name="edit_account">Manage Account</string>
     <string name="info">INFO</string>
     <string name="plan">PLAN</string>
     <string name="please_login">Please login first to connect!</string>
@@ -482,7 +482,11 @@ last chosen location.</string>
     <string name="packet_size_description">Choose whether to let Windscribe decide the MTU for your connection, or to manually override.</string>
     <string name="allow_lan_description">Choose whether to allow access to resources on the same network (like file servers, printers, media boxes, etc.) while connected to Windscribe.</string>
     <string name="keep_alive_description">Sends NAT keepalive packets regularly to its peer to keep the NAT session alive, so that the peer can access the device(IKEv2 Only)</string>
-    <string name="appearance_description">Light or Dark. Choose a side, and choose wisely.</string>-->
+    <string name="appearance_description">Light or Dark. Choose a side, and choose wisely.</string>
+    -->
     <string name="auto_connect_on_boot_description">Automatically connect to the last connected location the device starts.</string>
     <string name="gps_spoofing_description">Spoof your device\'s GPS coordinates.</string>
+    <string name="lazy_login_description">Login into Windscribe\'s TV apps with a short code.</string>
+    <string name="get_10gb_data">Get 10GB/ Month of data and gain the ability to reset your password.</string>
+    <string name="data_left_in_your_plan">Data Left</string>
 </resources>
