@@ -618,11 +618,12 @@
     <style name="MenuItemLabelNoStartMargin" parent="MenuItemLabel">
         <item name="android:layout_marginStart">0dp</item>
         <item name="android:layout_marginLeft">0dp</item>
+        <item name="android:includeFontPadding">false</item>
     </style>
 
     <style name="MenuItemContainer">
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">@dimen/reg_52dp</item>
+        <item name="android:layout_height">@dimen/reg_48dp</item>
         <item name="android:layout_marginStart">@dimen/margin_16</item>
         <item name="android:background">@drawable/ripple_square</item>
         <item name="android:clickable">true</item>
@@ -737,7 +738,6 @@
     </style>
 
 
-
     <style name="MenuItemLabelFive" parent="WrapWrapContainer">
         <item name="android:layout_marginTop">@dimen/margin_16</item>
         <item name="android:fontFamily">@font/ibm_font_family</item>
@@ -746,6 +746,21 @@
         <item name="android:textSize">16sp</item>
         <item name="android:textStyle">bold</item>
     </style>
+
+
+    <style name="ExpandableChildLabelText" parent="WrapWrapContainer">
+        <item name="android:fontFamily">@font/ibm_font_family</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">?attr/preferenceItemLabelFiveColor</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginTop">0dp</item>
+        <item name="android:text">@string/username</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:layout_marginStart">@dimen/margin_16</item>
+        <item name="android:layout_height">@dimen/reg_48dp</item>
+    </style>
+
 
     <style name="preferenceRoundedBackground" parent="ConstraintWrapContainer">
         <item name="android:layout_width">match_parent</item>
@@ -760,6 +775,28 @@
         <item name="android:paddingBottom">@dimen/padding_16</item>
     </style>
 
+    <style name="preferenceRoundCornerButton" parent="ConstraintWrapContainer">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/reg_48dp</item>
+        <item name="android:background">@drawable/preferences_rounded_corner_background</item>
+        <item name="android:layout_marginTop">@dimen/margin_16</item>
+        <item name="android:layout_marginEnd">@dimen/margin_16</item>
+        <item name="android:layout_marginStart">@dimen/margin_16</item>
+        <item name="android:paddingStart">@dimen/padding_16</item>
+        <item name="android:paddingBottom">@dimen/padding_14</item>
+        <item name="android:paddingTop">@dimen/padding_14</item>
+    </style>
+
+    <style name="preferenceRoundCornerButtonLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textColor">?attr/preferenceItemLabelColor</item>
+        <item name="android:textSize">@dimen/text_size_16</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
     <style name="preferenceRoundedBackgroundLowTopMargin" parent="preferenceRoundedBackground">
         <item name="android:layout_marginTop">16dp</item>
         <item name="android:layout_marginBottom">0dp</item>
@@ -770,7 +807,7 @@
     <style name="MenuAttentionContainer">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:background">@color/colorYellow</item>
+        <item name="android:background">@drawable/attention_container_background</item>
     </style>
 
     <style name="MenuAttentionLabel" parent="WrapWrapContainer">
@@ -780,8 +817,8 @@
         <item name="android:layout_marginBottom">@dimen/margin_16</item>
         <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
         <item name="android:gravity">center</item>
-        <item name="android:textColor">@color/colorDeepBlue</item>
-        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/colorYellow</item>
+        <item name="android:textSize">14sp</item>
     </style>
 
     <style name="SmallProgressCircle">
@@ -908,7 +945,7 @@
         <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
         <item name="android:textColor">?attr/preferenceItemActionColor</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:layout_marginStart">@dimen/padding_14</item>
+        <item name="layout_goneMarginStart">@dimen/padding_14</item>
     </style>
 
     <style name="MenuActionTitleIcon">

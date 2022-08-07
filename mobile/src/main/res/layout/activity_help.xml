@@ -83,7 +83,9 @@
                 android:layout_marginTop="@dimen/padding_16"
                 android:layout_marginStart="@dimen/margin_16"
                 android:layout_marginEnd="@dimen/margin_16"
-                android:padding="@dimen/padding_16"
+                android:layout_height="@dimen/reg_48dp"
+                android:paddingStart="@dimen/padding_16"
+                android:paddingEnd="@dimen/padding_16"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/community">
@@ -101,6 +103,7 @@
                     android:id="@+id/tv_view_label"
                     style="@style/MenuActionTitle"
                     android:clickable="false"
+                    android:layout_marginStart="@dimen/margin_16"
                     android:text="@string/view_log"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toEndOf="@id/debug_view_title_icon"
@@ -111,10 +114,12 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/cl_debug_send"
                 style="@style/MenuItemContainer"
-                android:padding="@dimen/padding_14"
+                android:layout_height="@dimen/reg_48dp"
                 android:layout_marginTop="@dimen/padding_16"
                 android:layout_marginStart="@dimen/margin_16"
                 android:layout_marginEnd="@dimen/margin_16"
+                android:paddingEnd="@dimen/padding_16"
+                android:paddingStart="@dimen/padding_16"
                 android:background="@drawable/preferences_rounded_corner_background"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -130,6 +135,7 @@
 
                 <TextView
                     android:id="@+id/tv_send_label"
+                    android:layout_marginStart="@dimen/margin_16"
                     style="@style/MenuActionTitle"
                     android:text="@string/send_log"
                     app:layout_constraintBottom_toBottomOf="parent"

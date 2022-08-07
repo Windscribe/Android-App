@@ -8,9 +8,7 @@ package com.windscribe.mobile.account;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.Observer;
 
-import com.google.gson.Gson;
 import com.windscribe.mobile.R;
 import com.windscribe.vpn.ActivityInteractor;
 import com.windscribe.vpn.api.CreateHashMap;
@@ -24,12 +22,12 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants;
 import com.windscribe.vpn.constants.UserStatusConstants;
 import com.windscribe.vpn.errormodel.WindError;
 import com.windscribe.vpn.model.User;
-import com.windscribe.vpn.repository.UserRepository;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -181,7 +179,7 @@ public class AccountPresenterImpl implements AccountPresenter {
     }
 
     @Override
-    public void onXPressLoginClicked() {
+    public void onLazyloginClicked() {
         mAccountView.showEnterCodeDialog();
     }
 
@@ -236,18 +234,23 @@ public class AccountPresenterImpl implements AccountPresenter {
         mAccountView.setUsername(user.getUserName());
         switch (user.getEmailStatus()){
             case NoEmail:
-                mAccountView.setEmail(mAccountInteractor.getResourceString(R.string.add_email),mAccountInteractor.getColorResource(R.color.colorNeonGreen));
+                mAccountView.setEmail(mAccountInteractor.getResourceString(R.string.add_email), mAccountInteractor.getColorResource(R.color.colorNeonGreen), mAccountInteractor.getThemeColor(R.attr.wdPrimaryColor));
                 break;
             case EmailProvided:
-                mAccountView.setEmailConfirm(user.getEmail());
+                mAccountView.setEmailConfirm(user.getEmail(), mAccountInteractor.getResourceString(R.string.confirm_your_email), mAccountInteractor.getColorResource(R.color.colorYellow50), mAccountInteractor.getColorResource(R.color.colorYellow), R.drawable.ic_warning_icon, R.drawable.attention_container_background);
                 break;
             case Confirmed:
-                mAccountView.setEmail(user.getEmail(), mAccountInteractor.getThemeColor(R.attr.wdSecondaryColor));
+                mAccountView.setEmailConfirmed(user.getEmail(), mAccountInteractor.getResourceString(R.string.get_10gb_data), mAccountInteractor.getThemeColor(R.attr.wdSecondaryColor), mAccountInteractor.getThemeColor(R.attr.wdPrimaryColor), R.drawable.ic_email_attention, R.drawable.confirmed_email_container_background);
         }
         if(user.getMaxData() == -1L){
             mAccountView.setPlanName(mAccountInteractor.getResourceString(R.string.unlimited_data));
-        }else{
-            mAccountView.setPlanName(user.getMaxData()/ UserStatusConstants.GB_DATA + mAccountInteractor.getResourceString(R.string.gb_per_month));
+            mAccountView.setDataLeft("");
+        }else {
+            mAccountView.setPlanName(user.getMaxData() / UserStatusConstants.GB_DATA + mAccountInteractor.getResourceString(R.string.gb_per_month));
+            if (user.getDataLeft() != null) {
+                String dataLeft = new DecimalFormat("##.00").format(user.getDataLeft());
+                mAccountView.setDataLeft(dataLeft + " GB");
+            }
         }
         setExpiryOrResetDate(user);
     }

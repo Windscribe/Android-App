@@ -40,6 +40,8 @@
     <color name="connectedHeaderColor">#012E6E</color>
     <color name="disconnectedHeaderColor">#28323c</color>
 
+    <color name="colorYellow10">#1AFFEE03</color>
+    <color name="colorYellow50">#80FFEE03</color>
     <color name="colorYellow">#FFEF02</color>
     <color name="colorRed">#FF3B3B</color>
     <color name="colorLightBlue">#A0FEDA</color>

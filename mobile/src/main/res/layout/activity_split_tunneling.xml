@@ -109,7 +109,6 @@
             android:textColor="?attr/wdSecondaryColor"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -126,8 +125,8 @@
         <androidx.appcompat.widget.SearchView
             android:id="@+id/searchView"
             android:layout_width="0dp"
-            android:layout_height="32dp"
-            android:layout_marginTop="@dimen/reg_28dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="@dimen/reg_24dp"
             app:submitBackground="@android:color/transparent"
             app:queryBackground="@android:color/transparent"
             android:visibility="invisible"
@@ -135,8 +134,7 @@
             app:layout_constraintEnd_toStartOf="@id/minimize_icon"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_apps_label"
-            app:searchIcon="@drawable/ic_search_icon"
-            />
+            app:searchIcon="@drawable/ic_search_icon" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/minimize_icon"

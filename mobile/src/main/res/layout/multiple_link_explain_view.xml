@@ -50,7 +50,6 @@
             android:layout_marginStart="0dp"
             android:layout_marginEnd="0dp"
             android:paddingStart="@dimen/padding_16"
-            android:paddingEnd="@dimen/padding_8"
             android:paddingTop="@dimen/padding_14"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -69,6 +68,7 @@
             <TextView
                 android:id="@+id/title"
                 style="@style/MenuActionTitle"
+                android:layout_marginStart="@dimen/margin_16"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="Title"
                 app:layout_constraintStart_toEndOf="@id/left_icon" />
@@ -98,8 +98,8 @@
             <ImageView
                 android:id="@+id/first_item_right_icon"
                 style="@style/ForwardArrowIcon"
-                android:layout_marginRight="@dimen/reg_8dp"
-                android:layout_marginEnd="@dimen/reg_8dp"
+                android:layout_marginRight="11dp"
+                android:layout_marginEnd="11dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="@id/first_item_title"
                 app:layout_constraintTop_toTopOf="@id/first_item_title" />
@@ -138,8 +138,8 @@
             <ImageView
                 android:id="@+id/second_item_right_icon"
                 style="@style/ForwardArrowIcon"
-                android:layout_marginRight="@dimen/reg_8dp"
-                android:layout_marginEnd="@dimen/reg_8dp"
+                android:layout_marginRight="11dp"
+                android:layout_marginEnd="11dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="@id/second_item_title"
                 app:layout_constraintTop_toTopOf="@id/second_item_title" />

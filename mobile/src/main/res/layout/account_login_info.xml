@@ -17,16 +17,16 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        style="@style/preferenceRoundedBackground"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_login_info_label"
-        style="@style/preferenceRoundedBackground">
+        android:padding="0dp"
+        android:layout_height="wrap_content">
 
         <TextView
             android:id="@+id/tv_username_label"
-            style="@style/MenuItemLabelFive"
-            android:layout_marginTop="0dp"
-            android:text="@string/username"
+            style="@style/ExpandableChildLabelText"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -34,26 +34,38 @@
             android:id="@+id/tv_account_username"
             style="@style/MenuItemLabelHalfOpacity"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tv_username_label" />
+            app:layout_constraintTop_toTopOf="@id/tv_username_label"
+            app:layout_constraintBottom_toBottomOf="@id/tv_username_label" />
 
         <ImageView
             android:id="@+id/img_username_divider"
             style="@style/PreferenceDivider"
-            android:layout_marginTop="@dimen/margin_16"
-            android:layout_marginStart="0dp"
+            android:layout_marginStart="@dimen/margin_16"
+            android:layout_marginBottom="0dp"
             android:contentDescription="@string/image_description"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_account_username" />
+            app:layout_constraintTop_toBottomOf="@id/tv_username_label" />
 
+        <ImageView
+            style="@style/ForwardArrowIcon"
+            android:visibility="gone"
+            android:id="@+id/confirm_email_icon"
+            android:src="@drawable/ic_warning_icon"
+            android:layout_marginEnd="@dimen/margin_8"
+            android:layout_marginStart="@dimen/margin_16"
+            app:layout_constraintBottom_toBottomOf="@id/tv_email_label"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_email_label" />
 
         <TextView
             android:id="@+id/tv_email_label"
-            style="@style/MenuItemLabelFive"
+            style="@style/ExpandableChildLabelText"
             android:text="@string/email"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/img_username_divider" />
-
+            app:layout_goneMarginStart="@dimen/reg_16dp"
+            android:layout_marginStart="4dp"
+            app:layout_constraintStart_toEndOf="@id/confirm_email_icon"
+            app:layout_constraintTop_toBottomOf="@id/tv_username_label" />
 
         <TextView
             android:id="@+id/tv_account_email"
@@ -72,27 +84,42 @@
             app:layout_constraintTop_toBottomOf="@id/tv_account_email" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/confirmContainer"
-            android:visibility="gone"
+            android:id="@+id/warningContainer"
+            android:visibility="visible"
+            android:layout_height="wrap_content"
             style="@style/MenuAttentionContainer"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="@dimen/margin_16"
             android:layout_marginEnd="@dimen/margin_16"
+            android:layout_marginStart="@dimen/margin_16"
+            android:paddingStart="@dimen/reg_16dp"
+            android:paddingEnd="@dimen/reg_16dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/bottom_space_login_info">
+            app:layout_constraintTop_toBottomOf="@id/tv_email_label"
+            android:layout_marginBottom="@dimen/reg_16dp"
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <TextView
+                android:id="@+id/tv_warning"
                 style="@style/MenuAttentionLabel"
-                android:text="@string/confirm_your_email"
+                android:gravity="left|center_vertical"
+                android:text="@string/get_10_gb"
+                android:layout_margin="0dp"
+                android:paddingTop="@dimen/reg_14dp"
+                android:paddingBottom="@dimen/reg_14dp"
+                android:textSize="@dimen/text_size_14"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/tv_send_btn"
+                android:id="@+id/resend_email_btn"
                 style="@style/MenuAttentionLabel"
                 android:text="@string/resend"
-                android:textColor="@color/colorDeepBlue50"
+                android:fontFamily="@font/ibm_plex_sans_bold"
+                android:textColor="@color/colorYellow"
+                android:layout_margin="0dp"
+                android:textSize="@dimen/text_size_14"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
