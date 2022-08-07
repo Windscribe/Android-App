@@ -15,7 +15,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginBottom="@dimen/margin_24"
+        android:layout_marginTop="@dimen/reg_24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/nav_bar">
@@ -33,10 +33,11 @@
                 android:id="@+id/cl_robert_description"
                 android:weightSum="10"
                 android:paddingEnd="@dimen/padding_8"
-                android:layout_margin="@dimen/margin_16"
-                android:layout_marginEnd="0dp"
-                android:background="@drawable/preference_rounded_stroke_background"
-                >
+                android:layout_marginStart="@dimen/margin_16"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/preference_rounded_stroke_background">
+
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"

@@ -19,11 +19,15 @@ public interface AccountView {
 
     void setActivityTitle(String title);
 
-    void setEmail(String email, int textColor);
+    void setEmail(String email, int textColor, int labelColor);
 
-    void setEmailConfirm(String emailConfirm);
+    void setEmailConfirm(String emailConfirm, String warningText, int emailColor, int emailLabelColor, int infoIcon, int containerBackground);
+
+    void setEmailConfirmed(String emailConfirm, String warningText, int emailColor, int emailLabelColor, int infoIcon, int containerBackground);
 
     void setPlanName(String planName);
+
+    void setDataLeft(String dataLeft);
 
     void setResetDate(String resetDateLabel, String resetDate);
 

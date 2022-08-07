@@ -8,7 +8,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.res.getResourceIdOrThrow
 import com.windscribe.mobile.R
 
 
@@ -22,10 +21,16 @@ class SingleLinkExplainView @JvmOverloads constructor(
     private val view: View = View.inflate(context, R.layout.lable_link_explain_view, this)
 
     init {
-        view.findViewById<TextView>(R.id.title).text = attributes.getString(R.styleable.SingleLinkExplainView_Title)
-        view.findViewById<TextView>(R.id.description).text = attributes.getString(R.styleable.SingleLinkExplainView_Description)
-        val leftIcon = attributes.getResourceIdOrThrow(R.styleable.SingleLinkExplainView_LeftIcon)
-        view.findViewById<ImageView>(R.id.left_icon).setImageResource(leftIcon)
+        view.findViewById<TextView>(R.id.title).text =
+            attributes.getString(R.styleable.SingleLinkExplainView_Title)
+        view.findViewById<TextView>(R.id.description).text =
+            attributes.getString(R.styleable.SingleLinkExplainView_Description)
+        val leftIcon = attributes.getResourceId(R.styleable.SingleLinkExplainView_LeftIcon, -1)
+        if (leftIcon == -1) {
+            view.findViewById<ImageView>(R.id.left_icon).visibility = GONE
+        } else {
+            view.findViewById<ImageView>(R.id.left_icon).setImageResource(leftIcon)
+        }
     }
 
     fun onClick(click: OnClickListener){

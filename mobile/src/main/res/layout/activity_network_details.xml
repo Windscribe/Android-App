@@ -38,18 +38,18 @@
         />
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/reg_48dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cl_preferred_protocol"
         android:id="@+id/cl_forget_network"
-        android:padding="@dimen/padding_16"
+        android:gravity="start|center_vertical"
+        android:paddingStart="@dimen/padding_16"
         android:layout_margin="@dimen/margin_16"
         android:text="@string/forget_network"
         style="@style/MenuItemLabel"
         android:layout_marginTop="@dimen/margin_16"
-        android:background="@drawable/preferences_rounded_corner_background"
-        />
+        android:background="@drawable/preferences_rounded_corner_background" />
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_error"
         android:layout_width="match_parent"

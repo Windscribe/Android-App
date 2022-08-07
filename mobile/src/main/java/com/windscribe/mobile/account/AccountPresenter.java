@@ -22,7 +22,7 @@ public interface AccountPresenter {
 
     void onUpgradeClicked(String textViewText);
 
-    void onXPressLoginClicked();
+    void onLazyloginClicked();
 
     void setLayoutFromApiSession();
 

@@ -55,12 +55,10 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/container"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/reg_48dp"
             android:layout_width="match_parent"
-            android:layout_marginTop="8dp"
             android:layout_marginStart="0dp"
             android:layout_marginEnd="0dp"
-            android:paddingBottom="@dimen/reg_12dp"
             android:paddingStart="@dimen/padding_16"
             android:paddingEnd="@dimen/margin_16"
             app:layout_constraintTop_toTopOf="parent"
@@ -73,7 +71,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:orientation="horizontal"
-                app:layout_constraintGuide_begin="@dimen/margin_16"
+                app:layout_constraintGuide_percent="0.50"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 />
@@ -127,7 +125,7 @@
             android:id="@+id/description"
             style="@style/MenuActionDescription"
             android:layout_width="0dp"
-            android:layout_marginStart="@dimen/margin_8"
+            android:layout_marginStart="@dimen/margin_16"
             android:layout_marginEnd="@dimen/margin_8"
             android:paddingBottom="@dimen/padding_16"
             android:paddingTop="@dimen/padding_8"

@@ -33,7 +33,7 @@
         <ImageView
             android:id="@+id/clip_corner_background"
             android:layout_width="match_parent"
-            android:layout_height="14dp"
+            android:layout_height="12dp"
             android:layout_marginStart="@dimen/reg_2dp"
             android:layout_marginEnd="@dimen/reg_2dp"
             android:background="@drawable/bottom_corner_rounded_background"
@@ -44,13 +44,11 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/container"
-            android:layout_height="wrap_content"
+            android:layout_height="36dp"
             android:layout_width="match_parent"
-            android:layout_marginTop="8dp"
             android:layout_marginStart="0dp"
             android:layout_marginEnd="0dp"
             android:paddingStart="@dimen/padding_16"
-            android:layout_marginBottom="8dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -61,7 +59,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:orientation="horizontal"
-                app:layout_constraintGuide_percent=".65"
+                app:layout_constraintGuide_percent=".70"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 />
@@ -133,7 +131,7 @@
             android:layout_marginTop="@dimen/reg_8dp"
             android:id="@+id/description"
             style="@style/MenuActionDescription"
-            android:layout_marginStart="@dimen/margin_8"
+            android:layout_marginStart="@dimen/margin_16"
             android:paddingBottom="@dimen/padding_16"
             android:paddingTop="@dimen/padding_16"
             android:layout_width="0dp"
