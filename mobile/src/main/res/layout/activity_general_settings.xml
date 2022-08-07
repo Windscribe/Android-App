@@ -12,18 +12,19 @@
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:paddingBottom="@dimen/reg_24dp"
+            android:layout_marginTop="@dimen/reg_24dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/nav_bar"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            >
+            app:layout_constraintEnd_toEndOf="parent">
+
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                >
+                android:layout_height="wrap_content">
+
                 <com.windscribe.mobile.custom_view.preferences.DropDownView
                     android:id="@+id/cl_selection_settings"
-                    android:layout_marginTop="@dimen/reg_24dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
@@ -131,19 +132,23 @@
 
                 <!--Version-->
                 <androidx.constraintlayout.widget.ConstraintLayout
-                    style="@style/MenuItemContainer"
-                    app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginTop="@dimen/margin_16"
                     android:layout_marginEnd="@dimen/margin_16"
+                    android:layout_marginStart="@dimen/margin_16"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/reg_48dp"
                     android:background="@drawable/preference_rounded_stroke_background"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/cl_haptic_settings">
 
                     <TextView
                         android:id="@+id/tv_version_label"
-                        style="@style/MenuItemLabelTwo"
+                        android:layout_width="wrap_content"
                         android:text="@string/version"
-                        android:padding="0dp"
+                        android:textColor="?attr/wdSecondaryColor"
+                        android:paddingTop="0dp"
+                        android:paddingBottom="0dp"
+                        android:layout_height="wrap_content"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />

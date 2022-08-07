@@ -3,12 +3,9 @@
     android:id="@+id/cl_connection_multiline_container"
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
-    android:layout_marginTop="@dimen/margin_16"
     android:layout_marginStart="@dimen/margin_16"
     android:layout_marginEnd="@dimen/margin_16"
     android:paddingStart="@dimen/padding_16"
-    android:paddingTop="@dimen/padding_14"
-    android:paddingBottom="@dimen/padding_14"
     app:layout_constraintTop_toBottomOf="@id/nav_bar"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
@@ -23,6 +20,8 @@
                 android:layout_marginStart="0dp"
                 android:fontFamily="@font/ibm_plex_sans_bold"
                 android:text="@string/network_options"
+                android:layout_height="@dimen/reg_48dp"
+                android:gravity="left|center_vertical"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/network_options_right_icon"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -43,23 +42,23 @@
                 app:layout_constraintTop_toBottomOf="@id/network_options_title"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="@dimen/margin_16"
                 android:layout_marginStart="0dp"
                 android:layout_marginEnd="0dp"
                 />
 
-            <TextView
-                android:id="@+id/split_tunnel_title"
-                style="@style/MenuActionTitle"
-                android:layout_width="0dp"
-                android:text="@string/split_tunneling"
-                android:fontFamily="@font/ibm_plex_sans_bold"
-                android:layout_marginTop="@dimen/margin_16"
-                android:layout_marginStart="0dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/split_tunnel_status"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintTop_toBottomOf="@id/network_options_divider" />
+    <TextView
+        android:id="@+id/split_tunnel_title"
+        style="@style/MenuActionTitle"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/reg_48dp"
+        android:gravity="left|center_vertical"
+        android:text="@string/split_tunneling"
+        android:fontFamily="@font/ibm_plex_sans_bold"
+        android:layout_marginStart="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/split_tunnel_status"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintTop_toBottomOf="@id/network_options_divider" />
 
             <TextView
                 android:id="@+id/split_tunnel_status"
