@@ -4,7 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="@dimen/margin_16"
-    android:layout_marginTop="4dp"
     android:id="@+id/auto_manual_mode_container"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -21,6 +20,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_protocol"
         style="@style/MenuItemContainer"
+        android:paddingStart="0dp"
+        android:paddingEnd="0dp"
         android:layout_marginStart="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -55,7 +56,7 @@
         <Spinner
             android:id="@+id/spinner_protocol"
             style="@style/MenuSpinner"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginTop="@dimen/margin_8"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -75,6 +76,8 @@
         android:id="@+id/cl_port"
         style="@style/MenuItemContainer"
         android:layout_marginStart="0dp"
+        android:paddingStart="0dp"
+        android:paddingEnd="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/img_connection_settings_divider">
@@ -110,7 +113,7 @@
         <Spinner
             android:id="@+id/spinner_port"
             style="@style/MenuSpinner"
-            app:layout_constraintBottom_toBottomOf="@id/tv_port_label"
+            android:layout_marginTop="@dimen/margin_8"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/tv_port_label" />
     </androidx.constraintlayout.widget.ConstraintLayout>

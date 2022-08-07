@@ -26,16 +26,17 @@ import androidx.appcompat.widget.AppCompatEditText;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.windscribe.mobile.R;
-import com.windscribe.mobile.listeners.AccountFragmentCallback;
-import com.windscribe.mobile.fragments.GhostMostAccountFragment;
 import com.windscribe.mobile.base.BaseActivity;
 import com.windscribe.mobile.confirmemail.ConfirmActivity;
 import com.windscribe.mobile.custom_view.CustomDialog;
 import com.windscribe.mobile.custom_view.ErrorFragment;
 import com.windscribe.mobile.custom_view.SuccessFragment;
+import com.windscribe.mobile.custom_view.preferences.SingleLinkExplainView;
 import com.windscribe.mobile.di.ActivityModule;
 import com.windscribe.mobile.di.DaggerActivityComponent;
 import com.windscribe.mobile.email.AddEmailActivity;
+import com.windscribe.mobile.fragments.GhostMostAccountFragment;
+import com.windscribe.mobile.listeners.AccountFragmentCallback;
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity;
 import com.windscribe.mobile.welcome.WelcomeActivity;
 import com.windscribe.vpn.Windscribe;
@@ -53,12 +54,12 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 
-public class AccountActivity extends BaseActivity implements AccountView, AccountFragmentCallback{
+public class AccountActivity extends BaseActivity implements AccountView, AccountFragmentCallback {
 
     AlertDialog alertDialog = null;
 
-    @BindView(R.id.confirmContainer)
-    ConstraintLayout confirmContainer;
+    @BindView(R.id.warningContainer)
+    ConstraintLayout warningContainer;
 
     @BindView(R.id.edit_arrow)
     ImageView editAccountArrow;
@@ -72,6 +73,9 @@ public class AccountActivity extends BaseActivity implements AccountView, Accoun
     @BindView(R.id.nav_button)
     ImageView imgAccountBackBtn;
 
+    @BindView(R.id.cl_account_lazy_login)
+    SingleLinkExplainView lazyLoginButton;
+
     @Inject
     AccountPresenter mAccountPresenter;
 
@@ -81,11 +85,17 @@ public class AccountActivity extends BaseActivity implements AccountView, Accoun
     @Inject
     CustomDialog mCustomProgressDialog;
 
-    @BindView(R.id.tv_send_btn)
+    @BindView(R.id.resend_email_btn)
     TextView resendButton;
 
     @BindView(R.id.tv_account_email)
     TextView tvAccountEmail;
+
+    @BindView(R.id.tv_email_label)
+    TextView tvAccountEmailLabel;
+
+    @BindView(R.id.tv_warning)
+    TextView tvEmailWarning;
 
     @BindView(R.id.tv_account_username)
     TextView tvAccountUserName;
@@ -96,6 +106,9 @@ public class AccountActivity extends BaseActivity implements AccountView, Accoun
     @BindView(R.id.tv_plan_data)
     TextView tvPlanData;
 
+    @BindView(R.id.confirm_email_icon)
+    ImageView confirmEmailIcon;
+
     @BindView(R.id.tv_reset_date)
     TextView tvResetDate;
 
@@ -104,6 +117,15 @@ public class AccountActivity extends BaseActivity implements AccountView, Accoun
 
     @BindView(R.id.tv_upgrade_info)
     TextView tvUpgradeInfo;
+
+    @BindView(R.id.data_left)
+    TextView tvDataLeft;
+
+    @BindView(R.id.data_left_label)
+    TextView dataLeftLabel;
+
+    @BindView(R.id.data_left_divider)
+    ImageView dataLeftDivider;
 
     private final String TAG = "account_a";
 
@@ -123,6 +145,7 @@ public class AccountActivity extends BaseActivity implements AccountView, Accoun
         setContentView(R.layout.activity_account);
         ButterKnife.bind(this);
         mAccountPresenter.observeUserData(this);
+        setupCustomLayoutDelegates();
     }
 
     @Override
@@ -146,6 +169,11 @@ public class AccountActivity extends BaseActivity implements AccountView, Accoun
     public void goToEmailActivity() {
         Intent startIntent = new Intent(this, AddEmailActivity.class);
         startActivity(startIntent);
+    }
+
+    private void setupCustomLayoutDelegates() {
+        mActivityLogger.info("User clicked Lazy login button.");
+        lazyLoginButton.onClick(v -> mAccountPresenter.onLazyloginClicked());
     }
 
     @Override
@@ -203,7 +231,7 @@ public class AccountActivity extends BaseActivity implements AccountView, Accoun
         startActivity(UpgradeActivity.getStartIntent(this));
     }
 
-    @OnClick(R.id.confirmContainer)
+    @OnClick(R.id.resend_email_btn)
     public void resendEmailClicked() {
         mAccountPresenter.onResendEmail();
     }
@@ -214,24 +242,63 @@ public class AccountActivity extends BaseActivity implements AccountView, Accoun
     }
 
     @Override
-    public void setEmail(String email, int textColor) {
-        mActivityLogger.info("Displaying account email ...");
+    public void setEmail(String email, int textColor, int labelColor) {
+        mActivityLogger.info("Setting up add email layout.");
         tvAccountEmail.setText(email);
         tvAccountEmail.setTextColor(textColor);
-        confirmContainer.setVisibility(View.GONE);
+        tvAccountEmailLabel.setTextColor(labelColor);
+        warningContainer.setVisibility(View.GONE);
+        confirmEmailIcon.setVisibility(View.GONE);
     }
 
     @Override
-    public void setEmailConfirm(String emailConfirm) {
-        mActivityLogger.info("Displaying account email ...");
-        tvAccountEmail.setText(emailConfirm);
-        confirmContainer.setVisibility(View.VISIBLE);
+    public void setEmailConfirm(String email, String warningText, int emailColor, int emailLabelColor, int infoIcon, int containerBackground) {
+        mActivityLogger.info("Setting up confirm email layout.");
+        tvAccountEmail.setText(email);
+        tvAccountEmail.setTextColor(emailColor);
+        warningContainer.setVisibility(View.VISIBLE);
+        confirmEmailIcon.setVisibility(View.VISIBLE);
+        tvAccountEmailLabel.setTextColor(emailLabelColor);
+        resendButton.setVisibility(View.VISIBLE);
+        confirmEmailIcon.setImageResource(infoIcon);
+        tvEmailWarning.setText(warningText);
+        tvEmailWarning.setTextColor(emailLabelColor);
+        warningContainer.setBackgroundResource(containerBackground);
+    }
+
+    @Override
+    public void setEmailConfirmed(String email, String warningText, int emailColor, int emailLabelColor, int infoIcon, int containerBackground) {
+        mActivityLogger.info("Setting up confirmed email layout.");
+        tvAccountEmail.setText(email);
+        tvAccountEmail.setTextColor(emailColor);
+        warningContainer.setVisibility(View.VISIBLE);
+        confirmEmailIcon.setVisibility(View.VISIBLE);
+        confirmEmailIcon.setImageResource(infoIcon);
+        tvAccountEmailLabel.setTextColor(emailLabelColor);
+        resendButton.setVisibility(View.GONE);
+        tvEmailWarning.setText(warningText);
+        tvEmailWarning.setTextColor(emailColor);
+        warningContainer.setBackgroundResource(containerBackground);
     }
 
     @Override
     public void setPlanName(String planName) {
         mActivityLogger.info("Displaying user plan name ...");
         tvPlanData.setText(planName);
+    }
+
+    @Override
+    public void setDataLeft(String dataLeft) {
+        if (dataLeft.isEmpty()) {
+            dataLeftDivider.setVisibility(View.GONE);
+            dataLeftLabel.setVisibility(View.GONE);
+            tvDataLeft.setVisibility(View.GONE);
+        } else {
+            dataLeftDivider.setVisibility(View.VISIBLE);
+            dataLeftLabel.setVisibility(View.VISIBLE);
+            tvDataLeft.setVisibility(View.VISIBLE);
+            tvDataLeft.setText(dataLeft);
+        }
     }
 
     @Override
@@ -340,11 +407,5 @@ public class AccountActivity extends BaseActivity implements AccountView, Accoun
     public void showSuccessDialog(final String message) {
         SuccessFragment.getInstance().add(message, this, R.id.fragment_container, true,
                 ThemeUtils.getColor(this, R.attr.overlayDialogBackgroundColor, R.color.colorDeepBlue90));
-    }
-
-    @OnClick({R.id.x_press_login_arrow, R.id.tv_x_press_login})
-    public void xPressLoginClick() {
-        mActivityLogger.info("User clicked XPress login button.");
-        mAccountPresenter.onXPressLoginClicked();
     }
 }
