@@ -9,15 +9,9 @@ import android.os.Build.VERSION
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.windscribe.vpn.R.array
-import com.windscribe.vpn.R.raw
-import com.windscribe.vpn.R.string
+import com.windscribe.vpn.R.*
 import com.windscribe.vpn.api.IApiCallManager
-import com.windscribe.vpn.api.response.ApiErrorResponse
-import com.windscribe.vpn.api.response.GenericResponseClass
-import com.windscribe.vpn.api.response.PortMapResponse
-import com.windscribe.vpn.api.response.ServerNodeListOverLoaded
-import com.windscribe.vpn.api.response.UserSessionResponse
+import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.WindVpnController
@@ -27,29 +21,13 @@ import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.RateDialogConstants
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
-import com.windscribe.vpn.repository.ConnectionDataRepository
-import com.windscribe.vpn.repository.LocationRepository
-import com.windscribe.vpn.repository.NotificationRepository
-import com.windscribe.vpn.repository.ServerListRepository
-import com.windscribe.vpn.repository.StaticIpRepository
 import com.windscribe.vpn.encoding.encoders.Base64
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.localdatabase.LocalDbInterface
-import com.windscribe.vpn.localdatabase.tables.NetworkInfo
-import com.windscribe.vpn.localdatabase.tables.PingTestResults
-import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
-import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
-import com.windscribe.vpn.localdatabase.tables.UserStatusTable
-import com.windscribe.vpn.localdatabase.tables.WindNotification
+import com.windscribe.vpn.localdatabase.tables.*
 import com.windscribe.vpn.model.User
-import com.windscribe.vpn.repository.UserRepository
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.CityAndRegion
-import com.windscribe.vpn.serverlist.entity.ConfigFile
-import com.windscribe.vpn.serverlist.entity.Favourite
-import com.windscribe.vpn.serverlist.entity.PingTime
-import com.windscribe.vpn.serverlist.entity.RegionAndCities
-import com.windscribe.vpn.serverlist.entity.StaticRegion
+import com.windscribe.vpn.repository.*
+import com.windscribe.vpn.serverlist.entity.*
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -62,18 +40,13 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
 import org.slf4j.LoggerFactory
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileReader
-import java.io.IOException
-import java.io.InputStream
+import java.io.*
 import java.nio.charset.Charset
-import java.util.Date
-import java.util.Scanner
+import java.util.*
 import java.util.concurrent.TimeUnit.DAYS
 import java.util.concurrent.TimeUnit.MILLISECONDS
-import kotlinx.coroutines.CoroutineScope
 
 /**
  * Implementation of ActivityInteractor
@@ -101,7 +74,7 @@ class ActivityInteractorImpl(
 
     interface PortMapLoadCallback {
 
-        fun onFinished(portMapResponse: PortMapResponse?)
+        fun onFinished(portMapResponse: PortMapResponse)
     }
 
     private var compositeDisposable = CompositeDisposable()
@@ -397,14 +370,14 @@ class ActivityInteractorImpl(
 
     override fun loadPortMap(callback: PortMapLoadCallback) {
         if (mapResponse != null) {
-            callback.onFinished(mapResponse)
+            mapResponse?.let { callback.onFinished(it) }
             return
         }
         compositeDisposable.add(
             getPortMap()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSingleObserver<PortMapResponse?>() {
+                .subscribeWith(object : DisposableSingleObserver<PortMapResponse>() {
                     override fun onError(e: Throwable) {
                         logger.debug(e.toString())
                     }

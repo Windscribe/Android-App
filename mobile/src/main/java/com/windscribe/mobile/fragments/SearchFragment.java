@@ -40,8 +40,8 @@ import com.windscribe.mobile.windscribe.WindscribeActivity;
 import com.windscribe.vpn.Windscribe;
 import com.windscribe.vpn.commonutils.ThemeUtils;
 import com.windscribe.vpn.serverlist.entity.City;
-import com.windscribe.vpn.serverlist.entity.ServerListData;
 import com.windscribe.vpn.serverlist.entity.Group;
+import com.windscribe.vpn.serverlist.entity.ServerListData;
 import com.windscribe.vpn.serverlist.interfaces.ListViewClickListener;
 
 import java.util.ArrayList;
@@ -186,10 +186,7 @@ public class SearchFragment extends Fragment {
             return new Group(group.getTitle(), group.getRegion(), cities, group.getLatencyAverage());
         }
 
-        boolean groupFound = false;
-        if (group.getTitle().toLowerCase().contains(keyword.toLowerCase())) {
-            groupFound = true;
-        }
+        boolean groupFound = group.getTitle().toLowerCase().contains(keyword.toLowerCase());
         if (cities.size() == 0 && groupFound) {
             return group;
         }

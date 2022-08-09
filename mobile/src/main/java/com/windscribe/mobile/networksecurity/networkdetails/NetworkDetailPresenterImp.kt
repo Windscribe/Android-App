@@ -14,14 +14,12 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_IKev2
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.services.DeviceStateService
-import com.windscribe.vpn.state.NetworkInfoManager
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.functions.Consumer
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
 class NetworkDetailPresenterImp @Inject constructor(
     private val networkView: NetworkDetailView,
@@ -64,11 +62,11 @@ class NetworkDetailPresenterImp @Inject constructor(
 
     override fun onProtocolSelected(protocol: String) {
         interactor.loadPortMap(object : PortMapLoadCallback {
-            override fun onFinished(portMapResponse: PortMapResponse?) {
+            override fun onFinished(portMapResponse: PortMapResponse) {
                 val networkInfo = networkView.networkInfo
                 networkInfo?.let {
                     networkInfo.protocol =
-                        portMapResponse?.let { getProtocolFromHeading(it, protocol) }
+                        getProtocolFromHeading(portMapResponse, protocol)
                     interactor.getCompositeDisposable()
                         .add(
                             interactor.saveNetwork(networkInfo)
@@ -77,7 +75,7 @@ class NetworkDetailPresenterImp @Inject constructor(
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribeWith(object : DisposableSingleObserver<NetworkInfo?>() {
                                     override fun onError(ignored: Throwable) {
-                                        networkView.showToast("Error...")
+                                        networkView.showToast("Error saving network information.")
                                     }
 
                                     override fun onSuccess(updatedNetwork: NetworkInfo) {
@@ -131,11 +129,11 @@ class NetworkDetailPresenterImp @Inject constructor(
 
     fun setPorts() {
         interactor.loadPortMap(object : PortMapLoadCallback {
-            override fun onFinished(portMapResponse: PortMapResponse?) {
+            override fun onFinished(portMapResponse: PortMapResponse) {
                 networkView.networkInfo?.let {
                     val protocol = it.protocol
                     val savedPort = it.port
-                    portMapResponse?.let {
+                    portMapResponse.let {
                         for (portMap in portMapResponse.portmap) {
                             if (portMap.protocol == protocol) {
                                 networkView.setupPortMapAdapter(savedPort, portMap.ports)
@@ -149,12 +147,12 @@ class NetworkDetailPresenterImp @Inject constructor(
 
     override fun setProtocols() {
         interactor.loadPortMap(object : PortMapLoadCallback {
-            override fun onFinished(portMapResponse: PortMapResponse?) {
+            override fun onFinished(portMapResponse: PortMapResponse) {
                 networkView.networkInfo?.let {
                     val savedProtocol = it.protocol
                     var selectedPortMap: PortMap? = null
                     val protocols: MutableList<String> = ArrayList()
-                    portMapResponse?.let {
+                    portMapResponse.let {
                         for (portMap in portMapResponse.portmap) {
                             if (portMap.protocol == savedProtocol) {
                                 selectedPortMap = portMap
