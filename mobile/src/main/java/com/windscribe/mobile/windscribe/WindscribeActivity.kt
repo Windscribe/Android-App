@@ -69,6 +69,7 @@ import com.windscribe.mobile.welcome.WelcomeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.ThemeUtils
+import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.AnimConstants
 import com.windscribe.vpn.constants.AnimConstants.VPN_CONNECTING_ANIMATION_DELAY
 import com.windscribe.vpn.constants.NetworkKeyConstants
@@ -573,9 +574,6 @@ class WindscribeActivity :
     override fun hideRecyclerViewProgressBar() {
         runOnUiThread { progressBarRecyclerView!!.visibility = View.GONE }
     }
-
-    override val isConnectedToNetwork: Boolean
-        get() = isNetworkPresent
 
     override fun neverAskAgainClicked() {
         presenter.saveRateDialogPreference(RateDialogConstants.STATUS_NEVER_ASK)
@@ -1149,7 +1147,7 @@ class WindscribeActivity :
         } else {
             networkIcon!!.setImageDrawable(getDrawableFromTheme(R.drawable.ic_wifi_secure))
             textViewConnectedNetworkName?.text =
-                if (isConnectedToNetwork) "Unknown Network" else getString(R.string.no_internet)
+                if (WindUtilities.isOnline()) "Unknown Network" else getString(R.string.no_internet)
         }
         val checkForReconnect = (
                 networkLayoutState == NetworkLayoutState.OPEN_3 ||
