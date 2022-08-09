@@ -268,7 +268,7 @@
         <item name="android:textStyle">bold</item>
         <item name="android:layout_marginTop">@dimen/margin_24</item>
         <item name="android:textColor">?attr/inputTextHintColor</item>
-        <item name="android:layout_marginStart">@dimen/margin_16</item>
+        <item name="android:layout_marginStart">@dimen/margin_32</item>
         <item name="fontFamily">@font/ibm_plex_sans_bold</item>
     </style>
 
@@ -290,11 +290,12 @@
         <item name="android:paddingTop">@dimen/padding_14</item>
         <item name="android:paddingEnd">@dimen/padding_16</item>
         <item name="android:paddingBottom">@dimen/padding_14</item>
-        <item name="android:background">?attr/inputBoxBackground</item>
+        <item name="android:background">@drawable/rounded_corner_input_box_background</item>
         <item name="android:inputType">text</item>
         <item name="android:textColorHint">@color/colorWhite</item>
         <item name="fontFamily">@font/ibm_plex_sans_regular</item>
         <item name="android:minHeight">@dimen/reg_48dp</item>
+        <item name="android:singleLine">true</item>
     </style>
 
     <style name="InputErrorIcon" parent="WrapWrapContainer">
@@ -315,7 +316,7 @@
         <item name="android:textStyle">normal</item>
         <item name="android:layout_marginTop">@dimen/margin_8</item>
         <item name="android:textColor">?attr/inputDescriptionColor</item>
-        <item name="android:layout_marginStart">@dimen/margin_16</item>
+        <item name="android:layout_marginStart">@dimen/margin_32</item>
         <item name="android:layout_marginEnd">@dimen/margin_16</item>
         <item name="android:layout_width">0dp</item>
         <item name="android:gravity">left</item>

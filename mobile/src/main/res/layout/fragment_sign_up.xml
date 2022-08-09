@@ -11,14 +11,6 @@
 
     <include layout="@layout/nav_bar" />
 
-    <TextView
-        android:id="@+id/page_description"
-        style="@style/PageDescription"
-        android:text="@string/sign_up_description"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/nav_bar" />
-
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guide_78"
         style="@style/WrapWrapContainer"
@@ -34,13 +26,16 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="@dimen/margin_24"
-        app:layout_constraintBottom_toTopOf="@+id/guide_78"
+        android:layout_marginTop="@dimen/margin_32"
+        app:layout_constraintBottom_toTopOf="@id/loginButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/page_description">
+        android:id="@+id/scrollable_container"
+        app:layout_constraintTop_toBottomOf="@id/nav_bar">
 
-        <androidx.constraintlayout.widget.ConstraintLayout style="@style/MatchWrapContainer">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_marginBottom="@dimen/margin_16"
+            style="@style/MatchWrapContainer">
 
             <TextView
                 android:id="@+id/username_hint"
@@ -100,7 +95,7 @@
                 style="@style/InputDescription"
                 android:layout_width="0dp"
                 android:layout_marginEnd="0dp"
-                android:layout_marginStart="0dp"
+                android:layout_marginStart="@dimen/margin_16"
                 android:gravity="left"
                 android:text="@string/password_requirement"
                 app:layout_constraintEnd_toEndOf="@id/password"
@@ -113,6 +108,7 @@
                 android:contentDescription="@string/password"
                 app:layout_constraintBottom_toBottomOf="@id/password"
                 app:layout_constraintEnd_toEndOf="@id/password"
+                android:layout_marginEnd="@dimen/margin_16"
                 app:layout_constraintTop_toTopOf="@id/password" />
 
             <TextView
@@ -160,6 +156,107 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/email" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/referral_title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/email_description"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintVertical_bias="0.0"
+                android:text="@string/referred_by_someone"
+                android:textSize="@dimen/text_size_16"
+                android:includeFontPadding="false"
+                android:textColor="?attr/wdSecondaryColor"
+                android:fontFamily="@font/ibm_plex_sans_bold"
+                android:layout_marginStart="@dimen/margin_32"
+                android:layout_marginTop="@dimen/margin_32"
+                android:layout_marginBottom="@dimen/margin_16" />
+
+            <ImageView
+                android:layout_width="@dimen/reg_32dp"
+                android:layout_height="@dimen/reg_32dp"
+                android:id="@+id/referral_collapse_icon"
+                app:layout_constraintStart_toEndOf="@id/referral_title"
+                app:layout_constraintTop_toTopOf="@id/referral_title"
+                app:layout_constraintBottom_toBottomOf="@id/referral_title"
+                android:src="@drawable/ic_expand"
+                app:tint="?attr/wdSecondaryColor" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/first_referral_description_prefix"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="@dimen/margin_32"
+                android:layout_marginTop="@dimen/margin_32"
+                android:text="-"
+                app:layout_constraintTop_toBottomOf="@id/referral_title"
+                app:tint="?attr/wdPrimaryColor"
+                tools:ignore="HardcodedText"
+                android:includeFontPadding="false"
+                android:visibility="gone" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/first_referral_description"
+                app:layout_constraintStart_toEndOf="@id/first_referral_description_prefix"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/first_referral_description_prefix"
+                android:text="@string/first_reason_to_use_referral"
+                android:textSize="@dimen/text_size_12"
+                android:includeFontPadding="false"
+                android:textColor="?attr/wdSecondaryColor"
+                android:fontFamily="@font/ibm_plex_sans_regular"
+                android:layout_marginStart="@dimen/margin_16"
+                android:layout_marginEnd="@dimen/margin_32"
+                android:visibility="gone" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/second_referral_description_prefix"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="@dimen/margin_32"
+                android:layout_marginTop="@dimen/margin_16"
+                android:text="-"
+                app:layout_constraintTop_toBottomOf="@id/first_referral_description"
+                app:tint="?attr/wdPrimaryColor"
+                android:includeFontPadding="false"
+                tools:ignore="HardcodedText"
+                android:visibility="gone" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/second_referral_description"
+                app:layout_constraintStart_toEndOf="@id/first_referral_description_prefix"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/second_referral_description_prefix"
+                android:text="@string/second_reason_to_use_referral"
+                android:textSize="@dimen/text_size_12"
+                android:includeFontPadding="false"
+                android:textColor="?attr/wdSecondaryColor"
+                android:fontFamily="@font/ibm_plex_sans_regular"
+                android:layout_marginStart="@dimen/margin_16"
+                android:layout_marginEnd="@dimen/margin_32"
+                android:visibility="gone" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/referral_username"
+                style="@style/InputBox"
+                android:autofillHints="username"
+                android:contentDescription="@string/email"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/second_referral_description"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginBottom="@dimen/margin_16"
+                android:layout_margin="@dimen/margin_16"
+                android:hint="@string/referral_username"
+                android:textColorHint="?attr/wdSecondaryColor"
+                android:visibility="gone" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
