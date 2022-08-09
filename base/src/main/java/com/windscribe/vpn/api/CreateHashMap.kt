@@ -21,12 +21,12 @@ import com.windscribe.vpn.constants.ApiConstants.XPRESS_CODE
 object CreateHashMap {
 
     fun buildTicketMap(
-            email: String,
-            subject: String,
-            message: String,
-            username: String,
-            queryType: QueryType
-    ): Map<String, String?> {
+        email: String,
+        subject: String,
+        message: String,
+        username: String,
+        queryType: QueryType
+    ): Map<String, String> {
         val queryMap: MutableMap<String, String> = HashMap()
         queryMap["support_email"] = email
         if (username.equals("na", ignoreCase = true)) {
