@@ -795,7 +795,7 @@ public class RecyclerRefreshLayout extends ViewGroup
         try {
             mTarget.layout(targetLeft, targetTop, targetRight, targetBottom);
         } catch (Exception e) {
-            RefreshLogger.e("error: ignored=" + e.toString() + " " + Arrays.toString(e.getStackTrace()));
+            RefreshLogger.e("error: ignored=" + e + " " + Arrays.toString(e.getStackTrace()));
         }
 
         int refreshViewLeft = (width - mRefreshView.getMeasuredWidth()) / 2;

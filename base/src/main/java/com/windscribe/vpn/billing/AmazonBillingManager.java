@@ -137,12 +137,12 @@ public class AmazonBillingManager implements PurchasingListener, LifecycleObserv
     private void saveActiveReceipts(final PurchaseUpdatesResponse response) {
         for (Receipt receipt : response.getReceipts()) {
             if (receipt.isCanceled()) {
-                logger.debug("Cancelled: " + receipt.toJSON().toString());
+                logger.debug("Cancelled: " + receipt.toJSON());
             } else {
                 AmazonPurchase amazonPurchase = new AmazonPurchase(receipt.getReceiptId(),
                         response.getUserData().getUserId());
                 amazonPurchases.add(amazonPurchase);
-                logger.debug("Active: " + receipt.toJSON().toString());
+                logger.debug("Active: " + receipt.toJSON());
             }
         }
     }
