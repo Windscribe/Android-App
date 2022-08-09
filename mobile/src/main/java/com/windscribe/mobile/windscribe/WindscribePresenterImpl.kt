@@ -138,9 +138,9 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getDecoyTrafficController().state.collectLatest {
            if(interactor.getVpnConnectionStateManager().isVPNActive()){
                if(it){
-                   windscribeView.setDecoyTrafficInfoVisibility(View.VISIBLE);
+                   windscribeView.setDecoyTrafficInfoVisibility(View.VISIBLE)
                }else{
-                   windscribeView.setDecoyTrafficInfoVisibility(View.GONE);
+                   windscribeView.setDecoyTrafficInfoVisibility(View.GONE)
                }
            }
         }
@@ -845,15 +845,15 @@ class WindscribePresenterImpl @Inject constructor(
 
     override fun onProtocolSelected(protocol: String) {
         interactor.loadPortMap(object : PortMapLoadCallback {
-            override fun onFinished(portMapResponse: PortMapResponse?) {
-                portMapResponse?.let {
+            override fun onFinished(portMapResponse: PortMapResponse) {
+                portMapResponse.let {
                     for (portMap in portMapResponse.portmap) {
                         if (protocol == portMap.heading) {
                             networkInformation?.let {
                                 it.protocol = portMap.protocol
                                 windscribeView.setupPortMapAdapter(
-                                        it.port,
-                                        portMap.ports
+                                    it.port,
+                                    portMap.ports
                                 )
                                 interactor.getNetworkInfoManager().updateNetworkInfo(it)
                             }
@@ -1555,8 +1555,8 @@ class WindscribePresenterImpl @Inject constructor(
 
     override fun setProtocolAdapter(protocol: String) {
         interactor.loadPortMap(object : PortMapLoadCallback {
-            override fun onFinished(portMapResponse: PortMapResponse?) {
-                portMapResponse?.let {
+            override fun onFinished(portMapResponse: PortMapResponse) {
+                portMapResponse.let {
                     val protocols: MutableList<String> = ArrayList()
                     var heading: String? = null
                     for (portMap in it.portmap) {
@@ -1567,8 +1567,8 @@ class WindscribePresenterImpl @Inject constructor(
                     }
                     heading?.let {
                         windscribeView.setupProtocolAdapter(
-                                heading,
-                                protocols.toTypedArray()
+                            heading,
+                            protocols.toTypedArray()
                         )
                     }
                 }
