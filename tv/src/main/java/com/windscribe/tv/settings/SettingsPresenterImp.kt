@@ -16,12 +16,8 @@ import com.windscribe.vpn.ActivityInteractorImpl.PortMapLoadCallback
 import com.windscribe.vpn.WindContextWrapper.Companion.changeLocale
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.Windscribe.Companion.getExecutorService
-import com.windscribe.vpn.api.response.ApiErrorResponse
-import com.windscribe.vpn.api.response.GenericResponseClass
-import com.windscribe.vpn.api.response.GenericSuccess
-import com.windscribe.vpn.api.response.PortMapResponse
+import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.api.response.PortMapResponse.PortMap
-import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.BOOT_ALLOW
 import com.windscribe.vpn.constants.PreferencesKeyConstants.BOOT_BLOCK
@@ -49,14 +45,12 @@ import io.reactivex.functions.Function
 import io.reactivex.observers.DisposableCompletableObserver
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Collections
-import java.util.Locale
+import java.util.*
 import javax.inject.Inject
-import kotlinx.coroutines.launch
 
 @PerActivity
 class SettingsPresenterImp @Inject constructor(
@@ -183,7 +177,7 @@ class SettingsPresenterImp @Inject constructor(
         }
     }
 
-    override fun onInstalledAppClick(updatedApp: InstalledAppsData?, reloadAdapter: Boolean) {
+    override fun onInstalledAppClick(updatedModel: InstalledAppsData?, reloadAdapter: Boolean) {
         interactor.getCompositeDisposable().add(
             interactor.getAppPreferenceInterface().installedApps
                 .observeOn(AndroidSchedulers.mainThread())
@@ -191,11 +185,11 @@ class SettingsPresenterImp @Inject constructor(
                 .subscribeWith(object : DisposableSingleObserver<List<String>>() {
                     override fun onError(e: Throwable) {
                         val list: MutableList<String> = ArrayList()
-                        updatedApp?.let { saveApps(list, it, reloadAdapter) }
+                        updatedModel?.let { saveApps(list, it, reloadAdapter) }
                     }
 
                     override fun onSuccess(installedAppsData: List<String>) {
-                        updatedApp?.let { saveApps(installedAppsData, it, reloadAdapter) }
+                        updatedModel?.let { saveApps(installedAppsData, it, reloadAdapter) }
                     }
                 })
         )
@@ -234,7 +228,7 @@ class SettingsPresenterImp @Inject constructor(
     override fun onPortSelected(protocol: String, port: String) {
         logger.info("Saving selected port...")
         interactor.loadPortMap(object : PortMapLoadCallback {
-            override fun onFinished(portMapResponse: PortMapResponse?) {
+            override fun onFinished(portMapResponse: PortMapResponse) {
                 when (getProtocolFromHeading(portMapResponse, protocol)) {
                     PROTO_IKev2 -> {
                         logger.info("Saving selected IKev2 port...")
@@ -268,7 +262,7 @@ class SettingsPresenterImp @Inject constructor(
     override fun onProtocolSelected(protocol: String) {
         logger.debug("Saving selected protocol.")
         interactor.loadPortMap(object : PortMapLoadCallback {
-            override fun onFinished(portMapResponse: PortMapResponse?) {
+            override fun onFinished(portMapResponse: PortMapResponse) {
                 val protocolFromHeading = getProtocolFromHeading(portMapResponse, protocol)
                 val savedProtocol = interactor.getSavedProtocol()
                 if (savedProtocol == protocolFromHeading) {
@@ -672,8 +666,8 @@ class SettingsPresenterImp @Inject constructor(
 
     private fun setPortMapAdapter(heading: String) {
         interactor.loadPortMap(object : PortMapLoadCallback {
-            override fun onFinished(portMapResponse: PortMapResponse?) {
-                portMapResponse?.let {
+            override fun onFinished(portMapResponse: PortMapResponse) {
+                portMapResponse.let {
                     val protocol = getProtocolFromHeading(portMapResponse, heading)
                     val savedPort = getSavedPort(protocol)
                     for (portMap in portMapResponse.portmap) {
@@ -688,8 +682,8 @@ class SettingsPresenterImp @Inject constructor(
 
     private fun setProtocolAdapter(savedProtocol: String) {
         interactor.loadPortMap(object : PortMapLoadCallback {
-            override fun onFinished(portMapResponse: PortMapResponse?) {
-                portMapResponse?.let {
+            override fun onFinished(portMapResponse: PortMapResponse) {
+                portMapResponse.let {
                     var selectedPortMap: PortMap? = null
                     val protocols: MutableList<String> = ArrayList()
                     for (portMap in portMapResponse.portmap) {
