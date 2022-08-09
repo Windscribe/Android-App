@@ -25,7 +25,6 @@
     <string name="two_fa_description">If enabled, use an authentication app to generate the code.</string>
     <string name="forgot_password">Forgot Password?</string>
     <string name="next">Continue</string>
-    <string name="sign_up">Sign up free</string>
     <string name="sign_up_description">Safeguard your account, access your settings from any device and get more data.</string>
     <string name="choose_username">Choose Username</string>
     <string name="choose_password">Choose  Password</string>
@@ -489,4 +488,10 @@ last chosen location.</string>
     <string name="lazy_login_description">Login into Windscribe\'s TV apps with a short code.</string>
     <string name="get_10gb_data">Get 10GB/ Month of data and gain the ability to reset your password.</string>
     <string name="data_left_in_your_plan">Data Left</string>
+    <string name="referral_username">Referring Username</string>
+    <string name="first_reason_to_use_referral">Provide their Windscribe username below and you will both receive an additional 1GB/ Month.</string>
+    <string name="second_reason_to_use_referral">Upgrade and you will both get Pro.</string>
+    <string name="referred_by_someone">Referred by someone?</string>
+    <string name="sign_up">Create Account</string>
+    <string name="please_provide_email_first">Please provide email first.</string>
 </resources>

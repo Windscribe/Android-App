@@ -93,6 +93,7 @@
                 android:id="@+id/password_visibility_toggle"
                 style="@style/InputVisibilityIcon"
                 android:contentDescription="@string/password"
+                android:layout_marginEnd="@dimen/margin_16"
                 app:layout_constraintBottom_toBottomOf="@id/password"
                 app:layout_constraintEnd_toEndOf="@id/password"
                 app:layout_constraintTop_toTopOf="@id/password" />

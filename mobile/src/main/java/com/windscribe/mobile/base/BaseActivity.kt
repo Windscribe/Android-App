@@ -38,11 +38,10 @@ import com.windscribe.mobile.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.PreferencesKeyConstants
-import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.collections.ArrayList
 
 abstract class BaseActivity : AppCompatActivity(), DisclaimerAlertListener {
     val coldLoad = AtomicBoolean()
@@ -186,7 +185,7 @@ abstract class BaseActivity : AppCompatActivity(), DisclaimerAlertListener {
         alertDialog.show()
     }
 
-    protected val isNetworkPresent: Boolean
+    val isConnectedToNetwork: Boolean
         get() = WindUtilities.isOnline()
 
     protected fun openURLInBrowser(urlToOpen: String?) {
