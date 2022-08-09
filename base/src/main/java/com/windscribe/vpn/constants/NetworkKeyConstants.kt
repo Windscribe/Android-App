@@ -17,6 +17,7 @@ object NetworkKeyConstants {
     const val URL_ADD_STATIC_IP = "/staticips"
     const val FIREBASE_DEVICE_ID_KEY = "gp_device_id"
     const val ADD_EMAIL_KEY = "email"
+    const val REFERRING_USERNAME = "referring_username"
     const val ADD_EMAIL_FORCED_KEY = "email_forced"
     const val POST_LOG_FILE_KEY = "logfile"
     const val UUID_KEY = "device_id"
