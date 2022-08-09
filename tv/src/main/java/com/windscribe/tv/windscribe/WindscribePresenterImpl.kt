@@ -9,9 +9,7 @@ import android.os.Build
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.view.View
-import com.windscribe.tv.R.color
-import com.windscribe.tv.R.drawable
-import com.windscribe.tv.R.string
+import com.windscribe.tv.R.*
 import com.windscribe.tv.serverlist.adapters.ServerAdapter
 import com.windscribe.tv.sort.ByLatency
 import com.windscribe.tv.sort.ByRegionName
@@ -34,11 +32,7 @@ import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import com.windscribe.vpn.model.User
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.CityAndRegion
-import com.windscribe.vpn.serverlist.entity.RegionAndCities
-import com.windscribe.vpn.serverlist.entity.ServerListData
-import com.windscribe.vpn.serverlist.entity.StaticRegion
+import com.windscribe.vpn.serverlist.entity.*
 import com.windscribe.vpn.services.ping.PingTestService
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -46,16 +40,15 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subscribers.DisposableSubscriber
-import java.util.Collections
-import java.util.Date
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeUnit.MILLISECONDS
-import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import java.util.*
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeUnit.MILLISECONDS
+import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Inject
 
 class WindscribePresenterImpl @Inject constructor(
     var windscribeView: WindscribeView,
@@ -109,7 +102,7 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     private fun protocolSwitch() {
-        interactor.getProtocolManager().availableProtocols.value?.let {
+        interactor.getProtocolManager().availableProtocols.value.let {
             if (it.isNotEmpty()) {
                 windscribeView.setBadgeIcon(
                     getProtocolBadge(it.first()),

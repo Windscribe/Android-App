@@ -89,7 +89,7 @@ class DeviceStateService : JobIntentWorkAroundService() {
         if (networkInfo.isAutoSecureOn.not() && interactor.preferenceHelper.whitelistOverride.not()) {
             logger.debug("${networkInfo.networkName} is unsecured. Starting network whitelist service.")
             vpnController.disconnect(true)
-        } else if (networkInfo.isPreferredOn) {
+        } else if (networkInfo.isPreferredOn && interactor.preferenceHelper.isDecoyTrafficOn.not()) {
             if (interactor.preferenceHelper.selectedProtocol != networkInfo.protocol || interactor.preferenceHelper.selectedPort != networkInfo.port) {
                 logger.debug("Reconnecting to set preferred protocol and port")
                 vpnController.connect()
