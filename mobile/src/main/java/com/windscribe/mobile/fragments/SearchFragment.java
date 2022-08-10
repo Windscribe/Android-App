@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -296,8 +295,8 @@ public class SearchFragment extends Fragment {
         int color = ThemeUtils.getColor(searchView.getContext(), R.attr.nodeListGroupTextColor, R.color.colorWhite40);
         searchText.setTextColor(color);
         searchText.setHintTextColor(color);
-        searchText.setTextSize(Dimension.SP, 12);
-        Typeface typeface = ResourcesCompat.getFont(view.getContext(), R.font.ibm_plex_sans_bold);
+        searchText.setTextSize(Dimension.SP, 14);
+        Typeface typeface = ResourcesCompat.getFont(view.getContext(), R.font.ibm_plex_sans_regular);
         searchText.setTypeface(typeface);
         searchText.setPadding(0, 0, 0, 0);
 
@@ -330,7 +329,7 @@ public class SearchFragment extends Fragment {
         if (position == lastPositionSnapped | !hapticFeedbackEnabled) {
             return;
         }
-        Vibrator vibrator = (Vibrator) Objects.requireNonNull(getActivity())
+        Vibrator vibrator = (Vibrator) requireActivity()
                 .getSystemService(Context.VIBRATOR_SERVICE);
         if (getActivity() instanceof WindscribeActivity && vibrator != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

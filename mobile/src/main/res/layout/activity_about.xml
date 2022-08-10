@@ -20,34 +20,15 @@
         android:background="@drawable/preferences_rounded_corner_background"
         >
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
             android:id="@+id/cl_status"
-            style="@style/MenuItemContainer"
-            android:paddingStart="0dp"
-            android:paddingEnd="0dp"
-            android:nextFocusDown="@id/cl_about"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_48dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <TextView
-                android:id="@+id/tv_status_label"
-                style="@style/MenuItemLabelNoStartMargin"
-                android:text="@string/status"
-                app:layout_constraintBottom_toBottomOf="@id/img_status_arrow"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/img_status_arrow" />
-
-            <ImageView
-                android:id="@+id/img_status_arrow"
-                style="@style/LinkArrowIcon"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
+            app:layout_constraintTop_toTopOf="parent"
+            app:ItemLinkViewTitle="@string/status"
+            app:ItemLinkViewRightIcon="@drawable/link_arrow_icon" />
 
         <ImageView
             style="@style/divider"
@@ -59,33 +40,15 @@
             android:layout_marginStart="@dimen/margin_16"
             app:layout_constraintTop_toBottomOf="@id/cl_status" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
             android:id="@+id/cl_about"
-            style="@style/MenuItemContainer"
-            android:paddingStart="0dp"
-            android:paddingEnd="0dp"
-            android:nextFocusDown="@id/cl_privacy"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_48dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/status_divider">
-
-            <TextView
-                android:id="@+id/tv_about_label"
-                style="@style/MenuItemLabelNoStartMargin"
-                android:text="@string/about_us"
-                app:layout_constraintBottom_toBottomOf="@id/img_about_arrow"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/img_about_arrow" />
-
-            <ImageView
-                android:id="@+id/img_about_arrow"
-                style="@style/LinkArrowIcon"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            app:ItemLinkViewTitle="@string/about_us"
+            app:layout_constraintTop_toBottomOf="@id/status_divider"
+            app:ItemLinkViewRightIcon="@drawable/link_arrow_icon" />
 
         <ImageView
             style="@style/divider"
@@ -97,33 +60,15 @@
             android:layout_marginStart="@dimen/margin_16"
             app:layout_constraintTop_toBottomOf="@id/cl_about" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
             android:id="@+id/cl_privacy"
-            style="@style/MenuItemContainer"
-            android:paddingStart="0dp"
-            android:paddingEnd="0dp"
-            android:nextFocusDown="@id/cl_term"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_48dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/about_divider">
-
-            <TextView
-                android:id="@+id/tv_privacy_label"
-                style="@style/MenuItemLabelNoStartMargin"
-                android:text="@string/privacy_policy"
-                app:layout_constraintBottom_toBottomOf="@id/img_privacy_arrow"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/img_privacy_arrow" />
-
-            <ImageView
-                android:id="@+id/img_privacy_arrow"
-                style="@style/LinkArrowIcon"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            app:layout_constraintTop_toBottomOf="@id/about_divider"
+            app:ItemLinkViewTitle="@string/privacy_policy"
+            app:ItemLinkViewRightIcon="@drawable/link_arrow_icon" />
 
         <ImageView
             style="@style/divider"
@@ -135,35 +80,15 @@
             android:layout_marginStart="@dimen/margin_16"
             app:layout_constraintTop_toBottomOf="@id/cl_privacy" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
             android:id="@+id/cl_term"
-            style="@style/MenuItemContainer"
-            android:paddingStart="0dp"
-            android:paddingEnd="0dp"
-            android:nextFocusDown="@id/cl_blog"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_48dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/privacy_divider">
-
-            <TextView
-                android:id="@+id/tv_term_label"
-                style="@style/MenuItemLabelNoStartMargin"
-                android:text="@string/terms_title"
-                app:layout_constraintBottom_toBottomOf="@id/img_term_arrow"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/img_term_arrow" />
-
-            <ImageView
-                android:id="@+id/img_term_arrow"
-                style="@style/LinkArrowIcon"
-                android:layout_marginEnd="@dimen/margin_16"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            app:layout_constraintTop_toBottomOf="@id/privacy_divider"
+            app:ItemLinkViewTitle="@string/terms_title"
+            app:ItemLinkViewRightIcon="@drawable/link_arrow_icon" />
 
         <ImageView
             style="@style/divider"
@@ -175,34 +100,15 @@
             android:layout_marginStart="@dimen/margin_16"
             app:layout_constraintTop_toBottomOf="@id/cl_term" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
             android:id="@+id/cl_blog"
-            style="@style/MenuItemContainer"
-            android:paddingStart="0dp"
-            android:paddingEnd="0dp"
-            android:nextFocusDown="@id/cl_job"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_48dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/term_divider">
-
-            <TextView
-                android:id="@+id/tv_blog_label"
-                style="@style/MenuItemLabelNoStartMargin"
-                android:text="@string/blog"
-                app:layout_constraintBottom_toBottomOf="@id/img_blog_arrow"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/img_blog_arrow" />
-
-            <ImageView
-                android:id="@+id/img_blog_arrow"
-                style="@style/LinkArrowIcon"
-                android:layout_marginEnd="@dimen/margin_16"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            app:layout_constraintTop_toBottomOf="@id/term_divider"
+            app:ItemLinkViewTitle="@string/blog"
+            app:ItemLinkViewRightIcon="@drawable/link_arrow_icon" />
 
         <ImageView
             style="@style/divider"
@@ -214,34 +120,15 @@
             android:layout_marginStart="@dimen/margin_16"
             app:layout_constraintTop_toBottomOf="@id/cl_blog" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
             android:id="@+id/cl_job"
-            style="@style/MenuItemContainer"
-            android:paddingStart="0dp"
-            android:paddingEnd="0dp"
-            android:nextFocusDown="@id/cl_job"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_48dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/blog_divider">
-
-            <TextView
-                android:id="@+id/tv_job_label"
-                style="@style/MenuItemLabelNoStartMargin"
-                android:text="@string/jobs"
-                app:layout_constraintBottom_toBottomOf="@id/img_job_arrow"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/img_job_arrow" />
-
-            <ImageView
-                android:id="@+id/img_job_arrow"
-                style="@style/LinkArrowIcon"
-                android:layout_marginEnd="@dimen/margin_16"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            app:layout_constraintTop_toBottomOf="@id/blog_divider"
+            app:ItemLinkViewTitle="@string/jobs"
+            app:ItemLinkViewRightIcon="@drawable/link_arrow_icon" />
 
         <ImageView
             style="@style/divider"
@@ -253,35 +140,15 @@
             android:layout_marginStart="@dimen/margin_16"
             app:layout_constraintTop_toBottomOf="@id/cl_job" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
             android:id="@+id/cl_licence"
-            android:visibility="visible"
-            style="@style/MenuItemContainer"
-            android:paddingStart="0dp"
-            android:paddingEnd="0dp"
-            android:nextFocusDown="@id/cl_licence"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_48dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/job_divider">
-
-            <TextView
-                android:id="@+id/tv_licence_label"
-                style="@style/MenuItemLabelNoStartMargin"
-                android:text="@string/software_licenses"
-                app:layout_constraintBottom_toBottomOf="@id/img_licence_arrow"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/img_licence_arrow" />
-
-            <ImageView
-                android:id="@+id/img_licence_arrow"
-                style="@style/LinkArrowIcon"
-                android:layout_marginEnd="@dimen/margin_16"
-                android:contentDescription="@string/image_description"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            app:layout_constraintTop_toBottomOf="@id/job_divider"
+            app:ItemLinkViewTitle="@string/software_licenses"
+            app:ItemLinkViewRightIcon="@drawable/link_arrow_icon" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

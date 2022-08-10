@@ -14,38 +14,43 @@ import com.windscribe.mobile.utils.UiUtil
 
 
 @SuppressLint("ClickableViewAccessibility")
-class SingleLinkExplainView @JvmOverloads constructor(
+class IconLinkView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : LinearLayout(context, attrs, defStyleAttr) {
 
-    private val attributes: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.SingleLinkExplainView)
-    private val view: View = View.inflate(context, R.layout.lable_link_explain_view, this)
+    private val attributes: TypedArray =
+        context.obtainStyledAttributes(attrs, R.styleable.ItemLinkView)
+    private val view: View = View.inflate(context, R.layout.icon_link_item_view, this)
+    var text: String
+        get() {
+            return view.findViewById<TextView>(R.id.title).text.toString()
+        }
+        set(value) {
+            view.findViewById<TextView>(R.id.title).text = value
+        }
 
     init {
         view.findViewById<TextView>(R.id.title).text =
-            attributes.getString(R.styleable.SingleLinkExplainView_Title)
-        view.findViewById<TextView>(R.id.description).text =
-            attributes.getString(R.styleable.SingleLinkExplainView_Description)
-        val leftIcon = attributes.getResourceId(R.styleable.SingleLinkExplainView_LeftIcon, -1)
+            attributes.getString(R.styleable.ItemLinkView_ItemLinkViewTitle)
+        val leftIcon = attributes.getResourceId(R.styleable.ItemLinkView_ItemLinkViewLeftIcon, -1)
         if (leftIcon == -1) {
             view.findViewById<ImageView>(R.id.left_icon).visibility = GONE
         } else {
             view.findViewById<ImageView>(R.id.left_icon).setImageResource(leftIcon)
         }
+        val rightIcon = attributes.getResourceId(R.styleable.ItemLinkView_ItemLinkViewRightIcon, -1)
+        if (rightIcon != -1) {
+            view.findViewById<ImageView>(R.id.right_icon).setImageResource(rightIcon)
+        }
         UiUtil.setupOnTouchListener(
             container = view.findViewById(R.id.container),
             textView = view.findViewById(R.id.title)
         )
-        UiUtil.setupOnTouchListener(
-            imageViewContainer = view.findViewById(R.id.clip_corner_background),
-            textView = view.findViewById(R.id.title)
-        )
     }
 
-    fun onClick(click: OnClickListener){
+    fun onClick(click: OnClickListener) {
         view.findViewById<ConstraintLayout>(R.id.container).setOnClickListener(click)
-        view.findViewById<ImageView>(R.id.clip_corner_background).setOnClickListener(click)
     }
 }
