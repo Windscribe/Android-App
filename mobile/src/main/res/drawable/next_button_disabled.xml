@@ -4,6 +4,9 @@
   -->
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="?attr/continueButtonDisabledBackground" />
-    <corners android:radius="@dimen/reg_28dp" />
+    <solid android:color="@android:color/transparent" />
+    <stroke
+        android:width="@dimen/reg_2dp"
+        android:color="?attr/wdPrimaryColor10" />
+    <corners android:radius="@dimen/reg_24dp" />
 </shape>

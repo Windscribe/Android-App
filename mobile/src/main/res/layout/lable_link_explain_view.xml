@@ -55,7 +55,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             >
 
-
             <ImageView
                 android:id="@+id/left_icon"
                 style="@style/MenuActionTitleIcon"

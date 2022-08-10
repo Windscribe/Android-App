@@ -94,7 +94,10 @@
         <item name="colorAccent">@color/colorWhite</item>
         <item name="wdPrimaryColor10">@color/colorWhite10</item>
         <item name="wdPrimaryInvertedColor">@color/colorDeepBlue</item>
+        <item name="wdSecondaryInvertedColor">@color/colorDeepBlue50</item>
         <item name="preferencesRoundedBackgroundColor">@color/colorWhite8</item>
+        <item name="wdPrimaryColor25">@color/colorWhite25</item>
+        <item name="wdActionColor">@color/colorNeonGreen</item>
     </style>
 
     <!--Light Theme -->
@@ -174,6 +177,9 @@
         <item name="wdPrimaryColor10">@color/colorDeepBlue10</item>
         <item name="wdPrimaryInvertedColor">@color/colorWhite</item>
         <item name="preferencesRoundedBackgroundColor">@color/colorDeepBlue8</item>
+        <item name="wdSecondaryInvertedColor">@color/colorWhite50</item>
+        <item name="wdPrimaryColor25">@color/colorDeepBlue25</item>
+        <item name="wdActionColor">@color/colorNavyBlue</item>
     </style>
 
     <style name="AppTheme.WindLauncher">
@@ -229,6 +235,13 @@
         <item name="android:focusableInTouchMode">true</item>
         <item name="android:fitsSystemWindows">false</item>
         <item name="android:background">?attr/containerBackground</item>
+    </style>
+
+    <style name="ScrollableContainer">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:background">?attr/containerBackground</item>
+        <item name="android:layout_marginTop">@dimen/reg_24dp</item>
     </style>
 
     <style name="OverlayContainer" parent="MatchMatchContainer">
@@ -290,8 +303,8 @@
         <item name="android:paddingTop">@dimen/padding_14</item>
         <item name="android:paddingEnd">@dimen/padding_16</item>
         <item name="android:paddingBottom">@dimen/padding_14</item>
-        <item name="android:background">@drawable/rounded_corner_input_box_background</item>
-        <item name="android:inputType">text</item>
+        <item name="android:background">@drawable/input_box_selector</item>
+        <item name="android:inputType">textNoSuggestions</item>
         <item name="android:textColorHint">@color/colorWhite</item>
         <item name="fontFamily">@font/ibm_plex_sans_regular</item>
         <item name="android:minHeight">@dimen/reg_48dp</item>
@@ -348,7 +361,7 @@
         <item name="android:layout_marginStart">@dimen/margin_24</item>
         <item name="android:layout_marginEnd">@dimen/margin_24</item>
         <item name="android:text">@string/next</item>
-        <item name="android:textColor">@color/colorDeepBlue</item>
+        <item name="android:textColor">@drawable/next_button_text_color</item>
         <item name="android:gravity">center</item>
         <item name="android:textSize">@dimen/text_size_16</item>
         <item name="android:paddingTop">@dimen/padding_14</item>
@@ -626,7 +639,6 @@
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">@dimen/reg_48dp</item>
         <item name="android:layout_marginStart">@dimen/margin_16</item>
-        <item name="android:background">@drawable/ripple_square</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
     </style>
@@ -711,7 +723,7 @@
         <item name="android:layout_marginEnd">@dimen/reg_8dp</item>
         <item name="android:background">@android:color/transparent</item>
         <item name="android:spinnerMode">dropdown</item>
-        <item name="android:popupBackground">@color/colorWhite</item>
+        <item name="android:popupBackground">@drawable/spinner_popup_background</item>
     </style>
 
     <style name="MenuItemTitle" parent="WrapWrapContainer">

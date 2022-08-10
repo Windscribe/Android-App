@@ -7,7 +7,6 @@ import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Pair
 import android.view.HapticFeedbackConstants
 import android.view.View
 import android.widget.Button
@@ -22,18 +21,20 @@ import com.windscribe.mobile.account.AccountActivity
 import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.confirmemail.ConfirmActivity
 import com.windscribe.mobile.connectionsettings.ConnectionSettingsActivity
+import com.windscribe.mobile.custom_view.preferences.IconLinkView
 import com.windscribe.mobile.di.ActivityModule
 import com.windscribe.mobile.email.AddEmailActivity
 import com.windscribe.mobile.generalsettings.GeneralSettingsActivity
 import com.windscribe.mobile.help.HelpActivity
 import com.windscribe.mobile.robert.RobertSettingsActivity
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
+import com.windscribe.mobile.utils.UiUtil
 import com.windscribe.mobile.welcome.WelcomeActivity
 import com.windscribe.vpn.alert.showAlertDialog
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.PreferenceChangeObserver
-import javax.inject.Inject
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
 class MainMenuActivity : BaseActivity(), MainMenuView {
     @JvmField
@@ -44,13 +45,8 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
     @BindView(R.id.nav_button)
     var backButton: ImageView? = null
 
-    @JvmField
     @BindView(R.id.cl_data_status)
-    var clDataStatus: ConstraintLayout? = null
-
-    @JvmField
-    @BindView(R.id.cl_sign)
-    var clSign: ConstraintLayout? = null
+    lateinit var clDataStatus: ConstraintLayout
 
     @JvmField
     @BindView(R.id.confirmEmail)
@@ -74,44 +70,37 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
     var setupAccountButton: Button? = null
 
     @JvmField
-    @BindView(R.id.tv_about_label)
-    var tvAboutLabel: TextView? = null
-
-    @JvmField
     @BindView(R.id.nav_title)
     var tvActivityTitle: TextView? = null
 
-    @JvmField
-    @BindView(R.id.tv_connection_label)
-    var tvConnection: TextView? = null
-
-    @JvmField
     @BindView(R.id.data_left)
-    var tvDataLeft: TextView? = null
+    lateinit var tvDataLeft: TextView
 
-    @JvmField
     @BindView(R.id.data_upgrade_label)
-    var tvDataUpgrade: TextView? = null
+    lateinit var tvDataUpgrade: TextView
 
-    @JvmField
-    @BindView(R.id.tv_account_label)
-    var tvMenuItemAccount: TextView? = null
+    @BindView(R.id.cl_general)
+    lateinit var generalView: IconLinkView
 
-    @JvmField
-    @BindView(R.id.tv_preference_label)
-    var tvMenuItemGeneral: TextView? = null
+    @BindView(R.id.cl_account)
+    lateinit var accountView: IconLinkView
 
-    @JvmField
-    @BindView(R.id.tv_help_label)
-    var tvMenuItemHelpMe: TextView? = null
+    @BindView(R.id.cl_connection)
+    lateinit var connectionView: IconLinkView
 
-    @JvmField
-    @BindView(R.id.tv_robert_label)
-    var tvRobert: TextView? = null
+    @BindView(R.id.cl_robert)
+    lateinit var robertView: IconLinkView
 
-    @JvmField
-    @BindView(R.id.tv_sign_label)
-    var tvSign: TextView? = null
+    @BindView(R.id.cl_help)
+    lateinit var helpView: IconLinkView
+
+    @BindView(R.id.cl_about)
+    lateinit var aboutView: IconLinkView
+
+    @BindView(R.id.cl_sign)
+    lateinit var logoutView: IconLinkView
+
+
     private val logger = LoggerFactory.getLogger(TAG)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -119,6 +108,39 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
         setContentLayout(R.layout.activity_main_menu)
         presenter.observeUserChange(this)
         preferenceChangeObserver.addLanguageChangeObserver(this) { presenter.onLanguageChanged() }
+        setupCustomLayoutDelegates()
+    }
+
+    private fun setupCustomLayoutDelegates() {
+        generalView.onClick {
+            performHapticFeedback(it)
+            presenter.onGeneralSettingsClicked()
+        }
+        accountView.onClick {
+            performHapticFeedback(it)
+            presenter.onMyAccountClicked()
+        }
+        connectionView.onClick {
+            performHapticFeedback(it)
+            presenter.onConnectionSettingsClicked()
+        }
+        robertView.onClick {
+            performHapticFeedback(it)
+            presenter.onRobertSettingsClicked()
+        }
+        helpView.onClick {
+            performHapticFeedback(it)
+            presenter.onHelpMeClicked()
+        }
+        aboutView.onClick {
+            performHapticFeedback(it)
+            presenter.onAboutClicked()
+        }
+        logoutView.onClick {
+            performHapticFeedback(it)
+            presenter.onSignOutClicked()
+        }
+        UiUtil.setupOnTouchListener(textViewContainer = tvDataUpgrade, textView = tvDataUpgrade)
     }
 
     override fun onResume() {
@@ -176,20 +198,6 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
         finish()
     }
 
-    @OnClick(R.id.cl_about)
-    fun onAboutClick() {
-        performHapticFeedback(tvMenuItemHelpMe)
-        logger.info("User clicked on about...")
-        presenter.onAboutClicked()
-    }
-
-    @OnClick(R.id.cl_account)
-    fun onAccountClick() {
-        performHapticFeedback(tvMenuItemAccount)
-        logger.info("User clicked on my account...")
-        presenter.onMyAccountClicked()
-    }
-
     @OnClick(R.id.setupAccount)
     fun onAccountSetUpClicked() {
         presenter.onAccountSetUpClicked()
@@ -214,42 +222,14 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
 
     @OnClick(R.id.cl_connection)
     fun onConnectionSettingsClick() {
-        performHapticFeedback(tvConnection)
+
         logger.info("User clicked on connection settings...")
         presenter.onConnectionSettingsClicked()
-    }
-
-    @OnClick(R.id.cl_general)
-    fun onGeneralClick() {
-        performHapticFeedback(tvMenuItemGeneral)
-        logger.info("User clicked on general settings...")
-        presenter.onGeneralSettingsClicked()
-    }
-
-    @OnClick(R.id.cl_help)
-    fun onHelpMeClick() {
-        performHapticFeedback(tvMenuItemHelpMe)
-        logger.info("User clicked on network security...")
-        presenter.onHelpMeClicked()
     }
 
     @OnClick(R.id.login)
     fun onLoginClicked() {
         presenter.onLoginClicked()
-    }
-
-    @OnClick(R.id.cl_robert)
-    fun onRobertSettingsClick() {
-        performHapticFeedback(tvRobert)
-        logger.info("User clicked on robert settings...")
-        presenter.onRobertSettingsClicked()
-    }
-
-    @OnClick(R.id.cl_sign, R.id.tv_sign_label)
-    fun onSignOutClicked() {
-        performHapticFeedback(tvSign)
-        logger.info("User clicked on sign out button...")
-        presenter.onSignOutClicked()
     }
 
     @OnClick(R.id.data_upgrade_label)
@@ -276,13 +256,13 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
         robert: String
     ) {
         tvActivityTitle?.text = activityTitle
-        tvMenuItemGeneral?.text = general
-        tvMenuItemAccount?.text = account
-        tvConnection?.text = connection
-        tvMenuItemHelpMe?.text = helpMe
-        tvSign?.text = signOut
-        tvAboutLabel?.text = about
-        tvRobert?.text = robert
+        generalView.text = general
+        accountView.text = account
+        connectionView.text = connection
+        helpView.text = helpMe
+        logoutView.text = signOut
+        aboutView.text = about
+        robertView.text = robert
     }
 
     override fun setActionButtonVisibility(
@@ -302,22 +282,27 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
     }
 
     override fun setLoginButtonVisibility(visibility: Int) {
-        clSign?.visibility = visibility
+        logoutView.visibility = visibility
     }
 
     override fun setupLayoutForFreeUser(dataLeft: String, upgradeLabel: String, color: Int) {
-        clDataStatus?.visibility = View.VISIBLE
-        tvDataLeft?.text = dataLeft
-        tvDataLeft?.setTextColor(color)
-        tvDataUpgrade?.text = upgradeLabel
+        clDataStatus.visibility = View.VISIBLE
+        tvDataLeft.text = dataLeft
+        tvDataLeft.setTextColor(color)
+        tvDataUpgrade.text = upgradeLabel
     }
 
     override fun setupLayoutForPremiumUser() {
-        clDataStatus?.visibility = View.GONE
+        clDataStatus.visibility = View.GONE
     }
 
     override fun showLogoutAlert() {
-        showAlertDialog(getString(R.string.logout), getString(R.string.logout_alert_description), getString(R.string.logout), getString(R.string.cancel)) {
+        showAlertDialog(
+            getString(R.string.logout),
+            getString(R.string.logout_alert_description),
+            getString(R.string.logout),
+            getString(R.string.cancel)
+        ) {
             presenter.continueWithLogoutClicked()
         }
     }

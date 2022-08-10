@@ -57,6 +57,7 @@
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/username"
                 style="@style/InputBox"
+                android:inputType="textNoSuggestions"
                 android:autofillHints="username"
                 android:contentDescription="@string/username"
                 app:layout_constraintStart_toStartOf="parent"
@@ -137,6 +138,7 @@
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/email"
                 style="@style/InputBox"
+                android:autofillHints="emailAddress"
                 android:contentDescription="@string/email"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/email_hint" />
@@ -184,19 +186,18 @@
                 android:src="@drawable/ic_expand"
                 app:tint="?attr/wdSecondaryColor" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <ImageView
                 android:id="@+id/first_referral_description_prefix"
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginStart="@dimen/margin_32"
-                android:layout_marginTop="@dimen/margin_32"
-                android:text="-"
+                android:layout_marginTop="@dimen/margin_8"
                 app:layout_constraintTop_toBottomOf="@id/referral_title"
-                app:tint="?attr/wdPrimaryColor"
-                tools:ignore="HardcodedText"
-                android:includeFontPadding="false"
-                android:visibility="gone" />
+                style="@style/ForwardArrowIcon"
+                android:src="@drawable/ic_check"
+                app:tint="@color/colorNeonGreen"
+                android:visibility="gone"
+                android:layout_height="@dimen/reg_16dp"
+                android:layout_width="@dimen/reg_16dp" />
 
             <TextView
                 android:layout_width="0dp"
@@ -214,19 +215,21 @@
                 android:layout_marginEnd="@dimen/margin_32"
                 android:visibility="gone" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <ImageView
                 android:id="@+id/second_referral_description_prefix"
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginStart="@dimen/margin_32"
                 android:layout_marginTop="@dimen/margin_16"
                 android:text="-"
-                app:layout_constraintTop_toBottomOf="@id/first_referral_description"
-                app:tint="?attr/wdPrimaryColor"
                 android:includeFontPadding="false"
                 tools:ignore="HardcodedText"
-                android:visibility="gone" />
+                app:layout_constraintTop_toBottomOf="@id/first_referral_description"
+                style="@style/ForwardArrowIcon"
+                android:src="@drawable/ic_check"
+                app:tint="@color/colorNeonGreen"
+                android:visibility="gone"
+                android:layout_height="@dimen/reg_16dp"
+                android:layout_width="@dimen/reg_16dp" />
 
             <TextView
                 android:layout_width="0dp"
@@ -247,16 +250,27 @@
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/referral_username"
                 style="@style/InputBox"
+                android:enabled="false"
                 android:autofillHints="username"
                 android:contentDescription="@string/email"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/second_referral_description"
-                app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_marginBottom="@dimen/margin_16"
                 android:layout_margin="@dimen/margin_16"
                 android:hint="@string/referral_username"
+                android:text="@string/please_provide_email_first"
+                android:textColor="@color/colorRed"
                 android:textColorHint="?attr/wdSecondaryColor"
                 android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/bottom_focus"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/reg_16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/referral_username"
+                app:layout_constraintStart_toStartOf="parent"
+                android:focusable="true"
+                android:focusableInTouchMode="true" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

@@ -307,8 +307,8 @@ class SplitTunnelingActivity : BaseActivity(), SplitTunnelingView {
             searchView.findViewById<TextView>(androidx.appcompat.R.id.search_src_text)
         searchText.setTextColor(getColor(this, R.attr.wdSecondaryColor, R.color.colorWhite))
         searchText.setHintTextColor(getColor(this, R.attr.wdSecondaryColor, R.color.colorWhite))
-        searchText.setTextSize(Dimension.SP, 12f)
-        val typeface = ResourcesCompat.getFont(this, R.font.ibm_plex_sans_bold)
+        searchText.setTextSize(Dimension.SP, 14f)
+        val typeface = ResourcesCompat.getFont(this, R.font.ibm_plex_sans_regular)
         searchText.typeface = typeface
         searchText.setPadding(0, 0, 0, 0)
 
