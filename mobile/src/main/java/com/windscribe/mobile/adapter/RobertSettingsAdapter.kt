@@ -73,7 +73,13 @@ class RobertSettingsAdapter(private val robertAdapterListener: RobertAdapterList
             if (robertSetting.status == 1) {
                 toggle.setImageResource(R.drawable.ic_toggle_button_on)
                 allow.setText(R.string.blocking)
-                allow.setTextColor(itemView.context.resources.getColor(R.color.colorNeonGreen))
+                allow.setTextColor(
+                    ThemeUtils.getColor(
+                        itemView.context,
+                        R.attr.wdActionColor,
+                        R.color.colorNeonGreen
+                    )
+                )
             } else {
                 toggle.setImageResource(R.drawable.ic_toggle_button_off)
                 allow.setText(R.string.allowing)

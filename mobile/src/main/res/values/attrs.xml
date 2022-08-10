@@ -72,8 +72,11 @@
         <attr name="wdPrimaryColor" format="color" />
         <attr name="wdPrimaryColor10" format="color" />
         <attr name="overlayDialogBackgroundColor" format="color" />
-        <attr name="wdPrimaryInvertedColor" format="color"/>
-        <attr name="preferencesRoundedBackgroundColor" format="color"/>
+        <attr name="wdPrimaryInvertedColor" format="color" />
+        <attr name="preferencesRoundedBackgroundColor" format="color" />
+        <attr name="wdSecondaryInvertedColor" format="color" />
+        <attr name="wdPrimaryColor25" format="color" />
+        <attr name="wdActionColor" format="color" />
     </declare-styleable>
     <!--Icons -->
     <declare-styleable name="DrawableIcon">
@@ -86,17 +89,23 @@
         <attr name="alphaBlueDrawable" format="integer" />
     </declare-styleable>
     <declare-styleable name="SingleLinkExplainView">
-        <attr format="string" name="Title"/>
-        <attr format="string" name="Description"/>
-        <attr format="reference" name="LeftIcon"/>
+        <attr format="string" name="Title" />
+        <attr format="string" name="Description" />
+        <attr format="reference" name="LeftIcon" />
+    </declare-styleable>
+    <declare-styleable name="ItemLinkView">
+        <attr format="string" name="ItemLinkViewTitle" />
+        <attr format="reference" name="ItemLinkViewLeftIcon" />
+        <attr format="reference" name="ItemLinkViewRightIcon" />
+        <attr name="HideBottomDivider" format="boolean" />
     </declare-styleable>
     <declare-styleable name="MultipleLinkExplainView">
-        <attr format="string" name="MultiLinkTitle"/>
-        <attr format="string" name="MultiLinkDescription"/>
-        <attr format="reference" name="MultiLinkLeftIcon"/>
-        <attr format="string" name="FirstItemTitle"/>
-        <attr format="string" name="SecondItemTitle"/>
-        <attr format="boolean" name="MultipleLinkShowRightIcon"/>
+        <attr format="string" name="MultiLinkTitle" />
+        <attr format="string" name="MultiLinkDescription" />
+        <attr format="reference" name="MultiLinkLeftIcon" />
+        <attr format="string" name="FirstItemTitle" />
+        <attr format="string" name="SecondItemTitle" />
+        <attr format="boolean" name="MultipleLinkShowRightIcon" />
     </declare-styleable>
 
     <declare-styleable name="ExpandableDropDownView">

@@ -22,11 +22,15 @@ import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.custom_view.ErrorFragment
 import com.windscribe.mobile.custom_view.ProgressFragment
 import com.windscribe.mobile.di.ActivityModule
+import com.windscribe.mobile.utils.UiUtil
 import javax.inject.Inject
 
 class RobertSettingsActivity : BaseActivity(), RobertSettingsView {
     @BindView(R.id.cl_custom_rules)
     lateinit var clCustomRules: ConstraintLayout
+
+    @BindView(R.id.tv_custom_rules)
+    lateinit var customRulesLabel: TextView
 
     @BindView(R.id.nav_title)
     lateinit var activityTitleView: TextView
@@ -48,6 +52,7 @@ class RobertSettingsActivity : BaseActivity(), RobertSettingsView {
         setActivityModule(ActivityModule(this, this)).inject(this)
         setContentLayout(R.layout.activity_robert_settings, true)
         presenter.init()
+        UiUtil.setupOnTouchListener(container = clCustomRules, textView = customRulesLabel)
     }
 
     override fun onDestroy() {

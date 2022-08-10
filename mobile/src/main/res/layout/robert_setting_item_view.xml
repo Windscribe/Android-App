@@ -40,7 +40,7 @@
         android:layout_marginTop="4dp"
         android:textSize="@dimen/text_size_12"
         android:fontFamily="@font/ibm_plex_sans_regular"
-        android:textColor="@color/colorNeonGreen"
+        android:textColor="?attr/wdActionColor"
         app:layout_constraintStart_toStartOf="@id/filter"
         app:layout_constraintTop_toBottomOf="@id/filter" />
 

@@ -6,7 +6,7 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
 
     <corners android:radius="@dimen/reg_24dp" />
-    <solid android:color="@color/colorWhite10" />
+    <solid android:color="?attr/wdPrimaryColor10" />
     <size
         android:width="@dimen/reg_48dp"
         android:height="@dimen/reg_48dp" />

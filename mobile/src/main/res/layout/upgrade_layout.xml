@@ -3,13 +3,12 @@
   ~ Copyright (c) 2021 Windscribe Limited.
   -->
 
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:id="@+id/cl_data_status"
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/cl_data_status"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:visibility="gone"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/reg_50dp"
+    android:visibility="visible"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent">
@@ -19,55 +18,47 @@
         android:layout_height="wrap_content"
         app:layout_constraintGuide_percent=".50"
         android:orientation="vertical"
-        android:id="@+id/guideline_50"
-        />
+        android:id="@+id/guideline_50" />
+
     <ImageView
-        android:id="@+id/middle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/ic_upgradebg_center"
-        android:contentDescription="@null"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/colorNeonGreen"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/divider" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="#192331"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/ic_upgradebg_left"
-        android:contentDescription="@null"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/middle" />
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/ic_upgradebg_right"
-        android:contentDescription="@null"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/middle" />
+        app:layout_constraintTop_toBottomOf="@id/divider"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
     <TextView
         android:id="@+id/data_left"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/reg_8dp"
         android:gravity="left"
         android:fontFamily="@font/ibm_plex_sans_bold"
         android:ellipsize="end"
         android:text="@string/_2gb_left"
+        android:layout_marginTop="@dimen/margin_8"
+        android:layout_marginEnd="@dimen/margin_8"
+        android:layout_marginStart="@dimen/margin_16"
         android:textColor="@color/colorNeonGreen"
         android:textSize="12sp"
         android:lines="1"
-        app:layout_constraintStart_toStartOf="@id/middle"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/guideline_50"
-        app:layout_constraintTop_toTopOf="@id/middle" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/data_upgrade_label"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/reg_8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
         android:fontFamily="@font/ibm_plex_sans_bold"
         android:gravity="right"
         android:ellipsize="end"
@@ -75,9 +66,11 @@
         android:textColor="@color/colorWhite50"
         android:textSize="12sp"
         android:lines="1"
+        android:layout_marginTop="@dimen/margin_8"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:layout_marginStart="@dimen/margin_8"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@id/guideline_50"
-        app:layout_constraintEnd_toEndOf="@id/middle"
-        app:layout_constraintTop_toTopOf="@id/middle" />
-
-
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="?attr/wdPrimaryInvertedColor" android:state_enabled="true" />
+    <item android:color="?attr/wdPrimaryColor25" android:state_enabled="false" />
+</selector>

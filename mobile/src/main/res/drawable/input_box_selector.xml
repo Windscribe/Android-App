@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/enabled_input_box_background" android:state_enabled="true" />
+    <item android:drawable="@drawable/disabled_input_box_background" android:state_enabled="false" />
+</selector>

@@ -27,6 +27,7 @@ import com.windscribe.mobile.di.ActivityModule
 import com.windscribe.mobile.gpsspoofing.GpsSpoofingSettingsActivity
 import com.windscribe.mobile.networksecurity.NetworkSecurityActivity
 import com.windscribe.mobile.splittunneling.SplitTunnelingActivity
+import com.windscribe.mobile.utils.UiUtil
 import com.windscribe.mobile.utils.UiUtil.isBackgroundLocationPermissionGranted
 import com.windscribe.mobile.utils.UiUtil.showBackgroundLocationPermissionAlert
 import com.windscribe.vpn.constants.FeatureExplainer
@@ -70,6 +71,13 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Alway
 
     @BindView(R.id.cl_decoy_traffic)
     lateinit var decoyTrafficToggleView: ExpandableToggleView
+
+    @BindView(R.id.split_tunnel_title)
+    lateinit var splitTunnelLabel: TextView
+
+    @BindView(R.id.network_options_title)
+    lateinit var networkOptionsLabel: TextView
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -228,6 +236,14 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Alway
             }
 
         }
+        UiUtil.setupOnTouchListener(
+            textViewContainer = splitTunnelLabel,
+            textView = splitTunnelLabel
+        )
+        UiUtil.setupOnTouchListener(
+            textViewContainer = networkOptionsLabel,
+            textView = networkOptionsLabel
+        )
     }
 
     @OnClick(R.id.nav_button)

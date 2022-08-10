@@ -216,18 +216,28 @@ class AccountPresenterImpl @Inject constructor(
         if (user.isGhost) {
             accountView.setupLayoutForGhostMode(user.isPro)
         } else if (user.maxData != -1L) {
-            accountView.setupLayoutForFreeUser(interactor.getResourceString(R.string.upgrade_case_normal))
+            accountView.setupLayoutForFreeUser(
+                interactor.getResourceString(R.string.upgrade_case_normal),
+                interactor.getThemeColor(R.attr.wdActionColor)
+            )
         } else {
-            accountView.setupLayoutForPremiumUser(interactor.getResourceString(R.string.plan_pro))
+            accountView.setupLayoutForPremiumUser(
+                interactor.getResourceString(R.string.plan_pro),
+                interactor.getThemeColor(R.attr.wdActionColor)
+            )
         }
         accountView.setUsername(user.userName)
         when (user.emailStatus) {
             EmailStatus.NoEmail -> accountView.setEmail(
+                interactor.getResourceString(R.string.add_email),
                 interactor.getResourceString(
-                    R.string.add_email
-                ), interactor.getColorResource(R.color.colorNeonGreen), interactor.getThemeColor(
-                    R.attr.wdPrimaryColor
-                )
+                    R.string.get_10gb_data
+                ),
+                interactor.getThemeColor(R.attr.wdSecondaryColor),
+                interactor.getThemeColor(R.attr.wdActionColor),
+                interactor.getThemeColor(R.attr.wdPrimaryColor),
+                R.drawable.ic_email_attention,
+                R.drawable.confirmed_email_container_background
             )
             EmailStatus.EmailProvided -> accountView.setEmailConfirm(
                 user.email!!, interactor.getResourceString(
