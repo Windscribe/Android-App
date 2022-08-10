@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.method.PasswordTransformationMethod
+import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -61,13 +62,13 @@ class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
     lateinit var usernameErrorView: ImageView
 
     @BindView(R.id.first_referral_description_prefix)
-    lateinit var firstReferralDescriptionPrefix: TextView
+    lateinit var firstReferralDescriptionPrefix: ImageView
 
     @BindView(R.id.first_referral_description)
     lateinit var firstReferralDescription: TextView
 
     @BindView(R.id.second_referral_description_prefix)
-    lateinit var secondReferralDescriptionPrefix: TextView
+    lateinit var secondReferralDescriptionPrefix: ImageView
 
     @BindView(R.id.second_referral_description)
     lateinit var secondReferralDescription: TextView
@@ -84,11 +85,13 @@ class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
     @BindView(R.id.referral_title)
     lateinit var referralTitle: TextView
 
+    @BindView(R.id.bottom_focus)
+    lateinit var bottomFocusView: ImageView
+
     private var isAccountSetUpLayout = false
     private var fragmentCallBack: FragmentCallback? = null
     private var skipToHome = false
     private var showReferralViews = false
-    private var referralUsernameText = ""
     private val ignoreEditTextChange = AtomicBoolean(false)
 
     override fun onAttach(context: Context) {
@@ -145,6 +148,26 @@ class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
         if (!ignoreEditTextChange.getAndSet(false)) {
             clearInputErrors()
         }
+        resetReferralUsernameView()
+    }
+
+    private fun resetReferralUsernameView() {
+        if (Patterns.EMAIL_ADDRESS.matcher(emailEditText.text)
+                .matches() && referralUsernameEditText.text.toString() != getString(R.string.please_provide_email_first)
+        ) {
+            referralUsernameEditText.setTextColor(resources.getColor(R.color.colorWhite50))
+            referralUsernameEditText.isEnabled = true
+        } else if (Patterns.EMAIL_ADDRESS.matcher(emailEditText.text)
+                .matches() && referralUsernameEditText.text.toString() == getString(R.string.please_provide_email_first)
+        ) {
+            referralUsernameEditText.setTextColor(resources.getColor(R.color.colorWhite50))
+            referralUsernameEditText.setText("")
+            referralUsernameEditText.isEnabled = true
+        } else {
+            referralUsernameEditText.setTextColor(resources.getColor(R.color.colorRed))
+            referralUsernameEditText.setText(getString(R.string.please_provide_email_first))
+            referralUsernameEditText.isEnabled = false
+        }
     }
 
     override fun clearInputErrors() {
@@ -155,8 +178,6 @@ class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
         passwordErrorView.visibility = View.INVISIBLE
         usernameEditText.setTextColor(resources.getColor(R.color.colorWhite))
         passwordEditText.setTextColor(resources.getColor(R.color.colorWhite))
-        referralUsernameEditText.setTextColor(resources.getColor(R.color.colorWhite50))
-        referralUsernameEditText.setText(referralUsernameText)
         referralTitle.setTextColor(resources.getColor(R.color.colorWhite50))
     }
 
@@ -190,17 +211,8 @@ class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
                 false
             )
         } else {
-            var referral = referralUsernameEditText.text.toString().trim { it <= ' ' }
+            val referral = referralUsernameEditText.text.toString().trim { it <= ' ' }
             val email = emailEditText.text.toString().trim { it <= ' ' }
-            if (referral == "Please provide email first.") {
-                referralUsernameEditText.setText("")
-                referralUsernameText = ""
-                referral = ""
-            }
-            if (referral.isNotEmpty() && email.isEmpty()) {
-                setMissingEmailError()
-                return
-            }
             fragmentCallBack!!.onSignUpButtonClick(
                 usernameEditText.text.toString().trim { it <= ' ' },
                 passwordEditText.text.toString().trim { it <= ' ' }, email, referral, false
@@ -231,7 +243,7 @@ class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
             if (!showReferralViews) View.VISIBLE else View.GONE
         showReferralViews = showReferralViews.not()
         if (showReferralViews) {
-            referralUsernameEditText.requestFocus()
+            bottomFocusView.requestFocus()
         } else {
             usernameEditText.requestFocus()
         }
@@ -254,21 +266,6 @@ class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
         emailDescriptionView.setTextColor(resources.getColor(R.color.colorRed))
         emailDescriptionView.text = errorMessage
         emailErrorView.visibility = View.VISIBLE
-    }
-
-    private fun setMissingEmailError() {
-        if (showReferralViews.not()) {
-            toggleReferralViewVisibility()
-        }
-        referralUsernameEditText.setTextColor(resources.getColor(R.color.colorRed))
-        referralTitle.setTextColor(resources.getColor(R.color.colorWhite))
-        emailErrorView.visibility = View.VISIBLE
-        val text = referralUsernameEditText.text.toString()
-        if (text != getString(R.string.please_provide_email_first)) {
-            referralUsernameText = text
-        }
-        referralUsernameEditText.setText(getString(R.string.please_provide_email_first))
-        emailEditText.post { emailEditText.requestFocus() }
     }
 
     override fun setLoginError(error: String) {

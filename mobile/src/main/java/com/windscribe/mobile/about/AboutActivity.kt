@@ -14,6 +14,7 @@ import butterknife.BindView
 import butterknife.OnClick
 import com.windscribe.mobile.R
 import com.windscribe.mobile.base.BaseActivity
+import com.windscribe.mobile.custom_view.preferences.IconLinkView
 import com.windscribe.mobile.di.ActivityModule
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -22,6 +23,27 @@ class AboutActivity : BaseActivity(), AboutView {
 
     @BindView(R.id.nav_button)
     lateinit var backButton: ImageView
+
+    @BindView(R.id.cl_status)
+    lateinit var statusView: IconLinkView
+
+    @BindView(R.id.cl_about)
+    lateinit var aboutView: IconLinkView
+
+    @BindView(R.id.cl_privacy)
+    lateinit var privacyView: IconLinkView
+
+    @BindView(R.id.cl_term)
+    lateinit var termsView: IconLinkView
+
+    @BindView(R.id.cl_blog)
+    lateinit var blogView: IconLinkView
+
+    @BindView(R.id.cl_job)
+    lateinit var jobView: IconLinkView
+
+    @BindView(R.id.cl_licence)
+    lateinit var licenceView: IconLinkView
 
     @Inject
     lateinit var aboutPresenter: AboutPresenter
@@ -36,12 +58,31 @@ class AboutActivity : BaseActivity(), AboutView {
         setActivityModule(ActivityModule(this, this)).inject(this)
         setContentLayout(R.layout.activity_about, true)
         aboutPresenter.init()
+        setupCustomLayoutDelegates()
     }
 
-    @OnClick(R.id.cl_about)
-    fun onAboutClick() {
-        logger.debug("User clicked about button")
-        aboutPresenter.onAboutClick()
+    private fun setupCustomLayoutDelegates() {
+        statusView.onClick {
+            aboutPresenter.onStatusClick()
+        }
+        aboutView.onClick {
+            aboutPresenter.onAboutClick()
+        }
+        privacyView.onClick {
+            aboutPresenter.onPrivacyClick()
+        }
+        termsView.onClick {
+            aboutPresenter.onTermsClick()
+        }
+        blogView.onClick {
+            aboutPresenter.onBlogClick()
+        }
+        jobView.onClick {
+            aboutPresenter.onJobsClick()
+        }
+        licenceView.onClick {
+            aboutPresenter.onViewLicenceClick()
+        }
     }
 
     @OnClick(R.id.nav_button)
@@ -49,42 +90,6 @@ class AboutActivity : BaseActivity(), AboutView {
         performHapticFeedback(backButton)
         logger.info("User clicked on back arrow...")
         onBackPressed()
-    }
-
-    @OnClick(R.id.cl_blog)
-    fun onBlogClick() {
-        logger.debug("User clicked blog button")
-        aboutPresenter.onBlogClick()
-    }
-
-    @OnClick(R.id.cl_job)
-    fun onJobClick() {
-        logger.debug("User clicked job button")
-        aboutPresenter.onJobsClick()
-    }
-
-    @OnClick(R.id.cl_privacy)
-    fun onPrivacyClick() {
-        logger.debug("User clicked privacy button")
-        aboutPresenter.onPrivacyClick()
-    }
-
-    @OnClick(R.id.cl_status)
-    fun onStatusClick() {
-        logger.debug("User clicked status button")
-        aboutPresenter.onStatusClick()
-    }
-
-    @OnClick(R.id.cl_term)
-    fun onTermClick() {
-        logger.debug("User clicked term button")
-        aboutPresenter.onTermsClick()
-    }
-
-    @OnClick(R.id.cl_licence)
-    fun onViewLicenceClick() {
-        logger.debug("User clicked Licence button")
-        aboutPresenter.onViewLicenceClick()
     }
 
     override fun openUrl(url: String) {
