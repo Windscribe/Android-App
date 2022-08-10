@@ -16,8 +16,6 @@ import com.windscribe.mobile.R;
 import com.windscribe.mobile.adapter.GpsSpoofingPagerAdapter;
 import com.windscribe.mobile.base.BaseActivity;
 import com.windscribe.mobile.di.ActivityModule;
-import com.windscribe.mobile.di.DaggerActivityComponent;
-import com.windscribe.vpn.Windscribe;
 import com.windscribe.vpn.mocklocation.MockLocationManager;
 
 import javax.inject.Inject;
@@ -41,14 +39,10 @@ public class GpsSpoofingSettingsActivity extends BaseActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_gps_spoofing_settings);
-
+        setActivityModule(new ActivityModule(this, this)).inject(this);
+        setContentLayout(R.layout.activity_gps_spoofing_settings, true);
         ButterKnife.bind(this);
-        DaggerActivityComponent.builder().activityModule(new ActivityModule(this, this))
-                .applicationComponent(Windscribe.getAppContext()
-                        .getApplicationComponent()).build().inject(this);
         setViewSetViewPager();
-
     }
 
     @Override

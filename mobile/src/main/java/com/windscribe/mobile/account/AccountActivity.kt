@@ -3,6 +3,7 @@
  */
 package com.windscribe.mobile.account
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
@@ -13,6 +14,7 @@ import android.text.InputFilter
 import android.text.InputType
 import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.view.MotionEvent.ACTION_DOWN
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
@@ -108,6 +110,9 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
     @BindView(R.id.data_left_divider)
     lateinit var dataLeftDivider: ImageView
 
+    @BindView(R.id.cl_edit_account)
+    lateinit var clEditAccount: ConstraintLayout
+
     @Inject
     lateinit var mCustomProgressDialog: CustomDialog
 
@@ -147,9 +152,30 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
         startActivity(startIntent)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun setupCustomLayoutDelegates() {
         logger.info("User clicked Lazy login button.")
         lazyLoginButton.onClick { presenter.onLazyLoginClicked() }
+        clEditAccount.setOnTouchListener { _, event ->
+            if (event.action == ACTION_DOWN) {
+                tvEditAccount.setTextColor(
+                    getColor(
+                        this,
+                        R.attr.wdPrimaryColor,
+                        R.color.colorWhite50
+                    )
+                )
+            } else {
+                tvEditAccount.setTextColor(
+                    getColor(
+                        this,
+                        R.attr.wdSecondaryColor,
+                        R.color.colorWhite50
+                    )
+                )
+            }
+            return@setOnTouchListener false
+        }
     }
 
     override fun hideProgress() {
@@ -171,7 +197,7 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
         onBackPressed()
     }
 
-    @OnClick(R.id.tv_edit_account, R.id.edit_arrow)
+    @OnClick(R.id.cl_edit_account)
     fun onEditAccountClick() {
         logger.info("User clicked on edit account button...")
         presenter.onEditAccountClicked()
@@ -215,13 +241,26 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
         mActivityTitleView.text = title
     }
 
-    override fun setEmail(email: String, textColor: Int, labelColor: Int) {
+    override fun setEmail(
+        email: String,
+        warningText: String,
+        warningColor: Int,
+        emailColor: Int,
+        labelColor: Int,
+        infoIcon: Int,
+        containerBackground: Int
+    ) {
         logger.info("Setting up add email layout.")
         tvAccountEmail.text = email
-        tvAccountEmail.setTextColor(textColor)
+        tvAccountEmail.setTextColor(emailColor)
         tvAccountEmailLabel.setTextColor(labelColor)
-        warningContainer.visibility = View.GONE
-        confirmEmailIcon.visibility = View.GONE
+        warningContainer.visibility = View.VISIBLE
+        confirmEmailIcon.visibility = View.VISIBLE
+        confirmEmailIcon.setImageResource(infoIcon)
+        warningContainer.setBackgroundResource(containerBackground)
+        tvEmailWarning.text = warningText
+        tvEmailWarning.setTextColor(warningColor)
+        resendButton.visibility = View.GONE
     }
 
     override fun setEmailConfirm(
@@ -302,18 +341,20 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
         tvEditAccount.isEnabled = !show
     }
 
-    override fun setupLayoutForFreeUser(upgradeText: String) {
+    override fun setupLayoutForFreeUser(upgradeText: String, color: Int) {
         logger.info("Setting up layout for free user...")
         tvUpgradeInfo.text = upgradeText
+        tvUpgradeInfo.setTextColor(color)
     }
 
     override fun setupLayoutForGhostMode(proUser: Boolean) {
         GhostMostAccountFragment.getInstance().add(this, R.id.fragment_container, false, proUser)
     }
 
-    override fun setupLayoutForPremiumUser(upgradeText: String) {
+    override fun setupLayoutForPremiumUser(upgradeText: String, color: Int) {
         logger.info("Setting up layout for premium user...")
         tvUpgradeInfo.text = upgradeText
+        tvUpgradeInfo.setTextColor(color)
     }
 
     override fun showEnterCodeDialog() {

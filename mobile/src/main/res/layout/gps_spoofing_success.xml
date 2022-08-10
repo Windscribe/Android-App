@@ -59,19 +59,12 @@
 
         <TextView
             android:id="@+id/close"
+            style="@style/NextButton"
+            android:enabled="true"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/reg_32dp"
-            android:background="@drawable/modal_location_permission_states"
-            android:clickable="true"
-            android:focusable="true"
-            android:fontFamily="@font/ibm_font_family"
-            android:gravity="center"
-            android:paddingBottom="14dp"
-            android:paddingTop="14dp"
             android:text="@string/close"
-            android:textColor="@color/colorDeepBlue95"
-            android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/feature_explain" />

@@ -53,7 +53,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
             logger.info("Split tunnel settings is ON")
             connSettingsView.setSplitTunnelText(
                 interactor.getResourceString(R.string.on),
-                interactor.getColorResource(R.color.colorNeonGreen)
+                interactor.getThemeColor(R.attr.wdActionColor)
             )
         } else {
             logger.info("Split tunnel settings is OFF")

@@ -21,7 +21,8 @@
         app:layout_constraintTop_toBottomOf="@id/tool_bar"
         app:layout_constraintBottom_toBottomOf="parent"
         android:id="@+id/scroll_view"
-        android:layout_height="0dp">
+        android:layout_height="0dp"
+        style="@style/ScrollableContainer">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -32,9 +33,9 @@
             <TextView
                 android:id="@+id/description"
                 style="@style/MenuActionDescription"
-                android:layout_marginTop="21dp"
+                android:layout_marginTop="24dp"
                 android:paddingEnd="@dimen/margin_32"
-                android:paddingStart="@dimen/margin_16"
+                android:layout_marginStart="@dimen/reg_16dp"
                 android:text="@string/how_to_send_ticket"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -199,9 +200,9 @@
                 android:id="@+id/message"
                 style="@style/InputBox"
                 android:layout_height="0dp"
-                android:gravity="start"
+                android:gravity="left"
                 android:hint="@string/message"
-                android:layout_margin="0dp"
+                android:layout_margin="16dp"
                 app:layout_constraintHeight_min="100dp"
                 android:inputType="textMultiLine"
                 android:paddingStart="@dimen/padding_32"

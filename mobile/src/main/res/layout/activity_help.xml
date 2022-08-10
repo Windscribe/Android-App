@@ -20,6 +20,7 @@
         >
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
+            android:paddingBottom="@dimen/margin_24"
             android:layout_height="wrap_content"
             >
             <com.windscribe.mobile.custom_view.preferences.SingleLinkExplainView
