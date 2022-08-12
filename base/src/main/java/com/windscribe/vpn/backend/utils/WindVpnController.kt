@@ -301,10 +301,6 @@ open class WindVpnController @Inject constructor(
                 stopNetworkWhiteListService()
             }
             vpnBackendHolder.disconnect()
-            //No intention to reconnect
-            if (waitForNextProtocol.not() || reconnecting.not()) {
-                interactor.preferenceHelper.globalUserConnectionPreference = false
-            }
             // Force disconnect if state did not change to disconnect
             if (reconnecting.not()) {
                 interactor.preferenceHelper.whitelistOverride = false
