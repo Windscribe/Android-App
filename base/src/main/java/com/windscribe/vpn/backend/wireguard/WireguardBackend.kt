@@ -4,6 +4,9 @@
 
 package com.windscribe.vpn.backend.wireguard
 
+import android.content.Context
+import android.os.Build
+import android.os.PowerManager
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.TrafficCounter
@@ -17,7 +20,6 @@ import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes.EXPIRED_OR_BANNED_ACCOUNT
-import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserRepository
@@ -26,20 +28,13 @@ import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.wireguard.android.backend.GoBackend
 import com.wireguard.android.backend.GoBackend.wgGetConfig
-import com.wireguard.android.backend.Tunnel.State.DOWN
-import com.wireguard.android.backend.Tunnel.State.TOGGLE
-import com.wireguard.android.backend.Tunnel.State.UP
+import com.wireguard.android.backend.Tunnel.State.*
 import dagger.Lazy
-import java.util.concurrent.TimeUnit
-import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.util.concurrent.TimeUnit
+import javax.inject.Singleton
 
 @Singleton
 class WireguardBackend(
@@ -59,6 +54,8 @@ class WireguardBackend(
     var connectionStateJob: Job? = null
     private var connectionHealthJob: Job? = null
     private var deviceIdleJob: Job? = null
+    private var appActivationJob: Job? = null
+    private var healthJob: Job? = null
     override var active = false
     private val maxHandshakeTimeInSeconds = 180L
 
@@ -131,6 +128,8 @@ class WireguardBackend(
 
     override suspend fun disconnect() {
         deviceIdleJob?.cancel()
+        appActivationJob?.cancel()
+        healthJob?.cancel()
         connectionHealthJob?.cancel()
         connectionJob?.cancel()
         trafficCounter.stop()
@@ -158,19 +157,29 @@ class WireguardBackend(
         if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CustomConfiguredProfile) {
             return
         }
-        connectionHealthJob = scope.launch(Dispatchers.Default) {
+        connectionHealthJob = scope.launch {
             while (true) {
                 delay(1000 * 60)
-                vpnLogger.debug("Checking tunnel health after timeout.")
-                checkTunnelHealth()
+                vpnLogger.debug("Checking tunnel health.")
+                healthJob?.cancel()
+                healthJob = scope.launch { checkTunnelHealth() }
             }
         }
         deviceIdleJob = scope.launch {
             deviceStateManager.isDeviceInteractive.collectLatest {
                 if (it) {
-                    vpnLogger.debug("Checking tunnel health after device being active.")
-                    checkLastHandshake()
+                    vpnLogger.debug("Device state changed: Checking tunnel health.")
+                    healthJob?.cancel()
+                    healthJob = scope.launch { checkLastHandshake() }
                 }
+            }
+        }
+        appActivationJob = scope.launch {
+            vpnLogger.debug("Launching service")
+            appContext.appLifeCycleObserver.appActivationState.collectLatest {
+                vpnLogger.debug("App state changed: Checking tunnel health")
+                healthJob?.cancel()
+                healthJob = scope.launch { checkTunnelHealth() }
             }
         }
     }
@@ -191,6 +200,16 @@ class WireguardBackend(
         vpnLogger.debug("Requesting new interface address.")
         Util.getProfile<WireGuardVpnProfile>()?.content?.let {
             vpnLogger.debug("Creating config from saved params")
+            val pm = appContext.getSystemService(Context.POWER_SERVICE) as PowerManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                vpnLogger.debug(
+                    "Power options: Interactive:${pm.isInteractive} Power Save mode: ${pm.isPowerSaveMode} Ignore battery optimization: ${
+                        pm.isIgnoringBatteryOptimizations(
+                            appContext.packageName
+                        )
+                    } Device Idle: ${pm.isDeviceIdleMode}"
+                )
+            }
             try {
                 val config = WireGuardVpnProfile.createConfigFromString(it)
                 when (val response = vpnProfileCreator.updateWireGuardConfig(config)) {
