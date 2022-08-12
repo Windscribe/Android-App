@@ -8,6 +8,10 @@ import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.repository.CallResult
 import io.reactivex.Completable
 import io.reactivex.Single
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.rx2.await
 
 object Ext {
@@ -26,8 +30,11 @@ object Ext {
         return try {
             val response = await() as GenericResponseClass<*, *>
             response.callResult()
-        } catch (e: Exception){
-            CallResult.Error(NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API, WindError.instance.rxErrorToString(e))
+        } catch (e: Exception) {
+            CallResult.Error(
+                NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API,
+                WindError.instance.rxErrorToString(e)
+            )
         }
     }
 
@@ -35,5 +42,19 @@ object Ext {
         return FakeTrafficVolume.values().map {
             it.name
         }.toTypedArray()
+    }
+
+    fun CoroutineScope.launchPeriodicAsync(
+        repeatMillis: Long,
+        action: () -> Unit
+    ) = this.async {
+        if (repeatMillis > 0) {
+            while (isActive) {
+                action()
+                delay(repeatMillis)
+            }
+        } else {
+            action()
+        }
     }
 }

@@ -149,10 +149,12 @@ class GeneralSettingsPresenterImpl @Inject constructor(
             logger.info("Previous  notification Toggle Settings: True")
             interactor.getAppPreferenceInterface().notificationStat = false
             settingsView.setupNotificationToggleImage(R.drawable.ic_toggle_button_off)
+            interactor.getTrafficCounter().reset(false)
         } else {
             logger.info("Previous Notification Toggle Settings: False")
             interactor.getAppPreferenceInterface().notificationStat = true
             settingsView.setupNotificationToggleImage(R.drawable.ic_toggle_button_on)
+            interactor.getTrafficCounter().reset(true)
         }
     }
 

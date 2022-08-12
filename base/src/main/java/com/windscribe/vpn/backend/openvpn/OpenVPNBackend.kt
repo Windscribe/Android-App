@@ -8,26 +8,23 @@ import android.content.Intent
 import android.os.Build
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe
-import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VpnBackend
 import com.windscribe.vpn.backend.utils.ProtocolManager
-import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.wireguard.android.backend.GoBackend
 import de.blinkt.openvpn.core.ConnectionStatus
 import de.blinkt.openvpn.core.OpenVPNService
 import de.blinkt.openvpn.core.VpnStatus
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import javax.inject.Singleton
 
 @Singleton
 class OpenVPNBackend(
         var backend: GoBackend,
         var scope: CoroutineScope,
-        var trafficCounter: TrafficCounter,
         var networkInfoManager: NetworkInfoManager,
         vpnStateManager: VPNConnectionStateManager,
         var serviceInteractor: ServiceInteractor,
@@ -68,7 +65,6 @@ class OpenVPNBackend(
         if(active){
             vpnLogger.debug("Stopping Open VPN Service.")
             connectionJob?.cancel()
-            trafficCounter.stop()
             startOpenVPN(OpenVPNService.PAUSE_VPN)
             delay(DISCONNECT_DELAY)
             deactivate()
@@ -125,14 +121,9 @@ class OpenVPNBackend(
         }
     }
 
-    override fun updateByteCount(download: Long, upload: Long, diffIn: Long, diffOut: Long) {
-        trafficCounter.update(download, upload)
-    }
+    override fun updateByteCount(download: Long, upload: Long, diffIn: Long, diffOut: Long) {}
 
     override fun connectivityTestPassed(ip: String) {
-        if (vpnServiceInteractor.preferenceHelper.notificationStat) {
-            trafficCounter.start()
-        }
         super.connectivityTestPassed(ip)
     }
 
