@@ -274,6 +274,7 @@ open class WindVpnController @Inject constructor(
     private suspend fun setLocationToConnect(alwaysOnVPN: Boolean) {
         if (alwaysOnVPN) {
             userRepository.get().synchronizedReload()
+            delay(1000)
         }
         val city = locationRepository.updateLocation()
         locationRepository.setSelectedCity(city)
