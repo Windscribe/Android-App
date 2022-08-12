@@ -14,6 +14,7 @@ import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.ServiceInteractorImpl
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.Windscribe.Companion.applicationScope
 import com.windscribe.vpn.api.*
 import com.windscribe.vpn.api.HashDomainGenerator.create
 import com.windscribe.vpn.apppreference.AppPreferenceHelper
@@ -44,8 +45,6 @@ import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import net.grandcentrix.tray.AppPreferences
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -138,7 +137,7 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun provideCoroutineScope(): CoroutineScope {
-        return CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        return applicationScope
     }
 
     @Provides
