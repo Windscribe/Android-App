@@ -23,20 +23,16 @@ import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState.Status
-import com.windscribe.vpn.backend.VPNState.Status.Connected
-import com.windscribe.vpn.backend.VPNState.Status.Connecting
-import com.windscribe.vpn.backend.VPNState.Status.Disconnected
-import com.windscribe.vpn.backend.VPNState.Status.ProtocolSwitch
-import com.windscribe.vpn.backend.VPNState.Status.UnsecuredNetwork
+import com.windscribe.vpn.backend.VPNState.Status.*
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.services.DisconnectService
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class WindNotificationBuilder @Inject constructor(
@@ -195,13 +191,13 @@ class WindNotificationBuilder @Inject constructor(
             }
         }
         scope.launch {
-            trafficCounter.stats.collectLatest { traffic ->
+            trafficCounter.trafficStats.collectLatest { traffic ->
                 trafficStats = traffic.text
                 val status = vpnConnectionStateManager.state.value.status
                 if (status == Connected && interactor.preferenceHelper.globalUserConnectionPreference) {
                     notificationManager.notify(
-                            NotificationConstants.SERVICE_NOTIFICATION_ID,
-                            buildNotification(status)
+                        NotificationConstants.SERVICE_NOTIFICATION_ID,
+                        buildNotification(status)
                     )
                 }
             }
