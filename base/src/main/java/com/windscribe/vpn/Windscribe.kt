@@ -25,14 +25,7 @@ import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.billing.AmazonBillingManager
 import com.windscribe.vpn.billing.GoogleBillingManager
 import com.windscribe.vpn.constants.PreferencesKeyConstants
-import com.windscribe.vpn.di.ActivityComponent
-import com.windscribe.vpn.di.ApplicationComponent
-import com.windscribe.vpn.di.ApplicationModule
-import com.windscribe.vpn.di.DaggerActivityComponent
-import com.windscribe.vpn.di.DaggerApplicationComponent
-import com.windscribe.vpn.di.DaggerServiceComponent
-import com.windscribe.vpn.di.ServiceComponent
-import com.windscribe.vpn.di.ServiceModule
+import com.windscribe.vpn.di.*
 import com.windscribe.vpn.localdatabase.WindscribeDatabase
 import com.windscribe.vpn.mocklocation.MockLocationManager
 import com.windscribe.vpn.services.ping.PingTestService.Companion.startPingTestService
@@ -42,9 +35,13 @@ import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import de.blinkt.openvpn.core.PRNGFixes
 import io.reactivex.plugins.RxJavaPlugins
-import java.util.Locale
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import org.slf4j.LoggerFactory
 import org.strongswan.android.logic.StrongSwanApplication
+import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import javax.inject.Inject
@@ -177,14 +174,26 @@ open class Windscribe : MultiDexApplication() {
 
     private fun setUpNewInstallation() {
         if (preference.getResponseString(PreferencesKeyConstants.NEW_INSTALLATION) == null) {
-            preference.saveResponseStringData(PreferencesKeyConstants.NEW_INSTALLATION, PreferencesKeyConstants.I_OLD)
+            preference.saveResponseStringData(
+                PreferencesKeyConstants.NEW_INSTALLATION,
+                PreferencesKeyConstants.I_OLD
+            )
             // This will be true for legacy app but not beta version users
             if (preference.getResponseString(PreferencesKeyConstants.CONNECTION_STATUS) == null) {
                 // Only Recording for legacy to new version
-                preference.saveResponseStringData(PreferencesKeyConstants.NEW_INSTALLATION, PreferencesKeyConstants.I_NEW)
+                preference.saveResponseStringData(
+                    PreferencesKeyConstants.NEW_INSTALLATION,
+                    PreferencesKeyConstants.I_NEW
+                )
                 preference.removeResponseData(PreferencesKeyConstants.SESSION_HASH)
             }
         }
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        applicationScope.cancel("Releasing system resources.")
+        applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }
 
     /**
@@ -227,6 +236,8 @@ open class Windscribe : MultiDexApplication() {
          */
         @JvmStatic
         lateinit var appContext: Windscribe
+
+        var applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }
 
     open fun getApplicationModuleComponent(): ApplicationComponent {
