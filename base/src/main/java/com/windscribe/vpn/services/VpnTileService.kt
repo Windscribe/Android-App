@@ -13,19 +13,17 @@ import com.windscribe.vpn.R.drawable
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.VPNState
-import com.windscribe.vpn.backend.VPNState.Status.Connected
-import com.windscribe.vpn.backend.VPNState.Status.Connecting
-import com.windscribe.vpn.backend.VPNState.Status.Disconnected
+import com.windscribe.vpn.backend.VPNState.Status.*
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
 @RequiresApi(api = VERSION_CODES.N)
 class VpnTileService : TileService() {
@@ -58,10 +56,12 @@ class VpnTileService : TileService() {
         logger.debug("Quick tile icon clicked....")
         scope.launch {
             if (vpnConnectionStateManager.isVPNActive()) {
+                interactor.preferenceHelper.globalUserConnectionPreference = false
                 vpnController.disconnect()
             } else {
                 userRepository.user.value?.let {
                     if (it.accountStatus == User.AccountStatus.Okay) {
+                        interactor.preferenceHelper.globalUserConnectionPreference = true
                         vpnController.connect()
                     } else {
                         logger.debug("Account status is ${it.accountStatus}.")

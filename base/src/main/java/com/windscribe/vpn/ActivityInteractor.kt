@@ -9,28 +9,13 @@ import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.ServerNodeListOverLoaded
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
-import com.windscribe.vpn.repository.ConnectionDataRepository
-import com.windscribe.vpn.repository.LocationRepository
-import com.windscribe.vpn.repository.NotificationRepository
-import com.windscribe.vpn.repository.ServerListRepository
-import com.windscribe.vpn.repository.StaticIpRepository
-import com.windscribe.vpn.localdatabase.tables.NetworkInfo
-import com.windscribe.vpn.localdatabase.tables.PingTestResults
-import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
-import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
-import com.windscribe.vpn.localdatabase.tables.UserStatusTable
-import com.windscribe.vpn.localdatabase.tables.WindNotification
-import com.windscribe.vpn.repository.UserRepository
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.CityAndRegion
-import com.windscribe.vpn.serverlist.entity.ConfigFile
-import com.windscribe.vpn.serverlist.entity.Favourite
-import com.windscribe.vpn.serverlist.entity.PingTime
-import com.windscribe.vpn.serverlist.entity.RegionAndCities
-import com.windscribe.vpn.serverlist.entity.StaticRegion
+import com.windscribe.vpn.localdatabase.tables.*
+import com.windscribe.vpn.repository.*
+import com.windscribe.vpn.serverlist.entity.*
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -143,4 +128,5 @@ interface ActivityInteractor {
     fun getNotificationUpdater(): NotificationRepository
     fun getWorkManager(): WindScribeWorkManager
     fun getDecoyTrafficController(): DecoyTrafficController
+    fun getTrafficCounter(): TrafficCounter
 }
