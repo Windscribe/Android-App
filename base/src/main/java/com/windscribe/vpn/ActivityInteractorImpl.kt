@@ -13,6 +13,7 @@ import com.windscribe.vpn.R.*
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.ThemeUtils
@@ -53,23 +54,24 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
  * @see ActivityInteractor
 */
 class ActivityInteractorImpl(
-        private val mainScope: CoroutineScope,
-        val preferenceHelper: PreferencesHelper,
-        private val apiCallManager: IApiCallManager,
-        val localDbInterface: LocalDbInterface,
-        private val vpnConnectionStateManager: VPNConnectionStateManager,
-        private val userRepository: UserRepository,
-        private val protocolManager: ProtocolManager,
-        private val networkInfoManager: NetworkInfoManager,
-        private val locationRepository: LocationRepository,
-        private val vpnController: WindVpnController,
-        private val connectionDataRepository: ConnectionDataRepository,
-        private val serverListRepository: ServerListRepository,
-        private val staticListUpdate: StaticIpRepository,
-        private val preferenceChangeObserver: PreferenceChangeObserver,
-        private val notificationRepository: NotificationRepository,
-        private val windScribeWorkManager: WindScribeWorkManager,
-        private val decoyTrafficController: DecoyTrafficController
+    private val mainScope: CoroutineScope,
+    val preferenceHelper: PreferencesHelper,
+    private val apiCallManager: IApiCallManager,
+    val localDbInterface: LocalDbInterface,
+    private val vpnConnectionStateManager: VPNConnectionStateManager,
+    private val userRepository: UserRepository,
+    private val protocolManager: ProtocolManager,
+    private val networkInfoManager: NetworkInfoManager,
+    private val locationRepository: LocationRepository,
+    private val vpnController: WindVpnController,
+    private val connectionDataRepository: ConnectionDataRepository,
+    private val serverListRepository: ServerListRepository,
+    private val staticListUpdate: StaticIpRepository,
+    private val preferenceChangeObserver: PreferenceChangeObserver,
+    private val notificationRepository: NotificationRepository,
+    private val windScribeWorkManager: WindScribeWorkManager,
+    private val decoyTrafficController: DecoyTrafficController,
+    private val trafficCounter: TrafficCounter
 ) : ActivityInteractor {
 
     interface PortMapLoadCallback {
@@ -136,6 +138,10 @@ class ActivityInteractorImpl(
 
     override fun getNotificationUpdater(): NotificationRepository {
         return notificationRepository
+    }
+
+    override fun getTrafficCounter(): TrafficCounter {
+        return trafficCounter
     }
 
     override fun addConfigFile(configFile: ConfigFile): Completable {

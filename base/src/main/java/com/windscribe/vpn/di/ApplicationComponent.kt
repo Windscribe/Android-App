@@ -10,6 +10,7 @@ import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.WindApiFactory
 import com.windscribe.vpn.api.WindCustomApiFactory
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.ikev2.IKev2VpnBackend
 import com.windscribe.vpn.backend.openvpn.OpenVPNBackend
@@ -20,24 +21,15 @@ import com.windscribe.vpn.backend.wireguard.WireguardBackend
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.mocklocation.MockLocationManager
-import com.windscribe.vpn.repository.ConnectionDataRepository
-import com.windscribe.vpn.repository.LocationRepository
-import com.windscribe.vpn.repository.NotificationRepository
-import com.windscribe.vpn.repository.ServerListRepository
-import com.windscribe.vpn.repository.StaticIpRepository
-import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.repository.*
 import com.windscribe.vpn.services.firebasecloud.WindscribeCloudMessaging
-import com.windscribe.vpn.state.AppLifeCycleObserver
-import com.windscribe.vpn.state.DeviceStateManager
-import com.windscribe.vpn.state.NetworkInfoManager
-import com.windscribe.vpn.state.PreferenceChangeObserver
-import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.windscribe.vpn.state.*
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import com.windscribe.vpn.workers.worker.*
 import dagger.Component
+import kotlinx.coroutines.CoroutineScope
 import javax.inject.Named
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
 
 @Singleton
 @Component(modules = [ApplicationModule::class])
@@ -86,6 +78,7 @@ interface ApplicationComponent {
     val networkInfoManager: NetworkInfoManager
     val appLifeCycleObserver: AppLifeCycleObserver
     val decoyTrafficController: DecoyTrafficController
+    val trafficCounter: TrafficCounter
 
     //Repository
     val staticIpRepository: StaticIpRepository

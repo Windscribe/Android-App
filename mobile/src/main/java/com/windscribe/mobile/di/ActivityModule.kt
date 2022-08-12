@@ -71,25 +71,20 @@ import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.ActivityInteractorImpl
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
-import com.windscribe.vpn.repository.ConnectionDataRepository
-import com.windscribe.vpn.repository.NotificationRepository
-import com.windscribe.vpn.repository.LocationRepository
-import com.windscribe.vpn.repository.ServerListRepository
-import com.windscribe.vpn.repository.StaticIpRepository
 import com.windscribe.vpn.localdatabase.LocalDbInterface
-import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.repository.*
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import dagger.Module
 import dagger.Provides
-import java.util.ArrayList
-import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
+import javax.inject.Named
 
 @Module
 class ActivityModule {
@@ -449,23 +444,24 @@ class ActivityModule {
     @Provides
     @PerActivity
     fun provideActivityInteractor(
-            coroutineScope: CoroutineScope,
-            prefHelper: PreferencesHelper,
-            apiCallManager: IApiCallManager,
-            localDbInterface: LocalDbInterface,
-            vpnConnectionStateManager: VPNConnectionStateManager,
-            userRepository: UserRepository,
-            protocolManager: ProtocolManager,
-            networkInfoManager: NetworkInfoManager,
-            locationRepository: LocationRepository,
-            vpnController: WindVpnController,
-            connectionDataRepository: ConnectionDataRepository,
-            serverListRepository: ServerListRepository,
-            staticListUpdate: StaticIpRepository,
-            preferenceChangeObserver: PreferenceChangeObserver,
-            notificationRepository: NotificationRepository,
-            workManager: WindScribeWorkManager,
-            decoyTrafficController: DecoyTrafficController
+        coroutineScope: CoroutineScope,
+        prefHelper: PreferencesHelper,
+        apiCallManager: IApiCallManager,
+        localDbInterface: LocalDbInterface,
+        vpnConnectionStateManager: VPNConnectionStateManager,
+        userRepository: UserRepository,
+        protocolManager: ProtocolManager,
+        networkInfoManager: NetworkInfoManager,
+        locationRepository: LocationRepository,
+        vpnController: WindVpnController,
+        connectionDataRepository: ConnectionDataRepository,
+        serverListRepository: ServerListRepository,
+        staticListUpdate: StaticIpRepository,
+        preferenceChangeObserver: PreferenceChangeObserver,
+        notificationRepository: NotificationRepository,
+        workManager: WindScribeWorkManager,
+        decoyTrafficController: DecoyTrafficController,
+        trafficCounter: TrafficCounter
     ): ActivityInteractor {
         return ActivityInteractorImpl(
             coroutineScope,
@@ -476,7 +472,9 @@ class ActivityModule {
             staticListUpdate,
             preferenceChangeObserver,
             notificationRepository,
-            workManager, decoyTrafficController
+            workManager,
+            decoyTrafficController,
+            trafficCounter
         )
     }
 }

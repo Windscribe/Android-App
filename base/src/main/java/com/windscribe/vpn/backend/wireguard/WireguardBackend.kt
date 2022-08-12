@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.PowerManager
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
@@ -38,7 +37,6 @@ import javax.inject.Singleton
 
 @Singleton
 class WireguardBackend(
-        var trafficCounter: TrafficCounter,
         var backend: GoBackend,
         var scope: CoroutineScope,
         var networkInfoManager: NetworkInfoManager,
@@ -132,7 +130,6 @@ class WireguardBackend(
         healthJob?.cancel()
         connectionHealthJob?.cancel()
         connectionJob?.cancel()
-        trafficCounter.stop()
         vpnLogger.debug("Stopping WireGuard service.")
         service?.close()
         delay(20)
@@ -146,9 +143,6 @@ class WireguardBackend(
     override fun connectivityTestPassed(ip: String) {
         if (!reconnecting) {
             startConnectionHealthJob()
-            if (vpnServiceInteractor.preferenceHelper.notificationStat) {
-                trafficCounter.start(this)
-            }
         }
         super.connectivityTestPassed(ip)
     }

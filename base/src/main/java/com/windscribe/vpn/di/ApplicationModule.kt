@@ -267,16 +267,15 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     fun provideOpenVPNBackend(
             goBackend: GoBackend,
             coroutineScope: CoroutineScope,
-            trafficCounter: TrafficCounter,
             networkInfoManager: NetworkInfoManager,
             vpnConnectionStateManager: VPNConnectionStateManager,
             serviceInteractor: ServiceInteractor,
             protocolManager: ProtocolManager,
     ): OpenVPNBackend {
         return OpenVPNBackend(
-                goBackend, coroutineScope, trafficCounter, networkInfoManager,
-                vpnConnectionStateManager,
-                serviceInteractor, protocolManager
+            goBackend, coroutineScope, networkInfoManager,
+            vpnConnectionStateManager,
+            serviceInteractor, protocolManager
         )
     }
 
@@ -389,8 +388,18 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
 
     @Provides
     @Singleton
-    fun provideTrafficCounter(coroutineScope: CoroutineScope): TrafficCounter {
-        return TrafficCounter(coroutineScope)
+    fun provideTrafficCounter(
+        coroutineScope: CoroutineScope,
+        vpnConnectionStateManager: VPNConnectionStateManager,
+        preferencesHelper: PreferencesHelper,
+        deviceStateManager: DeviceStateManager
+    ): TrafficCounter {
+        return TrafficCounter(
+            coroutineScope,
+            vpnConnectionStateManager,
+            preferencesHelper,
+            deviceStateManager
+        )
     }
 
     @Provides
@@ -487,7 +496,6 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun provideWireguardBackend(
-            trafficCounter: TrafficCounter,
             goBackend: GoBackend,
             coroutineScope: CoroutineScope,
             networkInfoManager: NetworkInfoManager,
@@ -499,12 +507,12 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
             deviceStateManager: DeviceStateManager
     ): WireguardBackend {
         return WireguardBackend(
-                trafficCounter, goBackend, coroutineScope, networkInfoManager,
-                vpnConnectionStateManager,
-                serviceInteractor, protocolManager,
-                vpnProfileCreator,
-                userRepository,
-                deviceStateManager
+            goBackend, coroutineScope, networkInfoManager,
+            vpnConnectionStateManager,
+            serviceInteractor, protocolManager,
+            vpnProfileCreator,
+            userRepository,
+            deviceStateManager
         )
     }
 
