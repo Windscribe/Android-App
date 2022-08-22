@@ -11,8 +11,6 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import java.util.concurrent.TimeUnit
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -20,6 +18,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.concurrent.TimeUnit
+import javax.inject.Singleton
 
 /**
  * Base class for Interfacing with VPN Modules.
@@ -87,7 +87,6 @@ abstract class VpnBackend(private val mainScope: CoroutineScope, val stateManage
                                                     ipAddress
                                             )
                                             connectivityTestPassed(it)
-                                            reconnecting = false
                                         } else {
                                             failedConnectivityTest()
                                         }
@@ -117,6 +116,10 @@ abstract class VpnBackend(private val mainScope: CoroutineScope, val stateManage
         vpnServiceInteractor.preferenceHelper.whitelistOverride = false
         vpnLogger.debug("Connectivity test successful: $ip")
         updateState(VPNState(VPNState.Status.Connected, ip = ip))
+        mainScope.launch {
+            delay(500)
+            reconnecting = false
+        }
         protocolManager.onConnectionSuccessful()
     }
 
@@ -137,10 +140,13 @@ abstract class VpnBackend(private val mainScope: CoroutineScope, val stateManage
             }
         } else {
             vpnLogger.debug("Connectivity test failed in background.")
-            reconnecting = false
             // Consider it connected and will fetch ip on app launch.
             vpnServiceInteractor.preferenceHelper.removeResponseData(PreferencesKeyConstants.USER_IP)
             updateState(VPNState(VPNState.Status.Connected))
+            mainScope.launch {
+                delay(500)
+                reconnecting = false
+            }
         }
     }
 
