@@ -6,11 +6,9 @@ package com.windscribe.mobile.ticket
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.graphics.Rect
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.ViewTreeObserver
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.widget.AppCompatEditText
@@ -23,12 +21,12 @@ import com.windscribe.mobile.custom_view.ErrorFragment
 import com.windscribe.mobile.custom_view.ProgressFragment
 import com.windscribe.mobile.custom_view.SuccessFragment
 import com.windscribe.mobile.di.ActivityModule
+import com.windscribe.mobile.welcome.SoftInputAssist
 import com.windscribe.vpn.api.response.QueryType
 import java.util.*
 import javax.inject.Inject
 
-class SendTicketActivity : BaseActivity(), SendTicketView, TextWatcher,
-    ViewTreeObserver.OnGlobalLayoutListener {
+class SendTicketActivity : BaseActivity(), SendTicketView, TextWatcher {
     @Inject
     lateinit var presenter: SendTicketPresenter
 
@@ -56,21 +54,29 @@ class SendTicketActivity : BaseActivity(), SendTicketView, TextWatcher,
     @BindView(R.id.nav_title)
     lateinit var tvActivityTitle: TextView
 
+    private var softInputAssist: SoftInputAssist? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
         setContentLayout(R.layout.activity_send_ticket, true)
+        softInputAssist = SoftInputAssist(this, intArrayOf())
         presenter.init()
     }
 
     override fun onResume() {
         super.onResume()
-        scrollView.viewTreeObserver.addOnGlobalLayoutListener(this)
+        softInputAssist?.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-        scrollView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+        softInputAssist?.onPause()
+    }
+
+    override fun onDestroy() {
+        softInputAssist?.onDestroy()
+        super.onDestroy()
     }
 
     override fun addTextChangeListener() {
@@ -100,20 +106,14 @@ class SendTicketActivity : BaseActivity(), SendTicketView, TextWatcher,
         super.onBackPressed()
     }
 
+    override fun onBackPressed() {
+        setInputState(true)
+        super.onBackPressed()
+    }
+
     @OnClick(R.id.tv_current_category, R.id.img_category_drop_down_btn)
     fun onCurrentQueryTypeClick() {
         queryTypeSpinner.performClick()
-    }
-
-    override fun onGlobalLayout() {
-        val rect = Rect()
-        scrollView.getWindowVisibleDisplayFrame(rect)
-        val heightDiff = scrollView.rootView.height - (rect.bottom - rect.top)
-        if (heightDiff > 150) {
-            if (scrollView.verticalScrollbarPosition != scrollView.bottom) {
-                scrollView.post { scrollView.smoothScrollTo(0, scrollView.bottom) }
-            }
-        }
     }
 
     @OnItemSelected(R.id.spinner_query)
@@ -147,8 +147,17 @@ class SendTicketActivity : BaseActivity(), SendTicketView, TextWatcher,
         emailView.setText(email)
     }
 
+    private fun setInputState(isEnabled: Boolean) {
+        queryTypeSpinner.isEnabled = isEnabled
+        emailView.isEnabled = isEnabled
+        subjectView.isEnabled = isEnabled
+        btnSendButton.isEnabled = isEnabled
+        messageView.isEnabled = isEnabled
+    }
+
     override fun setErrorLayout(message: String) {
-        ErrorFragment.getInstance().add(message, this, R.id.cl_overlay, true)
+        setInputState(false)
+        ErrorFragment.getInstance().add(message, this, R.id.cl_settings_ticket, true)
     }
 
     override fun setProgressView(show: Boolean) {
@@ -179,7 +188,8 @@ class SendTicketActivity : BaseActivity(), SendTicketView, TextWatcher,
     }
 
     override fun setSuccessLayout(message: String) {
-        SuccessFragment.getInstance().add(message, this, R.id.cl_overlay, false)
+        setInputState(false)
+        SuccessFragment.getInstance().add(message, this, R.id.cl_settings_ticket, false)
     }
 
     private fun hideKeyBoard() {

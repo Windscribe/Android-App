@@ -5,6 +5,9 @@
 
 <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/error_fragment_container"
     style="@style/MatchMatchContainer"
+    android:focusable="true"
+    android:elevation="6.0dp"
+    android:focusableInTouchMode="true"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -14,10 +17,12 @@
         app:layout_constraintBottom_toTopOf="@id/close_btn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:focusable="false"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/warning_icon"
+            android:focusable="false"
             style="@style/WarningIcon"
             android:layout_width="@dimen/reg_80dp"
             android:layout_height="@dimen/reg_80dp"
