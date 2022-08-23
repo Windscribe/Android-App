@@ -295,8 +295,8 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
         logger.info("Setting up confirmed email layout.")
         tvAccountEmail.text = emailConfirm
         tvAccountEmail.setTextColor(emailColor)
-        warningContainer.visibility = View.VISIBLE
-        confirmEmailIcon.visibility = View.VISIBLE
+        warningContainer.visibility = View.GONE
+        confirmEmailIcon.visibility = View.GONE
         confirmEmailIcon.setImageResource(infoIcon)
         tvAccountEmailLabel.setTextColor(emailLabelColor)
         resendButton.visibility = View.GONE
