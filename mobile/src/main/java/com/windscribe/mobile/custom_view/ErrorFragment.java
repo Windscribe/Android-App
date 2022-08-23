@@ -5,8 +5,6 @@
 package com.windscribe.mobile.custom_view;
 
 import android.os.Bundle;
-import android.transition.Slide;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -83,7 +81,6 @@ public class ErrorFragment extends Fragment {
         Bundle bundle = new Bundle();
         bundle.putString("error", error);
         setArguments(bundle);
-        setEnterTransition(new Slide(Gravity.BOTTOM).addTarget(R.id.error_fragment_container));
         FragmentTransaction transaction = activity.getSupportFragmentManager()
                 .beginTransaction()
                 .add(container, this);
