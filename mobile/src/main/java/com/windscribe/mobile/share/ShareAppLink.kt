@@ -14,7 +14,6 @@ import butterknife.ButterKnife
 import butterknife.OnClick
 import com.windscribe.mobile.R
 import com.windscribe.mobile.base.BaseDialogFragment
-import com.windscribe.mobile.confirmemail.ConfirmActivity
 import com.windscribe.mobile.email.AddEmailActivity
 import com.windscribe.mobile.email.AddEmailActivity.Companion.finishAfterAddEmail
 import com.windscribe.vpn.ActivityInteractor
@@ -76,15 +75,7 @@ class ShareAppLink @Inject constructor(private val activityInteractor: ActivityI
                 intent.putExtra(finishAfterAddEmail, true)
                 startActivity(intent)
             }
-            User.EmailStatus.EmailProvided -> {
-                val intent = Intent(context, ConfirmActivity::class.java)
-                intent.putExtra(
-                    ConfirmActivity.ReasonToConfirmEmail,
-                    "Confirm to email to refer Windscribe to your friends."
-                )
-                startActivity(intent)
-            }
-            User.EmailStatus.Confirmed -> {
+            User.EmailStatus.EmailProvided, User.EmailStatus.Confirmed -> {
                 val launchActivity = activity as AppCompatActivity
                 ShareCompat.IntentBuilder(launchActivity)
                     .setType("text/plain")
