@@ -18,8 +18,11 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.RadioGroup.OnCheckedChangeListener
+import android.widget.TextView
 import android.widget.TextView.BufferType.SPANNABLE
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.get
@@ -133,15 +136,18 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
                 mPromoPlan?.visibility = View.GONE
                 mPromoSticker?.visibility = View.GONE
                 plan.getSkus().forEach {
-                    val params = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT)
-                    val radioButton = this.layoutInflater.inflate(layout.plan_radio_option, null) as RadioButton
+                    val params = RadioGroup.LayoutParams(
+                        RadioGroup.LayoutParams.WRAP_CONTENT,
+                        RadioGroup.LayoutParams.WRAP_CONTENT
+                    )
                     params.weight = 1F
-                    radioButton.layoutParams = params
+                    val radioButton =
+                        this.layoutInflater.inflate(layout.plan_radio_option, null) as RadioButton
                     val planDuration = plan.getPlanDuration(it)
                     val planPrice = plan.getPrice(it)
                     radioButton.text = "$planPrice/$planDuration"
                     radioButton.setTag(R.id.sku_tag, it)
-                    mPlanRadioGroup?.addView(radioButton)
+                    mPlanRadioGroup?.addView(radioButton, params)
                 }
             }
         }
