@@ -3,7 +3,7 @@ New
 1. Improved Preferences UI.
 2. Friend Referral and Share Windscribe with your friends.
 3. Traffic stats counter for IKEv2
-4. Tap blur your wifi name
+4. Tap to blur your wifi name
 
 Fixed:
 1. Wireguard connection time improvement in restrictive networks.
