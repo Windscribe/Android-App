@@ -6,12 +6,10 @@ package com.windscribe.vpn.model
 
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.constants.UserStatusConstants
-import com.windscribe.vpn.model.User.AccountStatus.Banned
-import com.windscribe.vpn.model.User.AccountStatus.Expired
-import com.windscribe.vpn.model.User.AccountStatus.Okay
-import com.windscribe.vpn.model.User.EmailStatus.Confirmed
-import com.windscribe.vpn.model.User.EmailStatus.EmailProvided
-import com.windscribe.vpn.model.User.EmailStatus.NoEmail
+import com.windscribe.vpn.model.User.AccountStatus.*
+import com.windscribe.vpn.model.User.EmailStatus.*
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 class User(private val sessionResponse: UserSessionResponse) {
 
@@ -112,6 +110,13 @@ class User(private val sessionResponse: UserSessionResponse) {
         get() = sessionResponse.premiumExpiryDate
     val resetDate: String?
         get() = sessionResponse.lastResetDate
+
+    val daysRegisteredSince: Long
+        get() {
+            val registrationDate = sessionResponse.registrationDate
+            val difference = Date().time - registrationDate.toLong() * 1000L
+            return TimeUnit.DAYS.convert(difference, TimeUnit.MILLISECONDS)
+        }
 
     override fun toString(): String {
         return "Account Status: $accountStatus | User Status: $userStatusInt | Ghost $isGhost | Email Status: $emailStatus | Sip count $sipCount"

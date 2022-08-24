@@ -91,4 +91,5 @@ interface WindscribePresenter {
     fun onDecoyTrafficBadgeClick()
     fun toggleBlurNetworkName()
     fun loadConfigFile(data: Intent)
+    suspend fun showShareLinkDialog()
 }

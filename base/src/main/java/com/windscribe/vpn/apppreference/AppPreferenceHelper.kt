@@ -10,6 +10,7 @@ import com.windscribe.vpn.api.response.NewsFeedNotification
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.backend.utils.ProtocolConfig
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.constants.PreferencesKeyConstants.ALREADY_SHOWN_SHARE_APP_LINK
 import com.windscribe.vpn.constants.PreferencesKeyConstants.AUTO_SECURE_NEW_NETWORKS
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DECOY_TRAFFIC
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_IKEV2_PORT
@@ -597,5 +598,11 @@ class AppPreferenceHelper(
         }
         set(value) {
             preference.put(WG_CONNECT_API_FAIL_OVER_STATE, Gson().toJson(value))
+        }
+
+    override var alreadyShownShareAppLink: Boolean
+        get() = preference.getBoolean(ALREADY_SHOWN_SHARE_APP_LINK, false)
+        set(value) {
+            preference.put(ALREADY_SHOWN_SHARE_APP_LINK, value)
         }
 }
