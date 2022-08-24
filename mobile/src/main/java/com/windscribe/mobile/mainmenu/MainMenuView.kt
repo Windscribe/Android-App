@@ -39,4 +39,5 @@ interface MainMenuView {
     fun startAccountSetUpActivity()
     fun startAddEmailActivity()
     fun startLoginActivity()
+    fun showShareLinkDialog()
 }

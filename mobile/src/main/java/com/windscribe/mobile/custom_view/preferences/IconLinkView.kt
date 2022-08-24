@@ -43,10 +43,12 @@ class IconLinkView @JvmOverloads constructor(
         val rightIcon = attributes.getResourceId(R.styleable.ItemLinkView_ItemLinkViewRightIcon, -1)
         if (rightIcon != -1) {
             view.findViewById<ImageView>(R.id.right_icon).setImageResource(rightIcon)
+            view.findViewById<ImageView>(R.id.right_icon).tag = rightIcon
         }
         UiUtil.setupOnTouchListener(
             container = view.findViewById(R.id.container),
-            textView = view.findViewById(R.id.title)
+            textView = view.findViewById(R.id.title),
+            iconView = view.findViewById(R.id.right_icon)
         )
     }
 

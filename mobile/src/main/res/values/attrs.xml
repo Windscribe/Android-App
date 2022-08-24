@@ -77,6 +77,9 @@
         <attr name="wdSecondaryInvertedColor" format="color" />
         <attr name="wdPrimaryColor25" format="color" />
         <attr name="wdActionColor" format="color" />
+        <attr name="wdWarningColor" format="color" />
+        <attr name="wdWarningColor10" format="color" />
+        <attr name="wdWarningColor50" format="color" />
     </declare-styleable>
     <!--Icons -->
     <declare-styleable name="DrawableIcon">
