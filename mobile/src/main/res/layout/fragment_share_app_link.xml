@@ -8,14 +8,7 @@
     android:elevation="6.0dp"
     tools:context=".share.ShareAppLink">
 
-    <ImageView
-        style="@style/IconStyle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="@dimen/margin_54"
-        android:layout_marginStart="@dimen/margin_8"
-        android:src="@drawable/ic_back_button"
-        android:id="@+id/backButton" />
+    <include layout="@layout/nav_bar" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
@@ -25,7 +18,7 @@
         android:id="@+id/container"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/nav_bar"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageView
