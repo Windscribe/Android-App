@@ -64,7 +64,11 @@
             android:text="@string/email"
             app:layout_goneMarginStart="@dimen/reg_16dp"
             android:layout_marginStart="4dp"
+            android:layout_width="wrap_content"
+            android:gravity="start|center_vertical"
+            android:layout_marginEnd="@dimen/margin_8"
             app:layout_constraintStart_toEndOf="@id/confirm_email_icon"
+            app:layout_constraintEnd_toStartOf="@id/tv_account_email"
             app:layout_constraintTop_toBottomOf="@id/tv_username_label" />
 
         <TextView
@@ -72,6 +76,10 @@
             style="@style/MenuItemLabelHalfOpacity"
             app:layout_constraintBottom_toBottomOf="@id/tv_email_label"
             app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="0dp"
+            android:gravity="end|center_vertical"
+            android:singleLine="true"
+            app:layout_constraintStart_toEndOf="@id/tv_email_label"
             app:layout_constraintTop_toTopOf="@id/tv_email_label" />
 
         <Space
