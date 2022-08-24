@@ -27,6 +27,7 @@ import com.windscribe.mobile.email.AddEmailActivity
 import com.windscribe.mobile.generalsettings.GeneralSettingsActivity
 import com.windscribe.mobile.help.HelpActivity
 import com.windscribe.mobile.robert.RobertSettingsActivity
+import com.windscribe.mobile.share.ShareAppLink
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.utils.UiUtil
 import com.windscribe.mobile.welcome.WelcomeActivity
@@ -100,11 +101,18 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
     @BindView(R.id.cl_sign)
     lateinit var logoutView: IconLinkView
 
+    @BindView(R.id.cl_refer_for_data)
+    lateinit var referForDataView: IconLinkView
+
+    @Inject
+    lateinit var fragmentFactory: ActivityModule.CustomFragmentFactory
+
 
     private val logger = LoggerFactory.getLogger(TAG)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
+        supportFragmentManager.fragmentFactory = fragmentFactory
         setContentLayout(R.layout.activity_main_menu)
         presenter.observeUserChange(this)
         preferenceChangeObserver.addLanguageChangeObserver(this) { presenter.onLanguageChanged() }
@@ -139,6 +147,10 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
         logoutView.onClick {
             performHapticFeedback(it)
             presenter.onSignOutClicked()
+        }
+        referForDataView.onClick {
+            performHapticFeedback(it)
+            presenter.onReferForDataClick()
         }
         UiUtil.setupOnTouchListener(textViewContainer = tvDataUpgrade, textView = tvDataUpgrade)
     }
@@ -332,6 +344,16 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
                 HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
             )
         }
+    }
+
+    override fun showShareLinkDialog() {
+        val fragment = supportFragmentManager.fragmentFactory.instantiate(
+            ShareAppLink::class.java.classLoader!!,
+            ShareAppLink::class.java.name
+        )
+        supportFragmentManager.beginTransaction().add(R.id.cl_main_menu, fragment)
+            .addToBackStack(fragment::javaClass.name)
+            .commit()
     }
 
     companion object {

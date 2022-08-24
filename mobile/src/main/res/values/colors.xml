@@ -42,12 +42,15 @@
 
     <color name="colorYellow10">#1AFFEE03</color>
     <color name="colorYellow50">#80FFEE03</color>
+    <color name="colorNavyBlue">#1A3880</color>
+    <color name="colorNavyBlue10">#1A193880</color>
+    <color name="colorNavyBlue50">#80193880</color>
     <color name="colorYellow">#FFEF02</color>
     <color name="colorRed">#FF3B3B</color>
     <color name="colorLightBlue">#A0FEDA</color>
     <color name="colorNeonGreen">#55ff8a</color>
     <color name="colorNeonGreen10">#1A54FF8A</color>
-    <color name="colorNavyBlue">#1A3880</color>
+
     <color name="colorBlue">#4285F4</color>
     <color name="darkGray">#343434</color>
 

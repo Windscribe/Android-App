@@ -54,7 +54,6 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
     @Inject
     lateinit var presenter: AddEmailPresenter
 
-    private var goToHomeAfterFinish = false
     private val logger = LoggerFactory.getLogger("[add_email_a]")
     private var softInputAssist: SoftInputAssist? = null
 
@@ -100,7 +99,6 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
         setContentLayout(R.layout.activity_add_email_address, true)
-        goToHomeAfterFinish = intent.getBooleanExtra("goToHomeAfterFinish", false)
         presenter.setUpLayout()
     }
 
@@ -122,7 +120,9 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
 
     override fun gotoWindscribeActivity() {
         Windscribe.appContext.workManager.updateSession(Data.EMPTY)
-        if (goToHomeAfterFinish) {
+        if (intent.getBooleanExtra(finishAfterAddEmail, false)) {
+            finish()
+        } else if (intent.getBooleanExtra(goToHomeAfterFinish, false)) {
             val startIntent = getStartIntent(this)
             startIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             startActivity(startIntent)
@@ -180,5 +180,10 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
 
     override fun showToast(toastString: String) {
         Toast.makeText(this, toastString, Toast.LENGTH_SHORT).show()
+    }
+
+    companion object {
+        const val finishAfterAddEmail = "finishAfterAddEmail"
+        const val goToHomeAfterFinish = "goToHomeAfterFinish"
     }
 }

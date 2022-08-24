@@ -6,6 +6,7 @@ package com.windscribe.mobile.upgradeactivity;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static com.android.billingclient.api.BillingClient.SkuType.INAPP;
+import static com.windscribe.mobile.email.AddEmailActivity.goToHomeAfterFinish;
 import static com.windscribe.vpn.Windscribe.appContext;
 import static com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA;
 
@@ -163,7 +164,7 @@ public class UpgradeActivity extends BaseActivity
     @Override
     public void goToAddEmail() {
         Intent startIntent = new Intent(this, AddEmailActivity.class);
-        startIntent.putExtra("goToHomeAfterFinish", false);
+        startIntent.putExtra(goToHomeAfterFinish, false);
         startActivity(startIntent);
     }
 

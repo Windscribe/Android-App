@@ -14,7 +14,6 @@ import android.text.InputFilter
 import android.text.InputType
 import android.text.TextWatcher
 import android.view.LayoutInflater
-import android.view.MotionEvent.ACTION_DOWN
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
@@ -39,6 +38,7 @@ import com.windscribe.mobile.email.AddEmailActivity
 import com.windscribe.mobile.fragments.GhostMostAccountFragment
 import com.windscribe.mobile.listeners.AccountFragmentCallback
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
+import com.windscribe.mobile.utils.UiUtil
 import com.windscribe.mobile.welcome.WelcomeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.commonutils.ThemeUtils.getColor
@@ -49,9 +49,6 @@ import javax.inject.Inject
 class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
     @BindView(R.id.warningContainer)
     lateinit var warningContainer: ConstraintLayout
-
-    @BindView(R.id.edit_arrow)
-    lateinit var editAccountArrow: ImageView
 
     @BindView(R.id.edit_progress)
     lateinit var editAccountProgressView: ProgressBar
@@ -85,6 +82,9 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
 
     @BindView(R.id.tv_edit_account)
     lateinit var tvEditAccount: TextView
+
+    @BindView(R.id.edit_arrow)
+    lateinit var tvEditAccountArrow: ImageView
 
     @BindView(R.id.tv_plan_data)
     lateinit var tvPlanData: TextView
@@ -156,26 +156,12 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
     private fun setupCustomLayoutDelegates() {
         logger.info("User clicked Lazy login button.")
         lazyLoginButton.onClick { presenter.onLazyLoginClicked() }
-        clEditAccount.setOnTouchListener { _, event ->
-            if (event.action == ACTION_DOWN) {
-                tvEditAccount.setTextColor(
-                    getColor(
-                        this,
-                        R.attr.wdPrimaryColor,
-                        R.color.colorWhite50
-                    )
-                )
-            } else {
-                tvEditAccount.setTextColor(
-                    getColor(
-                        this,
-                        R.attr.wdSecondaryColor,
-                        R.color.colorWhite50
-                    )
-                )
-            }
-            return@setOnTouchListener false
-        }
+        tvEditAccountArrow.tag = R.drawable.ic_forward_arrow_settings
+        UiUtil.setupOnTouchListener(
+            clEditAccount,
+            iconView = tvEditAccountArrow,
+            textView = tvEditAccount
+        )
     }
 
     override fun hideProgress() {
@@ -335,7 +321,7 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
     }
 
     override fun setWebSessionLoading(show: Boolean) {
-        editAccountArrow.visibility = if (show) View.GONE else View.VISIBLE
+        tvEditAccountArrow.visibility = if (show) View.GONE else View.VISIBLE
         editAccountProgressView.visibility =
             if (show) View.VISIBLE else View.GONE
         tvEditAccount.isEnabled = !show
