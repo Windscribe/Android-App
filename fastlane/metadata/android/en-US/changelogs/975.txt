@@ -1,0 +1,10 @@
+Build: 3.3.775
+1. Improved Preferences UI.
+2. Friend Referral and Share Windscribe with your friends.
+3. Traffic stats counter for IKEv2
+4. Tap to blur your wifi name
+5. Wireguard connection time improvement in restrictive networks.
+6. Google payments not confirming after app kill.
+7. Traffic counter gets stuck when app is launched from quick tile.
+8. App not connecting to last location after reboot.
+9. Wireguard connect recovering when battery mode set to "optimize"
