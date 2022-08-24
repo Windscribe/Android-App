@@ -90,11 +90,14 @@
             android:id="@+id/description"
             style="@style/MenuActionDescription"
             android:layout_marginStart="@dimen/margin_16"
+            android:layout_marginEnd="@dimen/margin_16"
             android:paddingBottom="@dimen/padding_14"
             android:paddingTop="@dimen/padding_14"
+            android:layout_width="0dp"
             android:includeFontPadding="false"
             tools:text="Description"
             app:layout_constraintStart_toStartOf="@id/container"
+            app:layout_constraintEnd_toEndOf="@id/container"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/container" />
     </androidx.constraintlayout.widget.ConstraintLayout>
