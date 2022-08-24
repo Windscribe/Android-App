@@ -4,7 +4,8 @@
 
 <androidx.constraintlayout.widget.ConstraintLayout style="@style/MatchMatchContainer"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cl_main_menu">
 
     <include layout="@layout/nav_bar" />
 
@@ -28,6 +29,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:ItemLinkViewTitle="@string/general"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
             app:ItemLinkViewLeftIcon="@drawable/ic_preferences_icon" />
 
         <ImageView
@@ -49,6 +51,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider_general"
             app:ItemLinkViewTitle="@string/account"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
             app:ItemLinkViewLeftIcon="@drawable/ic_myaccount_icon" />
 
         <ImageView
@@ -69,6 +72,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider_account"
             app:ItemLinkViewTitle="@string/connection"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
             app:ItemLinkViewLeftIcon="@drawable/ic_connection_icon" />
 
         <ImageView
@@ -89,7 +93,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider_connection"
             app:ItemLinkViewTitle="@string/robert"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
             app:ItemLinkViewLeftIcon="@drawable/ic_robert" />
+
 
         <ImageView
             android:id="@+id/divider_robert"
@@ -102,13 +108,36 @@
             app:layout_constraintTop_toBottomOf="@id/cl_robert" />
 
         <com.windscribe.mobile.custom_view.preferences.IconLinkView
-            android:id="@+id/cl_help"
+            android:id="@+id/cl_refer_for_data"
             android:layout_width="match_parent"
             android:layout_height="@dimen/reg_50dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider_robert"
+            app:ItemLinkViewTitle="Refer for Data"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
+            app:ItemLinkViewLeftIcon="@drawable/ic_favourite" />
+
+        <ImageView
+            android:id="@+id/divider_refer_for_data"
+            style="@style/divider"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
+            app:layout_constraintTop_toBottomOf="@id/cl_refer_for_data" />
+
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
+            android:id="@+id/cl_help"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider_refer_for_data"
             app:ItemLinkViewTitle="@string/help_me"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
             app:ItemLinkViewLeftIcon="@drawable/ic_helpme_icon" />
 
         <ImageView
@@ -129,6 +158,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider_help"
             app:ItemLinkViewTitle="@string/about"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
             app:ItemLinkViewLeftIcon="@drawable/ic_about" />
 
         <ImageView
@@ -149,6 +179,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider_about"
             app:ItemLinkViewTitle="@string/logout"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
             app:ItemLinkViewLeftIcon="@drawable/ic_sign_out"
             app:HideBottomDivider="true" />
     </androidx.constraintlayout.widget.ConstraintLayout>

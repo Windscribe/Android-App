@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.view.WindowManager
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -75,8 +76,14 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Alway
     @BindView(R.id.split_tunnel_title)
     lateinit var splitTunnelLabel: TextView
 
+    @BindView(R.id.split_tunnel_right_icon)
+    lateinit var splitTunnelArrow: ImageView
+
     @BindView(R.id.network_options_title)
     lateinit var networkOptionsLabel: TextView
+
+    @BindView(R.id.network_options_right_icon)
+    lateinit var networkOptionsArrow: ImageView
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -236,12 +243,16 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Alway
             }
 
         }
+        splitTunnelArrow.tag = R.drawable.ic_forward_arrow_settings
+        networkOptionsArrow.tag = R.drawable.ic_forward_arrow_settings
         UiUtil.setupOnTouchListener(
             textViewContainer = splitTunnelLabel,
+            iconView = splitTunnelArrow,
             textView = splitTunnelLabel
         )
         UiUtil.setupOnTouchListener(
             textViewContainer = networkOptionsLabel,
+            iconView = networkOptionsArrow,
             textView = networkOptionsLabel
         )
     }

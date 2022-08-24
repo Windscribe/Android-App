@@ -6,6 +6,7 @@ package com.windscribe.mobile.account
 import android.content.Context
 import com.windscribe.mobile.R
 import com.windscribe.vpn.ActivityInteractor
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.CreateHashMap.createVerifyExpressLoginMap
 import com.windscribe.vpn.api.CreateHashMap.createWebSessionMap
 import com.windscribe.vpn.api.response.*
@@ -240,11 +241,22 @@ class AccountPresenterImpl @Inject constructor(
                 R.drawable.confirmed_email_container_background
             )
             EmailStatus.EmailProvided -> accountView.setEmailConfirm(
-                user.email!!, interactor.getResourceString(
+                user.email!!,
+                interactor.getResourceString(
                     R.string.confirm_your_email
-                ), interactor.getColorResource(R.color.colorYellow50), interactor.getColorResource(
+                ),
+                com.windscribe.vpn.commonutils.ThemeUtils.getColor(
+                    appContext,
+                    R.attr.wdWarningColor50,
                     R.color.colorYellow
-                ), R.drawable.ic_warning_icon, R.drawable.attention_container_background
+                ),
+                com.windscribe.vpn.commonutils.ThemeUtils.getColor(
+                    appContext,
+                    R.attr.wdWarningColor,
+                    R.color.colorYellow
+                ),
+                R.drawable.ic_warning_icon,
+                R.drawable.attention_container_background
             )
             EmailStatus.Confirmed -> accountView.setEmailConfirmed(
                 user.email!!, interactor.getResourceString(

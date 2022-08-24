@@ -26,4 +26,5 @@ interface MainMenuPresenter {
     fun setLayoutFromApiSession()
     fun observeUserChange(mainMenuActivity: MainMenuActivity)
     fun setTheme(context: Context)
+    fun onReferForDataClick()
 }
