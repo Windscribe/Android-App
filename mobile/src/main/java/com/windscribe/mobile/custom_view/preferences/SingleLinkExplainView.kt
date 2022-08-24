@@ -34,9 +34,11 @@ class SingleLinkExplainView @JvmOverloads constructor(
         } else {
             view.findViewById<ImageView>(R.id.left_icon).setImageResource(leftIcon)
         }
+        view.findViewById<ImageView>(R.id.right_icon).tag = R.drawable.ic_forward_arrow_settings
         UiUtil.setupOnTouchListener(
             container = view.findViewById(R.id.container),
-            textView = view.findViewById(R.id.title)
+            textView = view.findViewById(R.id.title),
+            iconView = view.findViewById(R.id.right_icon)
         )
         UiUtil.setupOnTouchListener(
             imageViewContainer = view.findViewById(R.id.clip_corner_background),

@@ -26,12 +26,16 @@ class ConfirmEmailPresenterImp @Inject constructor(
         }
     }
 
-    override fun init() {
-        val proUser = (interactor.getAppPreferenceInterface().userStatus
-                == UserStatusConstants.USER_STATUS_PREMIUM)
-        val reasonForConfirmEmail = interactor
-            .getResourceString(if (proUser) R.string.pro_reason_to_confirm else R.string.free_reason_to_confirm)
-        confirmEmailView.setReasonToConfirmEmail(reasonForConfirmEmail)
+    override fun init(reasonToConfirmEmail: String?) {
+        reasonToConfirmEmail?.let {
+            confirmEmailView.setReasonToConfirmEmail(it)
+        } ?: kotlin.run {
+            val proUser = (interactor.getAppPreferenceInterface().userStatus
+                    == UserStatusConstants.USER_STATUS_PREMIUM)
+            val reasonForConfirmEmail = interactor
+                .getResourceString(if (proUser) R.string.pro_reason_to_confirm else R.string.free_reason_to_confirm)
+            confirmEmailView.setReasonToConfirmEmail(reasonForConfirmEmail)
+        }
     }
 
     override fun resendVerificationEmail() {

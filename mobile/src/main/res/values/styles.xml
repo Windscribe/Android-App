@@ -98,6 +98,10 @@
         <item name="preferencesRoundedBackgroundColor">@color/colorWhite8</item>
         <item name="wdPrimaryColor25">@color/colorWhite25</item>
         <item name="wdActionColor">@color/colorNeonGreen</item>
+        <item name="wdWarningColor">@color/colorYellow</item>
+        <item name="wdWarningColor10">@color/colorYellow10</item>
+        <item name="wdWarningColor50">@color/colorYellow50</item>
+
     </style>
 
     <!--Light Theme -->
@@ -180,6 +184,9 @@
         <item name="wdSecondaryInvertedColor">@color/colorWhite50</item>
         <item name="wdPrimaryColor25">@color/colorDeepBlue25</item>
         <item name="wdActionColor">@color/colorNavyBlue</item>
+        <item name="wdWarningColor">@color/colorNavyBlue</item>
+        <item name="wdWarningColor10">@color/colorNavyBlue10</item>
+        <item name="wdWarningColor50">@color/colorNavyBlue50</item>
     </style>
 
     <style name="AppTheme.WindLauncher">
@@ -597,6 +604,10 @@
         <item name="android:contentDescription">@string/image_description</item>
     </style>
 
+    <style name="RightIconFullOpacity" parent="LinkArrowIcon">
+        <item name="preferenceForwardArrowColor">?attr/wdPrimaryColor</item>
+    </style>
+
     <style name="LinkArrowIcon" parent="WrapWrapContainer">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">@dimen/reg_16dp</item>
@@ -830,7 +841,7 @@
         <item name="android:layout_marginBottom">@dimen/margin_16</item>
         <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
         <item name="android:gravity">center</item>
-        <item name="android:textColor">@color/colorYellow</item>
+        <item name="android:textColor">?attr/wdWarningColor</item>
         <item name="android:textSize">14sp</item>
     </style>
 
