@@ -349,9 +349,7 @@ class ActivityInteractorImpl(
 
     override fun isUserEligibleForRatingApp(userSessionResponse: UserSessionResponse): Boolean {
         val user = User(userSessionResponse)
-        val registrationDate = userSessionResponse.registrationDate
-        val difference = Date().time - registrationDate.toLong() * 1000L
-        val days = DAYS.convert(difference, MILLISECONDS)
+        val days = user.daysRegisteredSince
         val experiencedUser = days >= RateDialogConstants.MINIMUM_DAYS_TO_START
         val dataUsed = user.dataUsed?.toFloat() ?: 0F
         val enoughDataUsed = dataUsed >= RateDialogConstants.MINIMUM_DATA_LIMIT

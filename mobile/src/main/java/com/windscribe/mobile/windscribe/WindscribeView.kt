@@ -4,20 +4,9 @@
 package com.windscribe.mobile.windscribe
 
 import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup
-import com.windscribe.mobile.adapter.ConfigAdapter
-import com.windscribe.mobile.adapter.FavouriteAdapter
-import com.windscribe.mobile.adapter.ProtocolAdapter
-import com.windscribe.mobile.adapter.RegionsAdapter
-import com.windscribe.mobile.adapter.StaticRegionAdapter
-import com.windscribe.mobile.adapter.StreamingNodeAdapter
-import com.windscribe.mobile.connectionui.ConnectedAnimationState
-import com.windscribe.mobile.connectionui.ConnectedState
-import com.windscribe.mobile.connectionui.ConnectingAnimationState
-import com.windscribe.mobile.connectionui.ConnectingState
-import com.windscribe.mobile.connectionui.ConnectionUiState
-import com.windscribe.mobile.connectionui.DisconnectedState
+import com.windscribe.mobile.adapter.*
+import com.windscribe.mobile.connectionui.*
 import com.windscribe.mobile.windscribe.WindscribeActivity.NetworkLayoutState
-import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.ServerListData
@@ -115,4 +104,5 @@ interface WindscribeView {
     fun protocolSwitchAdapter(): ProtocolAdapter?
     fun clearConnectingAnimation()
     fun setDecoyTrafficInfoVisibility(visibility: Int)
+    fun showShareLinkDialog()
 }

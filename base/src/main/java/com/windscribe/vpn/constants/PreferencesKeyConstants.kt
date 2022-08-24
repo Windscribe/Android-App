@@ -159,4 +159,5 @@ object PreferencesKeyConstants {
     const val FAKE_TRAFFIC_VOLUME = "fake_traffic_volume"
     const val AUTO_SECURE_NEW_NETWORKS = "auto_secure_new_networks"
     const val WG_CONNECT_API_FAIL_OVER_STATE = "wg_connect_api_fail_over_state"
+    const val ALREADY_SHOWN_SHARE_APP_LINK = "already_shown_share_app_link"
 }
