@@ -47,6 +47,7 @@ class ShareAppLink @Inject constructor(private val activityInteractor: ActivityI
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        activityInteractor.getAppPreferenceInterface().alreadyShownShareAppLink = true
         navTitle.visibility = View.INVISIBLE
         activityInteractor.getUserRepository().user.observe(this) {
             setupLayout(it.emailStatus)
@@ -60,12 +61,7 @@ class ShareAppLink @Inject constructor(private val activityInteractor: ActivityI
                 errorView.visibility = View.VISIBLE
                 continueButton.text = getString(R.string.add_email)
             }
-            User.EmailStatus.EmailProvided -> {
-                errorView.text = getString(R.string.please_confirm_email_first)
-                errorView.visibility = View.VISIBLE
-                continueButton.text = getString(R.string.confirm_your_email)
-            }
-            User.EmailStatus.Confirmed -> {
+            User.EmailStatus.EmailProvided, User.EmailStatus.Confirmed -> {
                 errorView.visibility = View.GONE
                 continueButton.text = getString(R.string.share_invite_link)
             }

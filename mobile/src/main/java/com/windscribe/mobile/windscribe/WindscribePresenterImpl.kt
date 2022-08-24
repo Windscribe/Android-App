@@ -73,6 +73,7 @@ import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subscribers.DisposableSubscriber
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
@@ -2728,7 +2729,7 @@ class WindscribePresenterImpl @Inject constructor(
         }
         val fileName = documentFile.name
         val existingFile = configAdapter?.configFiles?.firstOrNull { it.name == fileName }
-        if(existingFile !=null ){
+        if (existingFile != null) {
             windscribeView.showToast("A file with same name already exists")
             return null
         }
@@ -2737,5 +2738,15 @@ class WindscribePresenterImpl @Inject constructor(
         }
         windscribeView.showToast("Choose valid .ovpn or .conf file.")
         return null
+    }
+
+    override suspend fun showShareLinkDialog() {
+        interactor.getUserRepository().user.value?.let {
+            delay(4000)
+            logger.debug("Share link criteria: Free user: ${it.isPro.not()} Days registred since:${it.daysRegisteredSince} Already shown: ${interactor.getAppPreferenceInterface().alreadyShownShareAppLink}")
+            if (it.isPro.not() && it.daysRegisteredSince > 30 && interactor.getAppPreferenceInterface().alreadyShownShareAppLink.not()) {
+                windscribeView.showShareLinkDialog()
+            }
+        }
     }
 }

@@ -62,6 +62,7 @@ import com.windscribe.mobile.mainmenu.MainMenuActivity
 import com.windscribe.mobile.newsfeedactivity.NewsFeedActivity
 import com.windscribe.mobile.ratemyapp.RateDialogFragment
 import com.windscribe.mobile.ratemyapp.RateDialogFragment.RateDialogResponse
+import com.windscribe.mobile.share.ShareAppLink
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.utils.UiUtil.isBackgroundLocationPermissionGranted
 import com.windscribe.mobile.utils.UiUtil.showBackgroundLocationPermissionAlert
@@ -119,6 +120,9 @@ class WindscribeActivity :
 
     @Inject
     lateinit var presenter: WindscribePresenter
+
+    @Inject
+    lateinit var fragmentFactory: ActivityModule.CustomFragmentFactory
 
     @Inject
     lateinit var serverListRepository: ServerListRepository
@@ -410,6 +414,7 @@ class WindscribeActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
+        supportFragmentManager.fragmentFactory = fragmentFactory
         setContentLayout(R.layout.activity_windscribe, true)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
         val layoutTransition = constraintLayoutMain?.layoutTransition
@@ -423,7 +428,8 @@ class WindscribeActivity :
         activityScope { presenter.observeStaticRegions() }
         activityScope { presenter.observeAllLocations() }
         activityScope { presenter.observerSelectedLocation() }
-        activityScope { presenter.observeDecoyTrafficState()}
+        activityScope { presenter.observeDecoyTrafficState() }
+        activityScope { presenter.showShareLinkDialog() }
         presenter.registerNetworkInfoListener()
         presenter.handlePushNotification(intent.extras)
         presenter.observeUserData(this)
@@ -2135,6 +2141,16 @@ class WindscribeActivity :
         decoyArrow?.visibility = visibility
         decoyDivider?.visibility = visibility
         tvDecoy?.visibility = visibility
+    }
+
+    override fun showShareLinkDialog() {
+        val fragment = supportFragmentManager.fragmentFactory.instantiate(
+            ShareAppLink::class.java.classLoader!!,
+            ShareAppLink::class.java.name
+        )
+        supportFragmentManager.beginTransaction().add(R.id.cl_windscribe_main, fragment)
+            .addToBackStack(fragment::javaClass.name)
+            .commit()
     }
 
     companion object {
