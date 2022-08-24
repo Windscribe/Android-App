@@ -30,6 +30,10 @@
     <color name="colorWhite90">#E6FFFFFF</color>
     <color name="colorWhite95">#F2FFFFFF</color>
     <color name="colorWhite">#FFFFFF</color>
+    <color name="colorOrange">#f28b00</color>
+    <color name="colorOrange10">#1AF28900</color>
+    <color name="colorOrange50">#80F28900</color>
+
     <!--Black -->
     <color name="colorBlack5">#0D000000</color>
     <color name="colorBlack">#000000</color>
