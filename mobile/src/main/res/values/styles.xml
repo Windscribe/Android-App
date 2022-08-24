@@ -184,9 +184,9 @@
         <item name="wdSecondaryInvertedColor">@color/colorWhite50</item>
         <item name="wdPrimaryColor25">@color/colorDeepBlue25</item>
         <item name="wdActionColor">@color/colorNavyBlue</item>
-        <item name="wdWarningColor">@color/colorNavyBlue</item>
-        <item name="wdWarningColor10">@color/colorNavyBlue10</item>
-        <item name="wdWarningColor50">@color/colorNavyBlue50</item>
+        <item name="wdWarningColor">@color/colorOrange</item>
+        <item name="wdWarningColor10">@color/colorOrange10</item>
+        <item name="wdWarningColor50">@color/colorOrange50</item>
     </style>
 
     <style name="AppTheme.WindLauncher">
