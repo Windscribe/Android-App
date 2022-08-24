@@ -52,7 +52,12 @@ class RobertSettingsActivity : BaseActivity(), RobertSettingsView {
         setActivityModule(ActivityModule(this, this)).inject(this)
         setContentLayout(R.layout.activity_robert_settings, true)
         presenter.init()
-        UiUtil.setupOnTouchListener(container = clCustomRules, textView = customRulesLabel)
+        customRulesArrow.tag = R.drawable.link_arrow_icon
+        UiUtil.setupOnTouchListener(
+            container = clCustomRules,
+            iconView = customRulesArrow,
+            textView = customRulesLabel
+        )
     }
 
     override fun onDestroy() {

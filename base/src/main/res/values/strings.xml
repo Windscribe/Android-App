@@ -494,4 +494,8 @@ last chosen location.</string>
     <string name="referred_by_someone">Referred by someone?</string>
     <string name="sign_up">Create Account</string>
     <string name="please_provide_email_first">Please provide email first.</string>
+    <string name="please_confirm_email_first">Please confirm email first.</string>
+    <string name="share_invite_link">Share Invite Link</string>
+    <string name="share_windscribe_with_a_friend">Share Windscribe with a friend!</string>
+    <string name="first_reason_to_use_share">You will both get an additional 1GB per month when they sign up.</string>
 </resources>

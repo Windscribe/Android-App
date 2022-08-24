@@ -117,7 +117,7 @@
                 style="@style/MenuAttentionLabel"
                 android:text="@string/resend"
                 android:fontFamily="@font/ibm_plex_sans_bold"
-                android:textColor="@color/colorYellow"
+                android:textColor="?attr/wdWarningColor"
                 android:layout_margin="0dp"
                 android:textSize="@dimen/text_size_14"
                 app:layout_constraintBottom_toBottomOf="parent"

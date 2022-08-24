@@ -5,6 +5,8 @@ package com.windscribe.mobile.di
 
 import android.animation.ArgbEvaluator
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentFactory
 import com.windscribe.mobile.about.AboutPresenter
 import com.windscribe.mobile.about.AboutPresenterImpl
 import com.windscribe.mobile.about.AboutView
@@ -49,6 +51,7 @@ import com.windscribe.mobile.newsfeedactivity.NewsFeedView
 import com.windscribe.mobile.robert.RobertSettingsPresenter
 import com.windscribe.mobile.robert.RobertSettingsPresenterImpl
 import com.windscribe.mobile.robert.RobertSettingsView
+import com.windscribe.mobile.share.ShareAppLink
 import com.windscribe.mobile.splash.SplashPresenter
 import com.windscribe.mobile.splash.SplashPresenterImpl
 import com.windscribe.mobile.splash.SplashView
@@ -84,6 +87,7 @@ import com.windscribe.vpn.workers.WindScribeWorkManager
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
+import javax.inject.Inject
 import javax.inject.Named
 
 @Module
@@ -476,5 +480,22 @@ class ActivityModule {
             decoyTrafficController,
             trafficCounter
         )
+    }
+
+    @Provides
+    @PerActivity
+    fun providesCustomFragmentFactory(activityInteractor: ActivityInteractor): CustomFragmentFactory {
+        return CustomFragmentFactory(activityInteractor)
+    }
+
+    @PerActivity
+    class CustomFragmentFactory @Inject constructor(private val activityInteractor: ActivityInteractor) :
+        FragmentFactory() {
+        override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
+            return when (loadFragmentClass(classLoader, className)) {
+                ShareAppLink::class.java -> ShareAppLink(activityInteractor)
+                else -> super.instantiate(classLoader, className)
+            }
+        }
     }
 }
