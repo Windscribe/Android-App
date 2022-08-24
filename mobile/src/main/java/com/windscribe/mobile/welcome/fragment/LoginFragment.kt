@@ -96,7 +96,7 @@ class LoginFragment : Fragment(), TextWatcher, WelcomeActivityCallback {
     }
 
     override fun clearInputErrors() {
-        twoFaDescriptionView.text = getString(R.string.two_fa_description)
+        twoFaDescriptionView.text = ""
         twoFaDescriptionView.setTextColor(resources.getColor(R.color.colorWhite50))
         twoFaErrorView.visibility = View.INVISIBLE
         usernameErrorView.visibility = View.INVISIBLE
