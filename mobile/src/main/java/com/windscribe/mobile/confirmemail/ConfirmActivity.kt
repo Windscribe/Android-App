@@ -35,7 +35,7 @@ class ConfirmActivity : BaseActivity(), ConfirmEmailView {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
         setContentLayout(R.layout.activity_confirm, true)
-        presenter.init()
+        presenter.init(intent.getStringExtra(ReasonToConfirmEmail))
     }
 
     override fun onDestroy() {
@@ -77,6 +77,7 @@ class ConfirmActivity : BaseActivity(), ConfirmEmailView {
     }
 
     companion object {
+        const val ReasonToConfirmEmail = "reasonToConfirmEmail"
         @JvmStatic
         fun getStartIntent(context: Context?): Intent {
             return Intent(context, ConfirmActivity::class.java)

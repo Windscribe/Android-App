@@ -17,9 +17,9 @@ import com.windscribe.vpn.model.User
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
 class MainMenuPresenterImpl @Inject constructor(
     private var mainMenuView: MainMenuView,
@@ -112,10 +112,15 @@ class MainMenuPresenterImpl @Inject constructor(
         mainMenuView.showLogoutAlert()
     }
 
+    override fun onReferForDataClick() {
+        mainMenuView.showShareLinkDialog()
+    }
+
     override fun onUpgradeClicked() {
         mPresenterLog.info("Showing upgrade dialog to the user...")
         mainMenuView.openUpgradeActivity()
     }
+
     override fun setLayoutFromApiSession() {
         interactor.getCompositeDisposable().add(
             interactor.getApiCallManager()
