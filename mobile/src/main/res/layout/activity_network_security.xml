@@ -80,11 +80,17 @@
             android:layout_marginTop="@dimen/reg_16dp"
             android:paddingStart="@dimen/padding_16"
             app:layout_constraintStart_toStartOf="@id/background"
+            app:layout_constraintEnd_toStartOf="@id/tv_current_protection"
+            android:layout_width="0dp"
+            android:singleLine="true"
+            android:gravity="start|center_vertical"
             app:layout_constraintTop_toBottomOf="@id/current_network_title" />
 
         <TextView
             android:id="@+id/tv_current_protection"
             style="@style/MenuItemLabelThree"
+            android:maxWidth="@dimen/reg_150dp"
+            android:singleLine="true"
             app:layout_constraintBottom_toBottomOf="@id/network_name"
             app:layout_constraintEnd_toStartOf="@id/img_network_protection_drop_down_btn"
             app:layout_constraintTop_toTopOf="@id/network_name" />
