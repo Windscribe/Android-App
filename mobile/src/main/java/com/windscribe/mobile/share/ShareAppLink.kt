@@ -9,11 +9,11 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ShareCompat
-import androidx.fragment.app.DialogFragment
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
 import com.windscribe.mobile.R
+import com.windscribe.mobile.base.BaseDialogFragment
 import com.windscribe.mobile.confirmemail.ConfirmActivity
 import com.windscribe.mobile.email.AddEmailActivity
 import com.windscribe.mobile.email.AddEmailActivity.Companion.finishAfterAddEmail
@@ -22,13 +22,16 @@ import com.windscribe.vpn.model.User
 import javax.inject.Inject
 
 class ShareAppLink @Inject constructor(private val activityInteractor: ActivityInteractor) :
-    DialogFragment() {
+    BaseDialogFragment() {
 
     @BindView(R.id.continue_btn)
     lateinit var continueButton: Button
 
     @BindView(R.id.error)
     lateinit var errorView: TextView
+
+    @BindView(R.id.nav_title)
+    lateinit var navTitle: TextView
 
     private var userEmailStatus: User.EmailStatus = User.EmailStatus.NoEmail
 
@@ -37,12 +40,14 @@ class ShareAppLink @Inject constructor(private val activityInteractor: ActivityI
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_share_app_link, container, false)
+        setViewWithCutout(view)
         ButterKnife.bind(this, view)
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        navTitle.visibility = View.INVISIBLE
         activityInteractor.getUserRepository().user.observe(this) {
             setupLayout(it.emailStatus)
         }
@@ -94,7 +99,7 @@ class ShareAppLink @Inject constructor(private val activityInteractor: ActivityI
         }
     }
 
-    @OnClick(R.id.backButton)
+    @OnClick(R.id.nav_button)
     fun onBackButtonClick() {
         activity?.onBackPressed()
     }
