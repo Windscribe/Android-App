@@ -128,6 +128,7 @@ interface PreferencesHelper {
     fun setUserAccountUpdateRequired(required: Boolean)
     fun setUserIntendedDisconnect(userIntendedDisconnect: Boolean)
     fun userIsInGhostMode(): Boolean
+    var alreadyShownShareAppLink: Boolean
 
     var fakeTrafficVolume:FakeTrafficVolume
 }
