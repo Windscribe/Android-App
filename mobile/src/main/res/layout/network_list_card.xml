@@ -14,10 +14,12 @@
         style="@style/MenuItemLabelTwo"
         android:textColor="?attr/wdSecondaryColor"
         android:layout_marginStart="@dimen/margin_16"
-        android:text="dfgdfgdg"
         android:padding="0dp"
         android:paddingStart="@dimen/padding_16"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/tv_current_protection"
+        android:layout_width="0dp"
+        android:gravity="start|center_vertical"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
