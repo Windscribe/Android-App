@@ -27,6 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="@dimen/margin_32"
+        android:layout_marginBottom="@dimen/margin_16"
         app:layout_constraintBottom_toTopOf="@id/loginButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -190,7 +191,7 @@
                 android:id="@+id/first_referral_description_prefix"
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginStart="@dimen/margin_32"
-                android:layout_marginTop="@dimen/margin_8"
+                android:layout_marginTop="@dimen/margin_16"
                 app:layout_constraintTop_toBottomOf="@id/referral_title"
                 style="@style/ForwardArrowIcon"
                 android:src="@drawable/ic_check"
@@ -238,7 +239,7 @@
                 app:layout_constraintStart_toEndOf="@id/first_referral_description_prefix"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/second_referral_description_prefix"
-                android:text="@string/second_reason_to_use_referral"
+                android:text="@string/if_they_go_pro_you_ll_go_pro_to"
                 android:textSize="@dimen/text_size_12"
                 android:includeFontPadding="false"
                 android:textColor="?attr/wdSecondaryColor"
@@ -261,6 +262,23 @@
                 android:textColor="@color/colorRed"
                 android:textColorHint="?attr/wdSecondaryColor"
                 android:visibility="gone" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/confirm_email_explainer"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/referral_username"
+                android:text="@string/you_must_confirm_your_email_in_order_for_the_benefits_above_to_apply_to_you_and_the_referrer"
+                android:textSize="@dimen/text_size_12"
+                android:visibility="gone"
+                android:includeFontPadding="false"
+                android:textColor="?attr/wdSecondaryColor"
+                android:fontFamily="@font/ibm_plex_sans_regular"
+                android:layout_marginStart="@dimen/margin_32"
+                android:layout_marginEnd="@dimen/margin_32"
+                android:layout_marginTop="@dimen/margin_16" />
 
             <ImageView
                 android:id="@+id/bottom_focus"

@@ -1,6 +1,5 @@
 package com.windscribe.mobile.share
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,10 +13,7 @@ import butterknife.ButterKnife
 import butterknife.OnClick
 import com.windscribe.mobile.R
 import com.windscribe.mobile.base.BaseDialogFragment
-import com.windscribe.mobile.email.AddEmailActivity
-import com.windscribe.mobile.email.AddEmailActivity.Companion.finishAfterAddEmail
 import com.windscribe.vpn.ActivityInteractor
-import com.windscribe.vpn.model.User
 import javax.inject.Inject
 
 class ShareAppLink @Inject constructor(private val activityInteractor: ActivityInteractor) :
@@ -26,13 +22,8 @@ class ShareAppLink @Inject constructor(private val activityInteractor: ActivityI
     @BindView(R.id.continue_btn)
     lateinit var continueButton: Button
 
-    @BindView(R.id.error)
-    lateinit var errorView: TextView
-
     @BindView(R.id.nav_title)
     lateinit var navTitle: TextView
-
-    private var userEmailStatus: User.EmailStatus = User.EmailStatus.NoEmail
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,41 +39,17 @@ class ShareAppLink @Inject constructor(private val activityInteractor: ActivityI
         super.onViewCreated(view, savedInstanceState)
         activityInteractor.getAppPreferenceInterface().alreadyShownShareAppLink = true
         navTitle.visibility = View.INVISIBLE
-        activityInteractor.getUserRepository().user.observe(this) {
-            setupLayout(it.emailStatus)
-        }
-    }
-
-    private fun setupLayout(userEmailStatus: User.EmailStatus) {
-        this.userEmailStatus = userEmailStatus
-        when (userEmailStatus) {
-            User.EmailStatus.NoEmail -> {
-                errorView.visibility = View.VISIBLE
-                continueButton.text = getString(R.string.add_email)
-            }
-            User.EmailStatus.EmailProvided, User.EmailStatus.Confirmed -> {
-                errorView.visibility = View.GONE
-                continueButton.text = getString(R.string.share_invite_link)
-            }
-        }
     }
 
     @OnClick(R.id.continue_btn)
     fun onContinueClick() {
-        when (userEmailStatus) {
-            User.EmailStatus.NoEmail -> {
-                val intent = Intent(context, AddEmailActivity::class.java)
-                intent.putExtra(finishAfterAddEmail, true)
-                startActivity(intent)
-            }
-            User.EmailStatus.EmailProvided, User.EmailStatus.Confirmed -> {
-                val launchActivity = activity as AppCompatActivity
-                ShareCompat.IntentBuilder(launchActivity)
-                    .setType("text/plain")
-                    .setChooserTitle("Share App")
-                    .setText("http://play.google.com/store/apps/details?id=" + launchActivity.packageName)
-                    .startChooser()
-            }
+        activityInteractor.getUserRepository().user.value?.let {
+            val launchActivity = activity as AppCompatActivity
+            ShareCompat.IntentBuilder(launchActivity)
+                .setType("text/plain")
+                .setChooserTitle("Share App")
+                .setText("${it.userName} is inviting you to join Windscribe. Provide their username at signup and you’ll both get 1gb of free data added to your accounts. If you go pro, they’ll go pro too!\nhttps://play.google.com/store/apps/details?id=" + launchActivity.packageName)
+                .startChooser()
         }
     }
 
