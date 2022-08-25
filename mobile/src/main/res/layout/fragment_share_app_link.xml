@@ -5,14 +5,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     style="@style/MatchMatchContainer"
-    android:elevation="6.0dp"
-    tools:context=".share.ShareAppLink">
+    android:clickable="true"
+    android:elevation="3.0dp"
+    tools:context=".share.ShareAppLink"
+    android:focusable="true">
 
     <include layout="@layout/nav_bar" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
-        app:layout_constraintWidth_percent=".80"
+        app:layout_constraintWidth_percent=".83"
         app:layout_constraintWidth_max="350dp"
         android:layout_height="wrap_content"
         android:id="@+id/container"
@@ -91,7 +93,7 @@
             app:layout_constraintStart_toEndOf="@id/first_referral_description_prefix"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/second_referral_description_prefix"
-            android:text="@string/second_reason_to_use_referral"
+            android:text="@string/if_they_go_pro_you_ll_go_pro_to"
             android:textSize="@dimen/text_size_12"
             android:includeFontPadding="false"
             android:textColor="?attr/wdSecondaryColor"
@@ -99,33 +101,33 @@
             android:layout_marginStart="@dimen/margin_16"
             android:layout_marginEnd="@dimen/margin_16" />
 
-        <TextView
-            style="@style/titleText"
-            android:id="@+id/error"
-            android:fontFamily="@font/ibm_plex_sans_regular"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/second_referral_description"
-            android:layout_marginTop="@dimen/margin_48"
-            android:hint="@string/referral_username"
-            android:textSize="@dimen/text_size_16"
-            android:text="@string/please_provide_email_first"
-            android:textColor="@color/colorRed"
-            android:visibility="gone"
-            android:textColorHint="?attr/wdSecondaryColor" />
-
         <Button
             style="@style/NextButton"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/error"
-            android:layout_marginTop="@dimen/margin_16"
+            app:layout_constraintTop_toBottomOf="@id/second_referral_description"
+            android:layout_marginTop="@dimen/margin_48"
             android:enabled="true"
             android:text="@string/share_invite_link"
             android:layout_marginStart="0dp"
             android:layout_marginEnd="0dp"
-            app:layout_goneMarginTop="@dimen/margin_48"
             android:id="@+id/continue_btn" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/confirm_email_explainer"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/continue_btn"
+            android:text="@string/referee_must_provide_your_username_at_sign_up_and_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account"
+            android:textSize="@dimen/text_size_12"
+            android:includeFontPadding="false"
+            android:textColor="?attr/wdSecondaryColor"
+            android:fontFamily="@font/ibm_plex_sans_regular"
+            android:layout_marginStart="@dimen/margin_32"
+            android:layout_marginEnd="@dimen/margin_32"
+            android:layout_marginTop="@dimen/margin_48" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

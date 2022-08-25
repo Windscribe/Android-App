@@ -16,7 +16,10 @@ import android.widget.*
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.fragment.app.Fragment
-import butterknife.*
+import butterknife.BindView
+import butterknife.ButterKnife
+import butterknife.OnCheckedChanged
+import butterknife.OnClick
 import com.windscribe.mobile.R
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -78,6 +81,9 @@ class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
 
     @BindView(R.id.referral_username)
     lateinit var referralUsernameEditText: AppCompatEditText
+
+    @BindView(R.id.confirm_email_explainer)
+    lateinit var confirmEmailExplainer: TextView
 
     @BindView(R.id.scrollable_container)
     lateinit var scrollableContainer: ScrollView
@@ -241,6 +247,8 @@ class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
             if (!showReferralViews) View.VISIBLE else View.GONE
         referralUsernameEditText.visibility =
             if (!showReferralViews) View.VISIBLE else View.GONE
+        confirmEmailExplainer.visibility =
+            if (!showReferralViews) View.VISIBLE else View.GONE
         showReferralViews = showReferralViews.not()
         if (showReferralViews) {
             bottomFocusView.requestFocus()
@@ -252,13 +260,6 @@ class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
     private fun hideReferralView() {
         referralTitle.visibility = View.GONE
         referralCollapseIcon.visibility = View.GONE
-    }
-
-    @OnFocusChange(R.id.referral_username)
-    fun focusChangedOnReferralUsername() {
-        if (referralUsernameEditText.hasFocus()) {
-            scrollableContainer.post { scrollableContainer.fullScroll(View.FOCUS_DOWN) }
-        }
     }
 
     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
