@@ -498,9 +498,10 @@ last chosen location.</string>
     <string name="share_invite_link">Share Invite Link</string>
     <string name="share_windscribe_with_a_friend">Share Windscribe with a friend!</string>
     <string name="first_reason_to_use_share">You will both get an additional 1GB per month when they sign up.</string>
-    <string name="if_they_go_pro_you_ll_go_pro_to">If they go Pro, you’ll go Pro to!</string>
+    <string name="if_they_go_pro_you_ll_go_pro_to">If they go Pro, you’ll go Pro too!</string>
     <string name="referee_must_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">Referee must confirm their email in order for the benefits above to apply to your account.</string>
     <string name="you_must_confirm_your_email_in_order_for_the_benefits_above_to_apply_to_you_and_the_referrer">You must confirm your email in order for the benefits above to apply to you and the referrer.</string>
     <string name="referee_must_provide_your_username_at_sign_up_and_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">Referee must provide your username at sign up and confirm their email in order for the benefits above to apply to your account.</string>
+    <string name="if_you_go_pro_they_ll_go_pro_too">If you go Pro, they’ll go Pro too!</string>
 
 </resources>
