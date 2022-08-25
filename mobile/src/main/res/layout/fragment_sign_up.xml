@@ -239,7 +239,7 @@
                 app:layout_constraintStart_toEndOf="@id/first_referral_description_prefix"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/second_referral_description_prefix"
-                android:text="@string/if_they_go_pro_you_ll_go_pro_to"
+                android:text="@string/if_you_go_pro_they_ll_go_pro_too"
                 android:textSize="@dimen/text_size_12"
                 android:includeFontPadding="false"
                 android:textColor="?attr/wdSecondaryColor"

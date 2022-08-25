@@ -154,7 +154,9 @@ class MainMenuPresenterImpl @Inject constructor(
 
     override fun observeUserChange(mainMenuActivity: MainMenuActivity) {
         mainMenuView.setActivityTitle(interactor.getResourceString(R.string.preferences))
-        interactor.getUserRepository().user.observe(mainMenuActivity) { user -> setLayoutFromUserSession(user) }
+        interactor.getUserRepository().user.observe(mainMenuActivity) { user ->
+            setLayoutFromUserSession(user)
+        }
     }
 
     override fun setTheme(context: Context) {
@@ -191,13 +193,16 @@ class MainMenuPresenterImpl @Inject constructor(
             user.dataLeft?.let {
                 val dataRemaining = interactor.getDataLeftString(R.string.data_left, it)
                 mainMenuView.setupLayoutForFreeUser(
-                        dataRemaining,
-                        interactor.getResourceString(R.string.get_more_data),
-                        getDataRemainingColor(it, user.maxData)
+                    dataRemaining,
+                    interactor.getResourceString(R.string.get_more_data),
+                    getDataRemainingColor(it, user.maxData)
                 )
             }
         } else {
             mainMenuView.setupLayoutForPremiumUser()
+        }
+        if (user.isGhost.not() && user.isPro.not()) {
+            mainMenuView.showShareLinkOption()
         }
         setupActionButton(user)
     }

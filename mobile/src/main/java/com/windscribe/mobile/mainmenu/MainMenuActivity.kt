@@ -104,9 +104,11 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
     @BindView(R.id.cl_refer_for_data)
     lateinit var referForDataView: IconLinkView
 
+    @BindView(R.id.divider_refer_for_data)
+    lateinit var referForDataDivider: ImageView
+
     @Inject
     lateinit var fragmentFactory: ActivityModule.CustomFragmentFactory
-
 
     private val logger = LoggerFactory.getLogger(TAG)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -354,6 +356,11 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
         supportFragmentManager.beginTransaction().add(R.id.cl_main_menu, fragment)
             .addToBackStack(fragment::javaClass.name)
             .commit()
+    }
+
+    override fun showShareLinkOption() {
+        referForDataView.visibility = View.VISIBLE
+        referForDataDivider.visibility = View.VISIBLE
     }
 
     companion object {

@@ -111,6 +111,7 @@
             android:id="@+id/cl_refer_for_data"
             android:layout_width="match_parent"
             android:layout_height="@dimen/reg_50dp"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider_robert"
@@ -121,6 +122,7 @@
         <ImageView
             android:id="@+id/divider_refer_for_data"
             style="@style/divider"
+            android:visibility="gone"
             android:layout_marginStart="@dimen/reg_16dp"
             android:layout_marginTop="0dp"
             android:layout_marginBottom="0dp"
