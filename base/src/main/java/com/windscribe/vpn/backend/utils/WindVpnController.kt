@@ -61,7 +61,6 @@ open class WindVpnController @Inject constructor(
 
     private val logger = LoggerFactory.getLogger("vpn_backend")
     private var disconnectTask: Job? = null
-    private var isConnecting = false
 
     private suspend fun createVPNProfile(config: ProtocolConfig): String {
         return when (WindUtilities.getSourceTypeBlocking()) {
@@ -198,8 +197,6 @@ open class WindVpnController @Inject constructor(
      * @param alwaysOnVPN if vpn service was launched by system.
      */
     open fun connect(alwaysOnVPN: Boolean = false) {
-        if (isConnecting) return
-         isConnecting = true
         when {
             // Disconnect from VPN and connect to next selected location.
             vpnBackendHolder.activeBackend != null -> {
@@ -236,9 +233,7 @@ open class WindVpnController @Inject constructor(
                 logger.debug("Profile: $profileToConnect")
                 logger.debug("Launching VPN Services.")
                 launchVPNService()
-                isConnecting = false
             } catch (e: Exception) {
-                isConnecting = false
                 scope.launch {
                     if (e is InvalidVPNConfigException) {
                         disconnect().invokeOnCompletion {
@@ -287,9 +282,6 @@ open class WindVpnController @Inject constructor(
      * @return Job A cancellable Job
      * */
     fun disconnect(waitForNextProtocol: Boolean = false, reconnecting: Boolean = false): Job {
-        if(disconnectTask?.isActive == true){
-            return disconnectTask?.job ?: scope.launch {}
-        }
         if(waitForNextProtocol && isServiceRunning(NetworkWhiteListService::class.java) && vpnConnectionStateManager.state.value.status == Status.UnsecuredNetwork){
             return scope.launch {}
         }
