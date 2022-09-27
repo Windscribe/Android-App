@@ -2144,13 +2144,17 @@ class WindscribeActivity :
     }
 
     override fun showShareLinkDialog() {
-        val fragment = supportFragmentManager.fragmentFactory.instantiate(
-            ShareAppLink::class.java.classLoader!!,
-            ShareAppLink::class.java.name
-        )
-        supportFragmentManager.beginTransaction().add(R.id.cl_windscribe_main, fragment)
-            .addToBackStack(fragment::javaClass.name)
-            .commit()
+        try {
+            val fragment = supportFragmentManager.fragmentFactory.instantiate(
+                ShareAppLink::class.java.classLoader!!,
+                ShareAppLink::class.java.name
+            )
+            supportFragmentManager.beginTransaction().add(R.id.cl_windscribe_main, fragment)
+                .addToBackStack(fragment::javaClass.name)
+                .commit()
+        } catch (e: IllegalStateException) {
+            logger.debug("unable to open share dialog.")
+        }
     }
 
     companion object {
