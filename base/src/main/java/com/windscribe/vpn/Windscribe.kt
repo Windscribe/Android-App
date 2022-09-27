@@ -38,7 +38,6 @@ import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import org.slf4j.LoggerFactory
 import org.strongswan.android.logic.StrongSwanApplication
 import java.util.*
@@ -188,12 +187,6 @@ open class Windscribe : MultiDexApplication() {
                 preference.removeResponseData(PreferencesKeyConstants.SESSION_HASH)
             }
         }
-    }
-
-    override fun onLowMemory() {
-        super.onLowMemory()
-        applicationScope.cancel("Releasing system resources.")
-        applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }
 
     /**

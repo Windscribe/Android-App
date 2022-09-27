@@ -201,6 +201,7 @@ open class WindVpnController @Inject constructor(
             // Disconnect from VPN and connect to next selected location.
             vpnBackendHolder.activeBackend != null -> {
                 interactor.preferenceHelper.isReconnecting = true
+                logger.debug("Disconnecting prior to connect.")
                 disconnect(reconnecting = true).invokeOnCompletion {
                     createProfileAndLaunchService(alwaysOnVPN).invokeOnCompletion {
                         logger.debug("Connect job completed")
@@ -282,20 +283,21 @@ open class WindVpnController @Inject constructor(
      * @return Job A cancellable Job
      * */
     fun disconnect(waitForNextProtocol: Boolean = false, reconnecting: Boolean = false): Job {
-        if(waitForNextProtocol && isServiceRunning(NetworkWhiteListService::class.java) && vpnConnectionStateManager.state.value.status == Status.UnsecuredNetwork){
-            return scope.launch {}
-        }
         logger.debug("Disconnecting from VPN: Waiting for next protocol: $waitForNextProtocol Reconnecting: $reconnecting")
         disconnectTask = scope.launch {
             if (WindStunnelUtility.isStunnelRunning) {
+                logger.debug("stopping stunnel service.")
                 WindStunnelUtility.stopLocalTunFromAppContext(appContext)
             }
             if (isServiceRunning(NetworkWhiteListService::class.java)) {
+                logger.debug("stopping whitelist service.")
                 stopNetworkWhiteListService()
             }
+            logger.debug("Requesting vpn backend disconnect.")
             vpnBackendHolder.disconnect()
             // Force disconnect if state did not change to disconnect
             if (reconnecting.not()) {
+                logger.debug("Reconnecting is false checking for force disconnect.")
                 interactor.preferenceHelper.whitelistOverride = false
                 try {
                     withTimeout(500) {
@@ -316,10 +318,12 @@ open class WindVpnController @Inject constructor(
 
     private fun checkForReconnect(waitForNextProtocol: Boolean){
         if (waitForNextProtocol) {
+            logger.debug("Wait for next protocol is true starting network white list service.")
             interactor.preferenceHelper.globalUserConnectionPreference = true
             vpnConnectionStateManager.setState(VPNState(Status.UnsecuredNetwork))
             NetworkWhiteListService.startService(appContext)
         } else {
+            logger.debug("Sending force disconnected state to UI.")
             vpnConnectionStateManager.setState(VPNState(Status.Disconnected))
         }
     }
