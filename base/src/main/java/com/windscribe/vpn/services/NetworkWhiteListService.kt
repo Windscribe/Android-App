@@ -16,16 +16,15 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.VPNState.Status.UnsecuredNetwork
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
-import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
 class NetworkWhiteListService : Service(), NetworkInfoListener {
 
@@ -77,7 +76,7 @@ class NetworkWhiteListService : Service(), NetworkInfoListener {
             return
         }
         networkInfo?.let {
-            logger.debug("SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelist override: ${interactor.preferenceHelper.whitelistOverride}")
+            logger.debug("Network white list service > SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelist override: ${interactor.preferenceHelper.whitelistOverride}")
             if (!it.isAutoSecureOn) {
                 onTrustedNetworkFound()
             } else {
