@@ -45,6 +45,7 @@ import com.windscribe.vpn.constants.RateDialogConstants
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.constants.UserStatusConstants.ACCOUNT_STATUS_OK
 import com.windscribe.vpn.errormodel.WindError.Companion.instance
+import com.windscribe.vpn.exceptions.BackgroundLocationPermissionNotAvailable
 import com.windscribe.vpn.exceptions.NoLocationPermissionException
 import com.windscribe.vpn.exceptions.NoNetworkException
 import com.windscribe.vpn.exceptions.WindScribeException
@@ -1702,10 +1703,15 @@ class WindscribePresenterImpl @Inject constructor(
                         )
             }
         } catch (e: WindScribeException) {
+            logger.debug(e.message)
             when (e) {
                 is NoNetworkException -> {
                     windscribeView.setNetworkLayout(null, NetworkLayoutState.CLOSED, false)
                     windscribeView.showToast("No Network")
+                }
+                is BackgroundLocationPermissionNotAvailable -> {
+                    windscribeView.setNetworkLayout(null, NetworkLayoutState.CLOSED, false)
+                    windscribeView.getLocationPermission(BaseActivity.NETWORK_NAME_PERMISSION)
                 }
                 is NoLocationPermissionException -> {
                     windscribeView.setNetworkLayout(null, NetworkLayoutState.CLOSED, false)

@@ -7,11 +7,11 @@ package com.windscribe.vpn.billing;
 import androidx.annotation.Nullable;
 
 import com.amazon.device.iap.model.Product;
-import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.ProductDetails;
 
 public interface BillingFragmentCallback {
 
-    void onContinuePlanClick(@Nullable SkuDetails selectedSku);
+    void onContinuePlanClick(@Nullable ProductDetails productDetails, int selectedIndex);
 
     void onContinuePlanClick(Product selectedSku);
 

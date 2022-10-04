@@ -29,19 +29,21 @@ import static com.windscribe.vpn.constants.BillingConstants.PURCHASED_ITEM_NULL;
 import static com.windscribe.vpn.constants.BillingConstants.PURCHASE_TOKEN;
 import static com.windscribe.vpn.constants.BillingConstants.PURCHASE_TYPE;
 
-import android.content.Intent;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.amazon.device.iap.PurchasingService;
 import com.amazon.device.iap.model.FulfillmentResult;
 import com.amazon.device.iap.model.Product;
+import com.amazon.device.iap.model.ProductType;
 import com.amazon.device.iap.model.PurchaseResponse;
 import com.amazon.device.iap.model.Receipt;
 import com.amazon.device.iap.model.UserData;
+import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.windscribe.mobile.R;
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity.BillingType;
@@ -70,8 +72,6 @@ import com.windscribe.vpn.exceptions.UnknownException;
 import com.windscribe.vpn.model.User;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +80,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.inject.Inject;
 
@@ -172,7 +173,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
         }
     }
 
-    public void launchPurchaseFlowWithAccountID(SkuDetails skuDetails) {
+    public void launchPurchaseFlowWithAccountID(ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParams) {
         mUpgradeInteractor.getCompositeDisposable().add(mUpgradeInteractor.getUserSessionData()
                 .flatMap((Function<UserSessionResponse, SingleSource<String>>)
                         userSessionResponse -> Single.fromCallable(() -> {
@@ -187,13 +188,13 @@ public class UpgradePresenterImpl implements UpgradePresenter {
                     @Override
                     public void onError(@NonNull final Throwable e) {
                         presenterLog.info("Failed to generate encrypted account ID.");
-                        mUpgradeView.startPurchaseFlow(skuDetails, null);
+                        mUpgradeView.startPurchaseFlow(productDetailsParams, null);
                     }
 
                     @Override
                     public void onSuccess(@NonNull final String accountID) {
                         presenterLog.info("Generated encrypted account ID.");
-                        mUpgradeView.startPurchaseFlow(skuDetails, accountID);
+                        mUpgradeView.startPurchaseFlow(productDetailsParams, accountID);
                     }
                 }));
     }
@@ -269,11 +270,11 @@ public class UpgradePresenterImpl implements UpgradePresenter {
     }
 
     @Override
-    public void onMonthlyItemClicked(@Nullable SkuDetails monthlySKU) {
-        if (monthlySKU != null) {
+    public void onMonthlyItemClicked(@Nullable ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParams) {
+        if (productDetailsParams != null) {
             //Start purchase flow
             presenterLog.info("Starting purchase flow...");
-            launchPurchaseFlowWithAccountID(monthlySKU);
+            launchPurchaseFlowWithAccountID(productDetailsParams);
         } else {
             presenterLog.debug("sku returned null! This should not happen... Notify user to retry...");
             mUpgradeView.showToast(
@@ -333,7 +334,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
             Map<String, String> purchaseMap = new HashMap<>();
             //Add purchase maps
             purchaseMap.put(GP_PACKAGE_NAME, itemPurchased.getPackageName());
-            purchaseMap.put(GP_PRODUCT_ID, itemPurchased.getSku());
+            purchaseMap.put(GP_PRODUCT_ID, itemPurchased.getProducts().get(0));
             purchaseMap.put(PURCHASE_TOKEN, itemPurchased.getPurchaseToken());
             presenterLog.info(purchaseMap.toString());
             mUpgradeInteractor.getCompositeDisposable().add(
@@ -443,18 +444,18 @@ public class UpgradePresenterImpl implements UpgradePresenter {
     }
 
     @Override
-    public void onSkuDetailsReceived(int responseCode, final List<SkuDetails> skuDetailsList) {
+    public void onSkuDetailsReceived(int responseCode, final List<ProductDetails> productDetails) {
         if (mUpgradeInteractor == null | mUpgradeView == null) {
             return;
         }
-        if (responseCode == OK && skuDetailsList.size() > 0) {
+        if (responseCode == OK && productDetails.size() > 0) {
             mUpgradeInteractor.getCompositeDisposable().add(
                     mUpgradeInteractor.getUserSessionData()
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(userSession -> onUserSessionResponse(skuDetailsList, userSession),
-                                    throwable -> onUserSessionResponseError(skuDetailsList, throwable)));
-        } else if (skuDetailsList.size() == 0) {
+                            .subscribe(userSession -> onUserSessionResponse(productDetails, userSession),
+                                    throwable -> onUserSessionResponseError(productDetails, throwable)));
+        } else if (productDetails.size() == 0) {
             presenterLog.debug("Failed to find requested products from the store.");
             mUpgradeView.showBillingErrorDialog("Promo is not valid anymore.");
         } else {
@@ -623,7 +624,20 @@ public class UpgradePresenterImpl implements UpgradePresenter {
                     mUpgradeView.getProducts(skuList);
                 } else {
                     presenterLog.debug("Querying google products");
-                    mUpgradeView.querySkuDetails(skuList, billingPlanResponse.getDataClass().getPlansList().get(0).isReBill());
+                    List<QueryProductDetailsParams.Product> products = new ArrayList<>();
+                    for (String sku : skuList) {
+                        String planType = mobileBillingPlans.stream().filter(billingPlans -> Objects.equals(billingPlans.getExtId(), sku)).findFirst().map(new java.util.function.Function<BillingPlanResponse.BillingPlans, String>() {
+                            @Override
+                            public String apply(BillingPlanResponse.BillingPlans billingPlans) {
+                                return billingPlans.isReBill() ? "subs" : "inapp";
+                            }
+                        }).orElse(ProductType.SUBSCRIPTION.name());
+                        products.add(QueryProductDetailsParams.Product.newBuilder()
+                                .setProductType(planType)
+                                .setProductId(sku)
+                                .build());
+                    }
+                    mUpgradeView.querySkuDetails(products);
                 }
             } else if (mPushNotificationAction != null) {
                 mUpgradeView.showBillingErrorDialog("Promo is not valid anymore.");
@@ -645,25 +659,25 @@ public class UpgradePresenterImpl implements UpgradePresenter {
         mUpgradeView.showBillingErrorDialog("Failed to get billing plans check your network connection.");
     }
 
-    private void onUserSessionResponse(List<SkuDetails> skuDetailsList, UserSessionResponse userSessionResponse) {
+    private void onUserSessionResponse(List<ProductDetails> productDetails, UserSessionResponse userSessionResponse) {
         presenterLog.info("Showing upgrade dialog to the user...");
         if (mUpgradeView != null) {
             mUpgradeView.hideProgressBar();
             mUpgradeView.showBillingDialog(
-                    new GoogleProducts(skuDetailsList, mobileBillingPlans, mPushNotificationAction),
+                    new GoogleProducts(productDetails, mobileBillingPlans, mPushNotificationAction),
                     userSessionResponse.getUserEmail() != null,
                     userSessionResponse.getEmailStatus()
                             == UserStatusConstants.EMAIL_STATUS_CONFIRMED);
         }
     }
 
-    private void onUserSessionResponseError(List<SkuDetails> skuDetailsList, Throwable throwable) {
+    private void onUserSessionResponseError(List<ProductDetails> productDetails, Throwable throwable) {
         //We failed to get the data remaining
         presenterLog.debug("Error reading user session response..." + throwable.getLocalizedMessage());
         if (mUpgradeView != null) {
             mUpgradeView.hideProgressBar();
             mUpgradeView.showBillingDialog(
-                    new GoogleProducts(skuDetailsList, mobileBillingPlans, mPushNotificationAction), true, true);
+                    new GoogleProducts(productDetails, mobileBillingPlans, mPushNotificationAction), true, true);
         }
     }
 

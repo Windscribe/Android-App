@@ -4,8 +4,10 @@
 package com.windscribe.tv.upgrade
 
 import com.amazon.device.iap.model.Product
+import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.SkuDetails
+import com.android.billingclient.api.QueryProductDetailsParams
+import com.google.common.collect.ImmutableList
 import com.windscribe.vpn.billing.WindscribeInAppProduct
 
 interface UpgradeView {
@@ -19,7 +21,7 @@ interface UpgradeView {
     val isBillingProcessFinished: Boolean
     fun onPurchaseCancelled()
     fun onPurchaseSuccessful(purchases: List<Purchase>)
-    fun querySkuDetails(products: List<String>, sub: Boolean)
+    fun querySkuDetails(products: List<QueryProductDetailsParams.Product>)
     fun restorePurchase()
     fun setBillingProcessStatus(processFinished: Boolean)
     fun setEmailStatus(isEmailAdded: Boolean, isEmailConfirmed: Boolean)
@@ -31,7 +33,11 @@ interface UpgradeView {
     fun showBillingErrorDialog(errorMessage: String)
     fun showProgressBar(message: String)
     fun showToast(toastText: String)
-    fun startPurchaseFlow(skuDetails: SkuDetails, accountID: String?)
+    fun startPurchaseFlow(
+        productDetailsParams: ImmutableList<BillingFlowParams.ProductDetailsParams>,
+        accountID: String?
+    )
+
     fun startPurchaseFlow(product: Product)
     fun startSignUpActivity()
     fun startWindscribeActivity()
