@@ -7,8 +7,10 @@ package com.windscribe.mobile.upgradeactivity;
 import androidx.annotation.Nullable;
 
 import com.amazon.device.iap.model.Product;
+import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.google.common.collect.ImmutableList;
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity.BillingType;
 import com.windscribe.vpn.billing.WindscribeInAppProduct;
 
@@ -37,7 +39,7 @@ public interface UpgradeView {
     //Called after onPurchaseUpdate returns successful
     void onPurchaseSuccessful(@Nullable List<Purchase> purchases);
 
-    void querySkuDetails(List<String> products, boolean sub);
+    void querySkuDetails(List<QueryProductDetailsParams.Product> products);
 
     void restorePurchase();
 
@@ -54,7 +56,7 @@ public interface UpgradeView {
 
     void showToast(String toastText);
 
-    void startPurchaseFlow(SkuDetails skuDetails, String accountID);
+    void startPurchaseFlow(ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParams, String accountID);
 
     void startPurchaseFlow(Product product);
 

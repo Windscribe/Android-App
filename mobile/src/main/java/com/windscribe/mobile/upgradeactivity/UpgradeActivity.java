@@ -5,7 +5,6 @@
 package com.windscribe.mobile.upgradeactivity;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-import static com.android.billingclient.api.BillingClient.SkuType.INAPP;
 import static com.windscribe.mobile.email.AddEmailActivity.goToHomeAfterFinish;
 import static com.windscribe.vpn.Windscribe.appContext;
 import static com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA;
@@ -21,8 +20,10 @@ import androidx.fragment.app.Fragment;
 
 import com.amazon.device.iap.model.Product;
 import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.google.common.collect.ImmutableList;
 import com.windscribe.mobile.R;
 import com.windscribe.mobile.base.BaseActivity;
 import com.windscribe.mobile.confirmemail.ConfirmActivity;
@@ -86,7 +87,7 @@ public class UpgradeActivity extends BaseActivity
 
     private final Logger mUpgradeLog = LoggerFactory.getLogger(TAG);
 
-    private SkuDetails selectedSkuDetails;
+    private ProductDetails selectedProductDetails;
 
     private Boolean upgradingFromWebsite = false;
 
@@ -196,15 +197,25 @@ public class UpgradeActivity extends BaseActivity
     }
 
     @Override
-    public void onContinuePlanClick(@Nullable SkuDetails selectedSkuDetails) {
-        if(selectedSkuDetails!=null){
+    public void onContinuePlanClick(@Nullable ProductDetails productDetails, int selectedIndex) {
+        if (productDetails != null) {
             mUpgradeLog.info("User clicked on plan item...");
-            String regionPlanUrl = mUpgradePresenter.regionalPlanIfAvailable(selectedSkuDetails.getSku());
-            if(regionPlanUrl!=null){
+            String regionPlanUrl = mUpgradePresenter.regionalPlanIfAvailable(productDetails.getProductId());
+            if (regionPlanUrl != null) {
                 mUpgradePresenter.onRegionalPlanSelected(regionPlanUrl);
-            }else{
-                this.selectedSkuDetails = selectedSkuDetails;
-                mUpgradePresenter.onMonthlyItemClicked(selectedSkuDetails);
+            } else {
+                this.selectedProductDetails = productDetails;
+                BillingFlowParams.ProductDetailsParams.Builder builder = BillingFlowParams.ProductDetailsParams.newBuilder();
+                builder.setProductDetails(productDetails);
+                if (productDetails.getSubscriptionOfferDetails() != null) {
+                    String offerToken = productDetails
+                            .getSubscriptionOfferDetails()
+                            .get(selectedIndex)
+                            .getOfferToken();
+                    builder.setOfferToken(offerToken);
+                }
+                ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParamsList = ImmutableList.of(builder.build());
+                mUpgradePresenter.onMonthlyItemClicked(productDetailsParamsList);
             }
         }
     }
@@ -230,7 +241,7 @@ public class UpgradeActivity extends BaseActivity
     public void onPurchaseSuccessful(@Nullable List<Purchase> purchases) {
         if (purchases != null) {
             Purchase purchase = purchases.get(0);
-            if (selectedSkuDetails != null && selectedSkuDetails.getType().equals(INAPP)) {
+            if (selectedProductDetails != null && selectedProductDetails.getOneTimePurchaseOfferDetails() != null) {
                 mGoogleBillingManager.InAppConsume(purchase);
             } else {
                 mGoogleBillingManager.subscriptionConsume(purchase);
@@ -255,9 +266,9 @@ public class UpgradeActivity extends BaseActivity
     }
 
     @Override
-    public void querySkuDetails(List<String> subs, boolean isSub) {
-        mUpgradeLog.info("Querying sku details..." + isSub);
-        mGoogleBillingManager.querySkuDetailsAsync(subs, isSub);
+    public void querySkuDetails(List<QueryProductDetailsParams.Product> products) {
+        mUpgradeLog.info("Querying sku details...");
+        mGoogleBillingManager.querySkuDetailsAsync(products);
     }
 
     @Override
@@ -313,8 +324,9 @@ public class UpgradeActivity extends BaseActivity
     }
 
     @Override
-    public void startPurchaseFlow(SkuDetails skuDetails, String accountID) {
-        final BillingFlowParams.Builder builder = BillingFlowParams.newBuilder().setSkuDetails(skuDetails);
+    public void startPurchaseFlow(ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParams, String accountID) {
+        BillingFlowParams.Builder builder = BillingFlowParams.newBuilder()
+                .setProductDetailsParamsList(productDetailsParams);
         if (accountID != null) {
             builder.setObfuscatedAccountId(accountID);
         }
@@ -396,7 +408,7 @@ public class UpgradeActivity extends BaseActivity
         });
         mGoogleBillingManager.querySkuDetailEvent.observe(this, customSkuDetails -> mUpgradePresenter
                 .onSkuDetailsReceived(customSkuDetails.getBillingResult().getResponseCode(),
-                        customSkuDetails.getSkuDetails()));
+                        customSkuDetails.getProductDetails()));
 
     }
 

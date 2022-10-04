@@ -9,10 +9,12 @@ import android.os.Bundle
 import android.widget.Toast
 import com.amazon.device.iap.model.Product
 import com.amazon.device.iap.model.PurchaseResponse
-import com.android.billingclient.api.BillingClient.SkuType
 import com.android.billingclient.api.BillingFlowParams
+import com.android.billingclient.api.BillingFlowParams.ProductDetailsParams
+import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.SkuDetails
+import com.android.billingclient.api.QueryProductDetailsParams
+import com.google.common.collect.ImmutableList
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.confirmemail.ConfirmActivity
@@ -26,16 +28,9 @@ import com.windscribe.tv.welcome.WelcomeActivity
 import com.windscribe.tv.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
-import com.windscribe.vpn.billing.AmazonBillingManager
-import com.windscribe.vpn.billing.AmazonPurchase
-import com.windscribe.vpn.billing.BillingFragmentCallback
-import com.windscribe.vpn.billing.CustomPurchase
-import com.windscribe.vpn.billing.CustomPurchases
-import com.windscribe.vpn.billing.CustomSkuDetails
-import com.windscribe.vpn.billing.GoogleBillingManager
-import com.windscribe.vpn.billing.PurchaseState
-import com.windscribe.vpn.billing.WindscribeInAppProduct
+import com.windscribe.vpn.billing.*
 import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
+import okhttp3.internal.toImmutableList
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
@@ -54,7 +49,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
     private var amazonBillingManager: AmazonBillingManager? = null
     private var googleBillingManager: GoogleBillingManager? = null
     private val logger = LoggerFactory.getLogger("upgrade_a")
-    private var selectedSkuDetails: SkuDetails? = null
+    private var selectedProductDetails: ProductDetails? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
@@ -132,11 +127,20 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         }
     }
 
-    override fun onContinuePlanClick(selectedSkuDetails: SkuDetails?) {
-        logger.info("User clicked on plan item...")
-        this.selectedSkuDetails = selectedSkuDetails
-        selectedSkuDetails?.let {
-            presenter.onMonthlyItemClicked(it)
+    override fun onContinuePlanClick(productDetails: ProductDetails?, selectedIndex: Int) {
+        if (productDetails != null) {
+            logger.info("User clicked on plan item...")
+            selectedProductDetails = productDetails
+            val builder = ProductDetailsParams.newBuilder()
+            builder.setProductDetails(productDetails)
+            if (productDetails.subscriptionOfferDetails != null) {
+                val offerToken = productDetails
+                    .subscriptionOfferDetails!![selectedIndex]
+                    .offerToken
+                builder.setOfferToken(offerToken)
+            }
+            val productDetailsParamsList = ImmutableList.of(builder.build())
+            presenter.onMonthlyItemClicked(productDetailsParamsList)
         }
     }
 
@@ -151,16 +155,13 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
 
     override fun onPurchaseSuccessful(purchases: List<Purchase>) {
         val purchase = purchases[0]
-        selectedSkuDetails?.let {
-            if (it.type == SkuType.INAPP) {
-                googleBillingManager?.InAppConsume(purchase)
-            } else {
-                googleBillingManager?.subscriptionConsume(purchase)
-            }
-        } ?: kotlin.run {
+        if (selectedProductDetails != null && selectedProductDetails!!.oneTimePurchaseOfferDetails != null) {
+            googleBillingManager?.InAppConsume(purchase)
+        } else {
             googleBillingManager?.subscriptionConsume(purchase)
         }
     }
+
 
     override fun onRestorePurchaseClick() {
         presenter.restorePurchase()
@@ -172,9 +173,10 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
     }
 
     override fun onTermPolicyClick() {}
-    override fun querySkuDetails(products: List<String>, sub: Boolean) {
-        logger.info("Querying sku details...$sub")
-        googleBillingManager?.querySkuDetailsAsync(products, sub)
+
+    override fun querySkuDetails(products: List<QueryProductDetailsParams.Product>) {
+        logger.info("Querying sku details...")
+        googleBillingManager?.querySkuDetailsAsync(products)
     }
 
     override fun restorePurchase() {
@@ -185,12 +187,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         isBillingProcessFinished = processFinished
     }
 
-    override fun setEmailStatus(isEmailAdded: Boolean, isEmailConfirmed: Boolean) {
-        val fragment = supportFragmentManager.findFragmentById(R.id.cl_upgrade)
-        if (fragment is PlansFragment) {
-            //  ((PlansFragment) fragment).setEmailStatus(isEmailAdded, isEmailConfirmed);
-        }
-    }
+    override fun setEmailStatus(isEmailAdded: Boolean, isEmailConfirmed: Boolean) {}
 
     override fun showBillingDialog(
         windscribeInAppProduct: WindscribeInAppProduct,
@@ -236,8 +233,12 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         Toast.makeText(this, toastText, Toast.LENGTH_SHORT).show()
     }
 
-    override fun startPurchaseFlow(skuDetails: SkuDetails, accountID: String?) {
-        val builder = BillingFlowParams.newBuilder().setSkuDetails(skuDetails)
+    override fun startPurchaseFlow(
+        productDetailsParams: ImmutableList<ProductDetailsParams>,
+        accountID: String?
+    ) {
+        val builder =
+            BillingFlowParams.newBuilder().setProductDetailsParamsList(productDetailsParams)
         accountID?.let { builder.setObfuscatedAccountId(it) }
         logger.info("Launching billing flow...")
         presenter.setPurchaseFlowState(PurchaseState.IN_PROCESS)
@@ -331,12 +332,12 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         }
         googleBillingManager?.querySkuDetailEvent?.observe(
             this
-        ) { customSkuDetails: CustomSkuDetails ->
+        ) { customProductDetails: CustomProductDetails ->
             presenter
-                    .onSkuDetailsReceived(
-                            customSkuDetails.billingResult.responseCode,
-                            customSkuDetails.skuDetails
-                    )
+                .onSkuDetailsReceived(
+                    customProductDetails.billingResult.responseCode,
+                    customProductDetails.productDetails.toImmutableList()
+                )
         }
     }
 
