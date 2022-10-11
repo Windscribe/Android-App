@@ -12,8 +12,6 @@ import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.BillingConstants
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.repository.CallResult
-import com.windscribe.vpn.repository.ConnectionDataRepository
-import com.windscribe.vpn.repository.UserRepository
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import kotlin.coroutines.suspendCoroutine
@@ -114,9 +112,11 @@ class GooglePendingReceiptValidator(appContext: Context, params: WorkerParameter
         logger.info("Verifying payment for purchased item: " + itemPurchased.originalJson)
         val purchaseMap = HashMap<String, String>()
         purchaseMap[BillingConstants.GP_PACKAGE_NAME] = "com.windscribe.vpn"
-        purchaseMap[BillingConstants.GP_PRODUCT_ID] = itemPurchased.sku
+        purchaseMap[BillingConstants.GP_PRODUCT_ID] = itemPurchased.products[0]
+
         purchaseMap[BillingConstants.PURCHASE_TOKEN] = itemPurchased.purchaseToken
-        return when (val result = interactor.apiManager.verifyPurchaseReceipt(purchaseMap).result<GenericSuccess>()) {
+        return when (val result =
+            interactor.apiManager.verifyPurchaseReceipt(purchaseMap).result<GenericSuccess>()) {
             is CallResult.Error -> {
                 logger.debug("Payment verification failed: ${result.errorMessage}")
                 false

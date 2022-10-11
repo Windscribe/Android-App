@@ -27,6 +27,7 @@ import com.windscribe.vpn.Windscribe;
 import com.windscribe.vpn.backend.Util;
 import com.windscribe.vpn.backend.utils.SelectedLocationType;
 import com.windscribe.vpn.constants.VpnPreferenceConstants;
+import com.windscribe.vpn.exceptions.BackgroundLocationPermissionNotAvailable;
 import com.windscribe.vpn.exceptions.NoLocationPermissionException;
 import com.windscribe.vpn.exceptions.NoNetworkException;
 import com.windscribe.vpn.exceptions.WindScribeException;
@@ -110,13 +111,14 @@ public class WindUtilities {
                     networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET ? "Ethernet"
                             : "Unknown";
 
-          if(networkName.equals("<unknown ssid>")){
-              throw new NoNetworkException("App tried to access network name in the background and Location permission is only available for while in use.");
-          }else{
-              return networkName;
-          }
+            if (networkName.equals("<unknown ssid>")) {
+                throw new BackgroundLocationPermissionNotAvailable("App tried to access network name in the background and Location permission is only available for while in use.");
+            } else {
+                return networkName;
+            }
+        } else {
+            throw new NoNetworkException("No network is connected");
         }
-        throw new NoNetworkException("No network is connected");
     }
 
     public static int getRandomNode(int size) {

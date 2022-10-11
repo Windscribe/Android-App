@@ -126,6 +126,7 @@ public class BillingPlanResponse {
                     ", ext_id='" + extId + '\'' +
                     ", price='" + planPrice + '\'' +
                     ", active='" + planStatus + '\'' +
+                    ", rebill='" + isReBill() + '\'' +
                     '}';
         }
     }

@@ -6,8 +6,11 @@ package com.windscribe.tv.upgrade
 import com.amazon.device.iap.PurchasingService
 import com.amazon.device.iap.model.*
 import com.android.billingclient.api.BillingClient.BillingResponseCode
+import com.android.billingclient.api.BillingFlowParams
+import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.SkuDetails
+import com.android.billingclient.api.QueryProductDetailsParams
+import com.google.common.collect.ImmutableList
 import com.google.gson.Gson
 import com.windscribe.tv.R
 import com.windscribe.vpn.ActivityInteractor
@@ -48,8 +51,6 @@ import io.reactivex.functions.Function
 import io.reactivex.observers.DisposableCompletableObserver
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
-import org.json.JSONException
-import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.security.MessageDigest
 import javax.inject.Inject
@@ -106,7 +107,7 @@ class UpgradePresenterImpl @Inject constructor(
         }
     }
 
-    private fun launchPurchaseFlowWithAccountID(skuDetails: SkuDetails) {
+    private fun launchPurchaseFlowWithAccountID(productDetailsParams: ImmutableList<BillingFlowParams.ProductDetailsParams>) {
         interactor.getCompositeDisposable().add(
             interactor.getUserSessionData()
                 .flatMap { userSessionResponse: UserSessionResponse ->
@@ -122,12 +123,12 @@ class UpgradePresenterImpl @Inject constructor(
                 .subscribeWith(object : DisposableSingleObserver<String?>() {
                     override fun onError(e: Throwable) {
                         logger.info("Failed to generate encrypted account ID.")
-                        upgradeView.startPurchaseFlow(skuDetails, null)
+                        upgradeView.startPurchaseFlow(productDetailsParams, null)
                     }
 
                     override fun onSuccess(accountID: String) {
                         logger.info("Generated encrypted account ID.")
-                        upgradeView.startPurchaseFlow(skuDetails, accountID)
+                        upgradeView.startPurchaseFlow(productDetailsParams, accountID)
                     }
                 })
         )
@@ -195,9 +196,9 @@ class UpgradePresenterImpl @Inject constructor(
         upgradeView.startPurchaseFlow(selectedSku)
     }
 
-    override fun onMonthlyItemClicked(monthlySKU: SkuDetails) {
+    override fun onMonthlyItemClicked(productDetailsParams: ImmutableList<BillingFlowParams.ProductDetailsParams>) {
         logger.info("Starting purchase flow...")
-        launchPurchaseFlowWithAccountID(monthlySKU)
+        launchPurchaseFlowWithAccountID(productDetailsParams)
     }
 
     override fun onProductDataResponse(products: Map<String, Product>) {
@@ -254,7 +255,7 @@ class UpgradePresenterImpl @Inject constructor(
         val purchaseMap: MutableMap<String, String> = HashMap()
         // Add purchase maps
         purchaseMap[GP_PACKAGE_NAME] = purchase.packageName
-        purchaseMap[GP_PRODUCT_ID] = purchase.sku
+        purchaseMap[GP_PRODUCT_ID] = purchase.products[0]
         purchaseMap[PURCHASE_TOKEN] = purchase.purchaseToken
         logger.info(purchaseMap.toString())
         interactor.getCompositeDisposable().add(
@@ -354,15 +355,15 @@ class UpgradePresenterImpl @Inject constructor(
                 setPurchaseFlowState(PurchaseState.FINISHED)
                 logger.debug(
                     "Showing dialog for error. Purchase failed with response code: " + responseCode +
-                        " Error Message: " + getBillingErrorMessage(responseCode)
+                            " Error Message: " + getBillingErrorMessage(responseCode)
                 )
                 onBillingSetupFailed(responseCode)
             }
         }
     }
 
-    override fun onSkuDetailsReceived(responseCode: Int, skuDetailsList: List<SkuDetails>) {
-        if (responseCode == BillingResponseCode.OK && skuDetailsList.isNotEmpty()) {
+    override fun onSkuDetailsReceived(responseCode: Int, productDetailsList: List<ProductDetails>) {
+        if (responseCode == BillingResponseCode.OK && productDetailsList.isNotEmpty()) {
             interactor.getCompositeDisposable().add(
                 interactor.getUserSessionData()
                     .subscribeOn(Schedulers.io())
@@ -370,25 +371,25 @@ class UpgradePresenterImpl @Inject constructor(
                     .subscribe(
                         { userSession: UserSessionResponse ->
                             onUserSessionResponse(
-                                skuDetailsList,
+                                productDetailsList,
                                 userSession
                             )
                         }
                     ) { throwable: Throwable ->
                         onUserSessionResponseError(
-                            skuDetailsList,
+                            productDetailsList,
                             throwable
                         )
                     }
             )
-        } else if (skuDetailsList.isEmpty()) {
+        } else if (productDetailsList.isEmpty()) {
             logger.debug("Failed to find requested products from the store.")
             upgradeView.showBillingErrorDialog("Promo is not valid anymore.")
         } else {
             val errorMessage = getBillingErrorMessage(responseCode)
             logger.debug(
                 "Error while retrieving sku details from play billing. Error Code: " + responseCode +
-                    " Message: " + errorMessage
+                        " Message: " + errorMessage
             )
             upgradeView.showBillingErrorDialog(errorMessage)
         }
@@ -577,7 +578,22 @@ class UpgradePresenterImpl @Inject constructor(
                     upgradeView.getProducts(skuList)
                 } else {
                     logger.debug("Querying google products")
-                    upgradeView.querySkuDetails(skuList, billingPlanResponse.dataClass!!.plansList[0].isReBill)
+                    val products: MutableList<QueryProductDetailsParams.Product> = mutableListOf()
+                    for (sku in skuList) {
+                        val planType =
+                            mobileBillingPlans.stream().filter { billingPlans: BillingPlans ->
+                                billingPlans.extId == sku
+                            }.findFirst()
+                                .map { billingPlans -> if (billingPlans.isReBill) "subs" else "inapp" }
+                                .orElse(ProductType.SUBSCRIPTION.name)
+                        products.add(
+                            QueryProductDetailsParams.Product.newBuilder()
+                                .setProductType(planType)
+                                .setProductId(sku)
+                                .build()
+                        )
+                    }
+                    upgradeView.querySkuDetails(products)
                 }
             } else if (notificationAction != null) {
                 upgradeView.showBillingErrorDialog("Promo is not valid anymore.")
@@ -606,7 +622,7 @@ class UpgradePresenterImpl @Inject constructor(
     }
 
     private fun onUserSessionResponse(
-        skuDetailsList: List<SkuDetails>,
+        skuDetailsList: List<ProductDetails>,
         userSessionResponse: UserSessionResponse
     ) {
         logger.info("Showing upgrade dialog to the user...")
@@ -619,7 +635,10 @@ class UpgradePresenterImpl @Inject constructor(
         )
     }
 
-    private fun onUserSessionResponseError(skuDetailsList: List<SkuDetails>, throwable: Throwable) {
+    private fun onUserSessionResponseError(
+        skuDetailsList: List<ProductDetails>,
+        throwable: Throwable
+    ) {
         // We failed to get the data remaining
         logger.debug("Error reading user session response..." + throwable.localizedMessage)
         upgradeView.hideProgressBar()
