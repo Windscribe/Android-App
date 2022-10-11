@@ -212,8 +212,7 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
             when (mWindscribeInAppProduct) {
                 is GoogleProducts -> {
                     val skuDetails = (mWindscribeInAppProduct as GoogleProducts).getSkuDetails(viewTag)
-                    skuDetails.subscriptionPeriod
-                    mBillingListener?.onContinuePlanClick(skuDetails)
+                    mBillingListener?.onContinuePlanClick(skuDetails, 0)
                 }
                 is AmazonProducts -> {
                     val product = (mWindscribeInAppProduct as AmazonProducts).getProduct(viewTag)
