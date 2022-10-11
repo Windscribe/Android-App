@@ -23,10 +23,11 @@ import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.ConsumeParams;
 import com.android.billingclient.api.ConsumeResponseListener;
+import com.android.billingclient.api.ProductDetailsResponseListener;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryPurchasesParams;
 import com.windscribe.vpn.constants.BillingConstants;
 
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ public class GoogleBillingManager implements PurchasesUpdatedListener, Lifecycle
 
     public final SingleLiveEvent<CustomPurchases> purchaseUpdateEvent = new SingleLiveEvent<>();
 
-    public final SingleLiveEvent<CustomSkuDetails> querySkuDetailEvent = new SingleLiveEvent<>();
+    public final SingleLiveEvent<CustomProductDetails> querySkuDetailEvent = new SingleLiveEvent<>();
 
     private final Application app;
 
@@ -139,19 +140,13 @@ public class GoogleBillingManager implements PurchasesUpdatedListener, Lifecycle
         purchaseUpdateEvent.postValue(new CustomPurchases(billingResult.getResponseCode(), purchases));
     }
 
-    public void querySkuDetailsAsync(final List<String> subs, boolean isSub) {
-        SkuDetailsParams subsDetailsParams = SkuDetailsParams.newBuilder()
-                .setSkusList(subs).setType(BillingClient.SkuType.SUBS).build();
-        SkuDetailsParams inAppsDetailsParams = SkuDetailsParams.newBuilder()
-                .setSkusList(subs).setType(BillingClient.SkuType.INAPP).build();
-
-        SkuDetailsResponseListener skuDetailsResponseListener = (billingResult, list) -> querySkuDetailEvent
-                .postValue(new CustomSkuDetails(billingResult, list));
-        if (isSub) {
-            mBillingClient.querySkuDetailsAsync(subsDetailsParams, skuDetailsResponseListener);
-        } else {
-            mBillingClient.querySkuDetailsAsync(inAppsDetailsParams, skuDetailsResponseListener);
-        }
+    public void querySkuDetailsAsync(final List<QueryProductDetailsParams.Product> subs) {
+        QueryProductDetailsParams productDetailsParams = QueryProductDetailsParams
+                .newBuilder()
+                .setProductList(subs)
+                .build();
+        ProductDetailsResponseListener productDetailsResponseListener = ((billingResult, list) -> querySkuDetailEvent.postValue(new CustomProductDetails(billingResult, list)));
+        mBillingClient.queryProductDetailsAsync(productDetailsParams, productDetailsResponseListener);
     }
 
     public void subscriptionConsume(Purchase purchase) {
@@ -180,26 +175,31 @@ public class GoogleBillingManager implements PurchasesUpdatedListener, Lifecycle
     }
 
     private void getRecentPurchases() {
-        Purchase.PurchasesResult subsPurchaseResult = mBillingClient.queryPurchases(BillingClient.SkuType.SUBS);
-        if (subsPurchaseResult.getResponseCode() == OK) {
-            List<Purchase> purchases = subsPurchaseResult.getPurchasesList();
-            if (purchases != null && purchases.size() > 0) {
-                logger.info("Existing purchase found.");
-                subscriptionConsume(purchases.get(0));
-            } else {
-                logger.info("No subscription history found.");
-            }
-        }
-
-        Purchase.PurchasesResult inAppPurchaseResult = mBillingClient.queryPurchases(BillingClient.SkuType.INAPP);
-        if (subsPurchaseResult.getResponseCode() == OK) {
-            List<Purchase> purchases = inAppPurchaseResult.getPurchasesList();
-            if (purchases != null && purchases.size() > 0) {
-                logger.info("Existing purchase found.");
-                InAppConsume(purchases.get(0));
-            } else {
-                logger.info("No InApp history found.");
-            }
-        }
+        mBillingClient.queryPurchasesAsync(
+                QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build(),
+                (billingResult, purchases) -> {
+                    if (billingResult.getResponseCode() == OK) {
+                        if (purchases.size() > 0) {
+                            logger.info("Existing purchase found.");
+                            subscriptionConsume(purchases.get(0));
+                        } else {
+                            logger.info("No subscription history found.");
+                        }
+                    }
+                }
+        );
+        mBillingClient.queryPurchasesAsync(
+                QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build(),
+                (billingResult, purchases) -> {
+                    if (billingResult.getResponseCode() == OK) {
+                        if (purchases.size() > 0) {
+                            logger.info("Existing purchase found.");
+                            InAppConsume(purchases.get(0));
+                        } else {
+                            logger.info("No one purchase history found.");
+                        }
+                    }
+                }
+        );
     }
 }

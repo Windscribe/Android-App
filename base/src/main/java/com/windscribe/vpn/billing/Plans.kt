@@ -5,7 +5,7 @@
 package com.windscribe.vpn.billing
 
 import com.amazon.device.iap.model.Product
-import com.android.billingclient.api.SkuDetails
+import com.android.billingclient.api.ProductDetails
 import com.windscribe.vpn.api.response.BillingPlanResponse.BillingPlans
 import com.windscribe.vpn.api.response.PushNotificationAction
 
@@ -65,20 +65,28 @@ open class WindscribeInAppProduct(
 }
 
 data class GoogleProducts(
-        val skuDetails: List<SkuDetails>,
-        val billingPlans: List<BillingPlans>,
-        var pushNotificationAction: PushNotificationAction?
+    val productDetailsList: List<ProductDetails>,
+    val billingPlans: List<BillingPlans>,
+    var pushNotificationAction: PushNotificationAction?
 ) : WindscribeInAppProduct(billingPlans, pushNotificationAction) {
 
     override fun getPrice(sku: String): String? {
-        return skuDetails.filter {
-            it.sku == sku
-        }.getOrNull(0)?.price
+        val product = productDetailsList.firstOrNull { it.productId == sku }
+        val subDetail = product?.subscriptionOfferDetails
+        if (subDetail != null) {
+            return subDetail[0].pricingPhases.pricingPhaseList[0].formattedPrice
+        } else {
+            val oneTimeDetail = product?.oneTimePurchaseOfferDetails
+            if (oneTimeDetail != null) {
+                return oneTimeDetail.formattedPrice
+            }
+        }
+        return null
     }
 
-    fun getSkuDetails(sku: String): SkuDetails {
-        return skuDetails.first {
-            it.sku == sku
+    fun getSkuDetails(sku: String): ProductDetails {
+        return productDetailsList.first {
+            it.productId == sku
         }
     }
 }

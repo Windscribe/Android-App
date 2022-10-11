@@ -9,8 +9,10 @@ import androidx.annotation.Nullable;
 
 import com.amazon.device.iap.model.Product;
 import com.amazon.device.iap.model.PurchaseResponse;
+import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.SkuDetails;
+import com.google.common.collect.ImmutableList;
 import com.windscribe.vpn.api.response.PushNotificationAction;
 import com.windscribe.vpn.billing.AmazonPurchase;
 import com.windscribe.vpn.billing.PurchaseState;
@@ -38,7 +40,7 @@ public interface UpgradePresenter {
 
     void onDestroy();
 
-    void onMonthlyItemClicked(@Nullable SkuDetails monthlySKU);
+    void onMonthlyItemClicked(@Nullable ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParams);
 
     void onProductDataResponse(Map<String, Product> products);
 
@@ -52,7 +54,7 @@ public interface UpgradePresenter {
 
     void onPurchaseUpdated(int responseCode, @Nullable List<Purchase> purchases);
 
-    void onSkuDetailsReceived(int responseCode, List<SkuDetails> skuDetailsList);
+    void onSkuDetailsReceived(int responseCode, List<ProductDetails> productDetails);
 
     void restorePurchase();
 
