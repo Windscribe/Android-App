@@ -33,7 +33,7 @@ abstract public class CityDao {
     @Query("Select * from City where region_id=:id")
     public abstract Single<List<City>> getAllCities(int id);
 
-    @Query("Select * from City order by primaryKey")
+    @Query("Select * from City where nodes not null order by primaryKey")
     public abstract Single<List<City>> getCities();
 
     @Query("Select * from City where city_id=:id")
