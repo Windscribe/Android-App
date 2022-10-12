@@ -16,4 +16,5 @@ interface NetworkDetailPresenter {
     fun toggleAutoSecure()
     fun togglePreferredProtocol()
     fun init()
+    fun reloadNetworkOptions()
 }
