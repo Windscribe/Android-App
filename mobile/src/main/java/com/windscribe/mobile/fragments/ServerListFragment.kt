@@ -35,7 +35,6 @@ import com.windscribe.mobile.holder.RemoveConfigHolder
 import com.windscribe.mobile.windscribe.FragmentClickListener
 import com.windscribe.mobile.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import java.lang.Exception
 import kotlin.math.roundToInt
 
 class ServerListFragment : Fragment() {
@@ -259,6 +258,9 @@ class ServerListFragment : Fragment() {
         if (deviceName != null && deviceName.isNotEmpty()) {
             this.deviceName?.visibility = View.VISIBLE
             this.deviceName?.text = deviceName
+        } else {
+            this.deviceName?.visibility = View.INVISIBLE
+            this.deviceName?.text = ""
         }
     }
 
