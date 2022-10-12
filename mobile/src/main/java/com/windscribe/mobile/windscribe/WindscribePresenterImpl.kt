@@ -2729,7 +2729,7 @@ class WindscribePresenterImpl @Inject constructor(
             windscribeView.showToast("Choose a valid config file")
             return null
         }
-        if (documentFile.length() > 1024 * 5){
+        if (documentFile.length() > 1024 * 5) {
             windscribeView.showToast("File is larger than 5KB")
             return null
         }
@@ -2737,6 +2737,10 @@ class WindscribePresenterImpl @Inject constructor(
         val existingFile = configAdapter?.configFiles?.firstOrNull { it.name == fileName }
         if (existingFile != null) {
             windscribeView.showToast("A file with same name already exists")
+            return null
+        }
+        if (fileName != null && fileName.length > 35) {
+            windscribeView.showToast("File name is too long. Maximum 35 characters allowed.")
             return null
         }
         if (fileName != null && fileName.endsWith(".conf") or fileName.endsWith(".ovpn")) {

@@ -483,7 +483,7 @@ last chosen location.</string>
     <string name="keep_alive_description">Sends NAT keepalive packets regularly to its peer to keep the NAT session alive, so that the peer can access the device(IKEv2 Only)</string>
     <string name="appearance_description">Light or Dark. Choose a side, and choose wisely.</string>
     -->
-    <string name="auto_connect_on_boot_description">Automatically connect to the last connected location the device starts.</string>
+    <string name="auto_connect_on_boot_description">Automatically connect to the last connected location when the device starts.</string>
     <string name="gps_spoofing_description">Spoof your device\'s GPS coordinates.</string>
     <string name="lazy_login_description">Login into Windscribe\'s TV apps with a short code.</string>
     <string name="get_10gb_data">Get 10GB/ Month of data and gain the ability to reset your password.</string>
