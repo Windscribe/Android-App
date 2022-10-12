@@ -180,7 +180,7 @@ public class FavouriteAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
     private void setLinkSpeed(final City city, final FavoriteViewHolder holder) {
-        int visibility = "10000".equals(city.getLinkSpeed()) && dataDetails.isShowLocationHealthEnabled()
+        int visibility = "10000".equals(city.getLinkSpeed())
                 ? View.VISIBLE : View.INVISIBLE;
         holder.imgLinkSpeed.setVisibility(visibility);
     }

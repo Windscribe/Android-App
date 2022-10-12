@@ -80,6 +80,11 @@ class NetworkDetailsActivity : BaseActivity(), NetworkDetailView {
         onBackPressed()
     }
 
+    override fun onBackPressed() {
+        presenter.reloadNetworkOptions()
+        super.onBackPressed()
+    }
+
     override fun onNetworkDeleted() {
         finish()
     }

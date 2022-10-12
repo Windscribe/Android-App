@@ -219,7 +219,7 @@ class AccountPresenterImpl @Inject constructor(
         } else if (user.maxData != -1L) {
             accountView.setupLayoutForFreeUser(
                 interactor.getResourceString(R.string.upgrade_case_normal),
-                interactor.getThemeColor(R.attr.wdActionColor)
+                interactor.getThemeColor(R.attr.wdSecondaryColor)
             )
         } else {
             accountView.setupLayoutForPremiumUser(
