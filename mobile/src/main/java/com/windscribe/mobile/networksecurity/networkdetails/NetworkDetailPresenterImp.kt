@@ -246,4 +246,8 @@ class NetworkDetailPresenterImp @Inject constructor(
         }
         return PROTO_IKev2
     }
+
+    override fun reloadNetworkOptions() {
+        interactor.getNetworkInfoManager().reload(false)
+    }
 }

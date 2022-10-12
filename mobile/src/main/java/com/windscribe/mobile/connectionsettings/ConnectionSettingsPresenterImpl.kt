@@ -123,7 +123,6 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
         if (interactor.getAppPreferenceInterface().isDecoyTrafficOn) {
             connSettingsView.setDecoyTrafficToggle(R.drawable.ic_toggle_button_off)
             interactor.getAppPreferenceInterface().isDecoyTrafficOn = false
-            interactor.getAppPreferenceInterface().packetSize = 1500
             logger.info("Setting decoy traffic to false")
             interactor.getDecoyTrafficController().stop()
         } else {
