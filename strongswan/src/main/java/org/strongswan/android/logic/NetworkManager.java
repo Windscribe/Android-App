@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Build;
 
@@ -83,6 +84,7 @@ public class NetworkManager extends BroadcastReceiver implements Runnable
 			/* while we only get events for the VPN network via registerDefaultNetworkCallback,
 			 * the default capabilities in the builder include NetworkCapabilities.NET_CAPABILITY_NOT_VPN */
 			NetworkRequest.Builder builder = new NetworkRequest.Builder();
+			builder.addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
 			cm.registerNetworkCallback(builder.build(), mCallback);
 		}
 		else
