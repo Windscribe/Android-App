@@ -632,6 +632,7 @@ class WindscribePresenterImpl @Inject constructor(
                 PreferencesKeyConstants.PROTO_UDP -> return drawable.ic_udp
                 PreferencesKeyConstants.PROTO_TCP -> return drawable.ic_tcp
                 PreferencesKeyConstants.PROTO_STEALTH -> return drawable.ic_stealth
+                PreferencesKeyConstants.PROTO_WS_TUNNEL -> return drawable.ic_stealth
                 PreferencesKeyConstants.PROTO_IKev2 -> return drawable.ic_ikev2
                 PreferencesKeyConstants.PROTO_WIRE_GUARD -> return drawable.ic_wg_icon
             }
@@ -643,6 +644,7 @@ class WindscribePresenterImpl @Inject constructor(
             PreferencesKeyConstants.PROTO_UDP -> drawable.ic_udp
             PreferencesKeyConstants.PROTO_TCP -> drawable.ic_tcp
             PreferencesKeyConstants.PROTO_STEALTH -> drawable.ic_stealth
+            PreferencesKeyConstants.PROTO_WS_TUNNEL -> drawable.ic_stealth
             PreferencesKeyConstants.PROTO_IKev2 -> drawable.ic_ikev2
             PreferencesKeyConstants.PROTO_WIRE_GUARD -> drawable.ic_wg_icon
             else -> {

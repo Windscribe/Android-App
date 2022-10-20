@@ -49,7 +49,9 @@ class ApiCallManager @Inject constructor(
             authRequired: Boolean = true
     ): Map<String, String> {
         val paramMap = mutableMapOf<String, String>()
-        paramMap[PLATFORM] = "android"
+        //paramMap[PLATFORM] = "android"
+        // TODO Only changing for testing
+        paramMap[PLATFORM] = "desktop"
         paramMap[APP_VERSION] = WindUtilities.getVersionName()
         if (authRequired) {
             val authMap = authorizationGenerator.create()

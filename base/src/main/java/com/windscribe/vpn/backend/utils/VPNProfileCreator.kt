@@ -17,6 +17,9 @@ import com.windscribe.vpn.backend.Util.saveProfile
 import com.windscribe.vpn.backend.Util.saveSelectedLocation
 import com.windscribe.vpn.backend.openvpn.WindStunnelUtility
 import com.windscribe.vpn.backend.openvpn.WsTunnelManager
+import com.windscribe.vpn.backend.openvpn.WsTunnelManager.Companion.WS_TUNNEL_ADDRESS
+import com.windscribe.vpn.backend.openvpn.WsTunnelManager.Companion.WS_TUNNEL_PORT
+import com.windscribe.vpn.backend.openvpn.WsTunnelManager.Companion.WS_TUNNEL_PROTOCOL
 import com.windscribe.vpn.backend.wireguard.WireGuardVpnProfile
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.commonutils.WindUtilities.ConfigType.WIRE_GUARD
@@ -185,6 +188,13 @@ class VPNProfileCreator @Inject constructor(
                 stunnelRoutingIp = vpnParameters.stealthIp
                 ip = VpnPreferenceConstants.STUNNEL_LOCAL_IP
             }
+            if (PreferencesKeyConstants.PROTO_WS_TUNNEL == protocolConfig.protocol) {
+                serverConfig = preferencesHelper.getOpenVPNServerConfig()
+                port = WS_TUNNEL_PORT
+                protocol = WS_TUNNEL_PROTOCOL
+                stunnelRoutingIp = vpnParameters.ikev2Ip
+                ip = WS_TUNNEL_ADDRESS
+            }
             if (PreferencesKeyConstants.PROTO_TCP == protocolConfig.protocol) {
                 ip = vpnParameters.tcpIp
                 protocol = "tcp"
@@ -226,12 +236,14 @@ class VPNProfileCreator @Inject constructor(
             if (WindStunnelUtility.isStunnelRunning) {
                 WindStunnelUtility.stopLocalTunFromAppContext(appContext)
             }
+            preferencesHelper.selectedPort = protocolConfig.port
+            WindUtilities.writeStunnelConfig(appContext, stunnelRoutingIp, protocolConfig.port)
+            WindStunnelUtility.startLocalTun()
+        } else if (protocolConfig.protocol == PreferencesKeyConstants.PROTO_WS_TUNNEL) {
             if (wsTunnelManager.running) {
                 wsTunnelManager.stopWsTunnel()
             }
             preferencesHelper.selectedPort = protocolConfig.port
-            //  WindUtilities.writeStunnelConfig(appContext, stunnelRoutingIp, protocolConfig.port)
-            // WindStunnelUtility.startLocalTun()
             if (stunnelRoutingIp != null) {
                 wsTunnelManager.startWsTunnel(vpnParameters.ikev2Ip, protocolConfig.port)
             }

@@ -29,6 +29,7 @@ object PreferencesKeyConstants {
     const val PROTO_UDP = "udp"
     const val PROTO_TCP = "tcp"
     const val PROTO_STEALTH = "stunnel"
+    const val PROTO_WS_TUNNEL = "wstunnel"
     const val PROTO_IKev2 = "ikev2"
     const val PROTO_WIRE_GUARD = "wg"
     const val SAVED_UDP_PORT = "saved_udp_port"

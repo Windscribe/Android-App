@@ -10,14 +10,11 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PortMapResponse
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status
-import com.windscribe.vpn.backend.utils.ProtocolConfig.Type.Auto
-import com.windscribe.vpn.backend.utils.ProtocolConfig.Type.Manual
-import com.windscribe.vpn.backend.utils.ProtocolConfig.Type.Preferred
+import com.windscribe.vpn.backend.utils.ProtocolConfig.Type.*
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -25,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import javax.inject.Singleton
 
 @Singleton
 class ProtocolManager(
@@ -137,11 +135,12 @@ class ProtocolManager(
         }
         // Set Auto Protocols
         val availableProtocolList = mutableListOf(
-                ProtocolConfig(PreferencesKeyConstants.PROTO_IKev2, "500", Auto),
-                ProtocolConfig(PreferencesKeyConstants.PROTO_UDP, "443", Auto),
-                ProtocolConfig(PreferencesKeyConstants.PROTO_TCP, "443", Auto),
-                ProtocolConfig(PreferencesKeyConstants.PROTO_STEALTH, "443", Auto),
-                ProtocolConfig(PreferencesKeyConstants.PROTO_WIRE_GUARD, "443", Auto)
+            ProtocolConfig(PreferencesKeyConstants.PROTO_IKev2, "500", Auto),
+            ProtocolConfig(PreferencesKeyConstants.PROTO_UDP, "443", Auto),
+            ProtocolConfig(PreferencesKeyConstants.PROTO_TCP, "443", Auto),
+            ProtocolConfig(PreferencesKeyConstants.PROTO_STEALTH, "443", Auto),
+            ProtocolConfig(PreferencesKeyConstants.PROTO_WIRE_GUARD, "443", Auto),
+            ProtocolConfig(PreferencesKeyConstants.PROTO_WS_TUNNEL, "443", Auto),
         )
         val portMapJson: String? = appContext.preference.getResponseString(PreferencesKeyConstants.PORT_MAP)
         if(portMapJson!=null){
@@ -198,6 +197,7 @@ class ProtocolManager(
             PreferencesKeyConstants.PROTO_UDP -> serviceInteractor.preferenceHelper.savedUDPPort
             PreferencesKeyConstants.PROTO_TCP -> serviceInteractor.preferenceHelper.savedTCPPort
             PreferencesKeyConstants.PROTO_STEALTH -> serviceInteractor.preferenceHelper.savedSTEALTHPort
+            PreferencesKeyConstants.PROTO_WS_TUNNEL -> serviceInteractor.preferenceHelper.savedSTEALTHPort
             PreferencesKeyConstants.PROTO_WIRE_GUARD -> serviceInteractor.preferenceHelper.wireGuardPort
             else -> PreferencesKeyConstants.DEFAULT_IKEV2_PORT
         }

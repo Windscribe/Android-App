@@ -8,6 +8,7 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_STEALTH
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_TCP
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_UDP
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
+import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WS_TUNNEL
 
 class ProtocolConfig(var protocol: String, var port: String, val type: Type) {
     enum class Type {
@@ -44,6 +45,7 @@ class ProtocolConfig(var protocol: String, var port: String, val type: Type) {
                 PROTO_UDP -> "UDP"
                 PROTO_TCP -> "TCP"
                 PROTO_STEALTH -> "Stealth"
+                PROTO_WS_TUNNEL -> "Wstunnel"
                 PROTO_WIRE_GUARD -> "WireGuard"
                 else -> "IKEv2"
             }
