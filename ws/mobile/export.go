@@ -9,12 +9,10 @@ import (
 
 /*
 This project uses gomobile to build android and ios libraries used in Windscribe apps for Wstunnel support.
-Run this to build for android:
-gomobile bind -o ../../base/libs/wstunnel.aar  -javapkg com.windscribe.websockettunnel
 */
 
 // Start Builds and start a http client (Tcp server + Websocket connection)
-// This Function blocks until os exit is called.
+// This Function blocks until exit signal is sent by host app.
 func Start(listenAddress string, wsAddress string, logFilePath string) bool {
 	initLogger(logFilePath)
 	err := wstunnel.NewHTTPClient(listenAddress, wsAddress, func(fd int) {
