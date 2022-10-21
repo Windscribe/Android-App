@@ -43,12 +43,13 @@ var channel = make(chan string)
 // Callback for Golang >>> App
 var hostAppCallBack AppCallback
 
-// RegisterCallback is called from the app.
+// RegisterCallback is called from the host app.
 func RegisterCallback(callback AppCallback) {
 	if callback != nil {
-		log.Print("App registered callback")
+		log.Print("Connecting to host app.")
 		hostAppCallBack = callback
 	} else {
+		log.Print("Disconnecting from host app.")
 		channel <- "exit"
 	}
 }

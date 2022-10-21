@@ -245,7 +245,7 @@ class VPNProfileCreator @Inject constructor(
             }
             preferencesHelper.selectedPort = protocolConfig.port
             if (stunnelRoutingIp != null) {
-                wsTunnelManager.startWsTunnel(vpnParameters.ikev2Ip, protocolConfig.port)
+                wsTunnelManager.startWsTunnel(vpnParameters.hostName, protocolConfig.port)
             }
         }
         saveSelectedLocation(lastSelectedLocation)

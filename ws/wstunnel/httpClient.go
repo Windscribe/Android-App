@@ -1,10 +1,7 @@
 package wstunnel
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"github.com/gorilla/websocket"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -35,14 +32,18 @@ func NewHTTPClient(listenTCP, connectWS string, callback func(fd int), channel c
 }
 
 func (h *httpClient) Run() error {
-	tcpAdr, _ := net.ResolveTCPAddr("tcp", h.listenTCP)
+	tcpAdr, err := net.ResolveTCPAddr("tcp", h.listenTCP)
+	if err != nil {
+		log.Fatal("Error resolving tcp address: ", err)
+		return err
+	}
 	tcpConnection, err := net.ListenTCP("tcp", tcpAdr)
 	if err != nil {
 		return err
 	}
 	defer tcpConnection.Close()
 	var active = true
-	log.Printf("Listening to %s", h.listenTCP)
+	log.Printf("Listening on 127.0.0.1%s", h.listenTCP)
 	for active {
 		tcpConn, err := tcpConnection.Accept()
 		if err != nil {
@@ -100,9 +101,6 @@ func (h *httpClient) createWsConnection(remoteAddr string) (wsConn *websocket.Co
 		log.Printf("%s - Connecting to %s", remoteAddr, wsURL)
 		var httpResponse *http.Response
 		dialer := *websocket.DefaultDialer
-		serverCert, _ := ioutil.ReadFile("server.crt")
-		serverKey, _ := ioutil.ReadFile("server.key")
-		privateKey, _ := x509.ParsePKCS1PrivateKey(serverKey)
 		// Access underlying socket fd before connecting to it.
 		customNetDialer := &net.Dialer{}
 		customNetDialer.Control = func(network, address string, c syscall.RawConn) error {
@@ -117,14 +115,8 @@ func (h *httpClient) createWsConnection(remoteAddr string) (wsConn *websocket.Co
 		dialer.NetDial = func(network, addr string) (net.Conn, error) {
 			return customNetDialer.Dial(network, addr)
 		}
-		cert := tls.Certificate{
-			Certificate: [][]byte{serverCert},
-			PrivateKey:  privateKey,
-		}
-		dialer.TLSClientConfig = &tls.Config{Certificates: []tls.Certificate{cert}, InsecureSkipVerify: true}
-		header := http.Header{}
-		wsConn, httpResponse, err = dialer.Dial(wsURL, header)
-
+		//Connect
+		wsConn, httpResponse, err = dialer.Dial(wsURL, nil)
 		if httpResponse != nil {
 			switch httpResponse.StatusCode {
 			case http.StatusMovedPermanently, http.StatusFound, http.StatusSeeOther, http.StatusTemporaryRedirect, http.StatusPermanentRedirect:
