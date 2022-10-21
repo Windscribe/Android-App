@@ -272,9 +272,13 @@ class AccountPresenterImpl @Inject constructor(
         } else {
             val maxData = user.maxData / UserStatusConstants.GB_DATA
             accountView.setPlanName("$maxData ${interactor.getResourceString(R.string.gb_per_month)}")
-            if (user.dataLeft != null) {
-                val dataLeft = DecimalFormat("##.00").format(user.dataLeft)
-                accountView.setDataLeft("$dataLeft GB")
+            user.dataLeft?.let { data ->
+                if (data > 0) {
+                    val formattedData = DecimalFormat("##.00").format(data)
+                    accountView.setDataLeft("$formattedData GB")
+                } else {
+                    accountView.setDataLeft("0.00 GB")
+                }
             }
         }
         setExpiryOrResetDate(user)
