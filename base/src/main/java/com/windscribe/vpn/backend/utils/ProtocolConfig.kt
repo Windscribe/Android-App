@@ -45,7 +45,7 @@ class ProtocolConfig(var protocol: String, var port: String, val type: Type) {
                 PROTO_UDP -> "UDP"
                 PROTO_TCP -> "TCP"
                 PROTO_STEALTH -> "Stealth"
-                PROTO_WS_TUNNEL -> "Wstunnel"
+                PROTO_WS_TUNNEL -> "WStunnel"
                 PROTO_WIRE_GUARD -> "WireGuard"
                 else -> "IKEv2"
             }

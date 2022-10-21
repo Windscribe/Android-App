@@ -249,7 +249,7 @@ class SettingsPresenterImp @Inject constructor(
                     }
                     PROTO_WS_TUNNEL -> {
                         logger.info("Saving selected ws port...")
-                        interactor.saveSTEALTHPort(port)
+                        interactor.saveWSTunnelPort(port)
                     }
                     PROTO_WIRE_GUARD -> {
                         logger.info("Saving selected wire guard port...")
@@ -566,7 +566,7 @@ class SettingsPresenterImp @Inject constructor(
             PROTO_UDP -> interactor.getSavedUDPPort()
             PROTO_TCP -> interactor.getSavedTCPPort()
             PROTO_STEALTH -> interactor.getSavedSTEALTHPort()
-            PROTO_WS_TUNNEL -> interactor.getSavedSTEALTHPort()
+            PROTO_WS_TUNNEL -> interactor.getSavedWSTunnelPort()
             PROTO_WIRE_GUARD -> interactor.getWireGuardPort()
             else -> "443"
         }

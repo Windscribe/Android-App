@@ -478,7 +478,8 @@ class ActivityInteractorImpl(
     }
 
     override fun getSavedConnectionMode(): String {
-        return preferenceHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY) ?: PreferencesKeyConstants.CONNECTION_MODE_AUTO
+        return preferenceHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY)
+            ?: PreferencesKeyConstants.CONNECTION_MODE_AUTO
     }
 
     override fun getSavedProtocol(): String {
@@ -487,6 +488,10 @@ class ActivityInteractorImpl(
 
     override fun getSavedSTEALTHPort(): String {
         return preferenceHelper.savedSTEALTHPort
+    }
+
+    override fun getSavedWSTunnelPort(): String {
+        return preferenceHelper.savedWSTunnelPort
     }
 
     override fun getSavedTCPPort(): String {
@@ -506,7 +511,10 @@ class ActivityInteractorImpl(
     }
 
     override fun saveConnectionMode(connectionMode: String) {
-        preferenceHelper.saveResponseStringData(PreferencesKeyConstants.CONNECTION_MODE_KEY, connectionMode)
+        preferenceHelper.saveResponseStringData(
+            PreferencesKeyConstants.CONNECTION_MODE_KEY,
+            connectionMode
+        )
     }
 
     override fun saveProtocol(protocol: String) {
@@ -515,6 +523,10 @@ class ActivityInteractorImpl(
 
     override fun saveSTEALTHPort(port: String) {
         preferenceHelper.saveResponseStringData(PreferencesKeyConstants.SAVED_STEALTH_PORT, port)
+    }
+
+    override fun saveWSTunnelPort(port: String) {
+        preferenceHelper.saveResponseStringData(PreferencesKeyConstants.SAVED_WS_TUNNEL_PORT, port)
     }
 
     override fun saveTCPPort(port: String) {
