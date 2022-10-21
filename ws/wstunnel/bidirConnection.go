@@ -35,7 +35,7 @@ func (b *bidirConnection) sendTCPToWS() {
 	data := make([]byte, BufferSize)
 	for {
 		if b.tcpReadTimeout > 0 {
-			b.tcpConn.SetReadDeadline(time.Now().Add(b.tcpReadTimeout))
+			_ = b.tcpConn.SetReadDeadline(time.Now().Add(b.tcpReadTimeout))
 		}
 		readSize, err := b.tcpConn.Read(data)
 		if err != nil && !os.IsTimeout(err) {
@@ -90,7 +90,7 @@ func (b *bidirConnection) Run() error {
 }
 
 func (b *bidirConnection) close() {
-	b.wsConn.WriteControl(websocket.CloseMessage, []byte{}, time.Now().Add(time.Second))
-	b.wsConn.Close()
-	b.tcpConn.Close()
+	_ = b.wsConn.WriteControl(websocket.CloseMessage, []byte{}, time.Now().Add(time.Second))
+	_ = b.wsConn.Close()
+	_ = b.tcpConn.Close()
 }

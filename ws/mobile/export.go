@@ -11,7 +11,7 @@ import (
 This project uses gomobile to build android and ios libraries used in Windscribe apps for Wstunnel support.
 */
 
-// Start Builds and start a http client (Tcp server + Websocket connection)
+// Start Builds and start a http client (Tcp server + Bi directional connection between clients and Websocket server)
 // This Function blocks until exit signal is sent by host app.
 func Start(listenAddress string, wsAddress string, logFilePath string) bool {
 	initLogger(logFilePath)
@@ -37,10 +37,10 @@ func initLogger(logFilePath string) {
 	log.SetOutput(file)
 }
 
-// Channel app >> Golang
+// Channel Host app > Library
 var channel = make(chan string)
 
-// Callback for Golang >>> App
+// Callback for Library > Host app
 var hostAppCallBack AppCallback
 
 // RegisterCallback is called from the host app.
@@ -54,8 +54,8 @@ func RegisterCallback(callback AppCallback) {
 	}
 }
 
-// AppCallback App should implement this interface and register.
+// AppCallback Host app should implement this interface and register.
 type AppCallback interface {
-	// Protect Web socket's underlying file descriptor sent to android for protecting it from VPN Service.
+	// Protect Web socket's underlying file descriptor sent to host app for protecting it from VPN Service.
 	Protect(fd int)
 }

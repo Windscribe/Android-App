@@ -1,5 +1,5 @@
 # Windscribe WSTunnel for mobile apps.
-This project is a fork of [https://github.com/trazfr/tcp-over-websocket](https://github.com/trazfr/tcp-over-websocket). Only relevent source are kept for easier maintence.
+This project is a fork of [https://github.com/trazfr/tcp-over-websocket](https://github.com/trazfr/tcp-over-websocket). Only relevant source are kept for easier maintenance.
 
 ## Build
 1. Run `go mod tidy` in ws directory.
