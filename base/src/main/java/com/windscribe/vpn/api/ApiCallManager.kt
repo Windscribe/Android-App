@@ -49,9 +49,7 @@ class ApiCallManager @Inject constructor(
             authRequired: Boolean = true
     ): Map<String, String> {
         val paramMap = mutableMapOf<String, String>()
-        //paramMap[PLATFORM] = "android"
-        // TODO Only changing for testing
-        paramMap[PLATFORM] = "desktop"
+        paramMap[PLATFORM] = "android"
         paramMap[APP_VERSION] = WindUtilities.getVersionName()
         if (authRequired) {
             val authMap = authorizationGenerator.create()
@@ -445,7 +443,7 @@ class ApiCallManager @Inject constructor(
                 extraParams,
                 modelType = PortMapResponse::class.java
         ) { apiService, params, _ ->
-            apiService.getPortMaps(params)
+            apiService.getPortMaps(params, arrayOf("wstunnel"))
         }
     }
 

@@ -1,9 +1,9 @@
 package com.windscribe.vpn.backend.openvpn
 
+import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.websockettunnel.api.Api.registerCallback
-import com.windscribe.websockettunnel.api.Api.start
-import com.windscribe.websockettunnel.api.AppCallback
+import com.windscribe.websockettunnel.wstunnel.TunnelCallBack
+import com.windscribe.websockettunnel.wstunnel.Wstunnel.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -20,10 +20,11 @@ class WsTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBackend)
     fun startWsTunnel(ip: String, port: String) {
         wsTunnelJob = scope.launch {
             val logFile = File(appContext.filesDir, WS_TUNNEL_LOG_FILE).path
+            initialise(BuildConfig.DEV, logFile)
             val remote = "wss://$ip:$port/$WS_TUNNEL_PROTOCOL/$WS_TUNNEL_ADDRESS/$WS_TUNNEL_PORT"
             logger.debug("Starting ws tunnel with arguments: $remote")
-            registerCallback(callback)
-            start(":$WS_TUNNEL_PORT", remote, logFile)
+            registerTunnelCallback(callback)
+            startWSTunnel(":$WS_TUNNEL_PORT", remote)
             logger.debug("Exiting ws tunnel.")
         }
     }
@@ -31,14 +32,12 @@ class WsTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBackend)
     fun stopWsTunnel() {
         logger.debug("Stopping ws tunnel.")
         wsTunnelJob?.cancel()
-        registerCallback(null)
+        registerTunnelCallback(null)
     }
 
-    private var callback = object : AppCallback {
-        override fun protect(fd: Long) {
-            vpnBackend.service?.protect(fd.toInt())
-            logger.debug("Protecting ws socket $fd.")
-        }
+    private var callback = TunnelCallBack { fd ->
+        vpnBackend.service?.protect(fd.toInt())
+        logger.debug("Protecting ws socket $fd.")
     }
 
     companion object {
