@@ -26,16 +26,12 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
-import androidx.work.Data
 import butterknife.BindView
 import butterknife.OnClick
 import butterknife.OnFocusChange
 import com.bumptech.glide.Glide
 import com.windscribe.tv.R
-import com.windscribe.tv.R.anim
-import com.windscribe.tv.R.drawable
-import com.windscribe.tv.R.id
-import com.windscribe.tv.R.string
+import com.windscribe.tv.R.*
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.customview.ErrorPrimaryFragment
 import com.windscribe.tv.di.ActivityModule
@@ -53,45 +49,21 @@ import com.windscribe.tv.welcome.WelcomeActivity
 import com.windscribe.tv.windscribe.WindscribeView.ConnectionStateAnimationListener
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
-import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.constants.AnimConstants
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.DeviceStateManager.DeviceStateListener
-import com.windscribe.vpn.state.PreferenceChangeObserver
-import com.windscribe.vpn.state.VPNConnectionStateManager
-import javax.inject.Inject
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
 class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     FocusAwareConstraintLayout.OnWindowResizeListener {
 
     @Inject
-    lateinit var vpnController: WindVpnController
-
-    @Inject
     lateinit var deviceStateManager: DeviceStateManager
 
     @Inject
-    lateinit var preferenceChangeObserver: PreferenceChangeObserver
-
-    @Inject
     lateinit var windscribePresenter: WindscribePresenter
-
-    @Inject
-    lateinit var vpnConnectionStateManager: VPNConnectionStateManager
-
-    @JvmField
-    @BindView(id.btn_help)
-    var btnHelp: ImageView? = null
-
-    @JvmField
-    @BindView(id.btn_notifications)
-    var btnNotifications: ImageView? = null
-
-    @JvmField
-    @BindView(id.btn_settings)
-    var btnSettings: ImageView? = null
 
     @JvmField
     @BindView(id.upgrade_parent)
@@ -135,7 +107,11 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
 
     @JvmField
     @BindView(id.badge_view)
-    var badgeView: ImageView? = null
+    var protocolBadgeBackground: ImageView? = null
+
+    @JvmField
+    @BindView(id.badge_text)
+    var protocolBadgeText: TextView? = null
 
     @JvmField
     @BindView(id.img_flag_gradient_top)
@@ -243,22 +219,40 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     override fun flashProtocolBadge(flash: Boolean) {
         runOnUiThread {
             if (flash) {
-                badgeView?.clearAnimation()
+                protocolBadgeBackground?.clearAnimation()
                 val alphaAnimation = AlphaAnimation(0.0f, 0.3f)
                 alphaAnimation.repeatCount = 50
                 alphaAnimation.duration = 500
                 alphaAnimation.isFillEnabled = false
                 alphaAnimation.setAnimationListener(object : AnimationListener {
                     override fun onAnimationEnd(animation: Animation) {
-                        badgeView?.alpha = 1.0f
+                        protocolBadgeBackground?.alpha = 1.0f
                     }
 
                     override fun onAnimationRepeat(animation: Animation) {}
                     override fun onAnimationStart(animation: Animation) {}
                 })
-                badgeView?.startAnimation(alphaAnimation)
+                protocolBadgeBackground?.startAnimation(alphaAnimation)
             } else {
-                badgeView?.clearAnimation()
+                protocolBadgeBackground?.clearAnimation()
+            }
+            if (flash) {
+                protocolBadgeText?.clearAnimation()
+                val alphaAnimation = AlphaAnimation(0.0f, 0.3f)
+                alphaAnimation.repeatCount = 50
+                alphaAnimation.duration = 500
+                alphaAnimation.isFillEnabled = false
+                alphaAnimation.setAnimationListener(object : AnimationListener {
+                    override fun onAnimationEnd(animation: Animation) {
+                        protocolBadgeText?.alpha = 1.0f
+                    }
+
+                    override fun onAnimationRepeat(animation: Animation) {}
+                    override fun onAnimationStart(animation: Animation) {}
+                })
+                protocolBadgeText?.startAnimation(alphaAnimation)
+            } else {
+                protocolBadgeText?.clearAnimation()
             }
         }
     }
@@ -320,14 +314,16 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         super.onBackPressed()
     }
 
-    override fun setBadgeIcon(badge: Int, disconnected: Boolean) {
+    override fun setBadgeIcon(protocolText: String, disconnected: Boolean) {
         runOnUiThread {
             if (disconnected) {
-                badgeView?.alpha = 0.3f
+                protocolBadgeBackground?.alpha = 0.3f
+                protocolBadgeText?.alpha = 0.3f
             } else {
-                badgeView?.alpha = 1.0f
+                protocolBadgeBackground?.alpha = 1.0f
+                protocolBadgeText?.alpha = 1.0f
             }
-            badgeView?.setImageResource(badge)
+            protocolBadgeText?.text = protocolText
         }
     }
 
@@ -407,7 +403,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
             } else {
                 splitRoutingView?.visibility = View.GONE
             }
-            badgeView?.visibility = View.VISIBLE
+            protocolBadgeBackground?.visibility = View.VISIBLE
             flashProtocolBadge(false)
             mainLogger.info("Setting layout for connected state.")
             setGlowVisibility(View.GONE)
@@ -424,7 +420,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     override fun setupLayoutConnecting(connectionState: String) {
         runOnUiThread {
             splitRoutingView?.visibility = View.GONE
-            badgeView?.visibility = View.VISIBLE
+            protocolBadgeBackground?.visibility = View.VISIBLE
             flashProtocolBadge(true)
             mainLogger.info("Setting layout for connecting state.")
             setGlowVisibility(View.GONE)

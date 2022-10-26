@@ -238,8 +238,7 @@ class ActivityInteractorImpl(
     private fun getHardCodedPortMap(): Single<PortMapResponse> {
         logger.debug("Using hardcoded port map.")
         return Single.fromCallable {
-            val inputStream: InputStream =
-                Windscribe.appContext.resources.openRawResource(raw.port_map)
+            val inputStream: InputStream = appContext.resources.openRawResource(raw.port_map)
             val sc = Scanner(inputStream)
             val sb = StringBuilder()
             while (sc.hasNext()) {
