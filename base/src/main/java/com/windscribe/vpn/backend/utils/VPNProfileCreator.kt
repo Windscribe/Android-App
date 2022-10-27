@@ -17,8 +17,8 @@ import com.windscribe.vpn.backend.Util.saveProfile
 import com.windscribe.vpn.backend.Util.saveSelectedLocation
 import com.windscribe.vpn.backend.openvpn.WindStunnelUtility
 import com.windscribe.vpn.backend.openvpn.WsTunnelManager
+import com.windscribe.vpn.backend.openvpn.WsTunnelManager.Companion.RANDOM_PORT
 import com.windscribe.vpn.backend.openvpn.WsTunnelManager.Companion.WS_TUNNEL_ADDRESS
-import com.windscribe.vpn.backend.openvpn.WsTunnelManager.Companion.WS_TUNNEL_PORT
 import com.windscribe.vpn.backend.openvpn.WsTunnelManager.Companion.WS_TUNNEL_PROTOCOL
 import com.windscribe.vpn.backend.wireguard.WireGuardVpnProfile
 import com.windscribe.vpn.commonutils.WindUtilities
@@ -190,7 +190,7 @@ class VPNProfileCreator @Inject constructor(
             }
             if (PreferencesKeyConstants.PROTO_WS_TUNNEL == protocolConfig.protocol) {
                 serverConfig = preferencesHelper.getOpenVPNServerConfig()
-                port = WS_TUNNEL_PORT
+                port = RANDOM_PORT.toString()
                 protocol = WS_TUNNEL_PROTOCOL
                 stunnelRoutingIp = vpnParameters.ikev2Ip
                 ip = WS_TUNNEL_ADDRESS
