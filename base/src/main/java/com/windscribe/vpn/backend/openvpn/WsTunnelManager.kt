@@ -24,7 +24,7 @@ class WsTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBackend)
             val remote = "wss://$ip:$port/$WS_TUNNEL_PROTOCOL/$WS_TUNNEL_ADDRESS/$WS_TUNNEL_PORT"
             logger.debug("Starting ws tunnel with arguments: $remote")
             registerTunnelCallback(callback)
-            startWSTunnel(":$RANDOM_PORT", remote)
+            startWSTunnel(":$WS_TUNNEL_LOCAL_PORT", remote)
             logger.debug("Exiting ws tunnel.")
         }
     }
@@ -45,6 +45,6 @@ class WsTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBackend)
         const val WS_TUNNEL_ADDRESS = "127.0.0.1"
         const val WS_TUNNEL_PROTOCOL = "tcp"
         const val WS_TUNNEL_LOG_FILE = "ws_tunnel_log.txt"
-        const val RANDOM_PORT = 43567
+        const val WS_TUNNEL_LOCAL_PORT = 43567
     }
 }
