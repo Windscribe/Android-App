@@ -45,6 +45,6 @@ class WsTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBackend)
         const val WS_TUNNEL_ADDRESS = "127.0.0.1"
         const val WS_TUNNEL_PROTOCOL = "tcp"
         const val WS_TUNNEL_LOG_FILE = "ws_tunnel_log.txt"
-        const val WS_TUNNEL_LOCAL_PORT = 43567
+        const val WS_TUNNEL_LOCAL_PORT = 65479
     }
 }
