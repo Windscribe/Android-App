@@ -25,9 +25,8 @@ public class VPNLaunchHelper {
     private static final String OVPNCONFIGFILE = "android.conf";
 
     private static String writeMiniVPN(Context context) {
-        return new File(context.getApplicationInfo().nativeLibraryDir, "libovpnexec.so").getPath();
-        /*String nativeAPI = NativeUtils.getNativeAPI();
-        *//* Q does not allow executing binaries written in temp directory anymore *//*
+        String nativeAPI = NativeUtils.getNativeAPI();
+        /* Q does not allow executing binaries written in temp directory anymore */
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
             return new File(context.getApplicationInfo().nativeLibraryDir, "libovpnexec.so").getPath();
         String[] abis;
@@ -50,7 +49,7 @@ public class VPNLaunchHelper {
             }
         }
 
-        throw new RuntimeException("Cannot find any executable for this device's ABIs " + Arrays.toString(abis));*/
+        throw new RuntimeException("Cannot find any executable for this device's ABIs " + Arrays.toString(abis));
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)

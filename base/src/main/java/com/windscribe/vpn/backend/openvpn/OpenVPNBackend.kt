@@ -132,6 +132,6 @@ class OpenVPNBackend(
     }
 
     fun protect(fd: Int): Boolean {
-        return service!!.saveMe(fd)
+        return service!!.protect(fd)
     }
 }

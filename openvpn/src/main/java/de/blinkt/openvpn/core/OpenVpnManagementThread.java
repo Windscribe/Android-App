@@ -13,12 +13,11 @@ import android.net.LocalSocketAddress;
 import android.os.Build;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import android.system.Os;
 import android.util.Log;
-import de.blinkt.openvpn.R;
-import de.blinkt.openvpn.VpnProfile;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -27,7 +26,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Locale;
+import java.util.Vector;
+
+import de.blinkt.openvpn.R;
+import de.blinkt.openvpn.VpnProfile;
 
 public class OpenVpnManagementThread implements Runnable, OpenVPNManagement {
 
@@ -553,10 +559,8 @@ public class OpenVpnManagementThread implements Runnable, OpenVPNManagement {
                 protectFileDescriptor(fdtoprotect);
                 break;
             case "DNSSERVER":
-                mOpenVPNService.addDNS(extra);
-                break;
             case "DNS6SERVER":
-               // mOpenVPNService.addDNS(extra);
+                mOpenVPNService.addDNS(extra);
                 break;
             case "DNSDOMAIN":
                 mOpenVPNService.setDomain(extra);
@@ -584,7 +588,7 @@ public class OpenVpnManagementThread implements Runnable, OpenVPNManagement {
             }
             case "ROUTE6": {
                 String[] routeparts = extra.split(" ");
-               // mOpenVPNService.addRoutev6(routeparts[0], routeparts[1]);
+                mOpenVPNService.addRoutev6(routeparts[0], routeparts[1]);
                 break;
             }
             case "IFCONFIG":
@@ -596,7 +600,7 @@ public class OpenVpnManagementThread implements Runnable, OpenVPNManagement {
                 String[] ifconfig6parts = extra.split(" ");
                 mtu = Integer.parseInt(ifconfig6parts[1]);
                 mOpenVPNService.setMtu(mtu);
-              //  mOpenVPNService.setLocalIPv6(ifconfig6parts[0]);
+                mOpenVPNService.setLocalIPv6(ifconfig6parts[0]);
                 break;
             case "PERSIST_TUN_ACTION":
                 // check if tun cfg stayed the same
