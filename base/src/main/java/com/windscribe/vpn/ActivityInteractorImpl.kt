@@ -15,6 +15,7 @@ import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.TrafficCounter
+import com.windscribe.vpn.backend.openvpn.WsTunnelManager
 import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.ThemeUtils
@@ -225,6 +226,10 @@ class ActivityInteractorImpl(
         while (bufferedReader.readLine().also { logLine = it } != null) {
             builder.append(logLine)
             builder.append("\n")
+        }
+        val wsTunnelLog = File(appContext.filesDir, WsTunnelManager.WS_TUNNEL_LOG_FILE)
+        if (wsTunnelLog.exists()) {
+            wsTunnelLog.bufferedReader().use { builder.append(it.readText()) }
         }
         bufferedReader.close()
         return String(Base64.encode(builder.toString().toByteArray(Charset.defaultCharset())))
