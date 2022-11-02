@@ -14,10 +14,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Vector;
 
-import de.blinkt.openvpn.R;
 import de.blinkt.openvpn.VpnProfile;
 
 public class VPNLaunchHelper {
@@ -25,31 +23,8 @@ public class VPNLaunchHelper {
     private static final String OVPNCONFIGFILE = "android.conf";
 
     private static String writeMiniVPN(Context context) {
-        String nativeAPI = NativeUtils.getNativeAPI();
         /* Q does not allow executing binaries written in temp directory anymore */
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-            return new File(context.getApplicationInfo().nativeLibraryDir, "libovpnexec.so").getPath();
-        String[] abis;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            abis = getSupportedABIsLollipop();
-        else
-            //noinspection deprecation
-            abis = new String[]{Build.CPU_ABI, Build.CPU_ABI2};
-
-        if (!nativeAPI.equals(abis[0])) {
-            VpnStatus.logWarning(R.string.abi_mismatch, Arrays.toString(abis), nativeAPI);
-            abis = new String[]{nativeAPI};
-        }
-
-        for (String abi : abis) {
-
-            File vpnExecutable = new File(context.getCacheDir(), "c_" + MINIPIEVPN + "." + abi);
-            if ((vpnExecutable.exists() && vpnExecutable.canExecute()) || writeMiniVPNBinary(context, abi, vpnExecutable)) {
-                return vpnExecutable.getPath();
-            }
-        }
-
-        throw new RuntimeException("Cannot find any executable for this device's ABIs " + Arrays.toString(abis));
+        return new File(context.getApplicationInfo().nativeLibraryDir, "libovpnexec.so").getPath();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
