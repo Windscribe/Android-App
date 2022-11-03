@@ -34,6 +34,7 @@ class OpenVPNBackend(
         VpnStatus.ByteCountListener {
 
     override var active = false
+    var service: OpenVPNWrapperService? = null
     override fun activate() {
         VpnStatus.addStateListener(this)
         VpnStatus.addLogListener {
@@ -128,5 +129,9 @@ class OpenVPNBackend(
     }
 
     override fun setConnectedVPN(uuid: String?) {
+    }
+
+    fun protect(fd: Int): Boolean {
+        return service!!.protect(fd)
     }
 }

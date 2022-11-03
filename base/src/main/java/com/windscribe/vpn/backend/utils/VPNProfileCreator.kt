@@ -16,6 +16,10 @@ import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.Util.saveProfile
 import com.windscribe.vpn.backend.Util.saveSelectedLocation
 import com.windscribe.vpn.backend.openvpn.WindStunnelUtility
+import com.windscribe.vpn.backend.openvpn.WsTunnelManager
+import com.windscribe.vpn.backend.openvpn.WsTunnelManager.Companion.WS_TUNNEL_ADDRESS
+import com.windscribe.vpn.backend.openvpn.WsTunnelManager.Companion.WS_TUNNEL_LOCAL_PORT
+import com.windscribe.vpn.backend.openvpn.WsTunnelManager.Companion.WS_TUNNEL_PROTOCOL
 import com.windscribe.vpn.backend.wireguard.WireGuardVpnProfile
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.commonutils.WindUtilities.ConfigType.WIRE_GUARD
@@ -34,6 +38,10 @@ import com.wireguard.config.Interface
 import com.wireguard.config.Interface.Builder
 import com.wireguard.config.Peer
 import de.blinkt.openvpn.core.ConfigParser
+import org.slf4j.LoggerFactory
+import org.strongswan.android.data.VpnProfile
+import org.strongswan.android.data.VpnProfile.SelectedAppsHandling.*
+import org.strongswan.android.data.VpnType
 import java.io.BufferedReader
 import java.io.Reader
 import java.io.StringReader
@@ -42,23 +50,16 @@ import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.nio.ByteOrder
-import java.util.SortedSet
-import java.util.TreeSet
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.slf4j.LoggerFactory
-import org.strongswan.android.data.VpnProfile
-import org.strongswan.android.data.VpnProfile.SelectedAppsHandling.SELECTED_APPS_DISABLE
-import org.strongswan.android.data.VpnProfile.SelectedAppsHandling.SELECTED_APPS_EXCLUDE
-import org.strongswan.android.data.VpnProfile.SelectedAppsHandling.SELECTED_APPS_ONLY
-import org.strongswan.android.data.VpnType
 
 @Singleton
 class VPNProfileCreator @Inject constructor(
-        private val preferencesHelper: PreferencesHelper,
-        private val wgConfigRepository: WgConfigRepository
+    private val preferencesHelper: PreferencesHelper,
+    private val wgConfigRepository: WgConfigRepository,
+    private val wsTunnelManager: WsTunnelManager
 ) {
 
     private val logger = LoggerFactory.getLogger("profile_creator")
@@ -187,6 +188,13 @@ class VPNProfileCreator @Inject constructor(
                 stunnelRoutingIp = vpnParameters.stealthIp
                 ip = VpnPreferenceConstants.STUNNEL_LOCAL_IP
             }
+            if (PreferencesKeyConstants.PROTO_WS_TUNNEL == protocolConfig.protocol) {
+                serverConfig = preferencesHelper.getOpenVPNServerConfig()
+                port = WS_TUNNEL_LOCAL_PORT.toString()
+                protocol = WS_TUNNEL_PROTOCOL
+                stunnelRoutingIp = vpnParameters.ikev2Ip
+                ip = WS_TUNNEL_ADDRESS
+            }
             if (PreferencesKeyConstants.PROTO_TCP == protocolConfig.protocol) {
                 ip = vpnParameters.tcpIp
                 protocol = "tcp"
@@ -231,6 +239,14 @@ class VPNProfileCreator @Inject constructor(
             preferencesHelper.selectedPort = protocolConfig.port
             WindUtilities.writeStunnelConfig(appContext, stunnelRoutingIp, protocolConfig.port)
             WindStunnelUtility.startLocalTun()
+        } else if (protocolConfig.protocol == PreferencesKeyConstants.PROTO_WS_TUNNEL) {
+            if (wsTunnelManager.running) {
+                wsTunnelManager.stopWsTunnel()
+            }
+            preferencesHelper.selectedPort = protocolConfig.port
+            if (stunnelRoutingIp != null) {
+                wsTunnelManager.startWsTunnel(vpnParameters.ikev2Ip, protocolConfig.port)
+            }
         }
         saveSelectedLocation(lastSelectedLocation)
         saveProfile(profile)

@@ -17,4 +17,5 @@ object VpnPreferenceConstants {
     const val STUNNEL_VPN_PROTOCOL = "tcp"
     const val VPN_CONNECTIVITY_ACTION = "com.windscribe.vpn.OPEN_VPN_CONNECTIVITY"
     const val DEBUG_FILE_SIZE_LOWER = "1024 KB"
+    const val WS_TUNNEL_FILE = "wstunnel.txt"
 }
