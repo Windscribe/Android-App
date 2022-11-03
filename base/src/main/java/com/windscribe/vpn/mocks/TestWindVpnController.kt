@@ -3,6 +3,7 @@ package com.windscribe.vpn.mocks
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VpnBackendHolder
+import com.windscribe.vpn.backend.openvpn.WsTunnelManager
 import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.backend.utils.WindVpnController
@@ -16,17 +17,27 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class TestWindVpnController(
-        scope: CoroutineScope,
-        interactor: ServiceInteractor,
-        vpnProfileCreator: VPNProfileCreator,
-        private val vpnConnectionStateManager: VPNConnectionStateManager,
-        vpnBackendHolder: VpnBackendHolder,
-        locationRepository: LocationRepository,
-        protocolManager: ProtocolManager,
-        wgConfigRepository: WgConfigRepository,
-        userRepository: Lazy<UserRepository>
+    scope: CoroutineScope,
+    interactor: ServiceInteractor,
+    vpnProfileCreator: VPNProfileCreator,
+    private val vpnConnectionStateManager: VPNConnectionStateManager,
+    vpnBackendHolder: VpnBackendHolder,
+    locationRepository: LocationRepository,
+    protocolManager: ProtocolManager,
+    wgConfigRepository: WgConfigRepository,
+    userRepository: Lazy<UserRepository>,
+    wsTunnelManager: WsTunnelManager
 ) : WindVpnController(
-        scope, interactor, vpnProfileCreator, vpnConnectionStateManager, vpnBackendHolder, locationRepository, protocolManager, wgConfigRepository,userRepository
+    scope,
+    interactor,
+    vpnProfileCreator,
+    vpnConnectionStateManager,
+    vpnBackendHolder,
+    locationRepository,
+    protocolManager,
+    wgConfigRepository,
+    userRepository,
+    wsTunnelManager
 ) {
     var nextState: VPNState = VPNState(VPNState.Status.Connected)
     override fun launchVPNService() {

@@ -109,6 +109,7 @@ dependencies {
     //Room
     api "androidx.room:room-rxjava2:$room"
     api "androidx.room:room-runtime:$room"
+    implementation fileTree(dir: './libs/', include: ['*.aar', '*.jar'], exclude: [])
     kapt "androidx.room:room-compiler:$room"
     // Push notifications
     api 'com.google.firebase:firebase-messaging:21.0.1'

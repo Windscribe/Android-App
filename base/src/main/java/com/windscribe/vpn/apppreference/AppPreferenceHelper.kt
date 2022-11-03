@@ -232,20 +232,41 @@ class AppPreferenceHelper(
     }
 
     override val savedLanguage: String
-        get() = preference.getString(PreferencesKeyConstants.USER_LANGUAGE, appContext.getAppSupportedSystemLanguage())
-                ?: appContext.getAppSupportedSystemLanguage()
+        get() = preference.getString(
+            PreferencesKeyConstants.USER_LANGUAGE,
+            appContext.getAppSupportedSystemLanguage()
+        )
+            ?: appContext.getAppSupportedSystemLanguage()
     override val savedProtocol: String
-        get() = preference.getString(PreferencesKeyConstants.PROTOCOL_KEY, PreferencesKeyConstants.PROTO_IKev2)
-                ?: PreferencesKeyConstants.PROTO_IKev2
+        get() = preference.getString(
+            PreferencesKeyConstants.PROTOCOL_KEY,
+            PreferencesKeyConstants.PROTO_IKev2
+        )
+            ?: PreferencesKeyConstants.PROTO_IKev2
     override val savedSTEALTHPort: String
-        get() = preference.getString(PreferencesKeyConstants.SAVED_STEALTH_PORT, PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT)
-                ?: PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT
+        get() = preference.getString(
+            PreferencesKeyConstants.SAVED_STEALTH_PORT,
+            PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT
+        )
+            ?: PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT
+    override val savedWSTunnelPort: String
+        get() = preference.getString(
+            PreferencesKeyConstants.SAVED_WS_TUNNEL_PORT,
+            PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT
+        )
+            ?: PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT
     override val savedTCPPort: String
-        get() = preference.getString(PreferencesKeyConstants.SAVED_TCP_PORT, PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT)
-                ?: PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT
+        get() = preference.getString(
+            PreferencesKeyConstants.SAVED_TCP_PORT,
+            PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT
+        )
+            ?: PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT
     override val savedUDPPort: String
-        get() = preference.getString(PreferencesKeyConstants.SAVED_UDP_PORT, PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT)
-                ?: PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT
+        get() = preference.getString(
+            PreferencesKeyConstants.SAVED_UDP_PORT,
+            PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT
+        )
+            ?: PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT
     override var selectedCity: Int
         get() = preference.getInt(PreferencesKeyConstants.SELECTED_CITY_ID, -1)
         set(cityId) {

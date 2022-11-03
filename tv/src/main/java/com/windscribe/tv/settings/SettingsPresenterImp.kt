@@ -33,6 +33,7 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_STEALTH
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_TCP
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_UDP
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
+import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WS_TUNNEL
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.SessionErrorHandler
 import com.windscribe.vpn.errormodel.WindError
@@ -245,6 +246,10 @@ class SettingsPresenterImp @Inject constructor(
                     PROTO_STEALTH -> {
                         logger.info("Saving selected stealth port...")
                         interactor.saveSTEALTHPort(port)
+                    }
+                    PROTO_WS_TUNNEL -> {
+                        logger.info("Saving selected ws port...")
+                        interactor.saveWSTunnelPort(port)
                     }
                     PROTO_WIRE_GUARD -> {
                         logger.info("Saving selected wire guard port...")
@@ -561,6 +566,7 @@ class SettingsPresenterImp @Inject constructor(
             PROTO_UDP -> interactor.getSavedUDPPort()
             PROTO_TCP -> interactor.getSavedTCPPort()
             PROTO_STEALTH -> interactor.getSavedSTEALTHPort()
+            PROTO_WS_TUNNEL -> interactor.getSavedWSTunnelPort()
             PROTO_WIRE_GUARD -> interactor.getWireGuardPort()
             else -> "443"
         }

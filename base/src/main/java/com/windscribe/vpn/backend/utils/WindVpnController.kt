@@ -17,6 +17,7 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.openvpn.WindStunnelUtility
+import com.windscribe.vpn.backend.openvpn.WsTunnelManager
 import com.windscribe.vpn.backend.utils.SelectedLocationType.CityLocation
 import com.windscribe.vpn.backend.utils.SelectedLocationType.StaticIp
 import com.windscribe.vpn.commonutils.WindUtilities
@@ -47,17 +48,18 @@ import javax.inject.Singleton
 
 @Singleton
 open class WindVpnController @Inject constructor(
-        val scope: CoroutineScope,
-        private val interactor: ServiceInteractor,
-        private val vpnProfileCreator: VPNProfileCreator,
-        private val vpnConnectionStateManager: VPNConnectionStateManager,
-        val vpnBackendHolder: VpnBackendHolder,
-        private val locationRepository: LocationRepository,
-        private val protocolManager: ProtocolManager,
-        private val wgConfigRepository: WgConfigRepository,
-        private val userRepository: Lazy<UserRepository>
+    val scope: CoroutineScope,
+    private val interactor: ServiceInteractor,
+    private val vpnProfileCreator: VPNProfileCreator,
+    private val vpnConnectionStateManager: VPNConnectionStateManager,
+    val vpnBackendHolder: VpnBackendHolder,
+    private val locationRepository: LocationRepository,
+    private val protocolManager: ProtocolManager,
+    private val wgConfigRepository: WgConfigRepository,
+    private val userRepository: Lazy<UserRepository>,
+    private val wsTunnelManager: WsTunnelManager,
 
-) {
+    ) {
 
     private val logger = LoggerFactory.getLogger("vpn_backend")
     private var disconnectTask: Job? = null
@@ -288,6 +290,9 @@ open class WindVpnController @Inject constructor(
             if (WindStunnelUtility.isStunnelRunning) {
                 logger.debug("stopping stunnel service.")
                 WindStunnelUtility.stopLocalTunFromAppContext(appContext)
+            }
+            if (wsTunnelManager.running) {
+                wsTunnelManager.stopWsTunnel()
             }
             if (isServiceRunning(NetworkWhiteListService::class.java)) {
                 logger.debug("stopping whitelist service.")
