@@ -9,7 +9,8 @@ import android.os.Build
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.view.View
-import com.windscribe.tv.R.*
+import com.windscribe.tv.R.color
+import com.windscribe.tv.R.string
 import com.windscribe.tv.serverlist.adapters.ServerAdapter
 import com.windscribe.tv.sort.ByLatency
 import com.windscribe.tv.sort.ByRegionName
@@ -22,7 +23,6 @@ import com.windscribe.vpn.backend.Util.getSavedLocation
 import com.windscribe.vpn.backend.Util.validIpAddress
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
-import com.windscribe.vpn.backend.utils.ProtocolConfig
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.BillingConstants
@@ -93,10 +93,10 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getProtocolManager().protocolConfigList.collectLatest {
             if (interactor.getVpnConnectionStateManager().isVPNActive()) {
                 it.selectedProtocol?.let { config ->
-                    windscribeView.setBadgeIcon(getProtocolBadge(config), false)
+                    windscribeView.setBadgeIcon(config.heading, false)
                 }
             } else {
-                windscribeView.setBadgeIcon(getProtocolBadge(it.nextProtocolToConnect), true)
+                windscribeView.setBadgeIcon(it.nextProtocolToConnect.heading, true)
             }
         }
     }
@@ -105,7 +105,7 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getProtocolManager().availableProtocols.value.let {
             if (it.isNotEmpty()) {
                 windscribeView.setBadgeIcon(
-                    getProtocolBadge(it.first()),
+                    it.first().heading,
                     !interactor.getVpnConnectionStateManager().isVPNActive()
                 )
                 windscribeView.setConnectionStateColor(interactor.getColorResource(color.colorYellow))
@@ -312,7 +312,7 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.setState(1)
         windscribeView.setGlowVisibility(View.GONE)
         windscribeView.setVpnButtonState()
-        windscribeView.setBadgeIcon(protocolBadge, false)
+        windscribeView.setBadgeIcon(protocolHeading, false)
         selectedLocation?.let {
             windscribeView.startVpnConnectingAnimation(
                 interactor.getResourceString(string.connecting),
@@ -626,30 +626,20 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
-    private val protocolBadge: Int
+    private val protocolHeading: String
         get() {
-            when (interactor.getAppPreferenceInterface().selectedProtocol) {
-                PreferencesKeyConstants.PROTO_UDP -> return drawable.ic_udp
-                PreferencesKeyConstants.PROTO_TCP -> return drawable.ic_tcp
-                PreferencesKeyConstants.PROTO_STEALTH -> return drawable.ic_stealth
-                PreferencesKeyConstants.PROTO_IKev2 -> return drawable.ic_ikev2
-                PreferencesKeyConstants.PROTO_WIRE_GUARD -> return drawable.ic_wg_icon
-            }
-            return drawable.ic_ikev2
-        }
-
-    private fun getProtocolBadge(protocolConfig: ProtocolConfig): Int {
-        return when (protocolConfig.protocol) {
-            PreferencesKeyConstants.PROTO_UDP -> drawable.ic_udp
-            PreferencesKeyConstants.PROTO_TCP -> drawable.ic_tcp
-            PreferencesKeyConstants.PROTO_STEALTH -> drawable.ic_stealth
-            PreferencesKeyConstants.PROTO_IKev2 -> drawable.ic_ikev2
-            PreferencesKeyConstants.PROTO_WIRE_GUARD -> drawable.ic_wg_icon
-            else -> {
-                drawable.ic_ikev2
+            return when (interactor.getAppPreferenceInterface().selectedProtocol) {
+                PreferencesKeyConstants.PROTO_UDP -> "UDP"
+                PreferencesKeyConstants.PROTO_TCP -> "TCP"
+                PreferencesKeyConstants.PROTO_STEALTH -> "Stealth"
+                PreferencesKeyConstants.PROTO_WS_TUNNEL -> "WStunnel"
+                PreferencesKeyConstants.PROTO_IKev2 -> "IKEv2"
+                PreferencesKeyConstants.PROTO_WIRE_GUARD -> "WireGuard"
+                else -> {
+                    "IKEv2"
+                }
             }
         }
-    }
 
     private fun getTotalPingTime(cities: List<City>, dataDetails: ServerListData): Int {
         var total = 0

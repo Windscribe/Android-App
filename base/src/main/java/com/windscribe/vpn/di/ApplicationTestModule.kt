@@ -23,6 +23,7 @@ import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.ikev2.IKev2VpnBackend
 import com.windscribe.vpn.backend.openvpn.OpenVPNBackend
+import com.windscribe.vpn.backend.openvpn.WsTunnelManager
 import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
@@ -420,8 +421,12 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
 
     @Provides
     @Singleton
-    fun provideVPNProfileCreator(preferencesHelper: PreferencesHelper, wgConfigRepository: WgConfigRepository): VPNProfileCreator {
-        return VPNProfileCreator(preferencesHelper, wgConfigRepository)
+    fun provideVPNProfileCreator(
+        preferencesHelper: PreferencesHelper,
+        wgConfigRepository: WgConfigRepository,
+        wsTunnelManager: WsTunnelManager
+    ): VPNProfileCreator {
+        return VPNProfileCreator(preferencesHelper, wgConfigRepository, wsTunnelManager)
     }
 
     @Provides
@@ -470,25 +475,27 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun provideWindVpnController(
-            coroutineScope: CoroutineScope,
-            serviceInteractor: ServiceInteractor,
-            vpnProfileCreator: VPNProfileCreator,
-            protocolManager: ProtocolManager,
-            VPNConnectionStateManager: VPNConnectionStateManager,
-            vpnBackendHolder: VpnBackendHolder,
-            locationRepository: LocationRepository,
-            wgConfigRepository: WgConfigRepository,
-            userRepository: Lazy<UserRepository>
+        coroutineScope: CoroutineScope,
+        serviceInteractor: ServiceInteractor,
+        vpnProfileCreator: VPNProfileCreator,
+        protocolManager: ProtocolManager,
+        VPNConnectionStateManager: VPNConnectionStateManager,
+        vpnBackendHolder: VpnBackendHolder,
+        locationRepository: LocationRepository,
+        wgConfigRepository: WgConfigRepository,
+        userRepository: Lazy<UserRepository>,
+        wsTunnelManager: WsTunnelManager
     ): WindVpnController {
         return TestWindVpnController(
-                coroutineScope,
-                serviceInteractor,
-                vpnProfileCreator,
-                VPNConnectionStateManager,
-                vpnBackendHolder,
-                locationRepository,
-                protocolManager, wgConfigRepository,
-                userRepository
+            coroutineScope,
+            serviceInteractor,
+            vpnProfileCreator,
+            VPNConnectionStateManager,
+            vpnBackendHolder,
+            locationRepository,
+            protocolManager, wgConfigRepository,
+            userRepository,
+            wsTunnelManager
         )
     }
 
@@ -701,13 +708,41 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
 
     @Provides
     @Singleton
-    fun providesWindScribeWorkManager(scope: CoroutineScope, vpnConnectionStateManager: VPNConnectionStateManager, preferencesHelper: PreferencesHelper): WindScribeWorkManager {
-        return WindScribeWorkManager(windscribeApp, scope, vpnConnectionStateManager, preferencesHelper)
+    fun providesWindScribeWorkManager(
+        scope: CoroutineScope,
+        vpnConnectionStateManager: VPNConnectionStateManager,
+        preferencesHelper: PreferencesHelper
+    ): WindScribeWorkManager {
+        return WindScribeWorkManager(
+            windscribeApp,
+            scope,
+            vpnConnectionStateManager,
+            preferencesHelper
+        )
     }
 
     @Provides
     @Singleton
-    fun providesDecoyTrafficController(scope: CoroutineScope, apiCallManager: IApiCallManager, preferencesHelper: PreferencesHelper, vpnConnectionStateManager: VPNConnectionStateManager): DecoyTrafficController {
-        return DecoyTrafficController(scope, apiCallManager, preferencesHelper,vpnConnectionStateManager)
+    fun providesDecoyTrafficController(
+        scope: CoroutineScope,
+        apiCallManager: IApiCallManager,
+        preferencesHelper: PreferencesHelper,
+        vpnConnectionStateManager: VPNConnectionStateManager
+    ): DecoyTrafficController {
+        return DecoyTrafficController(
+            scope,
+            apiCallManager,
+            preferencesHelper,
+            vpnConnectionStateManager
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun providesWsTunnelManager(
+        scope: CoroutineScope,
+        openVPNBackend: OpenVPNBackend
+    ): WsTunnelManager {
+        return WsTunnelManager(scope, openVPNBackend)
     }
 }
