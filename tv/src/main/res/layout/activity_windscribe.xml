@@ -345,22 +345,34 @@
             android:textSize="64sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/city_name"
-
-
-            />
+            app:layout_constraintTop_toBottomOf="@id/city_name" />
 
         <ImageView
             android:id="@+id/badge_view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="@id/badge_text"
+            app:layout_constraintEnd_toEndOf="@id/badge_text"
+            app:layout_constraintTop_toTopOf="@id/badge_text"
+            app:layout_constraintStart_toStartOf="@id/badge_text"
+            android:background="@drawable/badge_background" />
+
+        <TextView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:visibility="visible"
+            android:layout_height="44dp"
+            android:id="@+id/badge_text"
+            android:gravity="center"
+            android:layout_marginEnd="@dimen/reg_8dp"
             app:layout_constraintBottom_toBottomOf="@id/connection_status"
             app:layout_constraintEnd_toStartOf="@id/split_routing_view"
             app:layout_constraintTop_toTopOf="@id/connection_status"
-            app:srcCompat="@drawable/ic_ikev2" />
-
+            android:textColor="#55FF8A"
+            android:paddingStart="@dimen/padding_16"
+            android:paddingEnd="@dimen/padding_16"
+            android:textSize="@dimen/text_size_24"
+            android:fontFamily="@font/ibm_plex_sans_bold"
+            android:text="IKEv2"
+            android:includeFontPadding="false" />
 
         <TextView
             android:id="@+id/connection_status"

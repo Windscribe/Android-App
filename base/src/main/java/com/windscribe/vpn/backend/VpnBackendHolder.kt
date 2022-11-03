@@ -15,12 +15,13 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_STEALTH
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_TCP
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_UDP
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
+import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WS_TUNNEL
 import de.blinkt.openvpn.VpnProfile
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import javax.inject.Singleton
 
 @Singleton
 class VpnBackendHolder(
@@ -39,7 +40,7 @@ class VpnBackendHolder(
      */
     private fun getBackend(): VpnBackend? {
         return when (preferenceHelper.selectedProtocol) {
-            PROTO_UDP, PROTO_TCP, PROTO_STEALTH -> {
+            PROTO_UDP, PROTO_TCP, PROTO_STEALTH, PROTO_WS_TUNNEL -> {
                 if (Util.getProfile<VpnProfile>() != null) {
                     return openVPNBackend
                 }
