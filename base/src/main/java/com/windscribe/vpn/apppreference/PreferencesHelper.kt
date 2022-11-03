@@ -57,6 +57,7 @@ interface PreferencesHelper {
     val savedLanguage: String
     val savedProtocol: String
     val savedSTEALTHPort: String
+    val savedWSTunnelPort: String
     val savedTCPPort: String
     val savedUDPPort: String
     var selectedCity: Int

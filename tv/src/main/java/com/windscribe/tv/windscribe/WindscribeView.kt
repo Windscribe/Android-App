@@ -23,7 +23,7 @@ interface WindscribeView {
     fun openNewsFeedActivity(showPopUp: Boolean, popUp: Int)
     fun openUpgradeActivity()
     fun quitApplication()
-    fun setBadgeIcon(badge: Int, disconnected: Boolean)
+    fun setBadgeIcon(protocolText: String, disconnected: Boolean)
     fun setConnectionStateColor(connectionStateColor: Int)
     fun setConnectionStateText(connectionStateText: String)
     fun setCountryFlag(flagIconResource: Int)

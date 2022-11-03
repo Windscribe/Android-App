@@ -443,7 +443,7 @@ class ApiCallManager @Inject constructor(
                 extraParams,
                 modelType = PortMapResponse::class.java
         ) { apiService, params, _ ->
-            apiService.getPortMaps(params)
+            apiService.getPortMaps(params, arrayOf("wstunnel"))
         }
     }
 
