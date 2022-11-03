@@ -14,10 +14,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Vector;
 
-import de.blinkt.openvpn.R;
 import de.blinkt.openvpn.VpnProfile;
 
 public class VPNLaunchHelper {
@@ -27,7 +25,7 @@ public class VPNLaunchHelper {
     private static String writeMiniVPN(Context context) {
         return new File(context.getApplicationInfo().nativeLibraryDir, "libovpnexec.so").getPath();
         /*String nativeAPI = NativeUtils.getNativeAPI();
-        *//* Q does not allow executing binaries written in temp directory anymore *//*
+         *//* Q does not allow executing binaries written in temp directory anymore *//*
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
             return new File(context.getApplicationInfo().nativeLibraryDir, "libovpnexec.so").getPath();
         String[] abis;

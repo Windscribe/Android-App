@@ -16,8 +16,8 @@ import com.windscribe.vpn.constants.NotificationConstants
 import de.blinkt.openvpn.VpnProfile
 import de.blinkt.openvpn.core.OpenVPNService
 import de.blinkt.openvpn.core.VpnStatus.StateListener
-import javax.inject.Inject
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
 class OpenVPNWrapperService : OpenVPNService(), StateListener {
 
@@ -30,11 +30,15 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
     @Inject
     lateinit var vpnController: WindVpnController
 
+    @Inject
+    lateinit var openVPNBackend: OpenVPNBackend
+
     private var logger = LoggerFactory.getLogger("open_vpn_wrapper")
 
     override fun onCreate() {
         Windscribe.appContext.serviceComponent.inject(this)
         super.onCreate()
+        openVPNBackend.service = this
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -56,7 +60,12 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
     }
 
     override fun onDestroy() {
+        openVPNBackend.service = null
         windNotificationBuilder.cancelNotification(NotificationConstants.SERVICE_NOTIFICATION_ID)
         super.onDestroy()
+    }
+
+    override fun protect(socket: Int): Boolean {
+        return super.protect(socket)
     }
 }

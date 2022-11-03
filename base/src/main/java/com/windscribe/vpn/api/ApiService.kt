@@ -36,7 +36,10 @@ interface ApiService {
 
     // @GET("/PortMap?version=5&country_code=RU")
     @GET("/PortMap?version=5")
-    fun getPortMaps(@QueryMap params: Map<String, String>?): Single<ResponseBody>
+    fun getPortMaps(
+        @QueryMap params: Map<String, String>?,
+        @Query("force_protocols[]") forceProtocols: Array<String>
+    ): Single<ResponseBody>
 
     @FormUrlEncoded
     @POST("/RegToken")

@@ -14,6 +14,7 @@ import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.ikev2.IKev2VpnBackend
 import com.windscribe.vpn.backend.openvpn.OpenVPNBackend
+import com.windscribe.vpn.backend.openvpn.WsTunnelManager
 import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
@@ -68,6 +69,7 @@ interface ApplicationComponent {
     val iKev2VpnBackend: IKev2VpnBackend
     val openVPNBackend: OpenVPNBackend
     val vpnConnectionStateManager: VPNConnectionStateManager
+    val wsTunnelManager: WsTunnelManager
 
     //Managers
     val windScribeWorkManager: WindScribeWorkManager

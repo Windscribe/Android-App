@@ -10,10 +10,12 @@ import androidx.core.content.ContextCompat
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.windscribe.vpn.R.*
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.TrafficCounter
+import com.windscribe.vpn.backend.openvpn.WsTunnelManager
 import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.ThemeUtils
@@ -225,6 +227,10 @@ class ActivityInteractorImpl(
             builder.append(logLine)
             builder.append("\n")
         }
+        val wsTunnelLog = File(appContext.filesDir, WsTunnelManager.WS_TUNNEL_LOG_FILE)
+        if (wsTunnelLog.exists()) {
+            wsTunnelLog.bufferedReader().use { builder.append(it.readText()) }
+        }
         bufferedReader.close()
         return String(Base64.encode(builder.toString().toByteArray(Charset.defaultCharset())))
     }
@@ -232,8 +238,7 @@ class ActivityInteractorImpl(
     private fun getHardCodedPortMap(): Single<PortMapResponse> {
         logger.debug("Using hardcoded port map.")
         return Single.fromCallable {
-            val inputStream: InputStream =
-                Windscribe.appContext.resources.openRawResource(raw.port_map)
+            val inputStream: InputStream = appContext.resources.openRawResource(raw.port_map)
             val sc = Scanner(inputStream)
             val sb = StringBuilder()
             while (sc.hasNext()) {
@@ -478,7 +483,8 @@ class ActivityInteractorImpl(
     }
 
     override fun getSavedConnectionMode(): String {
-        return preferenceHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY) ?: PreferencesKeyConstants.CONNECTION_MODE_AUTO
+        return preferenceHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY)
+            ?: PreferencesKeyConstants.CONNECTION_MODE_AUTO
     }
 
     override fun getSavedProtocol(): String {
@@ -487,6 +493,10 @@ class ActivityInteractorImpl(
 
     override fun getSavedSTEALTHPort(): String {
         return preferenceHelper.savedSTEALTHPort
+    }
+
+    override fun getSavedWSTunnelPort(): String {
+        return preferenceHelper.savedWSTunnelPort
     }
 
     override fun getSavedTCPPort(): String {
@@ -506,7 +516,10 @@ class ActivityInteractorImpl(
     }
 
     override fun saveConnectionMode(connectionMode: String) {
-        preferenceHelper.saveResponseStringData(PreferencesKeyConstants.CONNECTION_MODE_KEY, connectionMode)
+        preferenceHelper.saveResponseStringData(
+            PreferencesKeyConstants.CONNECTION_MODE_KEY,
+            connectionMode
+        )
     }
 
     override fun saveProtocol(protocol: String) {
@@ -515,6 +528,10 @@ class ActivityInteractorImpl(
 
     override fun saveSTEALTHPort(port: String) {
         preferenceHelper.saveResponseStringData(PreferencesKeyConstants.SAVED_STEALTH_PORT, port)
+    }
+
+    override fun saveWSTunnelPort(port: String) {
+        preferenceHelper.saveResponseStringData(PreferencesKeyConstants.SAVED_WS_TUNNEL_PORT, port)
     }
 
     override fun saveTCPPort(port: String) {

@@ -79,11 +79,13 @@ interface ActivityInteractor {
     fun saveConnectionMode(connectionMode: String)
     fun saveProtocol(protocol: String)
     fun saveSTEALTHPort(port: String)
+    fun saveWSTunnelPort(port: String)
     fun saveTCPPort(port: String)
     fun saveUDPPort(port: String)
     fun getSavedConnectionMode(): String
     fun getSavedProtocol(): String
     fun getSavedSTEALTHPort(): String
+    fun getSavedWSTunnelPort(): String
     fun getSavedTCPPort(): String
     fun getSavedUDPPort(): String
     fun getThemeColor(resourceId: Int): Int
