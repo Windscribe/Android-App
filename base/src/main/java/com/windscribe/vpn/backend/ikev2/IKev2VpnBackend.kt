@@ -12,16 +12,14 @@ import android.os.IBinder
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
-import com.windscribe.vpn.backend.utils.ProtocolManager
-import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -31,17 +29,18 @@ import org.strongswan.android.logic.VpnStateService
 import org.strongswan.android.logic.VpnStateService.VpnStateListener
 import java.io.File
 import java.io.IOException
+import java.util.*
+import javax.inject.Singleton
 
 @Singleton
 class IKev2VpnBackend(
-        var scope: CoroutineScope,
-        var networkInfoManager: NetworkInfoManager,
-        var vpnStateManager: VPNConnectionStateManager,
-        var serviceInteractor: ServiceInteractor,
-        var protocolManager: ProtocolManager
-) : VpnBackend(scope, vpnStateManager, serviceInteractor, protocolManager),
-        VpnStateListener,
-        NetworkInfoListener {
+    var scope: CoroutineScope,
+    var networkInfoManager: NetworkInfoManager,
+    var vpnStateManager: VPNConnectionStateManager,
+    var serviceInteractor: ServiceInteractor
+) : VpnBackend(scope, vpnStateManager, serviceInteractor),
+    VpnStateListener,
+    NetworkInfoListener {
 
     private var vpnService: VpnStateService? = null
     private val stateServiceChannel = Channel<VpnStateService>()
@@ -93,13 +92,15 @@ class IKev2VpnBackend(
         }
         serviceConnection?.let {
             context.bindService(
-                    Intent(context, VpnStateService::class.java),
-                    it, Service.BIND_AUTO_CREATE
+                Intent(context, VpnStateService::class.java),
+                it, Service.BIND_AUTO_CREATE
             )
         }
     }
 
-    override fun connect() {
+    override fun connect(protocolInformation: ProtocolInformation, connectionId: UUID) {
+        this.protocolInformation = protocolInformation
+        this.connectionId = connectionId
         vpnLogger.debug("Connecting to Ikev2 Service.")
         startConnectionJob()
         scope.launch {
@@ -107,7 +108,8 @@ class IKev2VpnBackend(
         }
     }
 
-    override suspend fun disconnect() {
+    override suspend fun disconnect(error: VPNState.Error?) {
+        this.error = error
         connectionJob?.cancel()
         vpnLogger.debug("Disconnecting ikev2 service.")
         vpnService?.state?.let {
@@ -160,7 +162,14 @@ class IKev2VpnBackend(
                 VpnStateService.State.DISCONNECTING -> VPNState(VPNState.Status.Disconnecting)
             } else {
                 if (error == VpnStateService.ErrorState.AUTH_FAILED) {
-                    authFailure = true
+                    scope.launch {
+                        disconnect(
+                            VPNState.Error(
+                                error = VPNState.ErrorType.AuthenticationError,
+                                message = "Authentication failed."
+                            )
+                        )
+                    }
                 }
                 null
             }

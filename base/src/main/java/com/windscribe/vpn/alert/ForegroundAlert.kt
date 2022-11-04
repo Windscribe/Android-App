@@ -27,6 +27,7 @@ fun showRetryDialog(message: String, retryCallBack: () -> Unit, cancelCallBack: 
             setPositiveButton(POSITIVE_BUTTON_LABEL, DialogInterface.OnClickListener(function = listener))
             setNegativeButton(NEGATIVE_BUTTON_LABEL, DialogInterface.OnClickListener(function = listener))
             setOnCancelListener { cancelCallBack() }
+            setOnDismissListener { cancelCallBack() }
             show()
         }
     }

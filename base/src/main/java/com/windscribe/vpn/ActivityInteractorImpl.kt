@@ -14,9 +14,9 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.openvpn.WsTunnelManager
-import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.ThemeUtils
 import com.windscribe.vpn.commonutils.WindUtilities
@@ -62,7 +62,6 @@ class ActivityInteractorImpl(
     val localDbInterface: LocalDbInterface,
     private val vpnConnectionStateManager: VPNConnectionStateManager,
     private val userRepository: UserRepository,
-    private val protocolManager: ProtocolManager,
     private val networkInfoManager: NetworkInfoManager,
     private val locationRepository: LocationRepository,
     private val vpnController: WindVpnController,
@@ -73,7 +72,8 @@ class ActivityInteractorImpl(
     private val notificationRepository: NotificationRepository,
     private val windScribeWorkManager: WindScribeWorkManager,
     private val decoyTrafficController: DecoyTrafficController,
-    private val trafficCounter: TrafficCounter
+    private val trafficCounter: TrafficCounter,
+    private val autoConnectionManager: AutoConnectionManager
 ) : ActivityInteractor {
 
     interface PortMapLoadCallback {
@@ -96,10 +96,6 @@ class ActivityInteractorImpl(
 
     override fun getVpnConnectionStateManager(): VPNConnectionStateManager {
         return vpnConnectionStateManager
-    }
-
-    override fun getProtocolManager(): ProtocolManager {
-        return protocolManager
     }
 
     override fun getNetworkInfoManager(): NetworkInfoManager {
@@ -144,6 +140,10 @@ class ActivityInteractorImpl(
 
     override fun getTrafficCounter(): TrafficCounter {
         return trafficCounter
+    }
+
+    override fun getAutoConnectionManager(): AutoConnectionManager {
+        return autoConnectionManager
     }
 
     override fun addConfigFile(configFile: ConfigFile): Completable {

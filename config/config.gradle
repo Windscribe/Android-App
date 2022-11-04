@@ -30,6 +30,11 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
+            manifestPlaceholders = [usesCleartextTraffic:"false"]
+        }
+        debug {
+            //Required for mock webserver
+            manifestPlaceholders = [usesCleartextTraffic:"true"]
         }
     }
 }

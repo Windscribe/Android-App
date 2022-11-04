@@ -43,8 +43,8 @@ import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.ActivityInteractorImpl
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.TrafficCounter
-import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
@@ -284,7 +284,6 @@ class ActivityModule {
         localDbInterface: LocalDbInterface,
         vpnConnectionStateManager: VPNConnectionStateManager,
         userRepository: UserRepository,
-        protocolManager: ProtocolManager,
         networkInfoManager: NetworkInfoManager,
         locationRepository: LocationRepository,
         vpnController: WindVpnController,
@@ -295,19 +294,20 @@ class ActivityModule {
         notificationRepository: NotificationRepository,
         workManager: WindScribeWorkManager,
         decoyTrafficController: DecoyTrafficController,
-        trafficCounter: TrafficCounter
+        trafficCounter: TrafficCounter,
+        autoConnectionManager: AutoConnectionManager
     ): ActivityInteractor {
         return ActivityInteractorImpl(
             coroutineScope,
             prefHelper, apiCallManager, localDbInterface, vpnConnectionStateManager,
-            userRepository, protocolManager, networkInfoManager, locationRepository, vpnController,
+            userRepository, networkInfoManager, locationRepository, vpnController,
             connectionDataRepository,
             serverListRepository,
             staticListUpdate,
             preferenceChangeObserver,
             notificationRepository, workManager, decoyTrafficController,
-            trafficCounter
-
+            trafficCounter,
+            autoConnectionManager
         )
     }
 }

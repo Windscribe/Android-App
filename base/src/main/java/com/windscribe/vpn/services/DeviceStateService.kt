@@ -88,7 +88,7 @@ class DeviceStateService : JobIntentWorkAroundService() {
         logger.debug("SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelist override: ${interactor.preferenceHelper.whitelistOverride} | Connect Intent: ${interactor.preferenceHelper.globalUserConnectionPreference}")
         if (networkInfo.isAutoSecureOn.not() && interactor.preferenceHelper.whitelistOverride.not()) {
             logger.debug("${networkInfo.networkName} is unsecured. Starting network whitelist service.")
-            vpnController.disconnect(true)
+            vpnController.disconnectAsync(true)
         }
         compositeDisposable.clear()
     }

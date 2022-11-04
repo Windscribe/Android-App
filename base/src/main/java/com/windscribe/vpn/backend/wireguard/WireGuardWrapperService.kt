@@ -40,7 +40,7 @@ class WireGuardWrapperService : GoBackend.VpnService() {
         super.onStartCommand(intent, flags, startId)
         return when (intent?.action) {
             VpnService.SERVICE_INTERFACE -> {
-                vpnController.connect(alwaysOnVPN = true)
+                vpnController.connectAsync(alwaysOnVPN = true)
                 START_NOT_STICKY
             }
             else -> {
@@ -66,6 +66,6 @@ class WireGuardWrapperService : GoBackend.VpnService() {
     }
 
     override fun onRevoke() {
-        wireguardBackend.scope.launch { vpnController.disconnect() }
+        wireguardBackend.scope.launch { vpnController.disconnectAsync() }
     }
 }

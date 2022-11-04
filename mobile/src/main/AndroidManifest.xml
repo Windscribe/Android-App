@@ -1,41 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  ~ Copyright (c) 2021 Windscribe Limited.
-  -->
-
-<manifest package="com.windscribe.mobile"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    package="com.windscribe.mobile"
     tools:ignore="LockedOrientationActivity">
-
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-    <uses-permission
-        android:name="android.permission.ACCESS_MOCK_LOCATION"
-        tools:ignore="MockLocation,ProtectedPermissions" />
 
     <application
         android:name=".windscribe.PhoneApplication"
         android:allowBackup="false"
+        android:extractNativeLibs="true"
         android:icon="@mipmap/ws_launcher"
         android:roundIcon="@mipmap/ws_launcher"
         android:supportsRtl="false"
-        android:extractNativeLibs="true"
         android:theme="@style/DarkTheme"
         tools:targetApi="m">
         <activity
             android:name=".robert.RobertSettingsActivity"
-            android:screenOrientation="portrait"
-            android:exported="false" />
-        <activity android:name=".about.AboutActivity"
+            android:exported="false"
             android:screenOrientation="portrait" />
-        <activity android:name=".ticket.SendTicketActivity"
-            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".about.AboutActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ticket.SendTicketActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".help.HelpActivity"
             android:screenOrientation="portrait" />
@@ -52,9 +39,9 @@
             android:autoRemoveFromRecents="true"
             android:excludeFromRecents="true"
             android:theme="@style/blinkt.dialog" />
-        <activity android:name=".networksecurity.networkdetails.NetworkDetailsActivity"
-            android:screenOrientation="portrait"
-            />
+        <activity
+            android:name=".networksecurity.networkdetails.NetworkDetailsActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".debug.DebugViewActivity"
             android:screenOrientation="portrait" />
@@ -101,8 +88,21 @@
         <activity
             android:name=".splittunneling.SplitTunnelingActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".networksecurity.NetworkSecurityActivity"
-            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".networksecurity.NetworkSecurityActivity"
+            android:screenOrientation="portrait" />
     </application>
+
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission
+        android:name="android.permission.ACCESS_MOCK_LOCATION"
+        tools:ignore="MockLocation,ProtectedPermissions" />
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
 </manifest>
