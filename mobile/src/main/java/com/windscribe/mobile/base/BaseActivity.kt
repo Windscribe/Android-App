@@ -188,15 +188,15 @@ abstract class BaseActivity : AppCompatActivity(), DisclaimerAlertListener {
     val isConnectedToNetwork: Boolean
         get() = WindUtilities.isOnline()
 
-    protected fun openURLInBrowser(urlToOpen: String?) {
+    fun openURLInBrowser(urlToOpen: String?) {
         val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(urlToOpen))
         if (browserIntent.resolveActivity(packageManager) != null) {
             startActivity(browserIntent)
         } else {
             Toast.makeText(
-                    this,
-                    "No available browser found to open the desired url!",
-                    Toast.LENGTH_SHORT
+                this,
+                "No available browser found to open the desired url!",
+                Toast.LENGTH_SHORT
             ).show()
         }
     }

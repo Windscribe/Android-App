@@ -98,6 +98,9 @@
         <item name="preferencesRoundedBackgroundColor">@color/colorWhite8</item>
         <item name="wdPrimaryColor25">@color/colorWhite25</item>
         <item name="wdActionColor">@color/colorNeonGreen</item>
+        <item name="wdActionColor10">@color/colorNeonGreen10</item>
+        <item name="wdActionColor25">@color/colorNeonGreen25</item>
+        <item name="wdActionColor50">@color/colorNeonGreen50</item>
         <item name="wdWarningColor">@color/colorYellow</item>
         <item name="wdWarningColor10">@color/colorYellow10</item>
         <item name="wdWarningColor50">@color/colorYellow50</item>
@@ -184,6 +187,9 @@
         <item name="wdSecondaryInvertedColor">@color/colorWhite50</item>
         <item name="wdPrimaryColor25">@color/colorDeepBlue25</item>
         <item name="wdActionColor">@color/colorNavyBlue</item>
+        <item name="wdActionColor10">@color/colorNavyBlue10</item>
+        <item name="wdActionColor25">@color/colorNavyBlue25</item>
+        <item name="wdActionColor50">@color/colorNavyBlue50</item>
         <item name="wdWarningColor">@color/colorOrange</item>
         <item name="wdWarningColor10">@color/colorOrange10</item>
         <item name="wdWarningColor50">@color/colorOrange50</item>
@@ -414,7 +420,7 @@
         <item name="android:textSize">@dimen/text_size_14</item>
         <item name="android:gravity">center_horizontal</item>
         <item name="android:layout_gravity">center</item>
-        <item name="fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
     </style>
 
     <style name="RobertPageDescription" parent="PageDescription">
@@ -1042,6 +1048,18 @@
         <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
         <item name="android:windowMinWidthMajor">90%</item>
         <item name="android:windowMinWidthMinor">90%</item>
+    </style>
+
+    <style name="ModelCloseIcon">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">@dimen/margin_16</item>
+        <item name="android:layout_marginTop">@dimen/margin_48</item>
+        <item name="android:clickable">true</item>
+        <item name="android:contentDescription">@null</item>
+        <item name="android:focusable">true</item>
+        <item name="android:rotationY">@integer/rtl_support_auto_mirror_flip</item>
+        <item name="android:src">@drawable/ic_modal_close_button</item>
     </style>
 
     <!-- OpenVPN -->

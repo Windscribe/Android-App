@@ -4,8 +4,8 @@
 
 package com.windscribe.vpn.backend
 
-import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.AppPreferenceHelper
+import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.ikev2.IKev2VpnBackend
 import com.windscribe.vpn.backend.openvpn.OpenVPNBackend
 import com.windscribe.vpn.backend.wireguard.WireGuardVpnProfile
@@ -21,6 +21,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import java.util.*
 import javax.inject.Singleton
 
 @Singleton
@@ -64,28 +65,27 @@ class VpnBackendHolder(
         }
     }
 
-    fun connect() {
+    fun connect(protocolInformation: ProtocolInformation, connectionId: UUID) {
         scope.launch {
             val active: Boolean = activeBackend?.active == true
             if (active) {
-                vpnLogger.debug("Active VPN Backend found.")
+                vpnLogger.debug("Active VPN backend found.")
                 delay(100)
             }
             activeBackend = getBackend()
             activeBackend?.let {
                 it.activate()
-                it.connect()
+                it.connect(protocolInformation, connectionId)
             } ?: kotlin.run {
                 // Unexpected state.
                 delay(500)
-                vpnLogger.debug("Could not find vpn backend matching the current vpn profile Now disconnecting.")
-                appContext.vpnController.disconnect()
+                vpnLogger.debug("Could not find vpn backend matching the current vpn profile.")
             }
         }
     }
 
-    suspend fun disconnect() {
-        activeBackend?.disconnect() ?: kotlin.run {
+    suspend fun disconnect(error: VPNState.Error? = null) {
+        activeBackend?.disconnect(error) ?: kotlin.run {
             vpnLogger.debug("VPN backend not found.")
         }
     }

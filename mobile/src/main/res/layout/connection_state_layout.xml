@@ -8,8 +8,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-
-    >
+    android:paddingTop="@dimen/padding_8"
+    android:paddingBottom="@dimen/padding_8"
+    android:paddingEnd="@dimen/padding_8">
 
 
     <!--Connection state-->
@@ -82,9 +83,22 @@
         android:textSize="12sp"
         android:textStyle="bold"
         android:visibility="visible"
+        android:text="500"
         app:layout_constraintBottom_toBottomOf="@id/tv_connection_state"
         app:layout_constraintStart_toEndOf="@id/tv_divider"
         app:layout_constraintTop_toTopOf="@id/tv_connection_state" />
+
+    <ImageView
+        android:id="@+id/img_protocol_change_arrow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/image_description"
+        android:visibility="gone"
+        android:padding="4dp"
+        android:src="@drawable/ic_change_protocol_arrow"
+        app:layout_constraintBottom_toBottomOf="@id/tv_port"
+        app:layout_constraintStart_toEndOf="@id/tv_port"
+        app:layout_constraintTop_toTopOf="@id/tv_port" />
 
     <!--preferred protocol on-->
     <ImageView

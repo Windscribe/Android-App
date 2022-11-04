@@ -15,6 +15,6 @@ class LastSelectedLocation(
         val lang: String? = "32.22"
 ) : Serializable {
     override fun toString(): String {
-        return "LastSelectedLocation(cityId=$cityId, nodeName='$nodeName', nickName='$nickName', countryCode=$countryCode, lat=$lat, lang=$lang)"
+        return "cityId=$cityId nodeName=$nodeName nickName=$nickName countryCode=$countryCode lat=$lat lang=$lang)"
     }
 }

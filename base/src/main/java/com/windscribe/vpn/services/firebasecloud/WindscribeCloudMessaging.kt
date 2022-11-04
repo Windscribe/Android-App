@@ -7,15 +7,13 @@ package com.windscribe.vpn.services.firebasecloud
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.backend.utils.WindVpnController
-import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
 class WindscribeCloudMessaging : FirebaseMessagingService() {
 
@@ -47,7 +45,7 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
                 FORCE_DISCONNECT -> {
                     logger.info("Received Force disconnect notification , stopping VPN Services.")
                     with(vpnController) {
-                        scope.launch { disconnect() }
+                        scope.launch { disconnectAsync() }
                     }
                 }
                 PROMO -> {
