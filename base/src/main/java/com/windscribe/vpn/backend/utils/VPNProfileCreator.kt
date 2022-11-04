@@ -12,6 +12,7 @@ import com.google.gson.Gson
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.Util.saveProfile
 import com.windscribe.vpn.backend.Util.saveSelectedLocation
@@ -75,9 +76,9 @@ class VPNProfileCreator @Inject constructor(
     )
 
     fun createIkEV2Profile(
-            location: LastSelectedLocation,
-            vpnParameters: VPNParameters,
-            config: ProtocolConfig
+        location: LastSelectedLocation,
+        vpnParameters: VPNParameters,
+        config: ProtocolInformation
     ): String {
         logger.info("creating IKEv2 Profile.")
         // Vpn profile
@@ -140,9 +141,9 @@ class VPNProfileCreator @Inject constructor(
     }
 
     fun createOpenVpnProfile(
-            lastSelectedLocation: LastSelectedLocation,
-            vpnParameters: VPNParameters,
-            protocolConfig: ProtocolConfig
+        lastSelectedLocation: LastSelectedLocation,
+        vpnParameters: VPNParameters,
+        protocolInformation: ProtocolInformation
     ): String {
         logger.info("Creating open vpn profile.")
         // Create a new profile
@@ -181,38 +182,38 @@ class VPNProfileCreator @Inject constructor(
         var stunnelRoutingIp: String? = null
         var ip: String? = null
         try {
-            if (PreferencesKeyConstants.PROTO_STEALTH == protocolConfig.protocol) {
+            if (PreferencesKeyConstants.PROTO_STEALTH == protocolInformation.protocol) {
                 serverConfig = preferencesHelper.getOpenVPNServerConfig()
                 port = VpnPreferenceConstants.STUNNEL_LOCAL_PORT
                 protocol = VpnPreferenceConstants.STUNNEL_VPN_PROTOCOL
                 stunnelRoutingIp = vpnParameters.stealthIp
                 ip = VpnPreferenceConstants.STUNNEL_LOCAL_IP
             }
-            if (PreferencesKeyConstants.PROTO_WS_TUNNEL == protocolConfig.protocol) {
+            if (PreferencesKeyConstants.PROTO_WS_TUNNEL == protocolInformation.protocol) {
                 serverConfig = preferencesHelper.getOpenVPNServerConfig()
                 port = WS_TUNNEL_LOCAL_PORT.toString()
                 protocol = WS_TUNNEL_PROTOCOL
                 stunnelRoutingIp = vpnParameters.ikev2Ip
                 ip = WS_TUNNEL_ADDRESS
             }
-            if (PreferencesKeyConstants.PROTO_TCP == protocolConfig.protocol) {
+            if (PreferencesKeyConstants.PROTO_TCP == protocolInformation.protocol) {
                 ip = vpnParameters.tcpIp
                 protocol = "tcp"
                 serverConfig = preferencesHelper.getOpenVPNServerConfig()
-                port = protocolConfig.port
+                port = protocolInformation.port
                 stunnelRoutingIp = null
             }
-            if (PreferencesKeyConstants.PROTO_UDP == protocolConfig.protocol) {
+            if (PreferencesKeyConstants.PROTO_UDP == protocolInformation.protocol) {
                 ip = vpnParameters.udpIp
                 protocol = "udp"
                 serverConfig = preferencesHelper.getOpenVPNServerConfig()
-                port = protocolConfig.port
+                port = protocolInformation.port
                 stunnelRoutingIp = null
             }
             if (serverConfig != null) {
                 profile.writeConfigFile(
-                        appContext,
-                        serverConfig,
+                    appContext,
+                    serverConfig,
                         ip,
                         protocol,
                         port,
@@ -232,20 +233,20 @@ class VPNProfileCreator @Inject constructor(
         if (preferencesHelper.splitTunnelToggle) {
             profile.mAllowedAppsVpn = HashSet(preferencesHelper.installedApps())
         }
-        if (protocolConfig.protocol == PreferencesKeyConstants.PROTO_STEALTH) {
+        if (protocolInformation.protocol == PreferencesKeyConstants.PROTO_STEALTH) {
             if (WindStunnelUtility.isStunnelRunning) {
                 WindStunnelUtility.stopLocalTunFromAppContext(appContext)
             }
-            preferencesHelper.selectedPort = protocolConfig.port
-            WindUtilities.writeStunnelConfig(appContext, stunnelRoutingIp, protocolConfig.port)
+            preferencesHelper.selectedPort = protocolInformation.port
+            WindUtilities.writeStunnelConfig(appContext, stunnelRoutingIp, protocolInformation.port)
             WindStunnelUtility.startLocalTun()
-        } else if (protocolConfig.protocol == PreferencesKeyConstants.PROTO_WS_TUNNEL) {
+        } else if (protocolInformation.protocol == PreferencesKeyConstants.PROTO_WS_TUNNEL) {
             if (wsTunnelManager.running) {
                 wsTunnelManager.stopWsTunnel()
             }
-            preferencesHelper.selectedPort = protocolConfig.port
+            preferencesHelper.selectedPort = protocolInformation.port
             if (stunnelRoutingIp != null) {
-                wsTunnelManager.startWsTunnel(vpnParameters.ikev2Ip, protocolConfig.port)
+                wsTunnelManager.startWsTunnel(vpnParameters.ikev2Ip, protocolInformation.port)
             }
         }
         saveSelectedLocation(lastSelectedLocation)
@@ -253,12 +254,18 @@ class VPNProfileCreator @Inject constructor(
         return "$lastSelectedLocation"
     }
 
-    fun createVpnProfileFromConfig(configFile: ConfigFile): Pair<String, ProtocolConfig> {
+    fun createVpnProfileFromConfig(configFile: ConfigFile): Pair<String, ProtocolInformation> {
         val content = configFile.content
         return if (WindUtilities.getConfigType(content) == WIRE_GUARD) {
-            Pair(createVpnProfileFromWireGuardConfig(configFile), Util.getProtocolConfigForWireguard(configFile.content))
+            Pair(
+                createVpnProfileFromWireGuardConfig(configFile),
+                Util.getProtocolInformationFromWireguardConfigConfig(configFile.content)
+            )
         } else {
-            Pair(createVpnProfileFromOpenVpnConfig(configFile), Util.getProtocolConfigForOpenVPN(configFile.content))
+            Pair(
+                createVpnProfileFromOpenVpnConfig(configFile),
+                Util.getProtocolInformationFromOpenVPNConfig(configFile.content)
+            )
         }
     }
 
@@ -380,9 +387,9 @@ class VPNProfileCreator @Inject constructor(
     }
 
     suspend fun createVpnProfileFromWireGuardProfile(
-            lastSelectedLocation: LastSelectedLocation,
-            vpnParameters: VPNParameters,
-            config: ProtocolConfig
+        lastSelectedLocation: LastSelectedLocation,
+        vpnParameters: VPNParameters,
+        config: ProtocolInformation
     ): String {
         val builder = Config.Builder()
         when (val remoteParamsResponse = wgConfigRepository.getWgParams(vpnParameters.hostName, vpnParameters.publicKey, wgForceInit.getAndSet(false))) {

@@ -494,6 +494,15 @@ last chosen location.</string>
     <string name="referred_by_someone">Referred by someone?</string>
     <string name="sign_up">Create Account</string>
     <string name="please_provide_email_first">Please provide email first.</string>
+    <string name="set_as_preferred">Set as Preferred</string>
+    <string name="set_this_protocol_as_preferred">Set \“%s\” as preferred protocol?</string>
+    <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe will always use this protocol to connect on this network in the future to avoid any interruptions.</string>
+    <string name="well_we_gave_it_our_best_shot_we_just_couldn_t_connect_you_on_this_network_send_us_your_debug_log_so_we_can_figure_out_what_happened">Well we gave it our best shot, we just couldn’t connect you on this network. Send us your debug log so we can figure out what happened.</string>
+    <string name="your_debug_log_has_been_received_please_contact_support_if_you_want_assistance_with_this_issue">Your debug log has been received. Please contact support if you want assistance with this issue.</string>
+    <string name="connection_failure">Connection Failure!</string>
+    <string name="the_protocol_you_ve_chosen_has_failed_to_connect_windscribe_will_attempt_to_reconnect_using_the_first_protocol_below">The protocol you’ve chosen has failed to connect. Windscribe will attempt to reconnect using the first protocol below.</string>
+    <string name="protocol_change">Change Protocol</string>
+    <string name="protocol_change_description">Quickly re-connect using a different protocol.</string>
     <string name="please_confirm_email_first">Please confirm email first.</string>
     <string name="share_invite_link">Share Invite Link</string>
     <string name="share_windscribe_with_a_friend">Share Windscribe with a friend!</string>

@@ -5,7 +5,7 @@ package com.windscribe.vpn.apppreference
 
 import com.windscribe.vpn.api.response.NewsFeedNotification
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
-import com.windscribe.vpn.backend.utils.ProtocolConfig
+import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.repository.WgLocalParams
 import io.reactivex.Single
@@ -64,7 +64,7 @@ interface PreferencesHelper {
     var selectedIp: String?
     var selectedPort: String
     var selectedProtocol: String
-    var selectedProtocolType: ProtocolConfig.Type
+    var selectedProtocolType: ProtocolConnectionStatus
     var selectedTheme: String
     val selection: String
     var sessionHash: String?

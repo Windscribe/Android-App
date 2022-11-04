@@ -53,6 +53,8 @@ import com.windscribe.vpn.constants.AnimConstants
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.DeviceStateManager.DeviceStateListener
+import com.windscribe.vpn.state.PreferenceChangeObserver
+import com.windscribe.vpn.state.VPNConnectionStateManager
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
@@ -63,7 +65,25 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     lateinit var deviceStateManager: DeviceStateManager
 
     @Inject
+    lateinit var preferenceChangeObserver: PreferenceChangeObserver
+
+    @Inject
     lateinit var windscribePresenter: WindscribePresenter
+
+    @Inject
+    lateinit var vpnConnectionStateManager: VPNConnectionStateManager
+
+    @JvmField
+    @BindView(id.btn_help)
+    var btnHelp: ImageView? = null
+
+    @JvmField
+    @BindView(id.btn_notifications)
+    var btnNotifications: ImageView? = null
+
+    @JvmField
+    @BindView(id.btn_settings)
+    var btnSettings: ImageView? = null
 
     @JvmField
     @BindView(id.upgrade_parent)
@@ -727,10 +747,11 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     }
 
     private fun registerDataChangeObserver() {
+        activityScope { windscribePresenter.observeVPNState() }
         activityScope { windscribePresenter.observeServerList() }
         activityScope { windscribePresenter.observeSelectedLocation() }
-        activityScope { windscribePresenter.observeVPNState() }
-        activityScope { windscribePresenter.observeProtocolState() }
+        activityScope { windscribePresenter.observeDisconnectedProtocol() }
+        activityScope { windscribePresenter.observeConnectedProtocol() }
         windscribePresenter.observeUserState(this)
     }
 

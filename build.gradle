@@ -24,6 +24,7 @@ buildscript {
     ext.espressoVersion = "3.5.0-alpha03"
     ext.robolectricVersion = "4.6.1"
     ext.extTruthVersion = '1.3.0-rc01'
+    ext.coroutines_version = '1.6.0'
 
     repositories {
         google()

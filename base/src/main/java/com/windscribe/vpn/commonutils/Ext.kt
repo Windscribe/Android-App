@@ -1,5 +1,7 @@
 package com.windscribe.vpn.commonutils
 
+import android.content.Context
+import android.util.TypedValue
 import androidx.work.ListenableWorker
 import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.constants.NetworkErrorCodes
@@ -38,6 +40,15 @@ object Ext {
         }
     }
 
+    suspend fun Completable.result(): Boolean {
+        return try {
+            await()
+            return true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     fun getFakeTrafficVolumeOptions(): Array<String> {
         return FakeTrafficVolume.values().map {
             it.name
@@ -57,4 +68,7 @@ object Ext {
             action()
         }
     }
+
+    fun Context.toPx(dp: Float): Float =
+        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics)
 }

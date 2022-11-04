@@ -19,7 +19,7 @@ interface WindscribePresenter {
     val isHapticFeedbackEnabled: Boolean
     fun loadConfigLocations()
     fun logoutFromCurrentSession()
-    suspend fun observeProtocolConfig()
+    suspend fun observeNextProtocolToConnect()
     suspend fun observeVPNState()
     fun onAddConfigLocation()
     fun onAddStaticIPClicked()
@@ -82,14 +82,15 @@ interface WindscribePresenter {
     fun updateLatency()
     fun userHasAccess(): Boolean
     fun observeUserData(windscribeActivity: WindscribeActivity)
-    suspend fun observeAvailableProtocols()
     suspend fun observeStaticRegions()
     suspend fun observeAllLocations()
     suspend fun observerSelectedLocation()
     suspend fun observeDecoyTrafficState()
     fun setAdapters()
-    fun onDecoyTrafficBadgeClick()
     fun toggleBlurNetworkName()
     fun loadConfigFile(data: Intent)
+    fun onDeocoyTrafficClick()
+    fun onProtocolChangeClick()
+    suspend fun observeConnectedProtocol()
     suspend fun showShareLinkDialog()
 }

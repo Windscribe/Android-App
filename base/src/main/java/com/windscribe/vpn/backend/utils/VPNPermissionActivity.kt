@@ -11,14 +11,16 @@ import android.net.VpnService
 import android.os.Bundle
 import com.windscribe.vpn.R.layout
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import de.blinkt.openvpn.core.Preferences
-import java.io.IOException
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import java.io.IOException
+import java.util.*
+import javax.inject.Inject
 
 class VPNPermissionActivity : Activity() {
 
@@ -37,10 +39,17 @@ class VPNPermissionActivity : Activity() {
     @Inject
     lateinit var vpnBackendHolder: VpnBackendHolder
 
+    lateinit var protocolInformation: ProtocolInformation
+
+    lateinit var connectionId: UUID
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_launch)
         Windscribe.appContext.activityComponent.inject(this)
+        protocolInformation =
+            intent.getSerializableExtra("protocolInformation") as ProtocolInformation
+        connectionId = intent.getSerializableExtra("connectionId") as UUID
         askForPermission()
     }
 
@@ -49,12 +58,12 @@ class VPNPermissionActivity : Activity() {
         if (requestCode == START_VPN_PROFILE) {
             if (resultCode == RESULT_OK) {
                 logger.debug("User granted VPN Permission.")
-                vpnBackendHolder.connect()
+                vpnBackendHolder.connect(protocolInformation, connectionId)
                 finish()
             } else if (resultCode == RESULT_CANCELED) {
                 logger.debug("User denied VPN permission.")
                 scope.launch {
-                    vpnController.disconnect()
+                    vpnController.disconnectAsync()
                     finish()
                 }
             }
@@ -66,7 +75,7 @@ class VPNPermissionActivity : Activity() {
             VpnService.prepare(this)
         } catch (e: Exception) {
             logger.info(e.toString())
-            scope.launch { vpnController.disconnect() }
+            scope.launch { vpnController.disconnectAsync() }
             return
         }
         fixDevTun()
@@ -74,7 +83,7 @@ class VPNPermissionActivity : Activity() {
             try {
                 startActivityForResult(intent, START_VPN_PROFILE)
             } catch (ane: ActivityNotFoundException) {
-                scope.launch { vpnController.disconnect() }
+                scope.launch { vpnController.disconnectAsync() }
                 logger.debug("Device image does not support vpn.")
             }
         } else {
