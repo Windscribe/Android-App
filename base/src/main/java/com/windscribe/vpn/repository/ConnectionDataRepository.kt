@@ -8,12 +8,9 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
-import com.windscribe.vpn.backend.utils.ProtocolManager
-import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_GENERATE_CREDENTIALS
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants
-import com.windscribe.vpn.exceptions.WindScribeException
 import io.reactivex.Completable
 import kotlinx.coroutines.rx2.rxSingle
 import org.slf4j.LoggerFactory
@@ -23,8 +20,7 @@ import javax.inject.Singleton
 @Singleton
 class ConnectionDataRepository @Inject constructor(
     private val preferencesHelper: PreferencesHelper,
-    private val apiCallManager: IApiCallManager,
-    private val protocolManager: ProtocolManager
+    private val apiCallManager: IApiCallManager
 ) {
     private val logger = LoggerFactory.getLogger("connection_data_updater")
     fun update(): Completable {
@@ -35,8 +31,8 @@ class ConnectionDataRepository @Inject constructor(
                     preferencesHelper.saveOpenVPNServerConfig(it)
                 }
                 if(errorRequestingCredentials(response.errorClass)){
-                   return@flatMap rxSingle { appContext.vpnController.disconnect() }
-                           .flatMap { apiCallManager.getServerCredentials()}
+                   return@flatMap rxSingle { appContext.vpnController.disconnectAsync() }
+                       .flatMap { apiCallManager.getServerCredentials() }
                 }else{
                     apiCallManager.getServerCredentials()
                 }
@@ -47,8 +43,8 @@ class ConnectionDataRepository @Inject constructor(
                     preferencesHelper.saveCredentials(PreferencesKeyConstants.OPEN_VPN_CREDENTIALS,it)
                 }
                 if(errorRequestingCredentials(response.errorClass)){
-                    return@flatMap rxSingle { appContext.vpnController.disconnect() }
-                            .flatMap { apiCallManager.getServerCredentialsForIKev2()}
+                    return@flatMap rxSingle { appContext.vpnController.disconnectAsync() }
+                        .flatMap { apiCallManager.getServerCredentialsForIKev2() }
                 }else{
                     apiCallManager.getServerCredentialsForIKev2()
                 }
@@ -59,8 +55,8 @@ class ConnectionDataRepository @Inject constructor(
                     preferencesHelper.saveCredentials(PreferencesKeyConstants.IKEV2_CREDENTIALS,it)
                 }
                 if(errorRequestingCredentials(response.errorClass)){
-                    return@flatMap rxSingle { appContext.vpnController.disconnect() }
-                            .flatMap { apiCallManager.getPortMap()}
+                    return@flatMap rxSingle { appContext.vpnController.disconnectAsync() }
+                        .flatMap { apiCallManager.getPortMap() }
                 }else{
                     apiCallManager.getPortMap()
                 }
@@ -75,7 +71,6 @@ class ConnectionDataRepository @Inject constructor(
                             Gson().toJson(it)
                         )
                         preferencesHelper.savePortMapVersion(NetworkKeyConstants.PORT_MAP_VERSION)
-                        protocolManager.loadProtocolConfigs()
                     } ?: it.errorClass?.let {
                         logger.error(it.errorMessage)
                     }

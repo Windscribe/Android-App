@@ -10,6 +10,10 @@ import com.windscribe.tv.upgrade.UpgradeActivity
 import com.windscribe.tv.welcome.WelcomeActivity
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.ApplicationInterface
+import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
+import com.windscribe.vpn.autoconnection.FragmentType
+import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
+import com.windscribe.vpn.autoconnection.ProtocolInformation
 
 class TVApplication : Windscribe(), ApplicationInterface {
 
@@ -31,4 +35,18 @@ class TVApplication : Windscribe(), ApplicationInterface {
         get() = true
 
     override fun setTheme() {}
+    override fun launchFragment(
+        protocolInformationList: List<ProtocolInformation>,
+        fragmentType: FragmentType,
+        autoConnectionModeCallback: AutoConnectionModeCallback,
+        protocolInformation: ProtocolInformation?
+    ): Boolean {
+        val nextUp = protocolInformationList.find { it.type == ProtocolConnectionStatus.NextUp }
+        return if (nextUp != null && fragmentType == FragmentType.ConnectionFailure) {
+            autoConnectionModeCallback.onProtocolSelect(nextUp)
+            true
+        } else {
+            false
+        }
+    }
 }

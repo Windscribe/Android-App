@@ -9,17 +9,9 @@
 
     <ImageView
         android:id="@+id/img_news_feed_close_btn"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/margin_16"
-        android:layout_marginTop="@dimen/margin_48"
-        android:clickable="true"
-        android:contentDescription="@null"
-        android:focusable="true"
-        android:rotationY="@integer/rtl_support_auto_mirror_flip"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_modal_close_button" />
+        style="@style/ModelCloseIcon" />
 
 
     <TextView

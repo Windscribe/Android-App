@@ -5,27 +5,31 @@
 package com.windscribe.vpn.repository
 
 import android.content.Intent
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.work.WorkManager
 import com.google.gson.Gson
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.UserSessionResponse
-import com.windscribe.vpn.backend.utils.ProtocolManager
+import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.model.User
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.await
 import org.slf4j.LoggerFactory
+import javax.inject.Singleton
 
 @Singleton
-class UserRepository(private val scope: CoroutineScope, private val serviceInteractor: ServiceInteractor, private val vpnController: WindVpnController, private val protocolManager: ProtocolManager) {
+class UserRepository(
+    private val scope: CoroutineScope,
+    private val serviceInteractor: ServiceInteractor,
+    private val vpnController: WindVpnController,
+    private val autoConnectionManager: AutoConnectionManager
+) {
     var user = MutableLiveData<User>()
     private val logger = LoggerFactory.getLogger("user_repo")
 
@@ -34,7 +38,10 @@ class UserRepository(private val scope: CoroutineScope, private val serviceInter
         reload()
     }
 
-    fun reload(response: UserSessionResponse? = null, callback:(suspend (user:User)->Unit)? = null) {
+    fun reload(
+        response: UserSessionResponse? = null,
+        callback: (suspend (user: User) -> Unit)? = null
+    ) {
         scope.launch(Dispatchers.IO) {
             response?.let { it ->
                 serviceInteractor.preferenceHelper.saveResponseStringData(PreferencesKeyConstants.GET_SESSION, Gson().toJson(it))
@@ -89,7 +96,7 @@ class UserRepository(private val scope: CoroutineScope, private val serviceInter
     suspend fun logout() {
         scope.launch {
             if (appContext.vpnConnectionStateManager.isVPNActive()) {
-                vpnController.disconnect()
+                vpnController.disconnectAsync()
             }
         }.invokeOnCompletion {
             WorkManager.getInstance(appContext).cancelAllWork()
@@ -115,7 +122,7 @@ class UserRepository(private val scope: CoroutineScope, private val serviceInter
             serviceInteractor.preferenceHelper.sessionHash = null
             serviceInteractor.preferenceHelper.globalUserConnectionPreference = false
             WindUtilities.deleteProfileCompletely(appContext).await()
-            protocolManager.loadProtocolConfigs()
+            autoConnectionManager.reset()
             serviceInteractor.clearData()
             appContext.activeActivity?.let {
                 val intent = appContext.applicationInterface.welcomeIntent

@@ -12,15 +12,18 @@ import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy.Builder
 import android.os.StrictMode.VmPolicy
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.multidex.MultiDexApplication
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
+import com.windscribe.vpn.autoconnection.FragmentType
+import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.ikev2.CharonVpnServiceWrapper
 import com.windscribe.vpn.backend.ikev2.StrongswanCertificateManager.init
-import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.billing.AmazonBillingManager
 import com.windscribe.vpn.billing.GoogleBillingManager
@@ -57,10 +60,16 @@ open class Windscribe : MultiDexApplication() {
         val upgradeIntent: Intent
         val isTV: Boolean
         fun setTheme()
+        fun launchFragment(
+            protocolInformationList: List<ProtocolInformation>,
+            fragmentType: FragmentType,
+            autoConnectionModeCallback: AutoConnectionModeCallback,
+            protocolInformation: ProtocolInformation? = null
+        ): Boolean
     }
 
     private val logger = LoggerFactory.getLogger("Windscribe")
-    var activeActivity: Activity? = null
+    var activeActivity: AppCompatActivity? = null
     lateinit var applicationInterface: ApplicationInterface
     @Inject
     lateinit var preference: PreferencesHelper
@@ -78,8 +87,6 @@ open class Windscribe : MultiDexApplication() {
     lateinit var mockLocationManager: MockLocationManager
     @Inject
     lateinit var vpnController: WindVpnController
-    @Inject
-    lateinit var protocolManager: ProtocolManager
     lateinit var applicationComponent: ApplicationComponent
     lateinit var activityComponent: ActivityComponent
     lateinit var serviceComponent: ServiceComponent
@@ -248,7 +255,7 @@ open class Windscribe : MultiDexApplication() {
     private fun registerForegroundActivityObserver() {
         registerActivityLifecycleCallbacks(object : ActivityLifecycleObserver {
             override fun onActivityResumed(activity: Activity) {
-                activeActivity = activity
+                activeActivity = activity as? AppCompatActivity
             }
 
             override fun onActivityPaused(activity: Activity) {

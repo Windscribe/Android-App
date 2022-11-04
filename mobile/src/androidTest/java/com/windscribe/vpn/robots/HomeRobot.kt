@@ -2,14 +2,7 @@ package com.windscribe.vpn.robots
 
 import androidx.test.espresso.ViewInteraction
 import com.windscribe.mobile.R
-import com.windscribe.test.BaseRobot
-import com.windscribe.test.click
-import com.windscribe.test.isViewVisible
-import com.windscribe.test.textDoestNotMatch
-import com.windscribe.test.textMatches
-import com.windscribe.test.typeText
-import com.windscribe.test.view
-import com.windscribe.test.viewDoesNotExists
+import com.windscribe.test.*
 
 class HomeRobot : BaseRobot() {
     fun pressConnectButton() = connectButton.click()
@@ -28,6 +21,8 @@ class HomeRobot : BaseRobot() {
     fun closeSearchLayout() = searchLayoutMinimizeButton.click()
     fun ipAddressMatch(ip: String) = ipView.textMatches(ip)
     fun ipAddressDoesNotMatch(ip: String) = ipView.textDoestNotMatch(ip)
+    fun connectionFailureViewVisible(): ViewInteraction =
+        connectionFailureTitle.textMatches("Connection Failure!")
 
     companion object {
         val connectButton: ViewInteraction = view(R.id.on_off_button)
@@ -43,5 +38,6 @@ class HomeRobot : BaseRobot() {
         val searchView: ViewInteraction = view(R.id.searchView)
         val searchLayoutMinimizeButton: ViewInteraction = view(R.id.minimize_icon)
         val ipView: ViewInteraction = view(R.id.ip_address)
+        val connectionFailureTitle: ViewInteraction = view(R.id.title)
     }
 }

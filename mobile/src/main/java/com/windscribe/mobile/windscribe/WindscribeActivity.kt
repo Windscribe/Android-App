@@ -35,7 +35,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionManager
 import androidx.viewpager.widget.ViewPager
-import androidx.viewpager.widget.ViewPager.OnPageChangeListener
+import androidx.viewpager.widget.ViewPager.*
 import butterknife.BindView
 import butterknife.OnClick
 import butterknife.OnItemSelected
@@ -345,6 +345,10 @@ class WindscribeActivity :
     var decoyArrow: ImageView? = null
 
     @JvmField
+    @BindView(R.id.img_protocol_change_arrow)
+    var changeProtocolArrow: ImageView? = null
+
+    @JvmField
     @BindView(R.id.preferred_protocol_toggle)
     var preferredProtocolToggle: ImageView? = null
 
@@ -423,13 +427,14 @@ class WindscribeActivity :
         setServerListView(false)
         registerDataChangeObserver()
         activityScope { presenter.observeVPNState() }
-        activityScope { presenter.observeProtocolConfig() }
-        activityScope { presenter.observeAvailableProtocols() }
+        activityScope { presenter.observeNextProtocolToConnect() }
+        activityScope { presenter.observeConnectedProtocol() }
         activityScope { presenter.observeStaticRegions() }
         activityScope { presenter.observeAllLocations() }
         activityScope { presenter.observerSelectedLocation() }
         activityScope { presenter.observeDecoyTrafficState() }
         activityScope { presenter.showShareLinkDialog() }
+        activityScope { presenter.observeDecoyTrafficState() }
         presenter.registerNetworkInfoListener()
         presenter.handlePushNotification(intent.extras)
         presenter.observeUserData(this)
@@ -673,12 +678,6 @@ class WindscribeActivity :
     fun onNotificationClick() {
         logger.info("User clicked news feed icon...")
         presenter.onNewsFeedItemClick()
-    }
-
-    @OnClick(R.id.tv_decoy_label, R.id.img_decoy_traffic_arrow)
-    fun onDecoyBadgeClick(){
-        logger.info("User clicked on decoy badge...")
-        presenter.onDecoyTrafficBadgeClick()
     }
 
     override fun onPageScrollStateChanged(i: Int) {}
@@ -2041,6 +2040,12 @@ class WindscribeActivity :
         tvDecoy?.visibility = state.decoyTrafficBadgeVisibility
         decoyDivider?.visibility = state.decoyTrafficBadgeVisibility
         decoyArrow?.visibility = state.decoyTrafficBadgeVisibility
+        if (state.decoyTrafficBadgeVisibility != VISIBLE && state is ConnectedState) {
+            preferredProtocolStatus?.visibility = View.GONE
+            changeProtocolArrow?.visibility = VISIBLE
+        } else {
+            changeProtocolArrow?.visibility = GONE
+        }
         constraintSetMain.setAlpha(R.id.tv_protocol, state.badgeViewAlpha)
     }
 
@@ -2155,6 +2160,16 @@ class WindscribeActivity :
         } catch (e: IllegalStateException) {
             logger.debug("unable to open share dialog.")
         }
+    }
+
+    @OnClick(R.id.tv_decoy_label, R.id.img_decoy_traffic_arrow)
+    fun onDecoyTrafficClick() {
+        presenter.onDeocoyTrafficClick()
+    }
+
+    @OnClick(R.id.img_protocol_change_arrow)
+    fun onProtocolChangeClick() {
+        presenter.onProtocolChangeClick()
     }
 
     companion object {

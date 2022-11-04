@@ -5,7 +5,6 @@
 package com.windscribe.vpn.workers.worker
 
 import android.content.Context
-import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -14,10 +13,8 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
-import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.constants.NetworkErrorCodes
-import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_ACCOUNT_DELETED
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.exceptions.GenericApiException
 import com.windscribe.vpn.exceptions.InvalidSessionException
@@ -29,12 +26,10 @@ import com.windscribe.vpn.repository.WgConfigRepository
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
-import javax.inject.Inject
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.rx2.await
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
 class SessionWorker(context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
 
@@ -134,7 +129,7 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
         if (user.accountStatus!=User.AccountStatus.Okay) {
             if(vpnStateManager.isVPNConnected()){
                 logger.debug("Disconnecting...")
-                vpnController.disconnect()
+                vpnController.disconnectAsync()
             }
             wgConfigRepository.deleteKeys()
             preferencesHelper.globalUserConnectionPreference = false
@@ -148,7 +143,7 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
             if (updatedLocation != previousLocation && preferencesHelper.globalUserConnectionPreference) {
                 logger.debug("Last selected location is changed Now Reconnecting")
                 locationRepository.setSelectedCity(updatedLocation)
-                vpnController.connect()
+                vpnController.connectAsync()
             }
         } catch (e: Exception) {
             logger.debug("Failed to update last selected location.")

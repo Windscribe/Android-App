@@ -6,6 +6,7 @@ package com.windscribe.vpn.tests
 
 import com.windscribe.test.BaseRobot
 import com.windscribe.test.dispatcher.MockServerDispatcher
+import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.robots.HomeRobot
 import com.windscribe.vpn.robots.LoginRobot
 import com.windscribe.vpn.robots.SignUpRobot
@@ -37,5 +38,9 @@ open class BaseTest {
     }
 
     @After
-    fun tearDown() = mockServer.shutdown()
+    fun tearDown() {
+        mockServer.shutdown()
+        Windscribe.appContext.windscribeDatabase.clearAllTables()
+        Windscribe.appContext.preference.clearAllData()
+    }
 }

@@ -75,7 +75,7 @@ class WindscribePresenterImpl @Inject constructor(
                 VPNState.Status.Connecting -> vpnConnecting()
                 VPNState.Status.Disconnected -> vpnDisconnected()
                 VPNState.Status.Disconnecting -> vpnDisconnecting()
-                VPNState.Status.ProtocolSwitch -> protocolSwitch()
+                VPNState.Status.ProtocolSwitch -> {}
                 VPNState.Status.InvalidSession -> windscribeView.gotoLoginRegistrationActivity()
                 else -> {}
             }
@@ -89,27 +89,22 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
-    override suspend fun observeProtocolState() {
-        interactor.getProtocolManager().protocolConfigList.collectLatest {
-            if (interactor.getVpnConnectionStateManager().isVPNActive()) {
-                it.selectedProtocol?.let { config ->
-                    windscribeView.setBadgeIcon(config.heading, false)
+    override suspend fun observeDisconnectedProtocol() {
+        interactor.getAutoConnectionManager().nextInLineProtocol.collectLatest { protocol ->
+            if (interactor.getVpnConnectionStateManager().isVPNActive().not()) {
+                protocol?.let {
+                    windscribeView.setBadgeIcon(Util.getProtocolLabel(it.protocol), true)
                 }
-            } else {
-                windscribeView.setBadgeIcon(it.nextProtocolToConnect.heading, true)
             }
         }
     }
 
-    private fun protocolSwitch() {
-        interactor.getProtocolManager().availableProtocols.value.let {
-            if (it.isNotEmpty()) {
-                windscribeView.setBadgeIcon(
-                    it.first().heading,
-                    !interactor.getVpnConnectionStateManager().isVPNActive()
-                )
-                windscribeView.setConnectionStateColor(interactor.getColorResource(color.colorYellow))
-                windscribeView.setupLayoutConnecting("Trying next protocol")
+    override suspend fun observeConnectedProtocol() {
+        interactor.getAutoConnectionManager().connectedProtocol.collectLatest { protocol ->
+            if (interactor.getVpnConnectionStateManager().isVPNActive()) {
+                protocol?.let {
+                    windscribeView.setBadgeIcon(Util.getProtocolLabel(it.protocol), false)
+                }
             }
         }
     }
@@ -245,10 +240,6 @@ class WindscribePresenterImpl @Inject constructor(
 
     override fun onConnectClicked() {
         val vpnStatus = interactor.getVpnConnectionStateManager().state.value.status
-        if (interactor.getProtocolManager().reconnectJob?.isActive == true) {
-            interactor.getProtocolManager().reconnectJob?.cancel()
-            disconnectFromVPN()
-        }
         if (vpnStatus == VPNState.Status.Connecting || vpnStatus == VPNState.Status.Connected) {
             logger.debug("connection state was connected or connecting user initiated disconnect")
             disconnectFromVPN()
@@ -285,7 +276,7 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getAppPreferenceInterface().isReconnecting = false
         interactor.getAppPreferenceInterface().globalUserConnectionPreference = false
         logger.info("Stopping established vpn connection for disconnect intent...")
-        interactor.getMainScope().launch { interactor.getVPNController().disconnect() }
+        interactor.getMainScope().launch { interactor.getVPNController().disconnectAsync() }
     }
 
     override fun onHotStart() {
@@ -312,7 +303,10 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.setState(1)
         windscribeView.setGlowVisibility(View.GONE)
         windscribeView.setVpnButtonState()
-        windscribeView.setBadgeIcon(protocolHeading, false)
+        windscribeView.setBadgeIcon(
+            Util.getProtocolLabel(interactor.getAppPreferenceInterface().selectedProtocol),
+            false
+        )
         selectedLocation?.let {
             windscribeView.startVpnConnectingAnimation(
                 interactor.getResourceString(string.connecting),
@@ -320,7 +314,7 @@ class WindscribePresenterImpl @Inject constructor(
                 interactor.getColorResource(color.colorDeepBlue),
                 interactor.getColorResource(color.colorNavyBlue),
                 interactor.getColorResource(color.colorWhite50),
-                interactor.getColorResource(color.colorNeonGreen), this@WindscribePresenterImpl
+                interactor.getColorResource(color.sea_green), this@WindscribePresenterImpl
             )
         } ?: kotlin.run {
             interactor.getCompositeDisposable().add(
@@ -340,7 +334,7 @@ class WindscribePresenterImpl @Inject constructor(
                                 interactor.getColorResource(color.colorDeepBlue),
                                 interactor.getColorResource(color.colorNavyBlue),
                                 interactor.getColorResource(color.colorWhite50),
-                                interactor.getColorResource(color.colorNeonGreen),
+                                interactor.getColorResource(color.sea_green),
                                 this@WindscribePresenterImpl
                             )
                         }
@@ -379,12 +373,12 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.setIpAddress(ip.trim())
         logger.info("Connection with the server is established.")
         windscribeView.startVpnConnectedAnimation(
-                interactor.getResourceString(string.connected),
-                interactor.getColorResource(color.colorNavyBlue),
-                interactor.getColorResource(color.colorPrimary),
-                interactor.getColorResource(color.colorLightBlue),
-                interactor.getColorResource(color.colorNeonGreen),
-                this@WindscribePresenterImpl
+            interactor.getResourceString(string.connected),
+            interactor.getColorResource(color.colorNavyBlue),
+            interactor.getColorResource(color.colorPrimary),
+            interactor.getColorResource(color.colorLightBlue),
+            interactor.getColorResource(color.sea_green),
+            this@WindscribePresenterImpl
         )
         updateLocationData(selectedLocation,true)
     }
@@ -542,7 +536,7 @@ class WindscribePresenterImpl @Inject constructor(
                 Util.saveSelectedLocation(it)
                 interactor.getLocationProvider().setSelectedCity(it.cityId)
             }
-            interactor.getVPNController().connect()
+            interactor.getVPNController().connectAsync()
         } else {
             logger.info("User not connected to any network.")
             windscribeView.showToast("Please connect to a network first and retry!")
@@ -557,7 +551,10 @@ class WindscribePresenterImpl @Inject constructor(
             logger.info("User clicked on static ip: " + staticRegion.cityName)
             interactor.getAppPreferenceInterface().setConnectingToStaticIP(true)
             // Saving static IP credentials
-            interactor.getAppPreferenceInterface().saveCredentials(PreferencesKeyConstants.STATIC_IP_CREDENTIAL,serverCredentialsResponse)
+            interactor.getAppPreferenceInterface().saveCredentials(
+                PreferencesKeyConstants.STATIC_IP_CREDENTIAL,
+                serverCredentialsResponse
+            )
             selectedLocation = LastSelectedLocation(
                 staticRegion.id, staticRegion.cityName,
                 staticRegion.staticIp, staticRegion.countryCode
@@ -566,7 +563,9 @@ class WindscribePresenterImpl @Inject constructor(
                 Util.saveSelectedLocation(it)
                 interactor.getLocationProvider().setSelectedCity(it.cityId)
             }
-            interactor.getVPNController().connect()
+            interactor.getMainScope().launch {
+                interactor.getAutoConnectionManager().connectInForeground()
+            }
         } else {
             logger.info("User not connected to any network.")
             windscribeView.showToast("Please connect to a network first and retry!")
@@ -626,21 +625,6 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
-    private val protocolHeading: String
-        get() {
-            return when (interactor.getAppPreferenceInterface().selectedProtocol) {
-                PreferencesKeyConstants.PROTO_UDP -> "UDP"
-                PreferencesKeyConstants.PROTO_TCP -> "TCP"
-                PreferencesKeyConstants.PROTO_STEALTH -> "Stealth"
-                PreferencesKeyConstants.PROTO_WS_TUNNEL -> "WStunnel"
-                PreferencesKeyConstants.PROTO_IKev2 -> "IKEv2"
-                PreferencesKeyConstants.PROTO_WIRE_GUARD -> "WireGuard"
-                else -> {
-                    "IKEv2"
-                }
-            }
-        }
-
     private fun getTotalPingTime(cities: List<City>, dataDetails: ServerListData): Int {
         var total = 0
         var index = 0
@@ -697,8 +681,7 @@ class WindscribePresenterImpl @Inject constructor(
             interactor.getAppPreferenceInterface().setUserIntendedDisconnect(true)
             interactor.getAppPreferenceInterface().globalUserConnectionPreference = false
             interactor.getAppPreferenceInterface().isReconnecting = false
-            interactor.getVPNController().disconnect()
-            interactor.getProtocolManager().loadProtocolConfigs()
+            interactor.getVPNController().disconnectAsync()
         }
     }
 
@@ -707,7 +690,9 @@ class WindscribePresenterImpl @Inject constructor(
             isLocationNotAvailableToUser(false)
             interactor.getAppPreferenceInterface().globalUserConnectionPreference = true
             logger.info("VPN connection attempt started...")
-            interactor.getVPNController().connect()
+            interactor.getMainScope().launch {
+                interactor.getAutoConnectionManager().connectInForeground()
+            }
         } else {
             logger.info("Selected location is null!")
             windscribeView.showToast(interactor.getResourceString(string.select_location))
@@ -738,7 +723,8 @@ class WindscribePresenterImpl @Inject constructor(
             User.AccountStatus.Okay -> {}
             User.AccountStatus.Banned -> {
                 if (interactor.getVpnConnectionStateManager().isVPNActive()) {
-                    interactor.getMainScope().launch { interactor.getVPNController().disconnect() }
+                    interactor.getMainScope()
+                        .launch { interactor.getVPNController().disconnectAsync() }
                 }
                 windscribeView.setupAccountStatusBanned()
             }
@@ -751,7 +737,8 @@ class WindscribePresenterImpl @Inject constructor(
                     if (user.accountStatus == User.AccountStatus.Expired) {
                         setUserStatus(user)
                         if (interactor.getVpnConnectionStateManager().isVPNActive()) {
-                            interactor.getMainScope().launch { interactor.getVPNController().disconnect() }
+                            interactor.getMainScope()
+                                .launch { interactor.getVPNController().disconnectAsync() }
                         }
                         windscribeView.setupAccountStatusExpired()
                     }

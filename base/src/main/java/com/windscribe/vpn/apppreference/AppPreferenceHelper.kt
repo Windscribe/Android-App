@@ -8,7 +8,7 @@ import com.google.gson.reflect.TypeToken
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.NewsFeedNotification
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
-import com.windscribe.vpn.backend.utils.ProtocolConfig
+import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.ALREADY_SHOWN_SHARE_APP_LINK
 import com.windscribe.vpn.constants.PreferencesKeyConstants.AUTO_SECURE_NEW_NETWORKS
@@ -284,20 +284,23 @@ class AppPreferenceHelper(
             preference.put(VpnPreferenceConstants.SELECTED_PORT, selectedPort)
         }
     override var selectedProtocol: String
-        get() = preference.getString(VpnPreferenceConstants.SELECTED_PROTOCOL, PreferencesKeyConstants.PROTO_IKev2)
-                ?: PreferencesKeyConstants.PROTO_IKev2
+        get() = preference.getString(
+            VpnPreferenceConstants.SELECTED_PROTOCOL,
+            PreferencesKeyConstants.PROTO_IKev2
+        )
+            ?: PreferencesKeyConstants.PROTO_IKev2
         set(selectedProtocol) {
             preference.put(VpnPreferenceConstants.SELECTED_PROTOCOL, selectedProtocol)
         }
-    override var selectedProtocolType: ProtocolConfig.Type
+    override var selectedProtocolType: ProtocolConnectionStatus
         get() = preference.getString(
-                VpnPreferenceConstants.SELECTED_PROTOCOL_TYPE,
-                ProtocolConfig.Type.Preferred.name
+            VpnPreferenceConstants.SELECTED_PROTOCOL_TYPE,
+            ProtocolConnectionStatus.Disconnected.name
         )?.let {
-            ProtocolConfig.Type.valueOf(
-                    it
+            ProtocolConnectionStatus.valueOf(
+                it
             )
-        } ?: ProtocolConfig.Type.Preferred
+        } ?: ProtocolConnectionStatus.Disconnected
         set(type) {
             preference.put(VpnPreferenceConstants.SELECTED_PROTOCOL_TYPE, type.name)
         }

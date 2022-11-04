@@ -2,7 +2,6 @@
 <!--
   ~ Copyright (c) 2021 Windscribe Limited.
   -->
-
 <resources>
     <!-- Deep Blue -->
     <color name="colorDeepBlue0">#00020D1C</color>
@@ -30,36 +29,41 @@
     <color name="colorWhite90">#E6FFFFFF</color>
     <color name="colorWhite95">#F2FFFFFF</color>
     <color name="colorWhite">#FFFFFF</color>
+    <!-- Pink -->
     <color name="colorOrange">#f28b00</color>
     <color name="colorOrange10">#1AF28900</color>
     <color name="colorOrange50">#80F28900</color>
-
-    <!--Black -->
+    <!-- Yellow -->
+    <color name="colorYellow10">#1AFFEE03</color>
+    <color name="colorYellow50">#80FFEE03</color>
+    <color name="colorYellow">#FFEF02</color>
+    <!-- Black -->
     <color name="colorBlack5">#0D000000</color>
     <color name="colorBlack">#000000</color>
-    <!-- Special -->
+    <!-- Navy blue -->
+    <color name="colorNavyBlue">#1A3880</color>
+    <color name="colorNavyBlue10">#1A193880</color>
+    <color name="colorNavyBlue25">#40193880</color>
+    <color name="colorNavyBlue50">#80193880</color>
+    <!-- Blue -->
+    <color name="colorLightBlue">#A0FEDA</color>
+    <color name="colorBlue">#4285F4</color>
+    <color name="colorBlueDark">#18222f</color>
+    <!-- Neon Green -->
+    <color name="colorNeonGreen">#55ff8a</color>
+    <color name="colorNeonGreen10">#1A54FF8A</color>
+    <color name="colorNeonGreen25">#4054FF8A</color>
+    <color name="colorNeonGreen50">#8054FF8A</color>
+    <!-- Red -->
+    <color name="colorRed">#FF3B3B</color>
+    <!-- Others -->
     <color name="colorPrimary">#006aff</color>
     <color name="colorFlagGradient">#202e59</color>
     <color name="colorFlagGradient50">#80202E59</color>
     <color name="connectedHeaderColor">#012E6E</color>
     <color name="disconnectedHeaderColor">#28323c</color>
-
-    <color name="colorYellow10">#1AFFEE03</color>
-    <color name="colorYellow50">#80FFEE03</color>
-    <color name="colorNavyBlue">#1A3880</color>
-    <color name="colorNavyBlue10">#1A193880</color>
-    <color name="colorNavyBlue50">#80193880</color>
-    <color name="colorYellow">#FFEF02</color>
-    <color name="colorRed">#FF3B3B</color>
-    <color name="colorLightBlue">#A0FEDA</color>
-    <color name="colorNeonGreen">#55ff8a</color>
-    <color name="colorNeonGreen10">#1A54FF8A</color>
-
-    <color name="colorBlue">#4285F4</color>
     <color name="darkGray">#343434</color>
-
     <!--Dead code Requires more refactor-->
     <color name="colorBackgroundDark">#0e1927</color>
-    <color name="colorBlueDark">#18222f</color>
 
 </resources>

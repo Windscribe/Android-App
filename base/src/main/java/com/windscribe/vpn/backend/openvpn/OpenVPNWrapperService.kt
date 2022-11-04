@@ -44,7 +44,7 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         logger.debug("Launching open VPN Service")
         if (intent != null && intent.action == VpnService.SERVICE_INTERFACE) {
-            vpnController.connect(alwaysOnVPN = true)
+            vpnController.connectAsync(alwaysOnVPN = true)
             START_NOT_STICKY
         }
         startForeground(NotificationConstants.SERVICE_NOTIFICATION_ID, windNotificationBuilder.buildNotification(Connecting))

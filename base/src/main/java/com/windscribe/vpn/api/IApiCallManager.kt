@@ -10,6 +10,7 @@ interface IApiCallManager {
 
     fun addUserEmailAddress(extraParams: Map<String, String>? = null): Single<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>>
     fun checkConnectivityAndIpAddress(extraParams: Map<String, String>? = null): Single<GenericResponseClass<String?, ApiErrorResponse?>>
+    fun getConnectedIp(): Single<GenericResponseClass<String?, ApiErrorResponse?>>
     fun claimAccount(extraParams: Map<String, String>? = null): Single<GenericResponseClass<ClaimAccountResponse?, ApiErrorResponse?>>
 
     //    fun getAccessIp(accessIpMap: Map<String, String>? = null): Single<GenericResponseClass<AccessIpResponse?, ApiErrorResponse?>>

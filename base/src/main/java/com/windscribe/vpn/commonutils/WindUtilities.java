@@ -121,9 +121,16 @@ public class WindUtilities {
         }
     }
 
-    public static int getRandomNode(int size) {
+    public static int getRandomNode(int size, int lastUsedIndex, int attempt) {
+        if (size == 1) {
+            return 0;
+        }
         Random random = new Random();
-        return random.nextInt(size);
+        int index = random.nextInt(size);
+        while (lastUsedIndex == index && attempt > 0) {
+            index = random.nextInt(size);
+        }
+        return index;
     }
 
     public static SelectedLocationType getSourceTypeBlocking() {

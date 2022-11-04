@@ -6,7 +6,6 @@ package com.windscribe.vpn.backend.ikev2
 
 import android.app.Notification
 import android.content.Intent
-import android.net.ProxyInfo
 import android.net.VpnService
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -15,10 +14,10 @@ import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.constants.NotificationConstants
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import org.strongswan.android.data.VpnProfile
 import org.strongswan.android.logic.CharonVpnService
+import javax.inject.Inject
 
 class CharonVpnServiceWrapper : CharonVpnService() {
 
@@ -62,7 +61,7 @@ class CharonVpnServiceWrapper : CharonVpnService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         return when (intent?.action) {
             VpnService.SERVICE_INTERFACE -> {
-                vpnController.connect(alwaysOnVPN = true)
+                vpnController.connectAsync(alwaysOnVPN = true)
                 START_NOT_STICKY
             }
             DISCONNECT_ACTION -> {

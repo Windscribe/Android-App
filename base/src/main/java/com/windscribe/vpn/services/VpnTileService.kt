@@ -57,12 +57,12 @@ class VpnTileService : TileService() {
         scope.launch {
             if (vpnConnectionStateManager.isVPNActive()) {
                 interactor.preferenceHelper.globalUserConnectionPreference = false
-                vpnController.disconnect()
+                vpnController.disconnectAsync()
             } else {
                 userRepository.user.value?.let {
                     if (it.accountStatus == User.AccountStatus.Okay) {
                         interactor.preferenceHelper.globalUserConnectionPreference = true
-                        vpnController.connect()
+                        vpnController.connectAsync()
                     } else {
                         logger.debug("Account status is ${it.accountStatus}.")
                     }
