@@ -10,7 +10,6 @@ import androidx.core.app.NotificationCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.windscribe.vpn.BuildConfig.CHECK_IP_URL
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.ServiceInteractorImpl
 import com.windscribe.vpn.Windscribe
@@ -19,12 +18,12 @@ import com.windscribe.vpn.api.HashDomainGenerator.create
 import com.windscribe.vpn.apppreference.AppPreferenceHelper
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.SecurePreferences
+import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.ikev2.IKev2VpnBackend
 import com.windscribe.vpn.backend.openvpn.OpenVPNBackend
 import com.windscribe.vpn.backend.openvpn.WsTunnelManager
-import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
@@ -128,11 +127,10 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun provideConnectionDataUpdater(
-            preferencesHelper: PreferencesHelper,
-            apiCallManager: IApiCallManager,
-            protocolManager: ProtocolManager
+        preferencesHelper: PreferencesHelper,
+        apiCallManager: IApiCallManager
     ): ConnectionDataRepository {
-        return ConnectionDataRepository(preferencesHelper, apiCallManager,protocolManager)
+        return ConnectionDataRepository(preferencesHelper, apiCallManager)
     }
 
     @Provides
@@ -183,14 +181,12 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
             networkInfoManager: NetworkInfoManager,
             vpnConnectionStateManager: VPNConnectionStateManager,
             serviceInteractor: ServiceInteractor,
-            protocolManager: ProtocolManager
     ): IKev2VpnBackend {
         return IKev2VpnBackend(
                 coroutineScope,
                 networkInfoManager,
                 vpnConnectionStateManager,
-                serviceInteractor,
-                protocolManager
+            serviceInteractor
         )
     }
 
@@ -266,17 +262,16 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun provideOpenVPNBackend(
-            goBackend: GoBackend,
-            coroutineScope: CoroutineScope,
-            networkInfoManager: NetworkInfoManager,
-            vpnConnectionStateManager: VPNConnectionStateManager,
-            serviceInteractor: ServiceInteractor,
-            protocolManager: ProtocolManager
+        goBackend: GoBackend,
+        coroutineScope: CoroutineScope,
+        networkInfoManager: NetworkInfoManager,
+        vpnConnectionStateManager: VPNConnectionStateManager,
+        serviceInteractor: ServiceInteractor
     ): OpenVPNBackend {
         return OpenVPNBackend(
             goBackend, coroutineScope, networkInfoManager,
             vpnConnectionStateManager,
-            serviceInteractor, protocolManager
+            serviceInteractor
         )
     }
 
@@ -305,16 +300,6 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
             securePreferences: SecurePreferences
     ): PreferencesHelper {
         return AppPreferenceHelper(preferences, securePreferences)
-    }
-
-    @Provides
-    @Singleton
-    fun provideProtocolManager(
-            coroutineScope: CoroutineScope,
-            networkInfoManager: NetworkInfoManager,
-            serviceInteractor: ServiceInteractor
-    ): ProtocolManager {
-        return ProtocolManager(networkInfoManager, coroutineScope, serviceInteractor)
     }
 
     @Provides
@@ -405,12 +390,12 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun provideUserRepository(
-            scope: CoroutineScope,
-            protocolManager: ProtocolManager,
-            serviceInteractor: ServiceInteractor,
-            vpnController: WindVpnController
+        scope: CoroutineScope,
+        autoConnectionManager: AutoConnectionManager,
+        serviceInteractor: ServiceInteractor,
+        vpnController: WindVpnController
     ): UserRepository {
-        return UserRepository(scope, serviceInteractor, vpnController, protocolManager)
+        return UserRepository(scope, serviceInteractor, vpnController, autoConnectionManager)
     }
 
     @Provides
@@ -478,13 +463,12 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
         coroutineScope: CoroutineScope,
         serviceInteractor: ServiceInteractor,
         vpnProfileCreator: VPNProfileCreator,
-        protocolManager: ProtocolManager,
+        autoConnectionManager: AutoConnectionManager,
         VPNConnectionStateManager: VPNConnectionStateManager,
         vpnBackendHolder: VpnBackendHolder,
         locationRepository: LocationRepository,
         wgConfigRepository: WgConfigRepository,
-        userRepository: Lazy<UserRepository>,
-        wsTunnelManager: WsTunnelManager
+        userRepository: Lazy<UserRepository>
     ): WindVpnController {
         return TestWindVpnController(
             coroutineScope,
@@ -493,9 +477,9 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
             VPNConnectionStateManager,
             vpnBackendHolder,
             locationRepository,
-            protocolManager, wgConfigRepository,
-            userRepository,
-            wsTunnelManager
+            autoConnectionManager,
+            wgConfigRepository,
+            userRepository
         )
     }
 
@@ -507,7 +491,6 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
             networkInfoManager: NetworkInfoManager,
             vpnConnectionStateManager: VPNConnectionStateManager,
             serviceInteractor: ServiceInteractor,
-            protocolManager: ProtocolManager,
             vpnProfileCreator: VPNProfileCreator,
             userRepository: Lazy<UserRepository>,
             deviceStateManager: DeviceStateManager
@@ -518,7 +501,6 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
             networkInfoManager,
             vpnConnectionStateManager,
             serviceInteractor,
-            protocolManager,
             vpnProfileCreator,
             userRepository,
             deviceStateManager
@@ -560,9 +542,11 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
     @Provides
     @Named("PrimaryApiEndpointMap")
     fun providesPrimaryApiEndpointMap(): Map<HostType, String> {
-        return mapOf(Pair(HostType.API, NetworkKeyConstants.API_ENDPOINT),
-                Pair(HostType.ASSET, NetworkKeyConstants.API_ENDPOINT_FOR_SERVER_LIST),
-                Pair(HostType.CHECK_IP, CHECK_IP_URL))
+        return mapOf(
+            Pair(HostType.API, "http://localhost:8080"),
+            Pair(HostType.ASSET, "http://localhost:8080"),
+            Pair(HostType.CHECK_IP, "http://localhost:8080")
+        )
     }
 
     @Provides
@@ -734,6 +718,26 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
             apiCallManager,
             preferencesHelper,
             vpnConnectionStateManager
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun providesAutoConnectionManager(
+        vpnConnectionStateManager: Lazy<VPNConnectionStateManager>,
+        vpnController: Lazy<WindVpnController>,
+        networkInfoManager: NetworkInfoManager,
+        interactor: ServiceInteractor,
+        scope: CoroutineScope,
+        connectionDataRepository: ConnectionDataRepository
+    ): AutoConnectionManager {
+        return AutoConnectionManager(
+            scope,
+            vpnConnectionStateManager,
+            vpnController,
+            networkInfoManager,
+            interactor,
+            connectionDataRepository
         )
     }
 

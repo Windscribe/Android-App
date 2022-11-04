@@ -10,10 +10,10 @@ import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
 class DisconnectService : IntentService("DisconnectService") {
 
@@ -41,7 +41,7 @@ class DisconnectService : IntentService("DisconnectService") {
             scope.launch {
                 logger.info("Stopping vpn services from notification.")
                 disconnectServiceInteractor.preferenceHelper.globalUserConnectionPreference = false
-                controller.disconnect()
+                controller.disconnectAsync()
             }
         }
     }

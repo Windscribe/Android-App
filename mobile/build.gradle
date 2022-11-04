@@ -80,4 +80,5 @@ dependencies {
     kapt 'com.jakewharton:butterknife-compiler:10.2.3'
     kapt "androidx.room:room-compiler:$room"
     kapt "com.google.dagger:dagger-compiler:$dagger"
+    androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
 }

@@ -9,8 +9,8 @@ import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.ServerNodeListOverLoaded
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.TrafficCounter
-import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.tables.*
@@ -117,7 +117,6 @@ interface ActivityInteractor {
     fun getPingResults(): Single<List<PingTestResults>>
     fun getFavoriteServerList(): Single<List<ServerNodeListOverLoaded>>
     fun getUserRepository(): UserRepository
-    fun getProtocolManager(): ProtocolManager
     fun getVpnConnectionStateManager(): VPNConnectionStateManager
     fun getNetworkInfoManager(): NetworkInfoManager
     fun getLocationProvider(): LocationRepository
@@ -131,4 +130,5 @@ interface ActivityInteractor {
     fun getWorkManager(): WindScribeWorkManager
     fun getDecoyTrafficController(): DecoyTrafficController
     fun getTrafficCounter(): TrafficCounter
+    fun getAutoConnectionManager(): AutoConnectionManager
 }

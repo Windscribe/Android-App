@@ -154,7 +154,7 @@
             android:gravity="center"
             android:letterSpacing=".1"
             android:textAllCaps="true"
-            android:textColor="@color/colorNeonGreen"
+            android:textColor="@color/sea_green"
             android:textSize="@dimen/text_size_16"
             android:textStyle="bold" />
 

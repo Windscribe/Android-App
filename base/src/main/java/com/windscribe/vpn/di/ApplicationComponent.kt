@@ -10,12 +10,11 @@ import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.WindApiFactory
 import com.windscribe.vpn.api.WindCustomApiFactory
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.ikev2.IKev2VpnBackend
 import com.windscribe.vpn.backend.openvpn.OpenVPNBackend
-import com.windscribe.vpn.backend.openvpn.WsTunnelManager
-import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.backend.wireguard.WireguardBackend
@@ -69,13 +68,12 @@ interface ApplicationComponent {
     val iKev2VpnBackend: IKev2VpnBackend
     val openVPNBackend: OpenVPNBackend
     val vpnConnectionStateManager: VPNConnectionStateManager
-    val wsTunnelManager: WsTunnelManager
+    val autoConnectionManager: AutoConnectionManager
 
     //Managers
     val windScribeWorkManager: WindScribeWorkManager
     val deviceStateManager: DeviceStateManager
     val windVpnController: WindVpnController
-    val protocolManager: ProtocolManager
     val mockLocationController: MockLocationManager
     val networkInfoManager: NetworkInfoManager
     val appLifeCycleObserver: AppLifeCycleObserver

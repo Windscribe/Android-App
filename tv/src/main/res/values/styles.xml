@@ -12,7 +12,7 @@
     </style>
 
     <style name="StyleNeonGreen" parent="ThemeOverlay.AppCompat.Light">
-        <item name="colorAccent">@color/colorNeonGreen</item>
+        <item name="colorAccent">@color/sea_green</item>
     </style>
 
     <style name="BaseButtonStyle" parent="Widget.AppCompat.Button.Colored">
@@ -26,7 +26,7 @@
         <item name="android:layout_gravity">bottom|end</item>
     </style>
 
-    <style name="overlay_screen" parent="@style/Theme.Transparent_custom"></style>
+    <style name="overlay_screen" parent="@style/Theme.Transparent_custom" />
 
     <style name="overlay_title" parent="TextAppearance.AppCompat">
         <item name="android:layout_margin">@dimen/reg_24dp</item>

@@ -5,15 +5,13 @@
 package com.windscribe.vpn
 
 import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.localdatabase.tables.UserStatusTable
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.CityAndRegion
-import com.windscribe.vpn.serverlist.entity.ConfigFile
-import com.windscribe.vpn.serverlist.entity.PingTime
-import com.windscribe.vpn.serverlist.entity.StaticRegion
+import com.windscribe.vpn.repository.CallResult
+import com.windscribe.vpn.serverlist.entity.*
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
@@ -43,5 +41,7 @@ interface ServiceInteractor {
     fun getConfigFile(id: Int): Single<ConfigFile>
     fun addConfigFile(configFile: ConfigFile): Completable
     fun getStaticRegionByID(staticId: Int): Single<StaticRegion>
+    suspend fun sendLog(): CallResult<GenericSuccess>
     suspend fun clearData()
+    fun saveNetwork(networkInfo: NetworkInfo): Single<Int>
 }
