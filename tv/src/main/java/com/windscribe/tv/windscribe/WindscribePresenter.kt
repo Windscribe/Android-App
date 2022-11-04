@@ -21,7 +21,8 @@ interface WindscribePresenter {
     fun onNetworkStateChanged()
     suspend fun observeVPNState()
     fun observeUserState(windscribeActivity: WindscribeActivity)
-    suspend fun observeProtocolState()
+    suspend fun observeConnectedProtocol()
     suspend fun observeServerList()
     suspend fun observeSelectedLocation()
+    suspend fun observeDisconnectedProtocol()
 }

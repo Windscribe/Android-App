@@ -3,21 +3,14 @@
  */
 package com.windscribe.tv.splash
 
-import com.google.gson.Gson
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.Windscribe.Companion.getExecutorService
 import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.api.response.GenericResponseClass
-import com.windscribe.vpn.api.response.ItemPurchased
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.constants.BillingConstants.GP_PACKAGE_NAME
-import com.windscribe.vpn.constants.BillingConstants.GP_PRODUCT_ID
-import com.windscribe.vpn.constants.BillingConstants.PURCHASED_ITEM
-import com.windscribe.vpn.constants.BillingConstants.PURCHASE_TOKEN
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.errormodel.WindError.Companion.instance
 import com.windscribe.vpn.services.ping.PingTestService
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.observers.DisposableCompletableObserver
 import io.reactivex.observers.DisposableSingleObserver
@@ -98,6 +91,7 @@ class SplashPresenterImpl @Inject constructor(
     }
 
     override fun checkNewMigration() {
+        interactor.getAutoConnectionManager().reset()
         migrateSessionAuthIfRequired()
         val userLoggedIn = interactor.getAppPreferenceInterface().sessionHash != null
         if (userLoggedIn) {

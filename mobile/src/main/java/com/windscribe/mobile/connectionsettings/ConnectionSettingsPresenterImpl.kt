@@ -161,7 +161,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
             interactor.saveConnectionMode(CONNECTION_MODE_AUTO)
             interactor.getAppPreferenceInterface().setChosenProtocol(null)
             setUpAutoModePorts()
-            interactor.getProtocolManager().loadProtocolConfigs()
+            interactor.getAutoConnectionManager().reset()
         }
     }
 
@@ -279,7 +279,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
                         interactor.saveUDPPort(port)
                     }
                 }
-                interactor.getProtocolManager().loadProtocolConfigs()
+                interactor.getAutoConnectionManager().reset()
             }
         })
     }
@@ -296,7 +296,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
                     logger.info("Saving selected protocol...")
                     interactor.saveProtocol(protocol)
                     setPortMapAdapter(heading)
-                    interactor.getProtocolManager().loadProtocolConfigs()
+                    interactor.getAutoConnectionManager().reset()
                 }
             }
         })

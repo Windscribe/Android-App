@@ -7,8 +7,9 @@ package com.windscribe.vpn.backend
 import android.app.Activity
 import android.content.Context
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
+import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
-import com.windscribe.vpn.backend.utils.ProtocolConfig
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.wireguard.config.BadConfigException
@@ -16,12 +17,7 @@ import com.wireguard.config.Config
 import inet.ipaddr.AddressStringException
 import inet.ipaddr.IPAddressString
 import io.reactivex.Single
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
-import java.io.Reader
-import java.io.StringReader
+import java.io.*
 
 
 object Util {
@@ -31,12 +27,12 @@ object Util {
     fun getLastSelectedLocation(context: Context): LastSelectedLocation? {
         try {
             ObjectInputStream(context.openFileInput(LAST_SELECTED_LOCATION))
-                    .use {
-                        val obj = it.readObject()
-                        if (obj is LastSelectedLocation) {
-                            return obj
-                        }
+                .use {
+                    val obj = it.readObject()
+                    if (obj is LastSelectedLocation) {
+                        return obj
                     }
+                }
         } catch (ignored: Exception) {
             return null
         }
@@ -46,7 +42,8 @@ object Util {
     fun getSavedLocation(): Single<LastSelectedLocation> {
         return Single.fromCallable {
             try {
-                val file = ObjectInputStream(Windscribe.appContext.openFileInput(LAST_SELECTED_LOCATION))
+                val file =
+                    ObjectInputStream(Windscribe.appContext.openFileInput(LAST_SELECTED_LOCATION))
                 val obj = file.readObject()
                 if (obj is LastSelectedLocation) {
                     return@fromCallable obj
@@ -73,14 +70,24 @@ object Util {
     }
 
     fun saveSelectedLocation(selectedLocation: LastSelectedLocation) {
-        val vpnFile = ObjectOutputStream(Windscribe.appContext.openFileOutput(LAST_SELECTED_LOCATION, Activity.MODE_PRIVATE))
+        val vpnFile = ObjectOutputStream(
+            Windscribe.appContext.openFileOutput(
+                LAST_SELECTED_LOCATION,
+                Activity.MODE_PRIVATE
+            )
+        )
         vpnFile.writeObject(selectedLocation)
         vpnFile.flush()
         vpnFile.close()
     }
 
     fun saveProfile(profile: Any): String {
-        val vpnFile = ObjectOutputStream(Windscribe.appContext.openFileOutput(VPN_PROFILE_NAME, Activity.MODE_PRIVATE))
+        val vpnFile = ObjectOutputStream(
+            Windscribe.appContext.openFileOutput(
+                VPN_PROFILE_NAME,
+                Activity.MODE_PRIVATE
+            )
+        )
         vpnFile.writeObject(profile)
         vpnFile.flush()
         vpnFile.close()
@@ -109,35 +116,40 @@ object Util {
         return ipAddress
     }
 
-    fun getProtocolConfigForOpenVPN(content: String): ProtocolConfig {
-        val protocolConfig = ProtocolConfig(PreferencesKeyConstants.PROTO_UDP, "443", ProtocolConfig.Type.Manual)
+    fun getProtocolInformationFromOpenVPNConfig(content: String): ProtocolInformation {
+        val protocolInformation = buildProtocolInformation(
+            null,
+            PreferencesKeyConstants.PROTO_UDP,
+            "443"
+        )
         val serverConfigLines = content.split(System.getProperty("line.separator")).toTypedArray()
         for (serverConfigLine in serverConfigLines) {
             if (serverConfigLine.contains("remote")) {
                 val splits = serverConfigLine.split(" ").toTypedArray()
                 if (splits.size > 2) {
-                    protocolConfig.port = splits[2]
-                    return protocolConfig
+                    protocolInformation.port = splits[2]
+                    return protocolInformation
                 }
             }
             if (serverConfigLine.contains("proto")) {
                 val splits = serverConfigLine.split(" ").toTypedArray()
                 if (splits.isNotEmpty() && splits[1].contains("tcp")) {
-                    protocolConfig.protocol = PreferencesKeyConstants.PROTO_TCP
+                    protocolInformation.protocol = PreferencesKeyConstants.PROTO_TCP
                 }
             }
         }
-        return protocolConfig
+        return protocolInformation
     }
 
-    fun getProtocolConfigForWireguard(content: String?): ProtocolConfig {
-        val protocolConfig = ProtocolConfig(PROTO_WIRE_GUARD, "", ProtocolConfig.Type.Manual)
+    fun getProtocolInformationFromWireguardConfigConfig(content: String?): ProtocolInformation {
+        val protocolInformation =
+            buildProtocolInformation(null, PROTO_WIRE_GUARD, "")
         val reader: Reader = StringReader(content)
         val bufferedReader = BufferedReader(reader)
         try {
             val config = Config.parse(bufferedReader)
             val inetEndpoint = config.peers[0].endpoint.get()
-            protocolConfig.port = inetEndpoint.port.toString()
+            protocolInformation.port = inetEndpoint.port.toString()
         } catch (e: IOException) {
             e.printStackTrace()
         } catch (e: BadConfigException) {
@@ -149,7 +161,7 @@ object Util {
                 e.printStackTrace()
             }
         }
-        return protocolConfig
+        return protocolInformation
     }
 
     fun getHostNameFromOpenVPNConfig(content: String): String? {
@@ -161,5 +173,69 @@ object Util {
             }
         }
         return null
+    }
+
+    fun getAppSupportedProtocolList(): MutableList<ProtocolInformation> {
+        val protocol1 = ProtocolInformation(
+            PreferencesKeyConstants.PROTO_IKev2,
+            PreferencesKeyConstants.DEFAULT_IKEV2_PORT,
+            "Internet Key Exchange is an IPsec based tunneling protocol",
+            ProtocolConnectionStatus.Disconnected
+        )
+        val protocol2 = ProtocolInformation(
+            PreferencesKeyConstants.PROTO_UDP,
+            PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT,
+            "Balanced speed and security.",
+            ProtocolConnectionStatus.Disconnected
+        )
+        val protocol3 = ProtocolInformation(
+            PreferencesKeyConstants.PROTO_TCP,
+            PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT,
+            "Use it if OpenVPN UDP fails.",
+            ProtocolConnectionStatus.Disconnected
+        )
+        val protocol4 = ProtocolInformation(
+            PreferencesKeyConstants.PROTO_STEALTH,
+            PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT,
+            "Disguises your traffic as regular HTTPS traffic with tls",
+            ProtocolConnectionStatus.Disconnected
+        )
+        val protocol5 = ProtocolInformation(
+            PreferencesKeyConstants.PROTO_WIRE_GUARD,
+            PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT,
+            "Extremely simple yet fast and modern VPN protocol.",
+            ProtocolConnectionStatus.Disconnected
+        )
+        val protocol6 = ProtocolInformation(
+            PreferencesKeyConstants.PROTO_WS_TUNNEL,
+            PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT,
+            "Disguises your traffic as regular HTTPS traffic with web sockets.",
+            ProtocolConnectionStatus.Disconnected
+        )
+        return mutableListOf(protocol1, protocol2, protocol3, protocol4, protocol5, protocol6)
+    }
+
+    fun buildProtocolInformation(
+        protocolInformationList: List<ProtocolInformation>?,
+        protocol: String,
+        port: String
+    ): ProtocolInformation {
+        val list = protocolInformationList ?: getAppSupportedProtocolList()
+        return list.firstOrNull { it.protocol == protocol }?.apply {
+            this.port = port
+            this.autoConnectTimeLeft = 10
+        } ?: getAppSupportedProtocolList().first()
+    }
+
+    fun getProtocolLabel(protocol: String): String {
+        return when (protocol) {
+            PreferencesKeyConstants.PROTO_IKev2 -> "IKEv2"
+            PreferencesKeyConstants.PROTO_UDP -> "UDP"
+            PreferencesKeyConstants.PROTO_TCP -> "TCP"
+            PreferencesKeyConstants.PROTO_STEALTH -> "Stealth"
+            PreferencesKeyConstants.PROTO_WIRE_GUARD -> "WireGuard"
+            PreferencesKeyConstants.PROTO_WS_TUNNEL -> "WStunnel"
+            else -> "IKEv2"
+        }
     }
 }

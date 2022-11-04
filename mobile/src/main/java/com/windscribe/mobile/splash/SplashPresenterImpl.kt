@@ -98,6 +98,7 @@ class SplashPresenterImpl @Inject constructor(
     }
 
     override fun checkNewMigration() {
+        interactor.getAutoConnectionManager().reset()
         migrateSessionAuthIfRequired()
         val userLoggedIn = interactor.getAppPreferenceInterface().sessionHash != null
         if (userLoggedIn) {

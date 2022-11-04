@@ -71,7 +71,7 @@ class NetworkWhiteListService : Service(), NetworkInfoListener {
         if (!interactor.preferenceHelper.globalUserConnectionPreference) {
             logger.debug("New network available but user connection intent is false. now disconnecting")
             scope.launch {
-                windVpnController.disconnect()
+                windVpnController.disconnectAsync()
             }
             return
         }
@@ -101,14 +101,14 @@ class NetworkWhiteListService : Service(), NetworkInfoListener {
 
     private fun onTrustedNetworkFound() {
         scope.launch {
-            windVpnController.disconnect(waitForNextProtocol = true)
+            windVpnController.disconnectAsync(waitForNextProtocol = true)
         }
     }
 
     private fun onUntrustedNetworkFound() {
         networkInfoManager.removeNetworkInfoListener(this)
         interactor.preferenceHelper.globalUserConnectionPreference = true
-        windVpnController.connect()
+        windVpnController.connectAsync()
     }
 
     private fun stopService() {

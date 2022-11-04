@@ -724,14 +724,21 @@ class ApiCallManager @Inject constructor(
                         }
             }
                     ?: apiFactory.createApi(url).sendDecoyTraffic(hashMapOf(Pair("data", data)), "text/plain")
-                            .flatMap {
-                                responseToModel(it, String::class.java)
-                            }
+                        .flatMap {
+                            responseToModel(it, String::class.java)
+                        }
         } catch (e: Exception) {
             val apiErrorResponse = ApiErrorResponse()
             apiErrorResponse.errorCode = NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
             apiErrorResponse.errorMessage = WindError.instance.rxErrorToString(e)
             return Single.just(GenericResponseClass(null, apiErrorResponse))
         }
+    }
+
+    override fun getConnectedIp(): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
+        return apiFactory.createApi("https://checkip.windscribe.com/").connectivityTestAndIp()
+            .flatMap {
+                 responseToModel(it, String::class.java)
+            }
     }
 }

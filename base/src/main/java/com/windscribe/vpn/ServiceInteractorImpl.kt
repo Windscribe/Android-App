@@ -4,23 +4,30 @@
 
 package com.windscribe.vpn
 
+import android.os.Build
 import com.google.gson.Gson
 import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.commonutils.WindUtilities
+import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.constants.UserStatusConstants
+import com.windscribe.vpn.encoding.encoders.Base64
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.localdatabase.tables.UserStatusTable
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.CityAndRegion
-import com.windscribe.vpn.serverlist.entity.ConfigFile
-import com.windscribe.vpn.serverlist.entity.PingTime
-import com.windscribe.vpn.serverlist.entity.Region
-import com.windscribe.vpn.serverlist.entity.StaticRegion
+import com.windscribe.vpn.repository.CallResult
+import com.windscribe.vpn.serverlist.entity.*
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.rx2.await
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileReader
+import java.nio.charset.Charset
 import javax.inject.Inject
 
 /**
@@ -113,5 +120,45 @@ class ServiceInteractorImpl @Inject constructor(
 
     override fun getStaticRegionByID(staticId: Int): Single<StaticRegion> {
         return this.localDbInterface.getStaticRegionByID(staticId)
+    }
+
+    override suspend fun sendLog(): CallResult<GenericSuccess> {
+        return try {
+            val logMap: MutableMap<String, String> = HashMap()
+            logMap[UserStatusConstants.CURRENT_USER_NAME] = preferenceHelper.userName
+            logMap[NetworkKeyConstants.POST_LOG_FILE_KEY] = getEncodedLog()
+            apiManager.postDebugLog(logMap).await().callResult()
+        } catch (e: Exception) {
+            CallResult.Error(errorMessage = "Unable to load debug logs from disk.")
+        }
+    }
+
+    @Throws(Exception::class)
+    fun getEncodedLog(): String {
+        var logLine: String?
+        val debugFilePath = getDebugFilePath()
+        val logFile = Windscribe.appContext.resources.getString(
+            R.string.log_file_header,
+            Build.VERSION.SDK_INT, Build.BRAND, Build.DEVICE, Build.MODEL, Build.MANUFACTURER,
+            Build.VERSION.RELEASE, WindUtilities.getVersionCode()
+        )
+        val builder = StringBuilder()
+        builder.append(logFile)
+        val file = File(debugFilePath)
+        val bufferedReader = BufferedReader(FileReader(file))
+        while (bufferedReader.readLine().also { logLine = it } != null) {
+            builder.append(logLine)
+            builder.append("\n")
+        }
+        bufferedReader.close()
+        return String(Base64.encode(builder.toString().toByteArray(Charset.defaultCharset())))
+    }
+
+    private fun getDebugFilePath(): String {
+        return Windscribe.appContext.cacheDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
+    }
+
+    override fun saveNetwork(networkInfo: NetworkInfo): Single<Int> {
+        return localDbInterface.updateNetwork(networkInfo)
     }
 }

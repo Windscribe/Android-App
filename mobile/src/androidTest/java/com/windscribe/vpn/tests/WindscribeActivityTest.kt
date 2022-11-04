@@ -2,10 +2,15 @@ package com.windscribe.vpn.tests
 
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.windscribe.mobile.welcome.WelcomeActivity
+import com.windscribe.mobile.windscribe.WindscribeActivity
 import com.windscribe.test.Constants
+import com.windscribe.test.Constants.ConnectionTime
+import com.windscribe.test.Constants.DisconnectTime
+import com.windscribe.test.Constants.FragmentLaunchTime
+import com.windscribe.test.Constants.LayoutReadyTime
+import com.windscribe.test.Constants.Padding
 import com.windscribe.test.Constants.TestIp
-import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.mocks.TestWindVpnController
 import de.codecentric.androidtestktx.espresso.extensions.waitFor
@@ -16,13 +21,12 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class WindscribeActivityTest : BaseTest() {
     @get:Rule
-    var activityScenarioRule = activityScenarioRule<WelcomeActivity>()
+    var activityScenarioRule = activityScenarioRule<WindscribeActivity>()
 
     @Test
     fun mainMenu() {
         launchHomeScreen()
         buildHomeRobot {
-            waitFor(500)
             homeViewVisible()
             pressHamburgerMenuButton()
             waitFor(500)
@@ -38,7 +42,6 @@ class WindscribeActivityTest : BaseTest() {
     fun newsfeed() {
         launchHomeScreen()
         buildHomeRobot {
-            waitFor(500)
             homeViewVisible()
             pressNewsFeedButton()
             waitFor(500)
@@ -54,7 +57,6 @@ class WindscribeActivityTest : BaseTest() {
     fun searchItem() {
         launchHomeScreen()
         buildHomeRobot {
-            waitFor(500)
             homeViewVisible()
             pressSearchIcon()
             waitFor(2000)
@@ -73,17 +75,32 @@ class WindscribeActivityTest : BaseTest() {
     fun connectionSuccess() {
         launchHomeScreen()
         buildHomeRobot {
-            (Windscribe.appContext.vpnController as TestWindVpnController).nextState = VPNState(VPNState.Status.Connected, ip = TestIp)
-            waitFor(500)
+            (appContext.vpnController as TestWindVpnController).mockState =
+                VPNState(VPNState.Status.Connected, ip = TestIp)
             homeViewVisible()
-            waitFor(500)
+            waitFor(LayoutReadyTime)
             pressConnectButton()
-            waitFor(8000)
+            waitFor(ConnectionTime + Padding)
             ipAddressMatch(TestIp)
             pressConnectButton()
-            waitFor(2000)
+            waitFor(DisconnectTime)
             ipAddressDoesNotMatch(TestIp)
-            waitFor(1000)
+            waitFor(LayoutReadyTime)
+        }
+    }
+
+    @Test
+    fun launchConnectionFailureView() {
+        launchHomeScreen()
+        buildHomeRobot {
+            (appContext.vpnController as TestWindVpnController).mockState =
+                VPNState(VPNState.Status.Disconnected)
+            homeViewVisible()
+            waitFor(LayoutReadyTime)
+            pressConnectButton()
+            waitFor(ConnectionTime * 2)
+            waitFor(FragmentLaunchTime)
+            connectionFailureViewVisible()
         }
     }
 
@@ -91,8 +108,8 @@ class WindscribeActivityTest : BaseTest() {
     fun connectionFailed() {
         launchHomeScreen()
         buildHomeRobot {
-            (Windscribe.appContext.vpnController as TestWindVpnController).nextState = VPNState(VPNState.Status.Disconnected)
-            waitFor(500)
+            (appContext.vpnController as TestWindVpnController).mockState =
+                VPNState(VPNState.Status.Disconnected)
             homeViewVisible()
             waitFor(500)
             pressConnectButton()
@@ -102,11 +119,13 @@ class WindscribeActivityTest : BaseTest() {
 
     private fun launchHomeScreen() {
         buildLoginRobot {
+            waitFor(2000)
             pressLoginButton()
             waitFor(500)
             enterUserName(Constants.Username)
             enterPassword(Constants.Password)
             pressContinueButton()
+            waitFor(8 * 1000)
         }
     }
 }

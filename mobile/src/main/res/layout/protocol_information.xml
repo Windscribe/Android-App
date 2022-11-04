@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginTop="@dimen/reg_16dp"
+    android:paddingBottom="@dimen/padding_14"
+    android:paddingStart="@dimen/padding_16"
+    android:id="@+id/container"
+    android:background="@drawable/protocol_connected_background">
+
+    <TextView
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:text="IKEv2"
+        android:includeFontPadding="false"
+        android:id="@+id/protocol"
+        android:textSize="@dimen/text_size_16"
+        android:textColor="?attr/wdActionColor"
+        android:layout_marginTop="@dimen/reg_14dp"
+        android:fontFamily="@font/ibm_plex_sans_bold" />
+
+    <TextView
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/protocol"
+        app:layout_constraintTop_toTopOf="@id/protocol"
+        app:layout_constraintBottom_toBottomOf="@id/protocol"
+        android:text="|"
+        android:layout_marginStart="@dimen/reg_8dp"
+        android:includeFontPadding="false"
+        android:id="@+id/divider"
+        android:textSize="@dimen/text_size_16"
+        android:textColor="?attr/wdActionColor25"
+        android:fontFamily="@font/ibm_plex_sans_bold" />
+
+    <TextView
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/divider"
+        app:layout_constraintTop_toTopOf="@id/protocol"
+        app:layout_constraintBottom_toBottomOf="@id/protocol"
+        android:text="500"
+        android:layout_marginStart="@dimen/reg_8dp"
+        android:includeFontPadding="false"
+        android:id="@+id/port"
+        android:textSize="@dimen/text_size_16"
+        android:textColor="?attr/wdActionColor50"
+        android:fontFamily="@font/ibm_plex_sans_regular" />
+
+    <TextView
+        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        app:layout_constraintWidth_percent=".75"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@id/protocol"
+        app:layout_constraintEnd_toStartOf="@id/check"
+        app:layout_constraintTop_toBottomOf="@id/protocol"
+        android:gravity="start"
+        android:text="One line description."
+        android:includeFontPadding="false"
+        android:id="@+id/description"
+        android:textSize="@dimen/text_size_12"
+        android:textColor="?attr/wdActionColor50"
+        android:fontFamily="@font/ibm_plex_sans_regular"
+        android:layout_marginTop="4dp" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_check"
+        android:layout_marginEnd="@dimen/margin_16"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/description"
+        app:layout_constraintBottom_toBottomOf="@id/description"
+        app:tint="?attr/wdActionColor"
+        android:id="@+id/check" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_small_forward_arrow"
+        android:layout_marginEnd="@dimen/margin_16"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/description"
+        app:layout_constraintBottom_toBottomOf="@id/description"
+        android:id="@+id/action_arrow"
+        android:visibility="gone" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/reg_24dp"
+        android:text="Failed"
+        android:includeFontPadding="false"
+        android:paddingStart="@dimen/reg_16dp"
+        android:paddingEnd="22dp"
+        android:layout_margin="2dp"
+        android:gravity="center"
+        android:textSize="@dimen/text_size_12"
+        android:fontFamily="@font/ibm_plex_sans_regular"
+        android:textColor="@color/colorRed"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/protocol"
+        app:layout_constraintBottom_toBottomOf="@id/description"
+        android:id="@+id/error"
+        android:visibility="gone" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/reg_24dp"
+        android:text="connected to"
+        android:background="@drawable/protocol_sticker_background"
+        android:includeFontPadding="false"
+        android:paddingStart="@dimen/reg_16dp"
+        android:paddingEnd="@dimen/reg_16dp"
+        android:gravity="center"
+        android:layout_marginEnd="3dp"
+        android:layout_marginTop="3dp"
+        android:textSize="@dimen/text_size_12"
+        android:fontFamily="@font/ibm_plex_sans_regular"
+        android:textColor="?attr/wdActionColor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?attr/wdActionColor"
+        android:id="@+id/status" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,8 +5,8 @@
 package com.windscribe.vpn.backend
 
 import com.windscribe.vpn.ServiceInteractor
-import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.backend.utils.ProtocolManager
+import com.windscribe.vpn.autoconnection.ProtocolInformation
+import com.windscribe.vpn.backend.wireguard.WireguardBackend
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import io.reactivex.disposables.CompositeDisposable
@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -25,12 +26,18 @@ import javax.inject.Singleton
  * Base class for Interfacing with VPN Modules.
  * */
 @Singleton
-abstract class VpnBackend(private val mainScope: CoroutineScope, val stateManager: VPNConnectionStateManager, val vpnServiceInteractor: ServiceInteractor, private val protocolManager: ProtocolManager) {
+abstract class VpnBackend(
+    private val mainScope: CoroutineScope,
+    val stateManager: VPNConnectionStateManager,
+    private val vpnServiceInteractor: ServiceInteractor
+) {
 
     val vpnLogger: Logger = LoggerFactory.getLogger("vpn_backend")
     var connectionJob: Job? = null
-    var authFailure = false
     var reconnecting = false
+    var protocolInformation: ProtocolInformation? = null
+    var connectionId: UUID? = null
+    var error: VPNState.Error? = null
 
     private val connectivityTestJob = CompositeDisposable()
 
@@ -48,16 +55,23 @@ abstract class VpnBackend(private val mainScope: CoroutineScope, val stateManage
     fun startConnectionJob() {
         connectionJob = mainScope.launch {
             vpnLogger.debug("Connection timer started.")
-            delay(CONNECTING_WAIT)
+            if (this@VpnBackend is WireguardBackend) {
+                delay(WG_CONNECTING_WAIT)
+            } else {
+                delay(CONNECTING_WAIT)
+            }
             connectionTimeout()
         }
     }
 
     private suspend fun connectionTimeout() {
         vpnLogger.debug("Connection timeout.")
-        deactivate()
-        delay(DEACTIVATE_WAIT)
-        protocolManager.protocolFailed()
+        disconnect(
+            error = VPNState.Error(
+                error = VPNState.ErrorType.TimeoutError,
+                "connection timeout"
+            )
+        )
     }
 
     /**
@@ -70,8 +84,8 @@ abstract class VpnBackend(private val mainScope: CoroutineScope, val stateManage
         connectivityTestJob.clear()
         vpnLogger.debug("Testing internet connectivity.")
         connectivityTestJob.add(
-                vpnServiceInteractor.apiManager
-                        .checkConnectivityAndIpAddress().delay(500, TimeUnit.MILLISECONDS)
+            vpnServiceInteractor.apiManager
+                .getConnectedIp().delay(500, TimeUnit.MILLISECONDS)
                         .retry(3)
                         .timeout(20, TimeUnit.SECONDS)
                         .delaySubscription(500, TimeUnit.MILLISECONDS)
@@ -103,10 +117,15 @@ abstract class VpnBackend(private val mainScope: CoroutineScope, val stateManage
 
     fun updateState(vpnState: VPNState) {
         mainScope.launch {
-            if (vpnState.status == VPNState.Status.Disconnected && authFailure) {
-                authFailure = false
-                stateManager.setState(VPNState(VPNState.Status.Disconnected, VPNState.Error.AuthenticationError))
-            } else {
+            vpnState.protocolInformation = protocolInformation
+            vpnState.connectionId = connectionId
+            error?.let {
+                if (vpnState.status == VPNState.Status.Disconnected) {
+                    vpnState.error = it
+                    error = null
+                }
+            }
+            if (connectionId != null) {
                 stateManager.setState(vpnState)
             }
         }
@@ -120,7 +139,6 @@ abstract class VpnBackend(private val mainScope: CoroutineScope, val stateManage
             delay(500)
             reconnecting = false
         }
-        protocolManager.onConnectionSuccessful()
     }
 
     private fun failedConnectivityTest() {
@@ -130,13 +148,12 @@ abstract class VpnBackend(private val mainScope: CoroutineScope, val stateManage
         if (reconnecting.not()) {
             mainScope.launch {
                 vpnLogger.debug("Connectivity test failed.")
-                appContext.vpnController.disconnect()
-                delay(DISCONNECT_DELAY)
-            }.invokeOnCompletion {
-                if(vpnServiceInteractor.preferenceHelper.isConnectingToConfiguredLocation().not()){
-                    vpnServiceInteractor.preferenceHelper.globalUserConnectionPreference = true
-                    protocolManager.protocolFailed()
-                }
+                disconnect(
+                    error = VPNState.Error(
+                        VPNState.ErrorType.ConnectivityTestFailed,
+                        "Connectivity test failed."
+                    )
+                )
             }
         } else {
             vpnLogger.debug("Connectivity test failed in background.")
@@ -153,12 +170,12 @@ abstract class VpnBackend(private val mainScope: CoroutineScope, val stateManage
     abstract var active: Boolean
     abstract fun activate()
     abstract fun deactivate()
-    abstract fun connect()
-    abstract suspend fun disconnect()
+    abstract fun connect(protocolInformation: ProtocolInformation, connectionId: UUID)
+    abstract suspend fun disconnect(error: VPNState.Error? = null)
 
     companion object {
-        var DISCONNECT_DELAY = 100L
+        var DISCONNECT_DELAY = 1000L
         var CONNECTING_WAIT = 30 * 1000L
-        var DEACTIVATE_WAIT = 500L
+        var WG_CONNECTING_WAIT = 20 * 1000L
     }
 }

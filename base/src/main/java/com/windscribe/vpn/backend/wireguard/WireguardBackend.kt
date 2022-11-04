@@ -9,12 +9,12 @@ import android.os.Build
 import android.os.PowerManager
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
-import com.windscribe.vpn.backend.utils.ProtocolManager
 import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.commonutils.WindUtilities
@@ -31,22 +31,23 @@ import com.wireguard.android.backend.Tunnel.State.*
 import dagger.Lazy
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.collectLatest
+import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Singleton
 class WireguardBackend(
-        var backend: GoBackend,
-        var scope: CoroutineScope,
-        var networkInfoManager: NetworkInfoManager,
-        var vpnStateManager: VPNConnectionStateManager,
-        var serviceInteractor: ServiceInteractor,
-        var protocolManager: ProtocolManager,
-        val vpnProfileCreator: VPNProfileCreator,
-        val userRepository: Lazy<UserRepository>,
-        val deviceStateManager: DeviceStateManager
-) : VpnBackend(scope, vpnStateManager, serviceInteractor, protocolManager) {
+    var backend: GoBackend,
+    var scope: CoroutineScope,
+    var networkInfoManager: NetworkInfoManager,
+    var vpnStateManager: VPNConnectionStateManager,
+    var serviceInteractor: ServiceInteractor,
+    val vpnProfileCreator: VPNProfileCreator,
+    val userRepository: Lazy<UserRepository>,
+    val deviceStateManager: DeviceStateManager
+) : VpnBackend(scope, vpnStateManager, serviceInteractor) {
 
     var service: WireGuardWrapperService? = null
     var connectionStateJob: Job? = null
@@ -75,7 +76,6 @@ class WireguardBackend(
 
     private var stickyDisconnectEvent = false
     override fun activate() {
-        updateState(VPNState(Connecting))
         stickyDisconnectEvent = true
         vpnLogger.debug("Activating wireGuard backend.")
         connectionStateJob = scope.launch {
@@ -107,7 +107,9 @@ class WireguardBackend(
         vpnLogger.debug("WireGuard backend deactivated.")
     }
 
-    override fun connect() {
+    override fun connect(protocolInformation: ProtocolInformation, connectionId: UUID) {
+        this.protocolInformation = protocolInformation
+        this.connectionId = connectionId
         startConnectionJob()
         scope.launch {
             vpnLogger.debug("Getting WireGuard profile.")
@@ -124,7 +126,8 @@ class WireguardBackend(
         }
     }
 
-    override suspend fun disconnect() {
+    override suspend fun disconnect(error: VPNState.Error?) {
+        this.error = error
         deviceIdleJob?.cancel()
         appActivationJob?.cancel()
         healthJob?.cancel()
@@ -141,10 +144,10 @@ class WireguardBackend(
     }
 
     override fun connectivityTestPassed(ip: String) {
+        super.connectivityTestPassed(ip)
         if (!reconnecting) {
             startConnectionHealthJob()
         }
-        super.connectivityTestPassed(ip)
     }
 
     private fun startConnectionHealthJob() {
@@ -169,11 +172,12 @@ class WireguardBackend(
             }
         }
         appActivationJob = scope.launch {
-            vpnLogger.debug("Launching service")
-            appContext.appLifeCycleObserver.appActivationState.collectLatest {
-                vpnLogger.debug("App state changed: Checking tunnel health")
-                healthJob?.cancel()
-                healthJob = scope.launch { checkTunnelHealth() }
+            appContext.appLifeCycleObserver.appActivationState.collectIndexed { index, value ->
+                if (index > 0) {
+                    vpnLogger.debug("App state changed: Checking tunnel health.")
+                    healthJob?.cancel()
+                    healthJob = scope.launch { checkTunnelHealth() }
+                }
             }
         }
     }
@@ -190,7 +194,6 @@ class WireguardBackend(
     }
 
     private suspend fun checkTunnelHealth() {
-        vpnLogger.debug("\n")
         vpnLogger.debug("Requesting new interface address.")
         Util.getProfile<WireGuardVpnProfile>()?.content?.let {
             vpnLogger.debug("Creating config from saved params")
@@ -213,16 +216,14 @@ class WireguardBackend(
                             reconnecting = true
                             backend.setState(testTunnel, UP, response.data)
                         } else {
-                            vpnLogger.debug("Same interface address.")
-                            vpnLogger.debug("\n")
+                            vpnLogger.debug("Interface address unchanged.")
                         }
                     }
                     is CallResult.Error -> {
                         vpnLogger.debug("Failed to create wg params :$response")
-                        vpnLogger.debug("\n")
                         when (response.code) {
                             EXPIRED_OR_BANNED_ACCOUNT -> {
-                                appContext.vpnController.disconnect()
+                                appContext.vpnController.disconnectAsync()
                             }
                             else -> {}
                         }

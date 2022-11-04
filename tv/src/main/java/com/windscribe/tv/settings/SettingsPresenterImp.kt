@@ -63,7 +63,7 @@ class SettingsPresenterImp @Inject constructor(
     private val logger = LoggerFactory.getLogger("setting_presenter")
     override fun onDestroy() {
         logger.info("Disposing observer...")
-        interactor.getProtocolManager().loadProtocolConfigs()
+        interactor.getAutoConnectionManager().reset()
         if (!interactor.getCompositeDisposable().isDisposed) {
             interactor.getCompositeDisposable().dispose()
         }
