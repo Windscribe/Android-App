@@ -50,12 +50,12 @@ class ConnectionChangeFragment(
 
     @OnClick(R.id.cancel, R.id.img_close_btn)
     fun onCancelClick() {
-        dismiss()
+        dismissAllowingStateLoss()
         autoConnectionModeCallback.onCancel()
     }
 
     override fun onItemSelect(protocolInformation: ProtocolInformation) {
-        dismiss()
+        dismissAllowingStateLoss()
         autoConnectionModeCallback.onProtocolSelect(protocolInformation)
     }
 }
