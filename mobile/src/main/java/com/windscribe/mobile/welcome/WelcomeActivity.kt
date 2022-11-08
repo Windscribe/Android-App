@@ -216,6 +216,8 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
             if (it !is ProgressFragment) {
                 ProgressFragment.getInstance().add(this, R.id.progress_container, true)
             }
+        } ?: kotlin.run {
+            ProgressFragment.getInstance().add(this, R.id.progress_container, true)
         }
     }
 
