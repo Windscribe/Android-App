@@ -56,7 +56,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="start"
-            app:layout_constrainedHeight="true"
             android:layout_marginTop="@dimen/reg_24dp"
             android:fontFamily="@font/ibm_plex_sans_regular"
             android:textColor="@color/colorWhite"
