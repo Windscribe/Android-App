@@ -2008,6 +2008,9 @@ class WindscribeActivity :
         preferenceChangeObserver.addShowLocationHealthChangeObserver(
             this
         ) { presenter.onShowLocationHealthChanged() }
+        preferenceChangeObserver.addLocationSettingsChangeObserver(this) {
+            presenter.onLocationSettingsChanged()
+        }
     }
 
     private fun setBarSelected(
