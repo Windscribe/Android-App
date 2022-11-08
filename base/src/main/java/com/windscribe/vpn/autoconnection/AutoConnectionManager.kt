@@ -76,8 +76,13 @@ class AutoConnectionManager(
 
     override fun onNetworkInfoUpdate(networkInfo: NetworkInfo?, userReload: Boolean) {
         if (isEnabled) return
-        if (networkInfo?.networkName != preferredProtocol?.first || networkInfo?.protocol != preferredProtocol?.second?.protocol || networkInfo?.port != preferredProtocol?.second?.port) {
-            reset()
+        listOfProtocols.firstOrNull {
+            it.protocol == networkInfo?.protocol
+        }?.let { protocolInfo ->
+            networkInfo?.let { info ->
+                preferredProtocol = Pair(info.networkName, protocolInfo)
+                reset()
+            }
         }
     }
 
@@ -390,6 +395,8 @@ class AutoConnectionManager(
                 logger.debug("App is in background. existing auto connect.")
                 stop()
             }
+        } else {
+            logger.debug("Unable to get network name.")
         }
     }
 
@@ -443,7 +450,7 @@ class AutoConnectionManager(
                                 listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
                                     ProtocolConnectionStatus.Connected
                                 logger.debug("Successfully found a working protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
-                                if (networkInfoManager.networkInfo?.port != protocolInformation.port && networkInfoManager.networkInfo?.protocol != protocolInformation.protocol) {
+                                if ((networkInfoManager.networkInfo?.port != protocolInformation.port && networkInfoManager.networkInfo?.protocol != protocolInformation.protocol) || networkInfoManager.networkInfo?.isPreferredOn == false) {
                                     saveNetworkForFutureUse(protocolInformation)
                                 }
                             } else if (connectionResult.error?.showError == true) {
@@ -452,10 +459,6 @@ class AutoConnectionManager(
                             } else {
                                 listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
                                     ProtocolConnectionStatus.Failed
-                                listOfProtocols.filter { it.type == ProtocolConnectionStatus.Failed }
-                                    .forEach {
-                                        logger.debug("Failedprotocl: ${it.protocol}")
-                                    }
                                 logger.debug("Auto connect failure: ${protocolInformation.protocol}:${protocolInformation.port} ${connectionResult.error?.message}")
                                 retry()
                             }
@@ -504,7 +507,7 @@ class AutoConnectionManager(
                                 listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
                                     ProtocolConnectionStatus.Connected
                                 logger.debug("Successfully found a working protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
-                                if (networkInfoManager.networkInfo?.port != protocolInformation.port && networkInfoManager.networkInfo?.protocol != protocolInformation.protocol) {
+                                if ((networkInfoManager.networkInfo?.port != protocolInformation.port && networkInfoManager.networkInfo?.protocol != protocolInformation.protocol) || networkInfoManager.networkInfo?.isPreferredOn == false) {
                                     saveNetworkForFutureUse(protocolInformation)
                                 }
                             } else if (connectionResult.error?.showError == true) {
