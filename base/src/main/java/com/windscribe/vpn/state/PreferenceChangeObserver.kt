@@ -18,6 +18,7 @@ class PreferenceChangeObserver {
     private val showLocationHealthChange = MutableLiveData<Boolean>()
     private val cityServerListChange = MutableLiveData<Boolean>()
     private val configListChange = MutableLiveData<Boolean>()
+    private val locationSettingsChange = MutableLiveData<Boolean>()
 
     fun addConfigListObserver(owner: LifecycleOwner, observer: Observer<Boolean>) {
         configListChange.observe(owner, observer)
@@ -33,6 +34,14 @@ class PreferenceChangeObserver {
 
     fun addShowLocationHealthChangeObserver(owner: LifecycleOwner?, observer: Observer<Boolean>?) {
         showLocationHealthChange.observe(owner!!, observer!!)
+    }
+
+    fun addLocationSettingsChangeObserver(owner: LifecycleOwner, observer: Observer<Boolean>) {
+        locationSettingsChange.observe(owner, observer)
+    }
+
+    fun postLocationSettingsChange() {
+        locationSettingsChange.postValue(true)
     }
 
     fun postCityServerChange() {

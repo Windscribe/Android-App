@@ -2745,4 +2745,10 @@ class WindscribePresenterImpl @Inject constructor(
             }
         }
     }
+
+    override fun onLocationSettingsChanged() {
+        selectedLocation?.let {
+            updateLocationUI(it, true)
+        }
+    }
 }
