@@ -2,6 +2,9 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusableInTouchMode="true"
+    android:focusable="true"
     android:background="?attr/wdPrimaryInvertedColor"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
