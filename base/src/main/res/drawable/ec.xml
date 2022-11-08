@@ -3,8 +3,8 @@
   -->
 
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="32dp"
-    android:height="16dp"
+    android:width="414dp"
+    android:height="207dp"
     android:viewportWidth="32"
     android:viewportHeight="16">
     <path
@@ -21,11 +21,14 @@
         android:pathData="M0 12h32V8H0z" />
     <path
         android:fillColor="#FFDA44"
+        android:fillType="evenOdd"
         android:pathData="M13 8.87a2.783 2.783 0 1 1 5.566 0 2.783 2.783 0 1 1-5.566 0" />
     <path
         android:fillColor="#0052B4"
+        android:fillType="evenOdd"
         android:pathData="M15.783 10.609c-0.96 0-1.74-0.78-1.74-1.74V7.827c0-0.959 0.78-1.739 1.74-1.739 0.959 0 1.739 0.78 1.739 1.74V8.87c0 0.959-0.78 1.739-1.74 1.739z" />
     <path
         android:fillColor="#000"
+        android:fillType="evenOdd"
         android:pathData="M18.565 4.696h-2.087C16.478 4.31 16.167 4 15.783 4c-0.385 0-0.696 0.311-0.696 0.696H13c0 0.384 0.335 0.695 0.719 0.695h-0.023c0 0.385 0.311 0.696 0.695 0.696 0 0.384 0.312 0.696 0.696 0.696h1.391c0.384 0 0.696-0.312 0.696-0.696 0.384 0 0.696-0.311 0.696-0.696h-0.024c0.385 0 0.72-0.311 0.72-0.695z" />
 </vector>
