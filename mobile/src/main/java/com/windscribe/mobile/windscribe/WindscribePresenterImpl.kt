@@ -790,9 +790,11 @@ class WindscribePresenterImpl @Inject constructor(
                 ) {
                     if (interactor.getVpnConnectionStateManager().isVPNConnected()) {
                         interactor.getAppPreferenceInterface().globalUserConnectionPreference =
-                                true
+                            true
                         logger.debug("Preferred protocol and port info change Now connecting.")
-                        interactor.getVPNController().connectAsync()
+                        interactor.getMainScope().launch {
+                            interactor.getAutoConnectionManager().connectInForeground()
+                        }
                     }
                 }
             }
