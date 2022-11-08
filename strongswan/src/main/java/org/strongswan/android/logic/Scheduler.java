@@ -25,11 +25,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 
+import androidx.annotation.RequiresApi;
+
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 import java.util.UUID;
-
-import androidx.annotation.RequiresApi;
 
 public class Scheduler extends BroadcastReceiver
 {
@@ -78,12 +78,15 @@ public class Scheduler extends BroadcastReceiver
      *
      * @return pending intent
      */
-    private PendingIntent createIntent()
-    {
+    private PendingIntent createIntent() {
         /* using component/class doesn't work with dynamic broadcast receivers */
         Intent intent = new Intent(EXECUTE_JOB);
         intent.setPackage(mContext.getPackageName());
-        return PendingIntent.getBroadcast(mContext, 0, intent, 0);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return PendingIntent.getBroadcast(mContext, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+        } else {
+            return PendingIntent.getBroadcast(mContext, 0, intent, 0);
+        }
     }
 
     /**
