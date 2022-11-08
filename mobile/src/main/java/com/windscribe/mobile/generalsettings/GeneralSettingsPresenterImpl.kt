@@ -27,6 +27,7 @@ class GeneralSettingsPresenterImpl @Inject constructor(
 
     override fun onDestroy() {
         if (interactor.getCompositeDisposable().isDisposed.not()) {
+            interactor.getPreferenceChangeObserver().postLocationSettingsChange()
             logger.info("Disposing observer...")
             interactor.getCompositeDisposable().dispose()
         }
