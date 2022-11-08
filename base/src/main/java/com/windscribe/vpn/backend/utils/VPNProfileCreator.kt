@@ -16,17 +16,15 @@ import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.Util.saveProfile
 import com.windscribe.vpn.backend.Util.saveSelectedLocation
-import com.windscribe.vpn.backend.openvpn.WindStunnelUtility
-import com.windscribe.vpn.backend.openvpn.WsTunnelManager
-import com.windscribe.vpn.backend.openvpn.WsTunnelManager.Companion.WS_TUNNEL_ADDRESS
-import com.windscribe.vpn.backend.openvpn.WsTunnelManager.Companion.WS_TUNNEL_LOCAL_PORT
-import com.windscribe.vpn.backend.openvpn.WsTunnelManager.Companion.WS_TUNNEL_PROTOCOL
+import com.windscribe.vpn.backend.openvpn.ProxyTunnelManager
+import com.windscribe.vpn.backend.openvpn.ProxyTunnelManager.Companion.PROXY_TUNNEL_ADDRESS
+import com.windscribe.vpn.backend.openvpn.ProxyTunnelManager.Companion.PROXY_TUNNEL_PORT
+import com.windscribe.vpn.backend.openvpn.ProxyTunnelManager.Companion.PROXY_TUNNEL_PROTOCOL
 import com.windscribe.vpn.backend.wireguard.WireGuardVpnProfile
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.commonutils.WindUtilities.ConfigType.WIRE_GUARD
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_VALID_CONFIG_NOT_FOUND
 import com.windscribe.vpn.constants.PreferencesKeyConstants
-import com.windscribe.vpn.constants.VpnPreferenceConstants
 import com.windscribe.vpn.exceptions.InvalidVPNConfigException
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.repository.CallResult
@@ -60,7 +58,7 @@ import javax.inject.Singleton
 class VPNProfileCreator @Inject constructor(
     private val preferencesHelper: PreferencesHelper,
     private val wgConfigRepository: WgConfigRepository,
-    private val wsTunnelManager: WsTunnelManager
+    private val proxyTunnelManager: ProxyTunnelManager
 ) {
 
     private val logger = LoggerFactory.getLogger("profile_creator")
@@ -179,46 +177,48 @@ class VPNProfileCreator @Inject constructor(
         var port: String? = null
         var protocol: String? = null
         var serverConfig: String? = null
-        var stunnelRoutingIp: String? = null
+        var proxyIp: String? = null
         var ip: String? = null
         try {
             if (PreferencesKeyConstants.PROTO_STEALTH == protocolInformation.protocol) {
                 serverConfig = preferencesHelper.getOpenVPNServerConfig()
-                port = VpnPreferenceConstants.STUNNEL_LOCAL_PORT
-                protocol = VpnPreferenceConstants.STUNNEL_VPN_PROTOCOL
-                stunnelRoutingIp = vpnParameters.stealthIp
-                ip = VpnPreferenceConstants.STUNNEL_LOCAL_IP
+                protocol = PROXY_TUNNEL_PROTOCOL
+                ip = PROXY_TUNNEL_ADDRESS
+                proxyIp = vpnParameters.stealthIp
+                port = PROXY_TUNNEL_PORT.toString()
+                //Old stunnel port
+                // port = "1194"
             }
             if (PreferencesKeyConstants.PROTO_WS_TUNNEL == protocolInformation.protocol) {
                 serverConfig = preferencesHelper.getOpenVPNServerConfig()
-                port = WS_TUNNEL_LOCAL_PORT.toString()
-                protocol = WS_TUNNEL_PROTOCOL
-                stunnelRoutingIp = vpnParameters.ikev2Ip
-                ip = WS_TUNNEL_ADDRESS
+                port = PROXY_TUNNEL_PORT.toString()
+                protocol = PROXY_TUNNEL_PROTOCOL
+                ip = PROXY_TUNNEL_ADDRESS
+                proxyIp = vpnParameters.ikev2Ip
             }
             if (PreferencesKeyConstants.PROTO_TCP == protocolInformation.protocol) {
                 ip = vpnParameters.tcpIp
                 protocol = "tcp"
                 serverConfig = preferencesHelper.getOpenVPNServerConfig()
                 port = protocolInformation.port
-                stunnelRoutingIp = null
+                proxyIp = null
             }
             if (PreferencesKeyConstants.PROTO_UDP == protocolInformation.protocol) {
                 ip = vpnParameters.udpIp
                 protocol = "udp"
                 serverConfig = preferencesHelper.getOpenVPNServerConfig()
                 port = protocolInformation.port
-                stunnelRoutingIp = null
+                proxyIp = null
             }
             if (serverConfig != null) {
                 profile.writeConfigFile(
                     appContext,
                     serverConfig,
-                        ip,
-                        protocol,
-                        port,
-                        stunnelRoutingIp,
-                        vpnParameters.ovpnX509
+                    ip,
+                    protocol,
+                    port,
+                    proxyIp,
+                    vpnParameters.ovpnX509
                 )
             }else{
                 throw InvalidVPNConfigException(CallResult.Error(ERROR_VALID_CONFIG_NOT_FOUND,"OpenVPN Server config not found."))
@@ -234,19 +234,33 @@ class VPNProfileCreator @Inject constructor(
             profile.mAllowedAppsVpn = HashSet(preferencesHelper.installedApps())
         }
         if (protocolInformation.protocol == PreferencesKeyConstants.PROTO_STEALTH) {
-            if (WindStunnelUtility.isStunnelRunning) {
+            if (proxyTunnelManager.running) {
+                proxyTunnelManager.stopProxyTunnel()
+            }
+            preferencesHelper.selectedPort = protocolInformation.port
+            if (proxyIp != null) {
+                proxyTunnelManager.startProxyTunnel(
+                    proxyIp,
+                    protocolInformation.port,
+                    false
+                )
+            }
+            // Old stunnel setup
+            /*if (WindStunnelUtility.isStunnelRunning) {
                 WindStunnelUtility.stopLocalTunFromAppContext(appContext)
             }
             preferencesHelper.selectedPort = protocolInformation.port
-            WindUtilities.writeStunnelConfig(appContext, stunnelRoutingIp, protocolInformation.port)
-            WindStunnelUtility.startLocalTun()
+            if (proxyIp != null) {
+                WindUtilities.writeStunnelConfig(appContext, proxyIp, protocolInformation.port)
+                WindStunnelUtility.startLocalTun()
+            }*/
         } else if (protocolInformation.protocol == PreferencesKeyConstants.PROTO_WS_TUNNEL) {
-            if (wsTunnelManager.running) {
-                wsTunnelManager.stopWsTunnel()
+            if (proxyTunnelManager.running) {
+                proxyTunnelManager.stopProxyTunnel()
             }
             preferencesHelper.selectedPort = protocolInformation.port
-            if (stunnelRoutingIp != null) {
-                wsTunnelManager.startWsTunnel(vpnParameters.ikev2Ip, protocolInformation.port)
+            if (proxyIp != null) {
+                proxyTunnelManager.startProxyTunnel(proxyIp, protocolInformation.port, true)
             }
         }
         saveSelectedLocation(lastSelectedLocation)

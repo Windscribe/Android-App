@@ -52,9 +52,11 @@ class ConnectionFailureFragment(
     private fun startAutoSelectTimer() {
         scope.launchPeriodicAsync(1000) {
             adapter?.data?.let {
-                it[0].autoConnectTimeLeft = it[0].autoConnectTimeLeft - 1
+                if (it[0].autoConnectTimeLeft > 0) {
+                    it[0].autoConnectTimeLeft = it[0].autoConnectTimeLeft - 1
+                }
                 adapter?.notifyItemChanged(0)
-                if (it[0].autoConnectTimeLeft < 0) {
+                if (it[0].autoConnectTimeLeft <= 0) {
                     onItemSelect(it[0])
                 }
             }
@@ -74,13 +76,13 @@ class ConnectionFailureFragment(
     @OnClick(R.id.cancel, R.id.img_close_btn)
     fun onCancelClick() {
         scope.cancel()
-        dismiss()
+        dismissAllowingStateLoss()
         autoConnectionModeCallback.onCancel()
     }
 
     override fun onItemSelect(protocolInformation: ProtocolInformation) {
+        dismissAllowingStateLoss()
         scope.cancel()
-        dismiss()
         autoConnectionModeCallback.onProtocolSelect(protocolInformation)
     }
 }

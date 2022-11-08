@@ -25,7 +25,7 @@ import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.ikev2.IKev2VpnBackend
 import com.windscribe.vpn.backend.openvpn.OpenVPNBackend
-import com.windscribe.vpn.backend.openvpn.WsTunnelManager
+import com.windscribe.vpn.backend.openvpn.ProxyTunnelManager
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
@@ -417,9 +417,9 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     fun provideVPNProfileCreator(
         preferencesHelper: PreferencesHelper,
         wgConfigRepository: WgConfigRepository,
-        wsTunnelManager: WsTunnelManager
+        proxyTunnelManager: ProxyTunnelManager
     ): VPNProfileCreator {
-        return VPNProfileCreator(preferencesHelper, wgConfigRepository, wsTunnelManager)
+        return VPNProfileCreator(preferencesHelper, wgConfigRepository, proxyTunnelManager)
     }
 
     @Provides
@@ -756,7 +756,7 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     fun providesWsTunnelManager(
         scope: CoroutineScope,
         openVPNBackend: OpenVPNBackend
-    ): WsTunnelManager {
-        return WsTunnelManager(scope, openVPNBackend)
+    ): ProxyTunnelManager {
+        return ProxyTunnelManager(scope, openVPNBackend)
     }
 }
