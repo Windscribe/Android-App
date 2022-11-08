@@ -19,7 +19,6 @@ package org.strongswan.android.logic;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -29,7 +28,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.net.ProxyInfo;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.Bundle;
@@ -60,7 +58,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Inet4Address;
-import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -828,13 +825,17 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 			 * we just use our main Activity */
 			Context context = getApplicationContext();
 			Intent intent = new Intent(context, getMainActivityClass());
-			PendingIntent pending = PendingIntent.getActivity(context, 0, intent,
-															  PendingIntent.FLAG_UPDATE_CURRENT);
+			PendingIntent pending = null;
+			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+				pending = PendingIntent.getActivity(context, 0, intent,
+						PendingIntent.FLAG_IMMUTABLE);
+			} else {
+				pending = PendingIntent.getActivity(context, 0, intent, 0);
+			}
 			builder.setConfigureIntent(pending);
 
 			/* mark all VPN connections as unmetered (default changed for Android 10) */
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-			{
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 				builder.setMetered(false);
 			}
 			return builder;

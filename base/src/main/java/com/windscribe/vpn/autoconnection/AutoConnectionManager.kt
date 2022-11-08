@@ -75,6 +75,7 @@ class AutoConnectionManager(
     }
 
     override fun onNetworkInfoUpdate(networkInfo: NetworkInfo?, userReload: Boolean) {
+        if (isEnabled) return
         if (networkInfo?.networkName != preferredProtocol?.first || networkInfo?.protocol != preferredProtocol?.second?.protocol || networkInfo?.port != preferredProtocol?.second?.port) {
             reset()
         }
@@ -227,6 +228,7 @@ class AutoConnectionManager(
             PreferencesKeyConstants.PROTO_TCP -> interactor.preferenceHelper.savedTCPPort
             PreferencesKeyConstants.PROTO_STEALTH -> interactor.preferenceHelper.savedSTEALTHPort
             PreferencesKeyConstants.PROTO_WIRE_GUARD -> interactor.preferenceHelper.wireGuardPort
+            PreferencesKeyConstants.PROTO_WS_TUNNEL -> interactor.preferenceHelper.savedWSTunnelPort
             else -> PreferencesKeyConstants.DEFAULT_IKEV2_PORT
         }
         manualProtocol = appSupportedProtocolOrder.firstOrNull {
@@ -450,6 +452,10 @@ class AutoConnectionManager(
                             } else {
                                 listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
                                     ProtocolConnectionStatus.Failed
+                                listOfProtocols.filter { it.type == ProtocolConnectionStatus.Failed }
+                                    .forEach {
+                                        logger.debug("Failedprotocl: ${it.protocol}")
+                                    }
                                 logger.debug("Auto connect failure: ${protocolInformation.protocol}:${protocolInformation.port} ${connectionResult.error?.message}")
                                 retry()
                             }
