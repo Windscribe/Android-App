@@ -115,6 +115,7 @@ class WelcomeFragment : Fragment(), OnPageChangeListener {
                             }
                             if (mViewPager.currentItem == pagerAdapter!!.count - 1) {
                                 slideLeft = false
+                                mViewPager.currentItem = 0
                             } else if (mViewPager.currentItem == 0) {
                                 slideLeft = true
                             }
@@ -137,9 +138,6 @@ class WelcomeFragment : Fragment(), OnPageChangeListener {
                                 mViewPager.fakeDragBy(
                                     -valueAnimator1.animatedFraction * mViewPager.width / 2
                                 )
-                            } else {
-                                mViewPager
-                                    .fakeDragBy(valueAnimator1.animatedFraction * mViewPager.width / 2)
                             }
                         }
                     } catch (ignored: Exception) {
