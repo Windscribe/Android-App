@@ -271,10 +271,17 @@ class WindscribePresenterImpl @Inject constructor(
 
     override fun setAdapters(){
         adapter?.let { windscribeView.setAdapter(it) }
-        favouriteAdapter?.let { windscribeView.setFavouriteAdapter(it)}
-        streamingNodeAdapter?.let { windscribeView.setStreamingNodeAdapter(it)}
-        staticRegionAdapter?.let { windscribeView.setStaticRegionAdapter(it)}
-        configAdapter?.let { windscribeView.setConfigLocListAdapter(it)}
+        favouriteAdapter?.let { windscribeView.setFavouriteAdapter(it) }
+        streamingNodeAdapter?.let { windscribeView.setStreamingNodeAdapter(it) }
+        staticRegionAdapter?.let { windscribeView.setStaticRegionAdapter(it) }
+        configAdapter?.let { windscribeView.setConfigLocListAdapter(it) }
+        if (staticRegionAdapter == null) {
+            windscribeView.showStaticIpAdapterLoadError(
+                "No Static IP's",
+                interactor.getResourceString(R.string.add_static_ip),
+                ""
+            )
+        }
     }
 
     override val isConnectedOrConnecting: Boolean
