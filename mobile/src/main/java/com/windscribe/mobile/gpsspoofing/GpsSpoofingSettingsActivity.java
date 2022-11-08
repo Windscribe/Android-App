@@ -10,7 +10,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.Toast;
 
-import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.windscribe.mobile.R;
 import com.windscribe.mobile.adapter.GpsSpoofingPagerAdapter;
@@ -30,7 +30,7 @@ public class GpsSpoofingSettingsActivity extends BaseActivity
     GpsSpoofingPresenter mPresenter;
 
     @BindView(R.id.view_pager)
-    ViewPager viewPager;
+    ViewPager2 viewPager;
 
     public static Intent getStartIntent(Context context) {
         return new Intent(context, GpsSpoofingSettingsActivity.class);
@@ -98,8 +98,9 @@ public class GpsSpoofingSettingsActivity extends BaseActivity
     }
 
     private void setViewSetViewPager() {
-        GpsSpoofingPagerAdapter adapter = new GpsSpoofingPagerAdapter(getSupportFragmentManager());
+        GpsSpoofingPagerAdapter adapter = new GpsSpoofingPagerAdapter(getSupportFragmentManager(), getLifecycle());
         viewPager.setAdapter(adapter);
         viewPager.setCurrentItem(0);
+        viewPager.setUserInputEnabled(false);
     }
 }
