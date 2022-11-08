@@ -7,13 +7,6 @@
     android:background="?attr/wdPrimaryInvertedColor"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <ImageView
-        android:id="@+id/img_close_btn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        style="@style/ModelCloseIcon"
-        android:layout_marginTop="0dp" />
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,12 +16,8 @@
         app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             android:id="@+id/container">
 
             <ImageView
@@ -90,6 +79,13 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
+
+    <ImageView
+        android:id="@+id/img_close_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        style="@style/ModelCloseIcon"
+        android:layout_marginTop="0dp" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
