@@ -8,6 +8,7 @@ import com.windscribe.vpn.api.response.WgConnectConfig
 import com.windscribe.vpn.api.response.WgConnectResponse
 import com.windscribe.vpn.api.response.WgInitResponse
 import com.windscribe.vpn.commonutils.Ext.result
+import com.windscribe.vpn.constants.ApiConstants.DEVICE_ID
 import com.windscribe.vpn.constants.ApiConstants.HOSTNAME
 import com.windscribe.vpn.constants.ApiConstants.WG_PUBLIC_KEY
 import com.windscribe.vpn.constants.NetworkErrorCodes
@@ -17,11 +18,11 @@ import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_WG_UNABLE_TO_GENERAT
 import com.wireguard.crypto.Key
 import com.wireguard.crypto.KeyPair
 import io.reactivex.Single
+import kotlinx.coroutines.CoroutineScope
+import org.slf4j.LoggerFactory
 import java.io.Serializable
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
-import org.slf4j.LoggerFactory
 
 @Singleton
 class WgConfigRepository(val scope: CoroutineScope, val interactor: ServiceInteractor) {
@@ -134,16 +135,31 @@ class WgConfigRepository(val scope: CoroutineScope, val interactor: ServiceInter
     }
 
     private suspend fun wgConnect(hostname: String, userPublicKey: String, protect: Boolean): CallResult<WgConnectConfig> {
-        val callResult = interactor.apiManager.wgConnect(mapOf(Pair(HOSTNAME, hostname), Pair(WG_PUBLIC_KEY, userPublicKey)),protect)
-                .flatMap {
-                    if (it.errorClass?.errorCode == ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP) {
-                        logger.debug("Retrying wg connect Error: Unable to selected wg ip.")
-                        interactor.apiManager.wgConnect(mapOf(Pair(HOSTNAME, hostname), Pair(WG_PUBLIC_KEY, userPublicKey)),protect)
-                    } else {
-                        Single.just(it)
-                    }
-                }.delaySubscription(100, TimeUnit.MILLISECONDS)
-                .result<WgConnectResponse>()
+        val params = mutableMapOf(Pair(HOSTNAME, hostname), Pair(WG_PUBLIC_KEY, userPublicKey))
+        if (interactor.preferenceHelper.isConnectingToStaticIp) {
+            runCatching {
+                return@runCatching interactor.preferenceHelper.getDeviceUUID(interactor.preferenceHelper.userName)
+                    ?: throw Exception("Failed to get username.")
+            }.onSuccess {
+                logger.debug("Adding device id to wg connect $it")
+                params[DEVICE_ID] = it
+            }
+        }
+        val callResult = interactor.apiManager.wgConnect(params, protect)
+            .flatMap {
+                if (it.errorClass?.errorCode == ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP) {
+                    logger.debug("Retrying wg connect Error: Unable to selected wg ip.")
+                    interactor.apiManager.wgConnect(
+                        mapOf(
+                            Pair(HOSTNAME, hostname),
+                            Pair(WG_PUBLIC_KEY, userPublicKey)
+                        ), protect
+                    )
+                } else {
+                    Single.just(it)
+                }
+            }.delaySubscription(100, TimeUnit.MILLISECONDS)
+            .result<WgConnectResponse>()
         return when (callResult) {
             is CallResult.Success -> {
                 CallResult.Success(callResult.data.config)
