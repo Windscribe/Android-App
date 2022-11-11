@@ -118,8 +118,26 @@ class AutoConnectionManager(
                     if (it.connectionId == newConnectionId) {
                         if (it.error?.error == VPNState.ErrorType.AuthenticationError) {
                             logger.debug("Updating user auth credentials.")
-                            connectionDataRepository.update().result()
-                            true
+                            if (connectionDataRepository.update().result()) {
+                                logger.debug("Auth updated successfully.")
+                                vpnController.get().connect(
+                                    connectionId = newConnectionId,
+                                    protocolInformation = protocolInformation,
+                                    attempt = attempt
+                                )
+                                return@first false
+                            } else {
+                                logger.debug("Failed to updated auth params.")
+                                return@first true
+                            }
+                        } else if (it.error?.error == VPNState.ErrorType.WireguardAuthenticationError) {
+                            logger.debug("Trying wireguard with force init.")
+                            vpnController.get().connect(
+                                connectionId = newConnectionId,
+                                protocolInformation = protocolInformation,
+                                attempt = attempt
+                            )
+                            return@first false
                         } else {
                             it.status != VPNState.Status.Connecting
                         }
@@ -141,6 +159,9 @@ class AutoConnectionManager(
                 stop()
             } else if (connectionResult.error?.showError == true) {
                 connectionResult.error?.message?.let { message -> showErrorDialog(message = message) }
+                isEnabled = false
+                stop()
+            } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
                 isEnabled = false
                 stop()
             }
@@ -456,6 +477,9 @@ class AutoConnectionManager(
                             } else if (connectionResult.error?.showError == true) {
                                 showErrorDialog(connectionResult.error?.message ?: "")
                                 stop()
+                            } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
+                                isEnabled = false
+                                stop()
                             } else {
                                 listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
                                     ProtocolConnectionStatus.Failed
@@ -512,6 +536,9 @@ class AutoConnectionManager(
                                 }
                             } else if (connectionResult.error?.showError == true) {
                                 connectionResult.error?.message?.let { showErrorDialog(it) }
+                                stop()
+                            } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
+                                isEnabled = false
                                 stop()
                             } else {
                                 listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =

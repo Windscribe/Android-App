@@ -251,7 +251,10 @@ open class WindVpnController @Inject constructor(
             // Disconnect from VPN and connect to next selected location.
             vpnBackendHolder.activeBackend?.active == true -> {
                 interactor.preferenceHelper.isReconnecting = true
-                disconnect(reconnecting = true)
+                disconnect(
+                    reconnecting = true,
+                    error = VPNState.Error(error = VPNState.ErrorType.UserDisconnect)
+                )
                 createProfileAndLaunchService(
                     alwaysOnVPN,
                     connectionId,
@@ -408,12 +411,17 @@ open class WindVpnController @Inject constructor(
         when (error.code) {
             ERROR_WG_KEY_LIMIT_EXCEEDED -> {
                 showRetryDialog(error.errorMessage, {
-                    vpnProfileCreator.wgForceInit.set(true)
                     CoroutineScope(context).launch {
-                        connect(
-                            connectionId = connectionId,
-                            protocolInformation = protocolInformation
+                        vpnProfileCreator.wgForceInit.set(true)
+                        val vpnState = VPNState(
+                            Disconnected, error = VPNState.Error(
+                                error = VPNState.ErrorType.WireguardAuthenticationError,
+                                "Wireguard wg key limit exceeded."
+                            )
                         )
+                        vpnState.protocolInformation = protocolInformation
+                        vpnState.connectionId = connectionId
+                        vpnConnectionStateManager.setState(vpnState)
                     }
                 }, {
                     CoroutineScope(context).launch {
