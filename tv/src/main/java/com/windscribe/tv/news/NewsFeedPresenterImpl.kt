@@ -93,6 +93,7 @@ class NewsFeedPresenterImpl @Inject constructor(
                         }
                         notificationList?.let {
                             newsFeedView.setItemSelected(if (showPopUp) popUpId else it[0].notificationId)
+                            newsFeedView.setNewsFeedContentText(it[0].notificationMessage)
                             it[0].action?.let { action ->
                                 newsFeedView.setActionLabel(action)
                             }
