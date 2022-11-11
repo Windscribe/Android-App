@@ -126,7 +126,6 @@ open class Windscribe : MultiDexApplication() {
         deviceStateManager.init(this)
         startPingTestService()
         mockLocationManager.init()
-        logFileSizes()
     }
 
     val amazonBillingManager: AmazonBillingManager
@@ -144,14 +143,6 @@ open class Windscribe : MultiDexApplication() {
     private fun languageToCode(language: String): String {
         val firstIndex =  language.indexOfLast { it == "(".single() }
         return language.substring(firstIndex + 1, language.length - 1)
-    }
-
-    private fun logFileSizes(){
-        filesDir.listFiles().forEach {
-            if(it.isFile){
-                logger.debug("Data Directory: ${it.name} ${it.length()/1024}KB")
-            }
-        }
     }
 
     fun getAppSupportedSystemLanguage(): String{
