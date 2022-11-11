@@ -27,6 +27,7 @@ object ApiConstants {
     const val AUTH_KEY_3 = "1032fcaab03"
     const val WG_PUBLIC_KEY = "wg_pubkey"
     const val HOSTNAME = "hostname"
+    const val DEVICE_ID = "device_id"
     const val PLATFORM = "platform"
     const val APP_VERSION = "app_version"
     const val PCP_ID = "pcpid"

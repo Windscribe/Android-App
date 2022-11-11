@@ -233,7 +233,11 @@ open class WindVpnController @Inject constructor(
 
     fun disconnectAsync(waitForNextProtocol: Boolean = false, reconnecting: Boolean = false) {
         scope.launch {
-            disconnect(waitForNextProtocol, reconnecting)
+            disconnect(
+                waitForNextProtocol,
+                reconnecting,
+                error = VPNState.Error(error = VPNState.ErrorType.UserDisconnect)
+            )
         }
     }
 
