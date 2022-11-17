@@ -179,7 +179,7 @@ object Util {
         val protocol1 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_IKev2,
             PreferencesKeyConstants.DEFAULT_IKEV2_PORT,
-            "Internet Key Exchange is an IPsec based tunneling protocol",
+            "IKEv2 is an IPsec based tunneling protocol.",
             ProtocolConnectionStatus.Disconnected
         )
         val protocol2 = ProtocolInformation(
@@ -197,7 +197,7 @@ object Util {
         val protocol4 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_STEALTH,
             PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT,
-            "Disguises your traffic as regular HTTPS traffic with tls",
+            "Disguises your traffic as HTTPS traffic with TLS",
             ProtocolConnectionStatus.Disconnected
         )
         val protocol5 = ProtocolInformation(
@@ -209,7 +209,7 @@ object Util {
         val protocol6 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_WS_TUNNEL,
             PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT,
-            "Disguises your traffic as regular HTTPS traffic with web sockets.",
+            "Wraps your HTTPS traffic with web sockets.",
             ProtocolConnectionStatus.Disconnected
         )
         return mutableListOf(protocol1, protocol2, protocol3, protocol4, protocol5, protocol6)
