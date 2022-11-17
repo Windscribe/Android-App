@@ -759,4 +759,24 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     ): ProxyTunnelManager {
         return ProxyTunnelManager(scope, openVPNBackend)
     }
+
+    @Provides
+    @Singleton
+    fun providesShortcutStateManager(
+        scope: CoroutineScope,
+        userRepository: Lazy<UserRepository>,
+        networkInfoManager: NetworkInfoManager,
+        autoConnectionManager: AutoConnectionManager,
+        interactor: ServiceInteractor,
+        vpnController: WindVpnController
+    ): ShortcutStateManager {
+        return ShortcutStateManager(
+            scope,
+            userRepository,
+            autoConnectionManager,
+            networkInfoManager,
+            interactor,
+            vpnController
+        )
+    }
 }

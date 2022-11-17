@@ -15,8 +15,7 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.*
 import com.windscribe.vpn.backend.utils.WindVpnController
-import com.windscribe.vpn.model.User
-import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.state.ShortcutStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -38,14 +37,15 @@ class VpnTileService : TileService() {
     lateinit var vpnConnectionStateManager: VPNConnectionStateManager
 
     @Inject
-    lateinit var userRepository: UserRepository
-
-    @Inject
     lateinit var scope: CoroutineScope
 
     private var job: Job? = null
 
+    @Inject
+    lateinit var shortcutStateManager: ShortcutStateManager
+
     private val logger = LoggerFactory.getLogger("quick_title_s")
+
     override fun onCreate() {
         super.onCreate()
         appContext.serviceComponent.inject(this)
@@ -54,22 +54,11 @@ class VpnTileService : TileService() {
     override fun onClick() {
         super.onClick()
         logger.debug("Quick tile icon clicked....")
-        scope.launch {
-            if (vpnConnectionStateManager.isVPNActive()) {
-                interactor.preferenceHelper.globalUserConnectionPreference = false
-                vpnController.disconnectAsync()
-            } else {
-                userRepository.user.value?.let {
-                    if (it.accountStatus == User.AccountStatus.Okay) {
-                        interactor.preferenceHelper.globalUserConnectionPreference = true
-                        vpnController.connectAsync()
-                    } else {
-                        logger.debug("Account status is ${it.accountStatus}.")
-                    }
-                } ?: kotlin.run {
-                    logger.debug("User is not logged In.")
-                }
-            }
+        if (vpnConnectionStateManager.isVPNActive()) {
+            interactor.preferenceHelper.globalUserConnectionPreference = false
+            vpnController.disconnectAsync()
+        } else {
+            shortcutStateManager.connect()
         }
     }
 

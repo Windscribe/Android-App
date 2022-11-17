@@ -163,7 +163,7 @@ class SplitTunnelingActivity : BaseActivity(), SplitTunnelingView {
     }
 
     override fun restartConnection() {
-        windVpnController.connectAsync(false)
+        windVpnController.connectAsync()
     }
 
     override fun setRecyclerViewAdapter(mAdapter: InstalledAppsAdapter) {

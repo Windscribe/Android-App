@@ -75,6 +75,7 @@
                     android:gravity="left"
                     android:clickable="false"
                     android:focusable="false"
+                    android:includeFontPadding="false"
                     app:layout_constraintEnd_toStartOf="@id/edit_arrow"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
