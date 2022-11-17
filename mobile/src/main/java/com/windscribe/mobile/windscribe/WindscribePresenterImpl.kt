@@ -2704,12 +2704,12 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     private fun validatedConfigFileName(documentFile: DocumentFile?) : String? {
-        if (documentFile == null){
+        if (documentFile == null) {
             windscribeView.showToast("Choose a valid config file")
             return null
         }
-        if (documentFile.length() > 1024 * 5) {
-            windscribeView.showToast("File is larger than 5KB")
+        if (documentFile.length() > 1024 * 12) {
+            windscribeView.showToast("File is larger than 12KB")
             return null
         }
         val fileName = documentFile.name

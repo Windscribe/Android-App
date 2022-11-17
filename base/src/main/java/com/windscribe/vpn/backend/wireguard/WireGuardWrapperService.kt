@@ -12,6 +12,7 @@ import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.constants.NotificationConstants
+import com.windscribe.vpn.state.ShortcutStateManager
 import com.wireguard.android.backend.GoBackend
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,6 +31,9 @@ class WireGuardWrapperService : GoBackend.VpnService() {
     @Inject
     lateinit var vpnController: WindVpnController
 
+    @Inject
+    lateinit var shortcutStateManager: ShortcutStateManager
+
     override fun onCreate() {
         Windscribe.appContext.serviceComponent.inject(this)
         super.onCreate()
@@ -40,7 +44,7 @@ class WireGuardWrapperService : GoBackend.VpnService() {
         super.onStartCommand(intent, flags, startId)
         return when (intent?.action) {
             VpnService.SERVICE_INTERFACE -> {
-                vpnController.connectAsync(alwaysOnVPN = true)
+                shortcutStateManager.connect()
                 START_NOT_STICKY
             }
             else -> {

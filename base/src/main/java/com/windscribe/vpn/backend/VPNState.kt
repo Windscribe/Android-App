@@ -19,7 +19,7 @@ class VPNState(
     }
 
     enum class ErrorType {
-        UserDisconnect, AuthenticationError, WireguardAuthenticationError, GenericError, TimeoutError, WireguardApiError, ConnectivityTestFailed
+        UserReconnect, UserDisconnect, AuthenticationError, WireguardAuthenticationError, GenericError, TimeoutError, WireguardApiError, ConnectivityTestFailed
     }
 
     data class Error(

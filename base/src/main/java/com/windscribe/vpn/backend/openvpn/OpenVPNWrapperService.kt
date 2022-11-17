@@ -13,6 +13,7 @@ import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.constants.NotificationConstants
+import com.windscribe.vpn.state.ShortcutStateManager
 import de.blinkt.openvpn.VpnProfile
 import de.blinkt.openvpn.core.OpenVPNService
 import de.blinkt.openvpn.core.VpnStatus.StateListener
@@ -33,6 +34,9 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
     @Inject
     lateinit var openVPNBackend: OpenVPNBackend
 
+    @Inject
+    lateinit var shortcutStateManager: ShortcutStateManager
+
     private var logger = LoggerFactory.getLogger("open_vpn_wrapper")
 
     override fun onCreate() {
@@ -44,7 +48,7 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         logger.debug("Launching open VPN Service")
         if (intent != null && intent.action == VpnService.SERVICE_INTERFACE) {
-            vpnController.connectAsync(alwaysOnVPN = true)
+            shortcutStateManager.connect()
             START_NOT_STICKY
         }
         startForeground(NotificationConstants.SERVICE_NOTIFICATION_ID, windNotificationBuilder.buildNotification(Connecting))

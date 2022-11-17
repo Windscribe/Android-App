@@ -79,6 +79,7 @@ interface ApplicationComponent {
     val appLifeCycleObserver: AppLifeCycleObserver
     val decoyTrafficController: DecoyTrafficController
     val trafficCounter: TrafficCounter
+    val shortcutStateManager: ShortcutStateManager
 
     //Repository
     val staticIpRepository: StaticIpRepository
