@@ -14,6 +14,7 @@ import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.constants.NotificationConstants
+import com.windscribe.vpn.state.ShortcutStateManager
 import kotlinx.coroutines.CoroutineScope
 import org.strongswan.android.data.VpnProfile
 import org.strongswan.android.logic.CharonVpnService
@@ -32,6 +33,9 @@ class CharonVpnServiceWrapper : CharonVpnService() {
 
     @Inject
     lateinit var iKev2VpnBackend: IKev2VpnBackend
+
+    @Inject
+    lateinit var shortcutStateManager: ShortcutStateManager
 
     @Inject
     lateinit var scope: CoroutineScope
@@ -61,7 +65,7 @@ class CharonVpnServiceWrapper : CharonVpnService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         return when (intent?.action) {
             VpnService.SERVICE_INTERFACE -> {
-                vpnController.connectAsync(alwaysOnVPN = true)
+                shortcutStateManager.connect()
                 START_NOT_STICKY
             }
             DISCONNECT_ACTION -> {

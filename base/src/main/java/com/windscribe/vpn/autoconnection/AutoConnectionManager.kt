@@ -138,6 +138,8 @@ class AutoConnectionManager(
                                 attempt = attempt
                             )
                             return@first false
+                        } else if (it.error?.error == VPNState.ErrorType.UserReconnect) {
+                            return@first false
                         } else {
                             it.status != VPNState.Status.Connecting
                         }
@@ -162,6 +164,7 @@ class AutoConnectionManager(
                 isEnabled = false
                 stop()
             } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
+                logger.debug("user disconnect.")
                 isEnabled = false
                 stop()
             }
