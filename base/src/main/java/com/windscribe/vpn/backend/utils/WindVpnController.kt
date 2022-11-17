@@ -225,9 +225,9 @@ open class WindVpnController @Inject constructor(
         }
     }
 
-    fun connectAsync(alwaysOnVPN: Boolean = false) {
+    fun connectAsync() {
         scope.launch {
-            connect(alwaysOnVPN)
+            connect()
         }
     }
 
@@ -246,7 +246,6 @@ open class WindVpnController @Inject constructor(
      * @param alwaysOnVPN if vpn service was launched by system.
      */
     open suspend fun connect(
-        alwaysOnVPN: Boolean = false,
         connectionId: UUID = UUID.randomUUID(),
         protocolInformation: ProtocolInformation? = null,
         attempt: Int = 0
@@ -257,10 +256,9 @@ open class WindVpnController @Inject constructor(
                 interactor.preferenceHelper.isReconnecting = true
                 disconnect(
                     reconnecting = true,
-                    error = VPNState.Error(error = VPNState.ErrorType.UserDisconnect)
+                    error = VPNState.Error(error = VPNState.ErrorType.UserReconnect)
                 )
                 createProfileAndLaunchService(
-                    alwaysOnVPN,
                     connectionId,
                     protocolInformation,
                     attempt
@@ -270,7 +268,6 @@ open class WindVpnController @Inject constructor(
             vpnConnectionStateManager.state.value.status == UnsecuredNetwork -> {
                 stopNetworkWhiteListService()
                 createProfileAndLaunchService(
-                    alwaysOnVPN,
                     connectionId,
                     protocolInformation,
                     attempt
@@ -279,7 +276,6 @@ open class WindVpnController @Inject constructor(
             else -> {
                 // Make a fresh connection
                 createProfileAndLaunchService(
-                    alwaysOnVPN,
                     connectionId,
                     protocolInformation,
                     attempt
@@ -289,7 +285,6 @@ open class WindVpnController @Inject constructor(
     }
 
     private suspend fun createProfileAndLaunchService(
-        alwaysOnVPN: Boolean = false,
         connectionId: UUID = UUID.randomUUID(),
         selectedProtocol: ProtocolInformation? = null,
         attempt: Int = 0
@@ -298,11 +293,11 @@ open class WindVpnController @Inject constructor(
             logger.debug("Connecting to VPN with connectionId: $connectionId")
             vpnConnectionStateManager.setState(VPNState(Connecting, connectionId = connectionId))
             interactor.preferenceHelper.whitelistOverride = true
-            setLocationToConnect(alwaysOnVPN)
+            setLocationToConnect()
             val protocolInformation = selectedProtocol?.let {
                 autoConnectionManager.setSelectedProtocol(it)
                 return@let it
-            } ?: getProtocolInformationToConnect(alwaysOnVPN)
+            } ?: getProtocolInformationToConnect()
             logger.debug("Protocol: $protocolInformation")
             val profileToConnect = createVPNProfile(protocolInformation, attempt)
             logger.debug("Location: $profileToConnect")
@@ -318,16 +313,10 @@ open class WindVpnController @Inject constructor(
         }
     }
 
-    private fun getProtocolInformationToConnect(alwaysOnVPN: Boolean): ProtocolInformation {
-        val config: ProtocolInformation = if (alwaysOnVPN) {
-            Util.buildProtocolInformation(
-                autoConnectionManager.listOfProtocols, interactor.preferenceHelper.selectedProtocol,
-                interactor.preferenceHelper.selectedPort
-            )
-        } else {
+    private fun getProtocolInformationToConnect(): ProtocolInformation {
+        val config: ProtocolInformation =
             autoConnectionManager.listOfProtocols.firstOrNull { it.type == ProtocolConnectionStatus.NextUp }
                 ?: autoConnectionManager.listOfProtocols.first()
-        }
         //Decoy traffic only works in Wireguard
         if (interactor.preferenceHelper.isDecoyTrafficOn) {
             Util.buildProtocolInformation(
@@ -339,11 +328,7 @@ open class WindVpnController @Inject constructor(
         return config
     }
 
-    private suspend fun setLocationToConnect(alwaysOnVPN: Boolean) {
-        if (alwaysOnVPN) {
-            userRepository.get().synchronizedReload()
-            delay(1000)
-        }
+    private suspend fun setLocationToConnect() {
         val city = locationRepository.updateLocation()
         locationRepository.setSelectedCity(city)
     }
