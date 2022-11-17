@@ -13,9 +13,11 @@ const val TITLE = "Error"
 const val POSITIVE_BUTTON_LABEL = "OK"
 const val NEGATIVE_BUTTON_LABEL = "Cancel"
 fun showRetryDialog(message: String, retryCallBack: () -> Unit, cancelCallBack: () -> Unit) {
+    var autoDismiss = true
     safeDialog {
         val builder = createDialogBuilder(it, message)
         val listener = { dialog: DialogInterface, which: Int ->
+            autoDismiss = false
             dialog.dismiss()
             if (which == AlertDialog.BUTTON_POSITIVE) {
                 retryCallBack()
@@ -24,10 +26,20 @@ fun showRetryDialog(message: String, retryCallBack: () -> Unit, cancelCallBack: 
             }
         }
         with(builder) {
-            setPositiveButton(POSITIVE_BUTTON_LABEL, DialogInterface.OnClickListener(function = listener))
-            setNegativeButton(NEGATIVE_BUTTON_LABEL, DialogInterface.OnClickListener(function = listener))
+            setPositiveButton(
+                POSITIVE_BUTTON_LABEL,
+                DialogInterface.OnClickListener(function = listener)
+            )
+            setNegativeButton(
+                NEGATIVE_BUTTON_LABEL,
+                DialogInterface.OnClickListener(function = listener)
+            )
             setOnCancelListener { cancelCallBack() }
-            setOnDismissListener { cancelCallBack() }
+            setOnDismissListener {
+                if (autoDismiss) {
+                    cancelCallBack()
+                }
+            }
             show()
         }
     }

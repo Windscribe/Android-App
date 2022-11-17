@@ -43,6 +43,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/reg_16dp"
+            android:gravity="center"
             android:textColor="?attr/wdSecondaryColor"
             android:text="@string/unlock_developer_mode_explain"
             app:layout_constraintEnd_toEndOf="parent"
