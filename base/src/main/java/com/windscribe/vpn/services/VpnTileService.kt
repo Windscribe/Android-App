@@ -63,12 +63,14 @@ class VpnTileService : TileService() {
     }
 
     override fun onStartListening() {
-        job = scope.launch {
-            vpnConnectionStateManager.state.collectLatest {
-                if (it.status == Disconnected && appContext.preference.isReconnecting) {
-                    return@collectLatest
+        shortcutStateManager.load {
+            job = scope.launch {
+                vpnConnectionStateManager.state.collectLatest {
+                    if (it.status == Disconnected && appContext.preference.isReconnecting) {
+                        return@collectLatest
+                    }
+                    resetState(it.status)
                 }
-                resetState(it.status)
             }
         }
     }

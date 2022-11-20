@@ -231,7 +231,10 @@ class AutoConnectionManager(
             logger.debug(protocolLog)
         }
         lastProtocolLog = protocolLog
-        scope.launch { _nextInLineProtocol.emit(appSupportedProtocolOrder[0]) }
+        scope.launch {
+            if (appSupportedProtocolOrder.size > 0)
+                _nextInLineProtocol.emit(appSupportedProtocolOrder[0])
+        }
         return appSupportedProtocolOrder
     }
 

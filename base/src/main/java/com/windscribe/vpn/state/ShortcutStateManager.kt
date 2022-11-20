@@ -19,7 +19,22 @@ class ShortcutStateManager(
     private val windVpnController: WindVpnController
 ) {
     private var logger = LoggerFactory.getLogger("shortcut_manager")
+    private var initilized = false
     fun connect() {
+        if (initilized) {
+            interactor.preferenceHelper.globalUserConnectionPreference = true
+            logger.debug("Connecting from shortcut.")
+            windVpnController.connectAsync()
+        } else {
+            load {
+                interactor.preferenceHelper.globalUserConnectionPreference = true
+                logger.debug("Connecting from shortcut.")
+                windVpnController.connectAsync()
+            }
+        }
+    }
+
+    fun load(callback: () -> Unit) {
         val userRepository = userRepository.get()
         scope.launch {
             logger.debug("Loading user info.")
@@ -32,9 +47,8 @@ class ShortcutStateManager(
                         networkInfoManager.reload(false)
                         logger.debug("Loading connection info.")
                         autoConnectionManager.reset()
-                        interactor.preferenceHelper.globalUserConnectionPreference = true
-                        logger.debug("Connecting from shortcut.")
-                        windVpnController.connectAsync()
+                        initilized = true
+                        callback()
                     } else {
                         logger.debug("Account status is ${user.accountStatus}.")
                     }
