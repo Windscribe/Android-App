@@ -112,7 +112,7 @@ dependencies {
     implementation fileTree(dir: './libs/', include: ['*.aar', '*.jar'], exclude: [])
     kapt "androidx.room:room-compiler:$room"
     // Push notifications
-    api 'com.google.firebase:firebase-messaging:21.0.1'
+    api 'com.google.firebase:firebase-messaging:23.1.0'
     // Work manager
     api "androidx.work:work-runtime:$work_manager"
     api "androidx.work:work-rxjava2:$work_manager"
