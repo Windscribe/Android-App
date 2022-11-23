@@ -5,33 +5,21 @@ package com.windscribe.tv.welcome
 
 import android.text.TextUtils
 import android.util.Patterns
-import com.google.android.gms.tasks.RuntimeExecutionException
-import com.google.firebase.iid.FirebaseInstanceId
-import com.google.firebase.iid.InstanceIdResult
+import com.google.firebase.messaging.FirebaseMessaging
 import com.windscribe.tv.R
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.BuildConfig
-import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.CreateHashMap.createClaimAccountMap
 import com.windscribe.vpn.api.CreateHashMap.createGhostModeMap
 import com.windscribe.vpn.api.CreateHashMap.createLoginMap
 import com.windscribe.vpn.api.CreateHashMap.createRegistrationMap
 import com.windscribe.vpn.api.CreateHashMap.createVerifyXPressCodeMap
-import com.windscribe.vpn.api.response.ApiErrorResponse
-import com.windscribe.vpn.api.response.ClaimAccountResponse
-import com.windscribe.vpn.api.response.GenericResponseClass
-import com.windscribe.vpn.api.response.RegToken
-import com.windscribe.vpn.api.response.UserLoginResponse
-import com.windscribe.vpn.api.response.UserRegistrationResponse
-import com.windscribe.vpn.api.response.UserSessionResponse
-import com.windscribe.vpn.api.response.XPressLoginCodeResponse
-import com.windscribe.vpn.api.response.XPressLoginVerifyResponse
+import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.SessionErrorHandler
 import com.windscribe.vpn.errormodel.WindError
-import com.windscribe.vpn.errormodel.WindError.Companion.instance
 import com.windscribe.vpn.services.ping.PingTestService
 import io.reactivex.Completable
 import io.reactivex.Flowable
@@ -47,11 +35,10 @@ import io.reactivex.subscribers.DisposableSubscriber
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import javax.inject.Inject
-import kotlin.collections.HashMap
 
 class WelcomePresenterImpl @Inject constructor(
     private val welcomeView: WelcomeView,
@@ -373,23 +360,20 @@ class WelcomePresenterImpl @Inject constructor(
     // Get and set firebase device token
     private val setFireBaseDeviceToken: Unit
         get() {
-            val sessionMap: MutableMap<String, String> = HashMap()
-            if (BuildConfig.APP_ID.isEmpty()) {
+            val sessionMap: MutableMap<String, String> = java.util.HashMap()
+            if (BuildConfig.API_KEY.isEmpty()) {
                 prepareLoginRegistrationDashboard(sessionMap)
             } else {
-                FirebaseInstanceId.getInstance().instanceId.addOnSuccessListener { instanceIdResult: InstanceIdResult ->
-                    try {
-                        val newToken = instanceIdResult.token
-                        logger.debug("" + newToken.length)
-                        logger.info("Received firebase device token.")
-                        logger.info(newToken)
+                FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                    if (!task.isSuccessful) {
+                        logger.debug("Failed to get token.")
+                    } else {
+                        val newToken = task.result
+                        logger.info("Received firebase device token: $newToken")
                         sessionMap[NetworkKeyConstants.FIREBASE_DEVICE_ID_KEY] = newToken
-                    } catch (e: RuntimeExecutionException) {
-                        logger.debug("No registered account for the selected device! " + instance
-                                .convertErrorToString(e))
                     }
                     prepareLoginRegistrationDashboard(sessionMap)
-                }.addOnFailureListener { e: java.lang.Exception? -> prepareLoginRegistrationDashboard(sessionMap) }.addOnCanceledListener { prepareLoginRegistrationDashboard(sessionMap) }
+                }
             }
         }
     private fun invalidateLoginCode(

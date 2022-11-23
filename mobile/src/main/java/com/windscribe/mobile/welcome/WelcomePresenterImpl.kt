@@ -6,9 +6,7 @@ package com.windscribe.mobile.welcome
 import android.text.TextUtils
 import android.util.Patterns
 import android.view.View
-import com.google.android.gms.tasks.RuntimeExecutionException
-import com.google.firebase.iid.FirebaseInstanceId
-import com.google.firebase.iid.InstanceIdResult
+import com.google.firebase.messaging.FirebaseMessaging
 import com.windscribe.mobile.BuildConfig
 import com.windscribe.mobile.R
 import com.windscribe.vpn.ActivityInteractor
@@ -293,24 +291,16 @@ class WelcomePresenterImpl @Inject constructor(
             if (BuildConfig.API_KEY.isEmpty()) {
                 prepareLoginRegistrationDashboard(sessionMap)
             } else {
-                FirebaseInstanceId.getInstance().instanceId.addOnSuccessListener { instanceIdResult: InstanceIdResult ->
-                    try {
-                        val newToken = instanceIdResult.token
-                        logger.debug("" + newToken.length)
-                        logger.info("Received firebase device token.")
-                        logger.info(newToken)
+                FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                    if (!task.isSuccessful) {
+                        logger.debug("Failed to get token.")
+                    } else {
+                        val newToken = task.result
+                        logger.info("Received firebase device token: $newToken")
                         sessionMap[NetworkKeyConstants.FIREBASE_DEVICE_ID_KEY] = newToken
-                    } catch (e: RuntimeExecutionException) {
-                        logger.debug(
-                            "No registered account for the selected device! " + WindError.instance
-                                .convertErrorToString(e)
-                        )
                     }
                     prepareLoginRegistrationDashboard(sessionMap)
-                }.addOnFailureListener {
-                    prepareLoginRegistrationDashboard(sessionMap)
                 }
-                    .addOnCanceledListener { prepareLoginRegistrationDashboard(sessionMap) }
             }
         }
 
