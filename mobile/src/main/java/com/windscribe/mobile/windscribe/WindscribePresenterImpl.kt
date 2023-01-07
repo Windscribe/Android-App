@@ -638,9 +638,9 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun onConfigFileClicked(configFile: ConfigFile) {
-        if(configFile.username.isEmpty() && WindUtilities.getConfigType(configFile.content) == WindUtilities.ConfigType.OpenVPN){
+        if (configFile.username == null && WindUtilities.getConfigType(configFile.content) == WindUtilities.ConfigType.OpenVPN) {
             windscribeView.openProvideUsernameAndPasswordDialog(configFile)
-        }else{
+        } else {
             connectToConfiguredLocation(configFile.getPrimaryKey())
         }
     }
