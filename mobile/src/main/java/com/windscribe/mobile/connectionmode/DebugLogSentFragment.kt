@@ -12,13 +12,12 @@ import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.constants.NetworkKeyConstants
 
-class DebugLogSentFragment(private val autoConnectionModeCallback: AutoConnectionModeCallback) :
-    DialogFragment() {
+class DebugLogSentFragment : DialogFragment() {
+
+    private var autoConnectionModeCallback: AutoConnectionModeCallback? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.debug_log_sent, container, false)
         ButterKnife.bind(this, view)
@@ -28,7 +27,7 @@ class DebugLogSentFragment(private val autoConnectionModeCallback: AutoConnectio
     @OnClick(R.id.cancel, R.id.img_close_btn)
     fun onCancelClick() {
         dismiss()
-        autoConnectionModeCallback.onCancel()
+        autoConnectionModeCallback?.onCancel()
     }
 
     @OnClick(R.id.contact_support)
@@ -36,5 +35,13 @@ class DebugLogSentFragment(private val autoConnectionModeCallback: AutoConnectio
         dismiss()
         val activity = activity as? BaseActivity
         activity?.openURLInBrowser(NetworkKeyConstants.getWebsiteLink(NetworkKeyConstants.URL_HELP_ME))
+    }
+
+    companion object {
+        fun newInstance(autoConnectionModeCallback: AutoConnectionModeCallback): DebugLogSentFragment {
+            val fragment = DebugLogSentFragment()
+            fragment.autoConnectionModeCallback = autoConnectionModeCallback
+            return fragment
+        }
     }
 }

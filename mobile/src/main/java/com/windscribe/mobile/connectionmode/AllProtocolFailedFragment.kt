@@ -13,14 +13,15 @@ import butterknife.OnClick
 import com.windscribe.mobile.R
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 
-class AllProtocolFailedFragment(private val autoConnectionModeCallback: AutoConnectionModeCallback) :
-    DialogFragment() {
+class AllProtocolFailedFragment : DialogFragment() {
 
     @BindView(R.id.progressBar)
     lateinit var progressView: ProgressBar
 
     @BindView(R.id.send_debug_log)
     lateinit var sendDebugLog: Button
+
+    private var autoConnectionModeCallback: AutoConnectionModeCallback? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,13 +36,21 @@ class AllProtocolFailedFragment(private val autoConnectionModeCallback: AutoConn
     @OnClick(R.id.cancel, R.id.img_close_btn)
     fun onCancelClick() {
         dismiss()
-        autoConnectionModeCallback.onCancel()
+        autoConnectionModeCallback?.onCancel()
     }
 
     @OnClick(R.id.send_debug_log)
     fun onSendLogClick() {
         sendDebugLog.visibility = View.INVISIBLE
         progressView.visibility = View.VISIBLE
-        autoConnectionModeCallback.onSendLogClicked()
+        autoConnectionModeCallback?.onSendLogClicked()
+    }
+
+    companion object {
+        fun newInstance(autoConnectionModeCallback: AutoConnectionModeCallback): AllProtocolFailedFragment {
+            val fragment = AllProtocolFailedFragment()
+            fragment.autoConnectionModeCallback = autoConnectionModeCallback
+            return fragment
+        }
     }
 }
