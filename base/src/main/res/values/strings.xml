@@ -513,5 +513,6 @@ last chosen location.</string>
     <string name="you_must_confirm_your_email_in_order_for_the_benefits_above_to_apply_to_you_and_the_referrer">You must confirm your email in order for the benefits above to apply to you and the referrer.</string>
     <string name="referee_must_provide_your_username_at_sign_up_and_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">Referee must provide your username at sign up and confirm their email in order for the benefits above to apply to your account.</string>
     <string name="if_you_go_pro_they_ll_go_pro_too">If you go Pro, they’ll go Pro too!</string>
+    <string name="protocol_change_is_not_available_for_custom_config">Protocol change is not available for Custom Configs.</string>
 
 </resources>
