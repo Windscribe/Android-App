@@ -5,11 +5,15 @@
 package com.windscribe.mobile.gpsspoofing.fragments;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.windscribe.mobile.R;
@@ -17,6 +21,7 @@ import com.windscribe.mobile.gpsspoofing.GpsSpoofingFragmentListener;
 
 import org.jetbrains.annotations.NotNull;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
@@ -24,6 +29,9 @@ import butterknife.OnClick;
 public class GpsSpoofingMockSettings extends Fragment {
 
     private GpsSpoofingFragmentListener mListener;
+
+    @BindView(R.id.feature_explain)
+    TextView explainerText;
 
     public GpsSpoofingMockSettings() {
 
@@ -39,11 +47,19 @@ public class GpsSpoofingMockSettings extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.gps_spoofing_mock_settings, container, false);
         ButterKnife.bind(this, view);
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            explainerText.setText(getString(R.string.add_to_mock_location_explain_android_12));
+        }
     }
 
     @Override
