@@ -125,11 +125,16 @@ class NetworkDetailsActivity : BaseActivity(), NetworkDetailView {
         }
     }
 
-    override fun onNetworkDetailAvailable(networkInfo: NetworkInfo) {
+    override fun onNetworkDetailAvailable(networkInfo: NetworkInfo, inUse: Boolean) {
         this.networkInfo = networkInfo
         setAutoSecureToggle(networkInfo.isAutoSecureOn)
         setPreferredProtocolToggle(networkInfo.isPreferredOn)
         presenter.setProtocols()
+        if (inUse) {
+            forgetNetworkView?.visibility = View.GONE
+        } else {
+            forgetNetworkView?.visibility = View.VISIBLE
+        }
     }
 
     override fun setAutoSecureToggle(autoSecure: Boolean) {

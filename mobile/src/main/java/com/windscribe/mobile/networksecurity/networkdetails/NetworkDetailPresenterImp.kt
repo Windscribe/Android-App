@@ -121,7 +121,12 @@ class NetworkDetailPresenterImp @Inject constructor(
                     }
 
                     override fun onSuccess(networkInfo: NetworkInfo) {
-                        networkView.onNetworkDetailAvailable(networkInfo)
+                        val currentNetworkName =
+                            interactor.getNetworkInfoManager().networkInfo?.networkName ?: ""
+                        networkView.onNetworkDetailAvailable(
+                            networkInfo,
+                            currentNetworkName == networkInfo.networkName
+                        )
                     }
                 })
         )
