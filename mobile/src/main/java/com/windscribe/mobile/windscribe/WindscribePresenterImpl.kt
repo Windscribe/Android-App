@@ -2601,7 +2601,7 @@ class WindscribePresenterImpl @Inject constructor(
                         if (interactor.getVpnConnectionStateManager()
                                         .isVPNActive()
                         ) interactor.getAppPreferenceInterface()
-                                .connectedFlagPath else interactor.getAppPreferenceInterface().disConnectedFlagPath
+                            .connectedFlagPath else interactor.getAppPreferenceInterface().disConnectedFlagPath
                 path?.let { windscribeView.setupLayoutForCustomBackground(path) }
             } else {
                 if (updateFlag && flagIcons.containsKey(lastSelectedLocation.countryCode)) {
@@ -2609,6 +2609,15 @@ class WindscribePresenterImpl @Inject constructor(
                         windscribeView.setCountryFlag(it)
                     }
                 }
+            }
+            if (windscribeView.uiConnectionState == null) {
+                windscribeView.setLastConnectionState(
+                    DisconnectedState(
+                        lastSelectedLocation,
+                        connectionOptions,
+                        appContext
+                    )
+                )
             }
         }
     }
@@ -2739,7 +2748,7 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
-    override fun onDeocoyTrafficClick() {
+    override fun onDecoyTrafficClick() {
         if (interactor.getVpnConnectionStateManager().isVPNConnected()) {
             if (interactor.getAppPreferenceInterface().isDecoyTrafficOn) {
                 windscribeView.openConnectionActivity()
