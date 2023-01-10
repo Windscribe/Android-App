@@ -2167,7 +2167,7 @@ class WindscribeActivity :
 
     @OnClick(R.id.tv_decoy_label, R.id.img_decoy_traffic_arrow)
     fun onDecoyTrafficClick() {
-        presenter.onDeocoyTrafficClick()
+        presenter.onDecoyTrafficClick()
     }
 
     @OnClick(R.id.img_protocol_change_arrow)
