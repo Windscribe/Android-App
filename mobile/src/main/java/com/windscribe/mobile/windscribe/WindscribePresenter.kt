@@ -89,7 +89,7 @@ interface WindscribePresenter {
     fun setAdapters()
     fun toggleBlurNetworkName()
     fun loadConfigFile(data: Intent)
-    fun onDeocoyTrafficClick()
+    fun onDecoyTrafficClick()
     fun onProtocolChangeClick()
     suspend fun observeConnectedProtocol()
     suspend fun showShareLinkDialog()
