@@ -8,8 +8,6 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.windscribe.vpn.Windscribe
 import org.slf4j.LoggerFactory
-import java.io.IOException
-import java.security.GeneralSecurityException
 
 class SecurePreferences(app: Windscribe) {
     private val logger = LoggerFactory.getLogger("secure_p")
@@ -30,30 +28,23 @@ class SecurePreferences(app: Windscribe) {
     }
 
     init {
-        var masterKey: MasterKey? = null
         try {
-            masterKey = MasterKey.Builder(app.applicationContext)
+            val masterKey = MasterKey.Builder(app.applicationContext)
                 .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
                 .build()
-        } catch (e: GeneralSecurityException) {
-            logger.debug("Failed to create master key:", e)
-        } catch (e: IOException) {
-            logger.debug("Failed to create master key:", e)
-        }
-        try {
-            masterKey?.let {
-                sharedPreferences = EncryptedSharedPreferences.create(
-                    app.applicationContext,
-                    secureSharedPrefsFile,
-                    it,
-                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-                )
+            sharedPreferences = EncryptedSharedPreferences.create(
+                app.applicationContext,
+                secureSharedPrefsFile,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        } catch (e: Exception) {
+            logger.debug("Failed to create EncryptedSharedPreferences ${e.localizedMessage}")
+            // Some Chinese Android tv boxes may throw security exception.
+            if (sharedPreferences == null) {
+                sharedPreferences = app.getSharedPreferences("windscribe_unsecured_preferences", 0)
             }
-        } catch (e: GeneralSecurityException) {
-            logger.error("Failed to create Encrypted preferences:", e)
-        } catch (e: IOException) {
-            logger.error("Failed to create Encrypted preferences:", e)
         }
     }
 }

@@ -16,13 +16,13 @@ import com.windscribe.mobile.adapter.ProtocolInformationAdapter
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 
-class ConnectionChangeFragment(
-    private val protocolInformation: List<ProtocolInformation>,
-    private val autoConnectionModeCallback: AutoConnectionModeCallback
-) : DialogFragment(), ItemSelectListener {
+class ConnectionChangeFragment : DialogFragment(), ItemSelectListener {
 
     @BindView(R.id.protocol_list)
     lateinit var protocolListView: RecyclerView
+    private var protocolInformation: List<ProtocolInformation>? = null
+    private var autoConnectionModeCallback: AutoConnectionModeCallback? = null
+
 
     var adapter: ProtocolInformationAdapter? = null
     override fun onCreateView(
@@ -40,7 +40,9 @@ class ConnectionChangeFragment(
         adapter = ProtocolInformationAdapter(mutableListOf(), this)
         protocolListView.layoutManager = LinearLayoutManager(context)
         protocolListView.adapter = adapter
-        adapter?.update(protocolInformation)
+        protocolInformation?.let {
+            adapter?.update(it)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,11 +53,23 @@ class ConnectionChangeFragment(
     @OnClick(R.id.cancel, R.id.img_close_btn)
     fun onCancelClick() {
         dismissAllowingStateLoss()
-        autoConnectionModeCallback.onCancel()
+        autoConnectionModeCallback?.onCancel()
     }
 
     override fun onItemSelect(protocolInformation: ProtocolInformation) {
         dismissAllowingStateLoss()
-        autoConnectionModeCallback.onProtocolSelect(protocolInformation)
+        autoConnectionModeCallback?.onProtocolSelect(protocolInformation)
+    }
+
+    companion object {
+        fun newInstance(
+            protocolInformation: List<ProtocolInformation>,
+            autoConnectionModeCallback: AutoConnectionModeCallback
+        ): ConnectionChangeFragment {
+            val fragment = ConnectionChangeFragment()
+            fragment.protocolInformation = protocolInformation
+            fragment.autoConnectionModeCallback = autoConnectionModeCallback
+            return fragment
+        }
     }
 }

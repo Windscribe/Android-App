@@ -638,9 +638,9 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun onConfigFileClicked(configFile: ConfigFile) {
-        if(configFile.username.isEmpty() && WindUtilities.getConfigType(configFile.content) == WindUtilities.ConfigType.OpenVPN){
+        if (configFile.username == null && WindUtilities.getConfigType(configFile.content) == WindUtilities.ConfigType.OpenVPN) {
             windscribeView.openProvideUsernameAndPasswordDialog(configFile)
-        }else{
+        } else {
             connectToConfiguredLocation(configFile.getPrimaryKey())
         }
     }
@@ -2748,7 +2748,9 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun onProtocolChangeClick() {
-        if (interactor.getVpnConnectionStateManager().isVPNConnected()) {
+        if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CustomConfiguredProfile) {
+            windscribeView.showToast(interactor.getResourceString(R.string.protocol_change_is_not_available_for_custom_config))
+        } else if (interactor.getVpnConnectionStateManager().isVPNConnected()) {
             interactor.getMainScope().launch {
                 interactor.getAutoConnectionManager().changeProtocolInForeground()
             }

@@ -98,6 +98,7 @@
         <attr format="string" name="Title" />
         <attr format="string" name="Description" />
         <attr format="reference" name="LeftIcon" />
+        <attr format="float" name="RightMargin" />
     </declare-styleable>
     <declare-styleable name="ItemLinkView">
         <attr format="string" name="ItemLinkViewTitle" />

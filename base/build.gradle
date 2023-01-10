@@ -97,7 +97,7 @@ dependencies {
     api 'io.reactivex.rxjava2:rxjava:2.2.13'
     //Retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    api 'com.squareup.retrofit2:converter-gson:2.5.0'
+    api 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.squareup.retrofit2:converter-scalars:2.9.0'
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
     //Okhttp
@@ -110,6 +110,7 @@ dependencies {
     api "androidx.room:room-rxjava2:$room"
     api "androidx.room:room-runtime:$room"
     implementation fileTree(dir: './libs/', include: ['*.aar', '*.jar'], exclude: [])
+    testImplementation 'org.junit.jupiter:junit-jupiter'
     kapt "androidx.room:room-compiler:$room"
     // Push notifications
     api 'com.google.firebase:firebase-messaging:23.1.0'

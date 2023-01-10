@@ -13,6 +13,7 @@ import com.windscribe.vpn.constants.BillingConstants
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.repository.CallResult
 import org.slf4j.LoggerFactory
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.coroutines.suspendCoroutine
 
@@ -60,18 +61,26 @@ class GooglePendingReceiptValidator(appContext: Context, params: WorkerParameter
         billingClient = BillingClient.newBuilder(applicationContext)
                 .setListener { _: BillingResult?, _: List<Purchase?>? -> logger.debug("Purchase flow: Purchases updated") }
                 .enablePendingPurchases().build()
+        val resumed = AtomicBoolean(false)
         billingClient?.startConnection(object : BillingClientStateListener {
             override fun onBillingServiceDisconnected() {
-                continuation.resumeWith(kotlin.Result.failure(WindScribeException("Billing client disconnected")))
+                if (!resumed.getAndSet(true)) {
+                    continuation.resumeWith(kotlin.Result.failure(WindScribeException("Billing client disconnected")))
+                }
             }
 
             override fun onBillingSetupFinished(billingResult: BillingResult) {
+                resumed.set(true)
                 logger.debug("Billing client setup was successful.")
                 if (BillingClient.BillingResponseCode.OK == billingResult.responseCode) {
                     logger.debug("Getting list of purchased products")
-                    continuation.resumeWith(kotlin.Result.success(true))
+                    if (!resumed.getAndSet(true)) {
+                        continuation.resumeWith(kotlin.Result.success(true))
+                    }
                 } else {
-                    continuation.resumeWith(kotlin.Result.failure(WindScribeException("Billing client setup failed code:" + billingResult.responseCode)))
+                    if (!resumed.getAndSet(true)) {
+                        continuation.resumeWith(kotlin.Result.failure(WindScribeException("Billing client setup failed code:" + billingResult.responseCode)))
+                    }
                 }
             }
         })

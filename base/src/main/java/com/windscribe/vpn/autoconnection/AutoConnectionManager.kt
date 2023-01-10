@@ -87,9 +87,11 @@ class AutoConnectionManager(
     }
 
     fun reset() {
-        listOfProtocols.clear()
-        listOfProtocols = reloadProtocols()
-        logger.debug("$listOfProtocols")
+        synchronized(listOfProtocols) {
+            listOfProtocols.clear()
+            listOfProtocols = reloadProtocols()
+            logger.debug("$listOfProtocols")
+        }
     }
 
     fun stop() {
