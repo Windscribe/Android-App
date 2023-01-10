@@ -560,9 +560,39 @@ class WindscribePresenterImpl @Inject constructor(
             if (interactor.getVpnConnectionStateManager().isVPNActive().not()) {
                 protocol?.let {
                     updatePreferredProtocol(it)
-                    windscribeView.setPortAndProtocol(Util.getProtocolLabel(it.protocol), it.port)
+                    if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CustomConfiguredProfile) {
+                        setCustomConfigPortAndProtocol()
+                    } else {
+                        windscribeView.setPortAndProtocol(
+                            Util.getProtocolLabel(it.protocol),
+                            it.port
+                        )
+                    }
                 }
             }
+        }
+    }
+
+    private fun setCustomConfigPortAndProtocol() {
+        selectedLocation?.cityId?.let {
+            interactor.getConfigFile(it)
+                .flatMap {
+                    return@flatMap Single.fromCallable {
+                        Util.getProtocolInformationFromWireguardConfig(it.content)
+                    }
+                }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { protocolInfo, error ->
+                    if (error != null) {
+                        logger.debug("Unable to get Protocol info from custom config. ${error.message}")
+                    } else if (protocolInfo != null) {
+                        windscribeView.setPortAndProtocol(
+                            Util.getProtocolLabel(protocolInfo.protocol),
+                            protocolInfo.port
+                        )
+                    }
+                }
         }
     }
 
@@ -587,7 +617,11 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun isPreferred(selectedProtocol: ProtocolInformation): Boolean {
         return interactor.getNetworkInfoManager().networkInfo?.let {
-            return@let (it.isPreferredOn && selectedProtocol.protocol == it.protocol && selectedProtocol.port == it.port)
+            return if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CustomConfiguredProfile) {
+                false
+            } else {
+                (it.isPreferredOn && selectedProtocol.protocol == it.protocol && selectedProtocol.port == it.port)
+            }
         } ?: false
     }
 
