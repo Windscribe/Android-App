@@ -59,20 +59,19 @@ class PhoneApplication : Windscribe(), ApplicationInterface {
                 activeActivity?.findViewById(android.R.id.content) as ViewGroup
             if (viewGroup.children.count() > 0 && viewGroup.children.first().id != -1) {
                 val fragment = when (fragmentType) {
-                    FragmentType.ConnectionFailure -> ConnectionFailureFragment(
-                        protocolInformationList,
+                    FragmentType.ConnectionFailure -> ConnectionFailureFragment.newInstance(
+                        protocolInformationList, autoConnectionModeCallback
+                    )
+                    FragmentType.ConnectionChange -> ConnectionChangeFragment.newInstance(
+                        protocolInformationList, autoConnectionModeCallback
+                    )
+                    FragmentType.SetupAsPreferredProtocol -> SetupPreferredProtocolFragment.newInstance(
+                        protocolInformation, autoConnectionModeCallback
+                    )
+                    FragmentType.DebugLogSent -> DebugLogSentFragment.newInstance(
                         autoConnectionModeCallback
                     )
-                    FragmentType.ConnectionChange -> ConnectionChangeFragment(
-                        protocolInformationList,
-                        autoConnectionModeCallback
-                    )
-                    FragmentType.SetupAsPreferredProtocol -> SetupPreferredProtocolFragment(
-                        protocolInformation,
-                        autoConnectionModeCallback
-                    )
-                    FragmentType.DebugLogSent -> DebugLogSentFragment(autoConnectionModeCallback)
-                    FragmentType.AllProtocolFailed -> AllProtocolFailedFragment(
+                    FragmentType.AllProtocolFailed -> AllProtocolFailedFragment.newInstance(
                         autoConnectionModeCallback
                     )
                 }

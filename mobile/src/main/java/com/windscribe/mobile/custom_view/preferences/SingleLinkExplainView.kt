@@ -4,11 +4,13 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.TypedArray
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.updateLayoutParams
 import com.windscribe.mobile.R
 import com.windscribe.mobile.utils.UiUtil
 
@@ -34,7 +36,8 @@ class SingleLinkExplainView @JvmOverloads constructor(
         } else {
             view.findViewById<ImageView>(R.id.left_icon).setImageResource(leftIcon)
         }
-        view.findViewById<ImageView>(R.id.right_icon).tag = R.drawable.ic_forward_arrow_settings
+        val rightIcon = view.findViewById<ImageView>(R.id.right_icon)
+        rightIcon.tag = R.drawable.ic_forward_arrow_settings
         UiUtil.setupOnTouchListener(
             container = view.findViewById(R.id.container),
             textView = view.findViewById(R.id.title),
@@ -44,6 +47,17 @@ class SingleLinkExplainView @JvmOverloads constructor(
             imageViewContainer = view.findViewById(R.id.clip_corner_background),
             textView = view.findViewById(R.id.title)
         )
+        val rightMargin = attributes.getFloat(R.styleable.SingleLinkExplainView_RightMargin, 11F)
+        val rightMarginPx = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            rightMargin,
+            resources.displayMetrics
+        ).toInt()
+        rightIcon.updateLayoutParams {
+            val params = this as ConstraintLayout.LayoutParams
+            params.marginEnd = rightMarginPx
+            params.rightMargin = rightMarginPx
+        }
     }
 
     fun onClick(click: OnClickListener){

@@ -20,16 +20,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.cancel
 
-class ConnectionFailureFragment(
-    private val protocolInformation: List<ProtocolInformation>,
-    private val autoConnectionModeCallback: AutoConnectionModeCallback
-) : DialogFragment(), ItemSelectListener {
+class ConnectionFailureFragment : DialogFragment(), ItemSelectListener {
+
 
     @BindView(R.id.protocol_list)
     lateinit var protocolListView: RecyclerView
     private var scope = CoroutineScope(Main)
+    private var adapter: ProtocolInformationAdapter? = null
+    private var protocolInformation: List<ProtocolInformation>? = null
+    private var autoConnectionModeCallback: AutoConnectionModeCallback? = null
 
-    var adapter: ProtocolInformationAdapter? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -45,8 +46,10 @@ class ConnectionFailureFragment(
         adapter = ProtocolInformationAdapter(mutableListOf(), this)
         protocolListView.layoutManager = LinearLayoutManager(context)
         protocolListView.adapter = adapter
-        adapter?.update(protocolInformation)
-        startAutoSelectTimer()
+        protocolInformation?.let {
+            adapter?.update(it)
+            startAutoSelectTimer()
+        }
     }
 
     private fun startAutoSelectTimer() {
@@ -77,12 +80,24 @@ class ConnectionFailureFragment(
     fun onCancelClick() {
         scope.cancel()
         dismissAllowingStateLoss()
-        autoConnectionModeCallback.onCancel()
+        autoConnectionModeCallback?.onCancel()
     }
 
     override fun onItemSelect(protocolInformation: ProtocolInformation) {
         dismissAllowingStateLoss()
         scope.cancel()
-        autoConnectionModeCallback.onProtocolSelect(protocolInformation)
+        autoConnectionModeCallback?.onProtocolSelect(protocolInformation)
+    }
+
+    companion object {
+        fun newInstance(
+            protocolInformationList: List<ProtocolInformation>,
+            autoConnectionModeCallback: AutoConnectionModeCallback
+        ): DialogFragment {
+            val fragment = ConnectionFailureFragment()
+            fragment.protocolInformation = protocolInformationList
+            fragment.autoConnectionModeCallback = autoConnectionModeCallback
+            return fragment
+        }
     }
 }
