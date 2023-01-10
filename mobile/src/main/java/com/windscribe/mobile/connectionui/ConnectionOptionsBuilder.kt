@@ -3,16 +3,14 @@
  */
 package com.windscribe.mobile.connectionui
 
-import com.windscribe.vpn.localdatabase.tables.NetworkInfo
-
 class ConnectionOptionsBuilder {
-    private var networkInfo: NetworkInfo? = null
+    private var isPreferred: Boolean = false
     fun build(): ConnectionOptions {
-        return ConnectionOptions(networkInfo)
+        return ConnectionOptions(isPreferred)
     }
 
-    fun setNetworkInfo(networkInfo: NetworkInfo?): ConnectionOptionsBuilder {
-        this.networkInfo = networkInfo
+    fun setIsPreferred(isPreferred: Boolean): ConnectionOptionsBuilder {
+        this.isPreferred = isPreferred
         return this
     }
 }

@@ -42,8 +42,7 @@ open class ConnectedAnimationState(
         get() = getColorResource(R.color.colorNeonGreen)
     override val preferredProtocolStatusDrawable: Drawable?
         get() {
-            val networkInfo = connectionOptions.networkInfo
-            return if (networkInfo?.isPreferredOn == true) {
+            return if (connectionOptions.isPreferred) {
                 getDrawable(R.drawable.ic_preferred_protocol_status_enabled)
             } else null
         }

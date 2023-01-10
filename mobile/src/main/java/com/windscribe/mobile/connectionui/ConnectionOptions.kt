@@ -3,6 +3,5 @@
  */
 package com.windscribe.mobile.connectionui
 
-import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 
-class ConnectionOptions internal constructor(val networkInfo: NetworkInfo?)
+class ConnectionOptions internal constructor(var isPreferred: Boolean)
