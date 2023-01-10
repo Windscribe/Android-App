@@ -25,6 +25,7 @@ import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.ActivityInteractorImpl.PortMapLoadCallback
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.*
+import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.Util.getSavedLocation
 import com.windscribe.vpn.backend.VPNState
@@ -206,10 +207,9 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.openEditConfigFileDialog(file)
     }
 
-    val connectionOptions: ConnectionOptions
-        get() = ConnectionOptionsBuilder()
-                .setNetworkInfo(networkInformation)
-                .build()
+    val connectionOptions: ConnectionOptions = ConnectionOptionsBuilder()
+        .build()
+
     override val selectedPort: String
         get() = interactor.getAppPreferenceInterface().selectedPort
     override val selectedProtocol: String
@@ -559,6 +559,7 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getAutoConnectionManager().nextInLineProtocol.collectLatest { protocol ->
             if (interactor.getVpnConnectionStateManager().isVPNActive().not()) {
                 protocol?.let {
+                    updatePreferredProtocol(it)
                     windscribeView.setPortAndProtocol(Util.getProtocolLabel(it.protocol), it.port)
                 }
             }
@@ -569,10 +570,25 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getAutoConnectionManager().connectedProtocol.collectLatest { protocol ->
             if (interactor.getVpnConnectionStateManager().isVPNActive()) {
                 protocol?.let {
+                    updatePreferredProtocol(it)
                     windscribeView.setPortAndProtocol(Util.getProtocolLabel(it.protocol), it.port)
                 }
             }
         }
+    }
+
+    private fun updatePreferredProtocol(protocol: ProtocolInformation) {
+        windscribeView.uiConnectionState?.let { state ->
+            connectionOptions.isPreferred = isPreferred(protocol)
+            state.connectionOptions = connectionOptions
+            windscribeView.setLastConnectionState(state)
+        }
+    }
+
+    private fun isPreferred(selectedProtocol: ProtocolInformation): Boolean {
+        return interactor.getNetworkInfoManager().networkInfo?.let {
+            return@let (it.isPreferredOn && selectedProtocol.protocol == it.protocol && selectedProtocol.port == it.port)
+        } ?: false
     }
 
     override suspend fun observeVPNState() {
@@ -837,7 +853,6 @@ class WindscribePresenterImpl @Inject constructor(
         networkInformation?.let {
             it.port = port
             interactor.getNetworkInfoManager().updateNetworkInfo(it)
-            updateConnectionState()
         }
     }
 
@@ -849,7 +864,6 @@ class WindscribePresenterImpl @Inject constructor(
         networkInformation?.let {
             it.isPreferredOn = !it.isPreferredOn
             interactor.getNetworkInfoManager().updateNetworkInfo(it)
-            updateConnectionState()
         }
     }
 
@@ -867,7 +881,6 @@ class WindscribePresenterImpl @Inject constructor(
                                 )
                                 interactor.getNetworkInfoManager().updateNetworkInfo(it)
                             }
-                            updateConnectionState()
                         }
                     }
                 }
@@ -1769,13 +1782,6 @@ class WindscribePresenterImpl @Inject constructor(
                             }
                         })
         )
-    }
-
-    fun updateConnectionState() {
-        if (windscribeView.uiConnectionState != null) {
-            windscribeView.uiConnectionState!!.connectionOptions = connectionOptions
-            windscribeView.setLastConnectionState(windscribeView.uiConnectionState!!)
-        }
     }
 
     override fun updateLatency() {
