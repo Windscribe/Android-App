@@ -273,7 +273,7 @@ class VPNProfileCreator @Inject constructor(
         return if (WindUtilities.getConfigType(content) == WIRE_GUARD) {
             Pair(
                 createVpnProfileFromWireGuardConfig(configFile),
-                Util.getProtocolInformationFromWireguardConfigConfig(configFile.content)
+                Util.getProtocolInformationFromWireguardConfig(configFile.content)
             )
         } else {
             Pair(

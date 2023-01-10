@@ -141,7 +141,7 @@ object Util {
         return protocolInformation
     }
 
-    fun getProtocolInformationFromWireguardConfigConfig(content: String?): ProtocolInformation {
+    fun getProtocolInformationFromWireguardConfig(content: String?): ProtocolInformation {
         val protocolInformation =
             buildProtocolInformation(null, PROTO_WIRE_GUARD, "")
         val reader: Reader = StringReader(content)
