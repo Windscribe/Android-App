@@ -73,13 +73,13 @@ open class ConnectionUiState internal constructor(
         get() = getColorResource(R.color.colorWhite50)
     open val preferredProtocolStatusDrawable: Drawable?
         get() {
-            return if (connectionOptions.networkInfo?.isPreferredOn == true) {
+            return if (connectionOptions.isPreferred) {
                 getDrawable(R.drawable.ic_preferred_protocol_status_disabled)
             } else null
         }
     open val preferredProtocolStatusVisibility: Int
         get() {
-            return if (connectionOptions.networkInfo?.isPreferredOn == true) {
+            return if (connectionOptions.isPreferred) {
                 View.VISIBLE
             } else View.GONE
         }

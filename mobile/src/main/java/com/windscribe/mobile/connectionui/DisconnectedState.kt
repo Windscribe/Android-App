@@ -32,7 +32,11 @@ class DisconnectedState(
         }
 
     override val preferredProtocolStatusDrawable: Drawable?
-        get() = if (connectionOptions.networkInfo?.isPreferredOn == true) {
-            getDrawable(R.drawable.ic_preferred_protocol_status_disabled)
-        } else null
+        get() {
+            return if (connectionOptions.isPreferred) {
+                getDrawable(R.drawable.ic_preferred_protocol_status_disabled)
+            } else {
+                null
+            }
+        }
 }
