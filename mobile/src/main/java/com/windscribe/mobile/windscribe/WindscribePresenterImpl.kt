@@ -2352,26 +2352,27 @@ class WindscribePresenterImpl @Inject constructor(
         selectedLocation = location
         selectedLocation?.let {
             windscribeView.startVpnConnectedAnimation(
-                    ConnectedAnimationState(
-                            it, connectionOptions,
-                            appContext
-                    )
+                ConnectedAnimationState(
+                    it, connectionOptions,
+                    appContext
+                )
             )
         }
         interactor.getCompositeDisposable().add(
-                Single.fromCallable {
-                    interactor.getLocationProvider().setSelectedCity(location.cityId)
-                    val customBackground =
-                            interactor.getAppPreferenceInterface().isCustomBackground
-                    if (customBackground) interactor.getAppPreferenceInterface().connectedFlagPath else ""
-                }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(
-                        { flagPath: String? ->
-                            if (flagPath!!.isNotEmpty()) {
-                                windscribeView.setupLayoutForCustomBackground(flagPath)
-                            }
-                            windscribeView.updateLocationName(location.nodeName, location.nickName)
-                        }) { }
-        )
+            Single.fromCallable {
+                interactor.getLocationProvider().setSelectedCity(location.cityId)
+                return@fromCallable interactor.getAppPreferenceInterface().connectedFlagPath ?: ""
+            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe { flagPath: String ->
+                    if (interactor.getAppPreferenceInterface().isCustomBackground) {
+                        if (flagPath.isEmpty()) {
+                            windscribeView.setCountryFlag(R.drawable.dummy_flag)
+                        } else {
+                            windscribeView.setupLayoutForCustomBackground(flagPath)
+                        }
+                    }
+                    windscribeView.updateLocationName(location.nodeName, location.nickName)
+                })
     }
 
     private fun onNotificationResponse(windNotifications: List<WindNotification>) {
