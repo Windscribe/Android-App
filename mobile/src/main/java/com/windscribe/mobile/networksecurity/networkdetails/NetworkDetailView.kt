@@ -8,7 +8,7 @@ import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 interface NetworkDetailView {
     var networkInfo: NetworkInfo?
     fun onNetworkDeleted()
-    fun onNetworkDetailAvailable(networkInfo: NetworkInfo)
+    fun onNetworkDetailAvailable(networkInfo: NetworkInfo, inUse: Boolean)
     fun setAutoSecureToggle(autoSecure: Boolean)
     fun setNetworkDetailError(show: Boolean, error: String?)
     fun setPreferredProtocolToggle(preferredProtocol: Boolean)
