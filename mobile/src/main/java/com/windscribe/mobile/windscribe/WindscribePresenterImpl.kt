@@ -751,6 +751,9 @@ class WindscribePresenterImpl @Inject constructor(
     // UI Items onClick Methods
     override fun onMenuButtonClicked() {
         windscribeView.performButtonClickHapticFeedback()
+        if (windscribeView.networkLayoutState != NetworkLayoutState.CLOSED) {
+            windscribeView.setNetworkLayout(networkInformation, NetworkLayoutState.CLOSED, true)
+        }
         logger.info("Opening main menu activity...")
         windscribeView.openMenuActivity()
     }
