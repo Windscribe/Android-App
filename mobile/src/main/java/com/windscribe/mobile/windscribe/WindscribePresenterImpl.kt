@@ -1425,14 +1425,15 @@ class WindscribePresenterImpl @Inject constructor(
     private fun onVPNConnecting() {
         selectedLocation?.let {
             windscribeView.hideProtocolSwitchView()
-            if(windscribeView.uiConnectionState !is ConnectingAnimationState)
-            logger.debug("Changing UI state to connecting.")
-            windscribeView.startVpnConnectingAnimation(
+            if (windscribeView.uiConnectionState !is ConnectingAnimationState) {
+                logger.debug("Changing UI state to connecting.")
+                windscribeView.startVpnConnectingAnimation(
                     ConnectingAnimationState(
-                            it, connectionOptions,
-                            appContext
+                        it, connectionOptions,
+                        appContext
                     )
-            )
+                )
+            }
         }
     }
 
@@ -1947,6 +1948,15 @@ class WindscribePresenterImpl @Inject constructor(
             return false
         }
 
+        // Does user own this location
+        if (interactor.getAppPreferenceInterface().userStatus != UserStatusConstants.USER_STATUS_PREMIUM &&
+            isPro == 1 && !isStaticIp
+        ) {
+            logger.info("Location is pro but user is not. Opening upgrade activity.")
+            windscribeView.openUpgradeActivity()
+            return false
+        }
+
         // User account status
         if (interactor.getUserAccountStatus() == UserStatusConstants.ACCOUNT_STATUS_EXPIRED && !isStaticIp) {
             logger.info("Error: account status is expired.")
@@ -1956,15 +1966,6 @@ class WindscribePresenterImpl @Inject constructor(
         if (interactor.getUserAccountStatus() == UserStatusConstants.ACCOUNT_STATUS_BANNED) {
             logger.info("Error: account status is banned.")
             windscribeView.setupAccountStatusBanned()
-            return false
-        }
-
-        // Does user own this location
-        if (interactor.getAppPreferenceInterface().userStatus != UserStatusConstants.USER_STATUS_PREMIUM &&
-                isPro == 1 && !isStaticIp
-        ) {
-            logger.info("Location is pro but user is not. Opening upgrade activity.")
-            windscribeView.openUpgradeActivity()
             return false
         }
 
