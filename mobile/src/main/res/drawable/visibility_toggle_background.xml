@@ -9,10 +9,10 @@
         <selector>
             <item
                 android:drawable="@drawable/ic_show_password"
-                android:state_checked="true" />
+                android:state_checked="false" />
             <item
                 android:drawable="@drawable/ic_hide_password"
-                android:state_checked="false" />
+                android:state_checked="true" />
         </selector>
     </item>
 </ripple>
