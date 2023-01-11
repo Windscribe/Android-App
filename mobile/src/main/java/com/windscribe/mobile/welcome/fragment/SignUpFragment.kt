@@ -299,6 +299,13 @@ class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
         emailEditText.addTextChangedListener(this)
     }
 
+    override fun onDestroyView() {
+        usernameEditText.removeTextChangedListener(this)
+        passwordEditText.removeTextChangedListener(this)
+        emailEditText.removeTextChangedListener(this)
+        super.onDestroyView()
+    }
+
     private fun resetNextButtonView() {
         val enable = usernameEditText.text.length > 2 && passwordEditText.text.length > 7
         signUpButton.isEnabled = enable
