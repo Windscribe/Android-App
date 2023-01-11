@@ -261,8 +261,13 @@ public class UpgradeActivity extends BaseActivity
     }
 
     @Override
-    public void onTermPolicyClick() {
+    public void onPolicyClick() {
         openURLInBrowser(NetworkKeyConstants.getWebsiteLink(NetworkKeyConstants.URL_PRIVACY));
+    }
+
+    @Override
+    public void onTermsClick() {
+        openURLInBrowser(NetworkKeyConstants.getWebsiteLink(NetworkKeyConstants.URL_TERMS));
     }
 
     @Override

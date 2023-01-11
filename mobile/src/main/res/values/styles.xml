@@ -568,7 +568,6 @@
 
     <style name="PlansTermsClickable" parent="PlansTerms">
         <item name="android:textSize">@dimen/text_size_10</item>
-        <item name="android:background">@drawable/ripple_square</item>
         <item name="android:layout_margin">0dp</item>
     </style>
 
