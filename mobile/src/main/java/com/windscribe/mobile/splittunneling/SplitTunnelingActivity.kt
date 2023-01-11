@@ -51,6 +51,9 @@ class SplitTunnelingActivity : BaseActivity(), SplitTunnelingView {
     @BindView(R.id.minimize_icon)
     lateinit var minimizeIcon: ImageView
 
+    @BindView(R.id.clear_icon)
+    lateinit var clearIcon: ImageView
+
     @BindView(R.id.progress)
     lateinit var progressBar: ProgressBar
 
@@ -117,7 +120,8 @@ class SplitTunnelingActivity : BaseActivity(), SplitTunnelingView {
         constraintSetTunnel.setVisibility(R.id.cl_app_list, ConstraintSet.GONE)
         minimizeIcon.visibility = View.GONE
         constraintSetTunnel.setVisibility(R.id.minimize_icon, ConstraintSet.GONE)
-
+        clearIcon.visibility = View.GONE
+        constraintSetTunnel.setVisibility(R.id.clear_icon, ConstraintSet.GONE)
         //Start transition
         mTransition = AutoTransition()
         mTransition?.duration = AnimConstants.CONNECTION_MODE_ANIM_DURATION
@@ -189,12 +193,14 @@ class SplitTunnelingActivity : BaseActivity(), SplitTunnelingView {
     override fun showProgress(progress: Boolean) {
         if (progress) {
             minimizeIcon.visibility = View.GONE
+            clearIcon.visibility = View.GONE
             searchView.visibility = View.INVISIBLE
             progressBar.visibility = View.VISIBLE
         } else {
             progressBar.visibility = View.GONE
             searchView.visibility = View.VISIBLE
             minimizeIcon.visibility = View.GONE
+            clearIcon.visibility = View.GONE
         }
     }
 
@@ -286,6 +292,11 @@ class SplitTunnelingActivity : BaseActivity(), SplitTunnelingView {
         // Filter results on text change
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(s: String): Boolean {
+                if (s.isEmpty()) {
+                    clearIcon.visibility = View.GONE
+                } else {
+                    clearIcon.visibility = View.VISIBLE
+                }
                 presenter.onFilter(s)
                 return false
             }
@@ -311,12 +322,8 @@ class SplitTunnelingActivity : BaseActivity(), SplitTunnelingView {
         val typeface = ResourcesCompat.getFont(this, R.font.ibm_plex_sans_regular)
         searchText.typeface = typeface
         searchText.setPadding(0, 0, 0, 0)
-
-        // Close button
-        val closeButton =
-            searchView.findViewById<ImageView>(androidx.appcompat.R.id.search_close_btn)
-        closeButton.setPadding(0, 0, 0, 0)
-        closeButton.setOnClickListener {
+        // Clear text
+        clearIcon.setOnClickListener { v: View? ->
             searchView.clearFocus()
             searchView.setQuery("", false)
             presenter.onFilter("")
