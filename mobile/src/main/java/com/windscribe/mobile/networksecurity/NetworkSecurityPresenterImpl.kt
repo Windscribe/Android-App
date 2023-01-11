@@ -102,7 +102,10 @@ class NetworkSecurityPresenterImpl @Inject constructor(
     }
 
     override fun onNetworkInfoUpdate(networkInfo: NetworkInfo?, userReload: Boolean) {
-        networkSecurityView.setupCurrentNetwork(networkInfo!!)
+        networkInfo?.let {
+            networkSecurityView.setupCurrentNetwork(networkInfo)
+        }
+        setupNetworkListAdapter()
     }
 
     override fun onCurrentNetworkClick() {
