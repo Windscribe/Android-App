@@ -34,7 +34,7 @@
             android:focusableInTouchMode="true"
             android:paddingEnd="@dimen/reg_48dp"
             android:paddingStart="@dimen/reg_16dp"
-            app:closeIcon="@drawable/ic_clear_icon"
+            app:closeIcon="@null"
             app:iconifiedByDefault="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -69,6 +69,18 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/clear_icon"
+            android:layout_width="@dimen/reg_32dp"
+            android:layout_height="@dimen/reg_32dp"
+            android:padding="@dimen/reg_8dp"
+            android:visibility="gone"
+            android:background="@drawable/ripple_round"
+            app:layout_constraintBottom_toBottomOf="@id/minimize_icon"
+            app:layout_constraintEnd_toStartOf="@id/minimize_icon"
+            app:layout_constraintTop_toTopOf="@id/minimize_icon"
+            app:srcCompat="@drawable/ic_clear_icon" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/minimize_icon"
