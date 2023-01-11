@@ -156,20 +156,18 @@ class AutoConnectionManager(
         stop()
         this.continuation = it
         isEnabled = true
-        if (isEnabled) {
-            val connectionResult = connectionAttempt()
-            if (connectionResult.status == VPNState.Status.Connected) {
-                isEnabled = false
-                stop()
-            } else if (connectionResult.error?.showError == true) {
-                connectionResult.error?.message?.let { message -> showErrorDialog(message = message) }
-                isEnabled = false
-                stop()
-            } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
-                logger.debug("user disconnect.")
-                isEnabled = false
-                stop()
-            }
+        val connectionResult = connectionAttempt()
+        if (connectionResult.status == VPNState.Status.Connected) {
+            isEnabled = false
+            stop()
+        } else if (connectionResult.error?.showError == true) {
+            connectionResult.error?.message?.let { message -> showErrorDialog(message = message) }
+            isEnabled = false
+            stop()
+        } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
+            logger.debug("user disconnect.")
+            isEnabled = false
+            stop()
         }
         if (WindUtilities.isOnline().not() && isEnabled) {
             logger.debug("No internet detected. existing.")
@@ -225,7 +223,7 @@ class AutoConnectionManager(
             }
         }
         appSupportedProtocolOrder.filter { it.type == ProtocolConnectionStatus.NextUp }
-            .forEach { it.type = ProtocolConnectionStatus.Disconnected }
+            .forEachIterable { it.type = ProtocolConnectionStatus.Disconnected }
         appSupportedProtocolOrder[0].type = ProtocolConnectionStatus.NextUp
         val protocolLog =
             "Last known: ${lastKnownProtocolInformation ?: ""} Preferred: ${preferredProtocol ?: ""} Manual: ${manualProtocol ?: ""}"
@@ -309,7 +307,7 @@ class AutoConnectionManager(
 
     private fun engageConnectionChangeMode() {
         listOfProtocols.filter { it.type == ProtocolConnectionStatus.NextUp }
-            .forEach { it.type = ProtocolConnectionStatus.Disconnected }
+            .forEachIterable { it.type = ProtocolConnectionStatus.Disconnected }
         val connectedProtocol =
             listOfProtocols.firstOrNull { it.type == ProtocolConnectionStatus.Connected }
         if (connectedProtocol != null) {
@@ -571,6 +569,14 @@ class AutoConnectionManager(
             interactor.preferenceHelper.selectedPort = protocolInformation.port
             interactor.preferenceHelper.selectedProtocolType = protocolInformation.type
             _connectedProtocol.emit(protocolInformation)
+        }
+    }
+
+    private inline fun <T> List<T>.forEachIterable(block: (T) -> Unit) {
+        with(iterator()) {
+            while (hasNext()) {
+                block(next())
+            }
         }
     }
 }
