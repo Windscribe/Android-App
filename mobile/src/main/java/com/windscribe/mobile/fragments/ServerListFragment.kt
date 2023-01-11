@@ -223,6 +223,7 @@ class ServerListFragment : Fragment() {
             return
         }
         clearErrors()
+        setSwipeRefreshLayoutEnabled(false)
         if (configCount == 0) {
 
             imageViewBrokenHeart
@@ -244,6 +245,7 @@ class ServerListFragment : Fragment() {
 
     fun setErrorNoItems(errorNoItems: String?) {
         clearErrors()
+        setSwipeRefreshLayoutEnabled(false)
         imageViewBrokenHeart?.visibility = View.VISIBLE
         textViewAdapterLoadError?.visibility = View.VISIBLE
         textViewAdapterLoadError?.text = errorNoItems
