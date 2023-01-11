@@ -578,10 +578,13 @@ class WindscribePresenterImpl @Inject constructor(
             interactor.getConfigFile(it)
                 .flatMap {
                     return@flatMap Single.fromCallable {
-                        Util.getProtocolInformationFromWireguardConfig(it.content)
+                        if (WindUtilities.getConfigType(it.content) == WindUtilities.ConfigType.OpenVPN) {
+                            Util.getProtocolInformationFromOpenVPNConfig(it.content)
+                        } else {
+                            Util.getProtocolInformationFromWireguardConfig(it.content)
+                        }
                     }
-                }
-                .subscribeOn(Schedulers.io())
+                }.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { protocolInfo, error ->
                     if (error != null) {
