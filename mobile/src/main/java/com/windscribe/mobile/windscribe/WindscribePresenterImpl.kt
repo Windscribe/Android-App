@@ -1456,13 +1456,14 @@ class WindscribePresenterImpl @Inject constructor(
             selectedLocation?.let {
                 windscribeView.clearConnectingAnimation()
                 windscribeView.setupLayoutDisconnected(
-                        DisconnectedState(
-                                it,
-                                connectionOptions,
-                                appContext
-                        )
+                    DisconnectedState(
+                        it,
+                        connectionOptions,
+                        appContext
+                    )
                 )
                 setIpAddress()
+                updateLocationUI(it, false)
             }
         }
     }
@@ -2635,26 +2636,33 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun updateLocationUI(lastSelectedLocation: LastSelectedLocation?, updateFlag: Boolean) {
         if (lastSelectedLocation != null) {
+            // Save city and update location
             interactor.getLocationProvider().setSelectedCity(lastSelectedLocation.cityId)
             windscribeView.updateLocationName(
-                    lastSelectedLocation.nodeName,
-                    lastSelectedLocation.nickName
+                lastSelectedLocation.nodeName,
+                lastSelectedLocation.nickName
             )
+            // Custom flag
             val customBackground = interactor.getAppPreferenceInterface().isCustomBackground
             if (customBackground) {
-                val path =
-                        if (interactor.getVpnConnectionStateManager()
-                                        .isVPNActive()
-                        ) interactor.getAppPreferenceInterface()
-                            .connectedFlagPath else interactor.getAppPreferenceInterface().disConnectedFlagPath
-                path?.let { windscribeView.setupLayoutForCustomBackground(path) }
+                val path = if (interactor.getVpnConnectionStateManager()
+                        .isVPNActive()
+                ) interactor.getAppPreferenceInterface()
+                    .connectedFlagPath else interactor.getAppPreferenceInterface().disConnectedFlagPath
+                path?.let {
+                    windscribeView.setupLayoutForCustomBackground(path)
+                } ?: kotlin.run {
+                    windscribeView.setCountryFlag(R.drawable.dummy_flag)
+                }
             } else {
+                // Country flag
                 if (updateFlag && flagIcons.containsKey(lastSelectedLocation.countryCode)) {
                     flagIcons[lastSelectedLocation.countryCode]?.let {
                         windscribeView.setCountryFlag(it)
                     }
                 }
             }
+            // Rebuild state if not available.
             if (windscribeView.uiConnectionState == null) {
                 windscribeView.setLastConnectionState(
                     DisconnectedState(
