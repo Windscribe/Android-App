@@ -300,7 +300,7 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
         noEmailAttentionFragment.enterTransition = Slide(Gravity.BOTTOM)
             .addTarget(R.id.email_fragment_container)
         supportFragmentManager.beginTransaction()
-            .add(R.id.fragment_container, noEmailAttentionFragment)
+            .replace(R.id.fragment_container, noEmailAttentionFragment)
             .addToBackStack(noEmailAttentionFragment.javaClass.name)
             .commit()
     }
