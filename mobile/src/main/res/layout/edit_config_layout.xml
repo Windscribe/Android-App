@@ -62,7 +62,7 @@
             android:background="@android:color/transparent"
             android:fontFamily="@font/ibm_font_family"
             android:gravity="start|center_vertical"
-            android:hint="@string/name"
+            android:hint="@string/config_title"
             android:lines="1"
             android:includeFontPadding="false"
             android:inputType="text"
