@@ -9,18 +9,27 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
+    <androidx.constraintlayout.widget.Barrier
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="start"
+        android:id="@+id/end_barrier"
+        app:constraint_referenced_ids="config_item_strength_bar,tv_config_item_strength" />
 
     <TextView
         android:id="@+id/config_name"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="13dp"
         android:layout_marginStart="@dimen/reg_16dp"
+        android:paddingEnd="@dimen/padding_8"
         android:layout_marginTop="13dp"
         android:fontFamily="@font/ibm_font_family"
         android:textColor="?attr/nodeListGroupTextColor"
         android:textSize="@dimen/text_size_14"
         android:textStyle="bold"
+        android:lines="1"
+        app:layout_constraintEnd_toStartOf="@id/end_barrier"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
