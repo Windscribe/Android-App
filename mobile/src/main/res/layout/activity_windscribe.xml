@@ -247,12 +247,15 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/margin_16"
         android:layout_marginTop="@dimen/reg_8dp"
+        android:paddingEnd="@dimen/padding_8"
         android:fontFamily="@font/ibm_font_family"
         android:gravity="bottom|start"
         android:textAlignment="viewStart"
         android:textColor="@color/colorWhite"
         android:textSize="24sp"
+        android:lines="2"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_connected_city_name" />
 
     <!--Connect Button-->
