@@ -324,6 +324,7 @@
     <string name="update">Update</string>
     <string name="enter_credentials">Enter Credentials</string>
     <string name="connect">Connect</string>
+    <string name="config_title" translatable="false">Config Title</string>
 
     <!--Debug -->
     <string name="send_debug_log">Send Debug Log</string>
