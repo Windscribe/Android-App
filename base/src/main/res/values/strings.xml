@@ -282,7 +282,7 @@
     <string name="auto_secure_description">Windscribe   will  automatically   turn  on   when  you  connect  to  this network.</string>
 
     <!--Auto connect on boot-->
-    <string name="auto_start_on_boot">Auto-connect on Boot</string>
+    <string name="auto_start_on_boot">Auto-connect On Boot</string>
     <string name="enable_start_on_boot">Enable Start On Boot</string>
 
     <!--Location permission -->
