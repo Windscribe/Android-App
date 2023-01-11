@@ -559,7 +559,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
                         .info("Fatal error during api call, user most likely lost network connection during the process or pressed the "
                                 +
                                 "button while not connected to internet. Response Code: " + responseCode);
-                return Windscribe.getAppContext().getResources().getString(R.string.fatal_error);
+                return Windscribe.getAppContext().getResources().getString(R.string.play_store_generic_api_error);
 
             case FEATURE_NOT_SUPPORTED:
                 presenterLog.debug("Requested feature is not supported by Play Store on the current device." +

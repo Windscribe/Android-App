@@ -133,6 +133,7 @@
     <string name="billing_service_unavailable">Billing service unavailable. Please check your network connection and try again!</string>
     <string name="unknown_billing_error">Unknown error. Please contact support at https://windscribe.com/support!</string>
     <string name="fatal_error">Could not connect to the billing service&#8230;Please check your network connection!</string>
+    <string name="play_store_generic_api_error">Unexpected response received from Play store. This may happen due to recently cancelled purchases. Try again later.</string>
     <string name="unable_to_process_request">We were unable to process your request. Please try again!</string>
     <string name="play_store_updating">Play store update in process! Please try after the update is finished.</string>
     <string name="purchase_cancelled">Purchase cancelled!</string>
