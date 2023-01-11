@@ -12,6 +12,10 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.Spanned
+import android.text.TextPaint
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.transition.Slide
 import android.view.Gravity
@@ -42,40 +46,40 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
 
     @JvmField
     @BindView(R.id.continueToFree)
-    var mContinueToFreeButton: Button? = null
+    var continueToFreeButton: Button? = null
 
     @JvmField
     @BindView(R.id.continueToPremium)
-    var mContinueToPremiumButton: Button? = null
+    var continueToPremiumButton: Button? = null
 
     @JvmField
     @BindView(R.id.planOptionContainer)
-    var mPlanRadioGroup: RadioGroup? = null
+    var planRadioGroup: RadioGroup? = null
 
     @JvmField
     @BindView(R.id.promoPlan)
-    var mPromoPlan: TextView? = null
+    var promoPlan: TextView? = null
 
     @JvmField
     @BindView(R.id.promoSticker)
-    var mPromoSticker: TextView? = null
+    var promoSticker: TextView? = null
 
     @JvmField
     @BindView(R.id.terms_policy)
-    var mTermAndPolicyView: TextView? = null
+    var termAndPolicyView: TextView? = null
 
     @JvmField
     @BindView(R.id.nav_title)
-    var mTitleView: TextView? = null
+    var titleView: TextView? = null
 
     private var isEmailAdded = false
     private var isEmailConfirmed = false
-    private var mBillingListener: BillingFragmentCallback? = null
-    private var mWindscribeInAppProduct: WindscribeInAppProduct? = null
+    private var billingListener: BillingFragmentCallback? = null
+    private var windscribeInAppProduct: WindscribeInAppProduct? = null
     override fun onAttach(context: Context) {
         super.onAttach(context)
         try {
-            mBillingListener = context as BillingFragmentCallback
+            billingListener = context as BillingFragmentCallback
         } catch (ignored: ClassCastException) {
         }
     }
@@ -92,28 +96,28 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        mTitleView?.text = getString(string.plans)
+        titleView?.text = getString(string.plans)
         setEmailStatus(isEmailAdded, isEmailConfirmed)
         showPlans()
         setTermAndPolicyText()
-        mPlanRadioGroup?.setOnCheckedChangeListener(this)
-        if (mPlanRadioGroup?.size!! > 0) {
-            val firstItem = mPlanRadioGroup?.get(0) as RadioButton
-            mPlanRadioGroup?.check(firstItem.id)
+        planRadioGroup?.setOnCheckedChangeListener(this)
+        if (planRadioGroup?.size!! > 0) {
+            val firstItem = planRadioGroup?.get(0) as RadioButton
+            planRadioGroup?.check(firstItem.id)
         }
     }
 
     @SuppressLint("SetTextI18n")
     private fun showPlans() {
-        mWindscribeInAppProduct?.let { plan ->
+        windscribeInAppProduct?.let { plan ->
             if (plan.isPromo()) {
-                mPlanRadioGroup?.visibility = View.GONE
-                mPromoPlan?.visibility = View.VISIBLE
-                mPromoSticker?.visibility = View.VISIBLE
+                planRadioGroup?.visibility = View.GONE
+                promoPlan?.visibility = View.VISIBLE
+                promoSticker?.visibility = View.VISIBLE
                 val firstPlan = plan.getSkus().first()
                 val planText: Spannable =
                     SpannableString("${plan.getPrice(firstPlan)}/${plan.getPlanDuration(firstPlan)}")
-                mPromoPlan?.append(planText)
+                promoPlan?.append(planText)
                 val divider: Spannable = SpannableString("  |  ")
                 context?.let {
                     divider.setSpan(
@@ -123,18 +127,18 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                 }
-                mPromoPlan?.append(divider)
+                promoPlan?.append(divider)
                 val discountText: Spannable = SpannableString(plan.getDiscountLabel(firstPlan))
-                mPromoPlan?.append(discountText)
-                mPromoSticker?.text = plan.getPromoStickerLabel(firstPlan)
-                mContinueToPremiumButton?.setTag(R.id.sku_tag, firstPlan)
-                mContinueToPremiumButton?.isEnabled = true
-                mContinueToPremiumButton?.text =
+                promoPlan?.append(discountText)
+                promoSticker?.text = plan.getPromoStickerLabel(firstPlan)
+                continueToPremiumButton?.setTag(R.id.sku_tag, firstPlan)
+                continueToPremiumButton?.isEnabled = true
+                continueToPremiumButton?.text =
                     "Continue ${plan.getPrice(firstPlan)}/${plan.getPlanDuration(firstPlan)}"
             } else {
-                mPlanRadioGroup?.visibility = View.VISIBLE
-                mPromoPlan?.visibility = View.GONE
-                mPromoSticker?.visibility = View.GONE
+                planRadioGroup?.visibility = View.VISIBLE
+                promoPlan?.visibility = View.GONE
+                promoSticker?.visibility = View.GONE
                 plan.getSkus().forEach {
                     val params = RadioGroup.LayoutParams(
                         RadioGroup.LayoutParams.WRAP_CONTENT,
@@ -147,7 +151,7 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
                     val planPrice = plan.getPrice(it)
                     radioButton.text = "$planPrice/$planDuration"
                     radioButton.setTag(R.id.sku_tag, it)
-                    mPlanRadioGroup?.addView(radioButton, params)
+                    planRadioGroup?.addView(radioButton, params)
                 }
             }
         }
@@ -163,7 +167,7 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
     ) {
         this.isEmailAdded = isEmailAdded
         this.isEmailConfirmed = isEmailConfirmed
-        this.mWindscribeInAppProduct = products
+        this.windscribeInAppProduct = products
         enterTransition = Slide(Gravity.BOTTOM).addTarget(R.id.plan_fragment_container)
         val transaction = activity.supportFragmentManager
             .beginTransaction()
@@ -176,7 +180,7 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
 
     @OnClick(R.id.continueToFree)
     fun tenGbFree() {
-        mBillingListener?.onTenGbFreeClick()
+        billingListener?.onTenGbFreeClick()
     }
 
     @OnClick(R.id.nav_button)
@@ -188,13 +192,13 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
     override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
         val viewTag = view?.findViewById<RadioButton>(checkedId)?.getTag(R.id.sku_tag) as String?
         viewTag?.let {
-            val planDuration = mWindscribeInAppProduct?.getPlanDuration(viewTag)
-            val planPrice = mWindscribeInAppProduct?.getPrice(viewTag)
+            val planDuration = windscribeInAppProduct?.getPlanDuration(viewTag)
+            val planPrice = windscribeInAppProduct?.getPrice(viewTag)
             planDuration.let {
                 planPrice.let {
-                    mContinueToPremiumButton?.isEnabled = true
-                    mContinueToPremiumButton?.text = "Continue $planPrice/$planDuration"
-                    mContinueToPremiumButton?.setTag(R.id.sku_tag, viewTag)
+                    continueToPremiumButton?.isEnabled = true
+                    continueToPremiumButton?.text = "Continue $planPrice/$planDuration"
+                    continueToPremiumButton?.setTag(R.id.sku_tag, viewTag)
                 }
             }
         }
@@ -207,16 +211,17 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
 
     @OnClick(R.id.continueToPremium)
     fun onPlanClicked() {
-        val viewTag = mContinueToPremiumButton?.getTag(R.id.sku_tag) as String?
+        val viewTag = continueToPremiumButton?.getTag(R.id.sku_tag) as String?
         viewTag?.let {
-            when (mWindscribeInAppProduct) {
+            when (windscribeInAppProduct) {
                 is GoogleProducts -> {
-                    val skuDetails = (mWindscribeInAppProduct as GoogleProducts).getSkuDetails(viewTag)
-                    mBillingListener?.onContinuePlanClick(skuDetails, 0)
+                    val skuDetails =
+                        (windscribeInAppProduct as GoogleProducts).getSkuDetails(viewTag)
+                    billingListener?.onContinuePlanClick(skuDetails, 0)
                 }
                 is AmazonProducts -> {
-                    val product = (mWindscribeInAppProduct as AmazonProducts).getProduct(viewTag)
-                    mBillingListener?.onContinuePlanClick(product)
+                    val product = (windscribeInAppProduct as AmazonProducts).getProduct(viewTag)
+                    billingListener?.onContinuePlanClick(product)
                 }
                 else -> {}
             }
@@ -229,11 +234,6 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
         showDialog(getString(string.access_to_multiple_servers))
     }
 
-    @OnClick(R.id.terms_policy)
-    fun onTermPolicyClick() {
-        mBillingListener?.onTermPolicyClick()
-    }
-
     @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.thirdInfoIcon)
     fun onThirdInfoIconClick() {
@@ -241,7 +241,8 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
     }
 
     fun setEmailStatus(isEmailAdded: Boolean, isEmailConfirmed: Boolean) {
-        mContinueToFreeButton?.visibility = if (isEmailAdded && isEmailConfirmed) View.GONE else View.VISIBLE
+        continueToFreeButton?.visibility =
+            if (isEmailAdded && isEmailConfirmed) View.GONE else View.VISIBLE
     }
 
     private fun setTermAndPolicyText() {
@@ -251,10 +252,45 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
         val spannable: Spannable = SpannableString(fullText)
         val spanStart = fullText.length - termAndPolicyText.length
         spannable.setSpan(
-            ForegroundColorSpan(Color.WHITE), spanStart, fullText.length,
+            ForegroundColorSpan(Color.WHITE),
+            spanStart,
+            fullText.length,
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
-        mTermAndPolicyView?.setText(spannable, SPANNABLE)
+        val termsSpan = object : ClickableSpan() {
+            override fun onClick(textView: View) {
+                billingListener?.onTermsClick()
+            }
+
+            override fun updateDrawState(textPaint: TextPaint) {
+                textPaint.color = textPaint.linkColor
+                textPaint.isUnderlineText = false
+            }
+        }
+        val policySpan = object : ClickableSpan() {
+            override fun onClick(textView: View) {
+                billingListener?.onPolicyClick()
+            }
+
+            override fun updateDrawState(textPaint: TextPaint) {
+                textPaint.color = textPaint.linkColor
+                textPaint.isUnderlineText = false
+            }
+        }
+        spannable.setSpan(
+            termsSpan,
+            spanStart,
+            fullText.indexOf("&") - 1,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        spannable.setSpan(
+            policySpan,
+            fullText.indexOf("&") + 1,
+            fullText.length,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        termAndPolicyView?.movementMethod = LinkMovementMethod.getInstance()
+        termAndPolicyView?.setText(spannable, SPANNABLE)
     }
 
     private fun showDialog(message: String) {
@@ -264,7 +300,6 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
     }
 
     companion object {
-
         @JvmStatic
         fun newInstance(): PlansFragment {
             return PlansFragment()

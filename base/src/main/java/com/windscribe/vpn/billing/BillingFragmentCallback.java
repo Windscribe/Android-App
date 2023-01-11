@@ -19,5 +19,7 @@ public interface BillingFragmentCallback {
 
     void onTenGbFreeClick();
 
-    void onTermPolicyClick();
+    void onTermsClick();
+
+    void onPolicyClick();
 }
