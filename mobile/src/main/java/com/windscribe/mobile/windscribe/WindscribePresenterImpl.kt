@@ -557,19 +557,7 @@ class WindscribePresenterImpl @Inject constructor(
 
     override suspend fun observeNextProtocolToConnect() {
         interactor.getAutoConnectionManager().nextInLineProtocol.collectLatest { protocol ->
-            if (interactor.getVpnConnectionStateManager().isVPNActive().not()) {
-                protocol?.let {
-                    updatePreferredProtocol(it)
-                    if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CustomConfiguredProfile) {
-                        setCustomConfigPortAndProtocol()
-                    } else {
-                        windscribeView.setPortAndProtocol(
-                            Util.getProtocolLabel(it.protocol),
-                            it.port
-                        )
-                    }
-                }
-            }
+            setProtocolAndPortOptions(protocol)
         }
     }
 
@@ -830,13 +818,30 @@ class WindscribePresenterImpl @Inject constructor(
             } else {
                 logger.debug("Setting open 3 Preferred layout.")
                 windscribeView.setNetworkLayout(
-                        networkInformation,
-                        NetworkLayoutState.OPEN_3, false
+                    networkInformation,
+                    NetworkLayoutState.OPEN_3, false
                 )
             }
         } else {
             logger.debug("Setting Closed Preferred layout.")
             windscribeView.setNetworkLayout(networkInformation, NetworkLayoutState.CLOSED, true)
+        }
+        setProtocolAndPortOptions(interactor.getAutoConnectionManager().nextInLineProtocol.value)
+    }
+
+    private fun setProtocolAndPortOptions(protocol: ProtocolInformation?) {
+        protocol?.let {
+            if (interactor.getVpnConnectionStateManager().isVPNActive().not()) {
+                updatePreferredProtocol(it)
+                if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CustomConfiguredProfile) {
+                    setCustomConfigPortAndProtocol()
+                } else {
+                    windscribeView.setPortAndProtocol(
+                        Util.getProtocolLabel(it.protocol),
+                        it.port
+                    )
+                }
+            }
         }
     }
 
@@ -844,9 +849,9 @@ class WindscribePresenterImpl @Inject constructor(
         if (checkForReconnect) {
             logger.debug("Network Layout collapsed.")
             val connectionPreference = interactor.getAppPreferenceInterface()
-                    .globalUserConnectionPreference
+                .globalUserConnectionPreference
             if (networkInformation != null && connectionPreference &&
-                    WindUtilities.getSourceTypeBlocking() !== SelectedLocationType.CustomConfiguredProfile
+                WindUtilities.getSourceTypeBlocking() !== SelectedLocationType.CustomConfiguredProfile
             ) {
                 if (isNetworkInfoChanged && networkInformation!!.isAutoSecureOn && networkInformation!!
                                 .isPreferredOn
