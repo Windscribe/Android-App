@@ -64,6 +64,9 @@ public class SearchFragment extends Fragment {
     @BindView(R.id.minimize_icon)
     ImageView minimizeBtn;
 
+    @BindView(R.id.clear_icon)
+    ImageView clearIcon;
+
     @BindView(R.id.progress)
     ProgressBar progressBar;
 
@@ -245,6 +248,11 @@ public class SearchFragment extends Fragment {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextChange(String s) {
+                if (s.isEmpty()) {
+                    clearIcon.setVisibility(View.GONE);
+                } else {
+                    clearIcon.setVisibility(View.VISIBLE);
+                }
                 if (regionsAdapter != null) {
                     // Group list
                     List<Group> groupList = new ArrayList<>();
@@ -299,11 +307,8 @@ public class SearchFragment extends Fragment {
         Typeface typeface = ResourcesCompat.getFont(view.getContext(), R.font.ibm_plex_sans_regular);
         searchText.setTypeface(typeface);
         searchText.setPadding(0, 0, 0, 0);
-
-        // Close button
-        ImageView closeButton = this.searchView.findViewById(androidx.appcompat.R.id.search_close_btn);
-        closeButton.setPadding(0, 0, 0, 0);
-        closeButton.setOnClickListener(v -> {
+        // Clear text
+        clearIcon.setOnClickListener(v -> {
             searchView.clearFocus();
             searchView.setQuery("", false);
             regionsAdapter = new SearchRegionsAdapter(groups, serverListData, listViewClickListener);
@@ -314,7 +319,7 @@ public class SearchFragment extends Fragment {
         searchIcon.setPadding(0, 0, 0, 0);
         searchIcon.setScaleType(ImageView.ScaleType.FIT_START);
         searchIcon.setImageTintList(ColorStateList.valueOf(color));
-
+        // Minimize
         minimizeBtn.setImageTintList(ColorStateList.valueOf(color));
         minimizeBtn.setOnClickListener(v -> {
             if (getActivity() != null) {
