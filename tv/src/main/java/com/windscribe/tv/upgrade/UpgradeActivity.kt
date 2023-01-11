@@ -171,8 +171,10 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         logger.info("User clicked on continue free...")
         presenter.onContinueFreeClick()
     }
+    
+    override fun onPolicyClick() {}
 
-    override fun onTermPolicyClick() {}
+    override fun onTermsClick() {}
 
     override fun querySkuDetails(products: List<QueryProductDetailsParams.Product>) {
         logger.info("Querying sku details...")
