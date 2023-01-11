@@ -96,7 +96,7 @@ class LoginFragment : Fragment(), TextWatcher, WelcomeActivityCallback {
     }
 
     override fun clearInputErrors() {
-        twoFaDescriptionView.text = ""
+        twoFaDescriptionView.text = getString(R.string.two_fa_description)
         twoFaDescriptionView.setTextColor(resources.getColor(R.color.colorWhite50))
         twoFaErrorView.visibility = View.INVISIBLE
         usernameErrorView.visibility = View.INVISIBLE
@@ -138,8 +138,15 @@ class LoginFragment : Fragment(), TextWatcher, WelcomeActivityCallback {
 
     @OnClick(R.id.twoFaToggle)
     fun onTwoFaToggleClick() {
-        if (twoFaToggle.visibility == View.VISIBLE) {
+        if (twoFaEditText.visibility != View.VISIBLE) {
             setTwoFaVisibility(View.VISIBLE)
+        }
+    }
+
+    @OnClick(R.id.two_fa_hint)
+    fun onTwoFaHintClick() {
+        if (twoFaEditText.visibility == View.VISIBLE) {
+            setTwoFaVisibility(View.GONE)
         }
     }
 
