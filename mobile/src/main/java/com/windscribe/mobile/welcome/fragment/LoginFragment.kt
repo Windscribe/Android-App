@@ -164,6 +164,7 @@ class LoginFragment : Fragment(), TextWatcher, WelcomeActivityCallback {
     fun setTwoFaError(errorMessage: String) {
         twoFaDescriptionView.visibility = View.VISIBLE
         twoFaDescriptionView.text = errorMessage
+        twoFaDescriptionView.setTextColor(resources.getColor(R.color.colorRed))
         twoFaErrorView.visibility = View.VISIBLE
     }
 
