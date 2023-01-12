@@ -94,4 +94,5 @@ interface WindscribePresenter {
     suspend fun observeConnectedProtocol()
     suspend fun showShareLinkDialog()
     fun onLocationSettingsChanged()
+    fun checkForWgIpChange()
 }
