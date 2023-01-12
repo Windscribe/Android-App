@@ -100,7 +100,7 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
     }
 
     override fun goToSignUp() {
-        val signUpFragment = SignUpFragment(false)
+        val signUpFragment = SignUpFragment.newInstance(false)
         val direction = GravityCompat
             .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
         signUpFragment.enterTransition =
@@ -327,12 +327,12 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
             softInputAssist = SoftInputAssist(this, intArrayOf(R.id.forgot_password))
         } else if (startFragmentName != null && startFragmentName == "SignUp") {
             softInputAssist = SoftInputAssist(this, intArrayOf(R.id.forgot_password))
-            fragment = SignUpFragment(false)
+            fragment = SignUpFragment.newInstance(false)
         } else if (startFragmentName != null && startFragmentName == "AccountSetUp") {
             softInputAssist =
                 SoftInputAssist(this, intArrayOf(R.id.forgot_password, R.id.set_up_later_button))
             val proAccount = presenter.isUserPro
-            fragment = SignUpFragment(proAccount)
+            fragment = SignUpFragment.newInstance(proAccount)
         } else {
             softInputAssist = SoftInputAssist(this, intArrayOf(R.id.forgot_password))
             fragment = WelcomeFragment()

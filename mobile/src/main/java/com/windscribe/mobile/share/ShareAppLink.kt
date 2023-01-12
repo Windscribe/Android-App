@@ -14,16 +14,16 @@ import butterknife.OnClick
 import com.windscribe.mobile.R
 import com.windscribe.mobile.base.BaseDialogFragment
 import com.windscribe.vpn.ActivityInteractor
-import javax.inject.Inject
 
-class ShareAppLink @Inject constructor(private val activityInteractor: ActivityInteractor) :
-    BaseDialogFragment() {
+class ShareAppLink : BaseDialogFragment() {
 
     @BindView(R.id.continue_btn)
     lateinit var continueButton: Button
 
     @BindView(R.id.nav_title)
     lateinit var navTitle: TextView
+
+    private var activityInteractor: ActivityInteractor? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,13 +37,13 @@ class ShareAppLink @Inject constructor(private val activityInteractor: ActivityI
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        activityInteractor.getAppPreferenceInterface().alreadyShownShareAppLink = true
+        activityInteractor?.getAppPreferenceInterface()?.alreadyShownShareAppLink = true
         navTitle.visibility = View.INVISIBLE
     }
 
     @OnClick(R.id.continue_btn)
     fun onContinueClick() {
-        activityInteractor.getUserRepository().user.value?.let {
+        activityInteractor?.getUserRepository()?.user?.value?.let {
             val launchActivity = activity as AppCompatActivity
             ShareCompat.IntentBuilder(launchActivity)
                 .setType("text/plain")
@@ -56,5 +56,13 @@ class ShareAppLink @Inject constructor(private val activityInteractor: ActivityI
     @OnClick(R.id.nav_button)
     fun onBackButtonClick() {
         activity?.onBackPressed()
+    }
+
+    companion object {
+        fun newInstance(activityInteractor: ActivityInteractor): ShareAppLink {
+            val fragment = ShareAppLink()
+            fragment.activityInteractor = activityInteractor
+            return fragment
+        }
     }
 }
