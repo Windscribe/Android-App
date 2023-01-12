@@ -124,7 +124,19 @@ public class NewsFeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             newsFeedViewHolder.imgCloseIcon.setImageResource(R.drawable.ic_close_white_25_alpha);
             newsFeedViewHolder.imgCloseIcon.setTag(0);
         }
-
+        NewsfeedAction newsfeedAction = windNotification.getAction();
+        if (newsfeedAction != null) {
+            // Remove last <p> container if it has a class name "ncta"
+            String message = windNotification.getNotificationMessage();
+            int bodyEndIndex = message.lastIndexOf("<p");
+            String body = message.substring(0, bodyEndIndex);
+            String pTag = message.substring(bodyEndIndex, message.length());
+            if (pTag.contains("ncta")) {
+                windNotification.setNotificationMessage(body);
+            }
+            newsFeedViewHolder.btnAction.setVisibility(View.VISIBLE);
+            newsFeedViewHolder.btnAction.setText(newsfeedAction.getLabel());
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             ((NewsFeedViewHolder) holder).tvBody.setText(
                     Html.fromHtml(mNotificationList.get(holder.getAdapterPosition()).getNotificationMessage(),
@@ -139,11 +151,6 @@ public class NewsFeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             ((NewsFeedViewHolder) holder).tvTitle.setText(Html.fromHtml(
                     mNotificationList.get(holder.getAdapterPosition()).getNotificationTitle().toUpperCase()));
 
-        }
-        NewsfeedAction newsfeedAction = windNotification.getAction();
-        if (newsfeedAction != null) {
-            newsFeedViewHolder.btnAction.setVisibility(View.VISIBLE);
-            newsFeedViewHolder.btnAction.setText(newsfeedAction.getLabel());
         }
     }
 
