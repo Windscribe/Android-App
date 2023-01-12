@@ -238,9 +238,24 @@ open class Windscribe : MultiDexApplication() {
 
     private fun serviceComponent(): ServiceComponent {
         return DaggerServiceComponent.builder()
-                .serviceModule(ServiceModule())
-                .applicationComponent(applicationComponent)
-                .build()
+            .serviceModule(ServiceModule())
+            .applicationComponent(applicationComponent)
+            .build()
+    }
+
+    override fun onLowMemory() {
+        logger.debug("Device is running low on memory.")
+        super.onLowMemory()
+    }
+
+    override fun onTerminate() {
+        logger.debug("App is being terminated.")
+        super.onTerminate()
+    }
+
+    override fun onTrimMemory(level: Int) {
+        logger.debug("Device is asking for memory trim with level = $level.")
+        super.onTrimMemory(level)
     }
 
     private fun registerForegroundActivityObserver() {
