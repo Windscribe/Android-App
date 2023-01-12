@@ -494,7 +494,7 @@ class ActivityModule {
         FragmentFactory() {
         override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
             return when (loadFragmentClass(classLoader, className)) {
-                ShareAppLink::class.java -> ShareAppLink(activityInteractor)
+                ShareAppLink::class.java -> ShareAppLink.newInstance(activityInteractor)
                 else -> super.instantiate(classLoader, className)
             }
         }

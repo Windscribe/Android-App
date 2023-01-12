@@ -23,7 +23,7 @@ import butterknife.OnClick
 import com.windscribe.mobile.R
 import java.util.concurrent.atomic.AtomicBoolean
 
-class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
+class SignUpFragment : Fragment(), TextWatcher,
     WelcomeActivityCallback {
     @BindView(R.id.email_sub_description)
     lateinit var addEmailLabel: TextView
@@ -94,6 +94,7 @@ class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
     @BindView(R.id.bottom_focus)
     lateinit var bottomFocusView: ImageView
 
+    private var isUserPro = false
     private var isAccountSetUpLayout = false
     private var fragmentCallBack: FragmentCallback? = null
     private var skipToHome = false
@@ -113,6 +114,7 @@ class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
             isAccountSetUpLayout =
                 requireArguments().getString("startFragmentName", "SignUp") == "AccountSetUp"
             skipToHome = requireArguments().getBoolean("skipToHome", false)
+            isUserPro = requireArguments().getBoolean("userPro", false)
         }
     }
 
@@ -130,7 +132,7 @@ class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
         if (isAccountSetUpLayout) {
             titleView.text = getString(R.string.account_set_up)
             setUpButton.visibility = View.VISIBLE
-            if (userPro) {
+            if (isUserPro) {
                 addEmailLabel.visibility = View.GONE
             }
             if (skipToHome) {
@@ -309,5 +311,15 @@ class SignUpFragment(private var userPro: Boolean) : Fragment(), TextWatcher,
     private fun resetNextButtonView() {
         val enable = usernameEditText.text.length > 2 && passwordEditText.text.length > 7
         signUpButton.isEnabled = enable
+    }
+
+    companion object {
+        fun newInstance(userPro: Boolean): SignUpFragment {
+            val args = Bundle()
+            args.putBoolean("userPro", userPro)
+            val fragment = SignUpFragment()
+            fragment.arguments = args
+            return fragment
+        }
     }
 }
