@@ -101,7 +101,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            android:text="ssdfsdfsdf"
             android:fontFamily="@font/ibm_plex_sans_bold"
             android:paddingTop="@dimen/padding_8"
             android:paddingBottom="@dimen/padding_8"

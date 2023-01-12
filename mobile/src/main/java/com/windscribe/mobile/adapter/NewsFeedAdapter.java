@@ -5,8 +5,9 @@
 package com.windscribe.mobile.adapter;
 
 
-import android.os.Build;
+
 import android.text.Html;
+import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.common.base.CharMatcher;
 import com.windscribe.mobile.R;
 import com.windscribe.mobile.newsfeedactivity.NewsFeedListener;
 import com.windscribe.vpn.constants.AnimConstants;
@@ -129,29 +131,22 @@ public class NewsFeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             // Remove last <p> container if it has a class name "ncta"
             String message = windNotification.getNotificationMessage();
             int bodyEndIndex = message.lastIndexOf("<p");
-            String body = message.substring(0, bodyEndIndex);
-            String pTag = message.substring(bodyEndIndex, message.length() - 1);
-            if (pTag.contains("ncta")) {
-                windNotification.setNotificationMessage(body);
+            if (bodyEndIndex > 0) {
+                String body = message.substring(0, bodyEndIndex);
+                String pTag = message.substring(bodyEndIndex, message.length() - 1);
+                if (pTag.contains("ncta")) {
+                    windNotification.setNotificationMessage(body);
+                }
             }
+            // Show action with label
             newsFeedViewHolder.btnAction.setVisibility(View.VISIBLE);
             newsFeedViewHolder.btnAction.setText(newsfeedAction.getLabel());
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            ((NewsFeedViewHolder) holder).tvBody.setText(
-                    Html.fromHtml(mNotificationList.get(holder.getAdapterPosition()).getNotificationMessage(),
-                            Html.FROM_HTML_MODE_LEGACY));
-            ((NewsFeedViewHolder) holder).tvTitle.setText(Html.fromHtml(
-                    mNotificationList.get(holder.getAdapterPosition()).getNotificationTitle().toUpperCase(),
-                    Html.FROM_HTML_MODE_LEGACY));
-
-        } else {
-            ((NewsFeedViewHolder) holder).tvBody.setText(
-                    Html.fromHtml(mNotificationList.get(holder.getAdapterPosition()).getNotificationMessage()));
-            ((NewsFeedViewHolder) holder).tvTitle.setText(Html.fromHtml(
-                    mNotificationList.get(holder.getAdapterPosition()).getNotificationTitle().toUpperCase()));
-
-        }
+        // Clear any trailing whitespace.
+        Spanned htmlBody = Html.fromHtml(windNotification.getNotificationMessage());
+        String htmlBodyWithoutSpace = CharMatcher.whitespace().trimTrailingFrom(htmlBody.toString());
+        ((NewsFeedViewHolder) holder).tvBody.setText(htmlBody.subSequence(0, htmlBodyWithoutSpace.length()));
+        ((NewsFeedViewHolder) holder).tvTitle.setText(Html.fromHtml(mNotificationList.get(holder.getAdapterPosition()).getNotificationTitle().toUpperCase()));
     }
 
     @NonNull
