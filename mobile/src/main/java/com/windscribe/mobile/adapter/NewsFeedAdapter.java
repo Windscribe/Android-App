@@ -130,7 +130,7 @@ public class NewsFeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             String message = windNotification.getNotificationMessage();
             int bodyEndIndex = message.lastIndexOf("<p");
             String body = message.substring(0, bodyEndIndex);
-            String pTag = message.substring(bodyEndIndex, message.length());
+            String pTag = message.substring(bodyEndIndex, message.length() - 1);
             if (pTag.contains("ncta")) {
                 windNotification.setNotificationMessage(body);
             }
