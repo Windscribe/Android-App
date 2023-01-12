@@ -477,6 +477,7 @@ class WindscribeActivity :
             setLanguage()
             presenter.onHotStart()
         }
+        presenter.checkForWgIpChange();
         appContext.workManager.checkPendingAccountUpgrades()
     }
 

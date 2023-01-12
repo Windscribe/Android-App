@@ -42,6 +42,7 @@ import com.windscribe.vpn.constants.NetworkKeyConstants.getWebsiteLink
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.AZ_LIST_SELECTION_MODE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.LATENCY_LIST_SELECTION_MODE
+import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.constants.RateDialogConstants
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.constants.UserStatusConstants.ACCOUNT_STATUS_OK
@@ -2830,6 +2831,39 @@ class WindscribePresenterImpl @Inject constructor(
     override fun onLocationSettingsChanged() {
         selectedLocation?.let {
             updateLocationUI(it, true)
+        }
+    }
+
+    /**
+     * Check for user ip when app resumes if connected to Wg.
+     * Dynamic wg may change ip on network changes.
+     */
+    override fun checkForWgIpChange() {
+        if (interactor.getVpnConnectionStateManager()
+                .isVPNConnected() && interactor.getAppPreferenceInterface().selectedProtocol == PROTO_WIRE_GUARD
+        ) {
+            interactor.getCompositeDisposable()
+                .add(interactor.getApiCallManager().checkConnectivityAndIpAddress()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe { response, _ ->
+                        response?.dataClass?.let { ip ->
+                            if (validIpAddress(ip.trim())) {
+                                val lastIpAddress = interactor.getAppPreferenceInterface()
+                                    .getResponseString(PreferencesKeyConstants.USER_IP)
+                                val updatedIpAddress = getModifiedIpAddress(ip.trim())
+                                if (lastIpAddress != updatedIpAddress && interactor.getVpnConnectionStateManager()
+                                        .isVPNConnected()
+                                ) {
+                                    interactor.getAppPreferenceInterface().saveResponseStringData(
+                                        PreferencesKeyConstants.USER_IP,
+                                        updatedIpAddress
+                                    )
+                                    windscribeView.setIpAddress(updatedIpAddress)
+                                }
+                            }
+                        }
+                    })
         }
     }
 }
