@@ -2842,27 +2842,28 @@ class WindscribePresenterImpl @Inject constructor(
         if (interactor.getVpnConnectionStateManager()
                 .isVPNConnected() && interactor.getAppPreferenceInterface().selectedProtocol == PROTO_WIRE_GUARD
         ) {
+            logger.debug("Checking dynamic wg ip change.")
             interactor.getCompositeDisposable()
-                .add(interactor.getApiCallManager().checkConnectivityAndIpAddress()
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe { response, _ ->
-                        response?.dataClass?.let { ip ->
-                            if (validIpAddress(ip.trim())) {
-                                val lastIpAddress = interactor.getAppPreferenceInterface()
-                                    .getResponseString(PreferencesKeyConstants.USER_IP)
-                                val updatedIpAddress = getModifiedIpAddress(ip.trim())
-                                if (lastIpAddress != updatedIpAddress && interactor.getVpnConnectionStateManager()
-                                        .isVPNConnected()
-                                ) {
+                .add(
+                    interactor.getApiCallManager().checkConnectivityAndIpAddress()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe { response, _ ->
+                            response?.dataClass?.let { ip ->
+                                if (validIpAddress(ip.trim())) {
+                                    val updatedIpAddress = getModifiedIpAddress(ip.trim())
                                     interactor.getAppPreferenceInterface().saveResponseStringData(
                                         PreferencesKeyConstants.USER_IP,
                                         updatedIpAddress
                                     )
+                                    logger.debug("Updating ip address to $updatedIpAddress")
                                     windscribeView.setIpAddress(updatedIpAddress)
+                                } else {
+                                    logger.debug("Invalid ip returned from Api $ip")
                                 }
+                            } ?: kotlin.run {
+                                logger.debug("Failed to get ip from APi.")
                             }
-                        }
                     })
         }
     }
