@@ -87,22 +87,16 @@ class WelcomePresenterImpl @Inject constructor(
                                 response: GenericResponseClass<XPressLoginCodeResponse?, ApiErrorResponse?>
                             ) {
                                 welcomeView.prepareUiForApiCallFinished()
-                                when {
-                                    response.dataClass != null -> {
+                                    response.dataClass?.let {
                                         logger.debug("Successfully generated XPress login code.")
-                                        welcomeView.setSecretCode(response.dataClass!!.xPressLoginCode)
-                                        startXPressLoginCodeVerifier(response.dataClass)
+                                        welcomeView.setSecretCode(it.xPressLoginCode)
+                                        startXPressLoginCodeVerifier(it)
+                                    } ?: response.errorClass?.let {
+                                        logger.debug(it.errorMessage)
+                                        welcomeView.showError(it.errorMessage)
+                                    } ?: kotlin.run {
+                                        welcomeView.showError("Unable to generate Login code. Check you network connection.")
                                     }
-                                    response.errorClass != null -> {
-                                        logger.debug(response.errorClass!!.errorMessage)
-                                        welcomeView.showError(response.errorClass!!.errorMessage)
-                                    }
-                                    else -> {
-                                        welcomeView.showError(
-                                            "Unable to generate Login code. Check you network connection."
-                                        )
-                                    }
-                                }
                             }
                         })
             )
@@ -117,7 +111,7 @@ class WelcomePresenterImpl @Inject constructor(
         isRegistration = false
         welcomeView.hideSoftKeyboard()
         if (validateLoginInputs(username, password, email, false)) {
-            if (!ignoreEmptyEmail && email!!.isEmpty()) {
+            if (!ignoreEmptyEmail && email?.isEmpty() == true) {
                 welcomeView.showNoEmailAttentionFragment()
                 return
             }
@@ -167,27 +161,17 @@ class WelcomePresenterImpl @Inject constructor(
     override fun startGhostAccountSetup() {
         welcomeView.prepareUiForApiCallStart()
         welcomeView.updateCurrentProcess("Signing In")
-        interactor.getCompositeDisposable().add(
-            interactor.getApiCallManager().getReg(null)
-                .flatMap(
-                    Function<GenericResponseClass<RegToken?, ApiErrorResponse?>, SingleSource<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>> label@{ regToken: GenericResponseClass<RegToken?, ApiErrorResponse?> ->
-                        when {
-                            regToken.dataClass != null -> {
-                                val ghostModeMap = createGhostModeMap(
-                                    regToken.dataClass!!.token
-                                )
-                                return@label interactor.getApiCallManager()
-                                    .signUserIn(ghostModeMap)
-                            }
-                            regToken.errorClass != null -> {
-                                throw Exception(regToken.errorClass!!.errorMessage)
-                            }
-                            else -> {
-                                throw Exception("Unknown Error")
-                            }
-                        }
-                    }
-                ).subscribeOn(Schedulers.io())
+        interactor.getCompositeDisposable().add(interactor.getApiCallManager().getReg(null)
+            .flatMap(Function<GenericResponseClass<RegToken?, ApiErrorResponse?>, SingleSource<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>> label@{ regToken: GenericResponseClass<RegToken?, ApiErrorResponse?> ->
+                regToken.dataClass?.let {
+                    val ghostModeMap = createGhostModeMap(it.token)
+                    return@label interactor.getApiCallManager().signUserIn(ghostModeMap)
+                } ?: regToken.errorClass?.let {
+                    throw Exception(it.errorMessage)
+                } ?: kotlin.run {
+                    throw Exception("Unknown Error")
+                }
+            }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(
                     object :
@@ -266,7 +250,7 @@ class WelcomePresenterImpl @Inject constructor(
         isRegistration = true
         welcomeView.hideSoftKeyboard()
         if (validateLoginInputs(username, password, email, false)) {
-            if (!ignoreEmptyEmail && email!!.isEmpty()) {
+            if (!ignoreEmptyEmail && email?.isEmpty() == true) {
                 welcomeView.showNoEmailAttentionFragment()
                 return
             }
@@ -313,16 +297,14 @@ class WelcomePresenterImpl @Inject constructor(
         }
     }
 
-    fun startXPressLoginCodeVerifier(xPressLoginCodeResponse: XPressLoginCodeResponse?) {
+    fun startXPressLoginCodeVerifier(xPressLoginCodeResponse: XPressLoginCodeResponse) {
         val startTime = System.currentTimeMillis()
         val xPressLoginMap = createVerifyXPressCodeMap(
-            xPressLoginCodeResponse!!.xPressLoginCode,
-            xPressLoginCodeResponse.signature
+            xPressLoginCodeResponse.xPressLoginCode, xPressLoginCodeResponse.signature
         )
         compositeDisposable.add(
             interactor.getApiCallManager().verifyXPressLoginCode(xPressLoginMap)
-                .timeout(20, TimeUnit.SECONDS)
-                .onErrorReturnItem(GenericResponseClass(null, null))
+                .timeout(20, TimeUnit.SECONDS).onErrorReturnItem(GenericResponseClass(null, null))
                 .repeatWhen { completed: Flowable<Any?> -> completed.delay(3, TimeUnit.SECONDS) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -338,12 +320,11 @@ class WelcomePresenterImpl @Inject constructor(
                         override fun onNext(
                             response: GenericResponseClass<XPressLoginVerifyResponse?, ApiErrorResponse?>
                         ) {
-                            if (response.dataClass != null) {
+                            response.dataClass?.let {
                                 compositeDisposable.clear()
                                 logger.debug("Successfully verified XPress login code.")
-                                val sessionAuth = response.dataClass!!.sessionAuth
-                                interactor.getAppPreferenceInterface().sessionHash =
-                                    sessionAuth
+                                val sessionAuth = it.sessionAuth
+                                interactor.getAppPreferenceInterface().sessionHash = sessionAuth
                                 setFireBaseDeviceToken
                             }
                             invalidateLoginCode(startTime, xPressLoginCodeResponse)
@@ -377,12 +358,11 @@ class WelcomePresenterImpl @Inject constructor(
             }
         }
     private fun invalidateLoginCode(
-        startTime: Long,
-        xPressLoginCodeResponse: XPressLoginCodeResponse?
+        startTime: Long, xPressLoginCodeResponse: XPressLoginCodeResponse
     ) {
         val secondsPassed =
             TimeUnit.SECONDS.convert(System.currentTimeMillis() - startTime, TimeUnit.MILLISECONDS)
-        if (secondsPassed > xPressLoginCodeResponse!!.ttl) {
+        if (secondsPassed > xPressLoginCodeResponse.ttl) {
             compositeDisposable.clear()
             logger.debug("Failed to verify XPress login code in ttl .Giving up")
             welcomeView.setSecretCode("")
@@ -435,17 +415,19 @@ class WelcomePresenterImpl @Inject constructor(
         logger.debug(apiErrorResponse.toString())
         welcomeView.prepareUiForApiCallFinished()
         val errorMessage = SessionErrorHandler.instance.getErrorMessage(apiErrorResponse)
-        val errorCode = apiErrorResponse.errorCode
-        if (errorCode == NetworkErrorCodes.ERROR_2FA_REQUIRED) {
-            welcomeView.setTwoFaRequired(username, password)
-        } else if (errorCode == NetworkErrorCodes.ERROR_INVALID_2FA) {
-            welcomeView.setTwoFaError(errorMessage)
-        } else if (errorCode == NetworkErrorCodes.ERROR_USER_NAME_ALREADY_TAKEN ||
-            errorCode == NetworkErrorCodes.ERROR_USER_NAME_ALREADY_IN_USE
-        ) {
-            welcomeView.setUsernameError(errorMessage)
-        } else {
-            welcomeView.setLoginRegistrationError(errorMessage)
+        when (apiErrorResponse.errorCode) {
+            NetworkErrorCodes.ERROR_2FA_REQUIRED -> {
+                welcomeView.setTwoFaRequired(username, password)
+            }
+            NetworkErrorCodes.ERROR_INVALID_2FA -> {
+                welcomeView.setTwoFaError(errorMessage)
+            }
+            NetworkErrorCodes.ERROR_USER_NAME_ALREADY_TAKEN, NetworkErrorCodes.ERROR_USER_NAME_ALREADY_IN_USE -> {
+                welcomeView.setUsernameError(errorMessage)
+            }
+            else -> {
+                welcomeView.setLoginRegistrationError(errorMessage)
+            }
         }
     }
 
@@ -511,7 +493,8 @@ class WelcomePresenterImpl @Inject constructor(
     }
 
     private fun updateStaticIps(): Completable {
-        return if (interactor.getUserRepository().user.value != null && interactor.getUserRepository().user.value!!.sipCount > 0) {
+        val sipCount = interactor.getUserRepository().user.value?.sipCount ?: 0
+        return if (sipCount > 0) {
             interactor.getStaticListUpdater().update()
         } else {
             Completable.fromAction {}

@@ -443,7 +443,6 @@ class WindscribeActivity :
     override fun onStart() {
         super.onStart()
         if (presenter.userHasAccess()) {
-            logger.info("Activity on start method,registering network and vpn status listener")
             presenter.onStart()
             if (intent != null && intent.action != null && (
                         intent.action
@@ -488,7 +487,9 @@ class WindscribeActivity :
     }
 
     override fun onDestroy() {
-        presenter.saveLastSelectedTabIndex(locationFragmentViewPager!!.currentItem)
+        locationFragmentViewPager?.currentItem?.let {
+            presenter.saveLastSelectedTabIndex(it)
+        }
         presenter.onDestroy()
         super.onDestroy()
     }
@@ -523,9 +524,9 @@ class WindscribeActivity :
     }
 
     override val flagViewHeight: Int
-        get() = flagDimensionsGuideView!!.measuredHeight
+        get() = flagDimensionsGuideView?.measuredHeight ?: 0
     override val flagViewWidth: Int
-        get() = flagDimensionsGuideView!!.measuredWidth
+        get() = flagDimensionsGuideView?.measuredWidth ?: 0
 
     override fun getLocationPermission(requestCode: Int) {
         checkLocationPermission(R.id.cl_windscribe_main, requestCode)
@@ -578,13 +579,15 @@ class WindscribeActivity :
         if(clProtocolswitch?.visibility == View.VISIBLE){
             val autoTransition = androidx.transition.AutoTransition()
             constraintSetMain.setVisibility(R.id.cl_protocol_switch, ConstraintSet.GONE)
-            TransitionManager.beginDelayedTransition(constraintLayoutMain!!, autoTransition)
-            constraintSetMain.applyTo(constraintLayoutMain)
+            constraintLayoutMain?.let {
+                TransitionManager.beginDelayedTransition(it, autoTransition)
+                constraintSetMain.applyTo(it)
+            }
         }
     }
 
     override fun hideRecyclerViewProgressBar() {
-        runOnUiThread { progressBarRecyclerView!!.visibility = View.GONE }
+        runOnUiThread { progressBarRecyclerView?.visibility = View.GONE }
     }
 
     override fun neverAskAgainClicked() {
@@ -769,7 +772,7 @@ class WindscribeActivity :
 
     @OnClick(R.id.tv_skip_for_now)
     fun onRemindLaterClick() {
-        logger.debug("User clicked on " + textViewSkip!!.text.toString() + " on account status layout...")
+        logger.debug("User clicked on " + textViewSkip?.text.toString() + " on account status layout...")
         presenter.onSkipNowClicked()
     }
 
@@ -820,7 +823,7 @@ class WindscribeActivity :
     @OnClick(R.id.img_server_list_flix)
     fun onShowFlixListClick() {
         logger.debug("User clicked show flix locations...")
-        if (locationFragmentViewPager!!.currentItem != 2) {
+        if (locationFragmentViewPager?.currentItem != 2) {
             // Change fragment to all server list fragment
             logger.debug("Setting pager item to 2: Flix List Fragment")
             locationFragmentViewPager?.currentItem = 2
@@ -1109,8 +1112,7 @@ class WindscribeActivity :
             R.id.top_gradient,
             if (customBackground) ConstraintSet.INVISIBLE else ConstraintSet.VISIBLE
         )
-        topGradient!!.visibility =
-            if (customBackground) View.INVISIBLE else View.VISIBLE
+        topGradient?.visibility = if (customBackground) View.INVISIBLE else View.VISIBLE
         constraintSetMain.setVisibility(
             R.id.top_gradient_custom,
             if (customBackground) ConstraintSet.VISIBLE else ConstraintSet.INVISIBLE
@@ -1127,7 +1129,7 @@ class WindscribeActivity :
         state: NetworkLayoutState?,
         resetAdapter: Boolean
     ) {
-        if (clPreferredProtocol!!.layoutTransition.isRunning) {
+        if (clPreferredProtocol?.layoutTransition?.isRunning == true) {
             return
         }
         if (resetAdapter) {
@@ -1151,19 +1153,16 @@ class WindscribeActivity :
             )
             textViewConnectedNetworkName?.text = networkInfo.networkName
         } else {
-            networkIcon!!.setImageDrawable(getDrawableFromTheme(R.drawable.ic_wifi_secure))
+            networkIcon?.setImageDrawable(getDrawableFromTheme(R.drawable.ic_wifi_secure))
             textViewConnectedNetworkName?.text =
                 if (WindUtilities.isOnline()) "Unknown Network" else getString(R.string.no_internet)
         }
-        val checkForReconnect = (
-                networkLayoutState == NetworkLayoutState.OPEN_3 ||
-                        networkLayoutState == NetworkLayoutState.OPEN_2
-                )
+        val checkForReconnect =
+            (networkLayoutState == NetworkLayoutState.OPEN_3 || networkLayoutState == NetworkLayoutState.OPEN_2)
         networkLayoutState = NetworkLayoutState.CLOSED
         animateBottomGradient(true)
-        collapseExpandExpandIcon!!.animate().rotation(0f).alpha(0.5f).setDuration(300)
-            .withEndAction { presenter.onNetworkLayoutCollapsed(checkForReconnect) }
-            .start()
+        collapseExpandExpandIcon?.animate()?.rotation(0f)?.alpha(0.5f)?.setDuration(300)
+            ?.withEndAction { presenter.onNetworkLayoutCollapsed(checkForReconnect) }?.start()
         networkIcon?.alpha = 0.5f
         lockIcon?.alpha = 1.0f
         textViewIpAddress?.alpha = 0.5f
@@ -1222,7 +1221,7 @@ class WindscribeActivity :
         animateBottomGradient(false)
         collapseExpandExpandIcon?.animate()?.rotation(-180f)?.alpha(1.0f)?.setDuration(300)?.start()
         autoSecureToggle?.setImageDrawable(
-            if (networkInfo!!.isAutoSecureOn) getDrawableFromTheme(R.drawable.ic_toggle_button_on) else getDrawableFromTheme(
+            if (networkInfo?.isAutoSecureOn == true) getDrawableFromTheme(R.drawable.ic_toggle_button_on) else getDrawableFromTheme(
                 R.drawable.ic_toggle_button_off_dark
             )
         )
@@ -1290,7 +1289,7 @@ class WindscribeActivity :
         clAutoSecure?.visibility = View.VISIBLE
         autoSecureDivider?.visibility =
             if (networkInfo?.isAutoSecureOn == true) View.VISIBLE else View.GONE
-        clPreferred!!.visibility =
+        clPreferred?.visibility =
             if (networkInfo?.isAutoSecureOn == true) View.VISIBLE else View.GONE
         clProtocol?.visibility =
             if (networkInfo?.isAutoSecureOn == true && networkInfo.isPreferredOn) View.VISIBLE else View.GONE
@@ -1368,9 +1367,8 @@ class WindscribeActivity :
     override fun setupAccountStatusDowngraded() {
         imgAccountGarryEmotion?.setImageResource(R.drawable.garry_sad)
         textViewSkip?.text = resources.getString(R.string.upgrade_later)
-        textViewAccountStatusTitle?.text =
-            resources.getString(R.string.you_r_pro_plan_expired)
-        textViewStatusExplanation!!.text =
+        textViewAccountStatusTitle?.text = resources.getString(R.string.you_r_pro_plan_expired)
+        textViewStatusExplanation?.text =
             resources.getString(R.string.you_ve_been_downgraded_to_free_for_now)
         textViewRenewPlan?.text = resources.getString(R.string.renew_plan)
         constraintSetMain.setVisibility(R.id.cl_account_status_info, ConstraintSet.VISIBLE)
@@ -1569,7 +1567,9 @@ class WindscribeActivity :
         portAdapter = ArrayAdapter(this, R.layout.drop_down_layout, R.id.tv_drop_down, ports)
         portSpinner?.adapter = portAdapter
         portSpinner?.isSelected = false
-        portSpinner?.setSelection(portAdapter!!.getPosition(savedPort))
+        portAdapter?.let {
+            portSpinner?.setSelection(it.getPosition(savedPort))
+        }
         currentPort?.text = savedPort
     }
 
@@ -1684,7 +1684,7 @@ class WindscribeActivity :
                 )
             }
             transition = AutoTransition()
-            transition!!.duration = AnimConstants.CONNECTION_MODE_ANIM_DURATION
+            transition?.duration = AnimConstants.CONNECTION_MODE_ANIM_DURATION
             android.transition.TransitionManager.beginDelayedTransition(
                 constraintLayoutServerList,
                 transition
@@ -1845,15 +1845,12 @@ class WindscribeActivity :
                                     state.flagGradientEndColor
                             ) as Int
                     setToolBarColors(gradientColor)
-                    connectionState!!.setTextColor(
-                            (
-                                    argbEvaluator
-                                            .evaluate(
-                                                    valueAnimator.animatedFraction,
-                                                    state.connectionStateStatusStartColor,
-                                                    state.connectionStateStatusEndColor
-                                            ) as Int
-                                    )
+                    connectionState?.setTextColor(
+                        (argbEvaluator.evaluate(
+                                valueAnimator.animatedFraction,
+                                state.connectionStateStatusStartColor,
+                                state.connectionStateStatusEndColor
+                            ) as Int)
                     )
                 }
                 valueAnimator.addListener(object : Animator.AnimatorListener {

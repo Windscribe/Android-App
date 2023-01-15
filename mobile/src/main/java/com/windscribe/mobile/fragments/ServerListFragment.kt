@@ -297,7 +297,8 @@ class ServerListFragment : Fragment() {
 
     private fun canPullToRefresh(): Boolean {
         val firstViewPosition = linearLayoutManager?.findFirstVisibleItemPosition()
-        return firstViewPosition == 0 && linearLayoutManager?.childCount!! > 0
+        val childCount = linearLayoutManager?.childCount ?: 0
+        return firstViewPosition == 0 && childCount > 0
     }
 
     private fun onRefreshForPing() {
@@ -322,10 +323,7 @@ class ServerListFragment : Fragment() {
                 if (centerView != null) {
                     updateAdapterPosition(centerView)
                 }
-               /* fragmentClickListener!!.setServerListToolbarElevation(
-                    if (centerView == 0) 0 else resources.getDimensionPixelSize(R.dimen.reg_2dp)
-                )*/
-                swipeRefreshLayout!!.isEnabled = canPullToRefresh()
+                swipeRefreshLayout?.isEnabled = canPullToRefresh()
             }
         })
     }

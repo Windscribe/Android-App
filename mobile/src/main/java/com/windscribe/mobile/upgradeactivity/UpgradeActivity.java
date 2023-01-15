@@ -197,7 +197,7 @@ public class UpgradeActivity extends BaseActivity
     }
 
     @Override
-    public void onContinuePlanClick(@Nullable ProductDetails productDetails, int selectedIndex) {
+    public void onContinuePlanClick(ProductDetails productDetails, int selectedIndex) {
         if (productDetails != null) {
             mUpgradeLog.info("User clicked on plan item...");
             String regionPlanUrl = mUpgradePresenter.regionalPlanIfAvailable(productDetails.getProductId());

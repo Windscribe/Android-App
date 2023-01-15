@@ -221,9 +221,12 @@ class SignUpFragment : Fragment(), TextWatcher,
         } else {
             val referral = referralUsernameEditText.text.toString().trim { it <= ' ' }
             val email = emailEditText.text.toString().trim { it <= ' ' }
-            fragmentCallBack!!.onSignUpButtonClick(
+            fragmentCallBack?.onSignUpButtonClick(
                 usernameEditText.text.toString().trim { it <= ' ' },
-                passwordEditText.text.toString().trim { it <= ' ' }, email, referral, false
+                passwordEditText.text.toString().trim { it <= ' ' },
+                email,
+                referral,
+                false
             )
         }
     }

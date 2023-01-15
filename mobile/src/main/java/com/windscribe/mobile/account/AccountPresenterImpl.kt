@@ -10,6 +10,7 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.CreateHashMap.createVerifyExpressLoginMap
 import com.windscribe.vpn.api.CreateHashMap.createWebSessionMap
 import com.windscribe.vpn.api.response.*
+import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.NetworkKeyConstants.getWebsiteLink
 import com.windscribe.vpn.constants.PreferencesKeyConstants
@@ -17,6 +18,7 @@ import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.WindError.Companion.instance
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.model.User.EmailStatus
+import com.windscribe.vpn.repository.CallResult
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
@@ -61,31 +63,31 @@ class AccountPresenterImpl @Inject constructor(
         logger.debug("verifying express login code.")
         val verifyLoginMap = createVerifyExpressLoginMap(code)
         interactor.getCompositeDisposable().add(
-            interactor.getApiCallManager()
-                .verifyExpressLoginCode(verifyLoginMap)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(
-                    object :
-                        DisposableSingleObserver<GenericResponseClass<VerifyExpressLoginResponse?, ApiErrorResponse?>>() {
-                        override fun onError(e: Throwable) {
-                            logger.debug(
-                                String.format(
-                                    "Error verifying login code: %s",
-                                    e.localizedMessage
-                                )
-                            )
-                            accountView.hideProgress()
-                            accountView.showErrorDialog(
-                                "Error verifying login code. Check your network connection."
-                            )
-                        }
+            interactor.getApiCallManager().verifyExpressLoginCode(verifyLoginMap)
+                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(object :
+                    DisposableSingleObserver<GenericResponseClass<VerifyExpressLoginResponse?, ApiErrorResponse?>>() {
+                    override fun onError(e: Throwable) {
+                        logger.debug("Error verifying login code: ${e.localizedMessage}")
+                        accountView.hideProgress()
+                        accountView.showErrorDialog("Error verifying login code. Check your network connection.")
+                    }
 
-                        override fun onSuccess(
-                            response: GenericResponseClass<VerifyExpressLoginResponse?, ApiErrorResponse?>
-                        ) {
-                            accountView.hideProgress()
-                            if (response.dataClass != null && response.dataClass!!.isSuccessful) {
+                    override fun onSuccess(
+                        response: GenericResponseClass<VerifyExpressLoginResponse?, ApiErrorResponse?>
+                    ) {
+                        accountView.hideProgress()
+                        when (val result = response.callResult<VerifyExpressLoginResponse>()) {
+                            is CallResult.Error -> {
+                                if (response.errorClass != null) {
+                                    logger.debug("Error verifying login code: ${result.errorMessage}")
+                                    accountView.showErrorDialog(result.errorMessage)
+                                } else {
+                                    logger.debug("Failed to verify lazy login code.")
+                                    accountView.showErrorDialog("Failed to verify lazy login code.")
+                                }
+                            }
+                            is CallResult.Success -> {
                                 logger.debug("Successfully verified login code")
                                 accountView.showSuccessDialog(
                                     """
@@ -93,20 +95,10 @@ class AccountPresenterImpl @Inject constructor(
     all good to go now.
     """.trimIndent()
                                 )
-                            } else if (response.errorClass != null) {
-                                logger.debug(
-                                    String.format(
-                                        "Error verifying login code: %s",
-                                        response.errorClass!!.errorMessage
-                                    )
-                                )
-                                accountView.showErrorDialog(response.errorClass!!.errorMessage)
-                            } else {
-                                logger.debug("Failed to verify lazy login code.")
-                                accountView.showErrorDialog("Failed to verify lazy login code.")
                             }
                         }
-                    })
+                    }
+                })
         )
     }
 
@@ -114,40 +106,39 @@ class AccountPresenterImpl @Inject constructor(
         accountView.setWebSessionLoading(true)
         logger.info("Opening My Account page in browser...")
         val webSessionMap = createWebSessionMap()
-        interactor.getCompositeDisposable()
-            .add(
-                interactor.getApiCallManager().getWebSession(webSessionMap)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeWith(
-                        object :
-                            DisposableSingleObserver<GenericResponseClass<WebSession?, ApiErrorResponse?>?>() {
-                            override fun onError(e: Throwable) {
-                                accountView.setWebSessionLoading(false)
-                                accountView.showErrorDialog(
-                                    "Unable to generate web session. Check your network connection."
-                                )
-                            }
+        interactor.getCompositeDisposable().add(
+            interactor.getApiCallManager().getWebSession(webSessionMap).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribeWith(object :
+                    DisposableSingleObserver<GenericResponseClass<WebSession?, ApiErrorResponse?>?>() {
+                    override fun onError(e: Throwable) {
+                        accountView.setWebSessionLoading(false)
+                        accountView.showErrorDialog(
+                            "Unable to generate web session. Check your network connection."
+                        )
+                    }
 
-                            override fun onSuccess(
-                                webSession: GenericResponseClass<WebSession?, ApiErrorResponse?>
-                            ) {
-                                accountView.setWebSessionLoading(false)
-                                if (webSession.dataClass != null) {
-                                    accountView.openEditAccountInBrowser(
-                                        getWebsiteLink(NetworkKeyConstants.URL_MY_ACCOUNT)
-                                                + webSession.dataClass!!.tempSession
-                                    )
-                                } else if (webSession.errorClass != null) {
-                                    accountView
-                                        .showErrorDialog(webSession.errorClass!!.errorMessage)
-                                } else {
+                    override fun onSuccess(
+                        webSession: GenericResponseClass<WebSession?, ApiErrorResponse?>
+                    ) {
+                        accountView.setWebSessionLoading(false)
+                        when (val result = webSession.callResult<WebSession>()) {
+                            is CallResult.Error -> {
+                                if (result.code == NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA) {
                                     accountView.showErrorDialog(
                                         "Unable to generate Web-Session. Check your network connection."
                                     )
+                                } else {
+                                    accountView.showErrorDialog(result.errorMessage)
                                 }
                             }
-                        })
+                            is CallResult.Success -> {
+                                accountView.openEditAccountInBrowser(
+                                    getWebsiteLink(NetworkKeyConstants.URL_MY_ACCOUNT) + result.data.tempSession
+                                )
+                            }
+                        }
+                    }
+                })
             )
     }
 
@@ -240,31 +231,31 @@ class AccountPresenterImpl @Inject constructor(
                 R.drawable.ic_email_attention,
                 R.drawable.confirmed_email_container_background
             )
-            EmailStatus.EmailProvided -> accountView.setEmailConfirm(
-                user.email!!,
-                interactor.getResourceString(
-                    R.string.confirm_your_email
-                ),
-                com.windscribe.vpn.commonutils.ThemeUtils.getColor(
-                    appContext,
-                    R.attr.wdWarningColor50,
-                    R.color.colorYellow
-                ),
-                com.windscribe.vpn.commonutils.ThemeUtils.getColor(
-                    appContext,
-                    R.attr.wdWarningColor,
-                    R.color.colorYellow
-                ),
-                R.drawable.ic_warning_icon,
-                R.drawable.attention_container_background
-            )
-            EmailStatus.Confirmed -> accountView.setEmailConfirmed(
-                user.email!!, interactor.getResourceString(
-                    R.string.get_10gb_data
-                ), interactor.getThemeColor(R.attr.wdSecondaryColor), interactor.getThemeColor(
-                    R.attr.wdPrimaryColor
-                ), R.drawable.ic_email_attention, R.drawable.confirmed_email_container_background
-            )
+            EmailStatus.EmailProvided -> user.email?.let {
+                accountView.setEmailConfirm(
+                    it, interactor.getResourceString(
+                        R.string.confirm_your_email
+                    ), com.windscribe.vpn.commonutils.ThemeUtils.getColor(
+                        appContext, R.attr.wdWarningColor50, R.color.colorYellow
+                    ), com.windscribe.vpn.commonutils.ThemeUtils.getColor(
+                        appContext, R.attr.wdWarningColor, R.color.colorYellow
+                    ), R.drawable.ic_warning_icon, R.drawable.attention_container_background
+                )
+            }
+            EmailStatus.Confirmed -> user.email?.let {
+                accountView.setEmailConfirmed(
+                    it,
+                    interactor.getResourceString(
+                        R.string.get_10gb_data
+                    ),
+                    interactor.getThemeColor(R.attr.wdSecondaryColor),
+                    interactor.getThemeColor(
+                        R.attr.wdPrimaryColor
+                    ),
+                    R.drawable.ic_email_attention,
+                    R.drawable.confirmed_email_container_background
+                )
+            }
         }
         if (user.maxData == -1L) {
             accountView.setPlanName(interactor.getResourceString(R.string.unlimited_data))

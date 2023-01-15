@@ -10,7 +10,9 @@ import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.api.response.AddEmailResponse
 import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.api.response.GenericResponseClass
+import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkKeyConstants
+import com.windscribe.vpn.repository.CallResult
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
@@ -65,22 +67,23 @@ class AddEmailPresenterImpl @Inject constructor(
                             override fun onSuccess(
                                 postEmailResponseClass: GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>
                             ) {
-                                if (postEmailResponseClass.dataClass != null) {
-                                    emailView.showToast("Added email successfully...")
-                                    logger.info("Email address added successfully...")
-                                    emailView.gotoWindscribeActivity()
-                                } else {
-                                    emailView.prepareUiForApiCallFinished()
-                                    emailView.showToast(
-                                        postEmailResponseClass.errorClass!!.errorMessage
-                                    )
-                                    logger.debug(
-                                        "Server returned error. " + postEmailResponseClass
-                                            .errorClass.toString()
-                                    )
-                                    emailView.showInputError(
-                                        postEmailResponseClass.errorClass!!.errorMessage
-                                    )
+                                emailView.prepareUiForApiCallFinished()
+                                when (val result =
+                                    postEmailResponseClass.callResult<AddEmailResponse>()) {
+                                    is CallResult.Error -> {
+                                        if (result.code != NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA) {
+                                            emailView.showToast(result.errorMessage)
+                                            logger.debug(
+                                                "Server returned error. " + postEmailResponseClass.errorClass.toString()
+                                            )
+                                            emailView.showInputError(result.errorMessage)
+                                        }
+                                    }
+                                    is CallResult.Success -> {
+                                        emailView.showToast("Added email successfully...")
+                                        logger.info("Email address added successfully...")
+                                        emailView.gotoWindscribeActivity()
+                                    }
                                 }
                             }
                         })

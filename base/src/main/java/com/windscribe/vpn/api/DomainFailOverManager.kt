@@ -2,16 +2,13 @@ package com.windscribe.vpn.api
 
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.apppreference.PreferencesHelper
-import org.slf4j.LoggerFactory
 
 class DomainFailOverManager(private val preferencesHelper: PreferencesHelper) {
     private var failedStates = mutableMapOf<String, Boolean>()
     private var wgConnectApiFailOverStates = mutableMapOf<String, Boolean>()
-    private val logger = LoggerFactory.getLogger("domain_fail_over_m")
 
     init {
         wgConnectApiFailOverStates.putAll(preferencesHelper.wgConnectApiFailOverState)
-        logger.debug("Wg connect api fail over state: $wgConnectApiFailOverStates")
     }
 
     fun isAccessible(domainType: DomainType, apiCallType: ApiCallType): Boolean {

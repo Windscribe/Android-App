@@ -9,6 +9,7 @@ import com.windscribe.vpn.api.response.AddEmailResponse
 import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.constants.UserStatusConstants
+import com.windscribe.vpn.repository.CallResult
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
@@ -41,37 +42,31 @@ class ConfirmEmailPresenterImp @Inject constructor(
     override fun resendVerificationEmail() {
         confirmEmailView.showEmailConfirmProgress(true)
         interactor.getCompositeDisposable().add(
-            interactor.getApiCallManager()
-                .resendUserEmailAddress(null)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(
-                    object :
-                        DisposableSingleObserver<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>>() {
-                        override fun onError(e: Throwable) {
-                            confirmEmailView.showToast("Error sending email..")
-                            confirmEmailView.showEmailConfirmProgress(false)
-                        }
+            interactor.getApiCallManager().resendUserEmailAddress(null).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribeWith(object :
+                    DisposableSingleObserver<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>>() {
+                    override fun onError(e: Throwable) {
+                        confirmEmailView.showToast("Error sending email..")
+                        confirmEmailView.showEmailConfirmProgress(false)
+                    }
 
-                        override fun onSuccess(
-                            postEmailResponseClass: GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>
-                        ) {
-                            confirmEmailView.showEmailConfirmProgress(false)
-                            if (postEmailResponseClass.dataClass != null) {
+                    override fun onSuccess(
+                        postEmailResponseClass: GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>
+                    ) {
+                        confirmEmailView.showEmailConfirmProgress(false)
+                        when (val result = postEmailResponseClass.callResult<AddEmailResponse>()) {
+                            is CallResult.Error -> {
+                                confirmEmailView.showToast(result.errorMessage)
+                                mPresenterLog.debug("Server returned error. $result")
+                            }
+                            is CallResult.Success -> {
                                 confirmEmailView.showToast("Email confirmation sent successfully...")
                                 mPresenterLog.info("Email confirmation sent successfully...")
                                 confirmEmailView.finishActivity()
-                            } else {
-                                confirmEmailView
-                                    .showToast(postEmailResponseClass.errorClass!!.errorMessage)
-                                mPresenterLog
-                                    .debug(
-                                        "Server returned error. " + postEmailResponseClass.errorClass
-                                            .toString()
-                                    )
                             }
                         }
-                    })
+                    }
+                })
         )
     }
 }

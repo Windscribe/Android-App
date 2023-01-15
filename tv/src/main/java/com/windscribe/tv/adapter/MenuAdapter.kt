@@ -58,7 +58,7 @@ class MenuAdapter(menuItems: List<String>, currentlySelectItem: String) :
     fun setCurrentlySelectItem(currentlySelectItem: String) {
         this.currentlySelectItem = currentlySelectItem
         notifyDataSetChanged()
-        listener!!.onItemSelected(currentlySelectItem)
+        listener?.onItemSelected(currentlySelectItem)
     }
 
     fun setListener(listener: MenuItemSelectListener?) {
