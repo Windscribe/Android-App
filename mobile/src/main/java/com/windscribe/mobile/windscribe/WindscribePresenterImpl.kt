@@ -55,6 +55,7 @@ import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import com.windscribe.vpn.localdatabase.tables.WindNotification
 import com.windscribe.vpn.model.User
+import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.serverlist.entity.*
 import com.windscribe.vpn.serverlist.interfaces.ListViewClickListener
 import com.windscribe.vpn.serverlist.sort.*
@@ -514,28 +515,30 @@ class WindscribePresenterImpl @Inject constructor(
                                 if (regions.size > 0) {
                                     logger.debug("Setting static ip adapter with " + regions.size + " items.")
                                     staticRegionAdapter = StaticRegionAdapter(
-                                            regions, serverListData,
-                                            this@WindscribePresenterImpl
+                                        regions, serverListData, this@WindscribePresenterImpl
                                     )
-                                    windscribeView.setStaticRegionAdapter(staticRegionAdapter!!)
+                                    staticRegionAdapter?.let {
+                                        windscribeView.setStaticRegionAdapter(it)
+                                    }
                                     var deviceName = ""
                                     if (regions[0].deviceName != null) {
                                         deviceName = regions[0].deviceName
                                     }
                                     windscribeView.showStaticIpAdapterLoadError(
-                                            "",
-                                            interactor.getResourceString(R.string.add_static_ip),
-                                            deviceName
+                                        "",
+                                        interactor.getResourceString(R.string.add_static_ip),
+                                        deviceName
                                     )
                                 } else {
-                                    if (staticRegionAdapter != null) {
-                                        staticRegionAdapter!!.setStaticIpList(null)
-                                        staticRegionAdapter!!.notifyDataSetChanged()
+                                    staticRegionAdapter?.let { staticRegionAdapter ->
+                                        staticRegionAdapter.setStaticIpList(null)
+                                        staticRegionAdapter.notifyDataSetChanged()
                                     }
                                     logger.debug(if (staticRegionAdapter != null) "Removing static ip adapter." else "Setting no static ip error.")
                                     windscribeView.showStaticIpAdapterLoadError(
-                                            "No Static IP's",
-                                            interactor.getResourceString(R.string.add_static_ip), ""
+                                        "No Static IP's",
+                                        interactor.getResourceString(R.string.add_static_ip),
+                                        ""
                                     )
                                 }
                                 checkSelectedLocationForChange()
@@ -626,10 +629,12 @@ class WindscribePresenterImpl @Inject constructor(
             lastVPNState = vpnState.status
             logger.info(String.format("New Connection State: %s", lastVPNState.name))
             when (vpnState.status) {
-                VPNState.Status.Connected -> if (vpnState.ip != null) {
-                    onVpnIpReceived(vpnState.ip)
-                } else {
-                    onVpnIpReceived("--.--.--.--")
+                VPNState.Status.Connected -> {
+                    vpnState.ip?.let {
+                        onVpnIpReceived(it)
+                    } ?: kotlin.run {
+                        onVpnIpReceived("--.--.--.--")
+                    }
                 }
                 VPNState.Status.Connecting -> onVPNConnecting()
                 VPNState.Status.Disconnected -> onVPNDisconnected()
@@ -804,23 +809,20 @@ class WindscribePresenterImpl @Inject constructor(
         logger.debug("Network Info updated.")
         networkInformation = networkInfo
         if (networkInformation != null && userReload) {
-            if (!networkInformation!!.isAutoSecureOn) {
+            if (networkInformation?.isAutoSecureOn != true) {
                 logger.debug("Setting closed Preferred layout.")
                 windscribeView.setNetworkLayout(
-                        networkInformation,
-                        NetworkLayoutState.OPEN_1, false
+                    networkInformation, NetworkLayoutState.OPEN_1, false
                 )
-            } else if (!networkInformation!!.isPreferredOn) {
+            } else if (networkInformation?.isPreferredOn != true) {
                 logger.debug("Setting open 2 Preferred layout.")
                 windscribeView.setNetworkLayout(
-                        networkInformation,
-                        NetworkLayoutState.OPEN_2, false
+                    networkInformation, NetworkLayoutState.OPEN_2, false
                 )
             } else {
                 logger.debug("Setting open 3 Preferred layout.")
                 windscribeView.setNetworkLayout(
-                    networkInformation,
-                    NetworkLayoutState.OPEN_3, false
+                    networkInformation, NetworkLayoutState.OPEN_3, false
                 )
             }
         } else {
@@ -854,12 +856,9 @@ class WindscribePresenterImpl @Inject constructor(
             if (networkInformation != null && connectionPreference &&
                 WindUtilities.getSourceTypeBlocking() !== SelectedLocationType.CustomConfiguredProfile
             ) {
-                if (isNetworkInfoChanged && networkInformation!!.isAutoSecureOn && networkInformation!!
-                                .isPreferredOn
-                ) {
+                if (isNetworkInfoChanged && (networkInformation?.isAutoSecureOn == true) && networkInformation?.isPreferredOn == true) {
                     if (interactor.getVpnConnectionStateManager().isVPNConnected()) {
-                        interactor.getAppPreferenceInterface().globalUserConnectionPreference =
-                            true
+                        interactor.getAppPreferenceInterface().globalUserConnectionPreference = true
                         logger.debug("Preferred protocol and port info change Now connecting.")
                         interactor.getMainScope().launch {
                             interactor.getAutoConnectionManager().connectInForeground()
@@ -1339,16 +1338,18 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun onSearchButtonClicked() {
-        if (adapter != null && adapter!!.groups != null) {
-            val searchGroups = adapter!!.groupsList
-            if (streamingNodeAdapter != null && streamingNodeAdapter!!.groups != null) {
-                searchGroups.addAll(streamingNodeAdapter!!.groupsList)
-            }
-            windscribeView.setupSearchLayout(
+        adapter?.let { adapter ->
+            adapter.groups?.let {
+                val searchGroups = adapter.groupsList
+                streamingNodeAdapter?.groupsList?.let { groupsList ->
+                    searchGroups.addAll(groupsList)
+                }
+                windscribeView.setupSearchLayout(
                     searchGroups,
-                    adapter!!.serverListData,
+                    adapter.serverListData,
                     this@WindscribePresenterImpl
-            )
+                )
+            }
         }
     }
 
@@ -1388,10 +1389,9 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun onShowLocationHealthChanged() {
-        if (adapter != null) {
-            val dataDetails = adapter!!.serverListData
-            dataDetails
-                .setShowLocationHealth(interactor.getAppPreferenceInterface().isShowLocationHealthEnabled)
+        adapter?.let {
+            val dataDetails = it.serverListData
+            dataDetails.setShowLocationHealth(interactor.getAppPreferenceInterface().isShowLocationHealthEnabled)
             updateServerListData(dataDetails)
         }
     }
@@ -1484,17 +1484,15 @@ class WindscribePresenterImpl @Inject constructor(
         )
     }
 
-    private fun onVpnIpReceived(ip: String?) {
+    private fun onVpnIpReceived(ip: String) {
         logger.info("Connection with the server is established.")
         connectingFromServerList = false
         interactor.getAppPreferenceInterface().isReconnecting = false
-        windscribeView.setIpAddress(ip!!.trim { it <= ' ' })
+        windscribeView.setIpAddress(ip.trim { it <= ' ' })
         windscribeView.performConfirmConnectionHapticFeedback()
         interactor.getCompositeDisposable().add(
-                getSavedLocation()
-                        .filter { interactor.getVpnConnectionStateManager().isVPNActive() }
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
+            getSavedLocation().filter { interactor.getVpnConnectionStateManager().isVPNActive() }
+                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                         .subscribe({ location: LastSelectedLocation -> onLastSelectedLocationLoaded(location) }) { throwable: Throwable ->
                             onLastSelectedLocationLoadFailed(
                                     throwable
@@ -1602,12 +1600,9 @@ class WindscribePresenterImpl @Inject constructor(
                                             appLogSubmissionResponse: GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
                                     ) {
                                         windscribeView.hideProgressView()
-                                        if (appLogSubmissionResponse.dataClass != null &&
-                                                appLogSubmissionResponse.dataClass!!.isSuccessful
-                                        ) {
-                                            windscribeView.showToast("Log sent successfully")
-                                        } else {
-                                            windscribeView.showToast("Error submitting log.")
+                                        when (appLogSubmissionResponse.callResult<GenericSuccess>()) {
+                                            is CallResult.Error -> windscribeView.showToast("Error submitting log.")
+                                            is CallResult.Success -> windscribeView.showToast("Log sent successfully")
                                         }
                                     }
                                 })
@@ -1740,23 +1735,17 @@ class WindscribePresenterImpl @Inject constructor(
         try {
             WindUtilities.getNetworkName()
             if (windscribeView.networkLayoutState === NetworkLayoutState.CLOSED) {
-                if (!networkInformation!!.isAutoSecureOn) {
-                    windscribeView
-                            .setNetworkLayout(
-                                    networkInformation, NetworkLayoutState.OPEN_1,
-                                    false
-                            )
-                } else if (!networkInformation!!.isPreferredOn) {
-                    windscribeView
-                            .setNetworkLayout(
-                                    networkInformation, NetworkLayoutState.OPEN_2,
-                                    false
-                            )
+                if (networkInformation?.isAutoSecureOn != true) {
+                    windscribeView.setNetworkLayout(
+                            networkInformation, NetworkLayoutState.OPEN_1, false
+                        )
+                } else if (networkInformation?.isPreferredOn != true) {
+                    windscribeView.setNetworkLayout(
+                            networkInformation, NetworkLayoutState.OPEN_2, false
+                        )
                 } else {
-                    windscribeView
-                            .setNetworkLayout(
-                                    networkInformation, NetworkLayoutState.OPEN_3,
-                                    false
+                    windscribeView.setNetworkLayout(
+                            networkInformation, NetworkLayoutState.OPEN_3, false
                             )
                 }
             } else {
@@ -1853,10 +1842,12 @@ class WindscribePresenterImpl @Inject constructor(
                                         DisposableSingleObserver<Pair<List<PingTime>, CityAndRegion>>() {
                                     override fun onError(e: Throwable) {}
                                     override fun onSuccess(pair: Pair<List<PingTime>, CityAndRegion>) {
-                                        val serverListData = adapter!!.serverListData
-                                        serverListData.pingTimes = pair.first
-                                        serverListData.bestLocation = pair.second
-                                        updateServerListData(serverListData)
+                                        adapter?.let {
+                                            val serverListData = it.serverListData
+                                            serverListData.pingTimes = pair.first
+                                            serverListData.bestLocation = pair.second
+                                            updateServerListData(serverListData)
+                                        }
                                     }
                                 })
                 )
@@ -1985,8 +1976,10 @@ class WindscribePresenterImpl @Inject constructor(
 
         // Check Network security
         val whiteListOverride = interactor.getAppPreferenceInterface().whitelistOverride
-        if (networkInformation != null && !networkInformation!!.isAutoSecureOn && !whiteListOverride) {
-            interactor.getAppPreferenceInterface().whitelistOverride = true
+        networkInformation?.let {
+            if (!it.isAutoSecureOn && !whiteListOverride) {
+                interactor.getAppPreferenceInterface().whitelistOverride = true
+            }
         }
         if (serverStatus == NetworkKeyConstants.SERVER_STATUS_TEMPORARILY_UNAVAILABLE) {
             logger.info("Error: Server is temporary unavailable.")
@@ -2321,8 +2314,7 @@ class WindscribePresenterImpl @Inject constructor(
         get() {
             logger.debug(interactor.getAppPreferenceInterface().selectedProtocol)
             logger.debug(networkInformation.toString())
-            return (interactor.getAppPreferenceInterface().selectedProtocol != networkInformation!!.protocol) or
-                    (interactor.getAppPreferenceInterface().selectedPort != networkInformation!!.port)
+            return (interactor.getAppPreferenceInterface().selectedProtocol != networkInformation?.protocol) or (interactor.getAppPreferenceInterface().selectedPort != networkInformation?.port)
         }
     private val isServerPingAllowed: Boolean
         get() {
@@ -2468,13 +2460,17 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.showToast(message)
         logger.debug("Resetting list adapters.")
         adapter?.serverListData?.favourites = favourites
-        val dataDetails = adapter!!.serverListData
+        val dataDetails = adapter?.serverListData
         adapter?.serverListData = dataDetails
         streamingNodeAdapter?.serverListData = dataDetails
         adapter?.notifyDataSetChanged()
-        streamingNodeAdapter!!.notifyDataSetChanged()
-        setFavouriteServerView(dataDetails)
-        windscribeView.updateSearchAdapter(adapter!!.serverListData)
+        streamingNodeAdapter?.notifyDataSetChanged()
+        dataDetails?.let {
+            setFavouriteServerView(dataDetails)
+        }
+        adapter?.let {
+            windscribeView.updateSearchAdapter(it.serverListData)
+        }
     }
 
     private fun setAllServerView(
@@ -2635,7 +2631,7 @@ class WindscribePresenterImpl @Inject constructor(
         }
         if (streamingNodeAdapter != null) {
             streamingNodeAdapter?.serverListData = serverListData
-            streamingNodeAdapter!!.notifyDataSetChanged()
+            streamingNodeAdapter?.notifyDataSetChanged()
         }
         if (staticRegionAdapter != null) {
             staticRegionAdapter?.setDataDetails(serverListData)

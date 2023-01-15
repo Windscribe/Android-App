@@ -113,7 +113,7 @@ class WelcomeFragment : Fragment(), OnPageChangeListener {
                             if (mViewPager.isFakeDragging) {
                                 mViewPager.endFakeDrag()
                             }
-                            if (mViewPager.currentItem == pagerAdapter!!.count - 1) {
+                            if (mViewPager.currentItem == (pagerAdapter?.count ?: 0) - 1) {
                                 slideLeft = false
                                 mViewPager.currentItem = 0
                             } else if (mViewPager.currentItem == 0) {
