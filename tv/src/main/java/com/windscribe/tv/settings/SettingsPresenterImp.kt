@@ -313,21 +313,21 @@ class SettingsPresenterImp @Inject constructor(
                             appLogSubmissionResponse: GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
                         ) {
                             settingView.hideProgress()
-                            if (appLogSubmissionResponse.dataClass != null &&
-                                appLogSubmissionResponse.dataClass!!.isSuccessful
-                            ) {
+                            if (appLogSubmissionResponse.dataClass?.isSuccessful == true) {
                                 settingView.showToast(
                                     interactor.getResourceString(R.string.app_log_submitted)
                                 )
                             } else if (appLogSubmissionResponse.errorClass != null) {
-                                settingView.showToast(
-                                    SessionErrorHandler.instance
-                                        .getErrorMessage(appLogSubmissionResponse.errorClass!!)
-                                )
+                                appLogSubmissionResponse.errorClass?.let {
+                                    settingView.showToast(
+                                        SessionErrorHandler.instance.getErrorMessage(
+                                            it
+                                        )
+                                    )
+                                }
                             } else {
                                 settingView.showToast(
-                                    interactor
-                                        .getResourceString(R.string.log_submission_failed)
+                                    interactor.getResourceString(R.string.log_submission_failed)
                                 )
                             }
                         }
@@ -608,10 +608,11 @@ class SettingsPresenterImp @Inject constructor(
                     override fun onSuccess(packages: List<InstalledAppsData?>) {
                         settingView.hideProgress()
                         installedAppsAdapter = InstalledAppsAdapter(
-                            installedAppList,
-                            this@SettingsPresenterImp
+                            installedAppList, this@SettingsPresenterImp
                         )
-                        settingView.setupAppsAdapter(installedAppsAdapter!!)
+                        installedAppsAdapter?.let {
+                            settingView.setupAppsAdapter(it)
+                        }
                     }
                 })
         )

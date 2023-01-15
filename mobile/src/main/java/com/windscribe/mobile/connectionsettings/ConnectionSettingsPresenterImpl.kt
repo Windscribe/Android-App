@@ -410,11 +410,13 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
                     protocols.add(portMap.heading)
                 }
                 selectedPortMap = selectedPortMap ?: portMapResponse.portmap[0]
-                connSettingsView.setupProtocolAdapter(
-                    selectedPortMap!!.heading,
-                    protocols.toTypedArray()
-                )
-                setPortMapAdapter(selectedPortMap.heading)
+                if (selectedPortMap != null) {
+                    connSettingsView.setupProtocolAdapter(
+                        selectedPortMap.heading,
+                        protocols.toTypedArray()
+                    )
+                    setPortMapAdapter(selectedPortMap.heading)
+                }
             }
         })
     }// check network first
@@ -429,7 +431,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
             }
             val manager = appContext
                 .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            if (manager.activeNetworkInfo == null || !manager.activeNetworkInfo!!.isConnected) {
+            if (manager.activeNetworkInfo == null || manager.activeNetworkInfo?.isConnected != true) {
                 connSettingsView.showToast("No Network Detected")
                 return
             }
@@ -443,7 +445,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
             } else {
                 for (network in networks) {
                     val networkInfo = manager.activeNetworkInfo
-                    if (networkInfo!!.isConnected) {
+                    if (networkInfo?.isConnected == true) {
                         prop = manager.getLinkProperties(network)
                     }
                 }

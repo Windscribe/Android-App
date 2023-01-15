@@ -174,7 +174,7 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Alway
             }
         }
         val decoyTrafficView = decoyTrafficToggleView.childView as DecoyTrafficView?
-        decoyTrafficView!!.delegate = object : DecoyTrafficView.Delegate {
+        decoyTrafficView?.delegate = object : DecoyTrafficView.Delegate {
             override fun onDecoyTrafficVolumeChanged(volume: String) {
                 presenter.onFakeTrafficVolumeSelected(volume)
             }
@@ -193,7 +193,7 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Alway
             }
         }
         val connectionModeView = connectionModeDropDownView.childView as ConnectionModeView?
-        connectionModeView!!.delegate = object : ConnectionModeView.Delegate {
+        connectionModeView?.delegate = object : ConnectionModeView.Delegate {
             override fun onProtocolSelected(protocol: String) {
                 presenter.onProtocolSelected(protocol)
             }

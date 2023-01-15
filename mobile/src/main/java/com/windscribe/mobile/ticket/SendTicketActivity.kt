@@ -194,8 +194,10 @@ class SendTicketActivity : BaseActivity(), SendTicketView, TextWatcher {
 
     private fun hideKeyBoard() {
         try {
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
+            currentFocus?.windowToken?.let {
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(it, 0)
+            }
         } catch (ignored: Exception) {
         }
     }

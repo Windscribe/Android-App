@@ -17,11 +17,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
-import butterknife.OnFocusChange
-import butterknife.OnTextChanged
+import butterknife.*
 import com.windscribe.tv.R
 
 class LoginFragment : Fragment(), WelcomeActivityCallback {
@@ -190,7 +186,7 @@ class LoginFragment : Fragment(), WelcomeActivityCallback {
     @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.forgotPassword)
     fun onForgotPasswordButtonClick() {
-        callBack!!.onForgotPasswordClick()
+        callBack?.onForgotPasswordClick()
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -216,12 +212,14 @@ class LoginFragment : Fragment(), WelcomeActivityCallback {
     @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.show_password)
     fun onShowPasswordButtonClick() {
-        if (showPasswordView?.isChecked == true) {
-            passwordEditText?.transformationMethod = null
-        } else {
-            passwordEditText?.transformationMethod = PasswordTransformationMethod()
+        passwordEditText?.let {
+            if (showPasswordView?.isChecked == true) {
+                it.transformationMethod = null
+            } else {
+                it.transformationMethod = PasswordTransformationMethod()
+            }
+            it.setSelection(it.text.length)
         }
-        passwordEditText?.setSelection(passwordEditText!!.text.length)
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -246,7 +244,10 @@ class LoginFragment : Fragment(), WelcomeActivityCallback {
         )
         backButton?.setTextColor(if (backButton?.hasFocus() == true) focusColor else normalColor)
         forgotPasswordButton?.setTextColor(if (forgotPasswordButton?.hasFocus() == true) focusColor else normalColor)
-        showPasswordView?.setTextColor(if (showPasswordView!!.hasFocus()) focusColor else normalColor)
-        showPasswordView?.buttonTintList = ColorStateList.valueOf(if (showPasswordView?.hasFocus() == true) focusColor else normalColor)
+        showPasswordView?.let {
+            it.setTextColor(if (it.hasFocus()) focusColor else normalColor)
+            it.buttonTintList =
+                ColorStateList.valueOf(if (it.hasFocus()) focusColor else normalColor)
+        }
     }
 }

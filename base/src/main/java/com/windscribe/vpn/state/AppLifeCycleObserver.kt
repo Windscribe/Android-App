@@ -4,18 +4,14 @@
 
 package com.windscribe.vpn.state
 
-import android.os.Build
-import android.os.Build.VERSION
 import androidx.lifecycle.Lifecycle.Event.*
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
-import com.windscribe.vpn.R.string
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.Windscribe.Companion.applicationScope
 import com.windscribe.vpn.api.ApiCallType
 import com.windscribe.vpn.api.DomainFailOverManager
 import com.windscribe.vpn.api.response.PushNotificationAction
-import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,7 +32,7 @@ class AppLifeCycleObserver @Inject constructor(
 ) :
     LifecycleObserver {
 
-    private val logger = LoggerFactory.getLogger("vpn_")
+    private val logger = LoggerFactory.getLogger("app")
     private val startingFresh = AtomicBoolean(false)
     var overriddenCountryCode: String? = null
     private var _appActivationState = MutableStateFlow(false)
@@ -52,24 +48,21 @@ class AppLifeCycleObserver @Inject constructor(
     @OnLifecycleEvent(ON_CREATE)
     fun createApp() {
         startingFresh.set(true)
-        val logFile = appContext.resources.getString(
-                string.log_file_header,
-                VERSION.SDK_INT, Build.BRAND, Build.DEVICE, Build.MODEL, Build.MANUFACTURER,
-                VERSION.RELEASE, WindUtilities.getVersionCode()
-        )
-        logger.info(logFile)
     }
 
     @OnLifecycleEvent(ON_PAUSE)
     fun pausingApp() {
         isInForeground = false
-        logger.debug("*****App going to background.*****")
         workManager.onAppMovedToBackground()
+        logger.debug("----------App going to background.--------\n")
     }
 
     @OnLifecycleEvent(ON_RESUME)
     fun resumingApp() {
-        if(appContext.vpnConnectionStateManager.isVPNConnected().not()){
+        if (startingFresh.get().not()) {
+            logger.debug("----------------App moved to Foreground.------------\n")
+        }
+        if (appContext.vpnConnectionStateManager.isVPNConnected().not()) {
             logger.debug("Resetting server list country code.")
             overriddenCountryCode = null
         }
@@ -77,11 +70,9 @@ class AppLifeCycleObserver @Inject constructor(
         networkInfoManager.reload()
         if (startingFresh.getAndSet(false)) {
             isInForeground = false
-            logger.debug("App on Start")
             workManager.onAppStart()
         } else {
             isInForeground = true
-            logger.debug("App moved to Foreground.")
             workManager.onAppMovedToForeground()
         }
         applicationScope.launch {

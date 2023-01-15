@@ -29,7 +29,7 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
         logger.info("Received cloud message from: " + remoteMessage.from)
         if (remoteMessage.notification != null) {
-            logger.info("Message Notification Body: " + remoteMessage.notification!!.body)
+            logger.info("Message Notification Body: " + remoteMessage.notification?.body)
         }
         val payload = remoteMessage.data
         if (payload.containsKey("type")) {
