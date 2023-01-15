@@ -10,8 +10,10 @@ import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
+import com.windscribe.vpn.commonutils.ThreadSafeList
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
+import com.windscribe.vpn.exceptions.WindScribeException
 import com.wireguard.config.BadConfigException
 import com.wireguard.config.Config
 import inet.ipaddr.AddressStringException
@@ -42,16 +44,17 @@ object Util {
     fun getSavedLocation(): Single<LastSelectedLocation> {
         return Single.fromCallable {
             try {
-                val file =
-                    ObjectInputStream(Windscribe.appContext.openFileInput(LAST_SELECTED_LOCATION))
-                val obj = file.readObject()
-                if (obj is LastSelectedLocation) {
-                    return@fromCallable obj
-                }
-            } catch (ignored: Exception) {
-                throw Exception()
+                ObjectInputStream(Windscribe.appContext.openFileInput(LAST_SELECTED_LOCATION)).use {
+                        val obj = it.readObject()
+                        if (obj is LastSelectedLocation) {
+                            return@use obj
+                        } else {
+                            throw WindScribeException("Invalid location found.")
+                        }
+                    }
+            } catch (ignored: FileNotFoundException) {
+                throw WindScribeException("No saved location")
             }
-            throw Exception()
         }
     }
 
@@ -175,7 +178,7 @@ object Util {
         return null
     }
 
-    fun getAppSupportedProtocolList(): MutableList<ProtocolInformation> {
+    fun getAppSupportedProtocolList(): ThreadSafeList<ProtocolInformation> {
         val protocol1 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_IKev2,
             PreferencesKeyConstants.DEFAULT_IKEV2_PORT,
@@ -212,7 +215,14 @@ object Util {
             "Wraps your HTTPS traffic with web sockets.",
             ProtocolConnectionStatus.Disconnected
         )
-        return mutableListOf(protocol1, protocol2, protocol3, protocol4, protocol5, protocol6)
+        return ThreadSafeList<ProtocolInformation>().apply {
+            add(protocol1)
+            add(protocol2)
+            add(protocol3)
+            add(protocol4)
+            add(protocol5)
+            add(protocol6)
+        }
     }
 
     fun buildProtocolInformation(

@@ -13,7 +13,6 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.windscribe.tv.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import java.util.ArrayList
 
 class InstalledAppsAdapter(
     mAppsList: List<InstalledAppsData>,
@@ -34,7 +33,7 @@ class InstalledAppsAdapter(
     private val installedAppListener: InstalledAppListener
     private var mAppsList: List<InstalledAppsData>?
     override fun getItemCount(): Int {
-        return if (mAppsList != null) mAppsList!!.size else 0
+        return mAppsList?.size ?: 0
     }
 
     override fun onBindViewHolder(viewHolder: RecyclerView.ViewHolder, i: Int) {

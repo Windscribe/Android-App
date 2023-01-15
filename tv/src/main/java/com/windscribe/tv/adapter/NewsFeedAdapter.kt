@@ -47,9 +47,11 @@ class NewsFeedAdapter(private val mNotificationList: List<WindNotification>?) :
 
         init {
             tvTitle.setOnClickListener {
-                stateArray.clear()
-                stateArray.put(windNotification!!.notificationId, 1)
-                notifyDataSetChanged()
+                windNotification?.let {
+                    stateArray.clear()
+                    stateArray.put(it.notificationId, 1)
+                    notifyDataSetChanged()
+                }
             }
         }
     }

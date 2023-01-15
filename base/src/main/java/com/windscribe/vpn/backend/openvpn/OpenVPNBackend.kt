@@ -158,6 +158,6 @@ class OpenVPNBackend(
     }
 
     fun protect(fd: Int): Boolean {
-        return service!!.protect(fd)
+        return service?.protect(fd) ?: false
     }
 }

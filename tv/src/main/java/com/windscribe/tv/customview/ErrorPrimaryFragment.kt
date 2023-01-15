@@ -26,7 +26,7 @@ class ErrorPrimaryFragment : Fragment() {
 
     @JvmField
     @BindView(R.id.error)
-    var mErrorView: TextView? = null
+    var errorView: TextView? = null
     private var error: String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,8 +45,8 @@ class ErrorPrimaryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        mErrorView!!.text = error
-        closeBtn!!.requestFocus()
+        errorView?.text = error
+        closeBtn?.requestFocus()
     }
 
     fun add(error: String?, activity: AppCompatActivity, container: Int, addToBackStack: Boolean) {

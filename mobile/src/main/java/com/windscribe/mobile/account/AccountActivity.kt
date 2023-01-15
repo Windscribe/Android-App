@@ -351,22 +351,22 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
         editText.inputType = InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
         editText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(editable: Editable) {
-                if (editable.length == 9 && alertDialog != null) {
-                    alertDialog!!.getButton(DialogInterface.BUTTON_POSITIVE).performClick()
+                if (editable.length == 9) {
+                    alertDialog?.getButton(DialogInterface.BUTTON_POSITIVE)?.performClick()
                 }
             }
 
             override fun beforeTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                if (editText.text != null) {
+                editText?.text?.let {
                     val replaceIndex = editText.selectionEnd
                     if (replaceIndex == 4 && start == 3) {
                         editText.setText(String.format("%s-", editText.text.toString()))
-                        editText.setSelection(editText.text!!.length)
+                        editText.setSelection(it.length)
                     }
                     if (replaceIndex == 5 && s[s.length - 1] != '-') {
-                        editText.text!!.insert(4, "-")
-                        editText.setSelection(editText.text!!.length)
+                        it.insert(4, "-")
+                        editText.setSelection(it.length)
                     }
                 }
             }

@@ -127,21 +127,17 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         }
     }
 
-    override fun onContinuePlanClick(productDetails: ProductDetails?, selectedIndex: Int) {
-        if (productDetails != null) {
-            logger.info("User clicked on plan item...")
-            selectedProductDetails = productDetails
-            val builder = ProductDetailsParams.newBuilder()
-            builder.setProductDetails(productDetails)
-            if (productDetails.subscriptionOfferDetails != null) {
-                val offerToken = productDetails
-                    .subscriptionOfferDetails!![selectedIndex]
-                    .offerToken
-                builder.setOfferToken(offerToken)
-            }
-            val productDetailsParamsList = ImmutableList.of(builder.build())
-            presenter.onMonthlyItemClicked(productDetailsParamsList)
+    override fun onContinuePlanClick(productDetails: ProductDetails, selectedIndex: Int) {
+        logger.info("User clicked on plan item...")
+        selectedProductDetails = productDetails
+        val builder = ProductDetailsParams.newBuilder()
+        builder.setProductDetails(productDetails)
+        productDetails.subscriptionOfferDetails?.let {
+            val offerToken = it[selectedIndex].offerToken
+            builder.setOfferToken(offerToken)
         }
+        val productDetailsParamsList = ImmutableList.of(builder.build())
+        presenter.onMonthlyItemClicked(productDetailsParamsList)
     }
 
     override fun onContinuePlanClick(selectedSku: Product) {
@@ -155,7 +151,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
 
     override fun onPurchaseSuccessful(purchases: List<Purchase>) {
         val purchase = purchases[0]
-        if (selectedProductDetails != null && selectedProductDetails!!.oneTimePurchaseOfferDetails != null) {
+        if (selectedProductDetails?.oneTimePurchaseOfferDetails != null) {
             googleBillingManager?.InAppConsume(purchase)
         } else {
             googleBillingManager?.subscriptionConsume(purchase)
@@ -171,7 +167,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         logger.info("User clicked on continue free...")
         presenter.onContinueFreeClick()
     }
-    
+
     override fun onPolicyClick() {}
 
     override fun onTermsClick() {}

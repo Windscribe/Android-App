@@ -43,6 +43,7 @@ import com.windscribe.vpn.exceptions.InvalidSessionException
 import com.windscribe.vpn.exceptions.UnknownException
 import com.windscribe.vpn.localdatabase.tables.UserStatusTable
 import com.windscribe.vpn.model.User
+import com.windscribe.vpn.repository.CallResult
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.SingleSource
@@ -272,21 +273,21 @@ class UpgradePresenterImpl @Inject constructor(
                         }
 
                         override fun onSuccess(paymentVerificationResponse: GenericResponseClass<GenericSuccess?, ApiErrorResponse?>) {
-                            when {
-                                paymentVerificationResponse.dataClass != null -> {
+                            when (val result =
+                                paymentVerificationResponse.callResult<GenericSuccess>()) {
+                                is CallResult.Error -> showBillingError(
+                                    result.code,
+                                    result.errorMessage
+                                )
+                                is CallResult.Success -> {
                                     logger.info("Payment verification successful. ")
-                                    interactor.getAppPreferenceInterface().removeResponseData(PURCHASED_ITEM)
+                                    interactor.getAppPreferenceInterface()
+                                        .removeResponseData(PURCHASED_ITEM)
                                     // Item purchased and verified
                                     logger.info("Setting item purchased to null & upgrading user account")
                                     mPurchase = null
                                     upgradeUserAccount()
                                     setPurchaseFlowState(PurchaseState.FINISHED)
-                                }
-                                paymentVerificationResponse.errorClass != null -> {
-                                    showBillingError(paymentVerificationResponse.errorClass)
-                                }
-                                else -> {
-                                    showBillingError(ApiErrorResponse())
                                 }
                             }
                         }
@@ -421,24 +422,16 @@ class UpgradePresenterImpl @Inject constructor(
                         override fun onSuccess(
                             userSessionResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>
                         ) {
-                            if (userSessionResponse.dataClass != null) {
-                                interactor.getAppPreferenceInterface()
-                                    .saveResponseStringData(
-                                        PreferencesKeyConstants.GET_SESSION,
-                                        Gson().toJson(userSessionResponse.dataClass)
+                            userSessionResponse.dataClass?.let {
+                                interactor.getAppPreferenceInterface().saveResponseStringData(
+                                        PreferencesKeyConstants.GET_SESSION, Gson().toJson(it)
                                     )
-                                upgradeView
-                                    .setEmailStatus(
-                                        userSessionResponse.dataClass!!.userEmail != null,
-                                        userSessionResponse.dataClass!!.emailStatus
-                                            == UserStatusConstants.EMAIL_STATUS_CONFIRMED
-                                    )
-                            } else if (userSessionResponse.errorClass != null) {
-                                // Server responded with error!
-                                logger.debug(
-                                    "Server returned error during get session call." +
-                                        userSessionResponse.errorClass.toString()
+                                upgradeView.setEmailStatus(
+                                    it.userEmail != null,
+                                    it.emailStatus == UserStatusConstants.EMAIL_STATUS_CONFIRMED
                                 )
+                            } ?: userSessionResponse.errorClass?.let {
+                                logger.debug("Server returned error during get session call. $it")
                             }
                         }
                     })
@@ -458,9 +451,9 @@ class UpgradePresenterImpl @Inject constructor(
         notificationAction = pushNotificationAction
     }
 
-    private fun billingResponseToSkuList(billingPlanResponse: BillingPlanResponse?): List<String> {
+    private fun billingResponseToSkuList(billingPlanResponse: BillingPlanResponse): List<String> {
         val inAppSkuList: MutableList<String> = ArrayList()
-        if (billingPlanResponse!!.plansList.size > 0) {
+        if (billingPlanResponse.plansList.size > 0) {
             mobileBillingPlans = billingPlanResponse.plansList
             logger.debug("Getting in app skus from billing plan...")
             for (billingPlan in mobileBillingPlans) {
@@ -537,8 +530,7 @@ class UpgradePresenterImpl @Inject constructor(
                 return appContext.resources.getString(R.string.play_store_updating)
             }
             PURCHASED_ITEM_NULL -> {
-                logger
-                    .debug(
+                logger.debug(
                         """User purchased the item but purchase list returned null.
  User will be shown unknown error. Support please look for the token in the log. Response code: $responseCode"""
                     )
@@ -548,30 +540,41 @@ class UpgradePresenterImpl @Inject constructor(
         return appContext.resources.getString(R.string.unknown_billing_error)
     }
 
+    private fun <D, E> parse(
+        response: GenericResponseClass<D?, E?>,
+        onSuccess: () -> D,
+        onApiError: () -> E,
+        onNoResponse: () -> Unit
+    ) {
+
+    }
+
     private val userSession: Single<UserSessionResponse>
-        get() = interactor.getApiCallManager().getSessionGeneric(null)
-            .flatMap(
+        get() = interactor.getApiCallManager().getSessionGeneric(null).flatMap(
                 Function<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>, SingleSource<UserSessionResponse>> label@{ genericSessionResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> ->
-                    if (genericSessionResponse.dataClass != null) {
-                        return@label Single.fromCallable { genericSessionResponse.dataClass }
-                    } else if (genericSessionResponse.errorClass != null) {
-                        if (genericSessionResponse.errorClass!!.errorCode
-                            == NetworkErrorCodes.ERROR_RESPONSE_SESSION_INVALID
-                        ) {
-                            throw InvalidSessionException("Session request Success: Invalid session.")
-                        } else {
-                            throw GenericApiException(genericSessionResponse.errorClass)
+                    when (val result = genericSessionResponse.callResult<UserSessionResponse>()) {
+                        is CallResult.Error -> {
+                            when (result.code) {
+                                NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA -> {
+                                    throw UnknownException("Unknown exception")
+                                }
+                                NetworkErrorCodes.ERROR_RESPONSE_SESSION_INVALID -> {
+                                    throw InvalidSessionException("Session request Success: Invalid session.")
+                                }
+                                else -> {
+                                    throw GenericApiException(result.errorMessage)
+                                }
+                            }
                         }
-                    } else {
-                        throw UnknownException("Unknown exception")
+                        is CallResult.Success -> return@label Single.fromCallable { genericSessionResponse.dataClass }
                     }
                 }
             )
 
     private fun onBillingResponse(billingPlanResponse: GenericResponseClass<BillingPlanResponse?, ApiErrorResponse?>) {
-        if (billingPlanResponse.dataClass != null) {
+        billingPlanResponse.dataClass?.let {
             logger.debug("Billing plan received. ")
-            val skuList = billingResponseToSkuList(billingPlanResponse.dataClass)
+            val skuList = billingResponseToSkuList(it)
             if (skuList.isNotEmpty()) {
                 if (upgradeView.billingType === UpgradeActivity.BillingType.Amazon) {
                     logger.debug("Querying amazon products")
@@ -589,8 +592,7 @@ class UpgradePresenterImpl @Inject constructor(
                         products.add(
                             QueryProductDetailsParams.Product.newBuilder()
                                 .setProductType(planType)
-                                .setProductId(sku)
-                                .build()
+                                .setProductId(sku).build()
                         )
                     }
                     upgradeView.querySkuDetails(products)
@@ -600,15 +602,13 @@ class UpgradePresenterImpl @Inject constructor(
             } else {
                 upgradeView.showBillingErrorDialog("Failed to get billing plans check your network connection.")
             }
-        } else if (billingPlanResponse.errorClass != null) {
+        } ?: billingPlanResponse.errorClass?.let {
             logger.debug(
                 String.format(
-                    "Billing response error: %s",
-                    billingPlanResponse.errorClass!!
-                        .errorMessage
+                    "Billing response error: %s", it.errorMessage
                 )
             )
-            upgradeView.showBillingErrorDialog(billingPlanResponse.errorClass!!.errorMessage)
+            upgradeView.showBillingErrorDialog(it.errorMessage)
         }
     }
 
@@ -651,22 +651,22 @@ class UpgradePresenterImpl @Inject constructor(
 
     private fun postPromoPaymentConfirmation(): Completable {
         val paymentPromoConfirmationMap: MutableMap<String, String> = HashMap()
-        paymentPromoConfirmationMap[PAY_ID] = notificationAction!!.pcpID
+        notificationAction?.let {
+            paymentPromoConfirmationMap[PAY_ID] = it.pcpID
+        }
         return interactor.getApiCallManager()
             .postPromoPaymentConfirmation(paymentPromoConfirmationMap)
             .onErrorReturn { GenericResponseClass(null, null) }
             .flatMapCompletable { response: GenericResponseClass<GenericSuccess?, ApiErrorResponse?> ->
                 Completable.fromAction {
-                    if (response.errorClass != null) {
+                    response.dataClass?.let {
+                        logger.debug("Successfully posted promo payment confirmation.")
+                    } ?: response.errorClass?.let {
                         logger.debug(
                             String.format(
-                                "Error posting promo payment confirmation : %s",
-                                response.errorClass!!.errorMessage
+                                "Error posting promo payment confirmation : %s", it.errorMessage
                             )
                         )
-                    }
-                    if (response.dataClass != null) {
-                        logger.debug("Successfully posted promo payment confirmation.")
                     }
                 }
             }
@@ -679,10 +679,10 @@ class UpgradePresenterImpl @Inject constructor(
             .saveResponseStringData(AMAZON_PURCHASED_ITEM, purchaseJson)
     }
 
-    private fun showBillingError(errorResponse: ApiErrorResponse?) {
-        logger.info(errorResponse.toString())
-        upgradeView.showBillingErrorDialog(errorResponse!!.errorMessage)
-        if (errorResponse.errorCode == 4005) {
+    private fun showBillingError(errorCode: Int, error: String) {
+        logger.info(error)
+        upgradeView.showBillingErrorDialog(error)
+        if (errorCode == 4005) {
             logger.debug("Purchase flow: Token was already verified once. Ignore")
             interactor.getAppPreferenceInterface()
                 .savePurchaseFlowState(PurchaseState.FINISHED.name)
@@ -691,8 +691,7 @@ class UpgradePresenterImpl @Inject constructor(
 
     private fun updateUserStatus(): Completable {
         return userSession.flatMapCompletable { userSessionResponse: UserSessionResponse ->
-            interactor
-                .insertOrUpdateUserStatus(
+            interactor.insertOrUpdateUserStatus(
                     UserStatusTable(
                         userSessionResponse.userName,
                         userSessionResponse.isPremium,
@@ -776,26 +775,24 @@ class UpgradePresenterImpl @Inject constructor(
                         }
 
                         override fun onSuccess(paymentVerificationResponse: GenericResponseClass<GenericSuccess?, ApiErrorResponse?>) {
-                            when {
-                                paymentVerificationResponse.dataClass != null -> {
+                            when (val result =
+                                paymentVerificationResponse.callResult<GenericSuccess>()) {
+                                is CallResult.Error -> showBillingError(
+                                    result.code,
+                                    result.errorMessage
+                                )
+                                is CallResult.Success -> {
                                     logger.info("Payment verification successful.")
                                     interactor.getAppPreferenceInterface()
-                                            .removeResponseData(AMAZON_PURCHASED_ITEM)
+                                        .removeResponseData(AMAZON_PURCHASED_ITEM)
                                     // Item purchased and verified
                                     logger.info("Setting item purchased to null & upgrading user account")
                                     mPurchase = null
                                     PurchasingService.notifyFulfillment(
-                                            amazonPurchase.receiptId,
-                                            FulfillmentResult.FULFILLED
+                                        amazonPurchase.receiptId, FulfillmentResult.FULFILLED
                                     )
                                     upgradeUserAccount()
                                     setPurchaseFlowState(PurchaseState.FINISHED)
-                                }
-                                paymentVerificationResponse.errorClass != null -> {
-                                    showBillingError(paymentVerificationResponse.errorClass)
-                                }
-                                else -> {
-                                    showBillingError(ApiErrorResponse())
                                 }
                             }
                         }

@@ -4,10 +4,14 @@
 
 package com.windscribe.vpn.state
 
+import android.os.Build
+import com.windscribe.vpn.R
+import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connected
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
+import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.repository.ConnectionDataRepository
 import com.windscribe.vpn.repository.UserRepository
 import dagger.Lazy
@@ -17,6 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Singleton
 
 @Singleton
@@ -48,9 +53,25 @@ class VPNConnectionStateManager(val scope: CoroutineScope, val connectionDataRep
     }
 
     init {
+        val start = AtomicBoolean(false)
         scope.launch {
             state.collectLatest {
-                logger.debug("VPN connection state changed to ${it.status}")
+                if (start.getAndSet(true)) {
+                    logger.debug("VPN state changed to ${it.status}")
+                } else {
+                    val logFile = Windscribe.appContext.resources.getString(
+                        R.string.log_file_header,
+                        Build.VERSION.SDK_INT,
+                        Build.BRAND,
+                        Build.DEVICE,
+                        Build.MODEL,
+                        Build.MANUFACTURER,
+                        Build.VERSION.RELEASE,
+                        WindUtilities.getVersionCode()
+                    )
+                    logger.info(logFile)
+                    logger.debug("VPN state initialized with ${it.status}")
+                }
             }
         }
     }
