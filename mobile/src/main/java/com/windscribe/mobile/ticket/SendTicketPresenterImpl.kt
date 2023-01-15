@@ -12,7 +12,9 @@ import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.api.response.QueryType
 import com.windscribe.vpn.api.response.TicketResponse
+import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.repository.CallResult
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
@@ -27,8 +29,8 @@ class SendTicketPresenterImpl @Inject constructor(
         sendTicketView.setActivityTitle(interactor.getResourceString(R.string.send_ticket))
         sendTicketView.setQueryTypeSpinner()
         sendTicketView.addTextChangeListener()
-        if (interactor.getUserRepository().user.value != null && interactor.getUserRepository().user.value!!.email != null) {
-            sendTicketView.setEmail(interactor.getUserRepository().user.value!!.email!!)
+        interactor.getUserRepository().user.value?.email?.let {
+            sendTicketView.setEmail(it)
         }
     }
 
@@ -65,14 +67,15 @@ class SendTicketPresenterImpl @Inject constructor(
                                 response: GenericResponseClass<TicketResponse?, ApiErrorResponse?>
                             ) {
                                 sendTicketView.setProgressView(false)
-                                if (response.dataClass != null) {
-                                    sendTicketView.setSuccessLayout(
-                                        "Sweet, we’ll get back to you as soon as one of our agents is back from lunch."
-                                    )
-                                } else if (response.errorClass != null) {
-                                    sendTicketView.setErrorLayout(response.errorClass!!.errorMessage)
-                                } else {
-                                    sendTicketView.setErrorLayout("Failed to submit ticket. Try again.")
+                                when (val result = response.callResult<TicketResponse>()) {
+                                    is CallResult.Error -> {
+                                        if (result.code == NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA) {
+                                            sendTicketView.setErrorLayout("Failed to submit ticket. Try again.")
+                                        } else {
+                                            sendTicketView.setErrorLayout(result.errorMessage)
+                                        }
+                                    }
+                                    is CallResult.Success -> sendTicketView.setSuccessLayout("Sweet, we’ll get back to you as soon as one of our agents is back from lunch.")
                                 }
                             }
                         })

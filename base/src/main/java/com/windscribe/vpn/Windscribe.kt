@@ -11,7 +11,6 @@ import android.os.Build.VERSION_CODES
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy.Builder
 import android.os.StrictMode.VmPolicy
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -164,7 +163,6 @@ open class Windscribe : MultiDexApplication() {
             val splits = language.split("-")
             Locale(splits[0], splits[1])
         }else{
-            Log.i("sfdsdf", language)
             Locale(language)
         }
     }

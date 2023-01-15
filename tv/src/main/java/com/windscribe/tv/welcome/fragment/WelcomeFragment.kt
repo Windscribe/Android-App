@@ -84,7 +84,7 @@ class WelcomeFragment : Fragment() {
         if (activity == null) {
             return
         }
-        loginButton!!.setTextColor(
+        loginButton?.setTextColor(
             if (loginButton?.hasFocus() == true) requireActivity().resources.getColor(R.color.colorWhite) else requireActivity().resources.getColor(
                 R.color.colorWhite50
             )
