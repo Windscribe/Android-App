@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/tv_login_info_label"
+        style="@style/MenuItemTitle"
+        android:text="@string/info"
+        android:layout_marginStart="@dimen/margin_32"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        style="@style/preferenceRoundedBackground"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_login_info_label"
+        android:padding="0dp"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tv_username_label"
+            style="@style/ExpandableChildLabelText"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_account_username"
+            style="@style/MenuItemLabelHalfOpacity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_username_label"
+            app:layout_constraintBottom_toBottomOf="@id/tv_username_label" />
+
+        <ImageView
+            android:id="@+id/img_username_divider"
+            style="@style/PreferenceDivider"
+            android:layout_marginStart="@dimen/margin_16"
+            android:layout_marginBottom="0dp"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_username_label" />
+
+        <ImageView
+            style="@style/ForwardArrowIcon"
+            android:visibility="gone"
+            android:id="@+id/confirm_email_icon"
+            android:src="@drawable/ic_warning_icon"
+            android:layout_marginEnd="@dimen/margin_8"
+            android:layout_marginStart="@dimen/margin_16"
+            app:layout_constraintBottom_toBottomOf="@id/tv_email_label"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_email_label" />
+
+        <TextView
+            android:id="@+id/tv_email_label"
+            style="@style/ExpandableChildLabelText"
+            android:text="@string/email"
+            app:layout_goneMarginStart="@dimen/reg_16dp"
+            android:layout_marginStart="4dp"
+            android:layout_width="wrap_content"
+            android:gravity="start|center_vertical"
+            android:layout_marginEnd="@dimen/margin_8"
+            app:layout_constraintStart_toEndOf="@id/confirm_email_icon"
+            app:layout_constraintEnd_toStartOf="@id/tv_account_email"
+            app:layout_constraintTop_toBottomOf="@id/tv_username_label" />
+
+        <TextView
+            android:id="@+id/tv_account_email"
+            style="@style/MenuItemLabelHalfOpacity"
+            app:layout_constraintBottom_toBottomOf="@id/tv_email_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="0dp"
+            android:gravity="end|center_vertical"
+            android:singleLine="true"
+            app:layout_constraintStart_toEndOf="@id/tv_email_label"
+            app:layout_constraintTop_toTopOf="@id/tv_email_label" />
+
+        <Space
+            android:visibility="gone"
+            android:id="@+id/bottom_space_login_info"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/margin_16"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_account_email" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/warningContainer"
+            android:visibility="visible"
+            android:layout_height="wrap_content"
+            style="@style/MenuAttentionContainer"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="@dimen/margin_16"
+            android:layout_marginStart="@dimen/margin_16"
+            android:paddingStart="@dimen/reg_16dp"
+            android:paddingEnd="@dimen/reg_16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_email_label"
+            android:layout_marginBottom="@dimen/reg_16dp"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <TextView
+                android:id="@+id/tv_warning"
+                style="@style/MenuAttentionLabel"
+                android:gravity="left|center_vertical"
+                android:text="@string/get_10_gb"
+                android:layout_margin="0dp"
+                android:paddingTop="@dimen/reg_14dp"
+                android:paddingBottom="@dimen/reg_14dp"
+                android:textSize="@dimen/text_size_14"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/resend_email_btn"
+                style="@style/MenuAttentionLabel"
+                android:text="@string/resend"
+                android:fontFamily="@font/ibm_plex_sans_bold"
+                android:textColor="?attr/wdWarningColor"
+                android:layout_margin="0dp"
+                android:textSize="@dimen/text_size_14"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ProgressBar
+                android:id="@+id/img_progress"
+                style="@style/SmallProgressCircle"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

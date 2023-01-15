@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<resources>
+    <!--Colors -->
+    <declare-styleable name="AppearanceMode">
+        <attr name="nodeListBackground" format="color" />
+        <attr name="nodeListGroupTextColorSelected" format="color" />
+        <attr name="nodeListGroupTextColor" format="color" />
+        <attr name="nodeListFlagBackgroundColor" format="color" />
+        <attr name="pingBarColor" format="color" />
+        <attr name="favColor" format="color" />
+        <attr name="navigationStripColor" format="color" />
+        <attr name="dividerHorizontalColor" format="color" />
+        <attr name="navigationStripDividerColor" format="color" />
+        <attr name="bottomBarConnectedColor" format="color" />
+        <attr name="bottomBarConnectingColor" format="color" />
+        <attr name="nodeStrengthTextColor" format="color" />
+        <attr name="nodeStrengthTextBackgroundColor" format="color" />
+        <attr name="notificationBackground" format="color" />
+        <attr name="notificationTextColor" format="color" />
+        <attr name="progressBarColor" format="color" />
+        <attr name="toolBarColorDisConnected" format="color" />
+        <attr name="toolBarColorConnecting" format="color" />
+        <attr name="serverListSearchView" format="color" />
+        <attr name="containerBackground" format="color" />
+        <attr name="backButtonBackgroundColor" format="color" />
+        <attr name="backButtonIconColor" format="color" />
+        <attr name="navBarTitleTextColor" format="color" />
+        <attr name="preferenceIconColor" format="color" />
+        <attr name="preferenceItemLabelColor" format="color" />
+        <attr name="preferenceForwardArrowColor" format="color" />
+        <attr name="preferenceDividerColor" format="color" />
+        <attr name="preferenceItemTitleColor" format="color" />
+        <attr name="preferenceItemLabelTwoColor" format="color" />
+        <attr name="preferenceItemLabelThreeColor" format="color" />
+        <attr name="preferenceItemLabelFiveColor" format="color" />
+        <attr name="debugViewTextColor" format="color" />
+        <attr name="dropDownIconColor" format="color" />
+        <attr name="iconRippleColor" format="color" />
+        <attr name="toggleIconColor" format="color" />
+        <attr name="toggleIconFillColor" format="color" />
+        <attr name="preferenceItemActionColor" format="color" />
+        <attr name="requiredLabelColor" format="color" />
+        <attr name="inputTextHintColor" format="color" />
+        <attr name="inputDescriptionColor" format="color" />
+        <attr name="inputBoxBackground" format="color" />
+        <attr name="largeInputHintColor" format="color" />
+        <attr name="inputTextColor" format="color" />
+        <attr name="continueButtonDisabledBackground" format="color" />
+        <attr name="warningTextColor" format="color" />
+        <attr name="warningTitleColor" format="color" />
+        <attr name="warningIconColor" format="color" />
+        <attr name="noBackgroundButtonTextColor" format="color" />
+        <attr name="searchIconColor" format="color" />
+        <attr name="searchTextColor" format="color" />
+        <attr name="checkMarkDisabledColor" format="color" />
+        <attr name="menuItemTabSelectionMaskColor" format="color" />
+        <attr name="menuItemTabNotSelectedColor" format="color" />
+        <attr name="menuItemTabLabelColor" format="color" />
+        <attr name="overlayContainerBackground" format="color" />
+        <attr name="progressTextColor" format="color" />
+        <attr name="progressBarTint" format="color" />
+        <attr name="pageDescriptionTextColor" format="color" />
+        <attr name="serverListUnderMaintenanceIconColor" format="color" />
+        <attr name="toolTipDialogBackgroundColor" format="color" />
+        <attr name="toolTipDialogTextColor" format="color" />
+        <attr name="menu_edit_background" format="color" />
+        <attr name="wdSecondaryColor" format="color" />
+        <attr name="wdPrimaryColor" format="color" />
+        <attr name="wdPrimaryColor10" format="color" />
+        <attr name="overlayDialogBackgroundColor" format="color" />
+        <attr name="wdPrimaryInvertedColor" format="color" />
+        <attr name="preferencesRoundedBackgroundColor" format="color" />
+        <attr name="wdSecondaryInvertedColor" format="color" />
+        <attr name="wdPrimaryColor25" format="color" />
+        <attr name="wdActionColor" format="color" />
+        <attr name="wdActionColor10" format="color" />
+        <attr name="wdActionColor25" format="color" />
+        <attr name="wdActionColor50" format="color" />
+        <attr name="wdWarningColor" format="color" />
+        <attr name="wdWarningColor10" format="color" />
+        <attr name="wdWarningColor50" format="color" />
+    </declare-styleable>
+    <!--Icons -->
+    <declare-styleable name="DrawableIcon">
+        <attr name="proBadge" format="integer" />
+        <attr name="expand_list_icon" format="integer" />
+        <attr name="construction_list_icon" format="integer" />
+        <attr name="close_list_icon" format="integer" />
+        <attr name="backgroundColorDrawable" format="integer" />
+        <attr name="normalButtonStateDrawable" format="integer" />
+        <attr name="alphaBlueDrawable" format="integer" />
+    </declare-styleable>
+    <declare-styleable name="SingleLinkExplainView">
+        <attr format="string" name="Title" />
+        <attr format="string" name="Description" />
+        <attr format="reference" name="LeftIcon" />
+        <attr format="float" name="RightMargin" />
+    </declare-styleable>
+    <declare-styleable name="ItemLinkView">
+        <attr format="string" name="ItemLinkViewTitle" />
+        <attr format="reference" name="ItemLinkViewLeftIcon" />
+        <attr format="reference" name="ItemLinkViewRightIcon" />
+        <attr name="HideBottomDivider" format="boolean" />
+    </declare-styleable>
+    <declare-styleable name="MultipleLinkExplainView">
+        <attr format="string" name="MultiLinkTitle" />
+        <attr format="string" name="MultiLinkDescription" />
+        <attr format="reference" name="MultiLinkLeftIcon" />
+        <attr format="string" name="FirstItemTitle" />
+        <attr format="string" name="SecondItemTitle" />
+        <attr format="boolean" name="MultipleLinkShowRightIcon" />
+    </declare-styleable>
+
+    <declare-styleable name="ExpandableDropDownView">
+        <attr format="string" name="ExpandableDropDownTitle"/>
+        <attr format="string" name="ExpandableDropDownDescription"/>
+        <attr format="reference" name="ExpandableDropDownLeftIcon"/>
+        <attr format="string" name="ExpandableDropDownChildType"/>
+        <attr format="boolean" name="ExpandableDropDownShowRightIcon"/>
+    </declare-styleable>
+
+    <declare-styleable name="ExpandableToggleView">
+        <attr format="string" name="ExpandableToggleViewTitle"/>
+        <attr format="string" name="ExpandableToggleViewDescription"/>
+        <attr format="string" name="ExpandableToggleViewChildType"/>
+        <attr format="boolean" name="ExpandableToggleShowRightIcon"/>
+        <attr format="boolean" name="ExpandableToggleHideExplainViewOnCollapse"/>
+        <attr format="reference" name="ExpandableToggleViewLeftIcon"/>
+    </declare-styleable>
+
+    <declare-styleable name="DropDownView">
+        <attr format="string" name="DropDownTitle"/>
+        <attr format="reference" name="DropDownLeftIcon"/>
+        <attr format="boolean" name="DropDownShowRightIcon"/>
+        <attr format="reference" name="DropDownDescription"/>
+    </declare-styleable>
+
+    <declare-styleable name="ToggleView">
+        <attr format="string" name="ToggleTitle"/>
+        <attr format="reference" name="ToggleLeftIcon"/>
+        <attr format="boolean" name="ToggleShowRightIcon"/>
+        <attr format="reference" name="ToggleDescription"/>
+    </declare-styleable>
+
+</resources>

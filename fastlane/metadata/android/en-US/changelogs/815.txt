@@ -1,0 +1,4 @@
+Change Log:
+
+1. Get Session call before wg init and connect.
+2. Device Idle state handling.

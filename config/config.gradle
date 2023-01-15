@@ -1,0 +1,50 @@
+/*
+ * Copyright (c) 2021 Windscribe Limited.
+ */
+Properties buildProperties = readPropertiesFile("build.properties")
+Properties signProperties = readPropertiesFile("sign.properties")
+
+android {
+    signingConfigs {
+        release {
+            if(signProperties.containsKey("SIGN_KEY_FILE")){
+                storeFile file(signProperties.getProperty("SIGN_KEY_FILE"))
+                storePassword signProperties.getProperty("SIGN_STORE_PASSWORD")
+                keyAlias signProperties.getProperty("SIGN_KEY_ALIAS")
+                keyPassword signProperties.getProperty("SIGN_KEY_PASSWORD")
+            }
+        }
+    }
+    defaultConfig{
+        buildProperties.entrySet().forEach {
+            if(it.value == "true" || it.value == "false"){
+                buildConfigField "boolean", it.key, "${it.value}"
+            }else{
+                buildConfigField "String", it.key, "\"${it.value}\""
+            }
+        }
+        if(System.getenv().containsKey("DEV")){
+            buildConfigField "boolean", "DEV", "${System.getenv("DEV")}"
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            manifestPlaceholders = [usesCleartextTraffic:"false"]
+        }
+        debug {
+            //Required for mock webserver
+            manifestPlaceholders = [usesCleartextTraffic:"true"]
+        }
+    }
+}
+
+Properties readPropertiesFile(String fileName) {
+    Properties properties = new Properties()
+    File contributorConfig = new File("$rootDir/config/$fileName")
+    if (contributorConfig.exists()) {
+        properties.load(new FileReader(contributorConfig))
+    }
+    return properties
+}
+

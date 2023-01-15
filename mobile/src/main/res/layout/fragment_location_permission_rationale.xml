@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerInParent="true"
+    android:background="@color/colorDeepBlue90">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/img_logo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@null"
+            app:layout_constraintBottom_toTopOf="@id/tv_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:srcCompat="@drawable/ic_attention_icon" />
+
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/padding_32"
+            android:layout_marginLeft="@dimen/padding_32"
+            android:layout_marginRight="@dimen/padding_32"
+            android:layout_marginStart="@dimen/padding_32"
+            android:layout_marginTop="@dimen/padding_32"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="center_horizontal"
+            android:text="@string/location_permission"
+            android:textColor="@color/colorWhite"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/tv_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/img_logo" />
+
+
+        <TextView
+            android:id="@+id/tv_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/padding_32"
+            android:layout_marginLeft="@dimen/padding_32"
+            android:layout_marginRight="@dimen/padding_32"
+            android:layout_marginStart="@dimen/padding_32"
+            android:layout_marginTop="@dimen/padding_16"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="@string/location_permission_for_ssid"
+            android:textColor="@color/colorWhite40"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@+id/tv_ok"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_title" />
+
+        <TextView
+            android:id="@+id/tv_ok"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="68dp"
+            android:layout_marginLeft="68dp"
+            android:layout_marginRight="68dp"
+            android:layout_marginStart="68dp"
+            android:layout_marginTop="@dimen/padding_32"
+            android:background="@drawable/modal_location_permission_states"
+            android:clickable="true"
+            android:focusable="true"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="center"
+            android:maxLines="1"
+            android:paddingBottom="14dp"
+            android:paddingTop="14dp"
+            android:text="@string/go_to_settings"
+            android:textColor="@color/colorDeepBlue95"
+            android:textSize="16sp"
+            app:autoSizeTextType="uniform"
+            app:layout_constraintBottom_toTopOf="@id/tv_cancel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_description" />
+
+
+        <TextView
+            android:id="@+id/tv_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_24"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="center"
+            android:text="@string/cancel"
+            android:textColor="@color/colorWhite40"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_ok" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</RelativeLayout>

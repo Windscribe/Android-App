@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/cl_connection_multiline_container"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:layout_marginStart="@dimen/margin_16"
+    android:layout_marginEnd="@dimen/margin_16"
+    android:paddingStart="@dimen/padding_16"
+    app:layout_constraintTop_toBottomOf="@id/nav_bar"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    android:background="@drawable/preferences_rounded_corner_background"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+        android:id="@+id/network_options_title"
+        style="@style/MenuActionTitle"
+        android:layout_width="0dp"
+        android:layout_marginStart="0dp"
+        android:fontFamily="@font/ibm_plex_sans_bold"
+        android:text="@string/network_options"
+        android:layout_height="@dimen/reg_48dp"
+        android:gravity="left|center_vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/network_options_right_icon"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/network_options_right_icon"
+        style="@style/ForwardArrowIcon"
+        android:layout_marginRight="@dimen/reg_16dp"
+        android:layout_marginEnd="@dimen/reg_16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/network_options_title"
+        app:layout_constraintTop_toTopOf="@id/network_options_title" />
+
+    <ImageView
+        android:id="@+id/network_options_divider"
+        style="@style/PreferenceDivider"
+        app:layout_constraintTop_toBottomOf="@id/network_options_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="0dp"
+        android:layout_marginEnd="0dp" />
+
+    <TextView
+        android:id="@+id/split_tunnel_title"
+        style="@style/MenuActionTitle"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/reg_48dp"
+        android:gravity="left|center_vertical"
+        android:text="@string/split_tunneling"
+        android:fontFamily="@font/ibm_plex_sans_bold"
+        android:layout_marginStart="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/split_tunnel_status"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintTop_toBottomOf="@id/network_options_divider" />
+
+    <TextView
+        android:id="@+id/split_tunnel_status"
+        style="@style/MenuActionTitle"
+        android:layout_width="wrap_content"
+        android:fontFamily="@font/ibm_plex_sans_regular"
+        android:layout_marginStart="0dp"
+        android:textColor="?attr/wdSecondaryColor"
+        android:layout_marginEnd="@dimen/reg_12dp"
+        app:layout_constraintStart_toEndOf="@id/split_tunnel_title"
+        app:layout_constraintEnd_toStartOf="@id/split_tunnel_right_icon"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintTop_toTopOf="@id/split_tunnel_title"
+        app:layout_constraintBottom_toBottomOf="@id/split_tunnel_title" />
+
+    <ImageView
+        android:id="@+id/split_tunnel_right_icon"
+        style="@style/ForwardArrowIcon"
+        android:layout_marginRight="@dimen/reg_16dp"
+        android:layout_marginEnd="@dimen/reg_16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/split_tunnel_title"
+        app:layout_constraintTop_toTopOf="@id/split_tunnel_title" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

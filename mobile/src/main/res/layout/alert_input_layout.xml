@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/alert_edit_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin_16"
+        android:letterSpacing="0.17"
+        android:backgroundTint="@color/colorWhite"
+        android:fontFamily="@font/ibm_plex_mono_regular"
+        android:padding="@dimen/padding_8"
+        android:textColor="@color/colorWhite"
+        android:textCursorDrawable="@drawable/cursor_background" />
+
+</androidx.appcompat.widget.LinearLayoutCompat>

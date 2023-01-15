@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/cl_windscribe_main"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:background="@color/colorDeepBlue"
+    android:fitsSystemWindows="false"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:padding="0dp"
+    tools:context=".windscribe.WindscribeActivity">
+
+    <!--Guidelines and barriers-->
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="on_off_button" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/flag_barrier"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        app:barrierDirection="top"
+        app:constraint_referenced_ids="cl_preferred_protocol" />
+
+    <Space
+        android:id="@+id/flag_space"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="70dp"
+        app:layout_constraintTop_toTopOf="@id/flag_barrier" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineHorizontal55"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.55" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineHorizontal60"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.6" />
+
+
+    <ImageView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="@dimen/margin_60"
+        app:layout_constraintBottom_toTopOf="@id/flag_space"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:importantForAccessibility="no"
+        android:id="@+id/flag_dimensions_guide" />
+
+    <!--Connection state-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_flag"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/flag_space"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="@dimen/margin_60"
+        app:layout_constraintVertical_bias="1.0">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/flag"
+            android:alpha="0.8"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:adjustViewBounds="true"
+            android:background="@null" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/top_gradient"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/top_gradient"
+            android:visibility="invisible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/flag"
+            app:layout_constraintBottom_toBottomOf="@id/flag" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/bottom_gradient"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintHeight_percent=".50"
+            android:alpha="0.0"
+            android:src="@drawable/bottom_gradient"
+            app:layout_constraintBottom_toBottomOf="@id/flag"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/top_gradient_custom"
+        android:layout_width="0dp"
+        android:layout_height="30dp"
+        android:background="@drawable/top_gradient_custom"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="@dimen/reg_60dp" />
+
+
+    <ImageView
+        android:id="@+id/connection_gradient"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:contentDescription="@null"
+        android:src="@drawable/connection_gradient"
+        app:layout_constraintBottom_toTopOf="@id/cl_preferred_protocol"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!--Node name-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/toolbar_windscribe"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:minWidth="171dp"
+        app:layout_constraintStart_toStartOf="parent">
+
+
+        <ImageView
+            android:id="@+id/toolbar_background_square"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/image_description"
+            android:scaleType="fitXY"
+            android:src="@drawable/header_left_disconnected"
+            app:layout_constraintEnd_toStartOf="@id/toolbar_background_slope"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!--Slope-->
+        <ImageView
+            android:id="@+id/toolbar_background_slope"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
+            android:scaleType="fitXY"
+            android:src="@drawable/header_right_disconnected"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <ImageView
+            android:id="@+id/img_hamburger_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/reg_8dp"
+            android:layout_marginStart="@dimen/margin_16"
+            android:clickable="true"
+            android:contentDescription="@string/image_description"
+            android:focusable="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/ic_ham_button" />
+
+
+        <ImageView
+            android:id="@+id/img_windscribe_logo"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin_16"
+            android:clickable="true"
+            android:contentDescription="@null"
+            android:focusable="true"
+            android:foregroundGravity="center"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ws_logo"
+            app:layout_constraintBottom_toBottomOf="@id/img_hamburger_menu"
+            app:layout_constraintStart_toEndOf="@id/img_hamburger_menu"
+            app:layout_constraintTop_toTopOf="@id/img_hamburger_menu" />
+
+        <TextView
+            android:id="@+id/text_view_notification"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/reg_16dp"
+            android:background="@drawable/icon_round_background"
+            android:gravity="center"
+            android:textColor="@color/colorDeepBlue"
+            android:textSize="9sp"
+            android:textStyle="bold"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/img_windscribe_logo"
+            app:layout_constraintTop_toTopOf="@id/img_windscribe_logo"
+            app:layout_constraintVertical_bias="0.25"
+            tools:ignore="SmallSp" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!--Connection Gradient on connection state change-->
+
+    <!--Flag and its gradient-->
+    <TextView
+        android:id="@+id/tv_connected_city_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_16"
+        android:layout_marginTop="2dp"
+        android:fontFamily="@font/ibm_font_family"
+        android:gravity="center_vertical|start"
+        android:includeFontPadding="false"
+        android:lines="1"
+        android:maxLength="16"
+        android:textAlignment="viewStart"
+        android:textColor="@color/colorWhite"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/connection_state_layout" />
+
+    <!--Top tool bar-->
+    <TextView
+        android:id="@+id/tv_connected_city_nick_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_16"
+        android:layout_marginTop="@dimen/reg_8dp"
+        android:paddingEnd="@dimen/padding_8"
+        android:fontFamily="@font/ibm_font_family"
+        android:gravity="bottom|start"
+        android:textAlignment="viewStart"
+        android:textColor="@color/colorWhite"
+        android:textSize="24sp"
+        android:maxLines="2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_connected_city_name" />
+
+    <!--Connect Button-->
+    <include layout="@layout/connect_button_layout" />
+
+
+    <!--Nick name-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/server_list_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/reg_48dp"
+        android:layout_marginTop="@dimen/server_list_toolbar_top_margin"
+        android:animateLayoutChanges="false"
+        android:background="@drawable/server_list_round_background"
+        android:elevation="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_preferred_protocol">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/server_list_tool_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:animateLayoutChanges="false"
+            android:background="@drawable/search_background"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/img_server_list_all"
+                android:layout_width="32dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="@dimen/margin_16"
+                android:contentDescription="@null"
+                android:scaleType="center"
+                app:layout_constraintBottom_toTopOf="@id/img_server_list_header_divider"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/modal_all_server_list"
+                app:tint="?attr/navigationStripColor" />
+
+
+            <ImageView
+                android:id="@+id/img_server_list_favorites"
+                android:layout_width="32dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="@dimen/margin_16"
+                android:contentDescription="@null"
+                android:scaleType="center"
+                app:layout_constraintBottom_toTopOf="@id/img_server_list_header_divider"
+                app:layout_constraintStart_toEndOf="@id/img_server_list_all"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/modal_fav_nav_list"
+                app:tint="?attr/navigationStripColor" />
+
+
+            <ImageView
+                android:id="@+id/img_server_list_flix"
+                android:layout_width="32dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="@dimen/margin_16"
+                android:contentDescription="@null"
+                android:scaleType="center"
+                app:layout_constraintBottom_toTopOf="@id/img_server_list_header_divider"
+                app:layout_constraintStart_toEndOf="@id/img_server_list_favorites"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/modal_flix_list"
+                app:tint="?attr/navigationStripColor" />
+
+
+            <ImageView
+                android:id="@+id/img_static_ip_list"
+                android:layout_width="32dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="@dimen/margin_16"
+                android:contentDescription="@null"
+                android:scaleType="center"
+                app:layout_constraintBottom_toTopOf="@id/img_server_list_header_divider"
+                app:layout_constraintStart_toEndOf="@id/img_server_list_flix"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/modal_static_ip_list"
+                app:tint="?attr/navigationStripColor" />
+
+
+            <ImageView
+                android:id="@+id/img_config_loc_list"
+                android:layout_width="@dimen/reg_32dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="@dimen/margin_16"
+                android:contentDescription="@null"
+                android:scaleType="center"
+                android:visibility="visible"
+                app:layout_constraintBottom_toTopOf="@id/img_server_list_header_divider"
+                app:layout_constraintStart_toEndOf="@id/img_static_ip_list"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/modal_configloc_list"
+                app:tint="?attr/navigationStripColor" />
+
+
+            <ImageView
+                android:id="@+id/img_search_list"
+                android:layout_width="@dimen/reg_32dp"
+                android:layout_height="0dp"
+                android:layout_marginEnd="@dimen/reg_16dp"
+                android:alpha="0.4"
+                android:contentDescription="@null"
+                android:scaleType="center"
+                android:visibility="visible"
+                app:layout_constraintBottom_toTopOf="@id/img_server_list_header_divider"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_search_icon"
+                app:tint="?attr/navigationStripColor" />
+
+            <ImageView
+                android:id="@+id/img_server_list_header_divider"
+                android:layout_width="0dp"
+                android:layout_height="2dp"
+                android:layout_marginTop="46dp"
+                android:contentDescription="@null"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+            <ImageView
+                android:id="@+id/img_server_list_selection_mask"
+                android:layout_width="@dimen/reg_16dp"
+                android:layout_height="2dp"
+                android:background="?attr/navigationStripColor"
+                android:contentDescription="@string/image_description"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/img_server_list_all"
+                app:layout_constraintStart_toStartOf="@id/img_server_list_all" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!--Preferred protocol-->
+    <include
+        layout="@layout/connection_state_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_windscribe" />
+
+    <!--Server list toolbar-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_server_list"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:animateLayoutChanges="false"
+        android:background="?attr/notificationBackground"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/server_list_toolbar">
+
+        <androidx.viewpager.widget.ViewPager
+            android:id="@+id/location_list_fragment_pager"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:animateLayoutChanges="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <ProgressBar
+            android:id="@+id/progress_bar_recyclerview"
+            android:layout_width="@dimen/reg_32dp"
+            android:layout_height="@dimen/reg_32dp"
+            android:theme="@style/StyleDeepBlueShadow"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Server list view pager -->
+    <include
+        android:id="@+id/cl_preferred_protocol"
+        layout="@layout/preferred_protocol_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/reg_16dp"
+        android:layout_marginStart="@dimen/reg_16dp"
+        android:layout_marginTop="@dimen/network_layout_top_margin"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_connected_city_nick_name" />
+
+    <!--Node Status-->
+    <include
+        android:id="@+id/cl_node_status_info"
+        layout="@layout/node_status_layout"
+        android:visibility="gone" />
+
+    <!--Account status-->
+    <include
+        android:id="@+id/cl_account_status_info"
+        layout="@layout/user_account_status_layout"
+        android:visibility="gone" />
+
+    <!--ProtocolSwitch-->
+    <include
+        layout="@layout/protocol_switch"
+        android:layout_width="0dp"
+        android:layout_height="44dp"
+        android:layout_marginBottom="@dimen/reg_8dp"
+        android:layout_marginEnd="@dimen/reg_16dp"
+        android:layout_marginStart="@dimen/reg_16dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

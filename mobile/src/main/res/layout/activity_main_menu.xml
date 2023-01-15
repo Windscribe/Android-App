@@ -1,0 +1,242 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout style="@style/MatchMatchContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cl_main_menu">
+
+    <include layout="@layout/nav_bar" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/nav_bar"
+        android:layout_marginStart="@dimen/margin_16"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:layout_marginTop="@dimen/margin_24"
+        android:background="@drawable/preferences_rounded_corner_background"
+        >
+
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
+            android:id="@+id/cl_general"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:ItemLinkViewTitle="@string/general"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
+            app:ItemLinkViewLeftIcon="@drawable/ic_preferences_icon" />
+
+        <ImageView
+            android:id="@+id/divider_general"
+            style="@style/divider"
+            android:layout_marginTop="0dp"
+            android:paddingTop="0dp"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:layout_marginBottom="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cl_general" />
+
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
+            android:id="@+id/cl_account"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider_general"
+            app:ItemLinkViewTitle="@string/account"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
+            app:ItemLinkViewLeftIcon="@drawable/ic_myaccount_icon" />
+
+        <ImageView
+            android:id="@+id/divider_account"
+            style="@style/divider"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cl_account" />
+
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
+            android:id="@+id/cl_connection"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider_account"
+            app:ItemLinkViewTitle="@string/connection"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
+            app:ItemLinkViewLeftIcon="@drawable/ic_connection_icon" />
+
+        <ImageView
+            android:id="@+id/divider_connection"
+            style="@style/divider"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cl_connection" />
+
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
+            android:id="@+id/cl_robert"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider_connection"
+            app:ItemLinkViewTitle="@string/robert"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
+            app:ItemLinkViewLeftIcon="@drawable/ic_robert" />
+
+
+        <ImageView
+            android:id="@+id/divider_robert"
+            style="@style/divider"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cl_robert" />
+
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
+            android:id="@+id/cl_refer_for_data"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_50dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider_robert"
+            app:ItemLinkViewTitle="Refer for Data"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
+            app:ItemLinkViewLeftIcon="@drawable/ic_favourite" />
+
+        <ImageView
+            android:id="@+id/divider_refer_for_data"
+            style="@style/divider"
+            android:visibility="gone"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
+            app:layout_constraintTop_toBottomOf="@id/cl_refer_for_data" />
+
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
+            android:id="@+id/cl_help"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider_refer_for_data"
+            app:ItemLinkViewTitle="@string/help_me"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
+            app:ItemLinkViewLeftIcon="@drawable/ic_helpme_icon" />
+
+        <ImageView
+            android:id="@+id/divider_help"
+            style="@style/divider"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cl_help" />
+
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
+            android:id="@+id/cl_about"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider_help"
+            app:ItemLinkViewTitle="@string/about"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
+            app:ItemLinkViewLeftIcon="@drawable/ic_about" />
+
+        <ImageView
+            android:id="@+id/divider_about"
+            style="@style/divider"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cl_about" />
+
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
+            android:id="@+id/cl_sign"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider_about"
+            app:ItemLinkViewTitle="@string/logout"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
+            app:ItemLinkViewLeftIcon="@drawable/ic_sign_out"
+            app:HideBottomDivider="true" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <Button
+        android:id="@+id/login"
+        style="@style/NoBackgroundButtonBold"
+        android:layout_marginBottom="@dimen/margin_16"
+        android:enabled="true"
+        android:text="@string/login"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/cl_data_status"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/setupAccount"
+        style="@style/NextButton"
+        android:layout_marginBottom="@dimen/margin_16"
+        android:enabled="true"
+        android:text="@string/account_set_up"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/login"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/addEmail"
+        style="@style/NextButton"
+        android:layout_marginBottom="@dimen/margin_16"
+        android:enabled="true"
+        android:text="@string/add_email"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/cl_data_status"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/confirmEmail"
+        style="@style/NextButtonWarning"
+        android:layout_marginBottom="@dimen/margin_16"
+        android:enabled="true"
+        android:text="@string/confirm_your_email"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/cl_data_status"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <include
+        layout="@layout/upgrade_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
