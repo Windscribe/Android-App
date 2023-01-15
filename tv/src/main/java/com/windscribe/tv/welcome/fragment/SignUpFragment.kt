@@ -16,11 +16,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
-import butterknife.OnFocusChange
-import butterknife.OnTextChanged
+import butterknife.*
 import com.windscribe.tv.R
 
 class SignUpFragment : Fragment(), WelcomeActivityCallback {
@@ -177,7 +173,7 @@ class SignUpFragment : Fragment(), WelcomeActivityCallback {
     @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.forgotPassword)
     fun onForgotPasswordButtonClick() {
-        fragmentCallBack!!.onForgotPasswordClick()
+        fragmentCallBack?.onForgotPasswordClick()
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -227,14 +223,17 @@ class SignUpFragment : Fragment(), WelcomeActivityCallback {
     private fun resetButtonTextColor() {
         val normalColor = requireActivity().resources.getColor(R.color.colorWhite50)
         val focusColor = requireActivity().resources.getColor(R.color.colorWhite)
-        loginSignUpButton!!.setTextColor(
-            if (loginSignUpButton!!.hasFocus()) requireActivity().resources.getColor(R.color.colorWhite) else requireActivity().resources.getColor(
+        loginSignUpButton?.setTextColor(
+            if (loginSignUpButton?.hasFocus() == true) requireActivity().resources.getColor(R.color.colorWhite) else requireActivity().resources.getColor(
                 R.color.colorWhite50
             )
         )
-        backButton?.setTextColor(if (backButton!!.hasFocus()) focusColor else normalColor)
+        backButton?.setTextColor(if (backButton?.hasFocus() == true) focusColor else normalColor)
         forgotPasswordButton?.setTextColor(if (forgotPasswordButton?.hasFocus() == true) focusColor else normalColor)
-        showPasswordView?.setTextColor(if (showPasswordView?.hasFocus() == true) focusColor else normalColor)
-        showPasswordView?.buttonTintList = ColorStateList.valueOf(if (showPasswordView!!.hasFocus()) focusColor else normalColor)
+        showPasswordView?.let {
+            it.setTextColor(if (it.hasFocus()) focusColor else normalColor)
+            it.buttonTintList =
+                ColorStateList.valueOf(if (it.hasFocus()) focusColor else normalColor)
+        }
     }
 }

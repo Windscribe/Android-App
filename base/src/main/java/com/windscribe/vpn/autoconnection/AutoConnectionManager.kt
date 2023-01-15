@@ -8,6 +8,7 @@ import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.Ext.result
+import com.windscribe.vpn.commonutils.ThreadSafeList
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
@@ -40,7 +41,7 @@ class AutoConnectionManager(
 
     private var continuation: CancellableContinuation<Boolean>? = null
     private val logger = LoggerFactory.getLogger("auto_connection_manager")
-    var listOfProtocols = emptyList<ProtocolInformation>().toMutableList()
+    var listOfProtocols = ThreadSafeList<ProtocolInformation>()
     private var manualProtocol: ProtocolInformation? = null
     private var lastKnownProtocolInformation: Pair<String, ProtocolInformation>? = null
     private var preferredProtocol: Pair<String, ProtocolInformation?>? = null
@@ -87,11 +88,9 @@ class AutoConnectionManager(
     }
 
     fun reset() {
-        synchronized(listOfProtocols) {
-            listOfProtocols.clear()
-            listOfProtocols = reloadProtocols()
-            logger.debug("$listOfProtocols")
-        }
+        listOfProtocols.clear()
+        listOfProtocols = reloadProtocols()
+        logger.debug("$listOfProtocols")
     }
 
     fun stop() {
@@ -197,7 +196,7 @@ class AutoConnectionManager(
         }
     }
 
-    private fun reloadProtocols(): MutableList<ProtocolInformation> {
+    private fun reloadProtocols(): ThreadSafeList<ProtocolInformation> {
         var appSupportedProtocolOrder = if (listOfProtocols.size > 0) {
             listOfProtocols
         } else {
@@ -205,8 +204,7 @@ class AutoConnectionManager(
         }
         if (interactor.preferenceHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY) != PreferencesKeyConstants.CONNECTION_MODE_AUTO) {
             setupManualProtocol(
-                interactor.preferenceHelper.savedProtocol,
-                appSupportedProtocolOrder
+                interactor.preferenceHelper.savedProtocol, appSupportedProtocolOrder
             )
         }
         networkInfoManager.networkInfo?.let {
@@ -241,8 +239,8 @@ class AutoConnectionManager(
 
     private fun moveProtocolToTop(
         protocolInformation: ProtocolInformation,
-        appSupportedProtocolOrder: MutableList<ProtocolInformation>
-    ): MutableList<ProtocolInformation> {
+        appSupportedProtocolOrder: ThreadSafeList<ProtocolInformation>
+    ): ThreadSafeList<ProtocolInformation> {
         val index =
             appSupportedProtocolOrder.indexOfFirst { it.protocol == protocolInformation.protocol }
         appSupportedProtocolOrder.removeAt(index)
@@ -349,16 +347,18 @@ class AutoConnectionManager(
 
     private fun sendLog() {
         if (isEnabled) {
-            CoroutineScope(continuation!!.context).launch {
-                when (val result = interactor.sendLog()) {
-                    is CallResult.Error -> {
-                        logger.debug("Error sending log ${result.errorMessage}")
-                        dismissDialog()
-                        stop()
-                    }
-                    is CallResult.Success -> {
-                        dismissDialog()
-                        contactSupport()
+            continuation?.let {
+                CoroutineScope(it.context).launch {
+                    when (val result = interactor.sendLog()) {
+                        is CallResult.Error -> {
+                            logger.debug("Error sending log ${result.errorMessage}")
+                            dismissDialog()
+                            stop()
+                        }
+                        is CallResult.Success -> {
+                            dismissDialog()
+                            contactSupport()
+                        }
                     }
                 }
             }
@@ -436,9 +436,11 @@ class AutoConnectionManager(
             it.isPreferredOn = true
             it.isAutoSecureOn = true
             if (isEnabled) {
-                CoroutineScope(continuation!!.context).launch {
-                    interactor.saveNetwork(it).await()
-                    logger.debug("Saved ${protocolInformation.protocol}:${protocolInformation.port} for SSID: ${it.networkName}")
+                continuation?.let { c ->
+                    CoroutineScope(c.context).launch {
+                        interactor.saveNetwork(it).await()
+                        logger.debug("Saved ${protocolInformation.protocol}:${protocolInformation.port} for SSID: ${it.networkName}")
+                    }
                 }
             }
             stop()
@@ -467,30 +469,32 @@ class AutoConnectionManager(
                         stop()
                     }
                     if (isEnabled) {
-                        CoroutineScope(continuation!!.context).launch {
-                            val connectionResult =
-                                connectionAttempt(protocolInformation = protocolInformation)
-                            listOfProtocols.firstOrNull {
-                                it.type == ProtocolConnectionStatus.NextUp
-                            }?.type = ProtocolConnectionStatus.Disconnected
-                            if (connectionResult.status == VPNState.Status.Connected) {
-                                listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
-                                    ProtocolConnectionStatus.Connected
-                                logger.debug("Successfully found a working protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
-                                if ((networkInfoManager.networkInfo?.port != protocolInformation.port && networkInfoManager.networkInfo?.protocol != protocolInformation.protocol) || networkInfoManager.networkInfo?.isPreferredOn == false) {
-                                    saveNetworkForFutureUse(protocolInformation)
+                        continuation?.let {
+                            CoroutineScope(it.context).launch {
+                                val connectionResult =
+                                    connectionAttempt(protocolInformation = protocolInformation)
+                                listOfProtocols.firstOrNull {
+                                    it.type == ProtocolConnectionStatus.NextUp
+                                }?.type = ProtocolConnectionStatus.Disconnected
+                                if (connectionResult.status == VPNState.Status.Connected) {
+                                    listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
+                                        ProtocolConnectionStatus.Connected
+                                    logger.debug("Successfully found a working protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
+                                    if ((networkInfoManager.networkInfo?.port != protocolInformation.port && networkInfoManager.networkInfo?.protocol != protocolInformation.protocol) || networkInfoManager.networkInfo?.isPreferredOn == false) {
+                                        saveNetworkForFutureUse(protocolInformation)
+                                    }
+                                } else if (connectionResult.error?.showError == true) {
+                                    showErrorDialog(connectionResult.error?.message ?: "")
+                                    stop()
+                                } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
+                                    isEnabled = false
+                                    stop()
+                                } else {
+                                    listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
+                                        ProtocolConnectionStatus.Failed
+                                    logger.debug("Auto connect failure: ${protocolInformation.protocol}:${protocolInformation.port} ${connectionResult.error?.message}")
+                                    retry()
                                 }
-                            } else if (connectionResult.error?.showError == true) {
-                                showErrorDialog(connectionResult.error?.message ?: "")
-                                stop()
-                            } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
-                                isEnabled = false
-                                stop()
-                            } else {
-                                listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
-                                    ProtocolConnectionStatus.Failed
-                                logger.debug("Auto connect failure: ${protocolInformation.protocol}:${protocolInformation.port} ${connectionResult.error?.message}")
-                                retry()
                             }
                         }
                     }
@@ -522,35 +526,37 @@ class AutoConnectionManager(
                     logger.debug("User changed protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
 
                     if (isEnabled) {
-                        CoroutineScope(continuation!!.context).launch {
-                            delay(300)
-                            if (WindUtilities.isOnline().not()) {
-                                logger.debug("No internet detected. existing.")
-                                stop()
-                            }
-                            var connectionResult =
-                                connectionAttempt(protocolInformation = protocolInformation)
-                            if (connectionResult.error?.error == VPNState.ErrorType.AuthenticationError) {
-                                connectionResult = connectionAttempt(1, protocolInformation)
-                            }
-                            if (connectionResult.status == VPNState.Status.Connected) {
-                                listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
-                                    ProtocolConnectionStatus.Connected
-                                logger.debug("Successfully found a working protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
-                                if ((networkInfoManager.networkInfo?.port != protocolInformation.port && networkInfoManager.networkInfo?.protocol != protocolInformation.protocol) || networkInfoManager.networkInfo?.isPreferredOn == false) {
-                                    saveNetworkForFutureUse(protocolInformation)
+                        continuation?.let {
+                            CoroutineScope(it.context).launch {
+                                delay(300)
+                                if (WindUtilities.isOnline().not()) {
+                                    logger.debug("No internet detected. existing.")
+                                    stop()
                                 }
-                            } else if (connectionResult.error?.showError == true) {
-                                connectionResult.error?.message?.let { showErrorDialog(it) }
-                                stop()
-                            } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
-                                isEnabled = false
-                                stop()
-                            } else {
-                                listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
-                                    ProtocolConnectionStatus.Failed
-                                logger.debug("Protocol change failure: ${protocolInformation.protocol}:${protocolInformation.port} ${connectionResult.error?.message}")
-                                retry()
+                                var connectionResult =
+                                    connectionAttempt(protocolInformation = protocolInformation)
+                                if (connectionResult.error?.error == VPNState.ErrorType.AuthenticationError) {
+                                    connectionResult = connectionAttempt(1, protocolInformation)
+                                }
+                                if (connectionResult.status == VPNState.Status.Connected) {
+                                    listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
+                                        ProtocolConnectionStatus.Connected
+                                    logger.debug("Successfully found a working protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
+                                    if ((networkInfoManager.networkInfo?.port != protocolInformation.port && networkInfoManager.networkInfo?.protocol != protocolInformation.protocol) || networkInfoManager.networkInfo?.isPreferredOn == false) {
+                                        saveNetworkForFutureUse(protocolInformation)
+                                    }
+                                } else if (connectionResult.error?.showError == true) {
+                                    connectionResult.error?.message?.let { showErrorDialog(it) }
+                                    stop()
+                                } else if (connectionResult.error?.error == VPNState.ErrorType.UserDisconnect) {
+                                    isEnabled = false
+                                    stop()
+                                } else {
+                                    listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
+                                        ProtocolConnectionStatus.Failed
+                                    logger.debug("Protocol change failure: ${protocolInformation.protocol}:${protocolInformation.port} ${connectionResult.error?.message}")
+                                    retry()
+                                }
                             }
                         }
                     }

@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.windscribe.mobile.R
 
@@ -34,7 +33,7 @@ class ExtraDataUseWarningFragment : DialogFragment() {
         return if (activity != null) {
             val dialogView: View = inflater.inflate(R.layout.fragment_extra_data_use_warning, container, false)
             dialogView.findViewById<View>(R.id.tv_ok).setOnClickListener {
-                callBack!!.turnOnDecoyTraffic()
+                callBack?.turnOnDecoyTraffic()
                 dismissAllowingStateLoss()
             }
             dialogView.findViewById<View>(R.id.tv_cancel).setOnClickListener { dismissAllowingStateLoss() }

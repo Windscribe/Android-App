@@ -125,7 +125,7 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
     }
 
     private suspend fun handleAccountStatusChange(user: User){
-        logger.debug("${user.accountStatus} ${vpnStateManager.isVPNConnected()}")
+        logger.debug("User account status: ${user.accountStatus} is VPN Connected: ${vpnStateManager.isVPNConnected()}")
         if (user.accountStatus!=User.AccountStatus.Okay) {
             if(vpnStateManager.isVPNConnected()){
                 logger.debug("Disconnecting...")

@@ -30,11 +30,7 @@ import com.windscribe.tv.moredata.GetMoreDataActivity
 import com.windscribe.tv.serverlist.customviews.PreferenceHeaderItemMain
 import com.windscribe.tv.serverlist.customviews.SettingFocusAware
 import com.windscribe.tv.serverlist.customviews.State
-import com.windscribe.tv.settings.fragment.AccountFragment
-import com.windscribe.tv.settings.fragment.ConnectionFragment
-import com.windscribe.tv.settings.fragment.DebugFragment
-import com.windscribe.tv.settings.fragment.GeneralFragment
-import com.windscribe.tv.settings.fragment.GhostAccountFragment
+import com.windscribe.tv.settings.fragment.*
 import com.windscribe.tv.upgrade.UpgradeActivity
 import com.windscribe.tv.welcome.WelcomeActivity
 import com.windscribe.tv.windscribe.WindscribeActivity
@@ -120,9 +116,11 @@ class SettingActivity :
         setActivityModule(ActivityModule(this, this)).inject(this)
         setContentLayout(R.layout.activity_setting)
         initFragment()
-        scrollView?.setOnScrollChangeListener { _: NestedScrollView?, _: Int, _: Int, _: Int, _: Int ->
-            if (fragment is GeneralFragment) {
-                (fragment as GeneralFragment).checkViewVisibility(scrollView!!)
+        scrollView?.let {
+            it.setOnScrollChangeListener { _: NestedScrollView?, _: Int, _: Int, _: Int, _: Int ->
+                if (fragment is GeneralFragment) {
+                    (fragment as GeneralFragment).checkViewVisibility(it)
+                }
             }
         }
         presenter.setUpTabMenu()
@@ -166,7 +164,7 @@ class SettingActivity :
     }
 
     override fun hideProgress() {
-        runOnUiThread { sendDebugDialog!!.dismiss() }
+        runOnUiThread { sendDebugDialog?.dismiss() }
     }
 
     override fun onAllowBootStartClick() {
@@ -439,8 +437,8 @@ class SettingActivity :
 
     override fun showProgress(progressText: String) {
         runOnUiThread {
-            sendDebugDialog!!.show()
-            (sendDebugDialog!!.findViewById<View>(R.id.tv_dialog_header) as TextView).text =
+            sendDebugDialog?.show()
+            (sendDebugDialog?.findViewById<View>(R.id.tv_dialog_header) as TextView).text =
                 progressText
         }
     }

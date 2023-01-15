@@ -15,9 +15,11 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.CreateHashMap.createWebSessionMap
 import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.constants.FeatureExplainer
+import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.exceptions.WindScribeException
+import com.windscribe.vpn.repository.CallResult
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -127,22 +129,23 @@ class RobertSettingsPresenterImpl(
         originalList: List<RobertFilter>, position: Int
     ) {
         robertSettingsAdapter?.settingUpdateInProgress = false
-        if (response.dataClass != null) {
-            robertSettingsView.hideProgress()
-            robertSettingsView.showToast("Successfully updated Robert rules.")
-            appContext.workManager.updateRobertRules()
-        } else if (response.errorClass != null) {
-            handleRobertSettingsUpdateError(
-                response.errorClass!!.errorMessage,
-                originalList,
-                position
-            )
-        } else {
-            handleRobertSettingsUpdateError(
-                "Failed to update Robert rules.",
-                originalList,
-                position
-            )
+        when (val result = response.callResult<GenericSuccess>()) {
+            is CallResult.Error -> {
+                if (result.code != NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA) {
+                    handleRobertSettingsUpdateError(result.errorMessage, originalList, position)
+                } else {
+                    handleRobertSettingsUpdateError(
+                        "Failed to update Robert rules.",
+                        originalList,
+                        position
+                    )
+                }
+            }
+            is CallResult.Success -> {
+                robertSettingsView.hideProgress()
+                robertSettingsView.showToast("Successfully updated Robert rules.")
+                appContext.workManager.updateRobertRules()
+            }
         }
     }
 
@@ -171,18 +174,23 @@ class RobertSettingsPresenterImpl(
 
     private fun handleWebSessionResponse(response: GenericResponseClass<WebSession?, ApiErrorResponse?>) {
         robertSettingsView.setWebSessionLoading(false)
-        if (response.dataClass != null) {
-            robertSettingsView.openUrl(responseToUrl(response.dataClass!!))
-        } else if (response.errorClass != null) {
-            mPresenterLog.debug(
-                String.format(
-                    "Failed to generate web session: %s",
-                    response.errorClass!!.errorDescription
-                )
-            )
-            robertSettingsView.showErrorDialog(response.errorClass!!.errorMessage)
-        } else {
-            robertSettingsView.showErrorDialog("Failed to generate Web-Session. Check your network connection.")
+        when (val result = response.callResult<WebSession>()) {
+            is CallResult.Error -> {
+                if (result.code != NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA) {
+                    mPresenterLog.debug(
+                        String.format(
+                            "Failed to generate web session: %s",
+                            result.errorMessage
+                        )
+                    )
+                    robertSettingsView.showErrorDialog(result.errorMessage)
+                } else {
+                    robertSettingsView.showErrorDialog("Failed to generate Web-Session. Check your network connection.")
+                }
+            }
+            is CallResult.Success -> {
+                robertSettingsView.openUrl(responseToUrl(result.data))
+            }
         }
     }
 
@@ -239,16 +247,21 @@ class RobertSettingsPresenterImpl(
     private fun saveToDatabase(
         response: GenericResponseClass<RobertFilterResponse?, ApiErrorResponse?>
     ): Single<List<RobertFilter>> {
-        if (response.dataClass != null) {
-            val robertSettings = response.dataClass!!.filters
-            val json = Gson().toJson(robertSettings)
-            interactor.getAppPreferenceInterface()
-                .saveResponseStringData(PreferencesKeyConstants.ROBERT_FILTERS, json)
-            return Single.just(robertSettings)
+        when (val result = response.callResult<RobertFilterResponse>()) {
+            is CallResult.Error -> {
+                if (result.code != NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA) {
+                    throw WindScribeException(result.errorMessage)
+                } else {
+                    throw WindScribeException("Unexpected Api response.")
+                }
+            }
+            is CallResult.Success -> {
+                val robertSettings = result.data.filters
+                val json = Gson().toJson(robertSettings)
+                interactor.getAppPreferenceInterface()
+                    .saveResponseStringData(PreferencesKeyConstants.ROBERT_FILTERS, json)
+                return Single.just(robertSettings)
+            }
         }
-        if (response.errorClass != null) {
-            throw WindScribeException(response.errorClass!!.errorMessage)
-        }
-        throw WindScribeException("Unexpected Api response.")
     }
 }

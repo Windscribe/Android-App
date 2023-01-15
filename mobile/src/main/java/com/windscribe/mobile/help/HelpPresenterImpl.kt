@@ -84,8 +84,7 @@ class HelpPresenterImpl @Inject constructor(
                             appLogSubmissionResponse: GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
                         ) {
                             helpView.showProgress(
-                                false, appLogSubmissionResponse.dataClass != null
-                                        && appLogSubmissionResponse.dataClass!!.isSuccessful
+                                false, appLogSubmissionResponse.dataClass != null && appLogSubmissionResponse.dataClass?.isSuccessful == true
                             )
                         }
                     })

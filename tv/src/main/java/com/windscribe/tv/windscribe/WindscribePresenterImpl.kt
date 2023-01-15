@@ -310,11 +310,12 @@ class WindscribePresenterImpl @Inject constructor(
         selectedLocation?.let {
             windscribeView.startVpnConnectingAnimation(
                 interactor.getResourceString(string.connecting),
-                FlagIconResource.getFlag(selectedLocation!!.countryCode),
+                FlagIconResource.getFlag(it.countryCode),
                 interactor.getColorResource(color.colorDeepBlue),
                 interactor.getColorResource(color.colorNavyBlue),
                 interactor.getColorResource(color.colorWhite50),
-                interactor.getColorResource(color.sea_green), this@WindscribePresenterImpl
+                interactor.getColorResource(color.sea_green),
+                this@WindscribePresenterImpl
             )
         } ?: kotlin.run {
             interactor.getCompositeDisposable().add(
