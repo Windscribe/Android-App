@@ -12,11 +12,7 @@ import com.windscribe.vpn.Windscribe.Companion.getExecutorService
 import com.windscribe.vpn.api.response.ServerNodeListOverLoaded
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.localdatabase.tables.PingTestResults
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.Favourite
-import com.windscribe.vpn.serverlist.entity.PingTime
-import com.windscribe.vpn.serverlist.entity.RegionAndCities
-import com.windscribe.vpn.serverlist.entity.ServerListData
+import com.windscribe.vpn.serverlist.entity.*
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -118,11 +114,9 @@ class DetailsPresenterImp(
         if (state == FavouriteState.Favourite) {
             logger.debug("Removing from favourites.")
             removeFromFavourite(city.getId())
-            detailView.showToast("Removed from favourites")
         } else {
             logger.debug("Adding to favourites.")
             addToFav(city.getId())
-            detailView.showToast("Added to favourites")
         }
     }
 
