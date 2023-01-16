@@ -30,6 +30,7 @@ import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_WG_KEY_LIMIT_EXCEEDE
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_WG_UNABLE_TO_GENERATE_PSK
 import com.windscribe.vpn.constants.NetworkErrorCodes.EXPIRED_OR_BANNED_ACCOUNT
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_IKev2
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.exceptions.InvalidVPNConfigException
@@ -314,13 +315,23 @@ open class WindVpnController @Inject constructor(
     }
 
     private fun getProtocolInformationToConnect(): ProtocolInformation {
+        // use default protocol if list protocol is not ready yet.
+        if (autoConnectionManager.listOfProtocols.isEmpty()) {
+            return ProtocolInformation(
+                PROTO_IKev2,
+                PreferencesKeyConstants.DEFAULT_IKEV2_PORT,
+                "IKEv2 is an IPsec based tunneling protocol.",
+                ProtocolConnectionStatus.Disconnected
+            )
+        }
         val config: ProtocolInformation =
             autoConnectionManager.listOfProtocols.firstOrNull { it.type == ProtocolConnectionStatus.NextUp }
                 ?: autoConnectionManager.listOfProtocols.first()
         //Decoy traffic only works in Wireguard
         if (interactor.preferenceHelper.isDecoyTrafficOn) {
             Util.buildProtocolInformation(
-                autoConnectionManager.listOfProtocols, PROTO_WIRE_GUARD,
+                autoConnectionManager.listOfProtocols,
+                PROTO_WIRE_GUARD,
                 interactor.preferenceHelper.wireGuardPort
             )
         }
