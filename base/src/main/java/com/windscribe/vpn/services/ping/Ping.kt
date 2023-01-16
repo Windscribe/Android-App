@@ -12,7 +12,6 @@ import android.system.OsConstants
 import android.system.StructPollfd
 import io.reactivex.Single
 import java.io.FileDescriptor
-import java.lang.reflect.InvocationTargetException
 import java.net.Inet6Address
 import java.net.InetAddress
 import java.net.SocketException
@@ -120,18 +119,15 @@ open class Ping {
             Os.setsockoptInt(fd, OsConstants.IPPROTO_IP, OsConstants.IP_TOS, ipTosLowDelay)
         } else {
             try {
-                val method = Os::class.java
-                        .getMethod(
-                                "setsockoptInt",
-                                FileDescriptor::class.java,
-                                Int::class.javaPrimitiveType,
-                                Int::class.javaPrimitiveType,
-                                Int::class.javaPrimitiveType
-                        )
+                val method = Os::class.java.getMethod(
+                        "setsockoptInt",
+                        FileDescriptor::class.java,
+                        Int::class.javaPrimitiveType,
+                        Int::class.javaPrimitiveType,
+                        Int::class.javaPrimitiveType
+                    )
                 method.invoke(null, fd, OsConstants.IPPROTO_IP, OsConstants.IP_TOS, ipTosLowDelay)
-            } catch (e: NoSuchMethodException) {
-            } catch (e: InvocationTargetException) {
-            } catch (e: IllegalAccessException) {
+            } catch (ignored: Exception) {
             }
         }
     }
