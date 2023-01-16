@@ -117,7 +117,12 @@ class WireguardBackend(
                 withContext(Dispatchers.IO) {
                     val content = WireGuardVpnProfile.createConfigFromString(it.content)
                     vpnLogger.debug("Setting WireGuard state UP.")
-                    backend.setState(testTunnel, UP, content)
+                    try {
+                        backend.setState(testTunnel, UP, content)
+                    } catch (e: Exception) {
+                        vpnLogger.error("Exception while setting WireGuard state UP.", e)
+                        updateState(VPNState(Disconnected))
+                    }
                 }
             } ?: kotlin.run {
                 vpnLogger.debug("Failed to get WireGuard profile.")
