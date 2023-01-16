@@ -412,7 +412,6 @@ class WelcomePresenterImpl @Inject constructor(
                         interactor.getWorkManager().onAppStart()
                         interactor.getWorkManager().onAppMovedToForeground()
                         startPingTestService()
-                        interactor.getWorkManager().onAppStart()
                         welcomeView.gotoHomeActivity(true)
                     }
 

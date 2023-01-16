@@ -12,6 +12,7 @@ import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.exceptions.TooHighLatencyError
+import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.serverlist.entity.PingTime
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.state.PreferenceChangeObserver
@@ -23,13 +24,13 @@ import io.reactivex.SingleSource
 import io.reactivex.functions.Function
 import io.reactivex.observers.DisposableCompletableObserver
 import io.reactivex.schedulers.Schedulers
+import org.slf4j.LoggerFactory
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
 import javax.inject.Inject
 import kotlin.math.roundToInt
-import org.slf4j.LoggerFactory
 
 class PingTestService : JobIntentWorkAroundService() {
 
@@ -42,6 +43,9 @@ class PingTestService : JobIntentWorkAroundService() {
     @Inject
     lateinit var vpnConnectionStateManager: VPNConnectionStateManager
 
+    @Inject
+    lateinit var userRepository: UserRepository
+
     private val logger = LoggerFactory.getLogger("ping_test_s")
     override fun onCreate() {
         super.onCreate()
@@ -49,7 +53,12 @@ class PingTestService : JobIntentWorkAroundService() {
     }
 
     override fun onHandleWork(intent: Intent) {
-        requestPings()
+        if (userRepository.loggedIn()) {
+            logger.debug("ping test service started")
+            requestPings()
+        } else {
+            stopSelf()
+        }
     }
 
     private fun cleanup() {
@@ -62,40 +71,30 @@ class PingTestService : JobIntentWorkAroundService() {
             id: Int,
             regionId: Int,
             ip: String?,
-            nodeAvailable: Boolean,
             isStatic: Boolean,
             isPro: Boolean
     ): Single<PingTime> {
         return Single.fromCallable {
             val pingTime = PingTime()
-            if (nodeAvailable) {
-                val dnsResolved = System.currentTimeMillis()
-                try {
-                    val address = InetSocketAddress(ip, 443)
-                    val socket = Socket()
-                    socket.connect(address, 1000)
-                    socket.close()
-                    val probeFinish = System.currentTimeMillis()
-                    pingTime.id = id
-                    pingTime.isPro = isPro
-                    pingTime.setRegionId(regionId)
-                    val time = (probeFinish - dnsResolved).toInt()
-                    pingTime.setPingTime(time)
-                    pingTime.setStatic(isStatic)
-                    return@fromCallable pingTime
-                } catch (e: Exception) {
-                    pingTime.id = id
-                    pingTime.isPro = isPro
-                    pingTime.setRegionId(regionId)
-                    pingTime.setPingTime(-1)
-                    pingTime.setStatic(isStatic)
-                    return@fromCallable pingTime
-                }
-            } else {
+            val dnsResolved = System.currentTimeMillis()
+            try {
+                val address = InetSocketAddress(ip, 443)
+                val socket = Socket()
+                socket.connect(address, 500)
+                socket.close()
+                val probeFinish = System.currentTimeMillis()
                 pingTime.id = id
-                pingTime.setPingTime(-1)
                 pingTime.isPro = isPro
                 pingTime.setRegionId(regionId)
+                val time = (probeFinish - dnsResolved).toInt()
+                pingTime.setPingTime(time)
+                pingTime.setStatic(isStatic)
+                return@fromCallable pingTime
+            } catch (e: Exception) {
+                pingTime.id = id
+                pingTime.isPro = isPro
+                pingTime.setRegionId(regionId)
+                pingTime.setPingTime(-1)
                 pingTime.setStatic(isStatic)
                 return@fromCallable pingTime
             }
@@ -117,16 +116,15 @@ class PingTestService : JobIntentWorkAroundService() {
         }.flatMap { inetAddress: InetAddress? ->
             val ping = Ping()
             val pingTime = PingTime()
-            ping.run(inetAddress, 500)
-                    .flatMap { timeMs: Long ->
-                        pingTime.id = id
-                        pingTime.isPro = isPro
-                        pingTime.setRegionId(regionId)
-                        pingTime.setPingTime(timeMs.toFloat().roundToInt())
-                        pingTime.setStatic(isStatic)
-                        Single.fromCallable { pingTime }
-                    }
-        }.onErrorResumeNext { getPingResult(id, regionId, ip, true, isStatic, isPro) }
+            ping.run(inetAddress, 500).flatMap { timeMs: Long ->
+                    pingTime.id = id
+                    pingTime.isPro = isPro
+                    pingTime.setRegionId(regionId)
+                    pingTime.setPingTime(timeMs.toFloat().roundToInt())
+                    pingTime.setStatic(isStatic)
+                    Single.fromCallable { pingTime }
+                }
+        }.onErrorResumeNext { getPingResult(id, regionId, ip, isStatic, isPro) }
                 .subscribeOn(Schedulers.computation())
     }
 
@@ -159,14 +157,15 @@ class PingTestService : JobIntentWorkAroundService() {
                                     Function<StaticRegion, SingleSource<PingTime>> label@{
                                         if (it.staticIpNode != null) {
                                             return@label getPings(
-                                                    it.id,
-                                                    it.ipId,
-                                                    it.staticIpNode.ip.toString(),
-                                                    isStatic = true,
-                                                    isPro = true
+                                                it.id,
+                                                it.ipId,
+                                                it.staticIpNode.ip.toString(),
+                                                isStatic = true,
+                                                isPro = true
                                             )
+                                        } else {
+                                            throw Exception("Static region has no ip")
                                         }
-                                        getPingResult(it.id, it.ipId, null, nodeAvailable = false, isStatic = true, isPro = true)
                                     }
                             ).retry(1) { throwable: Throwable? -> throwable is TooHighLatencyError }
                             .takeUntil {
@@ -204,7 +203,7 @@ class PingTestService : JobIntentWorkAroundService() {
     companion object {
 
         private const val PING_JOB_ID = 7777
-        fun enqueueWork(context: Context, intent: Intent) {
+        private fun enqueueWork(context: Context, intent: Intent) {
             try {
                 enqueueWork(context, PingTestService::class.java, PING_JOB_ID, intent)
             } catch (ignored: IllegalStateException) {
