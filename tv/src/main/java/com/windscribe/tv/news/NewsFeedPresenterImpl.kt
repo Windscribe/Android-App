@@ -95,6 +95,7 @@ class NewsFeedPresenterImpl @Inject constructor(
                             newsFeedView.setItemSelected(if (showPopUp) popUpId else it[0].notificationId)
                             newsFeedView.setNewsFeedContentText(it[0].notificationMessage)
                             it[0].action?.let { action ->
+                                logger.debug("Action: $action")
                                 newsFeedView.setActionLabel(action)
                             }
                         }
@@ -117,6 +118,8 @@ class NewsFeedPresenterImpl @Inject constructor(
         newsFeedView.setNewsFeedContentText(windNotification.notificationMessage)
         windNotification.action?.let {
             newsFeedView.setActionLabel(it)
+        } ?: kotlin.run {
+            newsFeedView.hideActionLabel()
         }
     }
 }

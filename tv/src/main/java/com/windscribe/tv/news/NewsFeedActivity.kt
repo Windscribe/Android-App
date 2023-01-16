@@ -85,6 +85,10 @@ class NewsFeedActivity : BaseActivity(), NewsFeedView {
         actionLabel?.visibility = View.VISIBLE
     }
 
+    override fun hideActionLabel() {
+        actionLabel?.visibility = View.GONE
+    }
+
     override fun setItemSelected(notificationId: Int) {
         newsFeedAdapter?.setItemSelected(notificationId)
     }

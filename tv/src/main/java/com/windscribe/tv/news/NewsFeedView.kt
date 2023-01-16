@@ -14,4 +14,5 @@ interface NewsFeedView {
     fun setNewsFeedContentText(contentText: String)
     fun showLoadingError(errorMessage: String)
     fun startUpgradeActivity(pushNotificationAction: PushNotificationAction)
+    fun hideActionLabel()
 }
