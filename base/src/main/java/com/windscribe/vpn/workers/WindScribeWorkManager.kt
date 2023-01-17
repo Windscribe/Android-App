@@ -98,20 +98,44 @@ class WindScribeWorkManager(private val context: Context, private val scope: Cor
     }
 
     fun updateStaticIpList() {
-        WorkManager.getInstance(context).enqueueUniqueWork(STATIC_IP_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(StaticIpWorker::class.java))
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            STATIC_IP_WORKER_KEY,
+            ExistingWorkPolicy.REPLACE,
+            createOneTimeWorkerRequest(StaticIpWorker::class.java)
+        )
     }
 
     fun updateNotifications() {
-        WorkManager.getInstance(context).enqueueUniqueWork(NOTIFICATION_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(NotificationWorker::class.java))
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            NOTIFICATION_WORKER_KEY,
+            ExistingWorkPolicy.REPLACE,
+            createOneTimeWorkerRequest(NotificationWorker::class.java)
+        )
     }
 
-    fun checkPendingAccountUpgrades(){
+    fun updateNodeLatencies() {
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            LATENCY_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(
+                LatencyWorker::class.java
+            )
+        )
+    }
+
+    fun checkPendingAccountUpgrades() {
         val pkgManager: PackageManager = context.packageManager
         val installerPackageName = pkgManager.getInstallerPackageName(context.packageName)
         if (installerPackageName != null && installerPackageName.startsWith("com.amazon")) {
-            WorkManager.getInstance(context).enqueueUniqueWork(PENDING_AMAZON_RECEIPT_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(AmazonPendingReceiptValidator::class.java))
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                PENDING_AMAZON_RECEIPT_WORKER_KEY,
+                ExistingWorkPolicy.REPLACE,
+                createOneTimeWorkerRequest(AmazonPendingReceiptValidator::class.java)
+            )
         } else {
-            WorkManager.getInstance(context).enqueueUniqueWork(PENDING_GOGGLE_RECEIPT_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(GooglePendingReceiptValidator::class.java))
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                PENDING_GOGGLE_RECEIPT_WORKER_KEY,
+                ExistingWorkPolicy.REPLACE,
+                createOneTimeWorkerRequest(GooglePendingReceiptValidator::class.java)
+            )
         }
     }
 
@@ -136,5 +160,6 @@ class WindScribeWorkManager(private val context: Context, private val scope: Cor
         const val CREDENTIALS_WORKER_KEY = "com.windscribe.vpn.credentials"
         const val PENDING_GOGGLE_RECEIPT_WORKER_KEY = "com.windscribe.vpn.pendingGoogleReceipts"
         const val PENDING_AMAZON_RECEIPT_WORKER_KEY = "com.windscribe.vpn.pendingAmazonReceipts"
+        const val LATENCY_WORKER_KEY = "com.windscribe.vpn.latencyWorker"
     }
 }

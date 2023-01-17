@@ -186,7 +186,6 @@
     <string name="all_locations">Toutes les localisations</string>
     <string name="robert">R.O.B.E.R.T.</string>
     <string name="terms"><![CDATA[Les abonnements peuvent être gérés mensuellement, annuellement ou désactivés en allant dans les paramètres du compte App Store après l’achat. Tous les prix sont TTC.]]></string>
-    <string name="terms_policy"><b>Conditions d’utilisation </b> et <b>Charte de confidentialité.</b></string>
     <string name="account_set_up">Configuration du compte</string>
     <string name="account_set_up_description">Protégez votre compte et accédez-y depuis n’importe quel appareil.</string>
     <string name="continue_free_10gb_mo">Recevez 10 Go/mois gratuits</string>
