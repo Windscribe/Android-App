@@ -86,6 +86,7 @@ interface WindscribePresenter {
     suspend fun observeAllLocations()
     suspend fun observerSelectedLocation()
     suspend fun observeDecoyTrafficState()
+    suspend fun observeLatency()
     fun setAdapters()
     fun toggleBlurNetworkName()
     fun loadConfigFile(data: Intent)
