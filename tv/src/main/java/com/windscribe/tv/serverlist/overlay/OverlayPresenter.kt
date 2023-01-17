@@ -11,4 +11,5 @@ interface OverlayPresenter {
     fun staticIpViewReady()
     fun allLocationViewReady()
     fun windLocationViewReady()
+    suspend fun observeLatencyChange()
 }
