@@ -194,7 +194,6 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun init() {
-        interactor.getAppPreferenceInterface().pingTestRequired = true
         val ipAddress = interactor.getAppPreferenceInterface()
             .getResponseString(PreferencesKeyConstants.USER_IP)
         if (ipAddress != null && interactor.getVpnConnectionStateManager().isVPNActive()) {

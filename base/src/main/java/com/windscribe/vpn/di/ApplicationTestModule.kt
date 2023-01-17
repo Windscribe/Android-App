@@ -327,20 +327,22 @@ class ApplicationTestModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun provideServerListUpdater(
-            scope: CoroutineScope,
-            preferencesHelper: PreferencesHelper,
-            apiCallManager: IApiCallManager,
-            localDbInterface: LocalDbInterface,
-            preferenceChangeObserver: PreferenceChangeObserver,
-            userRepository: UserRepository, appLifeCycleObserver: AppLifeCycleObserver
+        scope: CoroutineScope,
+        apiCallManager: IApiCallManager,
+        localDbInterface: LocalDbInterface,
+        preferenceChangeObserver: PreferenceChangeObserver,
+        userRepository: UserRepository,
+        appLifeCycleObserver: AppLifeCycleObserver,
+        workManager: WindScribeWorkManager
     ): ServerListRepository {
         return ServerListRepository(
-                scope,
-                preferencesHelper,
-                apiCallManager,
-                localDbInterface,
-                preferenceChangeObserver, userRepository,
-                appLifeCycleObserver
+            scope,
+            apiCallManager,
+            localDbInterface,
+            preferenceChangeObserver,
+            userRepository,
+            appLifeCycleObserver,
+            workManager
         )
     }
 
