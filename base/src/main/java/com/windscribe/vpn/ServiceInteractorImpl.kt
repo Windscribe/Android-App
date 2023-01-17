@@ -72,6 +72,10 @@ class ServiceInteractorImpl @Inject constructor(
         return localDbInterface.cities
     }
 
+    override fun getPingableCities(): Single<List<City>> {
+        return localDbInterface.pingableCities
+    }
+
     override fun getAllFavourites(): Single<List<Favourite>> {
         return localDbInterface.favourites
     }

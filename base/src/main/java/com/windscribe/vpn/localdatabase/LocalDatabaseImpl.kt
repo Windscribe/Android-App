@@ -4,28 +4,9 @@
 package com.windscribe.vpn.localdatabase
 
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.localdatabase.tables.NetworkInfo
-import com.windscribe.vpn.localdatabase.tables.PingTestResults
-import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
-import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
-import com.windscribe.vpn.localdatabase.tables.UserStatusTable
-import com.windscribe.vpn.localdatabase.tables.WindNotification
-import com.windscribe.vpn.serverlist.dao.CityAndRegionDao
-import com.windscribe.vpn.serverlist.dao.CityDao
-import com.windscribe.vpn.serverlist.dao.ConfigFileDao
-import com.windscribe.vpn.serverlist.dao.FavouriteDao
-import com.windscribe.vpn.serverlist.dao.PingTimeDao
-import com.windscribe.vpn.serverlist.dao.RegionAndCitiesDao
-import com.windscribe.vpn.serverlist.dao.RegionDao
-import com.windscribe.vpn.serverlist.dao.StaticRegionDao
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.CityAndRegion
-import com.windscribe.vpn.serverlist.entity.ConfigFile
-import com.windscribe.vpn.serverlist.entity.Favourite
-import com.windscribe.vpn.serverlist.entity.PingTime
-import com.windscribe.vpn.serverlist.entity.Region
-import com.windscribe.vpn.serverlist.entity.RegionAndCities
-import com.windscribe.vpn.serverlist.entity.StaticRegion
+import com.windscribe.vpn.localdatabase.tables.*
+import com.windscribe.vpn.serverlist.dao.*
+import com.windscribe.vpn.serverlist.entity.*
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import io.reactivex.Completable
 import io.reactivex.Flowable
@@ -123,6 +104,9 @@ class LocalDatabaseImpl @Inject constructor(
         get() = staticRegionsDao.allStaticRegionsFlowAble
     override val cities: Single<List<City>>
         get() = cityDao.cities
+    override val pingableCities: Single<List<City>>
+        get() = cityDao.pingableCities
+
     override fun getCitiesByRegion(regionID: Int, pro: Int): Single<Int> {
         return cityAndRegionDao.getCitiesByRegion(regionID, pro)
     }

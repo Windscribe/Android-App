@@ -30,6 +30,7 @@ interface ServiceInteractor {
     fun insertOrUpdateUserStatus(userStatusTable: UserStatusTable): Completable
     fun addPing(pingTime: PingTime): Completable
     fun getAllCities(): Single<List<City>>
+    fun getPingableCities(): Single<List<City>>
     fun getAllRegion(): Single<List<RegionAndCities>>
     fun getAllFavourites(): Single<List<Favourite>>
     fun getCity(id: Int): Single<City>
