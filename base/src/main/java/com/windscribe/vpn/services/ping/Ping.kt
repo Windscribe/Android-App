@@ -10,7 +10,6 @@ import android.system.ErrnoException
 import android.system.Os
 import android.system.OsConstants
 import android.system.StructPollfd
-import io.reactivex.Single
 import java.io.FileDescriptor
 import java.net.Inet6Address
 import java.net.InetAddress
@@ -20,11 +19,11 @@ import java.nio.ByteBuffer
 open class Ping {
 
     @Throws(Exception::class)
-    fun run(mDest: InetAddress?, timeoutMs: Int): Single<Long> {
-        val type = if (mDest is Inet6Address) EchoPacketBuilder.TYPE_ICMP_V6 else EchoPacketBuilder.TYPE_ICMP_V4
+    fun run(mDest: InetAddress?, timeoutMs: Int): Long {
+        val type =
+            if (mDest is Inet6Address) EchoPacketBuilder.TYPE_ICMP_V6 else EchoPacketBuilder.TYPE_ICMP_V4
         val mEchoPacketBuilder = EchoPacketBuilder(
-                type,
-                "abcdefghijklmnopqrstuvwabcdefghi".toByteArray()
+            type, "abcdefghijklmnopqrstuvwabcdefghi".toByteArray()
         )
         val inet: Int
         val proto: Int
@@ -57,15 +56,11 @@ open class Ping {
                             close(fd)
                             throw Exception()
                         }
-                        Single.fromCallable {
-                            close(fd)
-                            time
-                        }
+                        close(fd)
+                        time
                     } else {
-                        Single.fromCallable {
-                            close(fd)
-                            throw Exception()
-                        }
+                        close(fd)
+                        throw Exception()
                     }
                 } else {
                     close(fd)

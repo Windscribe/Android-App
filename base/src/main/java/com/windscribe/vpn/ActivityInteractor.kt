@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn
 
+import androidx.lifecycle.LifecycleCoroutineScope
 import com.windscribe.vpn.ActivityInteractorImpl.PortMapLoadCallback
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.ServerNodeListOverLoaded
@@ -122,6 +123,7 @@ interface ActivityInteractor {
     fun getLocationProvider(): LocationRepository
     fun getVPNController(): WindVpnController
     fun getMainScope(): CoroutineScope
+    fun getActivityScope(): LifecycleCoroutineScope
     fun getServerListUpdater(): ServerListRepository
     fun getConnectionDataUpdater(): ConnectionDataRepository
     fun getStaticListUpdater(): StaticIpRepository
@@ -131,4 +133,5 @@ interface ActivityInteractor {
     fun getDecoyTrafficController(): DecoyTrafficController
     fun getTrafficCounter(): TrafficCounter
     fun getAutoConnectionManager(): AutoConnectionManager
+    fun getLatencyRepository(): LatencyRepository
 }

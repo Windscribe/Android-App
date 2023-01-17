@@ -21,7 +21,6 @@ import com.windscribe.vpn.constants.UserStatusConstants.USER_STATUS_PREMIUM
 import com.windscribe.vpn.errormodel.SessionErrorHandler
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.repository.CallResult
-import com.windscribe.vpn.services.ping.PingTestService.Companion.startPingTestService
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.SingleSource
@@ -411,7 +410,7 @@ class WelcomePresenterImpl @Inject constructor(
                     override fun onComplete() {
                         interactor.getWorkManager().onAppStart()
                         interactor.getWorkManager().onAppMovedToForeground()
-                        startPingTestService()
+                        interactor.getWorkManager().updateNodeLatencies()
                         welcomeView.gotoHomeActivity(true)
                     }
 
