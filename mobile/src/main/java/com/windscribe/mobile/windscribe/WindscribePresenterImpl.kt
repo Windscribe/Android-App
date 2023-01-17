@@ -927,7 +927,7 @@ class WindscribePresenterImpl @Inject constructor(
         logger.debug("Starting ping testing for custom nodes.")
         interactor.getActivityScope().launch {
             withContext(interactor.getMainScope().coroutineContext) {
-                return@withContext interactor.getLatencyRepository().updateConfigs()
+                return@withContext interactor.getLatencyRepository().updateConfigLatencies()
             }
             windscribeView.setRefreshLayout(false)
             logger.debug("Ping testing finished successfully.")
@@ -941,7 +941,7 @@ class WindscribePresenterImpl @Inject constructor(
         logger.debug("Starting ping testing for favourite nodes.")
         interactor.getActivityScope().launch {
             withContext(interactor.getMainScope().coroutineContext) {
-                return@withContext interactor.getLatencyRepository().updateFavourites()
+                return@withContext interactor.getLatencyRepository().updateFavouriteCityLatencies()
             }
             windscribeView.setRefreshLayout(false)
             logger.debug("Ping testing finished successfully.")
@@ -955,7 +955,7 @@ class WindscribePresenterImpl @Inject constructor(
         logger.debug("Starting ping testing for static nodes.")
         interactor.getActivityScope().launch {
             withContext(interactor.getMainScope().coroutineContext) {
-                return@withContext interactor.getLatencyRepository().updateStaticIp()
+                return@withContext interactor.getLatencyRepository().updateStaticIpLatency()
             }
             windscribeView.setRefreshLayout(false)
             logger.debug("Ping testing finished successfully.")
@@ -969,7 +969,8 @@ class WindscribePresenterImpl @Inject constructor(
         logger.debug("Starting ping testing for streaming nodes.")
         interactor.getActivityScope().launch {
             withContext(interactor.getMainScope().coroutineContext) {
-                return@withContext interactor.getLatencyRepository().updateStreamingServers()
+                return@withContext interactor.getLatencyRepository()
+                    .updateStreamingServerLatencies()
             }
             windscribeView.setRefreshLayout(false)
             logger.debug("Ping testing finished successfully.")
@@ -1536,7 +1537,7 @@ class WindscribePresenterImpl @Inject constructor(
                         logger.error("Config added successfully to database.")
                         interactor.getActivityScope().launch {
                             withContext(interactor.getMainScope().coroutineContext) {
-                                interactor.getLatencyRepository().updateConfigs()
+                                interactor.getLatencyRepository().updateConfigLatencies()
                             }
                             windscribeView.showToast(interactor.getResourceString(R.string.config_added))
                             interactor.getPreferenceChangeObserver().postConfigListChange()

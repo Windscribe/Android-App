@@ -48,11 +48,15 @@ class LatencyRepository @Inject constructor(
                 return@run updateState(this, LatencyType.Servers)
             }
         }
-        val staticPings = updateStaticIp()
-        return cityPings.getOrElse { false } || staticPings
+        val staticLatencyChanged = updateStaticIpLatency()
+        val cityPingsChanged = cityPings.getOrElse { false }
+        if (cityPingsChanged || staticLatencyChanged) {
+            interactor.preferenceHelper.pingTestRequired = false
+        }
+        return cityPingsChanged || staticLatencyChanged
     }
 
-    suspend fun updateFavourites(): Boolean {
+    suspend fun updateFavouriteCityLatencies(): Boolean {
         val cityPings = runCatching {
             interactor.getAllFavourites().await().map {
                 interactor.getCity(it.id).await()
@@ -71,7 +75,7 @@ class LatencyRepository @Inject constructor(
         return cityPings.getOrElse { false }
     }
 
-    suspend fun updateStreamingServers(): Boolean {
+    suspend fun updateStreamingServerLatencies(): Boolean {
         val cityPings = runCatching {
             interactor.getAllRegion().await().filter {
                 it.region.locationType == "streaming"
@@ -116,7 +120,7 @@ class LatencyRepository @Inject constructor(
         return latencies.isNotEmpty()
     }
 
-    suspend fun updateStaticIp(): Boolean {
+    suspend fun updateStaticIpLatency(): Boolean {
         val staticPings = runCatching {
             interactor.getAllStaticRegions().await().map { region ->
                 if (skipPing) {
@@ -124,9 +128,7 @@ class LatencyRepository @Inject constructor(
                 }
                 if (region.staticIpNode != null) {
                     getLatency(
-                        region.id,
-                        region.ipId,
-                        region.staticIpNode.ip.toString(),
+                        region.id, region.ipId, region.staticIpNode.ip.toString(),
                         isStatic = true,
                         isPro = true
                     )
@@ -143,7 +145,7 @@ class LatencyRepository @Inject constructor(
         return staticPings.getOrElse { false }
     }
 
-    suspend fun updateConfigs(): Boolean {
+    suspend fun updateConfigLatencies(): Boolean {
         val configPings = runCatching {
             interactor.getAllConfigs().map { configFile ->
                 if (skipPing) {
