@@ -186,7 +186,6 @@
     <string name="all_locations">Todas las ubicaciones</string>
     <string name="robert">R.O.B.E.R.T.</string>
     <string name="terms"><![CDATA[Las suscripciones se pueden administrar mensual o anualmente, o puedes desactivarlas en la configuración de la cuenta de App Store luego de la compra. Todos los precios incluyen los impuestos correspondientes.]]></string>
-    <string name="terms_policy"><b>Términos de uso </b> y <b>Política de privacidad.</b></string>
     <string name="account_set_up">Configuración de la cuenta</string>
     <string name="account_set_up_description">Salvaguarda tu cuenta y accédela desde cualquier dispositivo.</string>
     <string name="continue_free_10gb_mo">Obtén 10 GB mensuales gratis</string>

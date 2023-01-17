@@ -247,7 +247,7 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
 
     private fun setTermAndPolicyText() {
         val appName = getString(string.app_name)
-        val termAndPolicyText = getString(string.terms_policy)
+        val termAndPolicyText = getString(string.terms_policy_en)
         val fullText = "$appName $termAndPolicyText"
         val spannable: Spannable = SpannableString(fullText)
         val spanStart = fullText.length - termAndPolicyText.length

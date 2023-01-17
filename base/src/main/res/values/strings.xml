@@ -195,7 +195,7 @@
     <string name="all_locations">All Locations</string>
     <string name="robert">R.O.B.E.R.T.</string>
     <string name="terms"><![CDATA[Subscriptions may be managed monthly, yearly or turned off by going to the Google play store account settings after purchase. All prices include applicable taxes.]]></string>
-    <string name="terms_policy"><b>Terms of Use </b> &amp; <b>Privacy Policy.</b></string>
+    <string name="terms_policy_en"><b>Terms of Use </b> &amp; <b>Privacy Policy.</b></string>
     <string name="account_set_up">Account Setup</string>
     <string name="account_set_up_description">Safeguard your account and access it from any device.</string>
     <string name="continue_free_10gb_mo">Get Free 10GB/month</string>

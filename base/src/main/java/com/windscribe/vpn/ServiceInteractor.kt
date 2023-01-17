@@ -30,6 +30,9 @@ interface ServiceInteractor {
     fun insertOrUpdateUserStatus(userStatusTable: UserStatusTable): Completable
     fun addPing(pingTime: PingTime): Completable
     fun getAllCities(): Single<List<City>>
+    fun getAllRegion(): Single<List<RegionAndCities>>
+    fun getAllFavourites(): Single<List<Favourite>>
+    fun getCity(id: Int): Single<City>
     fun getAllStaticRegions(): Single<List<StaticRegion>>
     fun getLowestPingId(): Single<Int>
     fun getStaticIpCount(): Int
@@ -44,4 +47,5 @@ interface ServiceInteractor {
     suspend fun sendLog(): CallResult<GenericSuccess>
     suspend fun clearData()
     fun saveNetwork(networkInfo: NetworkInfo): Single<Int>
+    suspend fun getAllConfigs(): List<ConfigFile>
 }
