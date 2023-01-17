@@ -434,7 +434,7 @@ class WindscribeActivity :
         activityScope { presenter.observerSelectedLocation() }
         activityScope { presenter.observeDecoyTrafficState() }
         activityScope { presenter.showShareLinkDialog() }
-        activityScope { presenter.observeDecoyTrafficState() }
+        activityScope { presenter.observeLatency() }
         presenter.registerNetworkInfoListener()
         presenter.handlePushNotification(intent.extras)
         presenter.observeUserData(this)
@@ -1997,9 +1997,6 @@ class WindscribeActivity :
         preferenceChangeObserver.addConfigListObserver(
             this
         ) { presenter.loadConfigLocations() }
-        preferenceChangeObserver.addLatencyChangeObserver(
-            this
-        ) { presenter.updateLatency() }
         preferenceChangeObserver.addLanguageChangeObserver(
             this
         ) { presenter.onLanguageChanged() }

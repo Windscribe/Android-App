@@ -35,8 +35,8 @@ import com.windscribe.tv.serverlist.fragments.WindOverlayFragment
 import com.windscribe.tv.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.state.PreferenceChangeObserver
-import javax.inject.Inject
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
 class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
     @JvmField
@@ -487,6 +487,7 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
     private fun registerDataChangeObservers() {
         activityScope { presenter.observeStaticRegions() }
         activityScope { presenter.observeAllLocations() }
+        activityScope { presenter.observeLatencyChange() }
     }
 
     private fun setConstraints() {

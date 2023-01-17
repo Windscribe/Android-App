@@ -12,16 +12,17 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.ServerListData
-import com.windscribe.tv.serverlist.detail.DetailListener
 import androidx.recyclerview.widget.RecyclerView
 import com.windscribe.tv.R
 import com.windscribe.tv.serverlist.adapters.DetailViewAdapter.DetailViewHolder
 import com.windscribe.tv.serverlist.customviews.ConnectButtonView
 import com.windscribe.tv.serverlist.customviews.FavouriteButtonView
+import com.windscribe.tv.serverlist.detail.DetailListener
 import com.windscribe.vpn.api.response.ServerNodeListOverLoaded
+import com.windscribe.vpn.serverlist.entity.City
 import com.windscribe.vpn.serverlist.entity.Favourite
+import com.windscribe.vpn.serverlist.entity.PingTime
+import com.windscribe.vpn.serverlist.entity.ServerListData
 
 class DetailViewAdapter(
     private val locationList: List<City>,
@@ -183,7 +184,8 @@ class DetailViewAdapter(
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setPingTestResultList() {
+    fun setPings(pingTimes: List<PingTime>) {
+        dataDetails.pingTimes = pingTimes
         notifyDataSetChanged()
     }
 

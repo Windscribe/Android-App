@@ -21,7 +21,7 @@ class LatencyWorker(context: Context, parameters: WorkerParameters) :
 
     override suspend fun doWork(): Result {
         return withContext(Dispatchers.IO) {
-            return@withContext if (latencyRepository.updateAllPings()) {
+            return@withContext if (latencyRepository.updateAllServerLatencies()) {
                 Result.success()
             } else {
                 Result.retry()
