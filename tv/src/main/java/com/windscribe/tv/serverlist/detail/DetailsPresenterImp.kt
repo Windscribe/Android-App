@@ -11,14 +11,16 @@ import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.Windscribe.Companion.getExecutorService
 import com.windscribe.vpn.api.response.ServerNodeListOverLoaded
 import com.windscribe.vpn.commonutils.FlagIconResource
-import com.windscribe.vpn.localdatabase.tables.PingTestResults
+import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.serverlist.entity.*
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.flow.collectLatest
 import org.slf4j.LoggerFactory
+import java.util.concurrent.atomic.AtomicBoolean
 
 class DetailsPresenterImp(
     private val detailView: DetailView,
@@ -78,8 +80,6 @@ class DetailsPresenterImp(
                             )
                             detailViewAdapter?.setPremiumUser(interactor.isPremiumUser())
                             detailViewAdapter?.let { detailView.setDetailAdapter(it) }
-
-                            setPings()
                             setFavouriteStates()
                             detailView.setState(LoadState.Loaded, 0, 0)
                             logger.debug("Successfully loaded detail view.")
@@ -137,7 +137,7 @@ class DetailsPresenterImp(
                     override fun onSuccess(favourites: List<Favourite>) {
                         logger.debug("Removed from favourites.")
                         detailView.showToast("Removed from favourites")
-                        resetAdapters(favourites)
+                        detailViewAdapter?.setFavourites(favourites)
                     }
                 }))
     }
@@ -158,14 +158,10 @@ class DetailsPresenterImp(
                 override fun onSuccess(favourites: List<Favourite>) {
                     logger.debug("Added to favourites.")
                     detailView.showToast("Added to favourites")
-                    resetAdapters(favourites)
+                    detailViewAdapter?.setFavourites(favourites)
                 }
             })
         )
-    }
-
-    private fun resetAdapters(favourites: List<Favourite>) {
-        detailViewAdapter?.setFavourites(favourites)
     }
 
     private fun setBackground(regionId: Int) {
@@ -189,8 +185,7 @@ class DetailsPresenterImp(
     private fun setFavouriteStates() {
         interactor.getCompositeDisposable().add(
             interactor.getFavoriteServerList()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableSingleObserver<List<ServerNodeListOverLoaded>>() {
                     override fun onError(e: Throwable) {}
                     override fun onSuccess(serverNodeListOverLoaded: List<ServerNodeListOverLoaded>) {
@@ -200,15 +195,25 @@ class DetailsPresenterImp(
         )
     }
 
-    private fun setPings() {
+    private val latencyAtomic = AtomicBoolean(true)
+    override suspend fun observeLatencyChange() {
+        interactor.getLatencyRepository().latencyEvent.collectLatest {
+            if (latencyAtomic.getAndSet(false)) return@collectLatest
+            when (it.second) {
+                LatencyRepository.LatencyType.Servers -> updateLatency()
+                else -> {}
+            }
+        }
+    }
+
+    private fun updateLatency() {
         interactor.getCompositeDisposable().add(
-            interactor.getPingResults()
-                .subscribeOn(Schedulers.io())
+            interactor.getAllPings().subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSingleObserver<List<PingTestResults>>() {
+                .subscribeWith(object : DisposableSingleObserver<List<PingTime>>() {
                     override fun onError(e: Throwable) {}
-                    override fun onSuccess(pingTestResults: List<PingTestResults>) {
-                        detailViewAdapter?.setPingTestResultList()
+                    override fun onSuccess(pings: List<PingTime>) {
+                        detailViewAdapter?.setPings(pings)
                     }
                 })
         )
