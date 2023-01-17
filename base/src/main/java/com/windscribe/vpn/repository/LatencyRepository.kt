@@ -38,6 +38,7 @@ class LatencyRepository @Inject constructor(
         val cityPings = runCatching {
             interactor.getPingableCities().await().map { city ->
                 if (skipPing) {
+                    interactor.preferenceHelper.pingTestRequired = true
                     throw Exception()
                 }
                 getLatency(city.getId(), city.regionID, city.pingIp, false, city.pro == 1)
@@ -50,7 +51,7 @@ class LatencyRepository @Inject constructor(
         }
         val staticLatencyChanged = updateStaticIpLatency()
         val cityPingsChanged = cityPings.getOrElse { false }
-        if (cityPingsChanged || staticLatencyChanged) {
+        if (cityPingsChanged) {
             interactor.preferenceHelper.pingTestRequired = false
         }
         return cityPingsChanged || staticLatencyChanged
