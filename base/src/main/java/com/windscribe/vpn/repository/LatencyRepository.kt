@@ -28,7 +28,7 @@ class LatencyRepository @Inject constructor(
 
     suspend fun updateAllPings(): Boolean {
         val cityPings = runCatching {
-            interactor.getAllCities().await().map { city ->
+            interactor.getPingableCities().await().map { city ->
                 if (skipPing) {
                     throw Exception()
                 }

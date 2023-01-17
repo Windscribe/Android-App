@@ -3,22 +3,10 @@
  */
 package com.windscribe.vpn.localdatabase
 
-import com.windscribe.vpn.localdatabase.tables.NetworkInfo
+import com.windscribe.vpn.localdatabase.tables.*
+import com.windscribe.vpn.serverlist.entity.*
 import io.reactivex.Completable
-import com.windscribe.vpn.serverlist.entity.PingTime
-import com.windscribe.vpn.serverlist.entity.StaticRegion
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.Favourite
-import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import io.reactivex.Flowable
-import com.windscribe.vpn.localdatabase.tables.PingTestResults
-import com.windscribe.vpn.serverlist.entity.RegionAndCities
-import com.windscribe.vpn.serverlist.entity.CityAndRegion
-import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
-import com.windscribe.vpn.localdatabase.tables.UserStatusTable
-import com.windscribe.vpn.localdatabase.tables.WindNotification
-import com.windscribe.vpn.serverlist.entity.ConfigFile
-import com.windscribe.vpn.serverlist.entity.Region
 import io.reactivex.Single
 
 interface LocalDbInterface {
@@ -44,6 +32,7 @@ interface LocalDbInterface {
     val allStaticRegions: Single<List<StaticRegion>>
     val allStaticRegionsFlowAble: Flowable<List<StaticRegion>>
     val cities: Single<List<City>>
+    val pingableCities: Single<List<City>>
     fun getCitiesByRegion(regionID: Int, pro: Int): Single<Int>
     val city: Single<CityAndRegion>
     fun getCityAndRegionByID(cityAndRegionID: Int): Single<CityAndRegion>

@@ -36,6 +36,9 @@ abstract public class CityDao {
     @Query("Select * from City where nodes not null order by primaryKey")
     public abstract Single<List<City>> getCities();
 
+    @Query("Select * from City order by primaryKey")
+    public abstract Single<List<City>> getPingableCities();
+
     @Query("Select * from City where city_id=:id")
     public abstract Single<City> getCityByID(int id);
 
