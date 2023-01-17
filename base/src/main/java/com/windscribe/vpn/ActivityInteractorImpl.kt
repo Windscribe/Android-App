@@ -7,6 +7,7 @@ package com.windscribe.vpn
 import android.os.Build
 import android.os.Build.VERSION
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleCoroutineScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.windscribe.vpn.R.*
@@ -56,6 +57,7 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
  * @see ActivityInteractor
 */
 class ActivityInteractorImpl(
+    private val activityScope: LifecycleCoroutineScope,
     private val mainScope: CoroutineScope,
     val preferenceHelper: PreferencesHelper,
     private val apiCallManager: IApiCallManager,
@@ -73,7 +75,8 @@ class ActivityInteractorImpl(
     private val windScribeWorkManager: WindScribeWorkManager,
     private val decoyTrafficController: DecoyTrafficController,
     private val trafficCounter: TrafficCounter,
-    private val autoConnectionManager: AutoConnectionManager
+    private val autoConnectionManager: AutoConnectionManager,
+    private val latencyRepository: LatencyRepository,
 ) : ActivityInteractor {
 
     interface PortMapLoadCallback {
@@ -114,7 +117,11 @@ class ActivityInteractorImpl(
         return mainScope
     }
 
-    override fun getDecoyTrafficController(): DecoyTrafficController{
+    override fun getActivityScope(): LifecycleCoroutineScope {
+        return activityScope
+    }
+
+    override fun getDecoyTrafficController(): DecoyTrafficController {
         return decoyTrafficController
     }
 
@@ -144,6 +151,10 @@ class ActivityInteractorImpl(
 
     override fun getAutoConnectionManager(): AutoConnectionManager {
         return autoConnectionManager
+    }
+
+    override fun getLatencyRepository(): LatencyRepository {
+        return latencyRepository
     }
 
     override fun addConfigFile(configFile: ConfigFile): Completable {

@@ -20,7 +20,6 @@ import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.SessionErrorHandler
 import com.windscribe.vpn.errormodel.WindError
-import com.windscribe.vpn.services.ping.PingTestService
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Single
@@ -470,7 +469,7 @@ class WelcomePresenterImpl @Inject constructor(
                     override fun onComplete() {
                         interactor.getWorkManager().onAppStart()
                         interactor.getWorkManager().onAppMovedToForeground()
-                        PingTestService.startPingTestService()
+                        interactor.getWorkManager().updateNodeLatencies()
                         if (isRegistration) {
                             welcomeView.gotoAddEmailActivity(
                                 interactor.getAppPreferenceInterface().userStatus

@@ -33,7 +33,6 @@ import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.serverlist.entity.*
-import com.windscribe.vpn.services.ping.PingTestService
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -294,7 +293,7 @@ class WindscribePresenterImpl @Inject constructor(
             logger.debug("Network state changed & vpn is not active, getting ip address...")
             setIPAddress()
             if (WindUtilities.isOnline() && !interactor.getVpnConnectionStateManager().isVPNActive() && interactor.getAppPreferenceInterface().pingTestRequired) {
-                PingTestService.startPingTestService()
+                interactor.getWorkManager().updateNodeLatencies()
             }
         }
     }

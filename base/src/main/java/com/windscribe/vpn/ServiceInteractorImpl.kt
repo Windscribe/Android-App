@@ -72,6 +72,18 @@ class ServiceInteractorImpl @Inject constructor(
         return localDbInterface.cities
     }
 
+    override fun getAllFavourites(): Single<List<Favourite>> {
+        return localDbInterface.favourites
+    }
+
+    override fun getAllRegion(): Single<List<RegionAndCities>> {
+        return localDbInterface.allRegion
+    }
+
+    override fun getCity(id: Int): Single<City> {
+        return localDbInterface.getCityByID(id)
+    }
+
     override fun getAllStaticRegions(): Single<List<StaticRegion>> {
         return localDbInterface.allStaticRegions
     }
@@ -112,6 +124,10 @@ class ServiceInteractorImpl @Inject constructor(
 
     override fun getConfigFile(id: Int): Single<ConfigFile> {
         return this.localDbInterface.getConfigFile(id)
+    }
+
+    override suspend fun getAllConfigs(): List<ConfigFile> {
+        return this.localDbInterface.allConfigs.await()
     }
 
     override fun addConfigFile(configFile: ConfigFile): Completable {

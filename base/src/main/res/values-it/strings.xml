@@ -186,7 +186,6 @@
     <string name="all_locations">Tutte le posizioni</string>
     <string name="robert">R.O.B.E.R.T.</string>
     <string name="terms"><![CDATA[Gli abbonamenti possono essere gestiti su base mensile, annuale, oppure possono essere disattivati nelle impostazioni dell\'account dell\'app store dopo l\'acquisto. Tutti i prezzi includono le tasse applicabili.]]></string>
-    <string name="terms_policy"><b>Condizioni d\'uso </b> e <b>Informativa sulla privacy.</b></string>
     <string name="account_set_up">Configurazione dell\'account</string>
     <string name="account_set_up_description">Tutela il tuo account e accedi da qualsiasi dispositivo.</string>
     <string name="continue_free_10gb_mo">Ottieni 10 GB/Mese gratis</string>

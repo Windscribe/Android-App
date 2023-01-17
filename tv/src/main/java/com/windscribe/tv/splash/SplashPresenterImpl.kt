@@ -10,7 +10,6 @@ import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.errormodel.WindError.Companion.instance
-import com.windscribe.vpn.services.ping.PingTestService
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.observers.DisposableCompletableObserver
 import io.reactivex.observers.DisposableSingleObserver
@@ -125,7 +124,7 @@ class SplashPresenterImpl @Inject constructor(
         if (sessionHash != null) {
             logger.info("Session auth hash present. User is already logged in...")
             if (WindUtilities.isOnline()) {
-                PingTestService.startPingTestService()
+                interactor.getWorkManager().updateNodeLatencies()
                 interactor.getWorkManager().checkPendingAccountUpgrades()
             }
             splashView.navigateToHome()

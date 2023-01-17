@@ -5,6 +5,8 @@ package com.windscribe.tv.di
 
 import android.animation.ArgbEvaluator
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.lifecycleScope
 import com.windscribe.tv.confirmemail.ConfirmEmailPresenter
 import com.windscribe.tv.confirmemail.ConfirmEmailPresenterImp
 import com.windscribe.tv.confirmemail.ConfirmEmailView
@@ -276,8 +278,14 @@ class ActivityModule {
     }
 
     @Provides
+    fun providesActivityScope(): LifecycleCoroutineScope {
+        return activity.lifecycleScope
+    }
+
+    @Provides
     @PerActivity
     fun provideActivityInteractor(
+        activityScope: LifecycleCoroutineScope,
         coroutineScope: CoroutineScope,
         prefHelper: PreferencesHelper,
         apiCallManager: IApiCallManager,
@@ -295,19 +303,30 @@ class ActivityModule {
         workManager: WindScribeWorkManager,
         decoyTrafficController: DecoyTrafficController,
         trafficCounter: TrafficCounter,
-        autoConnectionManager: AutoConnectionManager
+        autoConnectionManager: AutoConnectionManager,
+        latencyRepository: LatencyRepository
     ): ActivityInteractor {
         return ActivityInteractorImpl(
+            activityScope,
             coroutineScope,
-            prefHelper, apiCallManager, localDbInterface, vpnConnectionStateManager,
-            userRepository, networkInfoManager, locationRepository, vpnController,
+            prefHelper,
+            apiCallManager,
+            localDbInterface,
+            vpnConnectionStateManager,
+            userRepository,
+            networkInfoManager,
+            locationRepository,
+            vpnController,
             connectionDataRepository,
             serverListRepository,
             staticListUpdate,
             preferenceChangeObserver,
-            notificationRepository, workManager, decoyTrafficController,
+            notificationRepository,
+            workManager,
+            decoyTrafficController,
             trafficCounter,
-            autoConnectionManager
+            autoConnectionManager,
+            latencyRepository
         )
     }
 }

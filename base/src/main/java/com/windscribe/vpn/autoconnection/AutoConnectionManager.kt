@@ -233,16 +233,15 @@ class AutoConnectionManager(
         return appSupportedProtocolOrder
     }
 
-    fun updateNextInLineProtocol() {
+    private fun updateNextInLineProtocol() {
         scope.launch {
-            if (listOfProtocols.isNotEmpty()) {
-                val first = listOfProtocols.first()
-                _nextInLineProtocol.emit(first)
+            val result = runCatching { listOfProtocols.first() }
+            result.getOrNull()?.let {
+                _nextInLineProtocol.emit(it)
             }
         }
     }
-
-
+    
     private fun moveProtocolToTop(
         protocolInformation: ProtocolInformation,
         appSupportedProtocolOrder: ThreadSafeList<ProtocolInformation>

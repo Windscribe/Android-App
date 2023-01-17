@@ -11,7 +11,6 @@ import com.windscribe.vpn.services.DeviceStateService
 import com.windscribe.vpn.services.DisconnectService
 import com.windscribe.vpn.services.NetworkWhiteListService
 import com.windscribe.vpn.services.VpnTileService
-import com.windscribe.vpn.services.ping.PingTestService
 import dagger.Component
 
 @PerService
@@ -22,7 +21,6 @@ interface ServiceComponent {
     fun inject(disconnectService: DisconnectService)
     fun inject(openVPNWrapperService: OpenVPNWrapperService)
     fun inject(deviceStateService: DeviceStateService)
-    fun inject(pingTestService: PingTestService)
     fun inject(bootSessionService: BootSessionService)
     fun inject(tileService: VpnTileService)
     fun inject(charonVpnServiceWrapper: CharonVpnServiceWrapper)

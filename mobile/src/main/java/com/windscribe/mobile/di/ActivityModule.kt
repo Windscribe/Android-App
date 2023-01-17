@@ -7,6 +7,8 @@ import android.animation.ArgbEvaluator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
+import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.lifecycleScope
 import com.windscribe.mobile.about.AboutPresenter
 import com.windscribe.mobile.about.AboutPresenterImpl
 import com.windscribe.mobile.about.AboutView
@@ -446,8 +448,14 @@ class ActivityModule {
     }
 
     @Provides
+    fun providesActivityScope(): LifecycleCoroutineScope {
+        return activity.lifecycleScope
+    }
+
+    @Provides
     @PerActivity
     fun provideActivityInteractor(
+        activityScope: LifecycleCoroutineScope,
         coroutineScope: CoroutineScope,
         prefHelper: PreferencesHelper,
         apiCallManager: IApiCallManager,
@@ -465,12 +473,20 @@ class ActivityModule {
         workManager: WindScribeWorkManager,
         decoyTrafficController: DecoyTrafficController,
         trafficCounter: TrafficCounter,
-        autoConnectionManager: AutoConnectionManager
+        autoConnectionManager: AutoConnectionManager,
+        latencyRepository: LatencyRepository
     ): ActivityInteractor {
         return ActivityInteractorImpl(
+            activityScope,
             coroutineScope,
-            prefHelper, apiCallManager, localDbInterface, vpnConnectionStateManager,
-            userRepository, networkInfoManager, locationRepository, vpnController,
+            prefHelper,
+            apiCallManager,
+            localDbInterface,
+            vpnConnectionStateManager,
+            userRepository,
+            networkInfoManager,
+            locationRepository,
+            vpnController,
             connectionDataRepository,
             serverListRepository,
             staticListUpdate,
@@ -479,7 +495,8 @@ class ActivityModule {
             workManager,
             decoyTrafficController,
             trafficCounter,
-            autoConnectionManager
+            autoConnectionManager,
+            latencyRepository
         )
     }
 

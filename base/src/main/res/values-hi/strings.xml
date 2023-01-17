@@ -190,7 +190,6 @@
     <string name="robert">रोबर्ट</string>
     <string name="robert_description">R.O.B.E.R.T. एक सर्वर-साइड डोमेन और आईपी ब्लॉकिंग टूल है। स्विच को टॉगल करके उन ब्लॉक सूचियों का चयन करें जिन्हें आप अपने सभी उपकरणों पर लागू करना चाहते हैं।</string>
     <string name="terms"><![CDATA[खरीद के बाद ऐप स्टोर अकाउंट सेटिंग्स पर जाकर मासिक, वार्षिक या बंद किए गए सदस्यता को प्रबंधित किया जा सकता है। सभी कीमतों में लागू कर शामिल हैं।]]></string>
-    <string name="terms_policy"><b>उपयोग की शर्तें </b> &amp; <b>गोपनीयता नीति.</b></string>
     <string name="account_set_up">खाता स्थापित करना</string>
     <string name="account_set_up_description">अपने खाते को सुरक्षित रखें और इसे किसी भी उपकरण से एक्सेस करें।</string>
     <string name="continue_free_10gb_mo">नि: शुल्क 10GB/महीना प्राप्त करें</string>
