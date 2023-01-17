@@ -55,6 +55,7 @@ import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import com.windscribe.vpn.localdatabase.tables.WindNotification
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.CallResult
+import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.serverlist.entity.*
 import com.windscribe.vpn.serverlist.interfaces.ListViewClickListener
 import com.windscribe.vpn.serverlist.sort.*
@@ -376,15 +377,33 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
+    private val latencyAtomic = AtomicBoolean(true)
+    override suspend fun observeLatency() {
+        interactor.getLatencyRepository().latencyEvent.collectLatest {
+            if (latencyAtomic.getAndSet(false)) return@collectLatest
+            when (it.second) {
+                LatencyRepository.LatencyType.Servers -> {
+                    interactor.getServerListUpdater().load()
+                }
+                LatencyRepository.LatencyType.StaticIp -> {
+                    interactor.getStaticListUpdater().load()
+                }
+                LatencyRepository.LatencyType.Config -> {
+                    loadConfigLocations()
+                }
+            }
+        }
+    }
+
     private fun loadServerList(regions: MutableList<RegionAndCities>) {
         logger.info("Loading server list from disk.")
         windscribeView.showRecyclerViewProgressBar()
         val serverListData = ServerListData()
         val oneTimeCompositeDisposable = CompositeDisposable()
-        oneTimeCompositeDisposable.add(interactor.getAllPings().onErrorReturnItem(ArrayList())
-            .flatMap {
-                serverListData.pingTimes = it
-                logger.info("Loaded Latency data.")
+        oneTimeCompositeDisposable.add(
+            interactor.getAllPings().onErrorReturnItem(ArrayList()).flatMap {
+                    serverListData.pingTimes = it
+                    logger.info("Loaded Latency data.")
                 interactor.getFavourites()
             }.onErrorReturnItem(ArrayList()).flatMap {
                 logger.info("Loaded favourites data.")
@@ -896,10 +915,9 @@ class WindscribePresenterImpl @Inject constructor(
         }
         logger.debug("Starting ping testing for all nodes.")
         interactor.getActivityScope().launch {
-            val changed = withContext(interactor.getMainScope().coroutineContext) {
-                return@withContext interactor.getLatencyRepository().updateAllPings()
+            withContext(interactor.getMainScope().coroutineContext) {
+                return@withContext interactor.getLatencyRepository().updateAllServerLatencies()
             }
-            if (changed) interactor.getServerListUpdater().load()
             windscribeView.setRefreshLayout(false)
             logger.debug("Ping testing finished successfully.")
         }
@@ -908,10 +926,9 @@ class WindscribePresenterImpl @Inject constructor(
     override fun onRefreshPingsForConfigServers() {
         logger.debug("Starting ping testing for custom nodes.")
         interactor.getActivityScope().launch {
-            val changed = withContext(interactor.getMainScope().coroutineContext) {
-                return@withContext interactor.getLatencyRepository().updateConfigs()
+            withContext(interactor.getMainScope().coroutineContext) {
+                return@withContext interactor.getLatencyRepository().updateConfigLatencies()
             }
-            if (changed) interactor.getPreferenceChangeObserver().postConfigListChange()
             windscribeView.setRefreshLayout(false)
             logger.debug("Ping testing finished successfully.")
         }
@@ -923,10 +940,9 @@ class WindscribePresenterImpl @Inject constructor(
         }
         logger.debug("Starting ping testing for favourite nodes.")
         interactor.getActivityScope().launch {
-            val changed = withContext(interactor.getMainScope().coroutineContext) {
-                return@withContext interactor.getLatencyRepository().updateFavourites()
+            withContext(interactor.getMainScope().coroutineContext) {
+                return@withContext interactor.getLatencyRepository().updateFavouriteCityLatencies()
             }
-            if (changed) interactor.getServerListUpdater().load()
             windscribeView.setRefreshLayout(false)
             logger.debug("Ping testing finished successfully.")
         }
@@ -938,10 +954,9 @@ class WindscribePresenterImpl @Inject constructor(
         }
         logger.debug("Starting ping testing for static nodes.")
         interactor.getActivityScope().launch {
-            val changed = withContext(interactor.getMainScope().coroutineContext) {
-                return@withContext interactor.getLatencyRepository().updateStaticIp()
+            withContext(interactor.getMainScope().coroutineContext) {
+                return@withContext interactor.getLatencyRepository().updateStaticIpLatency()
             }
-            if (changed) interactor.getStaticListUpdater().load()
             windscribeView.setRefreshLayout(false)
             logger.debug("Ping testing finished successfully.")
         }
@@ -953,10 +968,10 @@ class WindscribePresenterImpl @Inject constructor(
         }
         logger.debug("Starting ping testing for streaming nodes.")
         interactor.getActivityScope().launch {
-            val changed = withContext(interactor.getMainScope().coroutineContext) {
-                return@withContext interactor.getLatencyRepository().updateStreamingServers()
+            withContext(interactor.getMainScope().coroutineContext) {
+                return@withContext interactor.getLatencyRepository()
+                    .updateStreamingServerLatencies()
             }
-            if (changed) interactor.getServerListUpdater().load()
             windscribeView.setRefreshLayout(false)
             logger.debug("Ping testing finished successfully.")
         }
@@ -1522,7 +1537,7 @@ class WindscribePresenterImpl @Inject constructor(
                         logger.error("Config added successfully to database.")
                         interactor.getActivityScope().launch {
                             withContext(interactor.getMainScope().coroutineContext) {
-                                interactor.getLatencyRepository().updateConfigs()
+                                interactor.getLatencyRepository().updateConfigLatencies()
                             }
                             windscribeView.showToast(interactor.getResourceString(R.string.config_added))
                             interactor.getPreferenceChangeObserver().postConfigListChange()

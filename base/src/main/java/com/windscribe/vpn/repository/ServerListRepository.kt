@@ -16,8 +16,6 @@ import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import io.reactivex.Completable
 import io.reactivex.Single
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +23,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.await
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ServerListRepository @Inject constructor(
@@ -45,7 +45,7 @@ class ServerListRepository @Inject constructor(
     }
     fun load(){
         scope.launch {
-            _events.emit(localDbInterface.allRegion.await())
+            _events.value = localDbInterface.allRegion.await()
         }
     }
     fun update(): Completable {

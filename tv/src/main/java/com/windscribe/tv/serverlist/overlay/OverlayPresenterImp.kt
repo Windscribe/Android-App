@@ -15,24 +15,19 @@ import com.windscribe.tv.sort.ByRegionName
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.constants.PreferencesKeyConstants.AZ_LIST_SELECTION_MODE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.LATENCY_LIST_SELECTION_MODE
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.CityAndRegion
-import com.windscribe.vpn.serverlist.entity.Favourite
-import com.windscribe.vpn.serverlist.entity.PingTime
-import com.windscribe.vpn.serverlist.entity.Region
-import com.windscribe.vpn.serverlist.entity.RegionAndCities
-import com.windscribe.vpn.serverlist.entity.ServerListData
-import com.windscribe.vpn.serverlist.entity.StaticRegion
+import com.windscribe.vpn.repository.LatencyRepository
+import com.windscribe.vpn.serverlist.entity.*
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
-import java.util.Collections
-import javax.inject.Inject
 import kotlinx.coroutines.flow.collectLatest
 import org.slf4j.LoggerFactory
+import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Inject
 
 class OverlayPresenterImp @Inject constructor(
     private var overlayView: OverlayView,
@@ -461,5 +456,21 @@ class OverlayPresenterImp @Inject constructor(
     @SuppressLint("NotifyDataSetChanged")
     private fun resetAdapters() {
         favouriteAdapter?.notifyDataSetChanged()
+    }
+
+    private val latencyAtomic = AtomicBoolean(true)
+    override suspend fun observeLatencyChange() {
+        interactor.getLatencyRepository().latencyEvent.collectLatest {
+            if (latencyAtomic.getAndSet(false)) return@collectLatest
+            when (it.second) {
+                LatencyRepository.LatencyType.Servers -> {
+                    interactor.getServerListUpdater().load()
+                }
+                LatencyRepository.LatencyType.StaticIp -> {
+                    interactor.getStaticListUpdater().load()
+                }
+                LatencyRepository.LatencyType.Config -> {}
+            }
+        }
     }
 }

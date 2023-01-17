@@ -11,19 +11,19 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.tv.disconnectalert.DisconnectActivity.Companion.getIntent
-import butterknife.BindView
-import javax.inject.Inject
 import androidx.leanback.widget.VerticalGridView
+import butterknife.BindView
 import com.bumptech.glide.Glide
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.di.ActivityModule
+import com.windscribe.tv.disconnectalert.DisconnectActivity.Companion.getIntent
 import com.windscribe.tv.serverlist.adapters.DetailViewAdapter
 import com.windscribe.tv.serverlist.overlay.LoadState
 import com.windscribe.tv.windscribe.WindscribeActivity
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
 class DetailActivity : BaseActivity(), DetailView {
     @JvmField
@@ -60,6 +60,7 @@ class DetailActivity : BaseActivity(), DetailView {
             fragmentTag = intent.getStringExtra("fragment_tag")?.toInt() ?: 1
             presenter.init(intent.getIntExtra(SELECTED_ID, -1))
         }
+        activityScope { presenter.observeLatencyChange() }
     }
 
     override fun onDestroy() {
