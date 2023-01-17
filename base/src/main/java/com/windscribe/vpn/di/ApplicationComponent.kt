@@ -88,6 +88,7 @@ interface ApplicationComponent {
     val connectionDataRepository: ConnectionDataRepository
     val notificationRepository: NotificationRepository
     val userRepository: UserRepository
+    val latencyRepository: LatencyRepository
 
     //Inject
     fun inject(app: Windscribe)
@@ -100,4 +101,5 @@ interface ApplicationComponent {
     fun inject(robertSyncWorker: RobertSyncWorker)
     fun inject(googlePendingReceiptValidator: GooglePendingReceiptValidator)
     fun inject(amazonPendingReceiptValidator: AmazonPendingReceiptValidator)
+    fun inject(latencyWorker: LatencyWorker)
 }

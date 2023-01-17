@@ -128,10 +128,25 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun provideConnectionDataUpdater(
-        preferencesHelper: PreferencesHelper,
-        apiCallManager: IApiCallManager
+        preferencesHelper: PreferencesHelper, apiCallManager: IApiCallManager
     ): ConnectionDataRepository {
         return ConnectionDataRepository(preferencesHelper, apiCallManager)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLatencyRepository(
+        preferenceChangeObserver: PreferenceChangeObserver,
+        interactor: ServiceInteractor,
+        userRepository: Lazy<UserRepository>,
+        vpnConnectionStateManager: Lazy<VPNConnectionStateManager>
+    ): LatencyRepository {
+        return LatencyRepository(
+            interactor,
+            preferenceChangeObserver,
+            userRepository,
+            vpnConnectionStateManager
+        )
     }
 
     @Provides
