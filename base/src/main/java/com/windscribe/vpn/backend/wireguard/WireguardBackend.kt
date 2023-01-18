@@ -219,7 +219,13 @@ class WireguardBackend(
                         if (config.`interface`.addresses.first() != response.data.`interface`.addresses.first()) {
                             vpnLogger.debug("${config.`interface`.addresses.first()} > ${response.data.`interface`.addresses.first()}")
                             reconnecting = true
-                            backend.setState(testTunnel, UP, response.data)
+                            try {
+                                backend.setState(testTunnel, UP, response.data)
+                            } catch (e: Exception) {
+                                reconnecting = false
+                                vpnLogger.debug("Failed to apply new config :${e.message} Trying reconnect.")
+                                appContext.vpnController.connectAsync()
+                            }
                         } else {
                             vpnLogger.debug("Interface address unchanged.")
                         }
