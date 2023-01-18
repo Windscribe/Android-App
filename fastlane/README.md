@@ -37,14 +37,6 @@ Pull Build number from play store and update gradle.
 
 Build and sign
 
-### buildReleaseApk
-
-```sh
-[bundle exec] fastlane buildReleaseApk
-```
-
-Build a release apk
-
 ### buildAndDebug
 
 ```sh
@@ -60,6 +52,14 @@ Build debug apk
 ```
 
 Publish app to play store (Internal channel)
+
+### buildReleaseApk
+
+```sh
+[bundle exec] fastlane buildReleaseApk
+```
+
+Build Signed Apks for all modules.
 
 ----
 
