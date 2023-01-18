@@ -22,8 +22,7 @@ SignAndUpload:
   stage: Deploy
   when: manual
   extends:
-    - ".sign"
-    - ".updateBuildVersion"
+    - ".signUpdateBuildNumber"
   script:
     - echo "VERSION_CODE=$VERSION_CODE" >> build.env
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
@@ -39,8 +38,7 @@ UploadNexusInternal:
   stage: Deploy
   when: on_success
   extends:
-    - ".sign"
-    - ".keepSameBuildVersion"
+    - ".signKeepBuildNumber"
   script:
     - echo "VERSION_CODE=$VERSION_CODE" >> build.env
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
@@ -57,8 +55,7 @@ UploadToNexus:
   except:
     - branches
   extends:
-    - ".sign"
-    - ".keepSameBuildVersion"
+    - ".signKeepBuildNumber"
   script:
     - echo "VERSION_CODE=$VERSION_CODE" >> build.env
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
@@ -71,7 +68,7 @@ UploadToNexus:
     reports:
       dotenv: build.env
 
-".sign":
+".signUpdateBuildNumber":
   stage: Deploy
   before_script:
     - apk -U upgrade
@@ -91,25 +88,32 @@ UploadToNexus:
     - chmod +x ./gradlew
     - extras fastlane
     - apk --no-cache add swig
-
-  after_script:
-    - rm $SIGN_KEY_PATH
-    - rm $BUILD_PROPERTIES_PATH
-    - rm $SIGN_PROPERTIES_PATH
-    - rm $GCM_KEY_PATH
-
-".updateBuildVersion":
-  stage: Deploy
-  before_script:
     - fastlane updateBuildVersion
     - export VERSION_CODE=$(grep -E "versionCode" mobile/build.gradle | cut -d '"' -f2
       | tr -d '"' | tr -d 'versionCode ')
     - export VERSION_NAME=${MAJOR}.${MINOR}.${VERSION_CODE}
     - touch ${CHANGE_LOG_PATH}${VERSION_CODE}.txt
 
-".keepSameBuildVersion":
+".signKeepBuildNumber":
   stage: Deploy
   before_script:
+    - apk -U upgrade
+    - apk --no-cache add curl
+    - apk add jq
+    - authToken=$(curl -X POST https://pki.int.windscribe.com:8200/v1/auth/approle/login -d "role_id=$role_id&secret_id=$secret_id" | jq       --raw-output '.auth.client_token')
+    - secretData=$(curl -H "X-Vault-Token:$authToken" -X GET https://pki.int.windscribe.com:8200/v1/kv/cicd/client-android)
+    - signProperties=$(echo "$secretData" | jq '.data."sign.properties"')
+    - echo "$signProperties" | base64 -d -i > $SIGN_PROPERTIES_PATH
+    - buildProperties=$(echo "$secretData" | jq '.data."build.properties"')
+    - echo "$buildProperties" | base64 -d -i > $BUILD_PROPERTIES_PATH
+    - uploadKey=$(echo "$secretData" | jq '.data.android_play_store_upload_key')
+    - echo "$uploadKey" | base64 -d -i > $GCM_KEY_PATH
+    - signKey=$(echo "$secretData" | jq '.data.android_play_store_sign_key')
+    - echo "$signKey" | base64 -d -i > $SIGN_KEY_PATH
+    - export GRADLE_USER_HOME=$(pwd)/.gradle
+    - chmod +x ./gradlew
+    - extras fastlane
+    - apk --no-cache add swig
     - fastlane keepBuildVersion
     - export VERSION_CODE=$(grep -E "versionCode" mobile/build.gradle | cut -d '"' -f2
       | tr -d '"' | tr -d 'versionCode ')
