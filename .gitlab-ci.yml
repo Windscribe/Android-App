@@ -11,7 +11,7 @@ variables:
   BUILD_PROPERTIES_PATH: "${CI_PROJECT_DIR}/config/build.properties"
   SIGN_PROPERTIES_PATH: "${CI_PROJECT_DIR}/config/sign.properties"
   MOBILE_APK_PATH: "${CI_PROJECT_DIR}/mobile/build/outputs/apk/release/mobile-release.apk"
-  TV_APK_PATH: "${CI_PROJECT_DIR}/tv/build/outputs/apk/release/tv-release.apk"
+  TV_APK_PATH: "${CI_PROJECT_DIR}/tv/build/outputs/apk/release/tv-universal-release.apk"
 
 stages:
   - Test
@@ -51,7 +51,7 @@ SignAndUpload:
   script:
     - echo "VERSION_CODE=$VERSION_CODE" >> build.env
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
-    - export DIRECTORY=${VERSION_NAME}.${VERSION_CODE}
+    - export DIRECTORY=${VERSION_NAME}
     - fastlane buildReleaseApk
     - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${MOBILE_APK_PATH} "${NEXUS_SERVER}${DIRECTORY}/mobile.apk"
     - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${TV_APK_PATH} "${NEXUS_SERVER}${DIRECTORY}/tv.apk"
