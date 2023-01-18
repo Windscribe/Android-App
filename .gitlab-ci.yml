@@ -37,6 +37,8 @@ SignAndUpload:
 UploadNexusInternal:
   stage: Deploy
   when: on_success
+  needs:
+    - "SignAndUpload"
   extends:
     - ".signKeepBuildNumber"
   script:
