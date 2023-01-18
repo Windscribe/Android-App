@@ -109,7 +109,6 @@ dependencies {
     //Room
     api "androidx.room:room-rxjava2:$room"
     api "androidx.room:room-runtime:$room"
-    implementation fileTree(dir: './libs/', include: ['*.aar', '*.jar'], exclude: [])
     testImplementation 'org.junit.jupiter:junit-jupiter'
     kapt "androidx.room:room-compiler:$room"
     // Push notifications
