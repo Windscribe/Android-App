@@ -53,8 +53,8 @@ SignAndUpload:
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
     - export DIRECTORY=${VERSION_NAME}.${VERSION_CODE}
     - fastlane buildReleaseApk
-    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --upload-file ${MOBILE_APK_PATH} "${NEXUS_SERVER}${DIRECTORY}/mobile.apk"
-    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --upload-file ${TV_APK_PATH} "${NEXUS_SERVER}${DIRECTORY}/tv.apk"
+    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${MOBILE_APK_PATH} "${NEXUS_SERVER}${DIRECTORY}/mobile.apk"
+    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${TV_APK_PATH} "${NEXUS_SERVER}${DIRECTORY}/tv.apk"
     - fastlane publishToInternal
   artifacts:
     reports:
