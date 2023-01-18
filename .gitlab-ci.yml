@@ -17,11 +17,13 @@ stages:
   - Test
   - Deploy
 
+#Upload to play store
 SignAndUpload:
   stage: Deploy
   when: manual
   extends:
     - ".sign"
+    - ".updateBuildVersion"
   script:
     - echo "VERSION_CODE=$VERSION_CODE" >> build.env
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
@@ -32,6 +34,22 @@ SignAndUpload:
     reports:
       dotenv: build.env
 
+#if uploaded successfully to play store save binaries in nexus
+UploadNexusInternal:
+  stage: Deploy
+  when: on_success
+  extends:
+    - ".sign"
+    - ".keepSameBuildVersion"
+  script:
+    - echo "VERSION_CODE=$VERSION_CODE" >> build.env
+    - echo "VERSION_NAME=$VERSION_NAME" >> build.env
+    - export DIRECTORY=${VERSION_NAME}
+    - fastlane buildReleaseApk
+    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${MOBILE_APK_PATH} "${NEXUS_SERVER}/${DIRECTORY}/windscribe-mobile.apk"
+    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${TV_APK_PATH} "${NEXUS_SERVER}/${DIRECTORY}/windscribe-tv.apk"
+
+#Upload binaries to nexus public channel.
 UploadToNexus:
   stage: Deploy
   only:
@@ -40,6 +58,7 @@ UploadToNexus:
     - branches
   extends:
     - ".sign"
+    - ".keepSameBuildVersion"
   script:
     - echo "VERSION_CODE=$VERSION_CODE" >> build.env
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
@@ -72,16 +91,30 @@ UploadToNexus:
     - chmod +x ./gradlew
     - extras fastlane
     - apk --no-cache add swig
-    - fastlane updateBuildVersion
-    - export VERSION_CODE=$(grep -E "versionCode" mobile/build.gradle | cut -d '"' -f2
-      | tr -d '"' | tr -d 'versionCode ')
-    - export VERSION_NAME=${MAJOR}.${MINOR}.${VERSION_CODE}
-    - touch ${CHANGE_LOG_PATH}${VERSION_CODE}.txt
+
   after_script:
     - rm $SIGN_KEY_PATH
     - rm $BUILD_PROPERTIES_PATH
     - rm $SIGN_PROPERTIES_PATH
     - rm $GCM_KEY_PATH
+
+".updateBuildVersion":
+  stage: Deploy
+  before_script:
+    - fastlane updateBuildVersion
+    - export VERSION_CODE=$(grep -E "versionCode" mobile/build.gradle | cut -d '"' -f2
+      | tr -d '"' | tr -d 'versionCode ')
+    - export VERSION_NAME=${MAJOR}.${MINOR}.${VERSION_CODE}
+    - touch ${CHANGE_LOG_PATH}${VERSION_CODE}.txt
+
+".keepSameBuildVersion":
+  stage: Deploy
+  before_script:
+    - fastlane keepBuildVersion
+    - export VERSION_CODE=$(grep -E "versionCode" mobile/build.gradle | cut -d '"' -f2
+      | tr -d '"' | tr -d 'versionCode ')
+    - export VERSION_NAME=${MAJOR}.${MINOR}.${VERSION_CODE}
+    - touch ${CHANGE_LOG_PATH}${VERSION_CODE}.txt
 
 ".curl":
   stage: Deploy
