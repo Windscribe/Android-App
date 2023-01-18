@@ -53,3 +53,8 @@ supply(
   aab_paths: Actions.lane_context[SharedValues::GRADLE_ALL_AAB_OUTPUT_PATHS]
 )
 end
+
+ desc "Build Signed Apks for all modules."
+ lane :buildReleaseApk do
+  buildAndSign(task:"clean assemble")
+ end
