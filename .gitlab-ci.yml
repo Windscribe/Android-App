@@ -37,8 +37,9 @@ SignAndUpload:
 UploadNexusInternal:
   stage: Deploy
   rules:
-    - if: $DEV == "false"
-  when: never
+    - if: $DEV == "true"
+      when: never
+    - when: always
   dependencies:
     - SignAndUpload
   needs:
@@ -57,12 +58,7 @@ UploadNexusInternal:
 UploadToNexus:
   stage: Deploy
   rules:
-    - if: $DEV == "false"
-  when: never
-  only:
-    - tags
-  except:
-    - branches
+    - if: $DEV == "false" && $CI_COMMIT_TAG != null
   extends:
     - ".signKeepBuildNumber"
   script:
