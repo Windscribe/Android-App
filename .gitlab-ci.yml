@@ -36,7 +36,9 @@ SignAndUpload:
 #if uploaded successfully to play store save binaries in nexus
 UploadNexusInternal:
   stage: Deploy
-  when: on_success
+  rules:
+    - if: $DEV == "false"
+  when: never
   dependencies:
     - SignAndUpload
   needs:
@@ -54,6 +56,9 @@ UploadNexusInternal:
 #Upload binaries to nexus public channel.
 UploadToNexus:
   stage: Deploy
+  rules:
+    - if: $DEV == "false"
+  when: never
   only:
     - tags
   except:
