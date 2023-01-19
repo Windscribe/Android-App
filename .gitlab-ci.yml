@@ -13,6 +13,12 @@ variables:
   MOBILE_APK_PATH: "${CI_PROJECT_DIR}/mobile/build/outputs/apk/release/mobile-release.apk"
   TV_APK_PATH: "${CI_PROJECT_DIR}/tv/build/outputs/apk/release/tv-universal-release.apk"
 
+workflow:
+  rules:
+    - if: $DEV == "true"
+      variables:
+        NEXUS_SERVER: $NEXUS_SERVER_PRIVATE
+
 stages:
   - Test
   - Deploy
@@ -33,12 +39,10 @@ UploadToPlayStoreInternalChannel:
     reports:
       dotenv: build.env
 
-UploadToNexusInternal:
+#Upload binaries to nexus private channel.
+UploadToNexusPrivate:
   stage: Deploy
-  rules:
-    - if: $DEV == "true"
-      when: never
-    - when: always
+  when: always
   dependencies:
     - UploadToPlayStoreInternalChannel
   needs:
@@ -50,14 +54,16 @@ UploadToNexusInternal:
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
     - export DIRECTORY=${VERSION_NAME}
     - fastlane buildReleaseApk
-    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${MOBILE_APK_PATH} "${NEXUS_SERVER}/Internal/${DIRECTORY}/windscribe-mobile.apk"
-    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${TV_APK_PATH} "${NEXUS_SERVER}/Internal/${DIRECTORY}/windscribe-tv.apk"
+    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${MOBILE_APK_PATH} "${NEXUS_SERVER_PRIVATE}${DIRECTORY}/windscribe-mobile.apk"
+    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${TV_APK_PATH} "${NEXUS_SERVER_PRIVATE}${DIRECTORY}/windscribe-tv.apk"
 
 #Upload binaries to nexus public channel.
 UploadToNexusPublic:
   stage: Deploy
-  rules:
-    - if: $DEV == "false" && $CI_COMMIT_TAG != null
+  only:
+    - tags
+  except:
+    - branches
   extends:
     - ".signKeepBuildNumber"
   script:
@@ -65,8 +71,8 @@ UploadToNexusPublic:
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
     - export DIRECTORY=${VERSION_NAME}
     - fastlane buildReleaseApk
-    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${MOBILE_APK_PATH} "${NEXUS_SERVER}/${DIRECTORY}/windscribe-mobile.apk"
-    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${TV_APK_PATH} "${NEXUS_SERVER}/${DIRECTORY}/windscribe-tv.apk"
+    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${MOBILE_APK_PATH} "${NEXUS_SERVER}${DIRECTORY}/windscribe-mobile.apk"
+    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${TV_APK_PATH} "${NEXUS_SERVER}${DIRECTORY}/windscribe-tv.apk"
 
   artifacts:
     reports:
@@ -129,9 +135,9 @@ Slack:
   stage: Deploy
   when: on_success
   dependencies:
-    - UploadToNexusInternal
+    - UploadToNexusPrivate
   needs:
-    - UploadToNexusInternal
+    - UploadToNexusPrivate
   extends:
     - ".curl"
   script:
