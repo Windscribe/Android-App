@@ -60,7 +60,7 @@ UploadToNexusPublic:
     - if: $DEV == "true"
       variables:
         NEXUS_SERVER: $NEXUS_SERVER_PRIVATE
-    - if: $COMMIT_TAG != null
+    - if: "$CI_COMMIT_TAG"
       when: always
     - when: never
 
