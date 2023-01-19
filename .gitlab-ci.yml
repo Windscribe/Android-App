@@ -56,14 +56,12 @@ UploadToNexusPublic:
   stage: Deploy
   extends:
     - ".signKeepBuildNumber"
-  rules:
-    - if: $DEV == "true"
-      variables:
-        NEXUS_SERVER: $NEXUS_SERVER_PRIVATE
-    - if: $CI_COMMIT_TAG
-      when: always
-
+  only:
+    - tags
+  except:
+    - branches
   script:
+    - if [ "$DEV" == "true" ]; then NEXUS_SERVER=$NEXUS_SERVER_PRIVATE; else NEXUS_SERVER=$NEXUS_SERVER; fi
     - echo "VERSION_CODE=$VERSION_CODE" >> build.env
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
     - export DIRECTORY=${VERSION_NAME}
