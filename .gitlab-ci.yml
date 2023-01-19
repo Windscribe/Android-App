@@ -61,7 +61,7 @@ UploadToNexusPublic:
   except:
     - branches
   script:
-    - if [ "$DEV" == "true" ]; then NEXUS_SERVER=$NEXUS_SERVER_PRIVATE; else NEXUS_SERVER=$NEXUS_SERVER; fi
+    - if [ "$DEV" == "true" ]; then NEXUS_SERVER=$NEXUS_SERVER_PRIVATE; fi
     - echo "VERSION_CODE=$VERSION_CODE" >> build.env
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
     - export DIRECTORY=${VERSION_NAME}
@@ -101,7 +101,7 @@ UploadToNexusPublic:
     - export VERSION_NAME=${MAJOR}.${MINOR}.${VERSION_CODE}
     - touch ${CHANGE_LOG_PATH}${VERSION_CODE}.txt
 
-# update build version to same play store.
+# update build version to same as play store.
 ".signKeepBuildNumber":
   stage: Deploy
   before_script:
