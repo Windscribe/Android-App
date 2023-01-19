@@ -36,7 +36,7 @@ UploadToPlayStoreInternalChannel:
 #Upload binaries to nexus private channel.
 UploadToNexusPrivate:
   stage: Deploy
-  when: always
+  when: on_success
   dependencies:
     - UploadToPlayStoreInternalChannel
   needs:
