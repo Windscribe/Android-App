@@ -54,16 +54,16 @@ UploadToNexusPrivate:
 #Upload binaries to nexus public channel.
 UploadToNexusPublic:
   stage: Deploy
-  only:
-    - tags
-  except:
-    - branches
   extends:
     - ".signKeepBuildNumber"
   rules:
     - if: $DEV == "true"
       variables:
         NEXUS_SERVER: $NEXUS_SERVER_PRIVATE
+    - if: $COMMIT_TAG != null
+      when: always
+    - when: never
+
   script:
     - echo "VERSION_CODE=$VERSION_CODE" >> build.env
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
