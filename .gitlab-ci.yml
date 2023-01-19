@@ -13,12 +13,6 @@ variables:
   MOBILE_APK_PATH: "${CI_PROJECT_DIR}/mobile/build/outputs/apk/release/mobile-release.apk"
   TV_APK_PATH: "${CI_PROJECT_DIR}/tv/build/outputs/apk/release/tv-universal-release.apk"
 
-workflow:
-  rules:
-    - if: $DEV == "true"
-      variables:
-        NEXUS_SERVER: $NEXUS_SERVER_PRIVATE
-
 stages:
   - Test
   - Deploy
@@ -66,6 +60,10 @@ UploadToNexusPublic:
     - branches
   extends:
     - ".signKeepBuildNumber"
+  rules:
+    - if: $DEV == "true"
+      variables:
+        NEXUS_SERVER: $NEXUS_SERVER_PRIVATE
   script:
     - echo "VERSION_CODE=$VERSION_CODE" >> build.env
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
