@@ -362,11 +362,11 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
                     val replaceIndex = editText.selectionEnd
                     if (replaceIndex == 4 && start == 3) {
                         editText.setText(String.format("%s-", editText.text.toString()))
-                        editText.setSelection(it.length)
+                        editText.setSelection(editText.text?.length ?: 0)
                     }
                     if (replaceIndex == 5 && s[s.length - 1] != '-') {
                         it.insert(4, "-")
-                        editText.setSelection(it.length)
+                        editText.setSelection(editText.text?.length ?: 0)
                     }
                 }
             }

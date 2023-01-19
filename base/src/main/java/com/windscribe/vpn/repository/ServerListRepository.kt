@@ -6,7 +6,6 @@ package com.windscribe.vpn.repository
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.windscribe.vpn.api.IApiCallManager
-import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.serverlist.entity.City
@@ -14,10 +13,9 @@ import com.windscribe.vpn.serverlist.entity.Region
 import com.windscribe.vpn.serverlist.entity.RegionAndCities
 import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.PreferenceChangeObserver
+import com.windscribe.vpn.workers.WindScribeWorkManager
 import io.reactivex.Completable
 import io.reactivex.Single
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,16 +23,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.await
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ServerListRepository @Inject constructor(
     private val scope: CoroutineScope,
-    private val preferencesHelper: PreferencesHelper,
     private val apiCallManager: IApiCallManager,
     private val localDbInterface: LocalDbInterface,
     private val preferenceChangeObserver: PreferenceChangeObserver,
     private val userRepository: UserRepository,
-    private val appLifeCycleObserver: AppLifeCycleObserver
+    private val appLifeCycleObserver: AppLifeCycleObserver,
+    private val workManager: WindScribeWorkManager
 ) {
     private val logger = LoggerFactory.getLogger("server_list_repository")
     private var _events = MutableStateFlow(emptyList<RegionAndCities>())
@@ -45,7 +45,7 @@ class ServerListRepository @Inject constructor(
     }
     fun load(){
         scope.launch {
-            _events.emit(localDbInterface.allRegion.await())
+            _events.value = localDbInterface.allRegion.await()
         }
     }
     fun update(): Completable {
@@ -93,9 +93,6 @@ class ServerListRepository @Inject constructor(
                     }
                 }
             }.flatMapCompletable { regions: List<Region> -> addToDatabase(regions) }
-            .doOnComplete {
-                preferencesHelper.pingTestRequired = true
-            }
     }
 
     private fun addToDatabase(regions: List<Region>): Completable {

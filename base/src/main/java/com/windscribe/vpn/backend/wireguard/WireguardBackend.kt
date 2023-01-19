@@ -117,7 +117,12 @@ class WireguardBackend(
                 withContext(Dispatchers.IO) {
                     val content = WireGuardVpnProfile.createConfigFromString(it.content)
                     vpnLogger.debug("Setting WireGuard state UP.")
-                    backend.setState(testTunnel, UP, content)
+                    try {
+                        backend.setState(testTunnel, UP, content)
+                    } catch (e: Exception) {
+                        vpnLogger.error("Exception while setting WireGuard state UP.", e)
+                        updateState(VPNState(Disconnected))
+                    }
                 }
             } ?: kotlin.run {
                 vpnLogger.debug("Failed to get WireGuard profile.")
@@ -214,7 +219,13 @@ class WireguardBackend(
                         if (config.`interface`.addresses.first() != response.data.`interface`.addresses.first()) {
                             vpnLogger.debug("${config.`interface`.addresses.first()} > ${response.data.`interface`.addresses.first()}")
                             reconnecting = true
-                            backend.setState(testTunnel, UP, response.data)
+                            try {
+                                backend.setState(testTunnel, UP, response.data)
+                            } catch (e: Exception) {
+                                reconnecting = false
+                                vpnLogger.debug("Failed to apply new config :${e.message} Trying reconnect.")
+                                appContext.vpnController.connectAsync()
+                            }
                         } else {
                             vpnLogger.debug("Interface address unchanged.")
                         }

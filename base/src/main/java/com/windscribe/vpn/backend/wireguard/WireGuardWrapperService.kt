@@ -35,8 +35,8 @@ class WireGuardWrapperService : GoBackend.VpnService() {
     lateinit var shortcutStateManager: ShortcutStateManager
 
     override fun onCreate() {
-        Windscribe.appContext.serviceComponent.inject(this)
         super.onCreate()
+        Windscribe.appContext.serviceComponent.inject(this)
         wireguardBackend.serviceCreated(this)
     }
 

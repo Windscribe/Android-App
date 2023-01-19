@@ -30,7 +30,6 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.di.*
 import com.windscribe.vpn.localdatabase.WindscribeDatabase
 import com.windscribe.vpn.mocklocation.MockLocationManager
-import com.windscribe.vpn.services.ping.PingTestService.Companion.startPingTestService
 import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -123,7 +122,7 @@ open class Windscribe : MultiDexApplication() {
                 .build())
         }
         deviceStateManager.init(this)
-        startPingTestService()
+        workManager.updateNodeLatencies()
         mockLocationManager.init()
     }
 

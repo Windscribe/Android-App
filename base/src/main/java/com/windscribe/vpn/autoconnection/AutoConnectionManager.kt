@@ -90,6 +90,7 @@ class AutoConnectionManager(
     fun reset() {
         listOfProtocols.clear()
         listOfProtocols = reloadProtocols()
+        updateNextInLineProtocol()
         logger.debug("$listOfProtocols")
     }
 
@@ -229,14 +230,18 @@ class AutoConnectionManager(
             logger.debug(protocolLog)
         }
         lastProtocolLog = protocolLog
-        scope.launch {
-            if (appSupportedProtocolOrder.size > 0)
-                _nextInLineProtocol.emit(appSupportedProtocolOrder[0])
-        }
         return appSupportedProtocolOrder
     }
 
-
+    private fun updateNextInLineProtocol() {
+        scope.launch {
+            val result = runCatching { listOfProtocols.first() }
+            result.getOrNull()?.let {
+                _nextInLineProtocol.emit(it)
+            }
+        }
+    }
+    
     private fun moveProtocolToTop(
         protocolInformation: ProtocolInformation,
         appSupportedProtocolOrder: ThreadSafeList<ProtocolInformation>

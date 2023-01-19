@@ -40,4 +40,4 @@ https://wiki.strongswan.org/projects/strongswan/wiki/AndroidVPNClientBuild
 format: [major][minor][BuildNumber]
 
 
-Copyright (c) 2023 Windscribe Limited
+Copyright (c) 2021 Windscribe Limited
