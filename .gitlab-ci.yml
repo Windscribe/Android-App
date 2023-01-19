@@ -18,7 +18,7 @@ stages:
   - Deploy
 
 #Upload to play store
-SignAndUpload:
+UploadToPlayStoreInternalChannel:
   stage: Deploy
   when: manual
   extends:
@@ -33,17 +33,16 @@ SignAndUpload:
     reports:
       dotenv: build.env
 
-#if uploaded successfully to play store save binaries in nexus
-UploadNexusInternal:
+UploadToNexusInternal:
   stage: Deploy
   rules:
     - if: $DEV == "true"
       when: never
     - when: always
   dependencies:
-    - SignAndUpload
+    - UploadToPlayStoreInternalChannel
   needs:
-    - SignAndUpload
+    - UploadToPlayStoreInternalChannel
   extends:
     - ".signKeepBuildNumber"
   script:
@@ -55,7 +54,7 @@ UploadNexusInternal:
     - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${TV_APK_PATH} "${NEXUS_SERVER}/Internal/${DIRECTORY}/windscribe-tv.apk"
 
 #Upload binaries to nexus public channel.
-UploadToNexus:
+UploadToNexusPublic:
   stage: Deploy
   rules:
     - if: $DEV == "false" && $CI_COMMIT_TAG != null
@@ -125,19 +124,14 @@ UploadToNexus:
     - export VERSION_NAME=${MAJOR}.${MINOR}.${VERSION_CODE}
     - touch ${CHANGE_LOG_PATH}${VERSION_CODE}.txt
 
-".curl":
-  stage: Deploy
-  before_script:
-    - extras fastlane
-    - apk --no-cache add curl
 
 Slack:
   stage: Deploy
   when: on_success
   dependencies:
-    - SignAndUpload
+    - UploadToNexusInternal
   needs:
-    - SignAndUpload
+    - UploadToNexusInternal
   extends:
     - ".curl"
   script:
@@ -147,3 +141,9 @@ Slack:
     - export MESSAGE=$TITLE$SPACE$CHANGE_LOG
     - export PAYLOAD={\"text\":\"$MESSAGE\"}
     - curl --retry 5 -X POST $SLACK_URL --show-error --fail -d "$PAYLOAD"
+
+".curl":
+  stage: Deploy
+  before_script:
+    - extras fastlane
+    - apk --no-cache add curl
