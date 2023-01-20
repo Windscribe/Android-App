@@ -333,8 +333,8 @@ class WelcomePresenterImpl @Inject constructor(
     }
 
     private fun evaluatePassword(password: String): Boolean {
-        val pattern = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}"
-        return password.matches(Regex(pattern))
+        val pattern = Regex("(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}")
+        return password.matches(pattern)
     }
 
     // Get and set firebase device token
