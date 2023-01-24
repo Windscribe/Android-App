@@ -12,10 +12,6 @@ object VpnPreferenceConstants {
     const val STUNNEL_PID = "pid"
     const val STUNNEL_LOG = "log"
     const val STUNNEL_ACCEPT_SETTINGS = "accept = 127.0.0.1:1194"
-    const val STUNNEL_LOCAL_IP = "127.0.0.1"
-    const val STUNNEL_LOCAL_PORT = "1194"
-    const val STUNNEL_VPN_PROTOCOL = "tcp"
-    const val VPN_CONNECTIVITY_ACTION = "com.windscribe.vpn.OPEN_VPN_CONNECTIVITY"
     const val DEBUG_FILE_SIZE_LOWER = "1024 KB"
-    const val WS_TUNNEL_FILE = "wstunnel.txt"
+    const val WG_CONNECT_DEFAULT_TTL = "3600"
 }
