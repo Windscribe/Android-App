@@ -64,6 +64,7 @@ class WireguardBackend(
     private val maxHandshakeTimeInSeconds = 180L
     private val connectivityManager =
         appContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+    private val powerManager = appContext.getSystemService(Context.POWER_SERVICE) as PowerManager
     private val networkRequest =
         NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
             .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build()
@@ -216,23 +217,20 @@ class WireguardBackend(
                 vpnLogger.debug("Last Wg handshake $lastHandshakeTimeInSeconds seconds ago Waiting for network.")
                 connectivityManager.requestNetwork(networkRequest, callback)
             }
-        } ?: kotlin.run {
-            vpnLogger.debug("Unable to get handshake time from wg binary..")
-        }
+        } ?: vpnLogger.debug("Unable to get handshake time from wg binary..")
     }
 
     private suspend fun checkTunnelHealth(): Result<String> {
         vpnLogger.debug("Requesting new interface address.")
         return Util.getProfile<WireGuardVpnProfile>()?.content?.let {
             vpnLogger.debug("Creating config from saved params")
-            val pm = appContext.getSystemService(Context.POWER_SERVICE) as PowerManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 vpnLogger.debug(
-                    "Power options: Interactive:${pm.isInteractive} Power Save mode: ${pm.isPowerSaveMode} Ignore battery optimization: ${
-                        pm.isIgnoringBatteryOptimizations(
+                    "Power options: Interactive:${powerManager.isInteractive} Power Save mode: ${powerManager.isPowerSaveMode} Ignore battery optimization: ${
+                        powerManager.isIgnoringBatteryOptimizations(
                             appContext.packageName
                         )
-                    } Device Idle: ${pm.isDeviceIdleMode}"
+                    } Device Idle: ${powerManager.isDeviceIdleMode}"
                 )
             }
             try {
