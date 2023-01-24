@@ -25,7 +25,6 @@ import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes.EXPIRED_OR_BANNED_ACCOUNT
-import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.DeviceStateManager
@@ -213,7 +212,7 @@ class WireguardBackend(
     private fun checkLastHandshake() {
         runCatching { connectivityManager.unregisterNetworkCallback(callback) }
         backend.handshakeNSecAgo()?.let { lastHandshakeTimeInSeconds ->
-            if (active && lastHandshakeTimeInSeconds > maxHandshakeTimeInSeconds && userRepository.get() != null && userRepository.get().user.value?.accountStatus == User.AccountStatus.Okay) {
+            if (active && lastHandshakeTimeInSeconds > maxHandshakeTimeInSeconds) {
                 vpnLogger.debug("Last Wg handshake $lastHandshakeTimeInSeconds seconds ago Waiting for network.")
                 connectivityManager.requestNetwork(networkRequest, callback)
             }
