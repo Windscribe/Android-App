@@ -367,7 +367,7 @@ class VPNProfileCreator @Inject constructor(
     suspend fun updateWireGuardConfig(config: Config): CallResult<Config> {
         val builder = Config.Builder()
         val serverPublicKey = config.peers[0].publicKey.toBase64()
-        val hostName = config.`interface`.addresses.first().address.hostName
+        val hostName = config.`interface`.addresses.first().address.hostAddress ?: ""
         val ip = config.peers[0].endpoint.get().host
         val port = config.peers[0].endpoint.get().port.toString()
         logger.debug("Requesting wg remote params.")
