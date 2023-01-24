@@ -31,4 +31,5 @@ object ApiConstants {
     const val PLATFORM = "platform"
     const val APP_VERSION = "app_version"
     const val PCP_ID = "pcpid"
+    const val WG_TTL = "wg_ttl"
 }
