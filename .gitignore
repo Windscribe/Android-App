@@ -13,3 +13,6 @@
 /.idea/
 /openvpn/.cxx/
 /ws/.idea/
+/dga/build
+/dga/.cxx
+
