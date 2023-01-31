@@ -17,6 +17,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.multidex.MultiDexApplication
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
+import com.windscribe.dga.Dga
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.FragmentType
@@ -112,6 +113,7 @@ open class Windscribe : MultiDexApplication() {
         }
         setUpNewInstallation()
         RxJavaPlugins.setErrorHandler { throwable: Throwable -> logger.info(throwable.toString()) }
+        Dga.load()
         initStrongswan()
         if (BuildConfig.APP_ID.isNotEmpty()) {
             FirebaseApp.initializeApp(this, FirebaseOptions.Builder()
