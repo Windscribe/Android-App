@@ -111,6 +111,9 @@ class User(private val sessionResponse: UserSessionResponse) {
     val resetDate: String?
         get() = sessionResponse.lastResetDate
 
+    val isAlaCarteUnlimitedPlan: Boolean
+        get() = sessionResponse.billingPlanID == -9
+
     val daysRegisteredSince: Long
         get() {
             val registrationDate = sessionResponse.registrationDate
