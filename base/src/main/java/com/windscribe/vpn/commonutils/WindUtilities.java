@@ -34,7 +34,6 @@ import com.windscribe.vpn.exceptions.WindScribeException;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.util.Random;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -119,18 +118,6 @@ public class WindUtilities {
         } else {
             throw new NoNetworkException("No network is connected");
         }
-    }
-
-    public static int getRandomNode(int size, int lastUsedIndex, int attempt) {
-        if (size == 1) {
-            return 0;
-        }
-        Random random = new Random();
-        int index = random.nextInt(size);
-        while (lastUsedIndex == index && attempt > 0) {
-            index = random.nextInt(size);
-        }
-        return index;
     }
 
     public static SelectedLocationType getSourceTypeBlocking() {

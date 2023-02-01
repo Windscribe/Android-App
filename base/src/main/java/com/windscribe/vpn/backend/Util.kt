@@ -14,6 +14,7 @@ import com.windscribe.vpn.commonutils.ThreadSafeList
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.exceptions.WindScribeException
+import com.windscribe.vpn.serverlist.entity.Node
 import com.wireguard.config.BadConfigException
 import com.wireguard.config.Config
 import inet.ipaddr.AddressStringException
@@ -247,5 +248,32 @@ object Util {
             PreferencesKeyConstants.PROTO_WS_TUNNEL -> "WStunnel"
             else -> "IKEv2"
         }
+    }
+
+    /**
+     * @return Random node index based on weight ignoring the last attempted node.
+     */
+    fun getRandomNode(lastUsedIndex: Int, attempt: Int, nodes: List<Node>): Int {
+        if (nodes.size == 1) {
+            return 0
+        }
+        var index = getRandomNode(nodes)
+        while (lastUsedIndex == index && attempt > 0) {
+            index = getRandomNode(nodes)
+        }
+        return index
+    }
+
+    private fun getRandomNode(nodes: List<Node>): Int {
+        var bestNode = 0
+        var weightCounter = Math.random() * (nodes.sumOf { it.weight })
+        for (node in nodes) {
+            weightCounter += node.weight
+            if (weightCounter <= 0.0) {
+                break
+            }
+            bestNode = nodes.indexOf(node)
+        }
+        return bestNode
     }
 }
