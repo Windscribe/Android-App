@@ -116,7 +116,7 @@
     <string name="potential_data_use">Estimated Data Usage</string>
     <!-- Account-->
     <string name="plan_pro">Pro</string>
-    <string name="a_la_carte_unlimited_plan">A la Carte Unlimited</string>
+    <string name="a_la_carte_unlimited_plan">Unlimited</string>
     <string name="expiry_date">Expiry  Date</string>
     <string name="reset_date">Reset  Date</string>
     <string name="gb_per_month">&#160;GB/Month</string>
