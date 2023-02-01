@@ -1,6 +1,5 @@
 include ':openvpn'
 include ':strongswan'
-include ':stealth'
 include ':base'
 include ':test'
 include ':mobile'
