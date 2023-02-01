@@ -88,6 +88,7 @@ dependencies {
     implementation project(path: ':openvpn')
     implementation project(path: ':strongswan')
     implementation project(path: ':stealth')
+    implementation(project(path: ':dga'))
    // api 'com.wireguard.android:tunnel:1.0.20200407'
     //Billing
     api files('libs/in-app-purchasing-2.0.76.jar')
