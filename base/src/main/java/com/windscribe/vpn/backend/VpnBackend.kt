@@ -53,6 +53,10 @@ abstract class VpnBackend(
     }
 
     fun startConnectionJob() {
+        if (vpnServiceInteractor.preferenceHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY) != PreferencesKeyConstants.CONNECTION_MODE_AUTO) {
+            vpnLogger.debug("Manual connection mode selected.")
+            return
+        }
         connectionJob = mainScope.launch {
             vpnLogger.debug("Connection timer started.")
             if (this@VpnBackend is WireguardBackend) {
