@@ -38,8 +38,7 @@ class IKev2VpnBackend(
     var networkInfoManager: NetworkInfoManager,
     var vpnStateManager: VPNConnectionStateManager,
     var serviceInteractor: ServiceInteractor
-) : VpnBackend(scope, vpnStateManager, serviceInteractor),
-    VpnStateListener,
+) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager), VpnStateListener,
     NetworkInfoListener {
 
     private var vpnService: VpnStateService? = null

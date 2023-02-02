@@ -8,6 +8,7 @@ import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.wireguard.WireguardBackend
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -29,7 +30,8 @@ import javax.inject.Singleton
 abstract class VpnBackend(
     private val mainScope: CoroutineScope,
     val stateManager: VPNConnectionStateManager,
-    private val vpnServiceInteractor: ServiceInteractor
+    private val vpnServiceInteractor: ServiceInteractor,
+    private val networkInfoManager: NetworkInfoManager
 ) {
 
     val vpnLogger: Logger = LoggerFactory.getLogger("vpn_backend")
@@ -53,8 +55,11 @@ abstract class VpnBackend(
     }
 
     fun startConnectionJob() {
-        if (vpnServiceInteractor.preferenceHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY) != PreferencesKeyConstants.CONNECTION_MODE_AUTO) {
-            vpnLogger.debug("Manual connection mode selected.")
+        val preferredProtocolOn = networkInfoManager.networkInfo?.isPreferredOn ?: false
+        if (preferredProtocolOn.not() && vpnServiceInteractor.preferenceHelper.getResponseString(
+                PreferencesKeyConstants.CONNECTION_MODE_KEY
+            ) != PreferencesKeyConstants.CONNECTION_MODE_AUTO) {
+            vpnLogger.debug("Manual connection mode selected without preferred protocol.")
             return
         }
         connectionJob = mainScope.launch {
