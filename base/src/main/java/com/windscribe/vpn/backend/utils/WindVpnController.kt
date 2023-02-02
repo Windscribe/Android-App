@@ -25,6 +25,7 @@ import com.windscribe.vpn.backend.utils.SelectedLocationType.StaticIp
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP
+import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_VALID_CONFIG_NOT_FOUND
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_WG_INVALID_PUBLIC_KEY
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_WG_KEY_LIMIT_EXCEEDED
@@ -408,7 +409,7 @@ open class WindVpnController @Inject constructor(
         logger.debug("code: ${error.code} error: ${error.errorMessage}")
         val context = coroutineContext
         when (error.code) {
-            ERROR_UNABLE_TO_REACH_API -> {
+            ERROR_UNABLE_TO_REACH_API, ERROR_UNEXPECTED_API_DATA -> {
                 disconnect()
             }
             ERROR_WG_KEY_LIMIT_EXCEEDED -> {
