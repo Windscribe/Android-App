@@ -30,9 +30,8 @@ class OpenVPNBackend(
     var networkInfoManager: NetworkInfoManager,
     vpnStateManager: VPNConnectionStateManager,
     var serviceInteractor: ServiceInteractor,
-) : VpnBackend(scope, vpnStateManager, serviceInteractor),
-    VpnStatus.StateListener,
-    VpnStatus.ByteCountListener {
+) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager),
+    VpnStatus.StateListener, VpnStatus.ByteCountListener {
 
     override var active = false
     private var stickyDisconnectEvent = false

@@ -52,7 +52,7 @@ class WireguardBackend(
     val vpnProfileCreator: VPNProfileCreator,
     val userRepository: Lazy<UserRepository>,
     val deviceStateManager: DeviceStateManager
-) : VpnBackend(scope, vpnStateManager, serviceInteractor) {
+) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager) {
 
     var service: WireGuardWrapperService? = null
     var connectionStateJob: Job? = null
