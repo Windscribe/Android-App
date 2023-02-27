@@ -3,6 +3,8 @@
  */
 package com.windscribe.vpn.api
 
+import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.*
@@ -13,6 +15,8 @@ import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkKeyConstants.API_HOST_ASSET
 import com.windscribe.vpn.constants.NetworkKeyConstants.API_HOST_CHECK_IP
 import com.windscribe.vpn.constants.NetworkKeyConstants.API_HOST_GENERIC
+import com.windscribe.vpn.constants.NetworkKeyConstants.CLOUDFLARE_DOH
+import com.windscribe.vpn.constants.NetworkKeyConstants.GOOGLE_DOH
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.exceptions.WindScribeException
@@ -209,27 +213,46 @@ class ApiCallManager @Inject constructor(
                 }.onErrorResumeNext {
                     if (it is HttpException && isErrorBodyValid(it)) {
                         return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
+                    } else {
+                        return@onErrorResumeNext (if (BuildConfig.DYNAMIC_DNS.isEmpty()) {
+                            throw WindScribeException("Dynamic doh disabled.")
                         } else {
-                            return@onErrorResumeNext (
-                                    if (BuildConfig.DEV || BuildConfig.BACKUP_API_ENDPOINT_STRING.isEmpty()) {
-                                        throw WindScribeException("Hash domains are disabled.")
-                                    } else {
-                                        domainFailOverManager.setDomainBlocked(
-                                            DomainType.Secondary,
-                                            apiCallType
-                                        )
-                                        callOrSkip(
-                                            apiCallType,
-                                            service,
-                                            DomainType.Hashed1,
-                                            backupApiEndPoint[0],
-                                            protect,
-                                            params
-                                        )
-                                    }
-                                    )
-                        }
-                    }.onErrorResumeNext {
+                            domainFailOverManager.setDomainBlocked(
+                                DomainType.Secondary, apiCallType
+                            )
+                            getDynamicDohEndpoint(hostType).flatMap { dynamicEndpoint ->
+                                callOrSkip(
+                                    apiCallType,
+                                    service,
+                                    DomainType.DYNAMIC_DOH,
+                                    dynamicEndpoint,
+                                    protect,
+                                    params
+                                )
+                            }
+                        })
+                    }
+                }.onErrorResumeNext {
+                    if (it is HttpException && isErrorBodyValid(it)) {
+                        return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
+                    } else {
+                        return@onErrorResumeNext (if (BuildConfig.DEV || BuildConfig.BACKUP_API_ENDPOINT_STRING.isEmpty()) {
+                            throw WindScribeException("Hash domains are disabled.")
+                        } else {
+                            domainFailOverManager.setDomainBlocked(
+                                DomainType.DYNAMIC_DOH, apiCallType
+                            )
+                            callOrSkip(
+                                apiCallType,
+                                service,
+                                DomainType.Hashed1,
+                                backupApiEndPoint[0],
+                                protect,
+                                params
+                            )
+                        })
+                    }
+                }.onErrorResumeNext {
                         if (it is HttpException && isErrorBodyValid(it)) {
                             return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
                         } else {
@@ -738,7 +761,25 @@ class ApiCallManager @Inject constructor(
     override fun getConnectedIp(): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
         return apiFactory.createApi("https://checkip.windscribe.com/").connectivityTestAndIp()
             .flatMap {
-                 responseToModel(it, String::class.java)
+                responseToModel(it, String::class.java)
             }
+    }
+
+    private fun getDynamicDohEndpoint(hostType: HostType): Single<String> {
+        return apiFactory.createApi(CLOUDFLARE_DOH).getCloudflareTxtRecord().onErrorResumeNext {
+            return@onErrorResumeNext apiFactory.createApi(GOOGLE_DOH).getGoogleDOHTxtRecord()
+        }.flatMap {
+            try {
+                val response = it.string()
+                val endpoint =
+                    Gson().fromJson(response, DOHTxtRecord::class.java).answer.first().data.replace(
+                        "\"",
+                        ""
+                    )
+                return@flatMap Single.fromCallable { "${hostType.text}${endpoint}" }
+            } catch (e: JsonSyntaxException) {
+                throw WindScribeException("Doh endpoint returned unknown data.")
+            }
+        }
     }
 }

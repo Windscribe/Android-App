@@ -3,6 +3,7 @@
  */
 package com.windscribe.vpn.api
 
+import com.windscribe.vpn.BuildConfig
 import io.reactivex.Single
 import okhttp3.ResponseBody
 import retrofit2.http.*
@@ -159,10 +160,25 @@ interface ApiService {
     @Streaming
     @FormUrlEncoded
     @POST("/")
-    fun sendDecoyTraffic(@FieldMap params: Map<String, String>?, @Header("Content-Type") contentType: String, @Header("X-DECOY-RESPONSE") xDecoyResponse: String ): Single<ResponseBody>
+    fun sendDecoyTraffic(
+        @FieldMap params: Map<String, String>?,
+        @Header("Content-Type") contentType: String,
+        @Header("X-DECOY-RESPONSE") xDecoyResponse: String
+    ): Single<ResponseBody>
 
     @Streaming
     @FormUrlEncoded
     @POST("/")
-    fun sendDecoyTraffic(@FieldMap params: Map<String, String>?, @Header("Content-Type") contentType: String): Single<ResponseBody>
+    fun sendDecoyTraffic(
+        @FieldMap params: Map<String, String>?,
+        @Header("Content-Type") contentType: String
+    ): Single<ResponseBody>
+
+    @GET("/resolve?name=${BuildConfig.DYNAMIC_DNS}&type=TXT")
+    @Headers("accept: application/dns-json")
+    fun getGoogleDOHTxtRecord(): Single<ResponseBody>
+
+    @GET("/dns-query?name=${BuildConfig.DYNAMIC_DNS}&type=TXT")
+    @Headers("accept: application/dns-json")
+    fun getCloudflareTxtRecord(): Single<ResponseBody>
 }
