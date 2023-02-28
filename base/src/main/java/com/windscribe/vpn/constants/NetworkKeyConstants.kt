@@ -46,6 +46,8 @@ object NetworkKeyConstants {
     const val URL_BLOG = "https://blog.windscribe.com/"
     const val URL_JOB = "/jobs"
     const val ROBERT = "/features/robert"
+    var CLOUDFLARE_DOH = "https://1.1.1.1"
+    var GOOGLE_DOH = "https://dns.google"
 
     @JvmField
     var WEB_URL: String? = null
