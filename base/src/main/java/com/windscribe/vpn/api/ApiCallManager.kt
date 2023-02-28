@@ -236,6 +236,7 @@ class ApiCallManager @Inject constructor(
                     if (it is HttpException && isErrorBodyValid(it)) {
                         return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
                     } else {
+                        lastUsedDynamicEndpoint = null
                         return@onErrorResumeNext (if (BuildConfig.DEV || BuildConfig.BACKUP_API_ENDPOINT_STRING.isEmpty()) {
                             throw WindScribeException("Hash domains are disabled.")
                         } else {
@@ -765,7 +766,11 @@ class ApiCallManager @Inject constructor(
             }
     }
 
+    private var lastUsedDynamicEndpoint: String? = null
     private fun getDynamicDohEndpoint(hostType: HostType): Single<String> {
+        if (lastUsedDynamicEndpoint != null) {
+            return Single.fromCallable { "${hostType.text}$lastUsedDynamicEndpoint" }
+        }
         return apiFactory.createApi(CLOUDFLARE_DOH).getCloudflareTxtRecord().onErrorResumeNext {
             return@onErrorResumeNext apiFactory.createApi(GOOGLE_DOH).getGoogleDOHTxtRecord()
         }.flatMap {
@@ -773,10 +778,10 @@ class ApiCallManager @Inject constructor(
                 val response = it.string()
                 val endpoint =
                     Gson().fromJson(response, DOHTxtRecord::class.java).answer.first().data.replace(
-                        "\"",
-                        ""
+                        "\"", ""
                     )
-                return@flatMap Single.fromCallable { "${hostType.text}${endpoint}" }
+                lastUsedDynamicEndpoint = endpoint
+                return@flatMap Single.fromCallable { "${hostType.text}$lastUsedDynamicEndpoint" }
             } catch (e: JsonSyntaxException) {
                 throw WindScribeException("Doh endpoint returned unknown data.")
             }
