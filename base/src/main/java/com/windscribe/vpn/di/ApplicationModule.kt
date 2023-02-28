@@ -649,7 +649,9 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
         return OkHttpClient.Builder()
             .addNetworkInterceptor {
                 val url = it.request().url
-                logger.debug("Request: $url")
+                if (BuildConfig.DEV) {
+                    logger.debug("Request: $url")
+                }
                 it.proceed(it.request())
             }
     }
