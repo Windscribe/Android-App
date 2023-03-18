@@ -760,8 +760,7 @@ class ApiCallManager @Inject constructor(
     }
 
     override fun getConnectedIp(): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
-        return apiFactory.createApi("https://checkip.windscribe.com/").connectivityTestAndIp()
-            .flatMap {
+        return apiFactory.createApi(BuildConfig.CHECK_IP_URL).connectivityTestAndIp().flatMap {
                 responseToModel(it, String::class.java)
             }
     }
