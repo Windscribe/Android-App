@@ -27,6 +27,7 @@ class WindApiFactory @Inject constructor(
 ) {
 
     private val mRetrofit: Retrofit
+    val dohResolver: DohResolver = DohResolver(this)
     fun createApi(url: String, protect: Boolean = false): ApiService {
         val activeBackend = Windscribe.appContext.vpnController.vpnBackendHolder.activeBackend
         if (protect && activeBackend is WireguardBackend && activeBackend.active) {
@@ -63,7 +64,7 @@ class WindApiFactory @Inject constructor(
         val sslContext: SSLContext = SSLContext.getInstance("TLS")
         sslContext.init(null, arrayOf<TrustManager>(trustManager), null)
         val sslSocketFactory: SSLSocketFactory = sslContext.socketFactory
-        val saveInstanceSSLSocketFactory = ManualEchSSLSocketFactory(sslSocketFactory)
+        val saveInstanceSSLSocketFactory = ManualEchSSLSocketFactory(dohResolver, sslSocketFactory)
         okHttpClient.sslSocketFactory(saveInstanceSSLSocketFactory, trustManager)
         val hostnameVerifier = HostnameVerifier { _, session ->
             HttpsURLConnection.getDefaultHostnameVerifier().run {

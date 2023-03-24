@@ -3,7 +3,6 @@
  */
 package com.windscribe.vpn.api
 
-import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -15,8 +14,6 @@ import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkKeyConstants.API_HOST_ASSET
 import com.windscribe.vpn.constants.NetworkKeyConstants.API_HOST_CHECK_IP
 import com.windscribe.vpn.constants.NetworkKeyConstants.API_HOST_GENERIC
-import com.windscribe.vpn.constants.NetworkKeyConstants.CLOUDFLARE_DOH
-import com.windscribe.vpn.constants.NetworkKeyConstants.GOOGLE_DOH
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.exceptions.WindScribeException
@@ -770,15 +767,9 @@ class ApiCallManager @Inject constructor(
         if (lastUsedDynamicEndpoint != null) {
             return Single.fromCallable { "${hostType.text}$lastUsedDynamicEndpoint" }
         }
-        return apiFactory.createApi(CLOUDFLARE_DOH).getCloudflareTxtRecord().onErrorResumeNext {
-            return@onErrorResumeNext apiFactory.createApi(GOOGLE_DOH).getGoogleDOHTxtRecord()
-        }.flatMap {
+        return apiFactory.dohResolver.getTxtAnswerAsync(BuildConfig.DYNAMIC_DNS, true).flatMap {
             try {
-                val response = it.string()
-                val endpoint =
-                    Gson().fromJson(response, DOHTxtRecord::class.java).answer.first().data.replace(
-                        "\"", ""
-                    )
+                val endpoint = it.data.replace("\"", "")
                 lastUsedDynamicEndpoint = endpoint
                 return@flatMap Single.fromCallable { "${hostType.text}$lastUsedDynamicEndpoint" }
             } catch (e: JsonSyntaxException) {
