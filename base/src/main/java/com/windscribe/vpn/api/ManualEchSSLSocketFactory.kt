@@ -1,9 +1,8 @@
 package com.windscribe.vpn.api
 
 import android.util.Base64
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import org.conscrypt.Conscrypt
-import tech.relaycorp.doh.DoHClient
 import java.io.IOException
 import java.net.InetAddress
 import java.net.Socket
@@ -14,8 +13,10 @@ import javax.net.ssl.SSLSocketFactory
 /**
  * SSLSocketFactory that disables the DNS auto-fetch, then manually do DNS in the test.
  */
-internal class ManualEchSSLSocketFactory(private val delegate: SSLSocketFactory) :
-    SSLSocketFactory() {
+internal class ManualEchSSLSocketFactory(
+    private val dohResolver: DohResolver,
+    private val delegate: SSLSocketFactory
+) : SSLSocketFactory() {
     private var host: String? = null
     private var sslSocket: SSLSocket? = null
     override fun getDefaultCipherSuites(): Array<String> {
@@ -62,18 +63,16 @@ internal class ManualEchSSLSocketFactory(private val delegate: SSLSocketFactory)
         sslSocket = socket as SSLSocket
         Conscrypt.setUseEchGrease(sslSocket, false)
         Conscrypt.setCheckDnsForEch(sslSocket, false)
-        val echConfigList = getEchConfig()
-        Conscrypt.setEchConfigList(sslSocket, echConfigList)
+        setEchConfig(socket)
         return sslSocket
     }
 
-    private fun getEchConfig(): ByteArray? {
-        val doh = DoHClient()
-        val txtRecord = doh.use {
-            runBlocking {
-                it.lookUp("echconfig001.windscribe.dev", "TXT").data.first()
+    private fun setEchConfig(sslSocket: SSLSocket) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dohResolver.getTxtAnswer("echconfig001.windscribe.dev")?.data?.let {
+                val config = Base64.decode(it, Base64.DEFAULT)
+                Conscrypt.setEchConfigList(sslSocket, config)
             }
         }
-        return Base64.decode(txtRecord, Base64.DEFAULT)
     }
 }
