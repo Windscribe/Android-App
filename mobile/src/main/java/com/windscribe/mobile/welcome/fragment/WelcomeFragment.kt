@@ -174,6 +174,11 @@ class WelcomeFragment : Fragment(), OnPageChangeListener {
         fragmentCallback?.onLoginClick()
     }
 
+    @OnClick(R.id.emergencyConnectButton)
+    fun onEmergencyButtonClick() {
+        fragmentCallback?.onEmergencyClick()
+    }
+
     private fun setGif() {
         Glide.with(this).load(R.raw.wsbadge).into(logo)
     }
