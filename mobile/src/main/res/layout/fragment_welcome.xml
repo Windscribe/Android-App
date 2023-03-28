@@ -98,8 +98,23 @@
         style="@style/NoBackgroundButtonBold"
         android:layout_marginBottom="@dimen/margin_24"
         android:text="@string/login"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/emergencyConnectButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/emergencyConnectButton"
+        android:layout_height="@dimen/reg_32dp"
+        android:layout_width="@dimen/reg_32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:src="@drawable/emergency_icon"
+        android:layout_marginBottom="@dimen/margin_24"
+        android:layout_gravity="center"
+        android:clickable="true"
+        android:background="@drawable/ripple_round"
+        android:contentDescription="@string/image_description"
+        android:focusable="true" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

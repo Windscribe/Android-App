@@ -18,7 +18,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import butterknife.BindView
 import butterknife.OnClick
 import com.windscribe.mobile.R
-import com.windscribe.mobile.alert.AlwaysOnFragment.AlwaysOnDialogCallBack
 import com.windscribe.mobile.alert.ExtraDataUseWarningFragment
 import com.windscribe.mobile.alert.LocationPermissionRationale
 import com.windscribe.mobile.alert.PermissionRationaleListener
@@ -35,7 +34,7 @@ import com.windscribe.vpn.constants.FeatureExplainer
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
-class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, AlwaysOnDialogCallBack,
+class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView,
     PermissionRationaleListener, ExtraDataUseWarningFragment.CallBack {
 
     private val logger = LoggerFactory.getLogger(TAG)
@@ -110,12 +109,6 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Alway
     override fun onDestroy() {
         presenter.onDestroy()
         super.onDestroy()
-    }
-
-    @OnClick(R.id.always_on_container)
-    fun clickOnAlwaysOn() {
-        logger.info("User clicked to always on..")
-        onGoToSettings()
     }
 
     override fun getLocationPermission(requestCode: Int) {
@@ -261,16 +254,6 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Alway
     fun onBackButtonClicked() {
         logger.info("User clicked on back arrow...")
         onBackPressed()
-    }
-
-    override fun onGoToSettings() {
-        val intent = Intent("android.net.vpn.SETTINGS")
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        if (intent.resolveActivity(packageManager) != null) {
-            startActivity(intent)
-        } else {
-            Toast.makeText(this, "VPN settings not found.", Toast.LENGTH_SHORT).show()
-        }
     }
 
     @OnClick(R.id.split_tunnel_title, R.id.split_tunnel_status, R.id.split_tunnel_right_icon)
