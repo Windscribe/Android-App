@@ -138,13 +138,20 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     fun provideLatencyRepository(
         interactor: ServiceInteractor,
         userRepository: Lazy<UserRepository>,
+        localDbInterface: LocalDbInterface,
         vpnConnectionStateManager: Lazy<VPNConnectionStateManager>
     ): LatencyRepository {
         return LatencyRepository(
-            interactor,
-            userRepository,
-            vpnConnectionStateManager
+            interactor, userRepository, localDbInterface, vpnConnectionStateManager
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideFavouriteRepository(
+        scope: CoroutineScope, localDbInterface: LocalDbInterface
+    ): FavouriteRepository {
+        return FavouriteRepository(scope, localDbInterface)
     }
 
     @Provides
@@ -548,11 +555,48 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     }
 
     @Provides
+    @Singleton
+    fun providesApiCallManagerInterfaceV2(
+        windApiFactory: WindApiFactory,
+        windCustomApiFactory: WindCustomApiFactory,
+        @Named("backupEndPointList") backupEndpoint: List<String>,
+        authorizationGenerator: AuthorizationGenerator,
+        @Named("accessIpList") accessIpList: List<String>,
+        @Named("PrimaryApiEndpointMap") primaryApiEndpointMap: Map<HostType, String>,
+        @Named("SecondaryApiEndpointMap") secondaryApiEndpointMap: Map<HostType, String>,
+        domainFailOverManager: DomainFailOverManager
+    ): IApiCallManagerV2 {
+        return ApiCallManagerV2(
+            windApiFactory,
+            windCustomApiFactory,
+            backupEndpoint,
+            authorizationGenerator,
+            accessIpList,
+            primaryApiEndpointMap,
+            secondaryApiEndpointMap,
+            domainFailOverManager
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun providesIpRepository(
+        scope: CoroutineScope,
+        preferencesHelper: PreferencesHelper,
+        apiCallManager: IApiCallManagerV2,
+        vpnConnectionStateManager: VPNConnectionStateManager
+    ): IpRepository {
+        return IpRepository(scope, preferencesHelper, apiCallManager, vpnConnectionStateManager)
+    }
+
+    @Provides
     @Named("SecondaryApiEndpointMap")
     fun providesSecondaryApiEndpointMap(): Map<HostType, String> {
-        return mapOf(Pair(HostType.API, "https://api.totallyacdn.com"),
-                Pair(HostType.ASSET, "https://assets.totallyacdn.com"),
-                Pair(HostType.CHECK_IP, "https://checkip.totallyacdn.com"))
+        return mapOf(
+            Pair(HostType.API, "https://api.totallyacdn.com"),
+            Pair(HostType.ASSET, "https://assets.totallyacdn.com"),
+            Pair(HostType.CHECK_IP, "https://checkip.totallyacdn.com")
+        )
     }
 
     @Provides
