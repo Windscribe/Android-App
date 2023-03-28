@@ -12,6 +12,7 @@ import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_GENERATE_C
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import io.reactivex.Completable
+import kotlinx.coroutines.rx2.await
 import kotlinx.coroutines.rx2.rxSingle
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -23,16 +24,19 @@ class ConnectionDataRepository @Inject constructor(
     private val apiCallManager: IApiCallManager
 ) {
     private val logger = LoggerFactory.getLogger("connection_data_updater")
+
+    suspend fun updateConnectionData() {
+        update().await()
+    }
+
     fun update(): Completable {
         logger.debug("Starting connection data update...")
-        return apiCallManager.getServerConfig()
-            .flatMap { response ->
+        return apiCallManager.getServerConfig().flatMap { response ->
                 response.dataClass?.let {
                     preferencesHelper.saveOpenVPNServerConfig(it)
                 }
-                if(errorRequestingCredentials(response.errorClass)){
-                   return@flatMap rxSingle { appContext.vpnController.disconnectAsync() }
-                       .flatMap { apiCallManager.getServerCredentials() }
+                if (errorRequestingCredentials(response.errorClass)) {
+                    return@flatMap rxSingle { appContext.vpnController.disconnectAsync() }.flatMap { apiCallManager.getServerCredentials() }
                 }else{
                     apiCallManager.getServerCredentials()
                 }
