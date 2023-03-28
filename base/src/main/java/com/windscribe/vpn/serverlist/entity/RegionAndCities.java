@@ -9,6 +9,7 @@ import androidx.room.Ignore;
 import androidx.room.Relation;
 
 import java.util.List;
+import java.util.Objects;
 
 public class RegionAndCities {
 
@@ -45,5 +46,21 @@ public class RegionAndCities {
 
     public void setRegion(Region region) {
         this.region = region;
+    }
+
+    @Ignore
+    public Boolean isExpanded = false;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RegionAndCities)) return false;
+        RegionAndCities that = (RegionAndCities) o;
+        return latencyTotal == that.latencyTotal && cities.equals(that.cities) && region.equals(that.region) && isExpanded.equals(that.isExpanded);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(cities, latencyTotal, region, isExpanded);
     }
 }

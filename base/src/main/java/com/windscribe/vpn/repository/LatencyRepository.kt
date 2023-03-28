@@ -4,6 +4,7 @@ import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.wireguard.WireGuardVpnProfile
 import com.windscribe.vpn.commonutils.WindUtilities
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.serverlist.entity.PingTime
 import com.windscribe.vpn.services.ping.Ping
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -23,6 +24,7 @@ import kotlin.math.roundToInt
 class LatencyRepository @Inject constructor(
     val interactor: ServiceInteractor,
     val userRepository: dagger.Lazy<UserRepository>,
+    val localDbInterface: LocalDbInterface,
     val vpnConnectionStateManager: dagger.Lazy<VPNConnectionStateManager>
 ) {
     enum class LatencyType {
@@ -33,6 +35,28 @@ class LatencyRepository @Inject constructor(
     val latencyEvent: StateFlow<Pair<Boolean, LatencyType>> = _latencyEvent.asStateFlow()
     private val skipPing
         get() = vpnConnectionStateManager.get().isVPNActive() || WindUtilities.isOnline().not()
+
+    suspend fun getPing(locationId: Int): PingTime {
+        return localDbInterface.allPingTimes.await().firstOrNull { it.id == locationId }?.let {
+            return it
+        } ?: kotlin.run {
+            kotlin.runCatching {
+                val regionAndCity = localDbInterface.getCityAndRegion(locationId)
+                return@run getLatency(
+                    locationId,
+                    regionAndCity.region.id,
+                    regionAndCity.city.pingIp,
+                    false,
+                    regionAndCity.city.pro == 1
+                )
+            }.getOrElse {
+                val pingTime = PingTime()
+                pingTime.id = locationId
+                pingTime.pingTime = -1
+                return pingTime
+            }
+        }
+    }
 
     suspend fun updateAllServerLatencies(): Boolean {
         val cityPings = runCatching {
