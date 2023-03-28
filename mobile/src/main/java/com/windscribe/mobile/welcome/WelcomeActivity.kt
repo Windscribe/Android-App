@@ -18,6 +18,10 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import butterknife.ButterKnife
 import com.windscribe.mobile.R
+import com.windscribe.mobile.alert.DialogType
+import com.windscribe.mobile.alert.GenericAlertCallback
+import com.windscribe.mobile.alert.GenericAlertData
+import com.windscribe.mobile.alert.GenericAlertDialog.Companion.show
 import com.windscribe.mobile.alert.UnknownErrorAlert
 import com.windscribe.mobile.alert.UnknownErrorAlert.LoginAttemptFailedAlertInterface
 import com.windscribe.mobile.base.BaseActivity
@@ -34,7 +38,7 @@ import java.io.File
 import javax.inject.Inject
 
 class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
-    LoginAttemptFailedAlertInterface {
+    LoginAttemptFailedAlertInterface, GenericAlertCallback {
 
     @Inject
     lateinit var presenter: WelcomePresenter
@@ -166,12 +170,24 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
         presenter.startLoginProcess(username, password, twoFa)
     }
 
+    override fun onEmergencyClick() {
+        GenericAlertData(
+            R.drawable.emergency_icon_white,
+            getString(R.string.emergency_connect),
+            getString(R.string.emergency_connect_description),
+            getString(R.string.connect)
+        ).apply {
+            show(this, supportFragmentManager)
+        }
+    }
+
     override fun onLoginClick() {
         val loginFragment = LoginFragment()
-        val direction = GravityCompat
-            .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
-        loginFragment.enterTransition =
-            Slide(direction).addTarget(R.id.login_container)
+        val direction = GravityCompat.getAbsoluteGravity(
+                GravityCompat.END,
+                resources.configuration.layoutDirection
+            )
+        loginFragment.enterTransition = Slide(direction).addTarget(R.id.login_container)
         replaceFragment(loginFragment, true)
     }
 
@@ -341,11 +357,16 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
         bundle.putString("startFragmentName", startFragmentName)
         bundle.putBoolean("skipToHome", skipToHome)
         fragment.arguments = bundle
-        val direction = GravityCompat
-            .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
-        fragment.enterTransition =
-            Slide(direction).addTarget(R.id.welcome_container)
+        val direction = GravityCompat.getAbsoluteGravity(
+                GravityCompat.END,
+                resources.configuration.layoutDirection
+            )
+        fragment.enterTransition = Slide(direction).addTarget(R.id.welcome_container)
         replaceFragment(fragment, false)
+    }
+
+    override fun onAlertDialogButtonClick(type: DialogType) {
+
     }
 
     companion object {
