@@ -17,8 +17,8 @@ import com.windscribe.vpn.workers.WindScribeWorkManager
 import io.reactivex.Completable
 import io.reactivex.Single
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.await
 import org.json.JSONObject
@@ -37,25 +37,31 @@ class ServerListRepository @Inject constructor(
     private val workManager: WindScribeWorkManager
 ) {
     private val logger = LoggerFactory.getLogger("server_list_repository")
-    private var _events = MutableStateFlow(emptyList<RegionAndCities>())
-    val regions: StateFlow<List<RegionAndCities>> = _events
+    private var _events = MutableSharedFlow<List<RegionAndCities>>(replay = 1)
+    val regions: SharedFlow<List<RegionAndCities>> = _events
     var globalServerList = true
+
     init {
-      load()
+        load()
     }
-    fun load(){
+
+    fun load() {
         scope.launch {
-            _events.value = localDbInterface.allRegion.await()
+            _events.emit(localDbInterface.allRegion.await())
         }
     }
+
+    suspend fun updateServerList() {
+        update().await()
+    }
+
     fun update(): Completable {
         logger.debug("Starting server list update")
-        return apiCallManager.getSessionGeneric(null)
-                .flatMap {
+        return apiCallManager.getSessionGeneric(null).flatMap {
                 it.dataClass?.let { userSession ->
                     userRepository.reload(userSession)
                     val user = User(userSession)
-                    if(appLifeCycleObserver.overriddenCountryCode!=null){
+                    if (appLifeCycleObserver.overriddenCountryCode != null) {
                         globalServerList = false
                     }
                     apiCallManager.getServerList(
@@ -111,4 +117,6 @@ class ServerListRepository @Inject constructor(
             .andThen(Completable.fromAction { preferenceChangeObserver.postCityServerChange() })
             .doOnError { logger.debug("Error saving server list to database") }
     }
+
+
 }
