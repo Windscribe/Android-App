@@ -5,10 +5,7 @@ package com.windscribe.vpn.di
 
 import android.content.Context
 import com.windscribe.vpn.Windscribe
-import com.windscribe.vpn.api.AuthorizationGenerator
-import com.windscribe.vpn.api.IApiCallManager
-import com.windscribe.vpn.api.WindApiFactory
-import com.windscribe.vpn.api.WindCustomApiFactory
+import com.windscribe.vpn.api.*
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.TrafficCounter
@@ -42,6 +39,7 @@ interface ApplicationComponent {
 
     //Api
     val apiCallManager: IApiCallManager
+    val apiCallManagerV2: IApiCallManagerV2
     val windApiFactory: WindApiFactory
     val windCustomFactory: WindCustomApiFactory
     val authorizationGenerator: AuthorizationGenerator
@@ -89,6 +87,8 @@ interface ApplicationComponent {
     val notificationRepository: NotificationRepository
     val userRepository: UserRepository
     val latencyRepository: LatencyRepository
+    val ipRepository: IpRepository
+    val favouriteRepository: FavouriteRepository
 
     //Inject
     fun inject(app: Windscribe)
