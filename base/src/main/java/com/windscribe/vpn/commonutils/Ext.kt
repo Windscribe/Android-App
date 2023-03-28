@@ -10,10 +10,7 @@ import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.repository.CallResult
 import io.reactivex.Completable
 import io.reactivex.Single
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.*
 import kotlinx.coroutines.rx2.await
 
 object Ext {
@@ -34,9 +31,26 @@ object Ext {
             response.callResult()
         } catch (e: Exception) {
             CallResult.Error(
-                NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API,
-                WindError.instance.rxErrorToString(e)
+                NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API, WindError.instance.rxErrorToString(e)
             )
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    suspend fun <T> Single<T>.toResult(): Result<T> {
+        return runCatching {
+            withContext(Dispatchers.IO) {
+                await() as T
+            }
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    suspend fun Completable.toResult(): Result<*> {
+        return runCatching {
+            withContext(Dispatchers.IO) {
+                await()
+            }
         }
     }
 
