@@ -482,32 +482,6 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
 
     @Provides
     @Singleton
-    fun provideWindVpnController(
-        coroutineScope: CoroutineScope,
-        serviceInteractor: ServiceInteractor,
-        vpnProfileCreator: VPNProfileCreator,
-        autoConnectionManager: AutoConnectionManager,
-        VPNConnectionStateManager: VPNConnectionStateManager,
-        vpnBackendHolder: VpnBackendHolder,
-        locationRepository: LocationRepository,
-        wgConfigRepository: WgConfigRepository,
-        userRepository: Lazy<UserRepository>
-    ): WindVpnController {
-        return WindVpnController(
-            coroutineScope,
-            serviceInteractor,
-            vpnProfileCreator,
-            VPNConnectionStateManager,
-            vpnBackendHolder,
-            locationRepository,
-            wgConfigRepository,
-            userRepository,
-            autoConnectionManager
-        )
-    }
-
-    @Provides
-    @Singleton
     fun provideWireguardBackend(
             goBackend: GoBackend,
             coroutineScope: CoroutineScope,
@@ -587,24 +561,6 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
         vpnConnectionStateManager: VPNConnectionStateManager
     ): IpRepository {
         return IpRepository(scope, preferencesHelper, apiCallManager, vpnConnectionStateManager)
-    }
-
-    @Provides
-    @Named("SecondaryApiEndpointMap")
-    fun providesSecondaryApiEndpointMap(): Map<HostType, String> {
-        return mapOf(
-            Pair(HostType.API, "https://api.totallyacdn.com"),
-            Pair(HostType.ASSET, "https://assets.totallyacdn.com"),
-            Pair(HostType.CHECK_IP, "https://checkip.totallyacdn.com")
-        )
-    }
-
-    @Provides
-    @Named("PrimaryApiEndpointMap")
-    fun providesPrimaryApiEndpointMap(): Map<HostType, String> {
-        return mapOf(Pair(HostType.API, NetworkKeyConstants.API_ENDPOINT),
-                Pair(HostType.ASSET, NetworkKeyConstants.API_ENDPOINT_FOR_SERVER_LIST),
-                Pair(HostType.CHECK_IP, BuildConfig.CHECK_IP_URL))
     }
 
     @Provides

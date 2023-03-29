@@ -42,7 +42,6 @@ data class GenericAlertData(
  */
 class GenericAlertDialog : Fragment() {
     private var genericAlertCallback: GenericAlertCallback? = null
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {

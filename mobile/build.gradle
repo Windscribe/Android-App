@@ -58,6 +58,10 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin"
     implementation "androidx.core:core-ktx:$ktx_core"
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:1.1.5"
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.0'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.0'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.5.0'
+
     //Core Module
     implementation project(path: ':base')
 
@@ -80,5 +84,6 @@ dependencies {
     kapt 'com.jakewharton:butterknife-compiler:10.2.3'
     kapt "androidx.room:room-compiler:$room"
     kapt "com.google.dagger:dagger-compiler:$dagger"
+    kaptAndroidTest("com.google.dagger:dagger-compiler:$dagger")
     androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
 }

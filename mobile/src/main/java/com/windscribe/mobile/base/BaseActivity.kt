@@ -219,13 +219,12 @@ abstract class BaseActivity : AppCompatActivity(), DisclaimerAlertListener {
         ButterKnife.bind(this)
     }
 
-    protected fun setLanguage() {
+    fun setLanguage() {
         val newLocale = appContext.getSavedLocale()
         Locale.setDefault(newLocale)
         val config = Configuration()
         config.locale = newLocale
-        appContext.resources
-                .updateConfiguration(config, baseContext.resources.displayMetrics)
+        appContext.resources.updateConfiguration(config, baseContext.resources.displayMetrics)
         resources.updateConfiguration(config, baseContext.resources.displayMetrics)
     }
 
