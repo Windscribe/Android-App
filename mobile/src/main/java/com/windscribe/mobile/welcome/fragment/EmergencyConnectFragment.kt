@@ -47,24 +47,24 @@ class EmergencyConnectFragment : Fragment() {
                 viewModal?.uiState?.collectLatest {
                     when (it) {
                         EmergencyConnectUIState.Disconnected -> {
+                            _binding?.tvDescription?.visibility = View.VISIBLE
                             _binding?.tvStatus?.visibility = View.INVISIBLE
                             _binding?.progressBar?.visibility = View.INVISIBLE
-                            _binding?.clMiddle?.visibility = View.VISIBLE
                             _binding?.tvDescription?.text =
                                 getString(R.string.emergency_connect_description)
                             _binding?.ok?.text = getString(R.string.connect)
 
                         }
                         EmergencyConnectUIState.Connecting -> {
-                            _binding?.clMiddle?.visibility = View.INVISIBLE
+                            _binding?.tvDescription?.visibility = View.INVISIBLE
                             _binding?.tvStatus?.visibility = View.VISIBLE
                             _binding?.progressBar?.visibility = View.VISIBLE
                             _binding?.ok?.text = getString(R.string.disconnect)
                         }
                         EmergencyConnectUIState.Connected -> {
+                            _binding?.tvDescription?.visibility = View.VISIBLE
                             _binding?.tvStatus?.visibility = View.INVISIBLE
                             _binding?.progressBar?.visibility = View.INVISIBLE
-                            _binding?.clMiddle?.visibility = View.VISIBLE
                             _binding?.tvDescription?.text =
                                 getString(R.string.emergency_connected_description)
                             _binding?.ok?.text = getString(R.string.disconnect)
