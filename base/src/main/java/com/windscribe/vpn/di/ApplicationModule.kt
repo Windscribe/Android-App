@@ -795,4 +795,10 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
             vpnController
         )
     }
+
+    @Provides
+    @Singleton
+    fun providesEmergencyConnectRepository(): EmergencyConnectRepository {
+        return EmergencyConnectRepositoryImpl()
+    }
 }

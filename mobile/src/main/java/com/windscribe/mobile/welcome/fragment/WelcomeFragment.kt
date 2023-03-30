@@ -6,6 +6,7 @@ package com.windscribe.mobile.welcome.fragment
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
@@ -15,6 +16,7 @@ import android.view.animation.AccelerateInterpolator
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
@@ -26,11 +28,19 @@ import com.google.android.material.tabs.TabLayout
 import com.windscribe.mobile.R
 import com.windscribe.mobile.fragments.FeatureFragments
 import com.windscribe.mobile.fragments.FeaturePageTransformer
+import com.windscribe.mobile.welcome.WelcomeActivity
+import com.windscribe.mobile.welcome.state.EmergencyConnectUIState
+import com.windscribe.mobile.welcome.viewmodal.EmergencyConnectViewModal
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.util.*
 
 class WelcomeFragment : Fragment(), OnPageChangeListener {
     @BindView(R.id.logo)
     lateinit var logo: ImageView
+
+    @BindView(R.id.emergencyConnectButton)
+    lateinit var emergencyConnectButton: ImageView
 
     @BindView(R.id.feature_pager)
     lateinit var mViewPager: ViewPager
@@ -44,6 +54,9 @@ class WelcomeFragment : Fragment(), OnPageChangeListener {
     private var scrollState = 0
     private var slideLeft = true
     private var pagerTimer: Timer? = null
+    private val viewModal: EmergencyConnectViewModal? by lazy {
+        return@lazy (activity as? WelcomeActivity)?.emergencyConnectViewModal?.value
+    }
 
     override fun onAttach(context: Context) {
         if (activity is FragmentCallback) {
@@ -53,8 +66,7 @@ class WelcomeFragment : Fragment(), OnPageChangeListener {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_welcome, container, false)
         ButterKnife.bind(this, view)
@@ -66,6 +78,16 @@ class WelcomeFragment : Fragment(), OnPageChangeListener {
         setGif()
         setPagerAdapter()
         setUpAutoPaging()
+        lifecycleScope.launch {
+            viewModal?.uiState?.collectLatest { state ->
+                if (state != EmergencyConnectUIState.Connected) {
+                    emergencyConnectButton.imageTintList = null
+                } else {
+                    emergencyConnectButton.imageTintList =
+                        ColorStateList.valueOf(resources.getColor(R.color.colorBlue))
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {

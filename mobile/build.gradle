@@ -49,6 +49,9 @@ android {
         abortOnError false
         disable 'NonConstantResourceId', 'ContentDescription', 'VectorRaster'
     }
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {

@@ -4,6 +4,7 @@
 package com.windscribe.mobile.di
 
 import android.animation.ArgbEvaluator
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
@@ -69,6 +70,7 @@ import com.windscribe.mobile.upgradeactivity.UpgradeView
 import com.windscribe.mobile.welcome.WelcomePresenter
 import com.windscribe.mobile.welcome.WelcomePresenterImpl
 import com.windscribe.mobile.welcome.WelcomeView
+import com.windscribe.mobile.welcome.viewmodal.EmergencyConnectViewModal
 import com.windscribe.mobile.windscribe.WindscribePresenter
 import com.windscribe.mobile.windscribe.WindscribePresenterImpl
 import com.windscribe.mobile.windscribe.WindscribeView
@@ -258,8 +260,7 @@ class ActivityModule {
 
     @Provides
     fun provideConfirmEmailPresenter(
-        confirmEmailView: ConfirmEmailView,
-        activityInteractor: ActivityInteractor
+        confirmEmailView: ConfirmEmailView, activityInteractor: ActivityInteractor
     ): ConfirmEmailPresenter {
         return ConfirmEmailPresenterImp(confirmEmailView, activityInteractor)
     }
@@ -495,8 +496,7 @@ class ActivityModule {
             workManager,
             decoyTrafficController,
             trafficCounter,
-            autoConnectionManager,
-            latencyRepository
+            autoConnectionManager, latencyRepository
         )
     }
 
@@ -504,6 +504,19 @@ class ActivityModule {
     @PerActivity
     fun providesCustomFragmentFactory(activityInteractor: ActivityInteractor): CustomFragmentFactory {
         return CustomFragmentFactory(activityInteractor)
+    }
+
+    @Provides
+    fun providesEmergencyConnectViewModal(
+        scope: CoroutineScope,
+        windVpnController: WindVpnController,
+        vpnConnectionStateManager: VPNConnectionStateManager
+    ): Lazy<EmergencyConnectViewModal> {
+        return activity.viewModels {
+            return@viewModels EmergencyConnectViewModal.provideFactory(
+                scope, windVpnController, vpnConnectionStateManager
+            )
+        }
     }
 
     @PerActivity

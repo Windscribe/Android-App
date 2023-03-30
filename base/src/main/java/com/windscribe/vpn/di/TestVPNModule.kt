@@ -6,6 +6,7 @@ import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.mocks.TestWindVpnController
+import com.windscribe.vpn.repository.EmergencyConnectRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.repository.WgConfigRepository
@@ -29,7 +30,8 @@ class TestVPNModule {
         vpnBackendHolder: VpnBackendHolder,
         locationRepository: LocationRepository,
         wgConfigRepository: WgConfigRepository,
-        userRepository: Lazy<UserRepository>
+        userRepository: Lazy<UserRepository>,
+        emergencyConnectRepository: EmergencyConnectRepository
     ): WindVpnController {
         return TestWindVpnController(
             coroutineScope,
@@ -40,7 +42,8 @@ class TestVPNModule {
             locationRepository,
             autoConnectionManager,
             wgConfigRepository,
-            userRepository
+            userRepository,
+            emergencyConnectRepository
         )
     }
 }
