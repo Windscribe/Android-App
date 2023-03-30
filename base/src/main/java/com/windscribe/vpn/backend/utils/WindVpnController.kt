@@ -453,7 +453,7 @@ open class WindVpnController @Inject constructor(
                 }.collect { state ->
                     logger.debug("$connectionAttempt ${state.status}")
                     if (state.status == VPNState.Status.Disconnected && connectionAttempt < connectionInfo.size) {
-                        callback("Connecting to Windscribe server..")
+                        callback("Connecting..")
                         vpnConnectionStateManager.setState(VPNState(status = VPNState.Status.Connecting))
                         val connectionUUID = UUID.randomUUID()
                         val openVPNInfo = connectionInfo[connectionAttempt]
