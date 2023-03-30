@@ -89,6 +89,7 @@ interface ApplicationComponent {
     val latencyRepository: LatencyRepository
     val ipRepository: IpRepository
     val favouriteRepository: FavouriteRepository
+    val emergencyConnectRepository: EmergencyConnectRepository
 
     //Inject
     fun inject(app: Windscribe)
