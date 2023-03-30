@@ -6,7 +6,6 @@ package com.windscribe.mobile.welcome.fragment
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context
-import android.content.res.ColorStateList
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
@@ -81,10 +80,9 @@ class WelcomeFragment : Fragment(), OnPageChangeListener {
         lifecycleScope.launch {
             viewModal?.uiState?.collectLatest { state ->
                 if (state != EmergencyConnectUIState.Connected) {
-                    emergencyConnectButton.imageTintList = null
+                    emergencyConnectButton.setImageResource(R.drawable.emergency_icon)
                 } else {
-                    emergencyConnectButton.imageTintList =
-                        ColorStateList.valueOf(resources.getColor(R.color.colorBlue))
+                    emergencyConnectButton.setImageResource(R.drawable.emergency_icon_blue)
                 }
             }
         }

@@ -8,15 +8,7 @@
     android:focusableInTouchMode="true"
     tools:context=".welcome.fragment.EmergencyConnectFragment">
 
-    <TextView
-        android:id="@+id/tvStatus"
-        style="@style/WarningText"
-        android:gravity="center"
-        android:layout_marginBottom="@dimen/margin_16"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/progressBar"
-        android:visibility="invisible" />
+
 
     <ImageView
         android:layout_width="wrap_content"
@@ -26,15 +18,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:id="@+id/closeIcon" />
 
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:id="@+id/progressBar"
-        android:visibility="invisible" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clMiddle"
@@ -44,6 +27,26 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tvStatus"
+            style="@style/WarningText"
+            android:gravity="center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/progressBar"
+            android:layout_marginTop="@dimen/margin_24"
+            android:visibility="invisible" />
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle"
+            android:id="@+id/progressBar"
+            android:layout_margin="@dimen/reg_40dp"
+            android:visibility="invisible" />
 
         <ImageView
             android:id="@+id/iconImage"
