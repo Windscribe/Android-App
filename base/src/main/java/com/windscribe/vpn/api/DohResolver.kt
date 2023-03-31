@@ -8,7 +8,7 @@ import com.windscribe.vpn.constants.NetworkKeyConstants
 import io.reactivex.Single
 import kotlinx.coroutines.rx2.await
 
-class DohResolver(private val apiFactory: WindApiFactory) {
+class DohResolver(private val apiFactory: EchApiFactory) {
 
     private val cache: HashMap<String, TxtAnswer> = HashMap()
     fun getTxtAnswerAsync(hostname: String, googleAsBackupResolver: Boolean): Single<TxtAnswer> {

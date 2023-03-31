@@ -508,30 +508,7 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Singleton
     fun providesApiCallManagerInterface(
         windApiFactory: WindApiFactory,
-        windCustomApiFactory: WindCustomApiFactory,
-        @Named("backupEndPointList") backupEndpoint: List<String>,
-        authorizationGenerator: AuthorizationGenerator,
-        @Named("accessIpList") accessIpList: List<String>,
-        @Named("PrimaryApiEndpointMap") primaryApiEndpointMap : Map<HostType, String>,
-        @Named("SecondaryApiEndpointMap") secondaryApiEndpointMap : Map<HostType, String>,
-        domainFailOverManager: DomainFailOverManager
-    ): IApiCallManager {
-        return ApiCallManager(
-            windApiFactory,
-            windCustomApiFactory,
-            backupEndpoint,
-            authorizationGenerator,
-            accessIpList,
-            primaryApiEndpointMap,
-            secondaryApiEndpointMap,
-            domainFailOverManager
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun providesApiCallManagerInterfaceV2(
-        windApiFactory: WindApiFactory,
+        echApiFactory: EchApiFactory,
         windCustomApiFactory: WindCustomApiFactory,
         @Named("backupEndPointList") backupEndpoint: List<String>,
         authorizationGenerator: AuthorizationGenerator,
@@ -539,9 +516,10 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
         @Named("PrimaryApiEndpointMap") primaryApiEndpointMap: Map<HostType, String>,
         @Named("SecondaryApiEndpointMap") secondaryApiEndpointMap: Map<HostType, String>,
         domainFailOverManager: DomainFailOverManager
-    ): IApiCallManagerV2 {
-        return ApiCallManagerV2(
+    ): IApiCallManager {
+        return ApiCallManager(
             windApiFactory,
+            echApiFactory,
             windCustomApiFactory,
             backupEndpoint,
             authorizationGenerator,
@@ -557,7 +535,7 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     fun providesIpRepository(
         scope: CoroutineScope,
         preferencesHelper: PreferencesHelper,
-        apiCallManager: IApiCallManagerV2,
+        apiCallManager: IApiCallManager,
         vpnConnectionStateManager: VPNConnectionStateManager
     ): IpRepository {
         return IpRepository(scope, preferencesHelper, apiCallManager, vpnConnectionStateManager)
@@ -710,19 +688,39 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun providesWindApiFactory(
-            retrofitBuilder: Retrofit.Builder,
-            httpBuilder: OkHttpClient.Builder,
-            protectedApiFactory: ProtectedApiFactory,
-            windscribeDnsResolver: WindscribeDnsResolver
+        retrofitBuilder: Retrofit.Builder,
+        httpBuilder: OkHttpClient.Builder,
+        protectedApiFactory: ProtectedApiFactory,
+        windscribeDnsResolver: WindscribeDnsResolver
     ): WindApiFactory {
-        return WindApiFactory(retrofitBuilder, httpBuilder, protectedApiFactory, windscribeDnsResolver)
+        return WindApiFactory(
+            retrofitBuilder,
+            httpBuilder,
+            protectedApiFactory,
+            windscribeDnsResolver
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun providesEchFactory(
+        retrofitBuilder: Retrofit.Builder,
+        httpBuilder: OkHttpClient.Builder,
+        protectedApiFactory: ProtectedApiFactory,
+        windscribeDnsResolver: WindscribeDnsResolver
+    ): EchApiFactory {
+        return EchApiFactory(
+            retrofitBuilder,
+            httpBuilder,
+            protectedApiFactory,
+            windscribeDnsResolver
+        )
     }
 
     @Provides
     @Singleton
     fun providesProtectedFactory(
-            retrofitBuilder: Retrofit.Builder,
-            windscribeDnsResolver: WindscribeDnsResolver
+        retrofitBuilder: Retrofit.Builder, windscribeDnsResolver: WindscribeDnsResolver
     ): ProtectedApiFactory {
         return ProtectedApiFactory(retrofitBuilder, windscribeDnsResolver)
     }
