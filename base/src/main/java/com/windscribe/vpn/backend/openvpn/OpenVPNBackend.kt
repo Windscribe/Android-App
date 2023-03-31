@@ -67,6 +67,7 @@ class OpenVPNBackend(
     override suspend fun disconnect(error: VPNState.Error?) {
         this.error = error
         if (active) {
+            stickyDisconnectEvent = false
             vpnLogger.debug("Stopping Open VPN Service.")
             connectionJob?.cancel()
             startOpenVPN(OpenVPNService.PAUSE_VPN)

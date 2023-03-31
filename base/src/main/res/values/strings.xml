@@ -517,6 +517,8 @@ last chosen location.</string>
     <string name="referee_must_provide_your_username_at_sign_up_and_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">Referee must provide your username at sign up and confirm their email in order for the benefits above to apply to your account.</string>
     <string name="if_you_go_pro_they_ll_go_pro_too">If you go Pro, they’ll go Pro too!</string>
     <string name="protocol_change_is_not_available_for_custom_config">Protocol change is not available for Custom Configs.</string>
+    <string name="disconnect">Disconnect</string>
     <string name="emergency_connect">Emergency Connect</string>
     <string name="emergency_connect_description">Can’t access Windscribe? Connect to our servers to block your restrictive network.</string>
+    <string name="emergency_connected_description">You are now connected to Windscribe server. Try to login again.</string>
 </resources>
