@@ -8,5 +8,5 @@ import dagger.Component
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [ApplicationTestModule::class])
+@Component(modules = [ApplicationModule::class, TestNetworkModule::class, TestVPNModule::class])
 interface ApplicationTestComponent : ApplicationComponent

@@ -36,16 +36,15 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_IKev2
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.exceptions.InvalidVPNConfigException
-import com.windscribe.vpn.repository.CallResult
-import com.windscribe.vpn.repository.LocationRepository
-import com.windscribe.vpn.repository.UserRepository
-import com.windscribe.vpn.repository.WgConfigRepository
+import com.windscribe.vpn.exceptions.WindScribeException
+import com.windscribe.vpn.repository.*
 import com.windscribe.vpn.serverlist.entity.Node
 import com.windscribe.vpn.services.NetworkWhiteListService
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -64,34 +63,30 @@ open class WindVpnController @Inject constructor(
     private val locationRepository: LocationRepository,
     private val wgConfigRepository: WgConfigRepository,
     private val userRepository: Lazy<UserRepository>,
-    private val autoConnectionManager: AutoConnectionManager
+    private val autoConnectionManager: AutoConnectionManager,
+    private val emergencyConnectRepository: EmergencyConnectRepository
 
 ) {
 
-    private val logger = LoggerFactory.getLogger("vpn_backend")
+    private val logger = LoggerFactory.getLogger("controller_v")
     private var isConnecting = false
 
     private suspend fun createVPNProfile(
-        protocolInformation: ProtocolInformation,
-        attempt: Int = 0
+        protocolInformation: ProtocolInformation, attempt: Int = 0
     ): String {
         return when (WindUtilities.getSourceTypeBlocking()) {
             CityLocation -> createVpnProfileFromCity(
-                interactor.preferenceHelper.selectedCity,
-                protocolInformation,
-                attempt
+                interactor.preferenceHelper.selectedCity, protocolInformation, attempt
             )
             StaticIp -> createVpnProfileFromStaticIp(
-                interactor.preferenceHelper.selectedCity,
-                protocolInformation
+                interactor.preferenceHelper.selectedCity, protocolInformation
             )
             else -> createProfileFromCustomConfig(interactor.preferenceHelper.selectedCity)
         }
     }
 
     open suspend fun launchVPNService(
-        protocolInformation: ProtocolInformation,
-        connectionId: UUID
+        protocolInformation: ProtocolInformation, connectionId: UUID
     ) {
         try {
             if (VpnService.prepare(appContext) == null) {
@@ -125,9 +120,7 @@ open class WindVpnController @Inject constructor(
 
     private var lastUsedRandomIndex = 0
     private suspend fun createVpnProfileFromCity(
-        selectedCity: Int,
-        config: ProtocolInformation,
-        attempt: Int = 0
+        selectedCity: Int, config: ProtocolInformation, attempt: Int = 0
     ): String {
         val cityAndRegion = interactor.getCityAndRegionByID(selectedCity)
         val city = cityAndRegion.city
@@ -154,46 +147,33 @@ open class WindVpnController @Inject constructor(
             VPNParameters(ikev2Ip, udpIp, tcpIp, stealthIp, hostname, publicKey, city.ovpnX509)
         when (config.protocol) {
             PreferencesKeyConstants.PROTO_IKev2 -> {
-                return vpnProfileCreator
-                    .createIkEV2Profile(
-                        location,
-                        vpnParameters,
-                        config
-                    )
+                return vpnProfileCreator.createIkEV2Profile(
+                    location, vpnParameters, config
+                )
             }
             PROTO_WIRE_GUARD -> {
-                return vpnProfileCreator
-                    .createVpnProfileFromWireGuardProfile(
-                        location,
-                        vpnParameters,
-                        config
-                    )
+                return vpnProfileCreator.createVpnProfileFromWireGuardProfile(
+                    location, vpnParameters, config
+                )
             }
             else -> {
                 return vpnProfileCreator.createOpenVpnProfile(
-                    location,
-                    vpnParameters,
-                    config
+                    location, vpnParameters, config
                 )
             }
         }
     }
 
     private suspend fun createVpnProfileFromStaticIp(
-        staticId: Int,
-        protocolInformation: ProtocolInformation
+        staticId: Int, protocolInformation: ProtocolInformation
     ): String {
         val staticRegion = interactor.getStaticRegionByID(staticId).blockingGet()
         val node = staticRegion.staticIpNode
         appContext.preference.saveCredentials(
-            PreferencesKeyConstants.STATIC_IP_CREDENTIAL,
-            staticRegion.credentials
+            PreferencesKeyConstants.STATIC_IP_CREDENTIAL, staticRegion.credentials
         )
         val location = LastSelectedLocation(
-            staticRegion.id,
-            staticRegion.cityName,
-            staticRegion.staticIp,
-            staticRegion.countryCode
+            staticRegion.id, staticRegion.cityName, staticRegion.staticIp, staticRegion.countryCode
         )
         val vpnParameters = VPNParameters(
             node.ip,
@@ -206,22 +186,19 @@ open class WindVpnController @Inject constructor(
         )
         when (protocolInformation.protocol) {
             PreferencesKeyConstants.PROTO_IKev2 -> {
-                return vpnProfileCreator
-                    .createIkEV2Profile(
-                        location, vpnParameters, protocolInformation
-                    )
+                return vpnProfileCreator.createIkEV2Profile(
+                    location, vpnParameters, protocolInformation
+                )
             }
             PROTO_WIRE_GUARD -> {
-                return vpnProfileCreator
-                    .createVpnProfileFromWireGuardProfile(
-                        location, vpnParameters, protocolInformation
-                    )
+                return vpnProfileCreator.createVpnProfileFromWireGuardProfile(
+                    location, vpnParameters, protocolInformation
+                )
             }
             else -> {
-                return vpnProfileCreator
-                    .createOpenVpnProfile(
-                        location, vpnParameters, protocolInformation
-                    )
+                return vpnProfileCreator.createOpenVpnProfile(
+                    location, vpnParameters, protocolInformation
+                )
             }
         }
     }
@@ -260,26 +237,20 @@ open class WindVpnController @Inject constructor(
                     error = VPNState.Error(error = VPNState.ErrorType.UserReconnect)
                 )
                 createProfileAndLaunchService(
-                    connectionId,
-                    protocolInformation,
-                    attempt
+                    connectionId, protocolInformation, attempt
                 )
             }
             // Stop Network list service and connect
             vpnConnectionStateManager.state.value.status == UnsecuredNetwork -> {
                 stopNetworkWhiteListService()
                 createProfileAndLaunchService(
-                    connectionId,
-                    protocolInformation,
-                    attempt
+                    connectionId, protocolInformation, attempt
                 )
             }
             else -> {
                 // Make a fresh connection
                 createProfileAndLaunchService(
-                    connectionId,
-                    protocolInformation,
-                    attempt
+                    connectionId, protocolInformation, attempt
                 )
             }
         }
@@ -402,9 +373,7 @@ open class WindVpnController @Inject constructor(
     }
 
     private suspend fun handleVPNError(
-        error: CallResult.Error,
-        connectionId: UUID,
-        protocolInformation: ProtocolInformation?
+        error: CallResult.Error, connectionId: UUID, protocolInformation: ProtocolInformation?
     ) {
         logger.debug("code: ${error.code} error: ${error.errorMessage}")
         val context = coroutineContext
@@ -474,5 +443,37 @@ open class WindVpnController @Inject constructor(
     private suspend fun stopNetworkWhiteListService() {
         NetworkWhiteListService.stopService(appContext)
         delay(100)
+    }
+
+    suspend fun connectUsingEmergencyProfile(callback: (String) -> Unit): Result<Unit> {
+        return emergencyConnectRepository.getConnectionInfo().mapCatching { connectionInfo ->
+            var connectionAttempt = 0
+            vpnConnectionStateManager.state.takeWhile {
+                    it.status != VPNState.Status.Connected
+                }.collect { state ->
+                    logger.debug("$connectionAttempt ${state.status}")
+                    if (state.status == VPNState.Status.Disconnected && connectionAttempt < connectionInfo.size) {
+                        callback("Connecting..")
+                        vpnConnectionStateManager.setState(VPNState(status = VPNState.Status.Connecting))
+                        val connectionUUID = UUID.randomUUID()
+                        val openVPNInfo = connectionInfo[connectionAttempt]
+                        vpnProfileCreator.createOpenVPNProfile(openVPNInfo)
+                        val lastSelectedLocation = LastSelectedLocation(
+                            -1,
+                            nodeName = "Emergency",
+                            nickName = "Windscribe location"
+                        )
+                        Util.saveSelectedLocation(lastSelectedLocation)
+                        val protocolInformation = openVPNInfo.getProtocolInformation()
+                        autoConnectionManager.setSelectedProtocol(protocolInformation)
+                        launchVPNService(protocolInformation, connectionUUID)
+                        connectionAttempt++
+                    } else if (state.status != VPNState.Status.Connecting) {
+                        if (connectionAttempt >= connectionInfo.size) {
+                            throw WindScribeException("No more profiles left to connect.")
+                        }
+                    }
+                }
+        }
     }
 }

@@ -29,7 +29,7 @@ import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [ApplicationModule::class])
+@Component(modules = [ApplicationModule::class, NetworkModule::class, VPNModule::class])
 interface ApplicationComponent {
     //Main
     val coroutineScope: CoroutineScope
@@ -89,6 +89,7 @@ interface ApplicationComponent {
     val latencyRepository: LatencyRepository
     val ipRepository: IpRepository
     val favouriteRepository: FavouriteRepository
+    val emergencyConnectRepository: EmergencyConnectRepository
 
     //Inject
     fun inject(app: Windscribe)

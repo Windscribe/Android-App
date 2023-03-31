@@ -7,6 +7,7 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.repository.EmergencyConnectRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.repository.WgConfigRepository
@@ -25,7 +26,8 @@ class TestWindVpnController(
     locationRepository: LocationRepository,
     autoConnectionManager: AutoConnectionManager,
     wgConfigRepository: WgConfigRepository,
-    userRepository: Lazy<UserRepository>
+    userRepository: Lazy<UserRepository>,
+    emergencyConnectRepository: EmergencyConnectRepository
 ) : WindVpnController(
     scope,
     interactor,
@@ -35,7 +37,8 @@ class TestWindVpnController(
     locationRepository,
     wgConfigRepository,
     userRepository,
-    autoConnectionManager
+    autoConnectionManager,
+    emergencyConnectRepository
 ) {
     var mockState: VPNState = VPNState(VPNState.Status.Disconnected)
     override suspend fun launchVPNService(
