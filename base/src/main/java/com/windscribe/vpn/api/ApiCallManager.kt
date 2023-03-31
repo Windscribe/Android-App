@@ -26,8 +26,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ApiCallManager @Inject constructor(
+open class ApiCallManager @Inject constructor(
     private val apiFactory: WindApiFactory,
+    private val echApiFactory: EchApiFactory,
     private val customApiFactory: WindCustomApiFactory,
     private val hashedDomains: List<String>,
     private val authorizationGenerator: AuthorizationGenerator,
@@ -379,7 +380,11 @@ class ApiCallManager @Inject constructor(
         params: Map<String, String>
     ): Single<ResponseBody> {
         return if (domainFailOverManager.isAccessible(domainType, apiCallType)) {
-            service.invoke(apiFactory.createApi(domain, protect), params, false)
+            if (domainType == DomainType.Primary) {
+                service.invoke(echApiFactory.createApi(domain, protect), params, false)
+            } else {
+                service.invoke(apiFactory.createApi(domain, protect), params, false)
+            }
         } else {
             return Single.error(Throwable())
         }
@@ -767,9 +772,11 @@ class ApiCallManager @Inject constructor(
         if (lastUsedDynamicEndpoint != null) {
             return Single.fromCallable { "${hostType.text}$lastUsedDynamicEndpoint" }
         }
-        return apiFactory.dohResolver.getTxtAnswerAsync(BuildConfig.DYNAMIC_DNS, true).flatMap {
+        return echApiFactory.dohResolver.getTxtAnswerAsync(BuildConfig.DYNAMIC_DNS, true).flatMap {
             try {
-                val endpoint = it.data.replace("\"", "")
+                val endpoint = it.data.replace(
+                    "\"", ""
+                )
                 lastUsedDynamicEndpoint = endpoint
                 return@flatMap Single.fromCallable { "${hostType.text}$lastUsedDynamicEndpoint" }
             } catch (e: JsonSyntaxException) {

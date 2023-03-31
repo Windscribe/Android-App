@@ -1,6 +1,7 @@
 package com.windscribe.vpn.api
 
 import android.util.Base64
+import com.windscribe.vpn.BuildConfig
 import kotlinx.coroutines.*
 import org.conscrypt.Conscrypt
 import java.io.IOException
@@ -69,7 +70,7 @@ internal class ManualEchSSLSocketFactory(
 
     private fun setEchConfig(sslSocket: SSLSocket) {
         CoroutineScope(Dispatchers.IO).launch {
-            dohResolver.getTxtAnswer("echconfig001.windscribe.dev")?.data?.let {
+            dohResolver.getTxtAnswer(BuildConfig.ECH_DOMAIN)?.data?.let {
                 val config = Base64.decode(it, Base64.DEFAULT)
                 Conscrypt.setEchConfigList(sslSocket, config)
             }
