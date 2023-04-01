@@ -56,12 +56,14 @@ class UserRepository(
             } ?: kotlin.run {
                 try {
                     logger.debug("Loading user info from cache")
-                    val cachedSessionResponse = serviceInteractor.preferenceHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
-                    val userSession = Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
+                    val cachedSessionResponse =
+                        serviceInteractor.preferenceHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
+                    val userSession =
+                        Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
                     user.postValue(User(userSession))
                     _userInfo.emit(User(userSession))
-                } catch (e: Exception) {
-                    logger.debug("Error loading user info: ${e.message}")
+                } catch (ignored: Exception) {
+                    logger.debug("No user is logged in.")
                 }
             }
         }
@@ -70,12 +72,14 @@ class UserRepository(
     fun synchronizedReload(){
         try {
             logger.debug("Loading user info from cache")
-            val cachedSessionResponse = serviceInteractor.preferenceHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
-            val userSession = Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
+            val cachedSessionResponse =
+                serviceInteractor.preferenceHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
+            val userSession =
+                Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
             user.postValue(User(userSession))
             _userInfo.tryEmit(User(userSession))
-        } catch (e: Exception) {
-            logger.debug("Error loading user info: ${e.message}")
+        } catch (ignored: Exception) {
+            logger.debug("No user is logged in.")
         }
     }
 
