@@ -651,10 +651,11 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
                         val queryStartIndex = messageWithoutHostname.indexOf("?")
                         if (queryStartIndex != -1) {
                             val messageWithoutQuery = messageWithoutHostname.replaceRange(
-                                queryStartIndex until messageWithoutHostname.length,
-                                ""
+                                queryStartIndex until messageWithoutHostname.length, ""
                             )
                             logger.debug(messageWithoutQuery)
+                        } else {
+                            logger.debug(messageWithoutHostname)
                         }
                     }
                 }

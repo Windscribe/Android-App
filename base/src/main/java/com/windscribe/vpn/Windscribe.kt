@@ -216,9 +216,6 @@ open class Windscribe : MultiDexApplication() {
             Conscrypt.newProviderBuilder().defaultTlsProtocol("TLSv1.3").build(), 1
         )
         Security.removeProvider("AndroidOpenSSL")
-        for (provider in Security.getProviders()) {
-            logger.debug("Ech TLS Provider: $provider")
-        }
     }
 
     companion object {
