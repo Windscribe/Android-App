@@ -10,7 +10,6 @@ import androidx.core.app.NotificationCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.ServiceInteractorImpl
 import com.windscribe.vpn.Windscribe
@@ -508,30 +507,7 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Singleton
     fun providesApiCallManagerInterface(
         windApiFactory: WindApiFactory,
-        windCustomApiFactory: WindCustomApiFactory,
-        @Named("backupEndPointList") backupEndpoint: List<String>,
-        authorizationGenerator: AuthorizationGenerator,
-        @Named("accessIpList") accessIpList: List<String>,
-        @Named("PrimaryApiEndpointMap") primaryApiEndpointMap : Map<HostType, String>,
-        @Named("SecondaryApiEndpointMap") secondaryApiEndpointMap : Map<HostType, String>,
-        domainFailOverManager: DomainFailOverManager
-    ): IApiCallManager {
-        return ApiCallManager(
-            windApiFactory,
-            windCustomApiFactory,
-            backupEndpoint,
-            authorizationGenerator,
-            accessIpList,
-            primaryApiEndpointMap,
-            secondaryApiEndpointMap,
-            domainFailOverManager
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun providesApiCallManagerInterfaceV2(
-        windApiFactory: WindApiFactory,
+        echApiFactory: EchApiFactory,
         windCustomApiFactory: WindCustomApiFactory,
         @Named("backupEndPointList") backupEndpoint: List<String>,
         authorizationGenerator: AuthorizationGenerator,
@@ -539,9 +515,10 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
         @Named("PrimaryApiEndpointMap") primaryApiEndpointMap: Map<HostType, String>,
         @Named("SecondaryApiEndpointMap") secondaryApiEndpointMap: Map<HostType, String>,
         domainFailOverManager: DomainFailOverManager
-    ): IApiCallManagerV2 {
-        return ApiCallManagerV2(
+    ): IApiCallManager {
+        return ApiCallManager(
             windApiFactory,
+            echApiFactory,
             windCustomApiFactory,
             backupEndpoint,
             authorizationGenerator,
@@ -557,7 +534,7 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     fun providesIpRepository(
         scope: CoroutineScope,
         preferencesHelper: PreferencesHelper,
-        apiCallManager: IApiCallManagerV2,
+        apiCallManager: IApiCallManager,
         vpnConnectionStateManager: VPNConnectionStateManager
     ): IpRepository {
         return IpRepository(scope, preferencesHelper, apiCallManager, vpnConnectionStateManager)
@@ -646,21 +623,49 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
 
     @Provides
     fun providesOkHttpBuilder(): OkHttpClient.Builder {
-        return OkHttpClient.Builder()
-            .addNetworkInterceptor {
-                val url = it.request().url
-                if (BuildConfig.DEV) {
-                    logger.debug("Request: $url")
-                }
-                it.proceed(it.request())
-            }
+        httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BASIC
+        return OkHttpClient.Builder().addInterceptor(httpLoggingInterceptor)
     }
+
+    private var httpLoggingInterceptor =
+        HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
+            override fun log(message: String) {
+                var hostType: String? = null
+                if (message.contains(NetworkKeyConstants.API_HOST_GENERIC)) {
+                    hostType = NetworkKeyConstants.API_HOST_GENERIC
+                } else if (message.contains(NetworkKeyConstants.API_HOST_ASSET)) {
+                    hostType = NetworkKeyConstants.API_HOST_ASSET
+                } else if (message.contains(NetworkKeyConstants.API_HOST_CHECK_IP)) {
+                    hostType = NetworkKeyConstants.API_HOST_CHECK_IP
+                }
+                hostType?.let {
+                    val hostTypeEndIndex = message.indexOf(it) + it.length
+                    var hostNameEndIndex = message.indexOf(".com")
+                    if (hostNameEndIndex == -1) {
+                        hostNameEndIndex = message.indexOf(".dev")
+                    }
+                    if (hostNameEndIndex != -1) {
+                        val hostName = message.substring(hostTypeEndIndex, hostNameEndIndex)
+                        val maskedHostName = hostName.replaceRange(3 until hostName.length, "...")
+                        val messageWithoutHostname = message.replace(hostName, maskedHostName)
+                        val queryStartIndex = messageWithoutHostname.indexOf("?")
+                        if (queryStartIndex != -1) {
+                            val messageWithoutQuery = messageWithoutHostname.replaceRange(
+                                queryStartIndex until messageWithoutHostname.length, ""
+                            )
+                            logger.debug(messageWithoutQuery)
+                        } else {
+                            logger.debug(messageWithoutHostname)
+                        }
+                    }
+                }
+            }
+        })
 
     @Provides
     @Singleton
     fun providesPreferenceHelper(
-            mPreference: AppPreferences,
-            securePreferences: SecurePreferences
+        mPreference: AppPreferences, securePreferences: SecurePreferences
     ): AppPreferenceHelper {
         return AppPreferenceHelper(mPreference, securePreferences)
     }
@@ -710,19 +715,39 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun providesWindApiFactory(
-            retrofitBuilder: Retrofit.Builder,
-            httpBuilder: OkHttpClient.Builder,
-            protectedApiFactory: ProtectedApiFactory,
-            windscribeDnsResolver: WindscribeDnsResolver
+        retrofitBuilder: Retrofit.Builder,
+        httpBuilder: OkHttpClient.Builder,
+        protectedApiFactory: ProtectedApiFactory,
+        windscribeDnsResolver: WindscribeDnsResolver
     ): WindApiFactory {
-        return WindApiFactory(retrofitBuilder, httpBuilder, protectedApiFactory, windscribeDnsResolver)
+        return WindApiFactory(
+            retrofitBuilder,
+            httpBuilder,
+            protectedApiFactory,
+            windscribeDnsResolver
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun providesEchFactory(
+        retrofitBuilder: Retrofit.Builder,
+        httpBuilder: OkHttpClient.Builder,
+        protectedApiFactory: ProtectedApiFactory,
+        windscribeDnsResolver: WindscribeDnsResolver
+    ): EchApiFactory {
+        return EchApiFactory(
+            retrofitBuilder,
+            httpBuilder,
+            protectedApiFactory,
+            windscribeDnsResolver
+        )
     }
 
     @Provides
     @Singleton
     fun providesProtectedFactory(
-            retrofitBuilder: Retrofit.Builder,
-            windscribeDnsResolver: WindscribeDnsResolver
+        retrofitBuilder: Retrofit.Builder, windscribeDnsResolver: WindscribeDnsResolver
     ): ProtectedApiFactory {
         return ProtectedApiFactory(retrofitBuilder, windscribeDnsResolver)
     }

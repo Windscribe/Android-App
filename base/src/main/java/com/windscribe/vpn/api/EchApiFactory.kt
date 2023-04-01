@@ -11,13 +11,15 @@ import okhttp3.OkHttpClient.Builder
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import java.security.KeyStore
 import java.util.concurrent.TimeUnit.MINUTES
 import java.util.concurrent.TimeUnit.SECONDS
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.net.ssl.*
 
 @Singleton
-class WindApiFactory @Inject constructor(
+class EchApiFactory @Inject constructor(
     retrofitBuilder: Retrofit.Builder,
     okHttpClient: Builder,
     val protectedApiFactory: ProtectedApiFactory,
@@ -25,6 +27,7 @@ class WindApiFactory @Inject constructor(
 ) {
 
     private val mRetrofit: Retrofit
+    val dohResolver: DohResolver = DohResolver(this)
     fun createApi(url: String, protect: Boolean = false): ApiService {
         val activeBackend = Windscribe.appContext.vpnController.vpnBackendHolder.activeBackend
         if (protect && activeBackend is WireguardBackend && activeBackend.active) {
@@ -40,8 +43,34 @@ class WindApiFactory @Inject constructor(
         val connectionPool = ConnectionPool(0, 5, MINUTES)
         okHttpClient.connectionPool(connectionPool)
         okHttpClient.dns(windscribeDnsResolver)
+        setupEchSSLFactory(okHttpClient)
         mRetrofit = retrofitBuilder.baseUrl(NetworkKeyConstants.API_ENDPOINT)
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addConverterFactory(GsonConverterFactory.create()).client(okHttpClient.build()).build()
+    }
+
+    private fun setupEchSSLFactory(okHttpClient: Builder) {
+        val trustManagerFactory: TrustManagerFactory = TrustManagerFactory.getInstance(
+            TrustManagerFactory.getDefaultAlgorithm()
+        )
+        trustManagerFactory.init(null as KeyStore?)
+        val trustManagers: Array<TrustManager> = trustManagerFactory.trustManagers
+        if (trustManagers.size != 1 || trustManagers[0] !is X509TrustManager) {
+            throw IllegalStateException(
+                "Unexpected default trust managers:" + trustManagers.contentToString()
+            )
+        }
+        val trustManager: X509TrustManager = trustManagers[0] as X509TrustManager
+        val sslContext: SSLContext = SSLContext.getInstance("TLS")
+        sslContext.init(null, arrayOf<TrustManager>(trustManager), null)
+        val sslSocketFactory: SSLSocketFactory = sslContext.socketFactory
+        val saveInstanceSSLSocketFactory = ManualEchSSLSocketFactory(dohResolver, sslSocketFactory)
+        okHttpClient.sslSocketFactory(saveInstanceSSLSocketFactory, trustManager)
+        val hostnameVerifier = HostnameVerifier { _, session ->
+            HttpsURLConnection.getDefaultHostnameVerifier().run {
+                return@run true
+            }
+        }
+        okHttpClient.hostnameVerifier(hostnameVerifier)
     }
 }
