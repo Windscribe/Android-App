@@ -2,9 +2,13 @@ package com.windscribe.vpn.api
 
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class DomainFailOverManager(private val preferencesHelper: PreferencesHelper) {
     private var failedStates = mutableMapOf<String, Boolean>()
+    private val lock = Mutex(false)
     private var wgConnectApiFailOverStates = mutableMapOf<String, Boolean>()
 
     init {
@@ -15,31 +19,43 @@ class DomainFailOverManager(private val preferencesHelper: PreferencesHelper) {
         if (Windscribe.appContext.vpnConnectionStateManager.isVPNConnected()) {
             return true
         }
-        return if (apiCallType == ApiCallType.WgConnect) {
-            if (wgConnectApiFailOverStates.isEmpty() && failedStates.isNotEmpty()) {
-                wgConnectApiFailOverStates.putAll(failedStates)
+        return runBlocking {
+            lock.withLock {
+                if (apiCallType == ApiCallType.WgConnect) {
+                    if (wgConnectApiFailOverStates.isEmpty() && failedStates.isNotEmpty()) {
+                        wgConnectApiFailOverStates.putAll(failedStates)
+                    }
+                    return@runBlocking wgConnectApiFailOverStates[domainType.name] ?: true
+                } else {
+                    return@runBlocking failedStates[domainType.name] ?: true
+                }
             }
-            wgConnectApiFailOverStates[domainType.name] ?: true
-        } else {
-            failedStates[domainType.name] ?: true
         }
     }
 
     fun reset(apiCallType: ApiCallType) {
-        if (apiCallType == ApiCallType.WgConnect) {
-            wgConnectApiFailOverStates.clear()
-            updateWgConnectFailOverState()
-        } else {
-            failedStates.clear()
+        runBlocking {
+            lock.withLock {
+                if (apiCallType == ApiCallType.WgConnect) {
+                    wgConnectApiFailOverStates.clear()
+                    updateWgConnectFailOverState()
+                } else {
+                    failedStates.clear()
+                }
+            }
         }
     }
 
     fun setDomainBlocked(domainType: DomainType, apiCallType: ApiCallType) {
-        if (apiCallType == ApiCallType.WgConnect) {
-            wgConnectApiFailOverStates[domainType.name] = false
-            updateWgConnectFailOverState()
-        } else {
-            failedStates[domainType.name] = false
+        runBlocking {
+            lock.withLock {
+                if (apiCallType == ApiCallType.WgConnect) {
+                    wgConnectApiFailOverStates[domainType.name] = false
+                    updateWgConnectFailOverState()
+                } else {
+                    failedStates[domainType.name] = false
+                }
+            }
         }
     }
 
