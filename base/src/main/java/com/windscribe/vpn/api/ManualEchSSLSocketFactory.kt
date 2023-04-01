@@ -4,9 +4,6 @@ import android.util.Base64
 import com.windscribe.vpn.BuildConfig
 import kotlinx.coroutines.*
 import org.conscrypt.Conscrypt
-import kotlinx.coroutines.runBlocking
-import org.conscrypt.Conscrypt
-import tech.relaycorp.doh.DoHClient
 import java.io.IOException
 import java.net.InetAddress
 import java.net.Socket

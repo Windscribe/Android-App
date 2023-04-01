@@ -157,5 +157,4 @@ dependencies {
     implementation 'info.guardianproject.conscrypt:conscrypt-android:2.6.alpha1638179154.job1828169525'
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'commons-net:commons-net:3.6'
-    implementation 'tech.relaycorp:doh:1.0.12'
 }

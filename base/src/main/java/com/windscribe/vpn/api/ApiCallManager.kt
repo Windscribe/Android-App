@@ -63,6 +63,14 @@ open class ApiCallManager @Inject constructor(
         return paramMap
     }
 
+    private fun getEchDomain(type: HostType): String {
+        return when (type) {
+            HostType.API -> "$API_HOST_GENERIC${BuildConfig.ECH_ENDPOINT}"
+            HostType.ASSET -> "$API_HOST_ASSET${BuildConfig.ECH_ENDPOINT}"
+            HostType.CHECK_IP -> "$API_HOST_CHECK_IP${BuildConfig.ECH_ENDPOINT}"
+        }
+    }
+
     /**
      * Gets access ips to be used as api endpoint as last resort
      * @return Access Ip response , contains List of hosts.
@@ -70,8 +78,7 @@ open class ApiCallManager @Inject constructor(
     private fun getAccessIp(accessIpMap: Map<String, String>?): Single<GenericResponseClass<AccessIpResponse?, ApiErrorResponse?>> {
         val params = createQueryMap(accessIpMap, true)
         return (customApiFactory.createCustomCertApi(BuildConfig.API_STATIC_IP_1)
-                .getAccessIps(params))
-                .onErrorResumeNext {
+            .getAccessIps(params)).onErrorResumeNext {
                     return@onErrorResumeNext (
                             customApiFactory.createCustomCertApi(BuildConfig.API_STATIC_IP_2)
                                     .getAccessIps(params)
@@ -212,12 +219,12 @@ open class ApiCallManager @Inject constructor(
                     if (it is HttpException && isErrorBodyValid(it)) {
                         return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
                     } else {
+                        domainFailOverManager.setDomainBlocked(
+                            DomainType.Secondary, apiCallType
+                        )
                         return@onErrorResumeNext (if (BuildConfig.DYNAMIC_DNS.isEmpty()) {
                             throw WindScribeException("Dynamic doh disabled.")
                         } else {
-                            domainFailOverManager.setDomainBlocked(
-                                DomainType.Secondary, apiCallType
-                            )
                             getDynamicDohEndpoint(hostType).flatMap { dynamicEndpoint ->
                                 callOrSkip(
                                     apiCallType,
@@ -235,12 +242,12 @@ open class ApiCallManager @Inject constructor(
                         return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
                     } else {
                         lastUsedDynamicEndpoint = null
+                        domainFailOverManager.setDomainBlocked(
+                            DomainType.DYNAMIC_DOH, apiCallType
+                        )
                         return@onErrorResumeNext (if (BuildConfig.DEV || BuildConfig.BACKUP_API_ENDPOINT_STRING.isEmpty()) {
                             throw WindScribeException("Hash domains are disabled.")
                         } else {
-                            domainFailOverManager.setDomainBlocked(
-                                DomainType.DYNAMIC_DOH, apiCallType
-                            )
                             callOrSkip(
                                 apiCallType,
                                 service,
@@ -255,20 +262,18 @@ open class ApiCallManager @Inject constructor(
                         if (it is HttpException && isErrorBodyValid(it)) {
                             return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
                         } else {
-                            return@onErrorResumeNext (
-                                    if (BuildConfig.DEV || BuildConfig.BACKUP_API_ENDPOINT_STRING.isEmpty()) {
-                                        throw WindScribeException("Hash domains are disabled.")
-                                    } else {
-                                        domainFailOverManager.setDomainBlocked(
-                                            DomainType.Hashed1,
-                                            apiCallType
-                                        )
-                                        callOrSkip(
-                                            apiCallType,
-                                            service,
-                                            DomainType.Hashed2,
-                                            backupApiEndPoint[1],
-                                            protect,
+                            domainFailOverManager.setDomainBlocked(
+                                DomainType.Hashed1, apiCallType
+                            )
+                            return@onErrorResumeNext (if (BuildConfig.DEV || BuildConfig.BACKUP_API_ENDPOINT_STRING.isEmpty()) {
+                                throw WindScribeException("Hash domains are disabled.")
+                            } else {
+                                callOrSkip(
+                                    apiCallType,
+                                    service,
+                                    DomainType.Hashed2,
+                                    backupApiEndPoint[1],
+                                    protect,
                                             params
                                         )
                                     }
@@ -278,43 +283,57 @@ open class ApiCallManager @Inject constructor(
                         if (it is HttpException && isErrorBodyValid(it)) {
                             return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
                         } else {
-                            return@onErrorResumeNext (
-                                    if (BuildConfig.DEV || BuildConfig.BACKUP_API_ENDPOINT_STRING.isEmpty()) {
-                                        throw WindScribeException("Hash domains are disabled.")
-                                    } else {
-                                        domainFailOverManager.setDomainBlocked(
-                                            DomainType.Hashed2,
-                                            apiCallType
-                                        )
-                                        callOrSkip(
-                                            apiCallType,
-                                            service,
-                                            DomainType.Hashed3,
-                                            backupApiEndPoint[2],
-                                            protect,
-                                            params
-                                        )
-                                    })
-                        }
-                    }
-                    .onErrorResumeNext {
-                        if (it is HttpException && isErrorBodyValid(it)) {
-                            return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
-                        } else {
-                            if (BuildConfig.DEV || BuildConfig.API_STATIC_CERT.isEmpty()) {
-                                throw WindScribeException("Unsafe http client disabled.")
+                            domainFailOverManager.setDomainBlocked(
+                                DomainType.Hashed2, apiCallType
+                            )
+                            return@onErrorResumeNext (if (BuildConfig.DEV || BuildConfig.BACKUP_API_ENDPOINT_STRING.isEmpty()) {
+                                throw WindScribeException("Hash domains are disabled.")
                             } else {
-                                if (domainFailOverManager.isAccessible(
-                                        DomainType.DirectIp1,
-                                        apiCallType
-                                    )
-                                ) {
-                                    domainFailOverManager.setDomainBlocked(
-                                        DomainType.Hashed3,
-                                        apiCallType
-                                    )
-                                    val services = getApiServicesWithAccessIp(params)
-                                    return@onErrorResumeNext services.flatMap { apiService ->
+                                callOrSkip(
+                                    apiCallType,
+                                    service,
+                                    DomainType.Hashed3,
+                                    backupApiEndPoint[2],
+                                    protect,
+                                    params
+                                )
+                            })
+                        }
+                }.onErrorResumeNext {
+                    if (it is HttpException && isErrorBodyValid(it)) {
+                        return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
+                    } else {
+                        domainFailOverManager.setDomainBlocked(
+                            DomainType.Hashed3, apiCallType
+                        )
+                        return@onErrorResumeNext (if (BuildConfig.DEV || BuildConfig.ECH_DOMAIN.isEmpty()) {
+                            throw WindScribeException("Ech domain disabled.")
+                        } else {
+                            callOrSkip(
+                                apiCallType,
+                                service,
+                                DomainType.Ech,
+                                getEchDomain(hostType),
+                                protect,
+                                params
+                            )
+                        })
+                    }
+                }.onErrorResumeNext {
+                    if (it is HttpException && isErrorBodyValid(it)) {
+                        return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
+                    } else {
+                        domainFailOverManager.setDomainBlocked(
+                            DomainType.Ech, apiCallType
+                        )
+                        if (BuildConfig.DEV || BuildConfig.API_STATIC_CERT.isEmpty()) {
+                            throw WindScribeException("Unsafe http client disabled.")
+                        } else {
+                            if (domainFailOverManager.isAccessible(
+                                    DomainType.DirectIp1, apiCallType
+                                )) {
+                                val services = getApiServicesWithAccessIp(params)
+                                return@onErrorResumeNext services.flatMap { apiService ->
                                         return@flatMap service.invoke(apiService[0], params, true)
                                     }
                                 } else {
@@ -329,15 +348,12 @@ open class ApiCallManager @Inject constructor(
                             if (BuildConfig.DEV || BuildConfig.API_STATIC_CERT.isEmpty()) {
                                 throw WindScribeException("Unsafe http client disabled.")
                             } else {
+                                domainFailOverManager.setDomainBlocked(
+                                    DomainType.DirectIp1, apiCallType
+                                )
                                 if (domainFailOverManager.isAccessible(
-                                        DomainType.DirectIp2,
-                                        apiCallType
-                                    )
-                                ) {
-                                    domainFailOverManager.setDomainBlocked(
-                                        DomainType.DirectIp1,
-                                        apiCallType
-                                    )
+                                        DomainType.DirectIp2, apiCallType
+                                    )) {
                                     val services = getApiServicesWithAccessIp(params)
                                     return@onErrorResumeNext services.flatMap { apiService ->
                                         return@flatMap service.invoke(apiService[1], params, true)
@@ -380,11 +396,7 @@ open class ApiCallManager @Inject constructor(
         params: Map<String, String>
     ): Single<ResponseBody> {
         return if (domainFailOverManager.isAccessible(domainType, apiCallType)) {
-            if (domainType == DomainType.Primary) {
-                service.invoke(echApiFactory.createApi(domain, protect), params, false)
-            } else {
-                service.invoke(apiFactory.createApi(domain, protect), params, false)
-            }
+            service.invoke(apiFactory.createApi(domain, protect), params, false)
         } else {
             return Single.error(Throwable())
         }
