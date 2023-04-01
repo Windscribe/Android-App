@@ -39,7 +39,6 @@ interface ApplicationComponent {
 
     //Api
     val apiCallManager: IApiCallManager
-    val apiCallManagerV2: IApiCallManagerV2
     val windApiFactory: WindApiFactory
     val windCustomFactory: WindCustomApiFactory
     val authorizationGenerator: AuthorizationGenerator

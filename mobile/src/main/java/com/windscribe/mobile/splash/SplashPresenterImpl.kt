@@ -8,6 +8,7 @@ import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.UserStatusConstants
+import com.windscribe.vpn.errormodel.WindError
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.observers.DisposableCompletableObserver
@@ -65,7 +66,7 @@ class SplashPresenterImpl @Inject constructor(
                             object :
                                 DisposableSingleObserver<GenericResponseClass<String?, ApiErrorResponse?>>() {
                                 override fun onError(e: Throwable) {
-                                    logger.debug("Error: " + e.message)
+                                    logger.debug(WindError.instance.rxErrorToString(e as Exception))
                                     decideActivity()
                                 }
 

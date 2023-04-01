@@ -3,7 +3,6 @@
  */
 package com.windscribe.vpn.api
 
-import com.windscribe.vpn.BuildConfig
 import io.reactivex.Single
 import okhttp3.ResponseBody
 import retrofit2.http.*
@@ -174,11 +173,11 @@ interface ApiService {
         @Header("Content-Type") contentType: String
     ): Single<ResponseBody>
 
-    @GET("/resolve?name=${BuildConfig.DYNAMIC_DNS}&type=TXT")
+    @GET("/resolve")
     @Headers("accept: application/dns-json")
-    fun getGoogleDOHTxtRecord(): Single<ResponseBody>
+    fun getGoogleDOHTxtRecord(@QueryMap params: Map<String, String>?): Single<ResponseBody>
 
-    @GET("/dns-query?name=${BuildConfig.DYNAMIC_DNS}&type=TXT")
+    @GET("/dns-query")
     @Headers("accept: application/dns-json")
-    fun getCloudflareTxtRecord(): Single<ResponseBody>
+    fun getCloudflareTxtRecord(@QueryMap params: Map<String, String>?): Single<ResponseBody>
 }

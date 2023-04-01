@@ -152,4 +152,9 @@ dependencies {
     runtimeOnly 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.0-alpha03'
 
     api 'com.squareup.okhttp3:mockwebserver:4.9.3'
+
+    // ECH Conscrypt
+    implementation 'info.guardianproject.conscrypt:conscrypt-android:2.6.alpha1638179154.job1828169525'
+    implementation 'commons-io:commons-io:2.11.0'
+    implementation 'commons-net:commons-net:3.6'
 }

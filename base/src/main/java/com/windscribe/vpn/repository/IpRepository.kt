@@ -1,8 +1,9 @@
 package com.windscribe.vpn.repository
 
-import com.windscribe.vpn.api.IApiCallManagerV2
+import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.VPNState
+import com.windscribe.vpn.commonutils.Ext.toResult
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory
 class IpRepository(
     private val scope: CoroutineScope,
     private val preferenceHelper: PreferencesHelper,
-    private val apiCallManagerV2: IApiCallManagerV2,
+    private val apiCallManagerV2: IApiCallManager,
     private val vpnConnectionStateManager: VPNConnectionStateManager
 ) {
     private val logger = LoggerFactory.getLogger("ip_repository")
@@ -40,7 +41,7 @@ class IpRepository(
         scope.launch {
             _state.emit(RepositoryState.Loading())
             if (WindUtilities.isOnline()) {
-                apiCallManagerV2.getConnectedIp().onSuccess {
+                apiCallManagerV2.getConnectedIp().toResult().onSuccess {
                     when (val result = it.callResult<String>()) {
                         is CallResult.Error -> loadIpFromStorage()
                         is CallResult.Success -> {
