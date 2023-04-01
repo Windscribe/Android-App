@@ -10,7 +10,6 @@ import androidx.core.app.NotificationCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.ServiceInteractorImpl
 import com.windscribe.vpn.Windscribe
@@ -624,21 +623,48 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
 
     @Provides
     fun providesOkHttpBuilder(): OkHttpClient.Builder {
-        return OkHttpClient.Builder()
-            .addNetworkInterceptor {
-                val url = it.request().url
-                if (BuildConfig.DEV) {
-                    logger.debug("Request: $url")
-                }
-                it.proceed(it.request())
-            }
+        httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BASIC
+        return OkHttpClient.Builder().addInterceptor(httpLoggingInterceptor)
     }
+
+    private var httpLoggingInterceptor =
+        HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
+            override fun log(message: String) {
+                var hostType: String? = null
+                if (message.contains(NetworkKeyConstants.API_HOST_GENERIC)) {
+                    hostType = NetworkKeyConstants.API_HOST_GENERIC
+                } else if (message.contains(NetworkKeyConstants.API_HOST_ASSET)) {
+                    hostType = NetworkKeyConstants.API_HOST_ASSET
+                } else if (message.contains(NetworkKeyConstants.API_HOST_CHECK_IP)) {
+                    hostType = NetworkKeyConstants.API_HOST_CHECK_IP
+                }
+                hostType?.let {
+                    val hostTypeEndIndex = message.indexOf(it) + it.length
+                    var hostNameEndIndex = message.indexOf(".com")
+                    if (hostNameEndIndex == -1) {
+                        hostNameEndIndex = message.indexOf(".dev")
+                    }
+                    if (hostNameEndIndex != -1) {
+                        val hostName = message.substring(hostTypeEndIndex, hostNameEndIndex)
+                        val maskedHostName = hostName.replaceRange(3 until hostName.length, "...")
+                        val messageWithoutHostname = message.replace(hostName, maskedHostName)
+                        val queryStartIndex = messageWithoutHostname.indexOf("?")
+                        if (queryStartIndex != -1) {
+                            val messageWithoutQuery = messageWithoutHostname.replaceRange(
+                                queryStartIndex until messageWithoutHostname.length,
+                                ""
+                            )
+                            logger.debug(messageWithoutQuery)
+                        }
+                    }
+                }
+            }
+        })
 
     @Provides
     @Singleton
     fun providesPreferenceHelper(
-            mPreference: AppPreferences,
-            securePreferences: SecurePreferences
+        mPreference: AppPreferences, securePreferences: SecurePreferences
     ): AppPreferenceHelper {
         return AppPreferenceHelper(mPreference, securePreferences)
     }
