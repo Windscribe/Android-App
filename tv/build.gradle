@@ -10,6 +10,7 @@ apply from: "$rootDir/config/config.gradle"
 apply from: "$rootDir/depedencycheck.gradle"
 
 android {
+    namespace 'com.windscribe.tv'
     bundle {
         language {
             enableSplit = false
@@ -21,8 +22,8 @@ android {
         applicationId rootProject.AppId
         minSdkVersion rootProject.appMinSdk
         targetSdkVersion rootProject.appTargetSdk
-        versionName System.getenv().getOrDefault("VERSION_NAME","3.0.730")
-        versionCode 730
+        versionName System.getenv().getOrDefault("VERSION_NAME", "3.7.1169")
+        versionCode 1169
         vectorDrawables.useSupportLibrary = true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -55,23 +56,24 @@ android {
         checkReleaseBuilds false
         disable 'NonConstantResourceId', 'ContentDescription', 'VectorRaster'
     }
-    namespace 'com.windscribe.tv'
 }
 
 dependencies {
     //Android
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
-    implementation 'androidx.leanback:leanback:1.0.0'
+    implementation "androidx.appcompat:appcompat:$appCompat"
+    implementation "com.google.android.material:material:$material"
+    implementation "androidx.leanback:leanback:$leanBack"
+    //Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin"
     implementation "androidx.core:core-ktx:$ktx_core"
-    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.3"
-    //Core module
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugarJdk"
+    //Core
     implementation project(path: ':base')
-
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+    //Annotation
+    annotationProcessor "com.github.bumptech.glide:compiler:$glide"
     annotationProcessor "androidx.room:room-compiler:$room"
-    kapt 'com.jakewharton:butterknife-compiler:10.2.3'
+    //Kapt
     kapt "androidx.room:room-compiler:$room"
+    kapt "com.jakewharton:butterknife-compiler:$butterknife"
     kapt "com.google.dagger:dagger-compiler:$dagger"
 }
