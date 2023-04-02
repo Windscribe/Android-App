@@ -4,9 +4,9 @@
 package com.windscribe.tv.serverlist.overlay
 
 interface OverlayListener {
-    fun onAllOverlayViewReady()
+    suspend fun onAllOverlayViewReady()
     fun onExit()
     fun onFavouriteOverlayReady()
     fun onStaticOverlayReady()
-    fun onWindOverlayReady()
+    suspend fun onWindOverlayReady()
 }

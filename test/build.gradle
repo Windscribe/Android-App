@@ -17,6 +17,7 @@ android {
             }
         }
     }
+    namespace 'com.windscribe.test'
 }
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')

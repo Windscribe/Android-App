@@ -168,7 +168,7 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         }
     }
 
-    override fun onAllOverlayViewReady() {
+    override suspend fun onAllOverlayViewReady() {
         presenter.allLocationViewReady()
     }
 
@@ -273,7 +273,7 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         }
     }
 
-    override fun onWindOverlayReady() {
+    override suspend fun onWindOverlayReady() {
         presenter.windLocationViewReady()
     }
 

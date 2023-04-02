@@ -9,10 +9,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import butterknife.ButterKnife
 import com.windscribe.tv.R
 import com.windscribe.tv.serverlist.adapters.ServerAdapter
 import com.windscribe.tv.serverlist.overlay.OverlayListener
+import kotlinx.coroutines.launch
 
 class AllOverlayFragment : Fragment(), CustomVerticalGridView.CustomFocusListener {
     var recyclerView: CustomVerticalGridView? = null
@@ -38,8 +42,12 @@ class AllOverlayFragment : Fragment(), CustomVerticalGridView.CustomFocusListene
         recyclerView?.setNumColumns(4)
         recyclerView?.setItemViewCacheSize(12)
         recyclerView?.setCustomFocusListener(this)
-        overlayListener?.onAllOverlayViewReady()
-        recyclerView?.requestFocus()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+                overlayListener?.onAllOverlayViewReady()
+                recyclerView?.requestFocus()
+            }
+        }
     }
 
     fun setAllOverlayAdapter(serverAdapter: ServerAdapter?) {
