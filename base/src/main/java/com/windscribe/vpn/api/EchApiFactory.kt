@@ -22,7 +22,7 @@ import javax.net.ssl.*
 class EchApiFactory @Inject constructor(
     retrofitBuilder: Retrofit.Builder,
     okHttpClient: Builder,
-    val protectedApiFactory: ProtectedApiFactory,
+    private val protectedApiFactory: ProtectedApiFactory,
     windscribeDnsResolver: WindscribeDnsResolver
 ) {
 
@@ -66,11 +66,5 @@ class EchApiFactory @Inject constructor(
         val sslSocketFactory: SSLSocketFactory = sslContext.socketFactory
         val saveInstanceSSLSocketFactory = ManualEchSSLSocketFactory(dohResolver, sslSocketFactory)
         okHttpClient.sslSocketFactory(saveInstanceSSLSocketFactory, trustManager)
-        val hostnameVerifier = HostnameVerifier { _, _ ->
-            HttpsURLConnection.getDefaultHostnameVerifier().run {
-                return@run true
-            }
-        }
-        okHttpClient.hostnameVerifier(hostnameVerifier)
     }
 }
