@@ -4,10 +4,13 @@
 
 package com.windscribe.vpn.backend.utils
 
+import android.Manifest
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.VpnService
+import android.os.Build
 import android.os.Bundle
 import com.windscribe.vpn.R.layout
 import com.windscribe.vpn.Windscribe
@@ -58,8 +61,20 @@ class VPNPermissionActivity : Activity() {
         if (requestCode == START_VPN_PROFILE) {
             if (resultCode == RESULT_OK) {
                 logger.debug("User granted VPN Permission.")
-                vpnBackendHolder.connect(protocolInformation, connectionId)
-                finish()
+                if (isNotificationsEnabled()) {
+                    vpnBackendHolder.connect(protocolInformation, connectionId)
+                    finish()
+                } else {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        logger.debug("requesting notification permission.")
+                        requestPermissions(
+                            arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION
+                        )
+                    } else {
+                        vpnBackendHolder.connect(protocolInformation, connectionId)
+                        finish()
+                    }
+                }
             } else if (resultCode == RESULT_CANCELED) {
                 logger.debug("User denied VPN permission.")
                 scope.launch {
@@ -67,6 +82,25 @@ class VPNPermissionActivity : Activity() {
                     finish()
                 }
             }
+        }
+    }
+
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == NOTIFICATION) {
+            vpnBackendHolder.connect(protocolInformation, connectionId)
+            finish()
+        }
+    }
+
+    private fun isNotificationsEnabled(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            (checkCallingPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)
+        } else {
+            true
         }
     }
 
@@ -113,12 +147,13 @@ class VPNPermissionActivity : Activity() {
             if (ret == 0) {
                 cmFixed = true
             }
-        } catch (e: InterruptedException) {
-        } catch (e: IOException) {
+        } catch (_: InterruptedException) {
+        } catch (_: IOException) {
         }
     }
 
     companion object {
         private const val START_VPN_PROFILE = 70
+        private const val NOTIFICATION = 71
     }
 }
