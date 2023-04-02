@@ -1,20 +1,21 @@
 package com.windscribe.vpn.api
 
-import java.net.Proxy
-import javax.inject.Inject
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import java.net.Proxy
+import javax.inject.Inject
 
-class ProtectedApiFactory @Inject constructor(var retrofitBuilder: Retrofit.Builder, windscribeDnsResolver: WindscribeDnsResolver) {
+class ProtectedApiFactory @Inject constructor(
+    var retrofitBuilder: Retrofit.Builder,
+    okHttpClientBuilder: OkHttpClient.Builder
+) {
     private var protectedHttpClient: OkHttpClient? = null
 
     init {
-        protectedHttpClient = OkHttpClient.Builder()
-                .dns(windscribeDnsResolver)
-                .proxy(Proxy.NO_PROXY)
-                .socketFactory(CustomSocketFactory())
+        protectedHttpClient =
+            okHttpClientBuilder.proxy(Proxy.NO_PROXY).socketFactory(VPNBypassSocketFactory())
                 .build()
     }
 
