@@ -97,7 +97,7 @@ class LocalDatabaseImpl @Inject constructor(
     override val allPings: Single<List<PingTestResults>>
         get() = pingTestDao.pingList
     override val allRegion: Single<List<RegionAndCities>>
-        get() = regionAndCitiesDao.allRegion
+        get() = regionAndCitiesDao.getAllRegion()
     override val allStaticRegions: Single<List<StaticRegion>>
         get() = staticRegionsDao.allStaticRegions
     override val allStaticRegionsFlowAble: Flowable<List<StaticRegion>>
@@ -112,7 +112,7 @@ class LocalDatabaseImpl @Inject constructor(
     }
 
     override val city: Single<CityAndRegion>
-        get() = cityAndRegionDao.city
+        get() = cityAndRegionDao.getCity()
 
     override fun getCityAndRegionByID(cityAndRegionID: Int): Single<CityAndRegion> {
         return cityAndRegionDao.getCityAndRegionByID(cityAndRegionID)

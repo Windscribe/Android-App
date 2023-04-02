@@ -9,11 +9,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.windscribe.tv.serverlist.overlay.OverlayListener
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import butterknife.ButterKnife
 import com.windscribe.tv.R
 import com.windscribe.tv.serverlist.adapters.ServerAdapter
 import com.windscribe.tv.serverlist.fragments.CustomVerticalGridView.CustomFocusListener
+import com.windscribe.tv.serverlist.overlay.OverlayListener
+import kotlinx.coroutines.launch
 
 class WindOverlayFragment : Fragment() {
     var recyclerView: CustomVerticalGridView? = null
@@ -42,8 +46,12 @@ class WindOverlayFragment : Fragment() {
                 overlayListener?.onExit()
             }
         })
-        overlayListener?.onWindOverlayReady()
-        recyclerView?.requestFocus()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+                overlayListener?.onWindOverlayReady()
+                recyclerView?.requestFocus()
+            }
+        }
     }
 
     fun setWindOverlayAdapter(serverAdapter: ServerAdapter) {

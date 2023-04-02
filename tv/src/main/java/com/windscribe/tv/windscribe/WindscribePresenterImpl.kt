@@ -659,6 +659,7 @@ class WindscribePresenterImpl @Inject constructor(
                     logger.debug("Account status was banned")
                     windscribeView.setupAccountStatusBanned()
                 }
+                else -> {}
             }
             return false
         }

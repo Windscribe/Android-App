@@ -11,6 +11,7 @@ android {
     }
     buildFeatures {
         dataBinding true
+        viewBinding true
     }
     compileSdkVersion rootProject.appCompiledSdk
     defaultConfig {
@@ -26,17 +27,16 @@ android {
         androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
     }
     packagingOptions {
-        //Disable Wg-quick for wireguard
-        exclude 'lib/arm64-v8a/libwg-quick.so'
-        exclude 'lib/armeabi-v7a/libwg-quick.so'
-        exclude 'lib/x86/libwg-quick.so'
-        exclude 'lib/x86_64/libwg-quick.so'
-        //Only required for api level 21
-        exclude 'lib/arm64-v8a/libjbcrypto.so'
-        exclude 'lib/armeabi-v7a/libjbcrypto.so'
-        exclude 'lib/x86/libjbcrypto.so'
-        exclude 'lib/x86_64/libjbcrypto.so'
+        jniLibs {
+            excludes += ['lib/arm64-v8a/libwg-quick.so', 'lib/armeabi-v7a/libwg-quick.so', 'lib/x86/libwg-quick.so', 'lib/x86_64/libwg-quick.so', 'lib/arm64-v8a/libjbcrypto.so', 'lib/armeabi-v7a/libjbcrypto.so', 'lib/x86/libjbcrypto.so', 'lib/x86_64/libjbcrypto.so']
+        }
     }
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+        disable 'MissingTranslation', 'NonConstantResourceId', 'VectorRaster', 'ContentDescription'
+    }
+    namespace 'com.windscribe.vpn'
     //Force gradle to pick latest version of guava and junit.
     configurations.all {
         resolutionStrategy.force 'com.google.code.findbugs:jsr305:1.3.9'
@@ -57,11 +57,6 @@ android {
         }
     }
 
-    lintOptions {
-        checkReleaseBuilds false
-        abortOnError false
-        disable 'MissingTranslation', 'NonConstantResourceId', 'VectorRaster', 'ContentDescription'
-    }
 
 }
 /*
@@ -71,23 +66,25 @@ android {
 
 dependencies {
     //Android
-    implementation fileTree(include: ['*.jar','*.aar'], dir: 'libs')
-    api 'androidx.appcompat:appcompat:1.2.0'
-    api 'com.google.android.material:material:1.3.0'
+    implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
+    api "androidx.appcompat:appcompat:$appCompat"
+    api "com.google.android.material:material:$material"
     api 'androidx.vectordrawable:vectordrawable:1.1.0'
-    api 'androidx.transition:transition:1.4.0'
-    api 'androidx.constraintlayout:constraintlayout:2.0.4'
+    api 'androidx.transition:transition:1.4.1'
+    api 'androidx.constraintlayout:constraintlayout:2.1.4'
     api 'androidx.multidex:multidex:2.0.1'
-    api "androidx.security:security-crypto:1.1.0-alpha03"
+    api "androidx.security:security-crypto:1.1.0-alpha05"
     api "androidx.lifecycle:lifecycle-extensions:2.2.0"
     api "androidx.lifecycle:lifecycle-common-java8:$archLifecycle"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin"
+    runtimeOnly "androidx.lifecycle:lifecycle-runtime-ktx:$archLifecycle"
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_std_lib"
     implementation "androidx.core:core-ktx:$ktx_core"
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.6.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.6.4'
     //VPN
     implementation project(path: ':openvpn')
     implementation project(path: ':strongswan')
-   // api 'com.wireguard.android:tunnel:1.0.20200407'
+    // api 'com.wireguard.android:tunnel:1.0.20200407'
     //Billing
     api files('libs/in-app-purchasing-2.0.76.jar')
     api 'com.android.billingclient:billing:5.0.0'
@@ -95,23 +92,24 @@ dependencies {
     api 'io.reactivex.rxjava2:rxandroid:2.1.1'
     api 'io.reactivex.rxjava2:rxjava:2.2.13'
     //Retrofit
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    api 'com.squareup.retrofit2:converter-gson:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-scalars:2.9.0'
+    implementation "com.squareup.retrofit2:retrofit:$retrofit"
+    api "com.squareup.retrofit2:converter-gson:$retrofit"
+    implementation "com.squareup.retrofit2:converter-scalars:$retrofit"
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
     //Okhttp
     implementation 'com.squareup.okhttp3:logging-interceptor:4.2.2'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    api 'com.squareup.okhttp3:mockwebserver:4.9.3'
     //Logging
-    api 'org.slf4j:slf4j-api:1.7.30'
+    api 'org.slf4j:slf4j-api:1.7.36'
     api 'com.github.tony19:logback-android:2.0.0'
     //Room
     api "androidx.room:room-rxjava2:$room"
     api "androidx.room:room-runtime:$room"
-    testImplementation 'org.junit.jupiter:junit-jupiter'
     kapt "androidx.room:room-compiler:$room"
+    implementation "androidx.room:room-testing:$room"
     // Push notifications
-    api 'com.google.firebase:firebase-messaging:23.1.0'
+    api "com.google.firebase:firebase-messaging:$fireBase"
     // Work manager
     api "androidx.work:work-runtime:$work_manager"
     api "androidx.work:work-rxjava2:$work_manager"
@@ -122,13 +120,13 @@ dependencies {
     kapt "com.google.dagger:dagger-compiler:$dagger"
     api "com.google.dagger:dagger:$dagger"
     // Coroutines
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesCore"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesCore"
     // Supporting libraries
     api 'org.javatuples:javatuples:1.2'
     api 'com.github.seancfoley:ipaddress:5.3.1'
-    api 'com.github.bumptech.glide:glide:4.11.0'
-    kapt 'com.github.bumptech.glide:compiler:4.11.0'
+    api "com.github.bumptech.glide:glide:$glide"
+    kapt "com.github.bumptech.glide:compiler:$glide"
     api 'commons-io:commons-io:2.11.0'
     api 'com.thoughtbot:expandablerecyclerview:1.3'
     api 'com.jakewharton:butterknife:10.2.0'
@@ -137,22 +135,16 @@ dependencies {
     api 'net.grandcentrix.tray:tray:0.12.0'
     implementation 'org.isomorphism:token-bucket:1.6'
     //Android Test
-    implementation "androidx.room:room-testing:$room"
-    androidTestImplementation 'androidx.test:core:1.4.0'
-    androidTestImplementation 'androidx.test:runner:1.4.0'
-    androidTestImplementation 'androidx.test:rules:1.4.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.ext:truth:1.4.0'
-    androidTestImplementation 'com.google.truth:truth:1.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation "androidx.test:core:$testCore"
+    androidTestImplementation "androidx.test.ext:truth:$testCore"
+    androidTestImplementation "androidx.test:rules:$testCore"
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'com.google.truth:truth:1.1.3'
     // Test
-    testImplementation 'junit:junit:4.13.2'
+    testImplementation "junit:junit:$JUnit"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-
-    runtimeOnly 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.0-alpha03'
-
-    api 'com.squareup.okhttp3:mockwebserver:4.9.3'
-
+    testImplementation 'org.junit.jupiter:junit-jupiter'
     // ECH Conscrypt
     implementation 'info.guardianproject.conscrypt:conscrypt-android:2.6.alpha1638179154.job1828169525'
     implementation 'commons-io:commons-io:2.11.0'
