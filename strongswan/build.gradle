@@ -3,6 +3,7 @@ plugins {
 }
 
 android {
+    namespace 'org.strongswan.android'
     compileSdk 33
 
     defaultConfig {
@@ -28,12 +29,11 @@ android {
             jniLibs.srcDirs = ['libs']
         }
     }
-    namespace 'org.strongswan.android'
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
+    implementation "androidx.appcompat:appcompat:$appCompat"
+    implementation "com.google.android.material:material:$material"
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
