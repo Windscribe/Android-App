@@ -10,6 +10,7 @@ import androidx.core.app.NotificationCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.windscribe.vpn.BuildConfig.DEV
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.ServiceInteractorImpl
 import com.windscribe.vpn.Windscribe
@@ -628,27 +629,8 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     private var httpLoggingInterceptor =
         HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
             override fun log(message: String) {
-                if (message.contains("https://")) {
-                    val hostTypeEndIndex = message.indexOf("https://") + "https://".length
-                    var hostNameEndIndex = message.indexOf(".com")
-                    if (hostNameEndIndex == -1) {
-                        hostNameEndIndex = message.indexOf(".dev")
-                    }
-                    if (hostNameEndIndex != -1) {
-                        val hostName = message.substring(hostTypeEndIndex, hostNameEndIndex)
-                        val maskedHostName =
-                            hostName.replaceRange(3 until hostName.length - 5, "...")
-                        val messageWithoutHostname = message.replace(hostName, maskedHostName)
-                        val queryStartIndex = messageWithoutHostname.indexOf("?")
-                        if (queryStartIndex != -1) {
-                            val messageWithoutQuery = messageWithoutHostname.replaceRange(
-                                queryStartIndex until messageWithoutHostname.length, ""
-                            )
-                            logger.debug(messageWithoutQuery)
-                        } else {
-                            logger.debug(messageWithoutHostname)
-                        }
-                    }
+                if (DEV) {
+                    logger.debug(message)
                 }
             }
         })
