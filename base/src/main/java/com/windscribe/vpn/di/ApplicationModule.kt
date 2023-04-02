@@ -628,23 +628,16 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     private var httpLoggingInterceptor =
         HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
             override fun log(message: String) {
-                var hostType: String? = null
-                if (message.contains(NetworkKeyConstants.API_HOST_GENERIC)) {
-                    hostType = NetworkKeyConstants.API_HOST_GENERIC
-                } else if (message.contains(NetworkKeyConstants.API_HOST_ASSET)) {
-                    hostType = NetworkKeyConstants.API_HOST_ASSET
-                } else if (message.contains(NetworkKeyConstants.API_HOST_CHECK_IP)) {
-                    hostType = NetworkKeyConstants.API_HOST_CHECK_IP
-                }
-                hostType?.let {
-                    val hostTypeEndIndex = message.indexOf(it) + it.length
+                if (message.contains("https://")) {
+                    val hostTypeEndIndex = message.indexOf("https://") + "https://".length
                     var hostNameEndIndex = message.indexOf(".com")
                     if (hostNameEndIndex == -1) {
                         hostNameEndIndex = message.indexOf(".dev")
                     }
                     if (hostNameEndIndex != -1) {
                         val hostName = message.substring(hostTypeEndIndex, hostNameEndIndex)
-                        val maskedHostName = hostName.replaceRange(3 until hostName.length, "...")
+                        val maskedHostName =
+                            hostName.replaceRange(3 until hostName.length - 5, "...")
                         val messageWithoutHostname = message.replace(hostName, maskedHostName)
                         val queryStartIndex = messageWithoutHostname.indexOf("?")
                         if (queryStartIndex != -1) {
@@ -720,7 +713,8 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Singleton
     fun providesWindApiFactory(
         retrofitBuilder: Retrofit.Builder,
-        httpBuilder: OkHttpClient.Builder, protectedApiFactory: ProtectedApiFactory
+        httpBuilder: OkHttpClient.Builder,
+        protectedApiFactory: ProtectedApiFactory
     ): WindApiFactory {
         return WindApiFactory(
             retrofitBuilder, httpBuilder, protectedApiFactory
@@ -731,7 +725,8 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Singleton
     fun providesEchFactory(
         retrofitBuilder: Retrofit.Builder,
-        httpBuilder: OkHttpClient.Builder, protectedApiFactory: ProtectedApiFactory
+        httpBuilder: OkHttpClient.Builder,
+        protectedApiFactory: ProtectedApiFactory
     ): EchApiFactory {
         return EchApiFactory(
             retrofitBuilder, httpBuilder, protectedApiFactory
