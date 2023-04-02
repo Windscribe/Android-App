@@ -1141,6 +1141,7 @@ class WindscribeActivity :
             NetworkLayoutState.OPEN_1 -> setNetworkLayoutExpandedLevel1(info)
             NetworkLayoutState.OPEN_2 -> setNetworkLayoutExpandedLevel2(info)
             NetworkLayoutState.OPEN_3 -> setNetworkLayoutExpandedLevel3(info)
+            else -> {}
         }
     }
 

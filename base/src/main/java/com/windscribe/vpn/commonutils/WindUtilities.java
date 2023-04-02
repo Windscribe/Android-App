@@ -17,7 +17,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -26,14 +25,12 @@ import com.windscribe.vpn.R;
 import com.windscribe.vpn.Windscribe;
 import com.windscribe.vpn.backend.Util;
 import com.windscribe.vpn.backend.utils.SelectedLocationType;
-import com.windscribe.vpn.constants.VpnPreferenceConstants;
 import com.windscribe.vpn.exceptions.BackgroundLocationPermissionNotAvailable;
 import com.windscribe.vpn.exceptions.NoLocationPermissionException;
 import com.windscribe.vpn.exceptions.NoNetworkException;
 import com.windscribe.vpn.exceptions.WindScribeException;
 
 import java.io.File;
-import java.io.FileWriter;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -203,26 +200,6 @@ public class WindUtilities {
     public static boolean isOnline() {
         NetworkInfo activeNetworkInfo = getUnderLayNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
-    }
-
-    @SuppressWarnings("SameReturnValue")
-    public static boolean writeStunnelConfig(Context context, String selectedIp, String stealthPort)
-            throws Exception {
-        String filePath = context.getFilesDir().getPath() + "/";
-        String configString = "log = overwrite\noutput = " + filePath + VpnPreferenceConstants.STUNNEL_LOG + "\n" +
-                "pid = " + filePath + VpnPreferenceConstants.STUNNEL_PID + "\ndebug = 7" +
-                "\n[openvpn]\n" + "client = yes\n" + VpnPreferenceConstants.STUNNEL_ACCEPT_SETTINGS
-                + "\nconnect = " + selectedIp + ":" + stealthPort;
-
-        Log.d("profile_creator", configString);
-
-        FileWriter stunnelConfigWriter = new FileWriter(context.getFilesDir()
-                .getPath() + "/" + VpnPreferenceConstants.STUNNEL_CONFIG_FILE);
-        stunnelConfigWriter.write(configString);
-
-        stunnelConfigWriter.flush();
-        stunnelConfigWriter.close();
-        return true;
     }
 
     private static boolean hasLocationPermission() {

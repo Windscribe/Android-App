@@ -419,13 +419,11 @@ open class ApiCallManager @Inject constructor(
 
     override fun checkConnectivityAndIpAddress(extraParams: Map<String, String>?): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
         return call(
-                authRequired = true,
-                hostType = HostType.CHECK_IP,
-                modelType = String::class.java
-        ) { apiService, params,  directIp ->
-            if(directIp){
+            authRequired = true, hostType = HostType.CHECK_IP, modelType = String::class.java
+        ) { apiService, _, directIp ->
+            if (directIp) {
                 apiService.connectivityTestAndIpDirectIp()
-            }else{
+            } else {
                 apiService.connectivityTestAndIp()
             }
         }
@@ -529,11 +527,15 @@ open class ApiCallManager @Inject constructor(
             overriddenCountryCode: String?
     ): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
         return call(
-                hostType = HostType.ASSET,
-                modelType = String::class.java
-        ) { apiService, params, directIp ->
-            if (directIp){
-                apiService.getServerListDirectIp(billingPlan, locHash, alcList, overriddenCountryCode)
+            hostType = HostType.ASSET, modelType = String::class.java
+        ) { apiService, _, directIp ->
+            if (directIp) {
+                apiService.getServerListDirectIp(
+                    billingPlan,
+                    locHash,
+                    alcList,
+                    overriddenCountryCode
+                )
             } else {
                 apiService.getServerList(billingPlan, locHash, alcList, overriddenCountryCode)
             }

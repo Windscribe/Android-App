@@ -66,7 +66,7 @@ class EchApiFactory @Inject constructor(
         val sslSocketFactory: SSLSocketFactory = sslContext.socketFactory
         val saveInstanceSSLSocketFactory = ManualEchSSLSocketFactory(dohResolver, sslSocketFactory)
         okHttpClient.sslSocketFactory(saveInstanceSSLSocketFactory, trustManager)
-        val hostnameVerifier = HostnameVerifier { _, session ->
+        val hostnameVerifier = HostnameVerifier { _, _ ->
             HttpsURLConnection.getDefaultHostnameVerifier().run {
                 return@run true
             }
