@@ -15,7 +15,6 @@ interface CityAndRegionDao {
     fun getCitiesByRegion(regionId: Int, isPro: Int): Single<Int>
 
     @get:Query("Select * from City limit 1")
-    @get:Transaction
     val city: Single<CityAndRegion>
 
     @Transaction
