@@ -11,8 +11,9 @@ import io.reactivex.Single
 
 @Dao
 interface RegionAndCitiesDao {
-    @get:Query("select * from Region")
-    val allRegion: Single<List<RegionAndCities>>
+    @Transaction
+    @Query("select * from Region")
+    fun getAllRegion(): Single<List<RegionAndCities>>
 
     @Transaction
     @Query("select * from Region where region_id = :id")
