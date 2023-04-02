@@ -10,7 +10,7 @@ apply from: "$rootDir/config/config.gradle"
 apply from: "$rootDir/depedencycheck.gradle"
 
 android {
-
+    namespace 'com.windscribe.mobile'
     bundle {
         language {
             enableSplit = false
@@ -22,8 +22,8 @@ android {
         applicationId rootProject.AppId
         minSdkVersion rootProject.appMinSdk
         targetSdkVersion rootProject.appTargetSdk
-        versionName System.getenv().getOrDefault("VERSION_NAME","3.0.730")
-        versionCode 730
+        versionName System.getenv().getOrDefault("VERSION_NAME", "3.7.1169")
+        versionCode 1169
         vectorDrawables.useSupportLibrary = true
 
         testInstrumentationRunner "com.windscribe.vpn.CustomRunner"
@@ -52,23 +52,22 @@ android {
         checkReleaseBuilds false
         disable 'NonConstantResourceId', 'ContentDescription', 'VectorRaster'
     }
-    namespace 'com.windscribe.mobile'
 }
 
 dependencies {
     //Android
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
+    implementation "androidx.appcompat:appcompat:$appCompat"
+    implementation "com.google.android.material:material:$material"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$archLifecycle"
+    implementation "androidx.navigation:navigation-fragment-ktx:$navigation"
+    implementation "androidx.navigation:navigation-ui-ktx:$navigation"
+    //kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_std_lib"
     implementation "androidx.core:core-ktx:$ktx_core"
-    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.3"
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
-
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugarJdk"
     //Core Module
     implementation project(path: ':base')
-
+    // Test
     androidTestImplementation 'de.codecentric:androidtestktx:0.9.0'
     androidTestImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin"
     androidTestImplementation "androidx.test:core:$coreVersion"
@@ -80,13 +79,13 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:truth:' + rootProject.extTruthVersion
     androidTestImplementation "org.jetbrains.kotlin:kotlin-reflect:1.7.20"
     androidTestImplementation 'com.squareup.rx.idler:rx2-idler:0.11.0'
+    androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
     //Shared test module
     androidTestImplementation project(path: ':test')
-
-    kapt 'com.github.bumptech.glide:compiler:4.11.0'
-    kapt 'com.jakewharton:butterknife-compiler:10.2.3'
+    //Kapt
+    kapt "com.github.bumptech.glide:compiler:$glide"
+    kapt "com.jakewharton:butterknife-compiler:$butterknife"
     kapt "androidx.room:room-compiler:$room"
     kapt "com.google.dagger:dagger-compiler:$dagger"
     kaptAndroidTest("com.google.dagger:dagger-compiler:$dagger")
-    androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
 }
