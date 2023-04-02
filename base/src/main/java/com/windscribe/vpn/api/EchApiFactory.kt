@@ -6,14 +6,11 @@ package com.windscribe.vpn.api
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.backend.wireguard.WireguardBackend
 import com.windscribe.vpn.constants.NetworkKeyConstants
-import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient.Builder
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import java.security.KeyStore
-import java.util.concurrent.TimeUnit.MINUTES
-import java.util.concurrent.TimeUnit.SECONDS
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.net.ssl.*
@@ -22,8 +19,7 @@ import javax.net.ssl.*
 class EchApiFactory @Inject constructor(
     retrofitBuilder: Retrofit.Builder,
     okHttpClient: Builder,
-    private val protectedApiFactory: ProtectedApiFactory,
-    windscribeDnsResolver: WindscribeDnsResolver
+    private val protectedApiFactory: ProtectedApiFactory
 ) {
 
     private val mRetrofit: Retrofit
@@ -37,12 +33,6 @@ class EchApiFactory @Inject constructor(
     }
 
     init {
-        okHttpClient.connectTimeout(NetworkKeyConstants.NETWORK_REQUEST_CONNECTION_TIMEOUT, SECONDS)
-        okHttpClient.readTimeout(5, SECONDS)
-        okHttpClient.writeTimeout(5, SECONDS)
-        val connectionPool = ConnectionPool(0, 5, MINUTES)
-        okHttpClient.connectionPool(connectionPool)
-        okHttpClient.dns(windscribeDnsResolver)
         setupEchSSLFactory(okHttpClient)
         mRetrofit = retrofitBuilder.baseUrl(NetworkKeyConstants.API_ENDPOINT)
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())

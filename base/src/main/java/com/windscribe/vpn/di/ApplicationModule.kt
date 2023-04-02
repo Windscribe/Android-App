@@ -46,10 +46,12 @@ import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
 import net.grandcentrix.tray.AppPreferences
+import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.slf4j.LoggerFactory
 import retrofit2.Retrofit
+import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -163,17 +165,13 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Singleton
     fun provideDatabase(): WindscribeDatabase {
         return Room.databaseBuilder(windscribeApp, WindscribeDatabase::class.java, "wind_db")
-                .fallbackToDestructiveMigration()
-                .addCallback(object : RoomDatabase.Callback() {
-                    override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
-                        logger.debug("No migration found for old database. Reconstructing from scratch.")
-                        super.onDestructiveMigration(db)
-                    }
-                })
-                .addMigrations(Migrations.migration_26_27)
-                .addMigrations(Migrations.migration_27_28)
-                .addMigrations(Migrations.migration_29_31)
-                .build()
+            .fallbackToDestructiveMigration().addCallback(object : RoomDatabase.Callback() {
+                override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
+                    logger.debug("No migration found for old database. Reconstructing from scratch.")
+                    super.onDestructiveMigration(db)
+                }
+            }).addMigrations(Migrations.migration_26_27).addMigrations(Migrations.migration_27_28)
+            .addMigrations(Migrations.migration_29_31).build()
     }
 
     @Provides
@@ -203,48 +201,45 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
         serviceInteractor: ServiceInteractor
     ): IKev2VpnBackend {
         return IKev2VpnBackend(
-                coroutineScope,
-                networkInfoManager,
-                vpnConnectionStateManager,
-            serviceInteractor
+            coroutineScope, networkInfoManager, vpnConnectionStateManager, serviceInteractor
         )
     }
 
     @Provides
     @Singleton
     fun provideLocalDatabaseImpl(
-            pingTestDao: PingTestDao,
-            userStatusDao: UserStatusDao,
-            popupNotificationDao: PopupNotificationDao,
-            regionDao: RegionDao,
-            cityDao: CityDao,
-            cityAndRegionDao: CityAndRegionDao,
-            configFileDao: ConfigFileDao,
-            staticRegionDao: StaticRegionDao,
-            pingTimeDao: PingTimeDao,
-            favouriteDao: FavouriteDao,
-            regionAndCitiesDao: RegionAndCitiesDao,
-            networkInfoDao: NetworkInfoDao,
-            serverStatusDao: ServerStatusDao,
-            preferenceChangeObserver: PreferenceChangeObserver,
-            windNotificationDao: WindNotificationDao
+        pingTestDao: PingTestDao,
+        userStatusDao: UserStatusDao,
+        popupNotificationDao: PopupNotificationDao,
+        regionDao: RegionDao,
+        cityDao: CityDao,
+        cityAndRegionDao: CityAndRegionDao,
+        configFileDao: ConfigFileDao,
+        staticRegionDao: StaticRegionDao,
+        pingTimeDao: PingTimeDao,
+        favouriteDao: FavouriteDao,
+        regionAndCitiesDao: RegionAndCitiesDao,
+        networkInfoDao: NetworkInfoDao,
+        serverStatusDao: ServerStatusDao,
+        preferenceChangeObserver: PreferenceChangeObserver,
+        windNotificationDao: WindNotificationDao
     ): LocalDbInterface {
         return LocalDatabaseImpl(
-                pingTestDao,
-                userStatusDao,
-                popupNotificationDao,
-                regionDao,
-                cityDao,
-                cityAndRegionDao,
-                configFileDao,
-                staticRegionDao,
-                pingTimeDao,
-                favouriteDao,
-                regionAndCitiesDao,
-                networkInfoDao,
-                serverStatusDao,
-                preferenceChangeObserver,
-                windNotificationDao
+            pingTestDao,
+            userStatusDao,
+            popupNotificationDao,
+            regionDao,
+            cityDao,
+            cityAndRegionDao,
+            configFileDao,
+            staticRegionDao,
+            pingTimeDao,
+            favouriteDao,
+            regionAndCitiesDao,
+            networkInfoDao,
+            serverStatusDao,
+            preferenceChangeObserver,
+            windNotificationDao
         )
     }
 
@@ -258,8 +253,7 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Singleton
     fun provideNotificationBuilder(@Named("ApplicationContext") appContext: Context): NotificationCompat.Builder {
         return NotificationCompat.Builder(
-                appContext,
-                NotificationConstants.NOTIFICATION_CHANNEL_ID
+            appContext, NotificationConstants.NOTIFICATION_CHANNEL_ID
         )
     }
 
@@ -272,9 +266,9 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun provideNotificationUpdater(
-            preferencesHelper: PreferencesHelper,
-            apiCallManager: IApiCallManager,
-            localDbInterface: LocalDbInterface
+        preferencesHelper: PreferencesHelper,
+        apiCallManager: IApiCallManager,
+        localDbInterface: LocalDbInterface
     ): NotificationRepository {
         return NotificationRepository(preferencesHelper, apiCallManager, localDbInterface)
     }
@@ -289,7 +283,9 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
         serviceInteractor: ServiceInteractor
     ): OpenVPNBackend {
         return OpenVPNBackend(
-            goBackend, coroutineScope, networkInfoManager,
+            goBackend,
+            coroutineScope,
+            networkInfoManager,
             vpnConnectionStateManager,
             serviceInteractor
         )
@@ -316,8 +312,7 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun providePreferenceHelperInterface(
-            preferences: AppPreferences,
-            securePreferences: SecurePreferences
+        preferences: AppPreferences, securePreferences: SecurePreferences
     ): PreferencesHelper {
         return AppPreferenceHelper(preferences, securePreferences)
     }
@@ -337,11 +332,12 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun provideSelectedLocationUpdater(
-            scope: CoroutineScope,
-            preferencesHelper: PreferencesHelper,
-            localDbInterface: LocalDbInterface,userRepository: Lazy<UserRepository>
+        scope: CoroutineScope,
+        preferencesHelper: PreferencesHelper,
+        localDbInterface: LocalDbInterface,
+        userRepository: Lazy<UserRepository>
     ): LocationRepository {
-        return LocationRepository(scope, preferencesHelper, localDbInterface,userRepository)
+        return LocationRepository(scope, preferencesHelper, localDbInterface, userRepository)
     }
 
     @Provides
@@ -375,15 +371,13 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun provideStaticListUpdater(
-            scope: CoroutineScope,
-            preferencesHelper: PreferencesHelper,
-            apiCallManager: IApiCallManager,
-            localDbInterface: LocalDbInterface
+        scope: CoroutineScope,
+        preferencesHelper: PreferencesHelper,
+        apiCallManager: IApiCallManager,
+        localDbInterface: LocalDbInterface
     ): StaticIpRepository {
-        return StaticIpRepository(scope,
-                preferencesHelper,
-                apiCallManager,
-                localDbInterface
+        return StaticIpRepository(
+            scope, preferencesHelper, apiCallManager, localDbInterface
         )
     }
 
@@ -402,10 +396,7 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
         deviceStateManager: DeviceStateManager
     ): TrafficCounter {
         return TrafficCounter(
-            coroutineScope,
-            vpnConnectionStateManager,
-            preferencesHelper,
-            deviceStateManager
+            coroutineScope, vpnConnectionStateManager, preferencesHelper, deviceStateManager
         )
     }
 
@@ -422,7 +413,9 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
 
     @Provides
     @Singleton
-    fun provideWgConfigRepository(scope: CoroutineScope, serviceInteractor: ServiceInteractor): WgConfigRepository {
+    fun provideWgConfigRepository(
+        scope: CoroutineScope, serviceInteractor: ServiceInteractor
+    ): WgConfigRepository {
         return WgConfigRepository(scope, serviceInteractor)
     }
 
@@ -445,31 +438,34 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun provideVpnBackendHolder(
-            coroutineScope: CoroutineScope,
-            preferenceHelper: AppPreferenceHelper,
-            openVPNBackend: OpenVPNBackend,
-            iKev2VpnBackend: IKev2VpnBackend,
-            wireguardBackend: WireguardBackend
+        coroutineScope: CoroutineScope,
+        preferenceHelper: AppPreferenceHelper,
+        openVPNBackend: OpenVPNBackend,
+        iKev2VpnBackend: IKev2VpnBackend,
+        wireguardBackend: WireguardBackend
     ): VpnBackendHolder {
         return VpnBackendHolder(
-                coroutineScope, preferenceHelper, iKev2VpnBackend, wireguardBackend,
-                openVPNBackend
+            coroutineScope, preferenceHelper, iKev2VpnBackend, wireguardBackend, openVPNBackend
         )
     }
 
     @Provides
     @Singleton
     fun provideWindNotificationBuilder(
-            notificationManager: NotificationManager,
-            notificationBuilder: NotificationCompat.Builder,
-            vpnConnectionStateManager: VPNConnectionStateManager,
-            scope: CoroutineScope,
-            trafficCounter: TrafficCounter,
-            interactor: ServiceInteractor
+        notificationManager: NotificationManager,
+        notificationBuilder: NotificationCompat.Builder,
+        vpnConnectionStateManager: VPNConnectionStateManager,
+        scope: CoroutineScope,
+        trafficCounter: TrafficCounter,
+        interactor: ServiceInteractor
     ): WindNotificationBuilder {
         return WindNotificationBuilder(
-                notificationManager, notificationBuilder, vpnConnectionStateManager,
-                trafficCounter, scope, interactor
+            notificationManager,
+            notificationBuilder,
+            vpnConnectionStateManager,
+            trafficCounter,
+            scope,
+            interactor
         )
     }
 
@@ -482,14 +478,14 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun provideWireguardBackend(
-            goBackend: GoBackend,
-            coroutineScope: CoroutineScope,
-            networkInfoManager: NetworkInfoManager,
-            vpnConnectionStateManager: VPNConnectionStateManager,
-            serviceInteractor: ServiceInteractor,
-            vpnProfileCreator: VPNProfileCreator,
-            userRepository: Lazy<UserRepository>,
-            deviceStateManager: DeviceStateManager
+        goBackend: GoBackend,
+        coroutineScope: CoroutineScope,
+        networkInfoManager: NetworkInfoManager,
+        vpnConnectionStateManager: VPNConnectionStateManager,
+        serviceInteractor: ServiceInteractor,
+        vpnProfileCreator: VPNProfileCreator,
+        userRepository: Lazy<UserRepository>,
+        deviceStateManager: DeviceStateManager
     ): WireguardBackend {
         return WireguardBackend(
             goBackend,
@@ -576,10 +572,7 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
         preferencesHelper: PreferencesHelper
     ): MockLocationManager {
         return MockLocationManager(
-            windscribeApp,
-            coroutineScope,
-            vpnConnectionStateManager,
-            preferencesHelper
+            windscribeApp, coroutineScope, vpnConnectionStateManager, preferencesHelper
         )
     }
 
@@ -622,9 +615,14 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     }
 
     @Provides
-    fun providesOkHttpBuilder(): OkHttpClient.Builder {
+    fun providesOkHttpBuilder(windscribeDnsResolver: WindscribeDnsResolver): OkHttpClient.Builder {
+        val connectionPool = ConnectionPool(0, 5, TimeUnit.MINUTES)
         httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BASIC
-        return OkHttpClient.Builder().addInterceptor(httpLoggingInterceptor)
+        return OkHttpClient.Builder().connectTimeout(
+            NetworkKeyConstants.NETWORK_REQUEST_CONNECTION_TIMEOUT, TimeUnit.SECONDS
+        ).readTimeout(5, TimeUnit.SECONDS).writeTimeout(5, TimeUnit.SECONDS)
+            .connectionPool(connectionPool).addInterceptor(httpLoggingInterceptor)
+            .dns(windscribeDnsResolver)
     }
 
     private var httpLoggingInterceptor =
@@ -689,16 +687,23 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
 
     @Provides
     @Singleton
-    fun providesVPNConnectionStateManager(scope: CoroutineScope, connectionDataRepository: ConnectionDataRepository, preferencesHelper: PreferencesHelper, userRepository: Lazy<UserRepository>): VPNConnectionStateManager {
-        return VPNConnectionStateManager(scope, connectionDataRepository,preferencesHelper,userRepository)
+    fun providesVPNConnectionStateManager(
+        scope: CoroutineScope,
+        connectionDataRepository: ConnectionDataRepository,
+        preferencesHelper: PreferencesHelper,
+        userRepository: Lazy<UserRepository>
+    ): VPNConnectionStateManager {
+        return VPNConnectionStateManager(
+            scope, connectionDataRepository, preferencesHelper, userRepository
+        )
     }
 
     @Provides
     @Singleton
     fun providesVPNServiceInteractor(
-            mPrefHelper: PreferencesHelper,
-            apiCallManager: IApiCallManager,
-            localDbInterface: LocalDbInterface
+        mPrefHelper: PreferencesHelper,
+        apiCallManager: IApiCallManager,
+        localDbInterface: LocalDbInterface
     ): ServiceInteractor {
         return ServiceInteractorImpl(mPrefHelper, apiCallManager, localDbInterface)
     }
@@ -706,8 +711,7 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun providesCustomDnsResolver(
-            mainScope: CoroutineScope,
-            preferencesHelper: PreferencesHelper
+        mainScope: CoroutineScope, preferencesHelper: PreferencesHelper
     ): WindscribeDnsResolver {
         return WindscribeDnsResolver(mainScope, preferencesHelper)
     }
@@ -716,15 +720,10 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Singleton
     fun providesWindApiFactory(
         retrofitBuilder: Retrofit.Builder,
-        httpBuilder: OkHttpClient.Builder,
-        protectedApiFactory: ProtectedApiFactory,
-        windscribeDnsResolver: WindscribeDnsResolver
+        httpBuilder: OkHttpClient.Builder, protectedApiFactory: ProtectedApiFactory
     ): WindApiFactory {
         return WindApiFactory(
-            retrofitBuilder,
-            httpBuilder,
-            protectedApiFactory,
-            windscribeDnsResolver
+            retrofitBuilder, httpBuilder, protectedApiFactory
         )
     }
 
@@ -732,33 +731,27 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Singleton
     fun providesEchFactory(
         retrofitBuilder: Retrofit.Builder,
-        httpBuilder: OkHttpClient.Builder,
-        protectedApiFactory: ProtectedApiFactory,
-        windscribeDnsResolver: WindscribeDnsResolver
+        httpBuilder: OkHttpClient.Builder, protectedApiFactory: ProtectedApiFactory
     ): EchApiFactory {
         return EchApiFactory(
-            retrofitBuilder,
-            httpBuilder,
-            protectedApiFactory,
-            windscribeDnsResolver
+            retrofitBuilder, httpBuilder, protectedApiFactory
         )
     }
 
     @Provides
     @Singleton
     fun providesProtectedFactory(
-        retrofitBuilder: Retrofit.Builder, windscribeDnsResolver: WindscribeDnsResolver
+        retrofitBuilder: Retrofit.Builder, okHttpClient: OkHttpClient.Builder
     ): ProtectedApiFactory {
-        return ProtectedApiFactory(retrofitBuilder, windscribeDnsResolver)
+        return ProtectedApiFactory(retrofitBuilder, okHttpClient)
     }
 
     @Provides
     @Singleton
     fun providesWindCustomApiFactory(
-            retrofitBuilder: Retrofit.Builder,
-            windscribeDnsResolver: WindscribeDnsResolver
+        retrofitBuilder: Retrofit.Builder, okHttpClient: OkHttpClient.Builder
     ): WindCustomApiFactory {
-        return WindCustomApiFactory(retrofitBuilder, windscribeDnsResolver)
+        return WindCustomApiFactory(retrofitBuilder, okHttpClient)
     }
 
     @Provides
@@ -769,10 +762,7 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
         preferencesHelper: PreferencesHelper
     ): WindScribeWorkManager {
         return WindScribeWorkManager(
-            windscribeApp,
-            scope,
-            vpnConnectionStateManager,
-            preferencesHelper
+            windscribeApp, scope, vpnConnectionStateManager, preferencesHelper
         )
     }
 
@@ -785,18 +775,14 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
         vpnConnectionStateManager: VPNConnectionStateManager
     ): DecoyTrafficController {
         return DecoyTrafficController(
-            scope,
-            apiCallManager,
-            preferencesHelper,
-            vpnConnectionStateManager
+            scope, apiCallManager, preferencesHelper, vpnConnectionStateManager
         )
     }
 
     @Provides
     @Singleton
     fun providesWsTunnelManager(
-        scope: CoroutineScope,
-        openVPNBackend: OpenVPNBackend
+        scope: CoroutineScope, openVPNBackend: OpenVPNBackend
     ): ProxyTunnelManager {
         return ProxyTunnelManager(scope, openVPNBackend)
     }
