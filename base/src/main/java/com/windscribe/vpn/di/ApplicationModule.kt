@@ -138,13 +138,16 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Provides
     @Singleton
     fun provideLatencyRepository(
-        interactor: ServiceInteractor,
-        userRepository: Lazy<UserRepository>,
+        preferencesHelper: PreferencesHelper,
         localDbInterface: LocalDbInterface,
-        vpnConnectionStateManager: Lazy<VPNConnectionStateManager>
+        apiCallManager: IApiCallManager,
+        vpnConnectionStateManager: Lazy<VPNConnectionStateManager>,
     ): LatencyRepository {
         return LatencyRepository(
-            interactor, userRepository, localDbInterface, vpnConnectionStateManager
+            preferencesHelper,
+            localDbInterface,
+            apiCallManager,
+            vpnConnectionStateManager
         )
     }
 

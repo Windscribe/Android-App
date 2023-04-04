@@ -54,5 +54,11 @@ interface IApiCallManager {
     fun deleteSession(extraParams: Map<String, String>? = null): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>
     fun wgInit(extraParams: Map<String, String>? = null, protect: Boolean): Single<GenericResponseClass<WgInitResponse?, ApiErrorResponse?>>
     fun wgConnect(extraParams: Map<String, String>? = null, protect: Boolean): Single<GenericResponseClass<WgConnectResponse?, ApiErrorResponse?>>
-    fun sendDecoyTraffic(url: String, data: String, sizeToReceive: String?): Single<GenericResponseClass<String?, ApiErrorResponse?>>
+    fun sendDecoyTraffic(
+        url: String,
+        data: String,
+        sizeToReceive: String?
+    ): Single<GenericResponseClass<String?, ApiErrorResponse?>>
+
+    suspend fun getLatency(host: String): Result<GenericResponseClass<Latency?, ApiErrorResponse?>>
 }

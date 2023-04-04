@@ -102,6 +102,12 @@ public class City implements Parcelable {
     @ColumnInfo(name = "tz")
     private String tz;
 
+    @SerializedName("ping_host")
+    @Expose
+    @ColumnInfo(name = "ping_host")
+    @Nullable
+    private String pingHost;
+
     protected City(Parcel in) {
         region_id = in.readInt();
         id = in.readInt();
@@ -117,6 +123,7 @@ public class City implements Parcelable {
         ovpnX509 = in.readString();
         linkSpeed = in.readString();
         health = in.readInt();
+        pingHost = in.readString();
     }
 
     public City() {
@@ -264,6 +271,14 @@ public class City implements Parcelable {
         this.tz = tz;
     }
 
+    public void setPingHost(String pingHost) {
+        this.pingHost = pingHost;
+    }
+
+    public String getPingHost() {
+        return pingHost;
+    }
+
     public boolean nodesAvailable() {
         List<Node> nodesToRemove = new ArrayList<>();
         if (nodes != null) {
@@ -295,6 +310,7 @@ public class City implements Parcelable {
                 ", tz='" + tz + '\'' +
                 ", pubKey='" + pubKey + '\'' +
                 ", ovpnX509='" + ovpnX509 + '\'' +
+                ", pingHost='" + pingHost + '\'' +
                 '}';
     }
 
@@ -314,5 +330,6 @@ public class City implements Parcelable {
         dest.writeString(ovpnX509);
         dest.writeString(linkSpeed);
         dest.writeInt(health);
+        dest.writeString(pingHost);
     }
 }
