@@ -3,6 +3,7 @@
  */
 package com.windscribe.vpn.api
 
+import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -22,6 +23,7 @@ import okhttp3.ResponseBody
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import retrofit2.HttpException
+import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -796,6 +798,25 @@ open class ApiCallManager @Inject constructor(
             } catch (e: JsonSyntaxException) {
                 throw WindScribeException("Doh endpoint returned unknown data.")
             }
+        }
+    }
+
+    override suspend fun getLatency(host: String): Result<GenericResponseClass<Latency?, ApiErrorResponse?>> {
+        return kotlin.runCatching {
+            apiFactory.createApi("$host/").getLatency().map()
+        }
+    }
+
+    fun <T> Response<T>.map(): GenericResponseClass<T?, ApiErrorResponse?> {
+        body()?.let {
+            return GenericResponseClass(it, null)
+        } ?: errorBody()?.let {
+            return GenericResponseClass(
+                null,
+                Gson().fromJson(it.string(), ApiErrorResponse::class.java)
+            )
+        } ?: kotlin.run {
+            return GenericResponseClass(null, null)
         }
     }
 }
