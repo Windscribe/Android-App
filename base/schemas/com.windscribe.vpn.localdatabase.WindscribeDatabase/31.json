@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 31,
-    "identityHash": "f84f9d3820d9fab9e07c87398d9e2596",
+    "identityHash": "9063d4b698b7ed2fafd19823fdd556a4",
     "entities": [
       {
         "tableName": "ping_results",
@@ -28,10 +28,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "node_name"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -60,10 +60,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "user_name"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -86,10 +86,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "user_name"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -118,10 +118,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "notification_id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -210,10 +210,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "primaryKey"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {
@@ -230,7 +230,7 @@
       },
       {
         "tableName": "City",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`city_id` INTEGER NOT NULL, `nodes` TEXT, `primaryKey` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `region_id` INTEGER NOT NULL, `gps` TEXT, `health` INTEGER NOT NULL, `link_speed` TEXT, `nick` TEXT, `city` TEXT, `ovpn_x509` TEXT, `ping_ip` TEXT DEFAULT '', `pro` INTEGER NOT NULL, `wg_pubkey` TEXT, `tz` TEXT)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`city_id` INTEGER NOT NULL, `nodes` TEXT, `primaryKey` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `region_id` INTEGER NOT NULL, `gps` TEXT, `health` INTEGER NOT NULL, `link_speed` TEXT, `nick` TEXT, `city` TEXT, `ovpn_x509` TEXT, `ping_ip` TEXT DEFAULT '', `pro` INTEGER NOT NULL, `wg_pubkey` TEXT, `tz` TEXT, `ping_host` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
@@ -316,13 +316,19 @@
             "columnName": "tz",
             "affinity": "TEXT",
             "notNull": false
+          },
+          {
+            "fieldPath": "pingHost",
+            "columnName": "ping_host",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "primaryKey"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -339,10 +345,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "favourite_id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -383,10 +389,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "ping_id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -523,10 +529,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -567,10 +573,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "networkName"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -617,10 +623,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "primary_key"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -703,10 +709,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -715,7 +721,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f84f9d3820d9fab9e07c87398d9e2596')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9063d4b698b7ed2fafd19823fdd556a4')"
     ]
   }
 }
