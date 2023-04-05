@@ -27,11 +27,11 @@ import com.windscribe.vpn.Windscribe;
 import com.windscribe.vpn.commonutils.ThemeUtils;
 import com.windscribe.vpn.constants.NetworkKeyConstants;
 import com.windscribe.vpn.serverlist.entity.City;
-import com.windscribe.vpn.serverlist.entity.ServerListData;
 import com.windscribe.vpn.serverlist.entity.Favourite;
 import com.windscribe.vpn.serverlist.entity.Group;
 import com.windscribe.vpn.serverlist.entity.PingTime;
 import com.windscribe.vpn.serverlist.entity.Region;
+import com.windscribe.vpn.serverlist.entity.ServerListData;
 import com.windscribe.vpn.serverlist.interfaces.ListViewClickListener;
 
 import java.util.ArrayList;
@@ -277,9 +277,9 @@ public class RegionsAdapter extends ExpandableRecyclerViewAdapter<RegionViewHold
         if (city.nodesAvailable()) {
             holder.imgFavorite.setOnClickListener(v -> {
                 if (isFavourite(city)) {
-                    mListener.removeFromFavourite(city.getId());
+                    mListener.removeFromFavourite(city.getId(), holder.getAdapterPosition(), this);
                 } else {
-                    mListener.addToFavourite(city.getId());
+                    mListener.addToFavourite(city.getId(), holder.getAdapterPosition(), this);
                 }
             });
         }
