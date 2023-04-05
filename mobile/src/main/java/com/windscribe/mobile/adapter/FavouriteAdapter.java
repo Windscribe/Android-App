@@ -163,7 +163,7 @@ public class FavouriteAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private void setClickListeners(City city, FavoriteViewHolder holder) {
         holder.imgFavorite.setOnClickListener(v -> {
             if (holder.getAdapterPosition() != -1) {
-                mListener.removeFromFavourite(mFavouriteList.get(holder.getAdapterPosition()).getId());
+                mListener.removeFromFavourite(mFavouriteList.get(holder.getAdapterPosition()).getId(), holder.getAdapterPosition(), this);
             }
         });
 

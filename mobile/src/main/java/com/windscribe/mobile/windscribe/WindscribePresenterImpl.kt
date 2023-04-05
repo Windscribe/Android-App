@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.util.Pair
 import android.view.View
 import androidx.documentfile.provider.DocumentFile
+import androidx.recyclerview.widget.RecyclerView
 import com.google.common.io.CharStreams
 import com.windscribe.mobile.R
 import com.windscribe.mobile.adapter.*
@@ -143,7 +144,11 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
-    override fun addToFavourite(cityId: Int) {
+    override fun addToFavourite(
+        cityId: Int,
+        position: Int,
+        adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
+    ) {
         val favourite = Favourite()
         favourite.id = cityId
         interactor.getCompositeDisposable()
@@ -151,7 +156,10 @@ class WindscribePresenterImpl @Inject constructor(
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ favourites: List<Favourite> ->
                     resetAdapters(
-                        favourites, interactor.getResourceString(R.string.added_to_favourites)
+                        favourites,
+                        interactor.getResourceString(R.string.added_to_favourites),
+                        position,
+                        adapter
                     )
                 }) { throwable: Throwable ->
                     logger.debug(
@@ -1221,7 +1229,11 @@ class WindscribePresenterImpl @Inject constructor(
      * Remove from favourite list
      * @Param cityID
      * */
-    override fun removeFromFavourite(cityId: Int) {
+    override fun removeFromFavourite(
+        cityId: Int,
+        position: Int,
+        adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
+    ) {
         val favourite = Favourite()
         favourite.id = cityId
         interactor.getCompositeDisposable()
@@ -1230,7 +1242,10 @@ class WindscribePresenterImpl @Inject constructor(
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ favourites: List<Favourite> ->
                     resetAdapters(
-                        favourites, interactor.getResourceString(R.string.remove_from_favourites)
+                        favourites,
+                        interactor.getResourceString(R.string.remove_from_favourites),
+                        position,
+                        adapter
                     )
                 }) { throwable: Throwable ->
                     logger.debug(
@@ -1957,18 +1972,26 @@ class WindscribePresenterImpl @Inject constructor(
      * Reset adapters on data change
      * */
     @SuppressLint("NotifyDataSetChanged")
-    private fun resetAdapters(favourites: List<Favourite>, message: String) {
+    private fun resetAdapters(
+        favourites: List<Favourite>,
+        message: String,
+        position: Int,
+        changedAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
+    ) {
         logger.debug(message)
         windscribeView.showToast(message)
         logger.debug("Resetting list adapters.")
         adapter?.serverListData?.favourites = favourites
-        val dataDetails = adapter?.serverListData
-        adapter?.serverListData = dataDetails
-        streamingNodeAdapter?.serverListData = dataDetails
-        adapter?.notifyDataSetChanged()
-        streamingNodeAdapter?.notifyDataSetChanged()
-        dataDetails?.let {
-            setFavouriteServerView(dataDetails)
+        streamingNodeAdapter?.serverListData?.favourites = favourites
+        changedAdapter.notifyItemChanged(position)
+        if (changedAdapter !is RegionsAdapter) {
+            adapter?.notifyDataSetChanged()
+        }
+        if (changedAdapter !is StreamingNodeAdapter) {
+            streamingNodeAdapter?.notifyDataSetChanged()
+        }
+        adapter?.serverListData?.let {
+            setFavouriteServerView(it)
         }
         adapter?.let {
             windscribeView.updateSearchAdapter(it.serverListData)
