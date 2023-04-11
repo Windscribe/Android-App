@@ -986,7 +986,7 @@ public abstract class OpenVPNService extends VpnService implements StateListener
                 VpnStatus.updateStateString("MULTI_USER_PERMISSION", "", R.string.state_user_vpn_permission, ConnectionStatus.LEVEL_MULTI_USER_PERMISSION);
             }
             VpnStatus.logError(R.string.tun_open_error);
-            VpnStatus.logError(getString(R.string.error) + e.getLocalizedMessage());
+            VpnStatus.logError("Error" + e.getLocalizedMessage());
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                 VpnStatus.logError(R.string.tun_error_helpful);
             }

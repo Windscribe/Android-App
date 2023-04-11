@@ -10,14 +10,15 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.ServerListData
-import com.windscribe.tv.serverlist.listeners.NodeClickListener
 import androidx.recyclerview.widget.RecyclerView
 import com.windscribe.tv.R
 import com.windscribe.tv.serverlist.adapters.FavouriteAdapter.FavouriteHolder
 import com.windscribe.tv.serverlist.customviews.ConnectButtonView
 import com.windscribe.tv.serverlist.customviews.FavouriteButtonView
+import com.windscribe.tv.serverlist.listeners.NodeClickListener
+import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.serverlist.entity.City
+import com.windscribe.vpn.serverlist.entity.ServerListData
 
 class FavouriteAdapter(
     private val locations: MutableList<City>,
@@ -84,17 +85,20 @@ class FavouriteAdapter(
                     View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
                         selectedBackground(hasFocus)
                         if (!serverListData.isProUser && city.pro == 1) {
-                            setHighlightText("Upgrade", hasFocus)
+                            setHighlightText(appContext.getString(R.string.upgrade), hasFocus)
                         } else if (!city.nodesAvailable()) {
-                            setHighlightText("Unavailable", hasFocus)
+                            setHighlightText(appContext.getString(R.string.unavailable), hasFocus)
                         } else {
-                            setHighlightText("Connect", hasFocus)
+                            setHighlightText(appContext.getString(R.string.connect), hasFocus)
                         }
                     }
                 btnFav.onFocusChangeListener =
                     View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
                         selectedBackground(hasFocus)
-                        setHighlightText("Remove from favourites", hasFocus)
+                        setHighlightText(
+                            appContext.getString(R.string.remove_it_from_favourites),
+                            hasFocus
+                        )
                     }
         }
 

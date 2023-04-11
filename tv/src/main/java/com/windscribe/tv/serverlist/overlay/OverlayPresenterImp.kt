@@ -59,11 +59,11 @@ class OverlayPresenterImp @Inject constructor(
         if (state == FavouriteState.Favourite) {
             logger.debug("Removed from favourites")
             removeFromFavourite(city.getId())
-            overlayView.showToast("Removed from favourites")
+            overlayView.showToast(interactor.getResourceString(R.string.remove_from_favourites))
         } else {
             addToFav(city.getId())
             logger.debug("Added to favourites")
-            overlayView.showToast("Added to favourites")
+            overlayView.showToast(interactor.getResourceString(R.string.added_to_favourites))
         }
     }
 
