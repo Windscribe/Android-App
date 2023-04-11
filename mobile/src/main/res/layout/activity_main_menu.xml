@@ -115,7 +115,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider_robert"
-            app:ItemLinkViewTitle="Refer for Data"
+            app:ItemLinkViewTitle="@string/refer_for_data"
             app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
             app:ItemLinkViewLeftIcon="@drawable/ic_favourite" />
 

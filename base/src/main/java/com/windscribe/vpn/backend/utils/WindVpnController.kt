@@ -9,6 +9,7 @@ import android.content.Context.ACTIVITY_SERVICE
 import android.content.Intent
 import android.net.VpnService
 import androidx.work.Data
+import com.windscribe.vpn.R
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.alert.showRetryDialog
@@ -453,7 +454,7 @@ open class WindVpnController @Inject constructor(
                 }.collect { state ->
                     logger.debug("$connectionAttempt ${state.status}")
                     if (state.status == VPNState.Status.Disconnected && connectionAttempt < connectionInfo.size) {
-                        callback("Connecting..")
+                        callback(interactor.getResourceString(R.string.connecting))
                         vpnConnectionStateManager.setState(VPNState(status = VPNState.Status.Connecting))
                         val connectionUUID = UUID.randomUUID()
                         val openVPNInfo = connectionInfo[connectionAttempt]

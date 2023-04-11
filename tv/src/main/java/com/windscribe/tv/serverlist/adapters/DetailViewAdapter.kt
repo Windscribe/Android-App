@@ -18,6 +18,7 @@ import com.windscribe.tv.serverlist.adapters.DetailViewAdapter.DetailViewHolder
 import com.windscribe.tv.serverlist.customviews.ConnectButtonView
 import com.windscribe.tv.serverlist.customviews.FavouriteButtonView
 import com.windscribe.tv.serverlist.detail.DetailListener
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerNodeListOverLoaded
 import com.windscribe.vpn.serverlist.entity.City
 import com.windscribe.vpn.serverlist.entity.Favourite
@@ -89,11 +90,11 @@ class DetailViewAdapter(
                     View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
                         selectedBackground(hasFocus)
                         if (!dataDetails.isProUser && selectedCity.pro == 1) {
-                            setHighlightText("Upgrade", hasFocus)
+                            setHighlightText(appContext.getString(R.string.upgrade), hasFocus)
                         } else if (!selectedCity.nodesAvailable()) {
-                            setHighlightText("Unavailable", hasFocus)
+                            setHighlightText(appContext.getString(R.string.unavailable), hasFocus)
                         } else {
-                            setHighlightText("Connect", hasFocus)
+                            setHighlightText(appContext.getString(R.string.connect), hasFocus)
                         }
                     }
                 btnFav.onFocusChangeListener =
@@ -102,9 +103,12 @@ class DetailViewAdapter(
                         selectedBackground(hasFocus)
                         val currentFavState = favStates[selectedCity.getId(), 1]
                         if (currentFavState == 1) {
-                            setHighlightText("Favourite", hasFocus)
+                            setHighlightText(appContext.getString(R.string.favourite), hasFocus)
                         } else {
-                            setHighlightText("Remove from favourites", hasFocus)
+                            setHighlightText(
+                                appContext.getString(R.string.remove_it_from_favourites),
+                                hasFocus
+                            )
                         }
                     }
             }

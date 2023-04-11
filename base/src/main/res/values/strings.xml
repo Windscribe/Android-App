@@ -1,9 +1,4 @@
-<!--
-  ~ Copyright (c) 2021 Windscribe Limited.
-  -->
-
 <resources>
-    <!--- User-->
     <string name="username_empty">Empty username!</string>
     <string name="password_empty">Empty password!</string>
     <string name="enter_username">Please enter your username!</string>
@@ -30,8 +25,6 @@
     <string name="choose_password">Choose  Password</string>
     <string name="email_description"><![CDATA[For password recovery, updates & promo only. No spam]]></string>
     <string name="sign_up_failed_network_alert">Well we gave it our best shot, we just couldn’t sign you up using this network for some reason.</string>
-
-    <!--Api -->
     <string name="backup_api_end_point">Trying backup api end point&#8230;</string>
     <string name="signing_in">Signing in&#8230;</string>
     <string name="signing_up">Signing up&#8230;</string>
@@ -44,8 +37,6 @@
     <string name="preparing_your_dashboard">Preparing your dashboard&#8230;</string>
     <string name="trying_static_endpoint">Trying static endpoint&#8230;</string>
     <string name="getting_reg_token">Getting reg token&#8230;</string>
-
-    <!--- Email-->
     <string name="invalid_email_format">Invalid email!</string>
     <string name="email_empty">Empty email!</string>
     <string name="email">Email</string>
@@ -53,13 +44,9 @@
     <string name="confirm_email">Confirm Email</string>
     <string name="resend_verification_email">Resend Verification Email</string>
     <string name="change_email">Change Email</string>
-
-    <!--Network -->
     <string name="no_internet">NO INTERNET!</string>
     <string name="no_network_detected">No network detected!</string>
     <string name="this_network_hates_us">This network hates us</string>
-
-    <!-- Upgrade-->
     <string name="upgrade">UPGRADE</string>
     <string name="upgrade_case_normal">Upgrade</string>
     <string name="renew_plan">Renew Plan</string>
@@ -76,8 +63,6 @@
     <string name="warning_no_email_pro_account">Add email to recover your account in case you forget your password.</string>
     <string name="free_reason_to_confirm">Please confirm your email to get 10GB/month</string>
     <string name="pro_reason_to_confirm">Please confirm your email to protect your account</string>
-
-    <!-- Connection states -->
     <string name="connected">CONNECTED</string>
     <string name="connected_lowercase">Connected</string>
     <string name="connecting">CONNECTING&#160;</string>
@@ -89,8 +74,6 @@
     <string name="checking_connectivity">Checking connectivity&#8230;</string>
     <string name="connectivity_test_failed">Connectivity test failed&#8230;</string>
     <string name="best_location">Best Location</string>
-
-    <!--Connection preference-->
     <string name="connection_mode">Connection Mode</string>
     <string name="preferred_protocol">Preferred Protocol</string>
     <string name="protocol">Protocol</string>
@@ -114,7 +97,6 @@
     <string name="decoy">DECOY</string>
     <string name="fake_traffic_volume">Fake Traffic Volume</string>
     <string name="potential_data_use">Estimated Data Usage</string>
-    <!-- Account-->
     <string name="plan_pro">Pro</string>
     <string name="a_la_carte_unlimited_plan">Unlimited</string>
     <string name="expiry_date">Expiry  Date</string>
@@ -127,8 +109,6 @@
     <string name="plan">PLAN</string>
     <string name="please_login">Please login first to connect!</string>
     <string name="please_login_to_see_account_details">Sign up or Login to view your account details and safeguard your preferences.</string>
-
-    <!-- Billing-->
     <string name="billing_unavailable">Play billing is unavailable for this device</string>
     <string name="item_unavailable">Item you requested is not available. \nPlease contact support at https://windscribe.com/support!</string>
     <string name="billing_service_unavailable">Billing service unavailable. Please check your network connection and try again!</string>
@@ -140,8 +120,6 @@
     <string name="purchase_cancelled">Purchase cancelled!</string>
     <string name="purchase_successful">Purchase successful!</string>
     <string name="_2gb_left">2GB LEFT</string>
-
-    <!-- Notification/Status Strings -->
     <string name="state_connecting">Connecting</string>
     <string name="state_wait">Waiting for server reply</string>
     <string name="state_auth">Authenticating</string>
@@ -157,19 +135,13 @@
     <string name="state_tcp_connect">Connecting (TCP)</string>
     <string name="state_auth_failed">Authentication failed</string>
     <string name="state_no_network">Waiting for usable network</string>
-
-    <!--News feed -->
     <string name="news_feed">News Feed</string>
     <string name="news_feed_welcome">You will find announcements and general Windscribe related news here. Perhaps even delicious cake, Everyone loves cake!</string>
     <string name="news_feed_welcome_title">WELCOME TO WINDSCRIBE</string>
-
-    <!-- Rate dialog -->
     <string name="rate_the_app">Rate Windscribe</string>
     <string name="may_be_later">Maybe Later</string>
     <string name="never_ask_again">Go Away</string>
     <string name="rate_message">Are you enjoying Windscribe? Sure you are. Rate us in the Play Store, and we’ll love you long time.</string>
-
-    <!-- GPS spoofing -->
     <string name="gps_spoofing_explain">This feature requires you to modify your android settings. Please follow the next few steps to activate it.</string>
     <string name="let_s_do_it">Let\'s do it</string>
     <string name="unlock_developer_mode">Unlock Developer  Options</string>
@@ -182,8 +154,6 @@
     <string name="gps_spoofing_success">Your GPS location will be the same as your VPN location.</string>
     <string name="gps_spoofing_not_set">Couldn’t enable GPS Spoofing</string>
     <string name="gps_spoofing_error">Please try following the guide again to activate it.</string>
-
-    <!--Ghost mode -->
     <string name="add_email">Add Email</string>
     <string name="unlimited_data">Unlimited Data</string>
     <string name="preferences">Preferences</string>
@@ -203,7 +173,6 @@
     <string name="continue_without_email">Continue Without Email</string>
     <string name="no_email_warning">Without an email, your free account will be limited to 2GB/Mo and you won’t  be able to reset your password.</string>
     <string name="get_started">Get Started</string>
-    <!-- Actions -->
     <string name="error_try_again">Error try again!</string>
     <string name="please_wait">Please wait&#8230;</string>
     <string name="resend">Resend</string>
@@ -215,16 +184,12 @@
     <string name="set_up_later">Setup Later</string>
     <string name="back">Back</string>
     <string name="ok">OK</string>
-
-    <!-- Log -->
     <string name="view_log">View Debug Log</string>
     <string name="send_log">Send Debug Log</string>
     <string name="send_charon_log">Send IkEv2 log</string>
     <string name="sent_thanks">Sent thanks !</string>
     <string name="sending_log">Sending log…</string>
     <string name="export_log">Export Log</string>
-
-    <!--Home -->
     <string name="no_favourites">No favourites</string>
     <string name="no_custom_configs">Custom configs allow you to connect to any OpenVPN or Wireguard server. Just add a valid config file and it will appear in this tab.</string>
     <string name="add_profile">Add VPN Profile</string>
@@ -234,8 +199,6 @@
     <string name="check_status_description">Try again later or go to our Status page for more info</string>
     <string name="added_to_favourites">Added to favourites</string>
     <string name="add_vpn_config">Add Custom Config</string>
-
-    <!--Main Menu-->
     <string name="general">General</string>
     <string name="account">Account</string>
     <string name="connection">Connection</string>
@@ -244,8 +207,6 @@
     <string name="logout">Log Out</string>
     <string name="preference">Preferences</string>
     <string name="logout_alert_description">Are you sure you want to log out of Windscribe?</string>
-
-    <!--General Settings-->
     <string name="sort_by">Location Order</string>
     <string name="display_latency">Display Latency</string>
     <string name="preferred_language">Language</string>
@@ -254,9 +215,6 @@
     <string name="haptic_setting_label">Haptic Feedback</string>
     <string name="version">Version</string>
     <string name="show_location_health">Location Load</string>
-
-
-    <!-- Split tunneling -->
     <string name="split_tunneling_feature">Choose which apps to exclude or  include from Windscribe when Connected</string>
     <string name="mode">Mode</string>
     <string name="split_tunneling">Split Tunneling</string>
@@ -265,13 +223,9 @@
     <string name="feature_tunnel_mode_exclusive">Apps selected below will not go through Windscribe when connected</string>
     <string name="feature_tunnel_mode_inclusive">Apps selected below will go through Windscribe when connected</string>
     <string name="apps">APPS</string>
-
-    <!--Always on -->
     <string name="always_on">Always on VPN</string>
     <string name="always_on_warning">\"Always On\" VPN allows Android to control the VPN connection and ensure that no data can leave the device unless the VPN tunnel is up.</string>
     <string name="always_on_setting">Android 10+ devices require Always-On VPN to be configured for Windscribe to start on device boot.</string>
-
-    <!-- Network security -->
     <string name="forget_network">Forget network</string>
     <string name="network_secured">Secured</string>
     <string name="network_unsecured">Unsecured</string>
@@ -282,25 +236,17 @@
     <string name="network_options">Network Options</string>
     <string name="auto_secure">Auto-Secure</string>
     <string name="auto_secure_description">Windscribe   will  automatically   turn  on   when  you  connect  to  this network.</string>
-
-    <!--Auto connect on boot-->
     <string name="auto_start_on_boot">Auto-connect On Boot</string>
     <string name="enable_start_on_boot">Enable Start On Boot</string>
-
-    <!--Location permission -->
     <string name="grant_permission">Grant Permission</string>
     <string name="reason_for_location_permission">Windscribe needs the location permission while it\'s running in the background in order to make the \"Network Whitelist\" feature work.  This permission is required to access Wifi network names. This permission is used solely for this feature as well as GPS spoofing functionality. Your location data does not leave your device, and is not used for anything else.</string>
     <string name="location_permission_for_ssid">Location permission required to set up preferred protocols and auto connect.</string>
     <string name="disclaimer">Disclaimer</string>
     <string name="location_permission">Location permission</string>
-
-    <!-- Features -->
     <string name="feature1">Servers in over 100 locations</string>
     <string name="feature2">Block ads and malware</string>
     <string name="feature3">No logging</string>
     <string name="feature4">Unlock streaming</string>
-
-    <!--Help -->
     <string name="knowledge_base">Knowledge Base</string>
     <string name="knowledge_base_description">All you need to know about Windscribe.</string>
     <string name="talk_to_garry">Talk to Garry</string>
@@ -309,17 +255,12 @@
     <string name="send_ticket_description">Stuck? Send us a ticket.</string>
     <string name="community_support">Community Support</string>
     <string name="community_support_description">Best places to help and get help from other users.</string>
-
-
-    <!--Send ticket -->
     <string name="how_to_send_ticket">Fill in the fields bellow and one of our support agents will personally get back to you very soon™</string>
     <string name="category">Category</string>
     <string name="email_reason_for_contact">So we can contact you, we won’t use  it for anything else</string>
     <string name="what_is_the_issue">What’s the issue?</string>
     <string name="message">Message</string>
     <string name="subject">Subject</string>
-
-    <!--Config -->
     <string name="edit_config_file">Edit Config file</string>
     <string name="name">name</string>
     <string name="save_credentials">Save credentials?</string>
@@ -327,26 +268,18 @@
     <string name="enter_credentials">Enter Credentials</string>
     <string name="connect">Connect</string>
     <string name="config_title" translatable="false">Config Title</string>
-
-    <!--Debug -->
     <string name="send_debug_log">Send Debug Log</string>
     <string name="send_ikev2_log">Send IKEv2 Log</string>
-
-    <!--Home -->
     <string name="failed">FAILED</string>
     <string name="next_in_up">"Next up in %d"</string>
     <string name="step_1_3">Step 1/3</string>
     <string name="step_2_3">Step 2/3</string>
     <string name="remove_from_favourites">Removed from favourites</string>
     <string name="config_added">Added to configs</string>
-
     <string name="app_background">App Background</string>
-    <string name="disconnected_lower_case">Disconnected</string>
-    <string name="connected_lower_case">Connected</string>
-    <string name="x_press_login">Lazy Login</string>
+    <string name="disconnected_lower_case">Disconnected </string>
+    <string name="connected_lower_case">Connected </string>
     <string name="other">OTHER</string>
-
-    <!-- About -->
     <string name="about">About</string>
     <string name="about_us">About Us</string>
     <string name="status">Status</string>
@@ -355,11 +288,6 @@
     <string name="blog">Blog</string>
     <string name="jobs">Jobs</string>
     <string name="software_licenses">Software Licenses</string>
-
-
-    <!-- ********** TV ************* -->
-
-    <!-- UPGRADE STRINGS -->
     <string name="benefit_unlimited_data">Unlimited Data</string>
     <string name="choose_plan">CHOOSE PLAN</string>
     <string name="monthly">MONTHLY</string>
@@ -367,33 +295,22 @@
     <string name="upgrade_title">You deserve more than limited privacy.</string>
     <string name="text_login">Login</string>
     <string name="text_sign_up">Sign up</string>
-
-    <!-- Log -->
     <string name="sending_debug_log">Sending debug log\nPlease wait&#8230;</string>
     <string name="app_log_submitted">Thanks! App log submitted.</string>
     <string name="log_submission_failed">Error submitting log file!</string>
-
-    <!-- Home -->
     <string name="add_your_email_address">Add your email address in case you forget your password. We’ll even give you 10GB for it.</string>
     <string name="locations">locations</string>
     <string name="notifications">Notifications</string>
-    <string name="support">Support</string>
+    <string name="support">Support</string>a
     <string name="support_content">Go to the address above on your phone or computer for all support related inquiries.</string>
     <string name="add_email_title">Add Email</string>
-
-    <!-- Upgrade -->
     <string name="upgradeNoData">Looks like you’re out of precious privacy</string>
     <string name="upgradeToUnlock">You deserve more than limited privacy</string>
     <string name="restore_purchase">Restore purchase</string>
     <string name="servers_in_over_60_countries_and_110_cities">Servers in over 60 countries and 110 cities</string>
     <string name="no_bandwidth_interruptions_stay_protected_forever">No bandwidth interruptions. Stay protected forever</string>
-
-
     <string name="skip">Skip</string>
     <string name="robert_detail">Blocks malware and ads on all your devices.</string>
-
-
-    <!-- Settings -->
     <string name="settings">Settings</string>
     <string name="sort_type">Order locations by</string>
     <string name="split_routing">Split routing</string>
@@ -407,8 +324,6 @@
     <string name="start_on_boot">Start on boot</string>
     <string name="split_routing_content">Choose which apps to exclude or include from Windscribe when connected</string>
     <string name="show_system_apps">Show system apps</string>
-
-    <!-- Login -->
     <string name="login_label">If you already have an account</string>
     <string name="ghost_account_sign_up">Sign Up or login to view your account details and safeguard your preferences</string>
     <string name="ghost_account_claim">Claim your account to prevent loss of pro status</string>
@@ -435,8 +350,6 @@
     <string name="support_url">windscribe.com/support</string>
     <string name="enter_code">Enter Code</string>
     <string name="enter">Enter</string>
-
-    <!-- Server list -->
     <string name="ping_time">%d MS</string>
     <string name="trying_next_protocol">"Trying next protocol in %d"</string>
     <string name="all">All</string>
@@ -449,11 +362,7 @@
     <string name="load_nothing_found">Nothing to see here</string>
     <string name="load_error">Error loading.</string>
     <string name="select_location">Please select a location first!</string>
-
-    <!-- Actions -->
     <string name="text_ok">OK</string>
-
-    <!--Robert -->
     <string name="robert_description">R.O.B.E.R.T. is a customizable server-side domain and IP blocking tool. Select the block lists you wish to apply on all your devices by toggling the switch.</string>
     <string name="learn_more">Learn More</string>
     <string name="manage_custom_rules">Manage Custom Rules</string>
@@ -465,14 +374,12 @@
     <string name="exclusive">Exclusive</string>
     <string name="inclusive">Inclusive</string>
     <string name="explain_me" translatable="false">Explain me!</string>
-    
     <string name="network_options_description">Windscribe will auto-disconnect when you join an unsecured wifi network.</string>
     <string name="auto_secure_new_networks">Auto-Secure new networks</string>
     <string name="auto_secure_new_networks_description">Mark all newly encountered networks as Secured.</string>
     <string name="auto_secure_description_secondary">Connect automatically on this Wi-Fi network to
 last chosen location.</string>
     <string name="preferred_protocol_description_secondary">Choose the best protocol for this network. This overrides all global connection settings.</string>
-    <!-- General-->
     <string name="location_order_description">Arrange the location list in ascending order of the alphabet, geography, or latency.</string>
     <string name="latency_display_description">Display latency as signal strength bars or in milliseconds.</string>
     <string name="language_description">Localize Windscribe to supported languages.</string>
@@ -480,13 +387,11 @@ last chosen location.</string>
     <string name="notification_stats_description">Show traffic stats in the notification.</string>
     <string name="location_load_description">Display the location load as a bar. The shorter the bar, the lesser the load on the location (with respect to the location\'s total capacity).</string>
     <string name="haptic_feedback_description">Physical responses(Vibration) to user actions</string>
-    <!-- Connection-->
     <string name="connection_mode_description">Choose whether to let Windscribe automatically pick a protocol / port combination most optimal for your setup, or to manually do it yourself.</string>
     <string name="packet_size_description">Choose whether to let Windscribe decide the MTU for your connection, or to manually override.</string>
     <string name="allow_lan_description">Choose whether to allow access to resources on the same network (like file servers, printers, media boxes, etc.) while connected to Windscribe.</string>
     <string name="keep_alive_description">Sends NAT keepalive packets regularly to its peer to keep the NAT session alive, so that the peer can access the device(IKEv2 Only)</string>
     <string name="appearance_description">Light or Dark. Choose a side, and choose wisely.</string>
-    -->
     <string name="auto_connect_on_boot_description">Automatically connect to the last connected location when the device starts.</string>
     <string name="gps_spoofing_description">Spoof your device\'s GPS coordinates.</string>
     <string name="lazy_login_description">Login into Windscribe\'s TV apps with a short code.</string>
@@ -521,4 +426,25 @@ last chosen location.</string>
     <string name="emergency_connect">Emergency Connect</string>
     <string name="emergency_connect_description">Can’t access Windscribe? Connect to our servers to block your restrictive network.</string>
     <string name="emergency_connected_description">You are now connected to Windscribe server. Try to login again.</string>
+    <string name="current_network">CURRENT NETWORK</string>
+    <string name="other_networks">OTHER NETWORKS</string>
+    <string name="required">(Required)</string>
+    <string name="send">Send</string>
+    <string name="iKEV2_description">IKEv2 is an IPsec based tunneling protocol.</string>
+    <string name="Udp_description">Balanced speed and security.</string>
+    <string name="Tcp_description">Use it if OpenVPN UDP fails.</string>
+    <string name="Stealth_description">Disguises your traffic as HTTPS traffic with TLS</string>
+    <string name="Wireguard_description">Extremely simple yet fast and modern VPN protocol.</string>
+    <string name="WSTunnel_description">Wraps your HTTPS traffic with web sockets.</string>
+    <string name="remove_it_from_favourites">Remove from favourites</string>
+    <string name="unavailable">Unavailable</string>
+    <string name="refer_for_data">Refer for Data</string>
+    <string name="email_confirmation_sent_successfully">Email confirmation sent successfully.</string>
+    <string name="error_sending_email">Error sending email.</string>
+    <string name="added_email_successfully">Added email successfully.</string>
+    <string name="file_path_will_show_here">File path will show here</string>
+    <string name="reddit">Reddit</string>
+    <string name="discord">Discord</string>
+    <string name="app_requires_background_location_permission">App requires background location permission to access WIFI SSID on Android 11+. If you wish to use this feature, press Okay and select \"Allow all the time\" from the permission dialog.</string>
+    <string name="error">"Error "</string>
 </resources>

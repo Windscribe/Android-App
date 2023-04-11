@@ -1005,7 +1005,7 @@
         <item name="android:textColor">?attr/requiredLabelColor</item>
         <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
         <item name="android:textSize">@dimen/text_size_16</item>
-        <item name="android:text">(Required)</item>
+        <item name="android:text">@string/required</item>
         <item name="android:includeFontPadding">false</item>
         <item name="android:layout_marginStart">4dp</item>
         <item name="android:layout_marginEnd">@dimen/margin_16</item>

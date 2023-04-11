@@ -469,10 +469,9 @@ class SettingsPresenterImp @Inject constructor(
     }
 
     override fun setupLayoutForDebugTab() {
-        settingView.setDebugLogProgress("Loading logs..", "")
-        interactor.getCompositeDisposable().add(
-            Single.fromCallable { interactor.getPartialLog() }
-                .subscribeOn(Schedulers.io())
+        settingView.setDebugLogProgress(interactor.getResourceString(R.string.loading), "")
+        interactor.getCompositeDisposable()
+            .add(Single.fromCallable { interactor.getPartialLog() }.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableSingleObserver<List<String>>() {
                     override fun onError(e: Throwable) {
