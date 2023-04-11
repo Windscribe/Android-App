@@ -80,7 +80,7 @@ class AddEmailPresenterImpl @Inject constructor(
                                         }
                                     }
                                     is CallResult.Success -> {
-                                        emailView.showToast("Added email successfully...")
+                                        emailView.showToast(interactor.getResourceString(R.string.added_email_successfully))
                                         logger.info("Email address added successfully...")
                                         emailView.gotoWindscribeActivity()
                                     }

@@ -46,7 +46,7 @@ class ConfirmEmailPresenterImp @Inject constructor(
                 .observeOn(AndroidSchedulers.mainThread()).subscribeWith(object :
                     DisposableSingleObserver<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>>() {
                     override fun onError(e: Throwable) {
-                        confirmEmailView.showToast("Error sending email..")
+                        confirmEmailView.showToast(interactor.getResourceString(R.string.error_sending_email))
                         confirmEmailView.showEmailConfirmProgress(false)
                     }
 
@@ -60,7 +60,7 @@ class ConfirmEmailPresenterImp @Inject constructor(
                                 mPresenterLog.debug("Server returned error. $result")
                             }
                             is CallResult.Success -> {
-                                confirmEmailView.showToast("Email confirmation sent successfully...")
+                                confirmEmailView.showToast(interactor.getResourceString(R.string.email_confirmation_sent_successfully))
                                 mPresenterLog.info("Email confirmation sent successfully...")
                                 confirmEmailView.finishActivity()
                             }
