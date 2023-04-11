@@ -261,7 +261,7 @@
         <item name="android:layout_height">@dimen/reg_56</item>
         <item name="android:background">@drawable/login_main_btn_background</item>
         <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
-        <item name="android:text">@string/text_login</item>
+        <item name="android:text">@string/login</item>
         <item name="android:textColor">@color/colorWhite</item>
         <item name="android:textSize">@dimen/text_size_16</item>
     </style>

@@ -55,9 +55,7 @@ object UiUtil {
 
     fun showBackgroundLocationPermissionAlert(context: AppCompatActivity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            showAlertDialog(
-                "App requires background location permission to access WIFI SSID on Android 11+. If you wish to use this feature, press Okay and select \"Allow all the time\" from the permission dialog.",
-            ) {
+            showAlertDialog(context.getString(R.string.app_requires_background_location_permission)) {
                 context.requestPermissions(
                     arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
                     REQUEST_BACKGROUND_PERMISSION

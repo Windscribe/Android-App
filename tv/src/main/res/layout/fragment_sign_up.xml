@@ -167,7 +167,7 @@
             android:layout_width="wrap_content"
             android:layout_marginStart="@dimen/reg_40dp"
             android:layout_marginEnd="@dimen/reg_40dp"
-            android:text="@string/back_uppercase"
+            android:text="@string/back"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
 

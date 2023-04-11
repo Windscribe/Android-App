@@ -9,9 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
 
-const val TITLE = "Error"
-const val POSITIVE_BUTTON_LABEL = "OK"
-const val NEGATIVE_BUTTON_LABEL = "Cancel"
+
 fun showRetryDialog(message: String, retryCallBack: () -> Unit, cancelCallBack: () -> Unit) {
     var autoDismiss = true
     safeDialog {
@@ -27,11 +25,11 @@ fun showRetryDialog(message: String, retryCallBack: () -> Unit, cancelCallBack: 
         }
         with(builder) {
             setPositiveButton(
-                POSITIVE_BUTTON_LABEL,
+                appContext.getString(R.string.ok),
                 DialogInterface.OnClickListener(function = listener)
             )
             setNegativeButton(
-                NEGATIVE_BUTTON_LABEL,
+                appContext.getString(R.string.cancel),
                 DialogInterface.OnClickListener(function = listener)
             )
             setOnCancelListener { cancelCallBack() }
@@ -45,7 +43,11 @@ fun showRetryDialog(message: String, retryCallBack: () -> Unit, cancelCallBack: 
     }
 }
 
-fun createDialogBuilder(activity: Activity, message: String, title: String = TITLE): AlertDialog.Builder {
+fun createDialogBuilder(
+    activity: Activity,
+    message: String,
+    title: String = appContext.getString(R.string.error)
+): AlertDialog.Builder {
     val builder = AlertDialog.Builder(activity, R.style.AlertDialog)
     val view: View = LayoutInflater.from(activity).inflate(R.layout.alert_dialog_view, null)
     view.findViewById<TextView>(R.id.message).text = message
@@ -63,7 +65,10 @@ fun showAlertDialog(message: String, callBack: () -> Unit) {
                 callBack()
         }
         with(builder) {
-            setPositiveButton(POSITIVE_BUTTON_LABEL, DialogInterface.OnClickListener(function = listener))
+            setPositiveButton(
+                appContext.getString(R.string.ok),
+                DialogInterface.OnClickListener(function = listener)
+            )
             show()
         }
     }
@@ -76,13 +81,22 @@ fun showErrorDialog(message: String) {
             dialog.dismiss()
         }
         with(builder) {
-            setNeutralButton(POSITIVE_BUTTON_LABEL, DialogInterface.OnClickListener(function = listener))
+            setNeutralButton(
+                appContext.getString(R.string.ok),
+                DialogInterface.OnClickListener(function = listener)
+            )
             show()
         }
     }
 }
 
-fun showAlertDialog(title: String, message: String, positionButtonLabel: String = POSITIVE_BUTTON_LABEL, negativeButtonLabel: String = NEGATIVE_BUTTON_LABEL, retryCallBack: () -> Unit) {
+fun showAlertDialog(
+    title: String,
+    message: String,
+    positionButtonLabel: String = appContext.getString(R.string.ok),
+    negativeButtonLabel: String = appContext.getString(R.string.cancel),
+    retryCallBack: () -> Unit
+) {
     safeDialog {
         val builder = createDialogBuilder(it, message, title)
         val listener = { dialog: DialogInterface, which: Int ->
@@ -92,7 +106,10 @@ fun showAlertDialog(title: String, message: String, positionButtonLabel: String 
             }
         }
         with(builder) {
-            setPositiveButton(positionButtonLabel, DialogInterface.OnClickListener(function = listener))
+            setPositiveButton(
+                positionButtonLabel,
+                DialogInterface.OnClickListener(function = listener)
+            )
             setNegativeButton(negativeButtonLabel, DialogInterface.OnClickListener(function = listener))
             show()
         }

@@ -97,7 +97,6 @@
     <string name="remove_vpn_query">Remove the VPN Profile \'%s\'?</string>
     <string name="tun_error_helpful">On some custom ICS images the permission on /dev/tun might be wrong, or the tun module might be missing completely. For CM9 images try the fix ownership option under general settings</string>
     <string name="tun_open_error">Failed to open the tun interface</string>
-    <string name="error">"Error: "</string>
     <string name="clear">Clear</string>
     <string name="last_openvpn_tun_config">Opening tun interface:</string>
     <string name="local_ip_info">Local IPv4: %1$s/%2$d IPv6: %3$s MTU: %4$d</string>
