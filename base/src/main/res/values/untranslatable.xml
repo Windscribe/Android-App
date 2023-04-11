@@ -25,8 +25,6 @@
     <string name="latency" translatable="false">Latency</string>
     <string name="light" translatable="false">Light</string>
     <string name="dark" translatable="false">Dark</string>
-    <string name="reddit" translatable="false">Reddit</string>
-    <string name="discord" translatable="false">Discord</string>
     <string name="OFF" translatable="false">OFF</string>
     <string name="empty_dash" translatable="false">--</string>
     <string name="image_description" translatable="false">Image</string>
@@ -57,7 +55,6 @@
     <string name="session_ipv6string" translatable="false">%1$s - %3$s, %2$s</string>
     <string name="warn_no_dns" translatable="false">No DNS servers being used. Name resolution may not work. Consider setting custom DNS Servers. Please also note that Android will keep using your proxy settings specified for your mobile/Wi-Fi connection when no DNS servers are set.</string>
     <string name="tun_open_error" translatable="false">Failed to open the tun interface</string>
-    <string name="error" translatable="false">"Error: "</string>
     <string name="app_no_longer_exists" translatable="false">Package %s is no longer installed, removing it from app allow/disallow list</string>
     <string name="no_allowed_app" translatable="false">No allowed app added. Adding ourselves (%s) to have at least one app in the allowed app list to not allow all apps</string>
     <string name="allowed_vpn_apps_info" translatable="false">Allowed VPN apps: %1$s</string>

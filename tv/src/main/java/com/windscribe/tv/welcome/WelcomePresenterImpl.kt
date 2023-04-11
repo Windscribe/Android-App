@@ -431,29 +431,28 @@ class WelcomePresenterImpl @Inject constructor(
     }
 
     private fun prepareLoginRegistrationDashboard(sessionMap: Map<String, String>) {
-        welcomeView.updateCurrentProcess("Getting session")
-        interactor.getCompositeDisposable().add(
-            interactor.getApiCallManager().getSessionGeneric(sessionMap)
+        welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_session))
+        interactor.getCompositeDisposable()
+            .add(interactor.getApiCallManager().getSessionGeneric(sessionMap)
                 .flatMapCompletable { sessionResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> ->
-                    Completable.fromSingle(
-                        Single.fromCallable {
-                            sessionResponse.dataClass?.let {
-                                if (interactor.getAppPreferenceInterface().getDeviceUUID(it.userName) == null) {
-                                    logger.debug("No device id is found for the current user, generating and saving UUID")
-                                    interactor.getAppPreferenceInterface().setDeviceUUID(it.userName, UUID.randomUUID().toString())
-                                }
-                                interactor.getUserRepository().reload(sessionResponse.dataClass)
+                    Completable.fromSingle(Single.fromCallable {
+                        sessionResponse.dataClass?.let {
+                            if (interactor.getAppPreferenceInterface()
+                                    .getDeviceUUID(it.userName) == null) {
+                                logger.debug("No device id is found for the current user, generating and saving UUID")
+                                interactor.getAppPreferenceInterface()
+                                    .setDeviceUUID(it.userName, UUID.randomUUID().toString())
                             }
-                            true
+                            interactor.getUserRepository().reload(sessionResponse.dataClass)
                         }
-                    )
+                        true
+                    })
                 }
-                .doOnComplete { welcomeView.updateCurrentProcess("Getting user credentials") }
+                .doOnComplete { welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_server_credentials)) }
                 .andThen(interactor.getConnectionDataUpdater().update())
-                .doOnComplete { welcomeView.updateCurrentProcess("Getting server list") }
+                .doOnComplete { welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_server_list)) }
                 .andThen(interactor.getServerListUpdater().update())
                 .andThen(updateStaticIps())
-                .doOnComplete { welcomeView.updateCurrentProcess("Preparing user data") }
                 .andThen(Completable.fromAction { interactor.getPreferenceChangeObserver().postCityServerChange() })
                 .andThen(interactor.updateUserData())
                 .onErrorResumeNext { throwable: Throwable ->
