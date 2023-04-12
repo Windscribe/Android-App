@@ -212,10 +212,12 @@ open class Windscribe : MultiDexApplication() {
     }
 
     private fun setupConscrypt() {
-        Security.insertProviderAt(
-            Conscrypt.newProviderBuilder().defaultTlsProtocol("TLSv1.3").build(), 1
-        )
-        Security.removeProvider("AndroidOpenSSL")
+        if (VERSION.SDK_INT >= VERSION_CODES.O) {
+            Security.insertProviderAt(
+                Conscrypt.newProviderBuilder().defaultTlsProtocol("TLSv1.3").build(), 1
+            )
+            Security.removeProvider("AndroidOpenSSL")
+        }
     }
 
     companion object {
