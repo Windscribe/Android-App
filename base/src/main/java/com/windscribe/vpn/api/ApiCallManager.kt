@@ -3,6 +3,7 @@
  */
 package com.windscribe.vpn.api
 
+import android.os.Build
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.windscribe.vpn.BuildConfig
@@ -308,7 +309,7 @@ open class ApiCallManager @Inject constructor(
                         domainFailOverManager.setDomainBlocked(
                             DomainType.Hashed3, apiCallType
                         )
-                        return@onErrorResumeNext (if (BuildConfig.DEV || BuildConfig.ECH_DOMAIN.isEmpty()) {
+                        return@onErrorResumeNext (if (BuildConfig.DEV || BuildConfig.ECH_DOMAIN.isEmpty() || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
                             throw WindScribeException("Ech domain disabled.")
                         } else {
                             callOrSkip(
