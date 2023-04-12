@@ -93,24 +93,25 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/image_description"
-        android:visibility="gone"
-        android:padding="4dp"
+        android:visibility="visible"
+        android:layout_marginStart="@dimen/reg_8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:src="@drawable/ic_change_protocol_arrow"
-        app:layout_constraintBottom_toBottomOf="@id/tv_port"
-        app:layout_constraintStart_toEndOf="@id/tv_port"
-        app:layout_constraintTop_toTopOf="@id/tv_port" />
+        app:layout_constraintStart_toEndOf="@id/img_preferred_protocol_status" />
 
     <!--preferred protocol on-->
     <ImageView
         android:id="@+id/img_preferred_protocol_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="@dimen/reg_12dp"
         android:contentDescription="@string/image_description"
         android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="@id/tv_connection_state"
-        app:layout_constraintStart_toEndOf="@id/tv_port"
-        app:layout_constraintTop_toTopOf="@id/tv_connection_state" />
+        android:src="@drawable/ic_preferred_protocol_status_disabled"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/tv_port" />
 
     <!--divider view-->
     <ImageView
