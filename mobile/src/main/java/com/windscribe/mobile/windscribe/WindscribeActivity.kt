@@ -2039,8 +2039,8 @@ class WindscribeActivity :
         tvDecoy?.visibility = state.decoyTrafficBadgeVisibility
         decoyDivider?.visibility = state.decoyTrafficBadgeVisibility
         decoyArrow?.visibility = state.decoyTrafficBadgeVisibility
+        preferredProtocolStatus?.visibility = state.preferredProtocolStatusVisibility
         if (state.decoyTrafficBadgeVisibility != VISIBLE && state is ConnectedState) {
-            preferredProtocolStatus?.visibility = View.GONE
             changeProtocolArrow?.visibility = VISIBLE
         } else {
             changeProtocolArrow?.visibility = GONE
