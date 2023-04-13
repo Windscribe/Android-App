@@ -242,7 +242,7 @@ public class SearchFragment extends Fragment {
     private void setUpCustomSearchBox(View view) {
         // Search view
         searchView.setIconifiedByDefault(false);
-        searchView.setQueryHint("Search");
+        searchView.setQueryHint(getString(R.string.search));
         searchView.setFocusable(false);
         // Filter results on text change
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
