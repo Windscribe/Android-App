@@ -11,7 +11,6 @@ interface GeneralSettingsPresenter {
     val savedLocale: String
     fun onConnectedFlagEditClicked(requestCode: Int)
     fun onConnectedFlagPathPicked(path: String)
-    fun onCustomFlagToggleButtonClicked(value: String)
     fun onDestroy()
     fun onDisConnectedFlagPathPicked(path: String)
     fun onDisconnectedFlagEditClicked(requestCode: Int)
@@ -26,4 +25,5 @@ interface GeneralSettingsPresenter {
     fun resizeAndSaveBitmap(inputStream: InputStream, outputStream: OutputStream)
     fun setTheme(context: Context)
     fun setupInitialLayout()
+    fun onAppBackgroundValueChanged(value: String)
 }

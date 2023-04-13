@@ -1,9 +1,6 @@
 package com.windscribe.mobile.custom_view.preferences
 
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.View
-import android.view.inputmethod.EditorInfo
 import android.widget.*
 import com.windscribe.mobile.R
 
@@ -15,6 +12,7 @@ class SplitRoutingModeView(private val childView: View) : BaseView(childView) , 
         fun onModeSelect(mode: String)
     }
     var delegate: Delegate? = null
+    var values: Array<String>? = null
 
     init {
         spinner = view.findViewById(R.id.spinner)
@@ -24,21 +22,23 @@ class SplitRoutingModeView(private val childView: View) : BaseView(childView) , 
     }
 
     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        view?.findViewById<TextView>(R.id.tv_drop_down)?. text = ""
+        view?.findViewById<TextView>(R.id.tv_drop_down)?.text = ""
         spinner?.selectedItem.toString().let {
-            delegate?.onModeSelect(it)
+            delegate?.onModeSelect(values?.get(position) ?: "")
             current?.text = it
         }
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {}
 
-    fun setAdapter(savedMode: String, modes: Array<String>) {
-        val modesAdapter: ArrayAdapter<String> = ArrayAdapter<String>(childView.context, R.layout.drop_down_layout,
-                R.id.tv_drop_down, modes)
+    fun setAdapter(selectedValues: String, values: Array<String>, localizeValues: Array<String>) {
+        this.values = values
+        val modesAdapter: ArrayAdapter<String> = ArrayAdapter<String>(
+            childView.context, R.layout.drop_down_layout, R.id.tv_drop_down, localizeValues
+        )
         spinner?.adapter = modesAdapter
         spinner?.isSelected = false
-        spinner?.setSelection(modesAdapter.getPosition(savedMode))
-        current?.text = savedMode
+        spinner?.setSelection(values.indexOf(selectedValues))
+        current?.text = selectedValues
     }
 }

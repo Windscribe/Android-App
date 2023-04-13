@@ -31,7 +31,6 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.DISABLED_MODE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.EXCLUSIVE_MODE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.INCLUSIVE_MODE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.LAN_ALLOW
-import java.lang.ClassCastException
 
 class ConnectionFragment : Fragment() {
     // Boot start
@@ -185,12 +184,11 @@ class ConnectionFragment : Fragment() {
     fun setPortAdapter(savedPort: String, ports: List<String>) {
         val portAdapter = MenuAdapter(ports, savedPort)
         portAdapter.setListener(object : MenuItemSelectListener {
-            override fun onItemSelected(selectedItem: String?) {
+            override fun onItemSelected(selectedItemKey: String?) {
                 selectedProtocol?.let { protocol ->
-                    selectedItem?.let {
+                    selectedItemKey?.let {
                         listener?.onPortSelected(
-                            protocol,
-                            selectedItem
+                            protocol, selectedItemKey
                         )
                     }
                 }
@@ -205,10 +203,10 @@ class ConnectionFragment : Fragment() {
         selectedProtocol = savedProtocol
         val protocolAdapter = MenuAdapter(protocols, savedProtocol)
         protocolAdapter.setListener(object : MenuItemSelectListener {
-            override fun onItemSelected(selectedItem: String?) {
-                selectedProtocol = selectedItem
-                selectedItem?.let {
-                    listener?.onProtocolSelected(selectedItem)
+            override fun onItemSelected(selectedItemKey: String?) {
+                selectedProtocol = selectedItemKey
+                selectedItemKey?.let {
+                    listener?.onProtocolSelected(selectedItemKey)
                 }
             }
         })
