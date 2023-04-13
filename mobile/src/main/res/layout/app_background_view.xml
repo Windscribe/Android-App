@@ -165,7 +165,7 @@
                 android:id="@+id/first_item_description"
                 style="@style/MenuActionTitle"
                 android:layout_width="0dp"
-                android:text="File path will show here"
+                android:text="@string/file_path_will_show_here"
                 android:ellipsize="start"
                 android:singleLine="true"
                 android:gravity="left"

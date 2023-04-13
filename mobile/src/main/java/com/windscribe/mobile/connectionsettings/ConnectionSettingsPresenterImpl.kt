@@ -190,7 +190,13 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
             interactor.getAppPreferenceInterface().isKeepAliveModeAuto
         if (!keepAliveSizeModeAuto) {
             interactor.getAppPreferenceInterface().isKeepAliveModeAuto = true
-            connSettingsView.setKeepAliveModeAdapter("Auto", arrayOf("Auto", "Manual"))
+            connSettingsView.setKeepAliveModeAdapter(
+                interactor.getResourceString(R.string.auto),
+                arrayOf(
+                    interactor.getResourceString(R.string.auto),
+                    interactor.getResourceString(R.string.manual)
+                )
+            )
         }
     }
 
@@ -200,7 +206,13 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
         if (keepAliveSizeModeAuto) {
             setKeepAlive(interactor.getAppPreferenceInterface().keepAlive)
             interactor.getAppPreferenceInterface().isKeepAliveModeAuto = false
-            connSettingsView.setKeepAliveModeAdapter("Manual", arrayOf("Auto", "Manual"))
+            connSettingsView.setKeepAliveModeAdapter(
+                interactor.getResourceString(R.string.manual),
+                arrayOf(
+                    interactor.getResourceString(R.string.auto),
+                    interactor.getResourceString(R.string.manual)
+                )
+            )
         }
     }
 
@@ -367,21 +379,44 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
         val isKeepAliveModeAuto =
             interactor.getAppPreferenceInterface().isKeepAliveModeAuto
         if (isKeepAliveModeAuto) {
-            connSettingsView.setKeepAliveModeAdapter("Auto", arrayOf("Auto", "Manual"))
+            connSettingsView.setKeepAliveModeAdapter(
+                interactor.getResourceString(R.string.auto),
+                arrayOf(
+                    interactor.getResourceString(R.string.auto),
+                    interactor.getResourceString(R.string.manual)
+                )
+            )
         } else {
-            connSettingsView.setKeepAliveModeAdapter("Manual", arrayOf("Auto", "Manual"))
+            connSettingsView.setKeepAliveModeAdapter(
+                interactor.getResourceString(R.string.manual),
+                arrayOf(
+                    interactor.getResourceString(R.string.auto),
+                    interactor.getResourceString(R.string.manual)
+                )
+            )
         }
         val keepAliveTime = interactor.getAppPreferenceInterface().keepAlive
         connSettingsView.setKeepAlive(keepAliveTime)
     }
 
     private fun setupLayoutBasedOnConnectionMode() {
-        setGpsSpoofingMenu()
-        val savedConnectionMode = interactor.getSavedConnectionMode()
-        connSettingsView.setupConnectionModeAdapter(
-            savedConnectionMode,
-            arrayOf("Auto", "Manual")
-        )
+        if (interactor.getSavedConnectionMode() == CONNECTION_MODE_AUTO) {
+            connSettingsView.setupConnectionModeAdapter(
+                interactor.getResourceString(R.string.auto),
+                arrayOf(
+                    interactor.getResourceString(R.string.auto),
+                    interactor.getResourceString(R.string.manual)
+                )
+            )
+        } else {
+            connSettingsView.setupConnectionModeAdapter(
+                interactor.getResourceString(R.string.manual),
+                arrayOf(
+                    interactor.getResourceString(R.string.auto),
+                    interactor.getResourceString(R.string.manual)
+                )
+            )
+        }
         setProtocolAdapter()
     }
 
@@ -389,9 +424,21 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
         val packetSizeModeAuto =
             interactor.getAppPreferenceInterface().isPackageSizeModeAuto
         if (packetSizeModeAuto) {
-            connSettingsView.setupPacketSizeModeAdapter("Auto", arrayOf("Auto", "Manual"))
+            connSettingsView.setupPacketSizeModeAdapter(
+                interactor.getResourceString(R.string.auto),
+                arrayOf(
+                    interactor.getResourceString(R.string.auto),
+                    interactor.getResourceString(R.string.manual)
+                )
+            )
         } else {
-            connSettingsView.setupPacketSizeModeAdapter("Manual", arrayOf("Auto", "Manual"))
+            connSettingsView.setupPacketSizeModeAdapter(
+                interactor.getResourceString(R.string.manual),
+                arrayOf(
+                    interactor.getResourceString(R.string.auto),
+                    interactor.getResourceString(R.string.manual)
+                )
+            )
         }
         val packetSize = interactor.getAppPreferenceInterface().packetSize
         connSettingsView.setPacketSize(packetSize.toString())
@@ -426,17 +473,17 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
         get() {
             // check network first
             if (interactor.getVpnConnectionStateManager().isVPNConnected()) {
-                connSettingsView.showToast("Disconnect from VPN")
+                connSettingsView.showToast(interactor.getResourceString(R.string.disconnect_from_vpn))
                 return
             }
             val manager = appContext
                 .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             if (manager.activeNetworkInfo == null || manager.activeNetworkInfo?.isConnected != true) {
-                connSettingsView.showToast("No Network Detected")
+                connSettingsView.showToast(interactor.getResourceString(R.string.no_network_detected))
                 return
             }
             connSettingsView.packetSizeDetectionProgress(true)
-            connSettingsView.setPacketSize("Auto detecting packet size...")
+            connSettingsView.setPacketSize(interactor.getResourceString(R.string.auto_detecting_packet_size))
             var prop: LinkProperties? = null
             val iFace: NetworkInterface
             val networks = manager.allNetworks
@@ -602,14 +649,14 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
     private fun showMtuFailed() {
         connSettingsView.setPacketSize("")
         connSettingsView.packetSizeDetectionProgress(false)
-        connSettingsView.showToast("Auto packet size detection failed.")
+        connSettingsView.showToast(interactor.getResourceString(R.string.auto_package_size_detecting_failed))
         logger.info("Error getting optimal MTU size.")
     }
 
     private fun showMtuResult() {
         connSettingsView.setPacketSize(currentPoint.toString())
         interactor.getAppPreferenceInterface().packetSize = currentPoint
-        connSettingsView.showToast("Packet size detected successfully.")
+        connSettingsView.showToast(interactor.getResourceString(R.string.package_size_detected_successfully))
         connSettingsView.packetSizeDetectionProgress(false)
         currentPoint = 1500
     }

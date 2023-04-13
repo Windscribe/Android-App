@@ -491,7 +491,11 @@ class SettingsPresenterImp @Inject constructor(
         // Setup language settings
         settingView.setupLanguageAdapter(savedLanguage, interactor.getLanguageList())
         val savedSort = interactor.getAppPreferenceInterface().selection
-        settingView.setupSortAdapter(savedSort, interactor.getSortList())
+        settingView.setupSortAdapter(
+            interactor.getStringArray(R.array.order_list),
+            savedSort,
+            interactor.getStringArray(R.array.order_list_keys)
+        )
     }
 
     override fun showLayoutBasedOnUserType() {

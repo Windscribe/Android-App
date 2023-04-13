@@ -233,7 +233,11 @@ class SplitTunnelingPresenterImpl @Inject constructor(
 
     private fun setupSplitRoutingMode() {
         val mode = interactor.getAppPreferenceInterface().splitRoutingMode
-        splitTunnelView.setSplitRoutingModeAdapter(splitTunnelView.splitRoutingModes, mode)
+        splitTunnelView.setSplitRoutingModeAdapter(
+            splitTunnelView.splitRoutingModes,
+            mode,
+            arrayOf(PreferencesKeyConstants.EXCLUSIVE_MODE, PreferencesKeyConstants.INCLUSIVE_MODE)
+        )
         if (mode == PreferencesKeyConstants.EXCLUSIVE_MODE) {
             splitTunnelView.setSplitModeTextView(mode, R.string.feature_tunnel_mode_exclusive)
         } else {
