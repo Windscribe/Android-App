@@ -35,6 +35,7 @@
             android:paddingEnd="@dimen/reg_48dp"
             android:paddingStart="@dimen/reg_16dp"
             app:closeIcon="@null"
+            android:hint="@string/search"
             app:iconifiedByDefault="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
