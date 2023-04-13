@@ -120,7 +120,9 @@ class SendTicketActivity : BaseActivity(), SendTicketView, TextWatcher {
     fun onQueryTypeSelected() {
         val queryType = queryTypeSpinner.selectedItem.toString()
         currentQueryType.text = queryType
-        presenter.onQueryTypeSelected(QueryType.valueOf(queryType))
+        QueryType.values()[queryTypeSpinner.selectedItemPosition].let {
+            presenter.onQueryTypeSelected(it)
+        }
     }
 
     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
@@ -178,7 +180,8 @@ class SendTicketActivity : BaseActivity(), SendTicketView, TextWatcher {
         val queryAdapter = ArrayAdapter(
             this,
             R.layout.drop_down_layout,
-            R.id.tv_drop_down, QueryType.values()
+            R.id.tv_drop_down,
+            resources.getStringArray(R.array.query_types)
         )
         queryTypeSpinner.adapter = queryAdapter
     }
