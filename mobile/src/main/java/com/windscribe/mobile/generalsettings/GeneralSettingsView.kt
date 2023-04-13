@@ -30,13 +30,33 @@ interface GeneralSettingsView {
     fun setLanguageTextView(language: String)
     fun setLatencyType(latencyType: String)
     fun setSelectionTextView(selection: String)
-    fun setThemeTextView(theme: String)
-    fun setupCustomFlagAdapter(saved: String, options: Array<String>)
+    fun reloadApp()
+    fun setupCustomFlagAdapter(
+        localiseValues: Array<String>,
+        selectedKey: String,
+        keys: Array<String>
+    )
+
     fun setupHapticToggleImage(ic_toggle_button_off: Int)
-    fun setupLanguageAdapter(savedLanguage: String, language: Array<String>)
-    fun setupLatencyAdapter(savedLatency: String, latencyTypes: Array<String>)
+    fun setupLanguageAdapter(
+        localiseValues: Array<String>,
+        selectedKey: String,
+        keys: Array<String>
+    )
+
+    fun setupLatencyAdapter(
+        localiseValues: Array<String>,
+        selelctedKey: String,
+        keys: Array<String>
+    )
+
     fun setupLocationHealthToggleImage(image: Int)
     fun setupNotificationToggleImage(ic_toggle_button_off: Int)
-    fun setupSelectionAdapter(savedSelection: String, selections: Array<String>)
-    fun setupThemeAdapter(savedTheme: String, themeList: Array<String>)
+    fun setupSelectionAdapter(
+        localiseValues: Array<String>,
+        selectedKey: String,
+        keys: Array<String>
+    )
+
+    fun setupThemeAdapter(localiseValues: Array<String>, selectedKey: String, keys: Array<String>)
 }

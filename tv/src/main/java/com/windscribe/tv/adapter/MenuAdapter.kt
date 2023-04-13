@@ -13,31 +13,36 @@ import com.windscribe.tv.adapter.MenuAdapter.PortHolder
 import com.windscribe.tv.serverlist.customviews.PreferenceItem
 import com.windscribe.tv.serverlist.customviews.State
 
-class MenuAdapter(menuItems: List<String>, currentlySelectItem: String) :
+class MenuAdapter(localiseValues: List<String>, selectedKey: String, keys: List<String>? = null) :
     RecyclerView.Adapter<PortHolder>() {
     inner class PortHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val labelView: PreferenceItem = itemView.findViewById(R.id.label)
         fun bind(item: String) {
             labelView.text = item
-            if (currentlySelectItem == item) {
+            var itemKey = item
+            if (keys != null) {
+                itemKey = keys[localiseValues.indexOf(item)]
+            }
+            if (selectedItemKey == itemKey) {
                 labelView.setState(State.MenuButtonState.NotSelected)
                 labelView.setState(State.MenuButtonState.Selected)
             } else {
                 labelView.setState(State.MenuButtonState.NotSelected)
             }
-            labelView.setOnClickListener { setCurrentlySelectItem(item) }
+            labelView.setOnClickListener { setCurrentlySelectItem(itemKey) }
         }
     }
 
     interface MenuItemSelectListener {
-        fun onItemSelected(selectedItem: String?)
+        fun onItemSelected(selectedItemKey: String?)
     }
 
-    private var currentlySelectItem: String
+    private var selectedItemKey: String
     private var listener: MenuItemSelectListener? = null
-    private val menuItems: List<String>
+    private val localiseValues: List<String>
+    private val keys: List<String>?
     override fun getItemCount(): Int {
-        return menuItems.size
+        return localiseValues.size
     }
 
     override fun getItemId(position: Int): Long {
@@ -45,7 +50,7 @@ class MenuAdapter(menuItems: List<String>, currentlySelectItem: String) :
     }
 
     override fun onBindViewHolder(portHolder: PortHolder, i: Int) {
-        portHolder.bind(menuItems[i])
+        portHolder.bind(localiseValues[i])
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): PortHolder {
@@ -55,10 +60,10 @@ class MenuAdapter(menuItems: List<String>, currentlySelectItem: String) :
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setCurrentlySelectItem(currentlySelectItem: String) {
-        this.currentlySelectItem = currentlySelectItem
+    fun setCurrentlySelectItem(selectedKey: String) {
+        this.selectedItemKey = selectedKey
         notifyDataSetChanged()
-        listener?.onItemSelected(currentlySelectItem)
+        listener?.onItemSelected(selectedKey)
     }
 
     fun setListener(listener: MenuItemSelectListener?) {
@@ -67,7 +72,8 @@ class MenuAdapter(menuItems: List<String>, currentlySelectItem: String) :
 
     init {
         setHasStableIds(true)
-        this.menuItems = menuItems
-        this.currentlySelectItem = currentlySelectItem
+        this.localiseValues = localiseValues
+        this.keys = keys
+        this.selectedItemKey = selectedKey
     }
 }

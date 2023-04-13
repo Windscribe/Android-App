@@ -325,12 +325,18 @@ class ActivityInteractorImpl(
     }
 
     override fun getRateAppPreference(): Int {
-        return this.preferenceHelper
-            .getResponseInt(RateDialogConstants.CURRENT_STATUS_KEY, RateDialogConstants.STATUS_DEFAULT)
+        return this.preferenceHelper.getResponseInt(
+                RateDialogConstants.CURRENT_STATUS_KEY,
+                RateDialogConstants.STATUS_DEFAULT
+            )
     }
 
     override fun getResourceString(resourceId: Int): String {
         return Windscribe.appContext.resources.getString(resourceId)
+    }
+
+    override fun getStringArray(resourceId: Int): Array<String> {
+        return Windscribe.appContext.resources.getStringArray(resourceId)
     }
 
     override fun getUserAccountStatus(): Int {

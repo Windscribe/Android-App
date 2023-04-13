@@ -447,4 +447,22 @@ last chosen location.</string>
     <string name="discord">Discord</string>
     <string name="app_requires_background_location_permission">App requires background location permission to access WIFI SSID on Android 11+. If you wish to use this feature, press Okay and select \"Allow all the time\" from the permission dialog.</string>
     <string name="error">"Error "</string>
+    <string name="auto">Auto</string>
+    <string name="manual">Manual</string>
+    <string name="technical">Technical</string>
+    <string name="sales">Sales</string>
+    <string name="feedback">Feedback</string>
+    <string name="custom">Custom</string>
+    <string name="flags">Flags</string>
+    <string name="bars">Bars</string>
+    <string name="ms">Ms</string>
+    <string name="geography">Geography</string>
+    <string name="alphabet">Alphabet</string>
+    <string name="latency">Latency</string>
+    <string name="light">Light</string>
+    <string name="dark">Dark</string>
+    <string name="disconnect_from_vpn">Disconnect from VPN</string>
+    <string name="auto_detecting_packet_size">Auto detecting packet size…</string>
+    <string name="auto_package_size_detecting_failed">Auto packet size detection failed.</string>
+    <string name="package_size_detected_successfully">Packet size detected successfully.</string>
 </resources>

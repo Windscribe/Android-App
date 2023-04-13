@@ -134,4 +134,5 @@ interface ActivityInteractor {
     fun getTrafficCounter(): TrafficCounter
     fun getAutoConnectionManager(): AutoConnectionManager
     fun getLatencyRepository(): LatencyRepository
+    fun getStringArray(resourceId: Int): Array<String>
 }

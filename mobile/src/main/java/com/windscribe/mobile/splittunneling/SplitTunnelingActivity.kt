@@ -181,9 +181,11 @@ class SplitTunnelingActivity : BaseActivity(), SplitTunnelingView {
         modeToggleView.setDescription(textDescription)
     }
 
-    override fun setSplitRoutingModeAdapter(modes: Array<String>, savedMode: String) {
+    override fun setSplitRoutingModeAdapter(
+        localizeValues: Array<String>, selectedValue: String, values: Array<String>
+    ) {
         val splitRoutingModeView = modeToggleView.childView as SplitRoutingModeView
-        splitRoutingModeView.setAdapter(savedMode, modes)
+        splitRoutingModeView.setAdapter(selectedValue, values, localizeValues)
     }
 
     override fun setupToggleImage(resourceId: Int) {

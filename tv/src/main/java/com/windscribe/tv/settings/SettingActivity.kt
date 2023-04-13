@@ -429,9 +429,13 @@ class SettingActivity :
         }
     }
 
-    override fun setupSortAdapter(savedSort: String, sortList: Array<String>) {
+    override fun setupSortAdapter(
+        localiseValues: Array<String>,
+        selectedItem: String,
+        values: Array<String>
+    ) {
         if (fragment is GeneralFragment) {
-            (fragment as GeneralFragment).setSortAdapter(savedSort, sortList)
+            (fragment as GeneralFragment).setSortAdapter(localiseValues, selectedItem, values)
         }
     }
 
