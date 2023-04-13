@@ -109,8 +109,9 @@ class RobertSettingsPresenterImpl(
                     }
                 ) {
                     handleRobertSettingsUpdateError(
-                        "Failed to update Robert rules.",
-                        originalList, position
+                        interactor.getResourceString(R.string.failed_to_update_robert_rules),
+                        originalList,
+                        position
                     )
                 })
     }
@@ -135,7 +136,7 @@ class RobertSettingsPresenterImpl(
                     handleRobertSettingsUpdateError(result.errorMessage, originalList, position)
                 } else {
                     handleRobertSettingsUpdateError(
-                        "Failed to update Robert rules.",
+                        interactor.getResourceString(R.string.failed_to_update_robert_rules),
                         originalList,
                         position
                     )
@@ -143,7 +144,7 @@ class RobertSettingsPresenterImpl(
             }
             is CallResult.Success -> {
                 robertSettingsView.hideProgress()
-                robertSettingsView.showToast("Successfully updated Robert rules.")
+                robertSettingsView.showToast(interactor.getResourceString(R.string.successfully_updated_robert_rules))
                 appContext.workManager.updateRobertRules()
             }
         }
