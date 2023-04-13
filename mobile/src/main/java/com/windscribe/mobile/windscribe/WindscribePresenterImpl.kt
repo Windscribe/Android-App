@@ -592,8 +592,8 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     private fun updatePreferredProtocol(protocol: ProtocolInformation) {
+        connectionOptions.isPreferred = isPreferred(protocol)
         windscribeView.uiConnectionState?.let { state ->
-            connectionOptions.isPreferred = isPreferred(protocol)
             state.connectionOptions = connectionOptions
             windscribeView.setLastConnectionState(state)
         }

@@ -21,7 +21,6 @@ import com.windscribe.tv.adapter.MenuAdapter
 import com.windscribe.tv.adapter.MenuAdapter.MenuItemSelectListener
 import com.windscribe.tv.listeners.SettingsFragmentListener
 import com.windscribe.tv.settings.SettingActivity
-import java.lang.ClassCastException
 
 class GeneralFragment : Fragment() {
     @JvmField
@@ -79,9 +78,9 @@ class GeneralFragment : Fragment() {
     fun setLanguageAdapter(savedLanguage: String, languages: Array<String>) {
         val languageAdapter = MenuAdapter(listOf(*languages), savedLanguage)
         languageAdapter.setListener(object : MenuItemSelectListener {
-            override fun onItemSelected(selectedItem: String?) {
+            override fun onItemSelected(selectedItemKey: String?) {
                 listener?.onLanguageSelect(
-                    selectedItem
+                    selectedItemKey
                 )
             }
         })
@@ -90,13 +89,13 @@ class GeneralFragment : Fragment() {
         languageView?.adapter = languageAdapter
     }
 
-    fun setSortAdapter(savedSort: String, sortTypes: Array<String>) {
-        val sortAdapter = MenuAdapter(listOf(*sortTypes), savedSort)
+    fun setSortAdapter(localiseItems: Array<String>, selectedKey: String, keys: Array<String>) {
+        val sortAdapter = MenuAdapter(listOf(*localiseItems), selectedKey, listOf(*keys))
         sortAdapter.setListener(object : MenuItemSelectListener {
-            override fun onItemSelected(selectedItem: String?) {
-                selectedItem?.let {
+            override fun onItemSelected(selectedItemKey: String?) {
+                selectedItemKey?.let {
                     listener?.onSortSelect(
-                        selectedItem
+                        selectedItemKey
                     )
                 }
             }

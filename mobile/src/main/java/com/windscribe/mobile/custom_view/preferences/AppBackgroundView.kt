@@ -26,6 +26,7 @@ class AppBackgroundView @JvmOverloads constructor(
     private var spinner: Spinner? = null
     private var current: TextView? = null
     private val view: View = View.inflate(context, R.layout.app_background_view, this)
+    private var keys: Array<String>? = null
 
     init {
         spinner = view.findViewById(R.id.spinner)
@@ -37,15 +38,16 @@ class AppBackgroundView @JvmOverloads constructor(
     }
 
     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        view?.findViewById<TextView>(R.id.tv_drop_down)?. text = ""
+        view?.findViewById<TextView>(R.id.tv_drop_down)?.text = ""
         spinner?.selectedItem.toString().let {
-            delegate?.onItemSelect(it)
-            animateVisibilityChange(it)
+            current?.text = it
+            delegate?.onItemSelect(keys?.get(position) ?: "")
+            animateVisibilityChange(position)
         }
     }
 
-    private fun animateVisibilityChange(value: String){
-        val visibility = if (value == "Custom"){
+    private fun animateVisibilityChange(position: Int) {
+        val visibility = if (position == 1) {
             VISIBLE
         } else {
             GONE
@@ -79,22 +81,24 @@ class AppBackgroundView @JvmOverloads constructor(
         view.findViewById<TextView>(R.id.second_item_title).text = value
     }
 
-    fun setFirstItemDescription(value: String){
-        if(value.isNotEmpty())
-        view.findViewById<TextView>(R.id.first_item_description).text = value
+    fun setFirstItemDescription(value: String) {
+        if (value.isNotEmpty()) view.findViewById<TextView>(R.id.first_item_description).text =
+            value
     }
 
-    fun setSecondItemDescription(value: String){
-        if(value.isNotEmpty())
-        view.findViewById<TextView>(R.id.second_item_description).text = value
+    fun setSecondItemDescription(value: String) {
+        if (value.isNotEmpty()) view.findViewById<TextView>(R.id.second_item_description).text =
+            value
     }
 
-    fun setAdapter(savedSelection: String, selections: Array<String>) {
-        val selectionAdapter: ArrayAdapter<String> = ArrayAdapter<String>(context, R.layout.drop_down_layout,
-                R.id.tv_drop_down, selections)
+    fun setAdapter(localiseValues: Array<String>, selectedKey: String, keys: Array<String>) {
+        this.keys = keys
+        val selectionAdapter: ArrayAdapter<String> = ArrayAdapter<String>(
+            context, R.layout.drop_down_layout, R.id.tv_drop_down, localiseValues
+        )
         spinner?.adapter = selectionAdapter
         spinner?.isSelected = false
-        spinner?.setSelection(selectionAdapter.getPosition(savedSelection))
-        current?.text = savedSelection
+        spinner?.setSelection(keys.indexOf(selectedKey))
+        current?.text = localiseValues[keys.indexOf(selectedKey)]
     }
 }

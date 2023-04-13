@@ -262,6 +262,20 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView,
         presenter.onSplitTunnelingOptionClicked()
     }
 
+    @OnClick(R.id.open_always_setting)
+    fun openAlwaysVPNSettingsClick() {
+        logger.info("User clicked on open VPN Settings...")
+        goToSettings()
+    }
+
+    private fun goToSettings() {
+        val intent = Intent("android.net.vpn.SETTINGS")
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        }
+    }
+
     @OnClick(R.id.network_options_right_icon, R.id.network_options_title)
     fun onWhitelistClick() {
         checkLocationPermission(R.id.connection_parent, REQUEST_LOCATION_PERMISSION)

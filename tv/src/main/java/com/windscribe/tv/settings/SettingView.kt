@@ -37,7 +37,7 @@ interface SettingView {
     fun setupLayoutForPremiumUser(upgradeText: String)
     fun setupPortMapAdapter(savedPort: String, ports: List<String>)
     fun setupProtocolAdapter(protocol: String, protocols: List<String>)
-    fun setupSortAdapter(savedSort: String, sortList: Array<String>)
+    fun setupSortAdapter(localiseValues: Array<String>, selectedItem: String, values: Array<String>)
     fun showProgress(progressText: String)
     fun showToast(toastString: String)
     fun updateLocale()
