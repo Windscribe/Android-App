@@ -83,7 +83,7 @@
                 android:paddingBottom="0dp"
                 android:includeFontPadding="false"
                 android:layout_width="0dp"
-                android:gravity="start|center_vertical"
+                android:gravity="left|center_vertical"
                 app:layout_constraintBottom_toBottomOf="@id/barrier"
                 app:layout_constraintEnd_toStartOf="@id/current"
                 app:layout_constraintStart_toEndOf="@id/left_icon"

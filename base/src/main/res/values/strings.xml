@@ -465,4 +465,7 @@ last chosen location.</string>
     <string name="auto_detecting_packet_size">Auto detecting packet size…</string>
     <string name="auto_package_size_detecting_failed">Auto packet size detection failed.</string>
     <string name="package_size_detected_successfully">Packet size detected successfully.</string>
+    <string name="search">Search</string>
+    <string name="failed_to_update_robert_rules">Failed to update Robert rules.</string>
+    <string name="successfully_updated_robert_rules">Successfully updated Robert rules.</string>
 </resources>
