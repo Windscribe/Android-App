@@ -11,7 +11,12 @@ interface SplitTunnelingView {
     fun restartConnection()
     fun setRecyclerViewAdapter(mAdapter: InstalledAppsAdapter)
     fun setSplitModeTextView(mode: String, textDescription: Int)
-    fun setSplitRoutingModeAdapter(modes: Array<String>, savedMode: String)
+    fun setSplitRoutingModeAdapter(
+        localizeValues: Array<String>,
+        selectedValue: String,
+        values: Array<String>
+    )
+
     fun setupToggleImage(resourceId: Int)
     fun showProgress(progress: Boolean)
     fun showTunnelSettingsLayout()

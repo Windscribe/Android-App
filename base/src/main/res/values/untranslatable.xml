@@ -20,17 +20,11 @@
     <string name="log_file_header" translatable="false">[DeviceInfo]\n-------------\n[API]: %1$d\n[Brand]: %2$s\n[Device]: %3$s\n[Model]: %4$s\n[Manufacturer]: %5$s\n[Release]: %6$s\n[App Release Version]: %7$s\n[Start of log]:\n------------------------------------------------------\n</string>
     <string name="reason_to_try_backup_endpoint" translatable="false">&#032;&#8212;Reason to try backup end point:&#032;</string>
     <!-- Strings arrays  -->
-    <string name="geography" translatable="false">Geography</string>
-    <string name="alphabet" translatable="false">Alphabet</string>
-    <string name="latency" translatable="false">Latency</string>
-    <string name="light" translatable="false">Light</string>
-    <string name="dark" translatable="false">Dark</string>
     <string name="OFF" translatable="false">OFF</string>
     <string name="empty_dash" translatable="false">--</string>
     <string name="image_description" translatable="false">Image</string>
     <string name="empty_ip_address" translatable="false">000.000.000.000</string>
     <string name="english" translatable="false">English</string>
-    <string name="bars" translatable="false">Bars</string>
     <string name="permission_revoked" translatable="false">VPN permission revoked by OS (e.g. other VPN program started), stopping VPN</string>
     <!--Ignore -->
     <string name="building_configration" translatable="false">Building Configuration&#8230;</string>
@@ -91,13 +85,50 @@
         <item>@string/alphabet</item>
         <item>@string/latency</item>
     </string-array>
+    <string-array name="order_list_keys">
+        <item>Geography</item>
+        <item>Alphabet</item>
+        <item>Latency</item>
+    </string-array>
     <string-array name="theme_list">
         <item>@string/light</item>
         <item>@string/dark</item>
     </string-array>
+    <string-array name="theme_list_keys">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
     <string-array name="split_mode_list">
         <item>@string/exclusive</item>
         <item>@string/inclusive</item>
+    </string-array>
+    <string-array name="split_mode_list_keys">
+        <item>Exclusive</item>
+        <item>Inclusive</item>
+    </string-array>
+
+    <string-array name="background_list">
+        <item>@string/flags</item>
+        <item>@string/custom</item>
+    </string-array>
+    <string-array name="background_list_keys">
+        <item>Flags</item>
+        <item>Custom</item>
+    </string-array>
+
+    <string-array name="latency_selection">
+        <item>@string/bars</item>
+        <item>@string/ms</item>
+    </string-array>
+    <string-array name="latency_selection_keys">
+        <item>Bars</item>
+        <item>Ms</item>
+    </string-array>
+    <string-array name="query_types">
+        <item>@string/account</item>
+        <item>@string/technical</item>
+        <item>@string/sales</item>
+        <item>@string/feedback</item>
     </string-array>
     <string-array name="language">
         <item>English (en)</item>
