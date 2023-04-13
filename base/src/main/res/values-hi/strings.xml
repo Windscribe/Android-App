@@ -535,4 +535,6 @@
     <string name="auto_package_size_detecting_failed">ऑटो पैकेट आकार का पता लगाना विफल।</string>
     <string name="package_size_detected_successfully">पैकेट आकार सफलतापूर्वक पता लगाया गया।</string>
     <string name="search">खोजें</string>
+    <string name="failed_to_update_robert_rules">रोबर्ट नियमों को अपडेट करने में विफल रहा।</string>
+    <string name="successfully_updated_robert_rules">रोबर्ट नियमों को सफलतापूर्वक अपडेट किया गया।</string>
 </resources>
