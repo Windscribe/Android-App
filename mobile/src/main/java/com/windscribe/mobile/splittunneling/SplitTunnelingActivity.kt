@@ -289,7 +289,7 @@ class SplitTunnelingActivity : BaseActivity(), SplitTunnelingView {
     private fun setUpCustomSearchBox() {
         // Search view
         searchView.setIconifiedByDefault(false)
-        searchView.queryHint = "Search"
+        searchView.queryHint = getString(R.string.search)
         searchView.isFocusable = false
         // Filter results on text change
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
