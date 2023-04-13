@@ -277,20 +277,19 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
                 textPaint.isUnderlineText = false
             }
         }
-        spannable.setSpan(
-            termsSpan,
-            spanStart,
-            fullText.indexOf("&") - 1,
-            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-        spannable.setSpan(
-            policySpan,
-            fullText.indexOf("&") + 1,
-            fullText.length,
-            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-        termAndPolicyView?.movementMethod = LinkMovementMethod.getInstance()
-        termAndPolicyView?.setText(spannable, SPANNABLE)
+        if (fullText.indexOf("&") != -1) {
+            spannable.setSpan(
+                termsSpan, spanStart, fullText.indexOf("&") - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            spannable.setSpan(
+                policySpan,
+                fullText.indexOf("&") + 1,
+                fullText.length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            termAndPolicyView?.movementMethod = LinkMovementMethod.getInstance()
+            termAndPolicyView?.setText(spannable, SPANNABLE)
+        }
     }
 
     private fun showDialog(message: String) {
