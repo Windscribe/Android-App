@@ -23,11 +23,11 @@ import com.windscribe.mobile.confirmemail.ConfirmActivity
 import com.windscribe.mobile.connectionsettings.ConnectionSettingsActivity
 import com.windscribe.mobile.custom_view.preferences.IconLinkView
 import com.windscribe.mobile.di.ActivityModule
+import com.windscribe.mobile.dialogs.ShareAppLinkDialog
 import com.windscribe.mobile.email.AddEmailActivity
 import com.windscribe.mobile.generalsettings.GeneralSettingsActivity
 import com.windscribe.mobile.help.HelpActivity
 import com.windscribe.mobile.robert.RobertSettingsActivity
-import com.windscribe.mobile.share.ShareAppLink
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.utils.UiUtil
 import com.windscribe.mobile.welcome.WelcomeActivity
@@ -107,14 +107,10 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
     @BindView(R.id.divider_refer_for_data)
     lateinit var referForDataDivider: ImageView
 
-    @Inject
-    lateinit var fragmentFactory: ActivityModule.CustomFragmentFactory
-
     private val logger = LoggerFactory.getLogger(TAG)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
-        supportFragmentManager.fragmentFactory = fragmentFactory
         setContentLayout(R.layout.activity_main_menu)
         presenter.observeUserChange(this)
         preferenceChangeObserver.addLanguageChangeObserver(this) { presenter.onLanguageChanged() }
@@ -349,13 +345,7 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
     }
 
     override fun showShareLinkDialog() {
-        val fragment = supportFragmentManager.fragmentFactory.instantiate(
-            ShareAppLink::class.java.classLoader!!,
-            ShareAppLink::class.java.name
-        )
-        supportFragmentManager.beginTransaction().add(R.id.cl_main_menu, fragment)
-            .addToBackStack(fragment::javaClass.name)
-            .commit()
+        ShareAppLinkDialog.show(this)
     }
 
     override fun showShareLinkOption() {

@@ -5,7 +5,7 @@ project.ext {
     appMinSdk = 21
     appTargetSdk = 33
     appCompiledSdk = 33
-    appBuildTool = "33.0.0"
+    appBuildTool = "33.0.2"
     appVersionCode = 1169
     appVersionName = "3.7.1169"
 
@@ -37,10 +37,10 @@ buildscript {
     //Test
     ext.JUnit = "4.13.2"
     ext.testCore = "1.5.0"
-    ext.coreVersion = "1.6.0-alpha-01"
+    ext.coreVersion = "1.6.0-alpha01"
     ext.extJUnitVersion = "1.2.0-alpha01"
     ext.runnerVersion = "1.6.0-alpha01"
-    ext.espressoVersion = "3.6.0-alpha01"
+    ext.espressoVersion = "3.5.1"
     ext.robolectricVersion = "4.6.1"
     ext.extTruthVersion = '1.3.0-rc01'
 

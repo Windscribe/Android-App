@@ -11,9 +11,11 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import java.io.Serializable;
+
 @SuppressWarnings("unused")
 @Entity(tableName = "ConfigFile")
-public class ConfigFile {
+public class ConfigFile implements Serializable {
 
     @PrimaryKey
     @ColumnInfo(name = "primary_key")

@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.api.response;
 
+import androidx.annotation.Nullable;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -60,6 +61,19 @@ public class StaticIp {
     @SerializedName("wg_pubkey")
     @Expose
     private String wgPubKey;
+
+    @SerializedName("ping_host")
+    @Expose
+    private String pingHost;
+
+    @Nullable
+    public String getPingHost() {
+        return pingHost;
+    }
+
+    public void setPingHost(@Nullable String pingHost) {
+        this.pingHost = pingHost;
+    }
 
     public String getCityName() {
         return cityName;

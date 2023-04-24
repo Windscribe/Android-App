@@ -22,8 +22,8 @@ import butterknife.OnClick
 import com.windscribe.mobile.R
 import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.confirmemail.ConfirmActivity
-import com.windscribe.mobile.custom_view.ProgressFragment
 import com.windscribe.mobile.di.ActivityModule
+import com.windscribe.mobile.dialogs.ProgressDialog
 import com.windscribe.mobile.welcome.SoftInputAssist
 import com.windscribe.mobile.windscribe.WindscribeActivity.Companion.getStartIntent
 import com.windscribe.vpn.Windscribe
@@ -154,15 +154,12 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
 
     override fun prepareUiForApiCallFinished() {
         logger.info("Preparing ui for api call finished...")
-        val fragment = supportFragmentManager.findFragmentById(R.id.cl_add_email)
-        if (fragment is ProgressFragment) {
-            fragment.finishProgress()
-        }
+        ProgressDialog.hide(this)
     }
 
     override fun prepareUiForApiCallStart() {
         logger.info("Preparing ui for api call start...")
-        ProgressFragment.getInstance().add(this, R.id.cl_add_email, true)
+        ProgressDialog.show(this)
     }
 
     override fun setUpLayout(title: String) {

@@ -18,12 +18,10 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import butterknife.BindView
 import butterknife.OnClick
 import com.windscribe.mobile.R
-import com.windscribe.mobile.alert.ExtraDataUseWarningFragment
-import com.windscribe.mobile.alert.LocationPermissionRationale
-import com.windscribe.mobile.alert.PermissionRationaleListener
 import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.custom_view.preferences.*
 import com.windscribe.mobile.di.ActivityModule
+import com.windscribe.mobile.dialogs.*
 import com.windscribe.mobile.gpsspoofing.GpsSpoofingSettingsActivity
 import com.windscribe.mobile.networksecurity.NetworkSecurityActivity
 import com.windscribe.mobile.splittunneling.SplitTunnelingActivity
@@ -35,7 +33,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView,
-    PermissionRationaleListener, ExtraDataUseWarningFragment.CallBack {
+    PermissionRationaleDialogCallback, ExtraDataUseWarningDialogCallBack {
 
     private val logger = LoggerFactory.getLogger(TAG)
 
@@ -365,10 +363,7 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView,
     }
 
     override fun showLocationRational(requestCode: Int) {
-        val locationPermissionRationale = LocationPermissionRationale()
-        if (!supportFragmentManager.isStateSaved && !locationPermissionRationale.isAdded) {
-            locationPermissionRationale.show(supportFragmentManager, null)
-        }
+        LocationPermissionRationaleDialog.show(this)
     }
 
     override fun showToast(toastString: String) {
@@ -376,11 +371,7 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView,
     }
 
     override fun showExtraDataUseWarning() {
-        val extraDataUseWarningFragment = ExtraDataUseWarningFragment()
-        extraDataUseWarningFragment.showNow(
-            supportFragmentManager,
-            extraDataUseWarningFragment.javaClass.name
-        )
+        ExtraDataUseWarningDialog.show(this)
     }
 
     override fun turnOnDecoyTraffic() {
