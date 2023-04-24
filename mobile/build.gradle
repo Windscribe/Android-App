@@ -16,6 +16,9 @@ android {
             enableSplit = false
         }
     }
+    adbOptions {
+        installOptions "-g"
+    }
 
     compileSdkVersion rootProject.appCompiledSdk
     defaultConfig {
@@ -33,9 +36,11 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            manifestPlaceholders["networkSecurityConfig"] = "@xml/network_security_config"
         }
         debug{
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            manifestPlaceholders["networkSecurityConfig"] = "@xml/test_network_security_config"
         }
     }
     compileOptions {
@@ -67,25 +72,15 @@ dependencies {
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugarJdk"
     //Core Module
     implementation project(path: ':base')
-    // Test
-    androidTestImplementation 'de.codecentric:androidtestktx:0.9.0'
-    androidTestImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin"
-    androidTestImplementation "androidx.test:core:$coreVersion"
-    androidTestImplementation "androidx.test:core-ktx:$coreVersion"
-    androidTestImplementation "androidx.test.ext:junit:$extJUnitVersion"
-    androidTestImplementation "androidx.test.ext:junit-ktx:$extJUnitVersion"
-    androidTestImplementation "androidx.test:runner:$runnerVersion"
-    androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
-    androidTestImplementation 'androidx.test.ext:truth:' + rootProject.extTruthVersion
-    androidTestImplementation "org.jetbrains.kotlin:kotlin-reflect:1.7.20"
-    androidTestImplementation 'com.squareup.rx.idler:rx2-idler:0.11.0'
-    androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
-    //Shared test module
-    androidTestImplementation project(path: ':test')
     //Kapt
     kapt "com.github.bumptech.glide:compiler:$glide"
     kapt "com.jakewharton:butterknife-compiler:$butterknife"
     kapt "androidx.room:room-compiler:$room"
     kapt "com.google.dagger:dagger-compiler:$dagger"
     kaptAndroidTest("com.google.dagger:dagger-compiler:$dagger")
+    //Shared test module
+    androidTestImplementation project(path: ':test')
+    androidTestImplementation "androidx.work:work-testing:$work_manager"
+    implementation "androidx.test.espresso:espresso-intents:3.5.1"
+    implementation 'androidx.test.uiautomator:uiautomator:2.2.0'
 }

@@ -11,7 +11,8 @@
         android:roundIcon="@mipmap/ws_launcher"
         android:supportsRtl="false"
         android:theme="@style/DarkTheme"
-        tools:targetApi="m">
+        android:networkSecurityConfig="${networkSecurityConfig}"
+        tools:targetApi="n">
         <activity
             android:name=".robert.RobertSettingsActivity"
             android:exported="false"

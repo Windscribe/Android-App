@@ -117,12 +117,12 @@ class RobertSettingsPresenterImpl(
     }
 
     private fun handleRobertLoadSettingResponse(robertFilters: List<RobertFilter>) {
-        robertSettingsView.hideProgress()
         robertSettingsAdapter = RobertSettingsAdapter(this)
         robertSettingsAdapter?.let {
             it.data = robertFilters
             robertSettingsView.setAdapter(it)
         }
+        robertSettingsView.hideProgress()
     }
 
     private fun handleRobertSettingUpdateResponse(
