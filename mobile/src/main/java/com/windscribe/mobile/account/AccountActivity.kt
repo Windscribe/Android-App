@@ -29,11 +29,11 @@ import com.windscribe.mobile.R
 import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.confirmemail.ConfirmActivity
 import com.windscribe.mobile.custom_view.CustomDialog
-import com.windscribe.mobile.custom_view.ErrorFragment
-import com.windscribe.mobile.custom_view.SuccessFragment
 import com.windscribe.mobile.custom_view.preferences.SingleLinkExplainView
 import com.windscribe.mobile.di.ActivityModule
 import com.windscribe.mobile.di.DaggerActivityComponent
+import com.windscribe.mobile.dialogs.ErrorDialog
+import com.windscribe.mobile.dialogs.SuccessDialog
 import com.windscribe.mobile.email.AddEmailActivity
 import com.windscribe.mobile.fragments.GhostMostAccountFragment
 import com.windscribe.mobile.listeners.AccountFragmentCallback
@@ -385,8 +385,9 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
     }
 
     override fun showErrorDialog(error: String) {
-        ErrorFragment.getInstance().add(
-            error, this, R.id.fragment_container, true,
+        ErrorDialog.show(
+            this,
+            error,
             getColor(this, R.attr.overlayDialogBackgroundColor, R.color.colorDeepBlue90)
         )
     }
@@ -402,8 +403,9 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
     }
 
     override fun showSuccessDialog(message: String) {
-        SuccessFragment.getInstance().add(
-            message, this, R.id.fragment_container, true,
+        SuccessDialog.show(
+            this,
+            message,
             getColor(this, R.attr.overlayDialogBackgroundColor, R.color.colorDeepBlue90)
         )
     }

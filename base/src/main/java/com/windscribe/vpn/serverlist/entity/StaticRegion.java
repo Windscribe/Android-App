@@ -5,6 +5,7 @@
 package com.windscribe.vpn.serverlist.entity;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -78,6 +79,10 @@ public class StaticRegion {
     @SerializedName("wg_pubkey")
     @Expose
     private String wgPubKey;
+
+    @SerializedName("ping_host")
+    @Expose
+    private String pingHost;
 
     public String getCityName() {
         return cityName;
@@ -203,6 +208,15 @@ public class StaticRegion {
         this.wgPubKey = wgPubKey;
     }
 
+    @Nullable
+    public String getPingHost() {
+        return pingHost;
+    }
+
+    public void setPingHost(@Nullable String pingHost) {
+        this.pingHost = pingHost;
+    }
+
     @NonNull
     @Override
     public String toString() {
@@ -220,6 +234,7 @@ public class StaticRegion {
                 ", credentials=" + credentials +
                 ", deviceName='" + deviceName + '\'' +
                 ", OvpnX509='" + ovpnX509 + '\'' +
+                ", pingHost='" + pingHost + '\'' +
                 '}';
     }
 

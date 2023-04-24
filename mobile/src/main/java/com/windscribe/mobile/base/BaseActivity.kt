@@ -14,8 +14,6 @@ import android.graphics.Rect
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.transition.Slide
-import android.view.Gravity
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -23,17 +21,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.GravityCompat
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import butterknife.ButterKnife
 import com.windscribe.mobile.R
-import com.windscribe.mobile.alert.DisclaimerAlertListener
-import com.windscribe.mobile.alert.LocationPermissionFragment
 import com.windscribe.mobile.di.ActivityComponent
 import com.windscribe.mobile.di.ActivityModule
+import com.windscribe.mobile.dialogs.LocationPermissionDialog
+import com.windscribe.mobile.dialogs.LocationPermissionDialogCallback
 import com.windscribe.mobile.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.commonutils.WindUtilities
@@ -43,7 +39,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class BaseActivity : AppCompatActivity(), DisclaimerAlertListener {
+abstract class BaseActivity : AppCompatActivity(), LocationPermissionDialogCallback {
     val coldLoad = AtomicBoolean()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,8 +48,7 @@ abstract class BaseActivity : AppCompatActivity(), DisclaimerAlertListener {
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
+        requestCode: Int, permissions: Array<String>,
         grantResults: IntArray
     ) {
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -117,10 +112,6 @@ abstract class BaseActivity : AppCompatActivity(), DisclaimerAlertListener {
         }
     }
 
-    override fun onRequestCancel() {
-        supportFragmentManager.popBackStack()
-    }
-
     override fun onRequestPermission(requestCode: Int) {
         supportFragmentManager.popBackStack()
         ActivityCompat.requestPermissions(
@@ -160,14 +151,7 @@ abstract class BaseActivity : AppCompatActivity(), DisclaimerAlertListener {
     }
 
     private fun showLocationDisclaimer(disclaimerContainer: Int, requestCode: Int) {
-        val fragment: Fragment = LocationPermissionFragment.newInstance(requestCode)
-        val direction = GravityCompat
-                .getAbsoluteGravity(Gravity.BOTTOM, resources.configuration.layoutDirection)
-        fragment.enterTransition = Slide(direction).addTarget(disclaimerContainer)
-        supportFragmentManager.beginTransaction()
-                .replace(android.R.id.content, fragment)
-                .addToBackStack(LocationPermissionFragment::class.java.name)
-                .commit()
+        LocationPermissionDialog.show(this, requestCode)
     }
 
     open fun showLocationRational(requestCode: Int) {

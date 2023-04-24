@@ -9,7 +9,6 @@ import android.os.Bundle
 import com.windscribe.vpn.serverlist.entity.ConfigFile
 
 interface WindscribePresenter {
-    fun contactSupport()
     val lastSelectedTabIndex: Int
     val selectedPort: String
     val selectedProtocol: String
@@ -63,15 +62,12 @@ interface WindscribePresenter {
     fun onShowFlixListClicked()
     fun onShowLocationHealthChanged()
     fun onShowStaticIpListClicked()
-    fun onSkipNodeCheckingClicked()
-    fun onSkipNowClicked()
     fun onStart()
     fun onUpgradeClicked()
     fun registerNetworkInfoListener()
     fun reloadNetworkInfo()
     fun saveLastSelectedTabIndex(index: Int)
     fun saveRateDialogPreference(type: Int)
-    fun sendLog()
     fun setMainCustomConstraints()
     fun setProtocolAdapter(protocol: String)
     fun setProtocolPreferred()

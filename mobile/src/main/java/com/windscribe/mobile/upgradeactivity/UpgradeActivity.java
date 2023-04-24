@@ -28,9 +28,9 @@ import com.windscribe.mobile.R;
 import com.windscribe.mobile.base.BaseActivity;
 import com.windscribe.mobile.confirmemail.ConfirmActivity;
 import com.windscribe.mobile.custom_view.CustomDialog;
-import com.windscribe.mobile.custom_view.ErrorFragment;
-import com.windscribe.mobile.custom_view.ProgressFragment;
 import com.windscribe.mobile.di.ActivityModule;
+import com.windscribe.mobile.dialogs.ErrorDialog;
+import com.windscribe.mobile.dialogs.ProgressDialog;
 import com.windscribe.mobile.email.AddEmailActivity;
 import com.windscribe.mobile.welcome.WelcomeActivity;
 import com.windscribe.mobile.windscribe.WindscribeActivity;
@@ -107,10 +107,10 @@ public class UpgradeActivity extends BaseActivity
         if (getIntent().hasExtra(PROMO_EXTRA)) {
             PushNotificationAction pushNotificationAction = (PushNotificationAction) getIntent()
                     .getSerializableExtra(PROMO_EXTRA);
-                mUpgradePresenter.setPushNotificationAction(pushNotificationAction);
-        }else{
+            mUpgradePresenter.setPushNotificationAction(pushNotificationAction);
+        } else {
             // Push notification promo
-            if(appContext.appLifeCycleObserver.getPushNotificationAction() != null){
+            if (appContext.appLifeCycleObserver.getPushNotificationAction() != null) {
                 mUpgradePresenter.setPushNotificationAction(appContext.appLifeCycleObserver.getPushNotificationAction());
             }
         }
@@ -129,9 +129,9 @@ public class UpgradeActivity extends BaseActivity
     @Override
     protected void onResume() {
         super.onResume();
-        if(upgradingFromWebsite){
+        if (upgradingFromWebsite) {
             goBackToMainActivity();
-        }else{
+        } else {
             if (billingType == BillingType.Google) {
                 mUpgradePresenter.checkBillingProcessStatus();
             }
@@ -185,10 +185,7 @@ public class UpgradeActivity extends BaseActivity
 
     @Override
     public void hideProgressBar() {
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.cl_upgrade);
-        if (fragment instanceof ProgressFragment) {
-            getSupportFragmentManager().beginTransaction().remove(fragment).commitNow();
-        }
+        ProgressDialog.hide(this);
     }
 
     @Override
@@ -296,7 +293,7 @@ public class UpgradeActivity extends BaseActivity
 
     @Override
     public void showBillingDialog(final WindscribeInAppProduct windscribeInAppProduct, final boolean isEmailAdded,
-            final boolean isEmailConfirmed) {
+                                  final boolean isEmailConfirmed) {
         PlansFragment.newInstance()
                 .add(this, windscribeInAppProduct, R.id.cl_upgrade, false, isEmailAdded, isEmailConfirmed);
     }
@@ -304,22 +301,18 @@ public class UpgradeActivity extends BaseActivity
     @Override
     public void showBillingErrorDialog(String errorMessage) {
         hideProgressBar();
-        ErrorFragment.getInstance().add(errorMessage, this, R.id.cl_upgrade, false);
+        ErrorDialog.show(this, errorMessage, null, true);
     }
 
     @Override
     public void showProgressBar(final String progressHeaderText) {
-        runOnUiThread(() -> {
-            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.cl_upgrade);
-            if (!(fragment instanceof ProgressFragment)) {
-                ProgressFragment.getInstance().add(progressHeaderText, UpgradeActivity.this, R.id.cl_upgrade, false);
-                getSupportFragmentManager().executePendingTransactions();
-            }
-            if (fragment instanceof ProgressFragment) {
-                ((ProgressFragment) fragment).updateProgressStatus(progressHeaderText);
-            }
-        });
-
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(ProgressDialog.tag);
+        if (!(fragment instanceof ProgressDialog)) {
+            ProgressDialog.show(this, progressHeaderText);
+        }
+        if (fragment instanceof ProgressDialog) {
+            ((ProgressDialog) fragment).updateProgressStatus(progressHeaderText);
+        }
     }
 
     @Override

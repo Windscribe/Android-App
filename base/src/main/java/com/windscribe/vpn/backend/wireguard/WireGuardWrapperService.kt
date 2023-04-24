@@ -15,6 +15,7 @@ import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.ShortcutStateManager
 import com.wireguard.android.backend.GoBackend
 import kotlinx.coroutines.launch
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 class WireGuardWrapperService : GoBackend.VpnService() {
@@ -34,6 +35,8 @@ class WireGuardWrapperService : GoBackend.VpnService() {
     @Inject
     lateinit var shortcutStateManager: ShortcutStateManager
 
+    private var logger = LoggerFactory.getLogger("vpn_backend")
+
     override fun onCreate() {
         super.onCreate()
         Windscribe.appContext.serviceComponent.inject(this)
@@ -41,20 +44,19 @@ class WireGuardWrapperService : GoBackend.VpnService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        super.onStartCommand(intent, flags, startId)
-        return when (intent?.action) {
-            VpnService.SERVICE_INTERFACE -> {
-                shortcutStateManager.connect()
-                START_NOT_STICKY
-            }
-            else -> {
-                startForeground(NotificationConstants.SERVICE_NOTIFICATION_ID, windNotificationBuilder.buildNotification(Connecting))
-                if (serviceInteractor.preferenceHelper.globalUserConnectionPreference) {
-                    START_STICKY
-                } else {
-                    START_NOT_STICKY
-                }
-            }
+        if (intent == null || intent.action == VpnService.SERVICE_INTERFACE) {
+            logger.debug("System relaunched service, starting shortcut state manager")
+            shortcutStateManager.connect()
+            return START_NOT_STICKY
+        }
+        startForeground(
+            NotificationConstants.SERVICE_NOTIFICATION_ID,
+            windNotificationBuilder.buildNotification(Connecting)
+        )
+        return if (serviceInteractor.preferenceHelper.globalUserConnectionPreference) {
+            START_STICKY
+        } else {
+            START_NOT_STICKY
         }
     }
 

@@ -11,18 +11,22 @@ import android.content.res.Resources
 import android.os.Bundle
 import android.os.LocaleList
 import android.os.StrictMode
+import android.util.Log
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnitRunner
-import com.squareup.rx2.idler.Rx2Idler
+import androidx.work.testing.SynchronousExecutor
+import androidx.work.testing.WorkManagerTestInitHelper
+import com.google.gson.Gson
 import com.windscribe.test.TestApplication
-import io.reactivex.plugins.RxJavaPlugins
-import java.util.*
+import com.windscribe.vpn.di.TestConfiguration
+import java.util.Locale
 
 open class CustomRunner : AndroidJUnitRunner() {
-    private var language = "en"
+    private var testConfiguration: TestConfiguration? = null
     override fun onCreate(arguments: Bundle?) {
         StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder().permitAll().build())
-        arguments?.getString("language")?.let {
-            language = it
+        targetContext.assets.open("testConfiguration.json").bufferedReader().readText().let {
+            testConfiguration = Gson().fromJson(it, TestConfiguration::class.java)
         }
         super.onCreate(arguments)
     }
@@ -32,23 +36,28 @@ open class CustomRunner : AndroidJUnitRunner() {
     }
 
     override fun callApplicationOnCreate(app: Application) {
-        setLanguage(app)
-        super.callApplicationOnCreate(app)
-    }
-
-    override fun onStart() {
-        RxJavaPlugins.setInitIoSchedulerHandler(
-            Rx2Idler.create("IO-Scheduler")
-        )
-        super.onStart()
+        if (app is TestApplication) {
+            app.testConfiguration = testConfiguration
+            setLanguage(app)
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            val config = androidx.work.Configuration.Builder().setMinimumLoggingLevel(Log.VERBOSE)
+                .setExecutor(SynchronousExecutor()).build()
+            WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
+            super.callApplicationOnCreate(app)
+            app.applicationComponent.userRepository.synchronizedReload()
+        } else {
+            super.callApplicationOnCreate(app)
+        }
     }
 
     private fun setLanguage(app: Application) {
-        val locale = Locale(language)
-        Locale.setDefault(locale)
-        val res: Resources = app.resources
-        val config: Configuration = res.configuration
-        config.setLocales(LocaleList(locale))
-        res.updateConfiguration(config, context.resources.displayMetrics)
+        testConfiguration?.language?.let {
+            val locale = Locale(it)
+            Locale.setDefault(locale)
+            val res: Resources = app.resources
+            val config: Configuration = res.configuration
+            config.setLocales(LocaleList(locale))
+            res.updateConfiguration(config, context.resources.displayMetrics)
+        }
     }
 }
