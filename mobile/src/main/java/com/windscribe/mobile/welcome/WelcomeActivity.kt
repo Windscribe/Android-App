@@ -18,13 +18,13 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import butterknife.ButterKnife
 import com.windscribe.mobile.R
-import com.windscribe.mobile.alert.UnknownErrorAlert
-import com.windscribe.mobile.alert.UnknownErrorAlert.LoginAttemptFailedAlertInterface
 import com.windscribe.mobile.base.BaseActivity
-import com.windscribe.mobile.custom_view.ErrorFragment
-import com.windscribe.mobile.custom_view.ProgressFragment
 import com.windscribe.mobile.di.ActivityModule
 import com.windscribe.mobile.di.DaggerActivityComponent
+import com.windscribe.mobile.dialogs.ErrorDialog
+import com.windscribe.mobile.dialogs.ProgressDialog
+import com.windscribe.mobile.dialogs.UnknownErrorDialog
+import com.windscribe.mobile.dialogs.UnknownErrorDialogCallback
 import com.windscribe.mobile.welcome.fragment.*
 import com.windscribe.mobile.welcome.state.EmergencyConnectUIState
 import com.windscribe.mobile.welcome.viewmodal.EmergencyConnectViewModal
@@ -35,8 +35,7 @@ import com.windscribe.vpn.constants.NetworkKeyConstants.getWebsiteLink
 import java.io.File
 import javax.inject.Inject
 
-class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
-    LoginAttemptFailedAlertInterface {
+class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView, UnknownErrorDialogCallback {
 
     @Inject
     lateinit var presenter: WelcomePresenter
@@ -199,8 +198,9 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
     }
 
     override fun prepareUiForApiCallFinished() {
+        ProgressDialog.hide(this)
         val progressFragment = supportFragmentManager.findFragmentById(R.id.progress_container)
-        if (progressFragment is ProgressFragment || progressFragment is NoEmailAttentionFragment) {
+        if (progressFragment is NoEmailAttentionFragment) {
             supportFragmentManager.popBackStack()
         }
         val mainFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
@@ -210,13 +210,7 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
     }
 
     override fun prepareUiForApiCallStart() {
-        supportFragmentManager.findFragmentById(R.id.progress_container)?.let {
-            if (it !is ProgressFragment) {
-                ProgressFragment.getInstance().add(this, R.id.progress_container, true)
-            }
-        } ?: kotlin.run {
-            ProgressFragment.getInstance().add(this, R.id.progress_container, true)
-        }
+        ProgressDialog.show(this)
     }
 
     private fun replaceFragment(fragment: Fragment, addToBackStack: Boolean) {
@@ -278,14 +272,11 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
     }
 
     override fun showError(error: String) {
-        ErrorFragment.getInstance().add(error, this, R.id.fragment_container, true)
+        ErrorDialog.show(this, error)
     }
 
     override fun showFailedAlert(error: String) {
-        runOnUiThread {
-            val unknownErrorAlert = UnknownErrorAlert.newInstance(error)
-            unknownErrorAlert.show(supportFragmentManager, "failed_login")
-        }
+        UnknownErrorDialog.show(this, error)
     }
 
     override fun showNoEmailAttentionFragment(
@@ -305,11 +296,9 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
     }
 
     override fun updateCurrentProcess(mCurrentCall: String) {
-        runOnUiThread {
-            val fragment = supportFragmentManager.findFragmentById(R.id.progress_container)
-            if (fragment is ProgressFragment) {
-                fragment.updateProgressStatus(mCurrentCall)
-            }
+        val fragment = supportFragmentManager.findFragmentByTag(ProgressDialog.tag)
+        if (fragment is ProgressDialog) {
+            fragment.updateProgressStatus(mCurrentCall)
         }
     }
 

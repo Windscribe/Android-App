@@ -87,6 +87,12 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
 
     @Provides
     @Singleton
+    fun provideApp(): Windscribe {
+        return windscribeApp
+    }
+
+    @Provides
+    @Singleton
     fun provideAuthGenerator(preferencesHelper: PreferencesHelper): AuthorizationGenerator {
         return AuthorizationGenerator(preferencesHelper)
     }
@@ -637,14 +643,6 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
                 }
             }
         })
-
-    @Provides
-    @Singleton
-    fun providesPreferenceHelper(
-        mPreference: AppPreferences, securePreferences: SecurePreferences
-    ): AppPreferenceHelper {
-        return AppPreferenceHelper(mPreference, securePreferences)
-    }
 
     @Provides
     fun providesRetrofitBuilder(): Retrofit.Builder {
