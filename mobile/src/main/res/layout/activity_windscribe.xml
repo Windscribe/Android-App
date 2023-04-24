@@ -455,29 +455,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_connected_city_nick_name" />
 
-    <!--Node Status-->
-    <include
-        android:id="@+id/cl_node_status_info"
-        layout="@layout/node_status_layout"
-        android:visibility="gone" />
-
-    <!--Account status-->
-    <include
-        android:id="@+id/cl_account_status_info"
-        layout="@layout/user_account_status_layout"
-        android:visibility="gone" />
-
-    <!--ProtocolSwitch-->
-    <include
-        layout="@layout/protocol_switch"
-        android:layout_width="0dp"
-        android:layout_height="44dp"
-        android:layout_marginBottom="@dimen/reg_8dp"
-        android:layout_marginEnd="@dimen/reg_16dp"
-        android:layout_marginStart="@dimen/reg_16dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

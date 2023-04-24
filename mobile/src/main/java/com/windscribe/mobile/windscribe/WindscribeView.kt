@@ -4,8 +4,17 @@
 package com.windscribe.mobile.windscribe
 
 import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup
-import com.windscribe.mobile.adapter.*
-import com.windscribe.mobile.connectionui.*
+import com.windscribe.mobile.adapter.ConfigAdapter
+import com.windscribe.mobile.adapter.FavouriteAdapter
+import com.windscribe.mobile.adapter.RegionsAdapter
+import com.windscribe.mobile.adapter.StaticRegionAdapter
+import com.windscribe.mobile.adapter.StreamingNodeAdapter
+import com.windscribe.mobile.connectionui.ConnectedAnimationState
+import com.windscribe.mobile.connectionui.ConnectedState
+import com.windscribe.mobile.connectionui.ConnectingAnimationState
+import com.windscribe.mobile.connectionui.ConnectingState
+import com.windscribe.mobile.connectionui.ConnectionUiState
+import com.windscribe.mobile.connectionui.DisconnectedState
 import com.windscribe.mobile.windscribe.WindscribeActivity.NetworkLayoutState
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.serverlist.entity.ConfigFile
@@ -21,10 +30,7 @@ interface WindscribeView {
     val uiConnectionState: ConnectionUiState?
     fun gotoLoginRegistrationActivity()
     fun handleRateView()
-    fun hideAccountStatusLayout()
-    fun hideNodeStatusLayout()
     fun hideProgressView()
-    fun hideProtocolSwitchView()
     fun hideRecyclerViewProgressBar()
     val isBannedLayoutShown: Boolean
     val isConnectedToNetwork: Boolean
@@ -63,7 +69,6 @@ interface WindscribeView {
     fun setStreamingNodeAdapter(streamingNodeAdapter: StreamingNodeAdapter)
     fun setUpLayoutForNodeUnderMaintenance()
     fun setupAccountStatusBanned()
-    fun setupAccountStatusDowngraded()
     fun setupAccountStatusExpired()
     fun setupLayoutConnected(state: ConnectedState)
     fun setupLayoutConnecting(state: ConnectingState)
@@ -73,8 +78,6 @@ interface WindscribeView {
     fun setupLayoutForFreeUser(dataLeft: String, upgradeLabel: String, color: Int)
     fun setupLayoutForProUser()
     fun setupLayoutForReconnect(connectionState: String, connectionStateTextColor: Int)
-
-    fun setupLayoutSwitchProtocol(uiState: ConnectionUiState)
     fun setupLayoutUnsecuredNetwork(uiState: ConnectionUiState)
     fun setupPortMapAdapter(savedPort: String, ports: List<String>)
     fun setupProtocolAdapter(savedProtocol: String, protocols: Array<String>)
@@ -88,7 +91,6 @@ interface WindscribeView {
     fun showDialog(message: String)
     fun showFavouriteAdapterLoadError(errorText: String)
     fun showListBarSelectTransition(resourceSelected: Int)
-    fun showNetworkFailedFragment()
     fun showNotificationCount(count: Int)
     fun showRecyclerViewProgressBar()
     fun showReloadError(error: String)
@@ -99,10 +101,8 @@ interface WindscribeView {
     fun updateLocationName(nodeName: String, nodeNickName: String)
     fun updateProgressView(text: String)
     fun updateSearchAdapter(serverListData: ServerListData)
-    fun updateSwitchProtocolTimer(secondsLeft: Int)
-    fun setProtocolsSwitchAdapter(adapter: ProtocolAdapter)
-    fun protocolSwitchAdapter(): ProtocolAdapter?
     fun clearConnectingAnimation()
     fun setDecoyTrafficInfoVisibility(visibility: Int)
     fun showShareLinkDialog()
+    fun setupAccountStatusOkay()
 }

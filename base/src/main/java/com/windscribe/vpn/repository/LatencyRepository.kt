@@ -9,14 +9,20 @@ import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.serverlist.entity.City
 import com.windscribe.vpn.serverlist.entity.PingTime
+import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.services.ping.Ping
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.rx2.await
+import kotlinx.coroutines.withTimeoutOrNull
 import java.net.Inet4Address
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -69,8 +75,16 @@ class LatencyRepository @Inject constructor(
         }
     }
 
+    private suspend fun pingJobAsync(region: StaticRegion): Deferred<PingTime> {
+        val context = currentCoroutineContext()
+        return CoroutineScope(context).async {
+            val pingTime = getPingTime(region.id, region.ipId, isStatic = true, isPro = true)
+            return@async getLatencyFromApi(region.pingHost, pingTime)
+        }
+    }
+
     suspend fun updateAllServerLatencies(): Boolean {
-        val cities = localDbInterface.cities.await()
+        val cities = localDbInterface.pingableCities.await()
         val pingJobs = cities.map { pingJobAsync(it) }
         val cityPings = runCatching {
             pingJobs.awaitAll().map { pingTime ->
@@ -134,19 +148,10 @@ class LatencyRepository @Inject constructor(
     }
 
     suspend fun updateStaticIpLatency(): Boolean {
+        val regions = localDbInterface.allStaticRegions.await()
+        val pingJobs = regions.map { pingJobAsync(it) }
         val staticPings = runCatching {
-            localDbInterface.allStaticRegions.await().map { region ->
-                if (skipPing) {
-                    throw Exception()
-                }
-                if (region.staticIpNode != null) {
-                    val pingTime =
-                        getPingTime(region.id, region.ipId, isStatic = true, isPro = true)
-                    getLatency(region.staticIpNode.ip.toString(), pingTime)
-                } else {
-                    throw Exception("Static region has no ip")
-                }
-            }.map { pingTime ->
+            pingJobs.awaitAll().map { pingTime ->
                 localDbInterface.addPing(pingTime).await()
                 pingTime
             }.run {
@@ -217,11 +222,14 @@ class LatencyRepository @Inject constructor(
     }
 
     private suspend fun getLatencyFromApi(
-        host: String,
+        host: String?,
         ping: PingTime,
     ): PingTime {
         if (skipPing) {
             throw WindScribeException("Latency check not allowed once vpn is connected.")
+        }
+        if (host == null) {
+            return ping.apply { pingTime = -1 }
         }
         val updatedPing = withTimeoutOrNull(3000) {
             iApiCallManager.getLatency(host).mapCatching {

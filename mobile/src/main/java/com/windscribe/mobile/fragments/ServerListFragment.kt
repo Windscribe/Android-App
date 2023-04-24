@@ -26,8 +26,8 @@ import butterknife.ButterKnife
 import butterknife.OnClick
 import com.windscribe.mobile.R
 import com.windscribe.mobile.adapter.ConfigAdapter
-import com.windscribe.mobile.custom_view.RefreshViewEg
 import com.windscribe.mobile.custom_view.refresh.RecyclerRefreshLayout
+import com.windscribe.mobile.custom_view.refresh.RefreshViewEg
 import com.windscribe.mobile.di.ActivityModule
 import com.windscribe.mobile.di.DaggerActivityComponent
 import com.windscribe.mobile.holder.ConfigViewHolder

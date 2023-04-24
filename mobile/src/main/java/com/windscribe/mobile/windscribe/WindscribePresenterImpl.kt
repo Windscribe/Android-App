@@ -55,7 +55,6 @@ import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import com.windscribe.vpn.localdatabase.tables.WindNotification
 import com.windscribe.vpn.model.User
-import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.serverlist.entity.*
 import com.windscribe.vpn.serverlist.interfaces.ListViewClickListener
@@ -104,7 +103,6 @@ class WindscribePresenterImpl @Inject constructor(
     private val flagIcons: Map<String, Int> = FlagIconResource.flagIcons
     private var networkInformation: NetworkInfo? = null
     private val onUserDataUpdate = AtomicBoolean()
-    private var hideAccountStatusLayout = false
     private val logger = LoggerFactory.getLogger("windscribe_p")
     private var connectingFromServerList = false
 
@@ -171,11 +169,6 @@ class WindscribePresenterImpl @Inject constructor(
                 })
     }
 
-    override fun contactSupport() {
-        logger.debug("Opening help page..")
-        windscribeView.openHelpUrl()
-    }
-
     override val lastSelectedTabIndex: Int
         get() = interactor.getAppPreferenceInterface().lastSelectedTabIndex
 
@@ -238,7 +231,6 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun init() {
-        hideAccountStatusLayout = false
         interactor.getAppPreferenceInterface().isReconnecting = false
         // User data
         onUserDataUpdate.set(false)
@@ -1020,8 +1012,6 @@ class WindscribePresenterImpl @Inject constructor(
     override fun onRenewPlanClicked() {
         when (interactor.getUserAccountStatus()) {
             ACCOUNT_STATUS_OK -> {
-                windscribeView.hideAccountStatusLayout()
-                hideAccountStatusLayout = true
                 logger.info("Account status okay, opening upgrade activity...")
                 windscribeView.openUpgradeActivity()
             }
@@ -1098,17 +1088,6 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.showListBarSelectTransition(R.id.img_static_ip_list)
     }
 
-    override fun onSkipNodeCheckingClicked() {
-        windscribeView.hideNodeStatusLayout()
-    }
-
-    override fun onSkipNowClicked() {
-        windscribeView.hideAccountStatusLayout()
-        if (interactor.getUserAccountStatus() == ACCOUNT_STATUS_OK) {
-            hideAccountStatusLayout = true
-        }
-    }
-
     /*
      * Connect to static IP
      * @param StaticIpID
@@ -1130,7 +1109,6 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun onVPNConnecting() {
         selectedLocation?.let {
-            windscribeView.hideProtocolSwitchView()
             if (windscribeView.uiConnectionState !is ConnectingAnimationState) {
                 logger.debug("Changing UI state to connecting.")
                 windscribeView.startVpnConnectingAnimation(
@@ -1144,7 +1122,6 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun onUnsecuredNetwork() {
         selectedLocation?.let {
-            windscribeView.hideProtocolSwitchView()
             windscribeView.setupLayoutUnsecuredNetwork(
                 UnsecuredProtocol(
                     it, connectionOptions, appContext
@@ -1161,7 +1138,6 @@ class WindscribePresenterImpl @Inject constructor(
         }
         if (windscribeView.uiConnectionState !is DisconnectedState) {
             logger.debug("Changing UI state to Disconnected")
-            windscribeView.hideProtocolSwitchView()
             selectedLocation?.let {
                 windscribeView.clearConnectingAnimation()
                 windscribeView.setupLayoutDisconnected(
@@ -1199,7 +1175,6 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     private fun onVpnRequiresUserInput() {
-        windscribeView.hideProtocolSwitchView()
         val locationSourceType = WindUtilities.getSourceTypeBlocking()
         if (locationSourceType === SelectedLocationType.CustomConfiguredProfile) {
             val cityId = interactor.getLocationProvider().selectedCity.value
@@ -1264,41 +1239,6 @@ class WindscribePresenterImpl @Inject constructor(
     override fun saveRateDialogPreference(type: Int) {
         interactor.saveRateAppPreference(type)
         interactor.setRateDialogUpdateTime()
-    }
-
-    override fun sendLog() {
-        logger.info("Preparing debug file...")
-        windscribeView.updateProgressView("Please wait")
-        val logMap: MutableMap<String, String> = HashMap()
-        val username = interactor.getAppPreferenceInterface()
-            .getResponseString(UserStatusConstants.CURRENT_USER_NAME)
-        username?.let {
-            logMap[UserStatusConstants.CURRENT_USER_NAME] = it
-        }
-        interactor.getCompositeDisposable()
-            .add(Single.fromCallable { interactor.getEncodedLog() }.flatMap { encodedLog: String ->
-                logger.info("Reading log file successful, submitting app log...")
-                logMap[NetworkKeyConstants.POST_LOG_FILE_KEY] = encodedLog
-                interactor.getApiCallManager().postDebugLog(logMap)
-            }.timeout(20, TimeUnit.SECONDS).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).subscribeWith(object :
-                    DisposableSingleObserver<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>?>() {
-                    override fun onError(e: Throwable) {
-                        windscribeView.hideProgressView()
-                        windscribeView.showToast("Error submitting log.")
-                    }
-
-                    override fun onSuccess(
-                        appLogSubmissionResponse: GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
-                    ) {
-                        windscribeView.hideProgressView()
-                        when (appLogSubmissionResponse.callResult<GenericSuccess>()) {
-                            is CallResult.Error -> windscribeView.showToast("Error submitting log.")
-                            is CallResult.Success -> windscribeView.showToast("Log sent successfully")
-                        }
-                    }
-                })
-            )
     }
 
     override fun setMainCustomConstraints() {
@@ -2203,7 +2143,9 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun setAccountStatus(user: User) {
         when (user.accountStatus) {
-            User.AccountStatus.Okay -> {}
+            User.AccountStatus.Okay -> {
+                windscribeView.setupAccountStatusOkay()
+            }
             User.AccountStatus.Banned -> {
                 if (interactor.getVpnConnectionStateManager().isVPNActive()) {
                     interactor.getMainScope()

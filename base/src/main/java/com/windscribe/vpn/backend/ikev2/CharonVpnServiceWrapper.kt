@@ -16,6 +16,7 @@ import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.ShortcutStateManager
 import kotlinx.coroutines.CoroutineScope
+import org.slf4j.LoggerFactory
 import org.strongswan.android.data.VpnProfile
 import org.strongswan.android.logic.CharonVpnService
 import javax.inject.Inject
@@ -40,6 +41,8 @@ class CharonVpnServiceWrapper : CharonVpnService() {
     @Inject
     lateinit var scope: CoroutineScope
 
+    private var logger = LoggerFactory.getLogger("vpn_backend")
+
     override fun onCreate() {
         appContext.serviceComponent.inject(this)
         super.onCreate()
@@ -63,19 +66,27 @@ class CharonVpnServiceWrapper : CharonVpnService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return when (intent?.action) {
-            VpnService.SERVICE_INTERFACE -> {
-                shortcutStateManager.connect()
-                START_NOT_STICKY
-            }
+        if (intent == null || intent.action == VpnService.SERVICE_INTERFACE) {
+            logger.debug("System relaunched service, starting shortcut state manager")
+            shortcutStateManager.connect()
+            return START_NOT_STICKY
+        }
+        return when (intent.action) {
             DISCONNECT_ACTION -> {
-                startForeground(NotificationConstants.SERVICE_NOTIFICATION_ID, windNotificationBuilder.buildNotification(Connecting))
+                startForeground(
+                    NotificationConstants.SERVICE_NOTIFICATION_ID,
+                    windNotificationBuilder.buildNotification(Connecting)
+                )
                 stopForeground(false)
                 setNextProfile(null)
                 START_NOT_STICKY
             }
+
             else -> {
-                startForeground(NotificationConstants.SERVICE_NOTIFICATION_ID, windNotificationBuilder.buildNotification(Connecting))
+                startForeground(
+                    NotificationConstants.SERVICE_NOTIFICATION_ID,
+                    windNotificationBuilder.buildNotification(Connecting)
+                )
                 Util.getProfile<VpnProfile>()?.let {
                     setNextProfile(it)
                     START_STICKY

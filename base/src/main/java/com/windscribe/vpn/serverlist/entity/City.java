@@ -275,6 +275,7 @@ public class City implements Parcelable {
         this.pingHost = pingHost;
     }
 
+    @Nullable
     public String getPingHost() {
         return pingHost;
     }
