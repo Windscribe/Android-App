@@ -1,5 +1,5 @@
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <!--- User-->
     <string name="username_empty">!فیلد نام کاربری خالی است</string>
     <string name="password_empty">!فیلد کلمه عبور خالی است</string>
     <string name="enter_username">!لطفا نام کاربری را وارد کنید</string>
@@ -25,24 +25,20 @@
     <string name="sign_up_description">.از حساب خود محافظت کنید، شما می توانید از هر دستگاهی به تنظیمات خود دسترسی داشته باشید و داده های بیشتری دریافت کنید</string>
     <string name="choose_username">انتخاب نام کاربری</string>
     <string name="choose_password">انتخاب کلمه عبور</string>
-    <string name="email_description"><![CDATA[For password recovery, updates & promo only. No spam]]></string>
+    <string name="email_description">For password recovery, updates &amp; promo only. No spam</string>
     <string name="sign_up_failed_network_alert"> !تمام تلاش خودمان را کردیم، فقط به دلایلی متاسفانه نتوانستیم شما را با استفاده از این شبکه ثبت نام کنیم</string>
-
-    <!--Api -->
-    <string name="backup_api_end_point">Trying backup api end point&#8230;</string>
-    <string name="signing_in">Signing in&#8230;</string>
-    <string name="signing_up">Signing up&#8230;</string>
-    <string name="getting_session">Getting Session&#8230;</string>
-    <string name="getting_port_maps">Getting Port Maps&#8230;</string>
-    <string name="getting_server_config">Getting Server Config&#8230;</string>
-    <string name="getting_server_credentials">Getting Server Credentials&#8230;</string>
-    <string name="getting_best_location">Getting Best Location&#8230;</string>
-    <string name="getting_server_list">Getting Server List&#8230;</string>
-    <string name="preparing_your_dashboard">Preparing your dashboard&#8230;</string>
-    <string name="trying_static_endpoint">Trying static endpoint&#8230;</string>
-    <string name="getting_reg_token">Getting reg token&#8230;</string>
-
-    <!--- Email-->
+    <string name="backup_api_end_point">Trying backup api end point…</string>
+    <string name="signing_in">Signing in…</string>
+    <string name="signing_up">Signing up…</string>
+    <string name="getting_session">Getting Session…</string>
+    <string name="getting_port_maps">Getting Port Maps…</string>
+    <string name="getting_server_config">Getting Server Config…</string>
+    <string name="getting_server_credentials">Getting Server Credentials…</string>
+    <string name="getting_best_location">Getting Best Location…</string>
+    <string name="getting_server_list">Getting Server List…</string>
+    <string name="preparing_your_dashboard">Preparing your dashboard…</string>
+    <string name="trying_static_endpoint">Trying static endpoint…</string>
+    <string name="getting_reg_token">Getting reg token…</string>
     <string name="invalid_email_format">!ایمیل وارد شده اشتباه است</string>
     <string name="email_empty">!فیلد پست الکترونیک خالی است</string>
     <string name="email">ایمیل</string>
@@ -50,13 +46,9 @@
     <string name="confirm_email">تایید ایمیل</string>
     <string name="resend_verification_email">ارسال مجدد ایمیل تایید</string>
     <string name="change_email">ویرایش ایمیل</string>
-
-    <!--Network -->
     <string name="no_internet"> :( عدم اتصال به اینترنت</string>
     <string name="no_network_detected">!هیچ شبکه ای شناسایی نشد</string>
     <string name="this_network_hates_us">:(این شبکه از ما بدش میاد</string>
-
-    <!-- Upgrade-->
     <string name="upgrade">ارتقاء</string>
     <string name="upgrade_case_normal">ارتقاء</string>
     <string name="renew_plan">تمدید طرح</string>
@@ -74,21 +66,17 @@
     <string name="warning_no_email_pro_account">.برای بازیابی حساب خود در صورت فراموشی رمز عبور، ایمیل خود را اضافه کنید</string>
     <string name="free_reason_to_confirm">لطفا ایمیل خود را برای دریافت 10 گیگابایت در ماه تأیید کنید</string>
     <string name="pro_reason_to_confirm">لطفا ایمیل خود را برای محافظت از حساب کاربری خودتان تأیید کنید</string>
-
-    <!-- Connection states -->
     <string name="connected">!ارتباط برقرار است</string>
     <string name="connected_lowercase">!ارتباط برقرار است</string>
-    <string name="connecting">در حال برقراری ارتباط&#160;</string>
+    <string name="connecting">در حال برقراری ارتباط </string>
     <string name="connecting_to">در حال برقرای ارتباط به %s</string>
     <string name="connected_to">ارتباطد برقرار شده است به %s</string>
     <string name="disconnecting">....در حال قطع کردن ارتباط</string>
     <string name="disconnected">!ارتباط قطع شده است</string>
-    <string name="tunnel_test_failed">تلاش برای برقراری ارتباط ناموفق بوده است&#8230;</string>
-    <string name="checking_connectivity">در حال بررسی اتصال&#8230;</string>
-    <string name="connectivity_test_failed">تست اتصال ناموفق بوده است&#8230;</string>
+    <string name="tunnel_test_failed">تلاش برای برقراری ارتباط ناموفق بوده است…</string>
+    <string name="checking_connectivity">در حال بررسی اتصال…</string>
+    <string name="connectivity_test_failed">تست اتصال ناموفق بوده است…</string>
     <string name="best_location">بهترین مکان</string>
-
-    <!--Connection preference-->
     <string name="connection_mode">نوع ارتباط</string>
     <string name="preferred_protocol">پروتکل برگزیده</string>
     <string name="protocol">پروتکل</string>
@@ -103,12 +91,10 @@
     <string name="natKeepAlive">IKE keepalive</string>
     <string name="keep_alive">keep alive</string>
     <string name="auto_detecting">....تشخیص خودکار</string>
-
-    <!-- Account-->
     <string name="plan_pro">Pro</string>
     <string name="expiry_date">تاریخ اتمام</string>
     <string name="reset_date">تنظیم مجدد تاریخ</string>
-    <string name="gb_per_month">&#160;GB/Month</string>
+    <string name="gb_per_month"> GB/Month</string>
     <string name="my_account">اکانت کاربری</string>
     <string name="cancel">لغو</string>
     <string name="edit_account">ویرایش اکانت</string>
@@ -116,20 +102,16 @@
     <string name="plan">طرح</string>
     <string name="please_login">!لطفا برای اتصال، ابتدا وارد شوید</string>
     <string name="please_login_to_see_account_details">.برای مشاهده جزئیات حساب خود و ایجاد تنظیمات مورد علاقه، ثبت نام کنید یا وارد شوید</string>
-
-    <!-- Billing-->
     <string name="billing_unavailable">!صورتحساب پلی استور برای این دستگاه موجود نمی باشد</string>
     <string name="item_unavailable">آیتم درخواستی شما موجود نیست. لطفا با پشتیبانی در سایت ذکر شده تماس بگیرید https://windscribe.com/support!</string>
     <string name="billing_service_unavailable">!خدمات صورت‌حساب در دسترس نیست. لطفاً اتصال شبکه خود را بررسی کنید و دوباره امتحان کنید</string>
     <string name="unknown_billing_error">خطای نامشخص رخ داده است. لطفا با پشتیبانی در سایت ذکر شده تماس بگیرید https://windscribe.com/support!</string>
-    <string name="fatal_error">Could not connect to the billing service&#8230;Please check your network connection!</string>
+    <string name="fatal_error">Could not connect to the billing service…Please check your network connection!</string>
     <string name="unable_to_process_request">متاسفانه بررسی درخواست شما درحال حاضر امکان پذیر نیست. لطفا دوباره امتحان کنید</string>
     <string name="play_store_updating">به روزرسانی فروشگاه پلی استور در حال انجام است، لطفا پس از اتمام به روز رسانی امتحان کنید</string>
     <string name="purchase_cancelled">!خرید شما کنسل شد</string>
     <string name="purchase_successful">خرید شما با موفقیت انجام شد</string>
     <string name="_2gb_left"> دو گیگابایت باقی مانده است </string>
-
-    <!-- Notification/Status Strings -->
     <string name="state_connecting">در حال برقراری ارتباط</string>
     <string name="state_wait">در انتظار پاسخ سرور</string>
     <string name="state_auth">در حال احراز هویت</string>
@@ -145,19 +127,13 @@
     <string name="state_tcp_connect">Connecting (TCP)</string>
     <string name="state_auth_failed">عملیات احراز هویت ناموفق بود</string>
     <string name="state_no_network">در حال انتظار برای پیدا کردن شبکه مناسب و قابل استفاده</string>
-
-    <!--News feed -->
     <string name="news_feed">فید خبری</string>
     <string name="news_feed_welcome">!اطلاعیه ها و اخبار کلی مرتبط به ما (وینداسکریب)را در اینجا خواهید یافت. شاید حتی کیک خوشمزه، همه کیک را دوست دارند</string>
     <string name="news_feed_welcome_title">WELCOME TO WINDSCRIBE</string>
-
-    <!-- Rate dialog -->
     <string name="rate_the_app">Rate Windscribe</string>
     <string name="may_be_later">Maybe Later</string>
     <string name="never_ask_again">Go Away</string>
     <string name="rate_message">Are you enjoying Windscribe? Sure you are. Rate us in the Play Store, and we’ll love you long time.</string>
-
-    <!-- GPS spoofing -->
     <string name="gps_spoofing_explain">برای این ویژگی نیاز است شما </string>
     <string name="let_s_do_it">بیا انجامش بدیم</string>
     <string name="unlock_developer_mode">قفل آپشن های توسعه دهنده را باز کنید</string>
@@ -169,8 +145,6 @@
     <string name="gps_spoofing_success">موقعیت مکانی جی پی اس شما همانند موقعیت  مکانی وی پی ان شما خواهد بود</string>
     <string name="gps_spoofing_not_set">امکان نفوذ به جی پی اس فعال نمی شود </string>
     <string name="gps_spoofing_error">لطفاً دوباره راهنما را دنبال کنید تا آن را فعال کنید</string>
-
-    <!--Ghost mode -->
     <string name="add_email">اضافه کردن ایمیل</string>
     <string name="unlimited_data">دیتا نامحدود</string>
     <string name="preferences">اولویت ها</string>
@@ -182,16 +156,15 @@
     <string name="pricing">قیمت گذاری</string>
     <string name="all_locations">همه مکان ها</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[Subscriptions may be managed monthly, yearly or turned off by going to the App Store Account Settings after purchase. All prices include applicable taxes.]]></string>
+    <string name="terms">Subscriptions may be managed monthly, yearly or turned off by going to the App Store Account Settings after purchase. All prices include applicable taxes.</string>
     <string name="account_set_up"> تنظیمات حساب کاربری</string>
     <string name="account_set_up_description">.از حساب خود و هر دستگاهی که به آن اتصال پیدا میکنید، محافظت کنید</string>
     <string name="continue_free_10gb_mo">ده گیگابایت در ماه رایگان دریافت کنید</string>
     <string name="continue_without_email">ادامه بدون ایمیل</string>
     <string name="no_email_warning">.بدون ایمیل، حساب رایگان شما به 2 گیگابایت در ماه محدود می شود و نمی توانید رمز عبور خود را تنظیم مجدد کنید</string>
     <string name="get_started">شروع کن</string>
-    <!-- Actions -->
     <string name="error_try_again">!خطا دوباره امتحان کنید</string>
-    <string name="please_wait">Please wait&#8230;</string>
+    <string name="please_wait">Please wait…</string>
     <string name="resend">دوباره ارسال کنید</string>
     <string name="loading">..در حال بارگذاری</string>
     <string name="retry">دوباره امتحان کنید</string>
@@ -201,16 +174,12 @@
     <string name="set_up_later">بعداً تنظیم کنید</string>
     <string name="back">برگشت</string>
     <string name="ok">باشه</string>
-
-    <!-- Log -->
     <string name="view_log">View Debug Log</string>
     <string name="send_log">Send Debug Log</string>
     <string name="send_charon_log">Send IkEv2 log</string>
     <string name="sent_thanks">Sent thanks !</string>
     <string name="sending_log">Sending log…</string>
     <string name="export_log">Export Log</string>
-
-    <!--Home -->
     <string name="no_favourites">موارد مورد علاقه وجود ندارد</string>
     <string name="no_custom_configs">Custom configs allow you to connect to any OpenVPN or Wireguard server. Just add a valid config file and it will appear in this tab.</string>
     <string name="add_profile">افزودن پروفایل وی پی ان</string>
@@ -220,8 +189,6 @@
     <string name="check_status_description">بعداً دوباره امتحان کنید یا برای اطلاعات بیشتر به صفحه وضعیت ما بروید</string>
     <string name="added_to_favourites">به علاقه مندی ها اضافه شد</string>
     <string name="add_vpn_config">تنظیمات سفارشی را اضافه کنید</string>
-
-    <!--Main Menu-->
     <string name="general">صفحه اصلی</string>
     <string name="account">پروفایل</string>
     <string name="connection">اتصال</string>
@@ -230,8 +197,6 @@
     <string name="logout">خروج از سیستم</string>
     <string name="preference">اولویت ها</string>
     <string name="logout_alert_description">آیا مطمئنید که می خواهید از وینداسکریب خارج شوید؟</string>
-
-    <!--General Settings-->
     <string name="sort_by">ترتیب موقعیت مکانی</string>
     <string name="display_latency">نمایش تاخیر</string>
     <string name="preferred_language">زبان</string>
@@ -240,9 +205,6 @@
     <string name="haptic_setting_label">Haptic Feedback</string>
     <string name="version">ورژن</string>
     <string name="show_location_health">نمایش موقعیت مکانی بارگیری شده</string>
-
-
-    <!-- Split tunneling -->
     <string name="split_tunneling_feature">هنگام اتصال، برنامه هایی را انتخاب کنید که از وینداسکریب حذف یا اضافه شوند</string>
     <string name="mode">حالت</string>
     <string name="split_tunneling">Split Tunneling</string>
@@ -251,45 +213,33 @@
     <string name="feature_tunnel_mode_exclusive">برنامه های انتخاب شده ذیل هنگام اتصال از وینداسکریب عبور نمی کنند</string>
     <string name="feature_tunnel_mode_inclusive">برنامه های انتخاب شده ذیل هنگام اتصال از وینداسکریب عبور می کنند</string>
     <string name="apps">برنامه ها</string>
-
-    <!--Always on -->
     <string name="always_on">همیشه روی وی پی ان</string>
     <string name="always_on_warning">
      \"وی پی ان همیشه روشن\"
      به اندروید اجازه می دهد تا اتصال وی پی ان  را کنترل کند و اطمینان حاصل کند که هیچ داده ای از دستگاه خارج نمی شود مگر اینکه تونل وی پی ان فعال باشد.
     </string>
     <string name="always_on_setting">دستگاه های اندروید10 و بالاتر برای راه اندازی وینداسکریب در راه اندازی دستگاه، به  پیکربندی "وی پی ان همیشه روشن" نیاز دارد</string>
-
-    <!-- Network security -->
     <string name="forget_network">شبکه رو فراموش کن</string>
     <string name="network_secured">ایمن شده است</string>
     <string name="network_unsecured">غیر ایمن</string>
     <string name="preferred_protocol_description">اگر مشکلی در اتصال دارید، یک پروتکل پیش‌فرض برای این شبکه انتخاب کنید</string>
     <string name="unknown">شبکه ناشناس</string>
-    <string name="loading_network_list">در حال بارگیری لیست شبکه، لطفا صبر کنید&#8230;</string>
+    <string name="loading_network_list">در حال بارگیری لیست شبکه، لطفا صبر کنید…</string>
     <string name="no_saved_network_list">!هیچ لیست شبکه ذخیره شده ای وجود ندارد</string>
     <string name="network_options">گزینه های شبکه</string>
     <string name="auto_secure">امنیت خودکار</string>
     <string name="auto_secure_description">.وقتی به این شبکه وصل می شوید، وینداسکریب به طور خودکار روشن می شود</string>
-
-    <!--Auto connect on boot-->
     <string name="auto_start_on_boot">اتصال خودکار در هنگام بوت</string>
     <string name="enable_start_on_boot">شروع در بوت را فعال کنید</string>
-
-    <!--Location permission -->
     <string name="grant_permission">دادن مجوز</string>
     <string name="reason_for_location_permission">وینداسکریب زمانی که در پس‌زمینه در حال اجراست به مجوز مکان نیاز دارد تا بتواند ویژگی \"لیست سفید شبکه\" را راه اندازی کند. این مجوز برای دسترسی به نام های شبکه وای فای مورد نیاز است. این مجوز صرفاً برای این ویژگی و همچنین عملکرد جعل جی پی اس استفاده می شود. داده‌های موقعیت مکانی شما از دستگاه شما خارج نمی‌شوند و برای چیز دیگری استفاده نمی‌شوند</string>
     <string name="location_permission_for_ssid">.برای راه‌اندازی پروتکل‌های ترجیحی و اتصال خودکار، مجوز مکان مورد نیاز است</string>
     <string name="disclaimer">سلب مسئولیت</string>
     <string name="location_permission">مجوز موقعیت مکانی</string>
-
-    <!-- Features -->
     <string name="feature1">سرور در بیش از 100 مکان</string>
     <string name="feature2">مسدود کردن تبلیغات و بدافزارها</string>
     <string name="feature3">بدون ورود به سیستم</string>
     <string name="feature4">قفل استریمینگ دیتا باز شود</string>
-
-    <!--Help -->
     <string name="knowledge_base">دانش محور</string>
     <string name="knowledge_base_description">.همه آنچه باید در مورد وینداسکریب بدانید</string>
     <string name="talk_to_garry">با گری صحبت کن</string>
@@ -298,153 +248,227 @@
     <string name="send_ticket_description">گیر کردی؟ برای ما یک تیکت بفرستید</string>
     <string name="community_support">پشتیبانی جامعه</string>
     <string name="community_support_description">بهترین مکان ها برای کمک و کمک گرفتن از سایر کاربران.</string>
-
-
-    <!--Send ticket -->
     <string name="how_to_send_ticket">فیلدهای زیر را پر کنید و یکی از نمایندگان پشتیبانی ما شخصاً به زودی با شما تماس می گیرد</string>
     <string name="category">دسته بندی</string>
     <string name="email_reason_for_contact">.بنابراین ما می توانیم با شما تماس بگیریم، ما از اطلاعات تماس شما برای هیچ چیز دیگری استفاده نخواهیم کرد</string>
     <string name="what_is_the_issue">چه مشکلی دارید؟</string>
-<string name="message">پیام</string>
-<string name="subject">عنوان</string>
-
-    <!--Config -->
-<string name="edit_config_file">ویرایش فایل پیکربندی</string>
-<string name="name">اسم</string>
-<string name="save_credentials">Save credentials?</string>
-<string name="update">به روز رسانی</string>
-<string name="enter_credentials">اعتبارنامه را وارد کنید</string>
-<string name="connect">اتصال</string>
-
-    <!--Debug -->
-<string name="send_debug_log">ارسال گزارش اشکال زدایی</string>
-<string name="send_ikev2_log"> IKEv2  ارسال گزارش</string>
-
-    <!--Home -->
-<string name="failed">ناموفق</string>
-<string name="next_in_up">"Next up in %d"</string>
-<string name="step_1_3">مرحله 1/3</string>
-<string name="step_2_3">مرحله 2/3</string>
-<string name="remove_from_favourites">از موارد دلخواه حذف شد</string>
-<string name="config_added">به تنظیمات اضافه شد</string>
-
-<string name="app_background">برنامه پس زمینه </string>
-<string name="disconnected_lower_case">قطع شده</string>
-<string name="connected_lower_case">متصل</string>
-<string name="x_press_login">اتصال کند</string>
-<string name="other">موارد دیگر</string>
-
-    <!-- About -->
-<string name="about">درباره </string>
-<string name="about_us">درباره ما</string>
-<string name="status">وضعیت موجود</string>
-<string name="privacy_policy"> سیاست حفظ حریم خصوصی</string>
-<string name="terms_title">شرایط</string>
-<string name="blog">وبلاگ</string>
-<string name="jobs">پوزیشن های شغلی</string>
-<string name="software_licenses">مجوزهای نرم افزار</string>
-
-
-    <!-- ********** TV ************* -->
-
-    <!-- UPGRADE STRINGS -->
-<string name="benefit_unlimited_data">دیتا نامحدود</string>
-<string name="choose_plan"> انتخاب طرح</string>
-<string name="monthly">ماهیانه</string>
-<string name="yearly">سالانه - 55% پس انداز</string>
-<string name="upgrade_title">.شما سزاوارید حریم خصوصی خود را بر اساس نیاز خود محدود کنید</string>
-<string name="text_login">ورود</string>
-<string name="text_sign_up">ثبت نام</string>
-
-    <!-- Log -->
-<string name="sending_debug_log">Sending debug log\nPlease wait&#8230;</string>
-<string name="app_log_submitted">.سپاس ! گزارش برنامه ارسال شد</string>
-<string name="log_submission_failed">!خطا در ارسال فایل گزارش</string>
-
-    <!-- Home -->
-<string name="add_your_email_address">  .آدرس ایمیل خود را اضافه کنید که در زمانیکه  رمز عبور خود را فراموش کردید از آن استفاده کنید، حتی 10 گیگابایت برای آن هدیه بگیرید</string>
-<string name="locations">مکان ها</string>
-<string name="notifications">اعلان ها</string>
-<string name="support">پشتیبانی</string>
-<string name="support_content">.برای تمام سوالات مربوط به پشتیبانی به آدرس بالا در تلفن یا رایانه خود بروید</string>
-<string name="add_email_title">ایمیل اضافه کنید</string>
-
-    <!-- Upgrade -->
-<string name="upgradeNoData">به نظر می رسد شما از حریم خصوصی ارزشمند خارج شده اید</string>
-<string name="upgradeToUnlock">شما سزاوارید حریم خصوصی خود را بر اساس نیاز خود محدود کنید</string>
-<string name="restore_purchase">خرید را بازیابی کنید</string>
-<string name="servers_in_over_60_countries_and_110_cities">سرور در بیش از 60 کشور و 110 شهر</string>
-<string name="no_bandwidth_interruptions_stay_protected_forever">بدون وقفه در پهنای باند. برای همیشه مورد محافظت قرار بگیر</string>
-
-
-<string name="skip">پرش کنید</string>
-<string name="robert_detail">.بدافزارها و تبلیغات را در همه دستگاه های شما مسدود می کند</string>
-
-
-    <!-- Settings -->
-<string name="settings">تنظیمات</string>
-<string name="sort_type">سفارش موقعیت مکان ها توسط</string>
-<string name="split_routing">تقسیم مسیریابی</string>
-<string name="exclusive_mode">انحصاری</string>
-<string name="disabled">خاموش است</string>
-<string name="apps_to_exclude">برنامه هایی که باید حذف شوند</string>
-<string name="apps_to_include">برنامه هایی که باید گنجانده شوند</string>
-<string name="lan_traffic">ترافیک شبکه</string>
-<string name="allow">اجازه دادن</string>
-<string name="block">مسدود کردن</string>
-<string name="start_on_boot">با بوت شروع کنید</string>
-<string name="split_routing_content" translatable="false">هنگام اتصال، برنامه‌هایی را انتخاب کنید که از وینداسکریب حذف یا اضافه شوند</string>
-<string name="show_system_apps">نمایش اپلیکیشن های سیستم</string>
-
-    <!-- Login -->
-<string name="login_label" translatable="false">اگر از قبل یک حساب کاربری دارید</string>
-<string name="ghost_account_sign_up" translatable="false">ثبت نام کنید یا وارد شوید تا جزئیات حساب خود را مشاهده کرده و از تنظیمات برگزیده خود محافظت کنید</string>
-<string name="ghost_account_claim" translatable="false">برای جلوگیری از از دست دادن وضعیت حرفه ای، حساب خود را درخواست کنید</string>
-<string name="claim_account" translatable="false">درخواست حساب</string>
-<string name="reason_to_get_more_data" translatable="false">"یا ثبت نام کنید تا آن را به 10 گیگابایت در ماه افزایش دهید، یا آن را ارتقا دهید و به طور کامل از شر محدودیت ها خلاص شوید. "</string>
-<string name="sign_up_to_get_10" translatable="false">ثبت نام - 10 گیگابایت در ماه</string>
-<string name="get_pro" translatable="false">حرفه ای دریافت کنید - نامحدود</string>
-<string name="add_email_pro" translatable="false">ایمیل اضافه کنید</string>
-<string name="text_two_fa" translatable="false">2FA require to proceed. Use an authentication app to generate the code.</string>
-<string name="free_reason_to_add_email" translatable="false">لطفا ایمیل خود را اضافه کنید تا 10 گیگابایت در ماه دریافت کنید</string>
-<string name="pro_reason_to_add_email" translatable="false">لطفا ایمیل خود را برای محافظت از حساب خود اضافه کنید</string>
-<string name="confirm_email_title" translatable="false">ایمیل را تایید کنید</string>
-<string name="back_uppercase" translatable="false">برگشت</string>
-<string name="Error" translatable="false">خطا</string>
-<string name="text_account_set_up" translatable="false">ثبت نام</string>
-<string name="xpress_login" translatable="false">Lazy Login</string>
-<string name="web_login_description" translatable="false">Go to <b>https://windscribe.com/lazy</b> on any device and enter the code below.</string>
-<string name="app_login_description" translatable="false">Using your Windscribe Android app on your phone or tablet, go to Preferences (Top left), under “Account” choose “Lazy Login” and enter the code below.</string>
-<string name="or" translatable="false">OR</string>
-<string name="generate_code" translatable="false">ایجاد کد</string>
-<string name="manual_login" translatable="false">ورود به سیستم دستی</string>
-<string name="keep_your_secrets">.اسرار خود را حفظ کنید</string>
-<string name="reset_password_description">Please visit windscribe.com to reset your password</string>
-<string name="support_url">windscribe.com/support</string>
-<string name="enter_code">کد را وارد کنید</string>
-<string name="enter">وارد کردن</string>
-
-    <!-- Server list -->
-<string name="ping_time">%d MS</string>
-<string name="trying_next_protocol">"Trying next protocol in %d"</string>
-<string name="all">تمام</string>
-<string name="favourite">موارد دلخواه</string>
-<string name="windflix">Windflix</string>
-<string name="static_ip">آی پی استاتیک</string>
-<string name="disconnect_alert_no_network" translatable="false">Windscribe VPN tunnel is paused due to no network connectivity - please check your network settings</string>
-<string name="node_under_construction_text" translatable="false">This Location is Under Maintenance. Try again later or go to our Status page for more info. https://windscribe.com/status</string>
-<string name="load_loading" translatable="false">در حال بارگذاری</string>
-<string name="load_nothing_found" translatable="false">چیزی برای دیدن اینجا نیست</string>
-<string name="load_error" translatable="false">خطای بارگذاری</string>
-<string name="select_location">!لطفا ابتدا یک مکان را انتخاب کنید</string>
-
-    <!-- Actions -->
-<string name="text_ok">تمام</string>
-
-    <!--Robert -->
-<string name="robert_description">R.O.B.E.R.T. is a customizable server-side domain and IP blocking tool. Select the block lists you wish to apply on all your devices by toggling the switch.</string>
-<string name="learn_more">بیشتر بدانید</string>
-<string name="manage_custom_rules">مدیریت قوانین سفارشی</string>
-<string name="blocking">مسدود کردن</string>
-<string name="allowing">اجازه دادن</string>
-    </resources>
+    <string name="message">پیام</string>
+    <string name="subject">عنوان</string>
+    <string name="edit_config_file">ویرایش فایل پیکربندی</string>
+    <string name="name">اسم</string>
+    <string name="save_credentials">Save credentials?</string>
+    <string name="update">به روز رسانی</string>
+    <string name="enter_credentials">اعتبارنامه را وارد کنید</string>
+    <string name="connect">اتصال</string>
+    <string name="send_debug_log">ارسال گزارش اشکال زدایی</string>
+    <string name="send_ikev2_log"> IKEv2  ارسال گزارش</string>
+    <string name="failed">ناموفق</string>
+    <string name="next_in_up">"Next up in %d"</string>
+    <string name="step_1_3">مرحله 1/3</string>
+    <string name="step_2_3">مرحله 2/3</string>
+    <string name="remove_from_favourites">از موارد دلخواه حذف شد</string>
+    <string name="config_added">به تنظیمات اضافه شد</string>
+    <string name="app_background">برنامه پس زمینه </string>
+    <string name="disconnected_lower_case">قطع شده</string>
+    <string name="connected_lower_case">متصل</string>
+    <string name="x_press_login">اتصال کند</string>
+    <string name="other">موارد دیگر</string>
+    <string name="about">درباره </string>
+    <string name="about_us">درباره ما</string>
+    <string name="status">وضعیت موجود</string>
+    <string name="privacy_policy"> سیاست حفظ حریم خصوصی</string>
+    <string name="terms_title">شرایط</string>
+    <string name="blog">وبلاگ</string>
+    <string name="jobs">پوزیشن های شغلی</string>
+    <string name="software_licenses">مجوزهای نرم افزار</string>
+    <string name="benefit_unlimited_data">دیتا نامحدود</string>
+    <string name="choose_plan"> انتخاب طرح</string>
+    <string name="monthly">ماهیانه</string>
+    <string name="yearly">سالانه - 55% پس انداز</string>
+    <string name="upgrade_title">.شما سزاوارید حریم خصوصی خود را بر اساس نیاز خود محدود کنید</string>
+    <string name="text_login">ورود</string>
+    <string name="text_sign_up">ثبت نام</string>
+    <string name="sending_debug_log">Sending debug log\nPlease wait…</string>
+    <string name="app_log_submitted">.سپاس ! گزارش برنامه ارسال شد</string>
+    <string name="log_submission_failed">!خطا در ارسال فایل گزارش</string>
+    <string name="add_your_email_address">  .آدرس ایمیل خود را اضافه کنید که در زمانیکه  رمز عبور خود را فراموش کردید از آن استفاده کنید، حتی 10 گیگابایت برای آن هدیه بگیرید</string>
+    <string name="locations">مکان ها</string>
+    <string name="notifications">اعلان ها</string>
+    <string name="support">پشتیبانی</string>
+    <string name="support_content">.برای تمام سوالات مربوط به پشتیبانی به آدرس بالا در تلفن یا رایانه خود بروید</string>
+    <string name="add_email_title">ایمیل اضافه کنید</string>
+    <string name="upgradeNoData">به نظر می رسد شما از حریم خصوصی ارزشمند خارج شده اید</string>
+    <string name="upgradeToUnlock">شما سزاوارید حریم خصوصی خود را بر اساس نیاز خود محدود کنید</string>
+    <string name="restore_purchase">خرید را بازیابی کنید</string>
+    <string name="servers_in_over_60_countries_and_110_cities">سرور در بیش از 60 کشور و 110 شهر</string>
+    <string name="no_bandwidth_interruptions_stay_protected_forever">بدون وقفه در پهنای باند. برای همیشه مورد محافظت قرار بگیر</string>
+    <string name="skip">پرش کنید</string>
+    <string name="robert_detail">.بدافزارها و تبلیغات را در همه دستگاه های شما مسدود می کند</string>
+    <string name="settings">تنظیمات</string>
+    <string name="sort_type">سفارش موقعیت مکان ها توسط</string>
+    <string name="split_routing">تقسیم مسیریابی</string>
+    <string name="exclusive_mode">انحصاری</string>
+    <string name="disabled">خاموش است</string>
+    <string name="apps_to_exclude">برنامه هایی که باید حذف شوند</string>
+    <string name="apps_to_include">برنامه هایی که باید گنجانده شوند</string>
+    <string name="lan_traffic">ترافیک شبکه</string>
+    <string name="allow">اجازه دادن</string>
+    <string name="block">مسدود کردن</string>
+    <string name="start_on_boot">با بوت شروع کنید</string>
+    <string name="split_routing_content" translatable="false">هنگام اتصال، برنامه‌هایی را انتخاب کنید که از وینداسکریب حذف یا اضافه شوند</string>
+    <string name="show_system_apps">نمایش اپلیکیشن های سیستم</string>
+    <string name="login_label" translatable="false">اگر از قبل یک حساب کاربری دارید</string>
+    <string name="ghost_account_sign_up" translatable="false">ثبت نام کنید یا وارد شوید تا جزئیات حساب خود را مشاهده کرده و از تنظیمات برگزیده خود محافظت کنید</string>
+    <string name="ghost_account_claim" translatable="false">برای جلوگیری از از دست دادن وضعیت حرفه ای، حساب خود را درخواست کنید</string>
+    <string name="claim_account" translatable="false">درخواست حساب</string>
+    <string name="reason_to_get_more_data" translatable="false">"یا ثبت نام کنید تا آن را به 10 گیگابایت در ماه افزایش دهید، یا آن را ارتقا دهید و به طور کامل از شر محدودیت ها خلاص شوید. "</string>
+    <string name="sign_up_to_get_10" translatable="false">ثبت نام - 10 گیگابایت در ماه</string>
+    <string name="get_pro" translatable="false">حرفه ای دریافت کنید - نامحدود</string>
+    <string name="add_email_pro" translatable="false">ایمیل اضافه کنید</string>
+    <string name="text_two_fa" translatable="false">2FA require to proceed. Use an authentication app to generate the code.</string>
+    <string name="free_reason_to_add_email" translatable="false">لطفا ایمیل خود را اضافه کنید تا 10 گیگابایت در ماه دریافت کنید</string>
+    <string name="pro_reason_to_add_email" translatable="false">لطفا ایمیل خود را برای محافظت از حساب خود اضافه کنید</string>
+    <string name="confirm_email_title" translatable="false">ایمیل را تایید کنید</string>
+    <string name="back_uppercase" translatable="false">برگشت</string>
+    <string name="Error" translatable="false">خطا</string>
+    <string name="text_account_set_up" translatable="false">ثبت نام</string>
+    <string name="xpress_login" translatable="false">Lazy Login</string>
+    <string name="web_login_description" translatable="false">Go to <b>https://windscribe.com/lazy</b> on any device and enter the code below.</string>
+    <string name="app_login_description" translatable="false">Using your Windscribe Android app on your phone or tablet, go to Preferences (Top left), under “Account” choose “Lazy Login” and enter the code below.</string>
+    <string name="or" translatable="false">OR</string>
+    <string name="generate_code" translatable="false">ایجاد کد</string>
+    <string name="manual_login" translatable="false">ورود به سیستم دستی</string>
+    <string name="keep_your_secrets">.اسرار خود را حفظ کنید</string>
+    <string name="reset_password_description">Please visit windscribe.com to reset your password</string>
+    <string name="support_url">windscribe.com/support</string>
+    <string name="enter_code">کد را وارد کنید</string>
+    <string name="enter">وارد کردن</string>
+    <string name="ping_time">%d MS</string>
+    <string name="trying_next_protocol">"Trying next protocol in %d"</string>
+    <string name="all">تمام</string>
+    <string name="favourite">موارد دلخواه</string>
+    <string name="windflix">Windflix</string>
+    <string name="static_ip">آی پی استاتیک</string>
+    <string name="disconnect_alert_no_network" translatable="false">Windscribe VPN tunnel is paused due to no network connectivity - please check your network settings</string>
+    <string name="node_under_construction_text" translatable="false">This Location is Under Maintenance. Try again later or go to our Status page for more info. https://windscribe.com/status</string>
+    <string name="load_loading" translatable="false">در حال بارگذاری</string>
+    <string name="load_nothing_found" translatable="false">چیزی برای دیدن اینجا نیست</string>
+    <string name="load_error" translatable="false">خطای بارگذاری</string>
+    <string name="select_location">!لطفا ابتدا یک مکان را انتخاب کنید</string>
+    <string name="text_ok">تمام</string>
+    <string name="robert_description">R.O.B.E.R.T. is a customizable server-side domain and IP blocking tool. Select the block lists you wish to apply on all your devices by toggling the switch.</string>
+    <string name="learn_more">بیشتر بدانید</string>
+    <string name="manage_custom_rules">مدیریت قوانین سفارشی</string>
+    <string name="blocking">مسدود کردن</string>
+    <string name="allowing">اجازه دادن</string>
+    <string name="latency">پوشیدگی</string>
+    <string name="ad_malware_blocker">بهترین نرم افزارهای مخرب و مسدود کننده اگهی شما همیشه استفاده کنید. جدی.</string>
+    <string name="decoy">دکوی</string>
+    <string name="send">ارسال</string>
+    <string name="app_requires_background_location_permission">برنامه نیاز به اجازه محل پس زمینه برای دسترسی به WIFI SSID در اندروید 11+. اگر می خواهید از این ویژگی استفاده کنید، Okay را فشار دهید و \"Allow all the time\" را از کادر گفتگوی مجوز انتخاب کنید.</string>
+    <string name="sales">فروش</string>
+    <string name="lazy_login_description">با یک کد کوتاه وارد برنامه های تلویزیونی Windscribe شوید.</string>
+    <string name="gps_spoofing_description">مختصات GPS دستگاه خود را جعل کنید.</string>
+    <string name="auto_secure_new_networks">امنیت خودکار شبکه های جدید</string>
+    <string name="dark">تاریک</string>
+    <string name="haptic_feedback_description">پاسخ های فیزیکی (لرزش) به اقدامات کاربر</string>
+    <string name="set_this_protocol_as_preferred">تنظیم \"٪s\" به عنوان پروتکل ترجیحی؟</string>
+    <string name="the_protocol_you_ve_chosen_has_failed_to_connect_windscribe_will_attempt_to_reconnect_using_the_first_protocol_below">پروتکلی که انتخاب کرده اید در اتصال شکست خورده است. Windscribe تلاش خواهد کرد تا با استفاده از اولین پروتکل زیر دوباره متصل شود.</string>
+    <string name="feedback">بازخورد</string>
+    <string name="please_provide_email_first">خوب ما تمام تلاش خود را کردیم، فقط نتوانستیم شما را در این شبکه متصل کنیم. گزارش اشکال زدایی خود را برای ما ارسال کنید تا بتوانیم بفهمیم چه اتفاقی افتاده است.</string>
+    <string name="error">حجم ترافیک جعلی</string>
+    <string name="Wireguard_description">با موفقیت قوانین رابرت را به روز کرد.</string>
+    <string name="geography">استفاده از داده های تخمینی</string>
+    <string name="potential_data_use">به اشتراک گذاشتن Windscribe با یک دوست!</string>
+    <string name="share_windscribe_with_a_friend">تمام شبکه های تازه مواجه شده را به عنوان امن علامت گذاری کنید.</string>
+    <string name="auto_secure_new_networks_description">اختلاف</string>
+    <string name="discord">اگر انها حرفه ای شوند، شما هم حرفه ای خواهید شد!</string>
+    <string name="error_sending_email">دریافت 10GB / ماه داده ها و به دست اوردن توانایی برای تنظیم مجدد رمز عبور خود را.</string>
+    <string name="get_10gb_data">IKEv2 یک پروتکل تونل زنی مبتنی بر IPsec است.</string>
+    <string name="iKEV2_description">حذف از علاقه مندی ها</string>
+    <string name="remove_it_from_favourites">نتوانست قوانین رابرت را به روز کند.</string>
+    <string name="WSTunnel_description">تغییر پروتکل برای Custom Configs در دسترس نیست.</string>
+    <string name="flags">چپ داده</string>
+    <string name="refer_for_data">اشتراک گذاری برنامه</string>
+    <string name="emergency_connected_description">تغییر پروتکل</string>
+    <string name="protocol_change">قطع</string>
+    <string name="Udp_description">خودکار</string>
+    <string name="emergency_connect">ارجاع شده توسط کسی؟</string>
+    <string name="auto_package_size_detecting_failed">نمایش امار ترافیک در اعلان.</string>
+    <string name="decoy_traffic_warning">اشکارسازی خودکار اندازهی بسته...</string>
+    <string name="auto_detecting_packet_size">تنظیم به عنوان ترجیحی</string>
+    <string name="explain_me">صفحه اتصال درون برنامه را سفارشی کنید.</string>
+    <string name="app_background_description">شبکه فعلی</string>
+    <string name="please_confirm_email_first">بسته های نگهداری NAT را به طور منظم به همتای خود ارسال می کند تا جلسه NAT را زنده نگه دارد تا همکار بتواند به دستگاه دسترسی پیدا کند (فقط IKEv2)</string>
+    <string name="location_order_description">دسترسی به سرورها در بیش از 60 کشور و 110 مرکز داده.</string>
+    <string name="access_to_multiple_servers">گزارش اشکالزدایی شما دریافت شده است. لطفا با پشتیبانی تماس بگیرید اگر شما می خواهید کمک با این موضوع.</string>
+    <string name="auto_secure_description_secondary">خرابی اتصال!</string>
+    <string name="i_understand">دکوی ترافیک</string>
+    <string name="decoy_traffic">کاملا خود توضیحی است. از پهنای باندی که دوست دارید استفاده کنید.</string>
+    <string name="as_much_as_bandwidth_you_like">هنگامی که دستگاه شروع به کار می کند، به طور خودکار به اخرین مکان متصل متصل می شود.</string>
+    <string name="appearance_description">عنوان پیکربندی</string>
+    <string name="location_load_description">(الزامی)</string>
+    <string name="required">جستجو</string>
+    <string name="search">نور</string>
+    <string name="light">دسترس نیست</string>
+    <string name="referee_must_provide_your_username_at_sign_up_and_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">نمی توانید به Windscribe دسترسی داشته باشد؟ برای مسدود کردن شبکه محدود کننده خود به سرورهای ما وصل شوید.</string>
+    <string name="language_description">محلی سازی Windscribe به زبان های پشتیبانی شده.</string>
+    <string name="caution">احتیاط</string>
+    <string name="custom">سفارشی</string>
+    <string name="latency_display_description">نمایش تاخیر به عنوان میله های قدرت سیگنال یا در میلی ثانیه.</string>
+    <string name="package_size_detected_successfully">اندازه بسته با موفقیت شناسایی شد.</string>
+    <string name="add_to_mock_location_explain_android_12">پس از باز شدن قفل، به "گزینه های توسعه دهنده" در تنظیمات بروید.  در زیر مکان» Windscribe را به عنوان برنامه مکان ساختگی» انتخاب کنید.</string>
+    <string name="play_store_generic_api_error">پاسخ غیر منتظره ای از فروشگاه Play دریافت کرد. این اتفاق ممکن است به دلیل خریدهایی که اخیرا لغو شده است رخ دهد. بعدا دوباره امتحان کنید.</string>
+    <string name="decoy_caution_description">این می تواند از مقدار قابل توجهی از داده ها استفاده کند، بنابراین مطمئن شوید که این ویژگی را روشن نکنید مگر اینکه واقعا به ان نیاز داشته باشید و یک برنامه داده بزرگ داشته باشید. این ویژگی ایمنی را تضمین نمی کند، بنابراین در معرض خطر خود استفاده کنید.</string>
+    <string name="allow_lan_description">انتخاب کنید که ایا اجازه دسترسی به منابع در همان شبکه (مانند سرورهای فایل، چاپگرها، جعبه های رسانه و غیره) در حالی که به Windscribe متصل هستید.</string>
+    <string name="preferred_protocol_description_secondary">بهترین پروتکل را برای این شبکه انتخاب کنید. این تمام تنظیمات اتصال جهانی را لغو می کند.</string>
+    <string name="packet_size_description">انتخاب کنید که ایا اجازه دهید Windscribe MTU را برای اتصال شما تصمیم بگیرد یا به صورت دستی لغو شود.</string>
+    <string name="reddit">بد</string>
+    <string name="if_you_go_pro_they_ll_go_pro_too">اگر شما حرفه ای بروید، انها نیز حرفه ای خواهند شد!</string>
+    <string name="share_app_description">٪s از شما دعوت میکند تا به Windscribe بپیوندید. نام کاربری خود را در ثبت نام ارائه دهید و هر دو 1 گیگابایت داده رایگان به حساب های خود اضافه خواهید کرد. اگر شما حرفه ای شوید، انها نیز حرفه ای خواهند شد!</string>
+    <string name="bars">میله</string>
+    <string name="ms">خانم</string>
+    <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe همیشه از این پروتکل برای اتصال به این شبکه در اینده برای جلوگیری از هرگونه وقفه استفاده خواهد کرد.</string>
+    <string name="connection_mode_description">انتخاب کنید که ایا اجازه دهید Windscribe به طور خودکار یک ترکیب پروتکل / پورت را برای تنظیم خود انتخاب کنید یا به صورت دستی ان را خودتان انجام دهید.</string>
+    <string name="terms_policy_en">شما هر دو 1GB اضافی در هر ماه زمانی که انها ثبت نام دریافت کنید.</string>
+    <string name="first_reason_to_use_share">لطفا ابتدا ایمیل ارسال کنید.</string>
+    <string name="well_we_gave_it_our_best_shot_we_just_couldn_t_connect_you_on_this_network_send_us_your_debug_log_so_we_can_figure_out_what_happened">"خطا"</string>
+    <string name="fake_traffic_volume">پروتکل VPN بسیار ساده و در عین حال سریع و مدرن.</string>
+    <string name="successfully_updated_robert_rules">جغرافیا</string>
+    <string name="if_they_go_pro_you_ll_go_pro_to">ایمیل با موفقیت اضافه شد.</string>
+    <string name="added_email_successfully">خطا در ارسال ایمیل.</string>
+    <string name="failed_to_update_robert_rules">شما باید ایمیل خود را تایید کنید تا مزایای فوق برای شما و مراجعه کننده اعمال شود.</string>
+    <string name="you_must_confirm_your_email_in_order_for_the_benefits_above_to_apply_to_you_and_the_referrer">شامل</string>
+    <string name="inclusive">ارجاع نام کاربری</string>
+    <string name="referral_username">ترافیک HTTPS خود را با سوکت های وب بسته بندی می کند.</string>
+    <string name="protocol_change_is_not_available_for_custom_config">فنی</string>
+    <string name="technical">پرچم</string>
+    <string name="data_left_in_your_plan">ارجاع برای داده ها</string>
+    <string name="share_app">شما اکنون به سرور Windscribe متصل شده اید. سعی کنید دوباره Login کنید.</string>
+    <string name="a_la_carte_unlimited_plan">سرعت و امنیت متعادل</string>
+    <string name="referred_by_someone">اشکارسازی خودکار اندازه بسته شکست خورد.</string>
+    <string name="notification_stats_description">این یک ویژگی تجربی است که تلاش می کند تا با حملات همبستگی ترافیکی به شبکه های متخاصم مبارزه کند. هنگامی که فعال می شود، برنامه فعالیت تصادفی را بر روی تونل تولید می کند و داده های تصادفی را در فواصل انتخاب شده اپلود و دانلود می کند.</string>
+    <string name="set_as_preferred">توضیح بده!</string>
+    <string name="current_network">به سرعت با استفاده از یک پروتکل متفاوت دوباره متصل شوید.</string>
+    <string name="protocol_change_description">الفبای</string>
+    <string name="alphabet">تایید ایمیل با موفقیت ارسال شد.</string>
+    <string name="email_confirmation_sent_successfully">لطفا ابتدا ایمیل را تایید کنید.</string>
+    <string name="keep_alive_description">ترتیب لیست مکان به ترتیب صعودی الفبا، جغرافیا یا تاخیر.</string>
+    <string name="your_debug_log_has_been_received_please_contact_support_if_you_want_assistance_with_this_issue">مسیر پرونده در اینجا نشان داده خواهد شد</string>
+    <string name="file_path_will_show_here">شما هر دو 1GB اضافی در هر ماه زمانی که شما ثبت نام دریافت کنید.</string>
+    <string name="first_reason_to_use_referral">قطع ارتباط با VPN</string>
+    <string name="disconnect_from_vpn">سایر شبکه ها</string>
+    <string name="other_networks">داور باید ایمیل خود را تایید کند تا مزایای فوق برای حساب شما اعمال شود.</string>
+    <string name="referee_must_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">اتصال خودکار در این شبکه Wi-Fi به
+اخرین مکان انتخاب شده</string>
+    <string name="connection_failure">می‌فهمم</string>
+    <string name="auto_connect_on_boot_description">به اشتراک گذاشتن پیوند دعوت</string>
+    <string name="share_invite_link">روشن یا تاریک. یک طرف را انتخاب کنید و عاقلانه انتخاب کنید.</string>
+    <string name="config_title">ارتقا و شما هر دو نرم افزار دریافت کنید.</string>
+    <string name="second_reason_to_use_referral">بار مکان را به عنوان یک نوار نمایش دهید. هر چه نوار کوتاهتر باشد، بار روی مکان (با توجه به ظرفیت کل مکان) کمتر است.</string>
+    <string name="unavailable">Windscribe هنگام پیوستن به یک شبکه وای فای ناامن به طور خودکار قطع می شود.</string>
+    <string name="network_options_description">داور باید نام کاربری شما را در زمان ثبت نام ارائه دهد و ایمیل خود را تایید کند تا مزایای فوق برای حساب شما اعمال شود.</string>
+    <string name="emergency_connect_description">استفاده از ان اگر OpenVPN UDP نتواند.</string>
+    <string name="Tcp_description">ترافیک خود را به عنوان ترافیک HTTPS با TLS پنهان می کند</string>
+    <string name="Stealth_description">حالت ترافیک طعمه</string>
+</resources>

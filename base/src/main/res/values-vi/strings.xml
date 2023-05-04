@@ -1,9 +1,5 @@
-<!--
-  ~ Copyright (c) 2021 Windscribe Limited.
-  -->
-
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <!--- User-->
     <string name="username_empty">Tên người dùng trống!</string>
     <string name="password_empty">Mật khẩu trống!</string>
     <string name="enter_username">Vui lòng nhập tên người dùng của bạn!</string>
@@ -29,10 +25,8 @@
     <string name="sign_up_description">Bảo vệ tài khoản của bạn, truy cập cài đặt của bạn từ bất kỳ thiết bị nào và nhận thêm dữ liệu.</string>
     <string name="choose_username">Chọn Tên người dùng</string>
     <string name="choose_password">Chọn Mật khẩu</string>
-    <string name="email_description"><![CDATA[Chỉ dành cho khôi phục mật khẩu, cập nhật và quảng cáo. Không có thư rác]]></string>
+    <string name="email_description">Chỉ dành cho khôi phục mật khẩu, cập nhật và quảng cáo. Không có thư rác</string>
     <string name="sign_up_failed_network_alert">Chà, chúng tôi cố gắng hết sức nhưng không thể giúp bạn đăng ký trên mạng này vì một số lý do.</string>
-
-    <!--Api -->
     <string name="backup_api_end_point">Đang thử điểm cuối api dự phòng…</string>
     <string name="signing_in">Đang đăng nhập…</string>
     <string name="signing_up">Đang đăng ký…</string>
@@ -45,8 +39,6 @@
     <string name="preparing_your_dashboard">Đang chuẩn bị trang tổng quan của bạn…</string>
     <string name="trying_static_endpoint">Đang thử điểm cuối tĩnh…</string>
     <string name="getting_reg_token">Nhận mã thông báo đăng ký…</string>
-
-    <!--- Email-->
     <string name="invalid_email_format">Email không hợp lệ!</string>
     <string name="email_empty">Email trống!</string>
     <string name="email">Email</string>
@@ -54,13 +46,9 @@
     <string name="confirm_email">Xác nhận Email</string>
     <string name="resend_verification_email">Gửi lại Email Xác minh</string>
     <string name="change_email">Thay đổi Email</string>
-
-    <!--Network -->
     <string name="no_internet">KHÔNG CÓ INTERNET!</string>
     <string name="no_network_detected">Không có mạng nào được phát hiện!</string>
     <string name="this_network_hates_us">Mạng này ghét chúng tôi</string>
-
-    <!-- Upgrade-->
     <string name="upgrade">NÂNG CẤP</string>
     <string name="upgrade_case_normal">Nâng cấp</string>
     <string name="renew_plan">Gia hạn Gói</string>
@@ -77,8 +65,6 @@
     <string name="warning_no_email_pro_account">Thêm email để khôi phục tài khoản của bạn trong trường hợp bạn quên mật khẩu.</string>
     <string name="free_reason_to_confirm">Vui lòng xác nhận email của bạn để nhận 10 GB/Tháng</string>
     <string name="pro_reason_to_confirm">Vui lòng xác nhận email để bảo vệ tài khoản của bạn</string>
-
-    <!-- Connection states -->
     <string name="connected">ĐÃ KẾT NỐI</string>
     <string name="connected_lowercase">Đã kết nối</string>
     <string name="connecting">ĐANG KẾT NỐI </string>
@@ -90,8 +76,6 @@
     <string name="checking_connectivity">Đang kiểm tra khả năng kết nối…</string>
     <string name="connectivity_test_failed">Kiểm tra khả năng kết nối thất bại…</string>
     <string name="best_location">Vị trí Tốt nhất</string>
-
-    <!--Connection preference-->
     <string name="connection_mode">Chế độ Kết nối</string>
     <string name="preferred_protocol">Giao thức Ưu tiên</string>
     <string name="protocol">Giao thức</string>
@@ -106,8 +90,6 @@
     <string name="natKeepAlive">IKE keepalive</string>
     <string name="keep_alive">keep alive</string>
     <string name="auto_detecting">Tự động phát hiện…</string>
-
-    <!-- Account-->
     <string name="plan_pro">Pro</string>
     <string name="expiry_date">Ngày hết hạn</string>
     <string name="reset_date">Đặt lại ngày</string>
@@ -119,8 +101,6 @@
     <string name="plan">GÓI</string>
     <string name="please_login">Vui lòng đăng nhập trước để kết nối!</string>
     <string name="please_login_to_see_account_details">Đăng ký hoặc Đăng nhập để xem chi tiết tài khoản của bạn và bảo vệ các tùy chọn của bạn.</string>
-
-    <!-- Billing-->
     <string name="billing_unavailable">Tính năng thanh toán trên Play không khả dụng cho thiết bị này</string>
     <string name="item_unavailable">Mục bạn yêu cầu không khả dụng. \nVui lòng liên hệ với bộ phận hỗ trợ tại https://windscribe.com/support!</string>
     <string name="billing_service_unavailable">Dịch vụ thanh toán không khả dụng. Vui lòng kiểm tra kết nối mạng của bạn và thử lại!</string>
@@ -131,8 +111,6 @@
     <string name="purchase_cancelled">Giao dịch mua đã bị hủy!</string>
     <string name="purchase_successful">Mua hàng thành công!</string>
     <string name="_2gb_left">CÒN LẠI 2 GB</string>
-
-    <!-- Notification/Status Strings -->
     <string name="state_connecting">Đang kết nối</string>
     <string name="state_wait">Đang chờ phản hồi của máy chủ</string>
     <string name="state_auth">Xác thực</string>
@@ -148,19 +126,13 @@
     <string name="state_tcp_connect">Đang kết nối (TCP)</string>
     <string name="state_auth_failed">Xác thực thất bại</string>
     <string name="state_no_network">Đang chờ mạng có thể sử dụng</string>
-
-    <!--News feed -->
     <string name="news_feed">Bảng tin</string>
     <string name="news_feed_welcome">Bạn sẽ tìm thấy các thông báo và tin tức chung liên quan đến Windscribe tại đây. Có lẽ cả bánh ngon, Mọi người đều thích bánh!</string>
     <string name="news_feed_welcome_title">CHÀO MỪNG BẠN ĐẾN VỚI WINDSCRIBE</string>
-
-    <!-- Rate dialog -->
     <string name="rate_the_app">Đánh giá Windscribe</string>
     <string name="may_be_later">Có lẽ để sau</string>
     <string name="never_ask_again">Rời đi</string>
     <string name="rate_message">Bạn có thích Windscribe không? Chắc chắn là có rồi. Đánh giá chúng tôi trên Cửa hàng Play và chúng tôi sẽ biết ơn bạn rất nhiều.</string>
-
-    <!-- GPS spoofing -->
     <string name="gps_spoofing_explain">Tính năng này yêu cầu bạn sửa đổi cài đặt Android của mình. Vui lòng làm theo một số bước tiếp theo để kích hoạt tính năng này.</string>
     <string name="let_s_do_it">Hãy thực hiện nào</string>
     <string name="unlock_developer_mode">Mở khóa Tùy chọn Nhà phát triển</string>
@@ -172,8 +144,6 @@
     <string name="gps_spoofing_success">Vị trí GPS của bạn sẽ giống với vị trí VPN của bạn.</string>
     <string name="gps_spoofing_not_set">Không thể bật Giả mạo GPS</string>
     <string name="gps_spoofing_error">Vui lòng thử làm theo hướng dẫn một lần nữa để kích hoạt tính năng này.</string>
-
-    <!--Ghost mode -->
     <string name="add_email">Thêm Email</string>
     <string name="unlimited_data">Dữ liệu Không giới hạn</string>
     <string name="preferences">Ưu tiên</string>
@@ -185,14 +155,13 @@
     <string name="pricing">GIÁ CẢ</string>
     <string name="all_locations">Tất cả Vị trí</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[Gói·đăng ký có thể được quản lý hàng tháng, hàng năm hoặc tắt bằng cách đi tới Cài đặt Tài khoản App Store sau khi mua. Tất cả giá đã bao gồm thuế hiện hành.]]></string>
+    <string name="terms">Gói·đăng ký có thể được quản lý hàng tháng, hàng năm hoặc tắt bằng cách đi tới Cài đặt Tài khoản App Store sau khi mua. Tất cả giá đã bao gồm thuế hiện hành.</string>
     <string name="account_set_up">Thiết lập Tài khoản</string>
     <string name="account_set_up_description">Bảo vệ tài khoản của bạn và truy cập tài khoản từ mọi thiết bị.</string>
     <string name="continue_free_10gb_mo">Nhận 10 GB miễn phí/Tháng</string>
     <string name="continue_without_email">Tiếp tục mà không cần Email</string>
     <string name="no_email_warning">Nếu không có email, tài khoản miễn phí của bạn sẽ bị giới hạn ở 2 GB/Tháng và bạn sẽ không thể đặt lại mật khẩu của mình.</string>
     <string name="get_started">Bắt đầu</string>
-    <!-- Actions -->
     <string name="error_try_again">Lỗi, hãy thử lại!</string>
     <string name="please_wait">Vui lòng chờ…</string>
     <string name="resend">Gửi lại</string>
@@ -204,16 +173,12 @@
     <string name="set_up_later">Thiết lập sau</string>
     <string name="back">Quay lại</string>
     <string name="ok">OK</string>
-
-    <!-- Log -->
     <string name="view_log">Xem Nhật ký Gỡ lỗi</string>
     <string name="send_log">Gửi Nhật ký Gỡ lỗi</string>
     <string name="send_charon_log">Gửi nhật ký IkEv2</string>
     <string name="sent_thanks">Đã gửi, xin cảm ơn!</string>
     <string name="sending_log">Đang gửi nhật ký…</string>
     <string name="export_log">Xuất Nhật ký</string>
-
-    <!--Home -->
     <string name="no_favourites">Không có mục yêu thích</string>
     <string name="no_custom_configs">Các cấu hình tùy chỉnh cho phép bạn kết nối với bất kỳ máy chủ OpenVPN hay Wireguard nào. Chỉ cần thêm một tệp cấu hình hợp lệ và máy chủ sẽ xuất hiện trong tab này.</string>
     <string name="add_profile">Thêm Cấu hình VPN</string>
@@ -223,8 +188,6 @@
     <string name="check_status_description">Hãy thử lại sau hoặc truy cập trang Trạng thái của chúng tôi để biết thêm thông tin</string>
     <string name="added_to_favourites">Đã thêm vào mục yêu thích</string>
     <string name="add_vpn_config">Thêm Cấu hình Tùy chỉnh</string>
-
-    <!--Main Menu-->
     <string name="general">Chung</string>
     <string name="account">Tài khoản</string>
     <string name="connection">Kết nối</string>
@@ -233,8 +196,6 @@
     <string name="logout">Đăng xuất</string>
     <string name="preference">Ưu tiên</string>
     <string name="logout_alert_description">Bạn có chắc chắn muốn đăng xuất khỏi Windscribe không?</string>
-
-    <!--General Settings-->
     <string name="sort_by">Thứ tự Vị trí</string>
     <string name="display_latency">Độ trễ Màn hình</string>
     <string name="preferred_language">Ngôn ngữ</string>
@@ -243,9 +204,6 @@
     <string name="haptic_setting_label">Phản hồi Haptic</string>
     <string name="version">Phiên bản</string>
     <string name="show_location_health">Hiển thị Tải Vị trí</string>
-
-
-    <!-- Split tunneling -->
     <string name="split_tunneling_feature">Chọn các ứng dụng để loại trừ hoặc bao gồm khỏi Windscribe khi được kết nối</string>
     <string name="mode">Chế độ</string>
     <string name="split_tunneling">Phân chia Đường hầm</string>
@@ -254,13 +212,9 @@
     <string name="feature_tunnel_mode_exclusive">Các ứng dụng được chọn bên dưới sẽ không chuyển qua Windscribe khi được kết nối</string>
     <string name="feature_tunnel_mode_inclusive">Các ứng dụng được chọn bên dưới sẽ chuyển qua Windscribe khi được kết nối</string>
     <string name="apps">CÁC ỨNG DỤNG</string>
-
-    <!--Always on -->
     <string name="always_on">VPN Luôn bật</string>
     <string name="always_on_warning">VPN \"Luôn bật\" cho phép Android kiểm soát kết nối VPN và đảm bảo rằng không có dữ liệu nào có thể rời khỏi thiết bị trừ khi đường hầm VPN được thiết lập.</string>
     <string name="always_on_setting">Các thiết bị Android 10+ yêu cầu VPN Luôn bật được định cấu hình để Windscribe bắt đầu khi khởi động thiết bị.</string>
-
-    <!-- Network security -->
     <string name="forget_network">Quên mạng</string>
     <string name="network_secured">Được bảo mật</string>
     <string name="network_unsecured">Không được bảo mật</string>
@@ -271,25 +225,17 @@
     <string name="network_options">Tùy chọn Mạng</string>
     <string name="auto_secure">Tự động Bảo mật</string>
     <string name="auto_secure_description">Windscribe sẽ tự động bật khi bạn kết nối với mạng này.</string>
-
-    <!--Auto connect on boot-->
     <string name="auto_start_on_boot">Tự động kết nối khi khởi động</string>
     <string name="enable_start_on_boot">Bật Bắt đầu Khi Khởi động</string>
-
-    <!--Location permission -->
     <string name="grant_permission">Cấp phép</string>
     <string name="reason_for_location_permission">Windscribe cần có quyền định vị khi chạy ở chế độ nền để làm cho tính năng \"Network Whitelist\" hoạt động. Quyền này là bắt buộc để truy cập tên mạng Wi-fi. Quyền này chỉ được sử dụng cho tính năng này cũng như chức năng giả mạo GPS. Dữ liệu vị trí của bạn không rời khỏi thiết bị của bạn và không được sử dụng cho bất kỳ việc gì khác.</string>
     <string name="location_permission_for_ssid">Cần có quyền vị trí để thiết lập các giao thức ưu tiên và tự động kết nối.</string>
     <string name="disclaimer">Tuyên bố Miễn trừ trách nhiệm</string>
     <string name="location_permission">Quyền vị trí</string>
-
-    <!-- Features -->
     <string name="feature1">Máy chủ tại hơn 100 vị trí</string>
     <string name="feature2">Chặn quảng cáo và phần mềm độc hại</string>
     <string name="feature3">Không ghi nhật ký</string>
     <string name="feature4">Mở khóa phát trực tuyến</string>
-
-    <!--Help -->
     <string name="knowledge_base">Kiến thức cơ bản</string>
     <string name="knowledge_base_description">Tất cả những gì bạn cần biết về Windscribe.</string>
     <string name="talk_to_garry">Trò chuyện với Garry</string>
@@ -298,43 +244,31 @@
     <string name="send_ticket_description">Gặp vấn đề? Hãy gửi cho chúng tôi một yêu cầu hỗ trợ.</string>
     <string name="community_support">Hỗ trợ Cộng đồng</string>
     <string name="community_support_description">Nơi tốt nhất để trợ giúp và nhận trợ giúp từ những người dùng khác.</string>
-
-
-    <!--Send ticket -->
     <string name="how_to_send_ticket">Điền vào các trường dưới đây và một trong những nhân viên hỗ trợ của chúng tôi sẽ liên hệ lại với bạn trong thời gian sớm nhất™</string>
     <string name="category">Danh mục</string>
     <string name="email_reason_for_contact">Vì vậy, chúng tôi có thể liên hệ với bạn, chúng tôi sẽ không sử dụng thông tin đó cho bất kỳ việc gì khác</string>
     <string name="what_is_the_issue">Vấn đề là gì?</string>
     <string name="message">Tin nhắn</string>
     <string name="subject">Chủ đề</string>
-
-    <!--Config -->
     <string name="edit_config_file">Chỉnh sửa Tệp cấu hình</string>
     <string name="name">tên</string>
     <string name="save_credentials">Lưu thông tin đăng nhập?</string>
     <string name="update">Cập nhật</string>
     <string name="enter_credentials">Nhập Thông tin đăng nhập</string>
     <string name="connect">Kết nối</string>
-
-    <!--Debug -->
     <string name="send_debug_log">Gửi Nhật ký Gỡ lỗi</string>
     <string name="send_ikev2_log">Gửi Nhật ký IKEv2</string>
-
-    <!--Home -->
     <string name="failed">THẤT ​​BẠI</string>
     <string name="next_in_up">"Lần kế tiếp trong %d"</string>
     <string name="step_1_3">Bước 1/3</string>
     <string name="step_2_3">Bước 2/3</string>
     <string name="remove_from_favourites">Đã xóa khỏi mục yêu thích</string>
     <string name="config_added">Đã thêm vào cấu hình</string>
-
     <string name="app_background">Nền ứng dụng</string>
     <string name="disconnected_lower_case">Đã ngắt kết nối</string>
     <string name="connected_lower_case">Đã kết nối</string>
     <string name="x_press_login">Đăng nhập Lười</string>
     <string name="other">KHÁC</string>
-
-    <!-- About -->
     <string name="about">Giới thiệu</string>
     <string name="about_us">Giới thiệu về Chúng tôi</string>
     <string name="status">Trạng thái</string>
@@ -343,11 +277,6 @@
     <string name="blog">Blog</string>
     <string name="jobs">Công việc</string>
     <string name="software_licenses">Giấy phép Phần mềm</string>
-
-
-    <!-- ********** TV ************* -->
-
-    <!-- UPGRADE STRINGS -->
     <string name="benefit_unlimited_data">Dữ liệu Không giới hạn</string>
     <string name="choose_plan">CHỌN GÓI</string>
     <string name="monthly">HÀNG THÁNG</string>
@@ -355,33 +284,22 @@
     <string name="upgrade_title">Bạn xứng đáng nhận được nhiều hơn quyền riêng tư bị hạn chế.</string>
     <string name="text_login">Đăng nhập</string>
     <string name="text_sign_up">Đăng ký</string>
-
-    <!-- Log -->
     <string name="sending_debug_log">Đang gửi nhật ký gỡ lỗi\nVui lòng đợi…</string>
     <string name="app_log_submitted">Xin cảm ơn! Nhật ký ứng dụng đã được gửi.</string>
     <string name="log_submission_failed">Lỗi khi gửi tệp nhật ký!</string>
-
-    <!-- Home -->
     <string name="add_your_email_address">Thêm địa chỉ email của bạn trong trường hợp bạn quên mật khẩu của mình. Chúng tôi thậm chí sẽ cung cấp cho bạn 10 GB khi làm điều đó.</string>
     <string name="locations">vị trí</string>
     <string name="notifications">Thông báo</string>
     <string name="support">Hỗ trợ</string>
     <string name="support_content">Truy cập địa chỉ·ở trên từ điện thoại hoặc máy tính của bạn để được hỗ trợ tất cả các câu hỏi liên quan.</string>
     <string name="add_email_title">Thêm Email</string>
-
-    <!-- Upgrade -->
     <string name="upgradeNoData">Có vẻ như bạn không còn quyền riêng tư quý giá</string>
     <string name="upgradeToUnlock">Bạn xứng đáng nhận được nhiều hơn quyền riêng tư bị hạn chế</string>
     <string name="restore_purchase">Khôi phục mua hàng</string>
     <string name="servers_in_over_60_countries_and_110_cities">Máy chủ tại hơn 60 quốc gia và 110 thành phố</string>
     <string name="no_bandwidth_interruptions_stay_protected_forever">Không bị gián đoạn băng thông. Được bảo vệ mãi mãi</string>
-
-
     <string name="skip">Bỏ qua</string>
     <string name="robert_detail">Chặn phần mềm độc hại và quảng cáo trên tất cả các thiết bị của bạn.</string>
-
-
-    <!-- Settings -->
     <string name="settings">Cài đặt</string>
     <string name="sort_type">Đặt hàng các vị trí bằng</string>
     <string name="split_routing">Phân chia Tuyến đường</string>
@@ -395,8 +313,6 @@
     <string name="start_on_boot">Bắt đầu khi khởi động</string>
     <string name="split_routing_content" translatable="false">Chọn các ứng dụng để loại trừ hoặc bao gồm khỏi Windscribe khi được kết nối</string>
     <string name="show_system_apps">Hiển thị các ứng dụng hệ thống</string>
-
-    <!-- Login -->
     <string name="login_label" translatable="false">Nếu bạn đã có một tài khoản</string>
     <string name="ghost_account_sign_up" translatable="false">Đăng ký hoặc đăng nhập để xem chi tiết tài khoản của bạn và bảo vệ các tùy chọn của bạn</string>
     <string name="ghost_account_claim" translatable="false">Xác thực tài khoản của bạn để tránh mất trạng thái pro</string>
@@ -423,8 +339,6 @@
     <string name="support_url">windscribe.com/support</string>
     <string name="enter_code">Nhập Mã</string>
     <string name="enter">Nhập</string>
-
-    <!-- Server list -->
     <string name="ping_time">%d MS</string>
     <string name="trying_next_protocol">"Thử giao thức tiếp theo trong %d"</string>
     <string name="all">Tất cả</string>
@@ -437,14 +351,120 @@
     <string name="load_nothing_found" translatable="false">Không có gì để xem ở đây</string>
     <string name="load_error" translatable="false">Lỗi khi tải.</string>
     <string name="select_location">Vui lòng chọn một vị trí trước!</string>
-
-    <!-- Actions -->
     <string name="text_ok">OK</string>
-
-    <!--Robert -->
     <string name="robert_description">R.O.B.E.R.T. là công cụ chặn IP và miền phía máy chủ có thể tùy chỉnh. Chọn danh sách chặn mà bạn muốn áp dụng trên tất cả các thiết bị của mình bằng cách bật nút chuyển.</string>
     <string name="learn_more">Tìm hiểu thêm</string>
     <string name="manage_custom_rules">Quản lý Quy tắc Tùy chỉnh</string>
     <string name="blocking">Chặn</string>
     <string name="allowing">Cho phép</string>
+    <string name="latency">Trễ</string>
+    <string name="ad_malware_blocker">Phần mềm độc hại và trình chặn quảng cáo tốt nhất mà bạn từng sử dụng. Nghiêm túc.</string>
+    <string name="decoy">DECOY</string>
+    <string name="send">Gửi</string>
+    <string name="app_requires_background_location_permission">Ứng dụng yêu cầu quyền truy cập vị trí chạy nền để truy cập WIFI SSID trên Android 11+. Nếu bạn muốn sử dụng tính năng này, hãy nhấn Okay và chọn \"Allow all the time\" từ hộp thoại quyền.</string>
+    <string name="sales">Bán hàng</string>
+    <string name="lazy_login_description">Đăng nhập vào các ứng dụng TV của Windscribe bằng một mã ngắn.</string>
+    <string name="gps_spoofing_description">Giả mạo tọa độ GPS của thiết bị.</string>
+    <string name="auto_secure_new_networks">Tự động bảo mật mạng mới</string>
+    <string name="dark">Tối</string>
+    <string name="haptic_feedback_description">Phản ứng vật lý (Rung) đối với hành động của người dùng</string>
+    <string name="set_this_protocol_as_preferred">Đặt \"%s\" làm giao thức ưa thích?</string>
+    <string name="the_protocol_you_ve_chosen_has_failed_to_connect_windscribe_will_attempt_to_reconnect_using_the_first_protocol_below">Giao thức bạn đã chọn không kết nối được. Windscribe sẽ cố gắng kết nối lại bằng giao thức đầu tiên bên dưới.</string>
+    <string name="feedback">Phản hồi</string>
+    <string name="please_provide_email_first">Vâng, chúng tôi đã cố gắng hết sức, chúng tôi không thể kết nối bạn trên mạng này. Gửi cho chúng tôi nhật ký gỡ lỗi của bạn để chúng tôi có thể tìm ra điều gì đã xảy ra.</string>
+    <string name="error">Lưu lượng truy cập giả mạo</string>
+    <string name="Wireguard_description">Cập nhật thành công các quy tắc của Robert.</string>
+    <string name="geography">Mức sử dụng dữ liệu ước tính</string>
+    <string name="potential_data_use">Chia sẻ Windscribe với bạn bè!</string>
+    <string name="share_windscribe_with_a_friend">Đánh dấu tất cả các mạng mới gặp là Bảo mật.</string>
+    <string name="auto_secure_new_networks_description">Bất hòa</string>
+    <string name="discord">Nếu họ đi Pro, bạn cũng sẽ đi Pro!</string>
+    <string name="error_sending_email">Nhận 10GB / Tháng dữ liệu và có khả năng đặt lại mật khẩu của bạn.</string>
+    <string name="get_10gb_data">IKEv2 là một giao thức đường hầm dựa trên IPsec.</string>
+    <string name="iKEV2_description">Xóa khỏi mục yêu thích</string>
+    <string name="remove_it_from_favourites">Không cập nhật được quy tắc của Robert.</string>
+    <string name="WSTunnel_description">Thay đổi giao thức không có sẵn cho Cấu hình tùy chỉnh.</string>
+    <string name="flags">Dữ liệu còn lại</string>
+    <string name="refer_for_data">Chia sẻ ứng dụng</string>
+    <string name="emergency_connected_description">Thay đổi giao thức</string>
+    <string name="protocol_change">Ngắt kết nối</string>
+    <string name="Udp_description">Xe ô tô</string>
+    <string name="emergency_connect">Được ai đó giới thiệu?</string>
+    <string name="auto_package_size_detecting_failed">Hiển thị số liệu thống kê lưu lượng truy cập trong thông báo.</string>
+    <string name="decoy_traffic_warning">Tự động phát hiện kích thước gói...</string>
+    <string name="auto_detecting_packet_size">Đặt làm Ưu tiên</string>
+    <string name="explain_me">Tùy chỉnh màn hình kết nối trong ứng dụng.</string>
+    <string name="app_background_description">MẠNG HIỆN TẠI</string>
+    <string name="please_confirm_email_first">Gửi các gói NAT keepalive thường xuyên cho đồng nghiệp của nó để giữ cho phiên NAT tồn tại, để người ngang hàng có thể truy cập thiết bị (Chỉ IKEv2)</string>
+    <string name="location_order_description">Truy cập vào các máy chủ tại hơn 60 quốc gia và 110 trung tâm dữ liệu.</string>
+    <string name="access_to_multiple_servers">Nhật ký gỡ lỗi của bạn đã được nhận. Vui lòng liên hệ với bộ phận hỗ trợ nếu bạn muốn được hỗ trợ về vấn đề này.</string>
+    <string name="auto_secure_description_secondary">Kết nối không thành công!</string>
+    <string name="i_understand">Mồi nhử giao thông</string>
+    <string name="decoy_traffic">Khá tự giải thích. Sử dụng nhiều băng thông bạn muốn.</string>
+    <string name="as_much_as_bandwidth_you_like">Tự động kết nối với vị trí được kết nối cuối cùng khi thiết bị khởi động.</string>
+    <string name="appearance_description">Cấu hình Tiêu đề</string>
+    <string name="location_load_description">(Bắt buộc)</string>
+    <string name="required">Tìm kiếm</string>
+    <string name="search">Ánh sáng</string>
+    <string name="light">Không khả dụng</string>
+    <string name="referee_must_provide_your_username_at_sign_up_and_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">Không thể truy cập Windscribe? Kết nối với máy chủ của chúng tôi để chặn mạng hạn chế của bạn.</string>
+    <string name="language_description">Bản địa hóa Windscribe sang các ngôn ngữ được hỗ trợ.</string>
+    <string name="caution">Thận trọng</string>
+    <string name="custom">Phong tục</string>
+    <string name="latency_display_description">Hiển thị độ trễ dưới dạng thanh cường độ tín hiệu hoặc tính bằng mili giây.</string>
+    <string name="package_size_detected_successfully">Kích thước gói được phát hiện thành công.</string>
+    <string name="add_to_mock_location_explain_android_12">Sau khi mở khóa, hãy chuyển đến "Tùy chọn nhà phát triển" trong Cài đặt.  Trong phần "Vị trí", hãy chọn Windscribe làm "Ứng dụng vị trí giả".</string>
+    <string name="play_store_generic_api_error">Phản hồi bất ngờ nhận được từ cửa hàng Play. Điều này có thể xảy ra do các giao dịch mua bị hủy gần đây. Hãy thử lại sau.</string>
+    <string name="decoy_caution_description">Điều này có thể sử dụng lượng dữ liệu đáng kể, vì vậy hãy đảm bảo không bật tính năng này trừ khi bạn thực sự cần nó và có gói dữ liệu lớn. Tính năng này không đảm bảo an toàn, vì vậy hãy tự chịu rủi ro khi sử dụng.</string>
+    <string name="allow_lan_description">Chọn có cho phép truy cập vào các tài nguyên trên cùng một mạng (như máy chủ tệp, máy in, hộp phương tiện, v.v.) trong khi kết nối với Windscribe hay không.</string>
+    <string name="preferred_protocol_description_secondary">Chọn giao thức tốt nhất cho mạng này. Thao tác này sẽ ghi đè tất cả cài đặt kết nối chung.</string>
+    <string name="packet_size_description">Chọn để Windscribe quyết định MTU cho kết nối của bạn hay ghi đè thủ công.</string>
+    <string name="reddit">Reddit</string>
+    <string name="if_you_go_pro_they_ll_go_pro_too">Nếu bạn đi Pro, họ cũng sẽ đi Pro!</string>
+    <string name="share_app_description">"Chúng tôi đang mời bạn tham gia Windscribe. Cung cấp tên người dùng của họ khi đăng ký và cả hai bạn sẽ nhận được 1GB dữ liệu miễn phí được thêm vào tài khoản của mình. Nếu bạn đi chuyên nghiệp, họ cũng sẽ trở nên chuyên nghiệp!\n%s"</string>
+    <string name="bars">Quán bar</string>
+    <string name="ms">Ms</string>
+    <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe sẽ luôn sử dụng giao thức này để kết nối trên mạng này trong tương lai nhằm tránh mọi gián đoạn.</string>
+    <string name="connection_mode_description">Chọn xem để Windscribe tự động chọn kết hợp giao thức / cổng tối ưu nhất cho thiết lập của bạn hay tự thực hiện thủ công.</string>
+    <string name="terms_policy_en">Cả hai bạn sẽ nhận được thêm 1GB mỗi tháng khi họ đăng ký.</string>
+    <string name="first_reason_to_use_share">Vui lòng cung cấp email trước.</string>
+    <string name="well_we_gave_it_our_best_shot_we_just_couldn_t_connect_you_on_this_network_send_us_your_debug_log_so_we_can_figure_out_what_happened">"Lỗi"</string>
+    <string name="fake_traffic_volume">Giao thức VPN cực kỳ đơn giản nhưng nhanh chóng và hiện đại.</string>
+    <string name="successfully_updated_robert_rules">Địa lý học</string>
+    <string name="if_they_go_pro_you_ll_go_pro_to">Đã thêm email thành công.</string>
+    <string name="added_email_successfully">Lỗi khi gửi email.</string>
+    <string name="failed_to_update_robert_rules">Bạn phải xác nhận email của mình để các lợi ích trên áp dụng cho bạn và người giới thiệu.</string>
+    <string name="you_must_confirm_your_email_in_order_for_the_benefits_above_to_apply_to_you_and_the_referrer">Inclusive</string>
+    <string name="inclusive">Tên người dùng giới thiệu</string>
+    <string name="referral_username">Kết thúc lưu lượng truy cập HTTPS của bạn bằng ổ cắm web.</string>
+    <string name="protocol_change_is_not_available_for_custom_config">Kỹ thuật</string>
+    <string name="technical">Cờ</string>
+    <string name="data_left_in_your_plan">Tham khảo dữ liệu</string>
+    <string name="share_app">Bây giờ bạn đã kết nối với máy chủ Windscribe. Thử đăng nhập lại.</string>
+    <string name="a_la_carte_unlimited_plan">Cân bằng tốc độ và bảo mật.</string>
+    <string name="referred_by_someone">Tự động phát hiện kích thước gói không thành công.</string>
+    <string name="notification_stats_description">Đây là một tính năng thử nghiệm cố gắng chống lại các cuộc tấn công tương quan lưu lượng truy cập vào các mạng đối thủ. Khi được bật, ứng dụng sẽ tạo hoạt động ngẫu nhiên trên đường hầm, đồng thời tải lên và tải xuống dữ liệu ngẫu nhiên theo các khoảng thời gian đã chọn.</string>
+    <string name="set_as_preferred">Giải thích cho tôi!</string>
+    <string name="current_network">Nhanh chóng kết nối lại bằng một giao thức khác.</string>
+    <string name="protocol_change_description">Bảng chữ cái</string>
+    <string name="alphabet">Email xác nhận đã gửi thành công.</string>
+    <string name="email_confirmation_sent_successfully">Vui lòng xác nhận email trước.</string>
+    <string name="keep_alive_description">Sắp xếp danh sách vị trí theo thứ tự tăng dần của bảng chữ cái, địa lý hoặc độ trễ.</string>
+    <string name="your_debug_log_has_been_received_please_contact_support_if_you_want_assistance_with_this_issue">Đường dẫn tệp sẽ hiển thị ở đây</string>
+    <string name="file_path_will_show_here">Cả hai bạn sẽ nhận được thêm 1GB mỗi tháng khi đăng ký.</string>
+    <string name="first_reason_to_use_referral">Ngắt kết nối khỏi VPN</string>
+    <string name="disconnect_from_vpn">CÁC MẠNG KHÁC</string>
+    <string name="other_networks">Người được giới thiệu phải xác nhận email của họ để các lợi ích trên áp dụng cho tài khoản của bạn.</string>
+    <string name="referee_must_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">Kết nối tự động trên mạng Wi-Fi này với
+Vị trí được chọn cuối cùng.</string>
+    <string name="connection_failure">Tôi hiểu</string>
+    <string name="auto_connect_on_boot_description">Chia sẻ liên kết mời</string>
+    <string name="share_invite_link">Ánh sáng hoặc bóng tối. Chọn một bên, và lựa chọn một cách khôn ngoan.</string>
+    <string name="config_title">Nâng cấp và cả hai bạn sẽ nhận được Pro.</string>
+    <string name="second_reason_to_use_referral">Hiển thị tải vị trí dưới dạng thanh. Thanh càng ngắn, tải trên vị trí càng ít (đối với tổng công suất của vị trí).</string>
+    <string name="unavailable">Windscribe sẽ tự động ngắt kết nối khi bạn tham gia mạng wifi không an toàn.</string>
+    <string name="network_options_description">Người được giới thiệu phải cung cấp tên người dùng của bạn khi đăng ký và xác nhận email của họ để các lợi ích trên áp dụng cho tài khoản của bạn.</string>
+    <string name="emergency_connect_description">Sử dụng nó nếu OpenVPN UDP không thành công.</string>
+    <string name="Tcp_description">Ngụy trang lưu lượng truy cập của bạn dưới dạng lưu lượng truy cập HTTPS bằng TLS</string>
+    <string name="Stealth_description">Chế độ giao thông mồi nhử</string>
 </resources>

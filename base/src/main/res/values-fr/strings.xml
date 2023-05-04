@@ -1,9 +1,5 @@
-<!--
-  ~ Copyright (c) 2021 Windscribe Limited.
-  -->
-
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <!--- User-->
     <string name="username_empty">Nom d’utilisateur vide !</string>
     <string name="password_empty">Mot de passe vide !</string>
     <string name="enter_username">Veuillez entrer votre nom d’utilisateur !</string>
@@ -29,10 +25,8 @@
     <string name="sign_up_description">Protégez votre compte, accédez à vos paramètres depuis n’importe quel appareil et augmentez votre plafond de données.</string>
     <string name="choose_username">Choisissez un nom d’utilisateur</string>
     <string name="choose_password">Choisissez un mot de passe</string>
-    <string name="email_description"><![CDATA[Pour récupérer votre mot de passe, vous tenir informé ou promouvoir nos produits uniquement. Sans spam]]></string>
+    <string name="email_description">Pour récupérer votre mot de passe, vous tenir informé ou promouvoir nos produits uniquement. Sans spam</string>
     <string name="sign_up_failed_network_alert">Nous avons fait de notre mieux, mais, pour un motif inconnu, nous n’avons pas été en mesure de vous inscrire sur ce réseau.</string>
-
-    <!--Api -->
     <string name="backup_api_end_point">Nous essayons de sauvegarder le terminal de l’api...</string>
     <string name="signing_in">Connexion...</string>
     <string name="signing_up">Inscription...</string>
@@ -45,8 +39,6 @@
     <string name="preparing_your_dashboard">Préparation de votre tableau de bord...</string>
     <string name="trying_static_endpoint">Essai du terminal statique...</string>
     <string name="getting_reg_token">Obtention du token d’enregistrement...</string>
-
-    <!--- Email-->
     <string name="invalid_email_format">E-mail non valide !</string>
     <string name="email_empty">E-mail vide !</string>
     <string name="email">E-mail</string>
@@ -54,13 +46,9 @@
     <string name="confirm_email">Confirmer l’e-mail</string>
     <string name="resend_verification_email">Renvoyer l’e-mail de vérification</string>
     <string name="change_email">Modifier l’e-mail</string>
-
-    <!--Network -->
     <string name="no_internet">AUCUNE CONNEXION INTERNET !</string>
     <string name="no_network_detected">Aucun réseau détecté !</string>
     <string name="this_network_hates_us">Ce réseau nous déteste</string>
-
-    <!-- Upgrade-->
     <string name="upgrade">PASSER PRO</string>
     <string name="upgrade_case_normal">Passer Pro</string>
     <string name="renew_plan">Renouveler forfait</string>
@@ -77,8 +65,6 @@
     <string name="warning_no_email_pro_account">Entrez un e-mail qui vous permettra de récupérer votre compte en cas d’oubli de votre mot de passe.</string>
     <string name="free_reason_to_confirm">Veuillez confirmer votre e-mail pour disposer de 10 Go/mois</string>
     <string name="pro_reason_to_confirm">Veuillez confirmer votre e-mail pour protéger votre compte</string>
-
-    <!-- Connection states -->
     <string name="connected">CONNECTÉ</string>
     <string name="connected_lowercase">Connecté</string>
     <string name="connecting">CONNEXION </string>
@@ -90,8 +76,6 @@
     <string name="checking_connectivity">Contrôle de connectivité...</string>
     <string name="connectivity_test_failed">Échec du test de connectivité...</string>
     <string name="best_location">La meilleure localisation</string>
-
-    <!--Connection preference-->
     <string name="connection_mode">Mode de connexion</string>
     <string name="preferred_protocol">Protocole favori</string>
     <string name="protocol">Protocole</string>
@@ -106,8 +90,6 @@
     <string name="natKeepAlive">IKE keepalive</string>
     <string name="keep_alive">keep alive</string>
     <string name="auto_detecting">Détection automatique...</string>
-
-    <!-- Account-->
     <string name="plan_pro">Pro</string>
     <string name="expiry_date">Date d’expiration</string>
     <string name="reset_date">Date de réinitialisation</string>
@@ -119,8 +101,6 @@
     <string name="plan">FORFAIT</string>
     <string name="please_login">Saisissez vos identifiants pour vous connecter !</string>
     <string name="please_login_to_see_account_details">Inscrivez-vous ou connectez-vous pour consulter les informations de votre compte et sauvegarder vos préférences.</string>
-
-    <!-- Billing-->
     <string name="billing_unavailable">Play billing n’est pas disponible pour cet appareil</string>
     <string name="item_unavailable">L’article que vous avez demandé n’est pas disponible. \nVeuillez contacter notre centre d’assistance ici : https://windscribe.com/support !</string>
     <string name="billing_service_unavailable">Service de facturation non disponible. Veuillez vérifier votre connexion réseau et réessayer !</string>
@@ -131,8 +111,6 @@
     <string name="purchase_cancelled">Achat annulé !</string>
     <string name="purchase_successful">Achat réussi !</string>
     <string name="_2gb_left">IL RESTE 2 Go</string>
-
-    <!-- Notification/Status Strings -->
     <string name="state_connecting">Connexion</string>
     <string name="state_wait">En attente d’une réponse du serveur</string>
     <string name="state_auth">Authentification</string>
@@ -148,19 +126,13 @@
     <string name="state_tcp_connect">Connexion (TCP)</string>
     <string name="state_auth_failed">Échec d’authentification</string>
     <string name="state_no_network">En attente d’un réseau utilisable</string>
-
-    <!--News feed -->
     <string name="news_feed">Fil d’actualité</string>
     <string name="news_feed_welcome">Vous trouverez ici les annonces et les actualités relatives à Windscribe. Peut-être même un délicieux gâteau, tout le monde aime les gâteaux !</string>
     <string name="news_feed_welcome_title">BIENVENUE SUR WINDSCRIBE</string>
-
-    <!-- Rate dialog -->
     <string name="rate_the_app">Évaluez Windscribe</string>
     <string name="may_be_later">Peut-être plus tard</string>
     <string name="never_ask_again">Quitter</string>
     <string name="rate_message">Vous appréciez Windscribe ? Nous l’espérons. Évaluez notre application dans le Play Store, nous vous en serions infiniment reconnaissants.</string>
-
-    <!-- GPS spoofing -->
     <string name="gps_spoofing_explain">Cette fonctionnalité implique la modification de vos paramètres Android. Veuillez suivre les étapes suivantes pour l’activer.</string>
     <string name="let_s_do_it">C’est parti</string>
     <string name="unlock_developer_mode">Déverrouiller les options Développeur</string>
@@ -172,8 +144,6 @@
     <string name="gps_spoofing_success">Votre position GPS sera la même que votre localisation VPN.</string>
     <string name="gps_spoofing_not_set">Impossible d’activer le Brouillage GPS</string>
     <string name="gps_spoofing_error">Veuillez essayer de suivre le guide à nouveau pour l’activer.</string>
-
-    <!--Ghost mode -->
     <string name="add_email">Ajouter un e-mail</string>
     <string name="unlimited_data">Données illimitées</string>
     <string name="preferences">Préférences</string>
@@ -185,14 +155,13 @@
     <string name="pricing">TARIF</string>
     <string name="all_locations">Toutes les localisations</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[Les abonnements peuvent être gérés mensuellement, annuellement ou désactivés en allant dans les paramètres du compte App Store après l’achat. Tous les prix sont TTC.]]></string>
+    <string name="terms">Les abonnements peuvent être gérés mensuellement, annuellement ou désactivés en allant dans les paramètres du compte App Store après l’achat. Tous les prix sont TTC.</string>
     <string name="account_set_up">Configuration du compte</string>
     <string name="account_set_up_description">Protégez votre compte et accédez-y depuis n’importe quel appareil.</string>
     <string name="continue_free_10gb_mo">Recevez 10 Go/mois gratuits</string>
     <string name="continue_without_email">Continuer sans e-mail</string>
     <string name="no_email_warning">Sans e-mail, votre compte gratuit sera limité à 2 Go/Mo et vous ne pourrez pas réinitialiser votre mot de passe.</string>
     <string name="get_started">Prise en main</string>
-    <!-- Actions -->
     <string name="error_try_again">Une erreur s’est produite, veuillez réessayer !</string>
     <string name="please_wait">Veuillez patienter…</string>
     <string name="resend">Renvoyer</string>
@@ -204,16 +173,12 @@
     <string name="set_up_later">Configuration ultérieure</string>
     <string name="back">Retour</string>
     <string name="ok">OK</string>
-
-    <!-- Log -->
     <string name="view_log">Afficher le journal de débogage</string>
     <string name="send_log">Envoyer le journal de débogage</string>
     <string name="send_charon_log">Envoyer le journal IkEv2</string>
     <string name="sent_thanks">Envoyé, merci !</string>
     <string name="sending_log">Envoi du journal...</string>
     <string name="export_log">Exporter le journal</string>
-
-    <!--Home -->
     <string name="no_favourites">Aucun favori</string>
     <string name="no_custom_configs">Les configurations personnalisées vous permettent de vous connecter à n’importe quel serveur OpenVPN ou Wireguard. Il suffit d’ajouter un fichier de configuration valide et il apparaîtra dans cet onglet.</string>
     <string name="add_profile">Ajouter un profil VPN</string>
@@ -223,8 +188,6 @@
     <string name="check_status_description">Essayez à nouveau plus tard ou consultez notre page « Statut » pour en savoir plus.</string>
     <string name="added_to_favourites">Ajouté aux favoris</string>
     <string name="add_vpn_config">Ajouter une configuration personnalisée</string>
-
-    <!--Main Menu-->
     <string name="general">Général</string>
     <string name="account">Compte</string>
     <string name="connection">Connexion</string>
@@ -233,8 +196,6 @@
     <string name="logout">Déconnexion</string>
     <string name="preference">Préférences</string>
     <string name="logout_alert_description">Êtes-vous certain de vouloir vous déconnecter de Windscribe ?</string>
-
-    <!--General Settings-->
     <string name="sort_by">Commande de localisation</string>
     <string name="display_latency">Latence d’affichage</string>
     <string name="preferred_language">Langue</string>
@@ -243,9 +204,6 @@
     <string name="haptic_setting_label">Retour haptique</string>
     <string name="version">Version</string>
     <string name="show_location_health">Afficher le chargement de la localisation</string>
-
-
-    <!-- Split tunneling -->
     <string name="split_tunneling_feature">Choisissez les applications à exclure ou à inclure de Windscribe lorsqu’il est connecté</string>
     <string name="mode">Mode</string>
     <string name="split_tunneling">Tunnellisation fractionnée</string>
@@ -254,13 +212,9 @@
     <string name="feature_tunnel_mode_exclusive">Les applications sélectionnées ci-après ne passeront pas par Windscribe lorsqu’elles seront connectées.</string>
     <string name="feature_tunnel_mode_inclusive">Les applications sélectionnées ci-après passeront par Windscribe lorsqu’elles seront connectées</string>
     <string name="apps">APPLIS</string>
-
-    <!--Always on -->
     <string name="always_on">Toujours sur VPN</string>
     <string name="always_on_warning">Le VPN \"Always On\" permet à Android de contrôler la connexion VPN et de s’assurer qu’aucune donnée ne peut quitter l’appareil si le tunnel VPN n’est pas actif.</string>
     <string name="always_on_setting">Les appareils Android 10+ requièrent que Always-On VPN soit configuré pour que Windscribe se lance au démarrage de l’appareil.</string>
-
-    <!-- Network security -->
     <string name="forget_network">Oublier le réseau</string>
     <string name="network_secured">Sécurisé</string>
     <string name="network_unsecured">Non sécurisé</string>
@@ -271,25 +225,17 @@
     <string name="network_options">Options réseau</string>
     <string name="auto_secure">Auto-Secure</string>
     <string name="auto_secure_description">Windscribe s’activera automatiquement lorsque vous vous connecterez à ce réseau.</string>
-
-    <!--Auto connect on boot-->
     <string name="auto_start_on_boot">Connexion automatique au démarrage</string>
     <string name="enable_start_on_boot">Activer le lancement au démarrage</string>
-
-    <!--Location permission -->
     <string name="grant_permission">Accorder autorisation</string>
     <string name="reason_for_location_permission">Windscribe a besoin d’une autorisation d’accès aux données de localisation pendant qu’il fonctionne en arrière-plan pour lancer la fonction \"Liste blanche du réseau\". Cette autorisation est requise pour accéder aux noms des réseaux Wifi. Cette autorisation est utilisée uniquement pour cette fonction et pour la fonctionnalité de brouillage GPS. Vos données de localisation ne quittent pas votre appareil et ne seront pas utilisées à d’autres fins.</string>
     <string name="location_permission_for_ssid">Une autorisation d’accès aux données de localisation est requise pour définir vos protocoles préférés et la fonction de connexion automatique.</string>
     <string name="disclaimer">Attention</string>
     <string name="location_permission">Autorisation d’accès aux données de localisation</string>
-
-    <!-- Features -->
     <string name="feature1">Des serveurs sur plus de 100 localisations</string>
     <string name="feature2">Bloquer les publicités et les logiciels malveillants</string>
     <string name="feature3">Zéro journalisation</string>
     <string name="feature4">Débloquez vos services de streaming préférés</string>
-
-    <!--Help -->
     <string name="knowledge_base">Base de connaissances</string>
     <string name="knowledge_base_description">Tout ce que vous devez savoir sur Windscribe.</string>
     <string name="talk_to_garry">Sollicitez Garry</string>
@@ -298,43 +244,31 @@
     <string name="send_ticket_description">Bloqué ? Envoyez-nous un ticket.</string>
     <string name="community_support">Soutien communautaire</string>
     <string name="community_support_description">Les meilleurs endroits pour donner et recevoir de l’aide d’autres utilisateurs.</string>
-
-
-    <!--Send ticket -->
     <string name="how_to_send_ticket">Remplissez les champs suivants pour qu’un agent de notre centre d’assistance vous contacte personnellement dans les meilleurs délais.</string>
     <string name="category">Catégorie</string>
     <string name="email_reason_for_contact">Nous l’utiliserons uniquement pour vous contacter</string>
     <string name="what_is_the_issue">Quel est le problème ?</string>
     <string name="message">Message</string>
     <string name="subject">Sujet</string>
-
-    <!--Config -->
     <string name="edit_config_file">Modifier le fichier de configuration</string>
     <string name="name">nom</string>
     <string name="save_credentials">Enregistrer les identifiants ?</string>
     <string name="update">Mettre à jour</string>
     <string name="enter_credentials">Entrez vos identifiants</string>
     <string name="connect">Se connecter</string>
-
-    <!--Debug -->
     <string name="send_debug_log">Envoyer le journal de débogage</string>
     <string name="send_ikev2_log">Envoyer le journal IKEv2</string>
-
-    <!--Home -->
     <string name="failed">ÉCHEC</string>
     <string name="next_in_up">« Prochainement sur %d »</string>
     <string name="step_1_3">Étape 1/3</string>
     <string name="step_2_3">Étape 2/3</string>
     <string name="remove_from_favourites">Supprimé des favoris</string>
     <string name="config_added">Ajouté aux configurations</string>
-
     <string name="app_background">Arrière-plan de l’application</string>
     <string name="disconnected_lower_case">Déconnecté</string>
     <string name="connected_lower_case">Connecté</string>
     <string name="x_press_login">Lazy Login</string>
     <string name="other">AUTRE</string>
-
-    <!-- About -->
     <string name="about">À propos de</string>
     <string name="about_us">À propos de nous</string>
     <string name="status">Statut</string>
@@ -343,11 +277,6 @@
     <string name="blog">Blog</string>
     <string name="jobs">Tâches</string>
     <string name="software_licenses">Licences de logiciels</string>
-
-
-    <!-- ********** TV ************* -->
-
-    <!-- UPGRADE STRINGS -->
     <string name="benefit_unlimited_data">Données illimitées</string>
     <string name="choose_plan">CHOISIR UN FORFAIT</string>
     <string name="monthly">MENSUEL</string>
@@ -355,33 +284,22 @@
     <string name="upgrade_title">Ne vous contentez pas d’un processus de confidentialité limité.</string>
     <string name="text_login">Connexion</string>
     <string name="text_sign_up">Inscription</string>
-
-    <!-- Log -->
     <string name="sending_debug_log">Envoi du journal de débogage\nVeuillez patienter...</string>
     <string name="app_log_submitted">Merci ! Journal de l’application envoyé.</string>
     <string name="log_submission_failed">Erreur lors de l’envoi du fichier journal !</string>
-
-    <!-- Home -->
     <string name="add_your_email_address">Ajoutez votre adresse e-mail au cas où vous oublieriez votre mot de passe. Nous vous offrirons même 10 Go pour ça.</string>
     <string name="locations">localisations</string>
     <string name="notifications">Notifications</string>
     <string name="support">Assistance</string>
     <string name="support_content">Rendez-vous à l’adresse précédente à l’aide de votre téléphone ou de votre ordinateur si vous avez des questions ou si vous avez besoin d’aide.</string>
     <string name="add_email_title">Ajouter un e-mail</string>
-
-    <!-- Upgrade -->
     <string name="upgradeNoData">On dirait que vous manquez d’intimité</string>
     <string name="upgradeToUnlock">Ne vous contentez pas d’un processus de confidentialité limité</string>
     <string name="restore_purchase">Rétablir l’achat</string>
     <string name="servers_in_over_60_countries_and_110_cities">Nous proposons des serveurs dans plus de 60 pays et 110 villes</string>
     <string name="no_bandwidth_interruptions_stay_protected_forever">Aucune interruption de la bande passante. Restez protégé à chaque instant</string>
-
-
     <string name="skip">Ignorer</string>
     <string name="robert_detail">Bloque les logiciels malveillants et les publicités sur tous vos appareils.</string>
-
-
-    <!-- Settings -->
     <string name="settings">Paramètres</string>
     <string name="sort_type">Classer les localisations par</string>
     <string name="split_routing">Routage fractionné</string>
@@ -395,8 +313,6 @@
     <string name="start_on_boot">Lancer au démarrage</string>
     <string name="split_routing_content" translatable="false">Choisissez les applications à exclure ou à inclure de Windscribe lorsqu’il est connecté</string>
     <string name="show_system_apps">Afficher les applications du système</string>
-
-    <!-- Login -->
     <string name="login_label" translatable="false">Si vous avez déjà un compte</string>
     <string name="ghost_account_sign_up" translatable="false">Inscrivez-vous ou connectez-vous pour consulter les informations de votre compte et sauvegarder vos préférences.</string>
     <string name="ghost_account_claim" translatable="false">Revendiquez votre compte pour éviter la perte du statut pro</string>
@@ -423,8 +339,6 @@
     <string name="support_url">windscribe.com/support</string>
     <string name="enter_code">Entrez le code</string>
     <string name="enter">Entrer</string>
-
-    <!-- Server list -->
     <string name="ping_time">%d MS</string>
     <string name="trying_next_protocol">« Essayez le prochain protocole dans %d »</string>
     <string name="all">Tous</string>
@@ -437,14 +351,120 @@
     <string name="load_nothing_found" translatable="false">Il n’y a rien à voir ici</string>
     <string name="load_error" translatable="false">Erreur de chargement.</string>
     <string name="select_location">Veuillez d’abord sélectionner une localisation !</string>
-
-    <!-- Actions -->
     <string name="text_ok">OK</string>
-
-    <!--Robert -->
     <string name="robert_description">R.O.B.E.R.T. est un outil de blocage de domaine et d’IP personnalisable côté serveur. Sélectionnez les listes de blocage que vous souhaitez appliquer sur tous vos appareils en basculant le curseur.</string>
     <string name="learn_more">En savoir plus</string>
     <string name="manage_custom_rules">Gérer les règles personnalisées</string>
     <string name="blocking">Blocage</string>
     <string name="allowing">Autorisation</string>
+    <string name="latency">Latence</string>
+    <string name="ad_malware_blocker">Meilleur malware et bloqueur de publicité que vous utiliserez jamais. Sérieusement.</string>
+    <string name="decoy">LEURRE</string>
+    <string name="send">Envoyer</string>
+    <string name="app_requires_background_location_permission">L’application nécessite une autorisation de localisation en arrière-plan pour accéder au SSID WIFI sur Android 11+. Si vous souhaitez utiliser cette fonctionnalité, appuyez sur OK et sélectionnez \"Autoriser tout le temps\ » dans la boîte de dialogue d’autorisation.</string>
+    <string name="sales">Ventes</string>
+    <string name="lazy_login_description">Connectez-vous aux applications TV de Windscribe avec un code court.</string>
+    <string name="gps_spoofing_description">Usurpez les coordonnées GPS de votre appareil.</string>
+    <string name="auto_secure_new_networks">Sécurisation automatique des nouveaux réseaux</string>
+    <string name="dark">Sombre</string>
+    <string name="haptic_feedback_description">Réponses physiques (vibrations) aux actions de l’utilisateur</string>
+    <string name="set_this_protocol_as_preferred">Définir \"%s\ » comme protocole préféré ?</string>
+    <string name="the_protocol_you_ve_chosen_has_failed_to_connect_windscribe_will_attempt_to_reconnect_using_the_first_protocol_below">Le protocole que vous avez choisi n’a pas réussi à se connecter. Windscribe tentera de se reconnecter en utilisant le premier protocole ci-dessous.</string>
+    <string name="feedback">Rétroaction</string>
+    <string name="please_provide_email_first">Eh bien, nous avons fait de notre mieux, nous ne pouvions tout simplement pas vous connecter sur ce réseau. Envoyez-nous votre journal de débogage afin que nous puissions comprendre ce qui s’est passé.</string>
+    <string name="error">Faux volume de trafic</string>
+    <string name="Wireguard_description">Mise à jour réussie des règles Robert.</string>
+    <string name="geography">Estimation de l’utilisation des données</string>
+    <string name="potential_data_use">Partagez Windscribe avec un ami !</string>
+    <string name="share_windscribe_with_a_friend">Marquez tous les nouveaux réseaux comme sécurisés.</string>
+    <string name="auto_secure_new_networks_description">Discorde</string>
+    <string name="discord">S’ils deviennent Pro, vous le devenez aussi !</string>
+    <string name="error_sending_email">Obtenez 10 Go / mois de données et obtenez la possibilité de réinitialiser votre mot de passe.</string>
+    <string name="get_10gb_data">IKEv2 est un protocole de tunneling basé sur IPsec.</string>
+    <string name="iKEV2_description">Supprimer des favoris</string>
+    <string name="remove_it_from_favourites">Impossible de mettre à jour les règles Robert.</string>
+    <string name="WSTunnel_description">La modification du protocole n’est pas disponible pour les configurations personnalisées.</string>
+    <string name="flags">Données restantes</string>
+    <string name="refer_for_data">Partager l’application</string>
+    <string name="emergency_connected_description">Modifier le protocole</string>
+    <string name="protocol_change">Déconnecter</string>
+    <string name="Udp_description">Auto</string>
+    <string name="emergency_connect">Référé par quelqu’un?</string>
+    <string name="auto_package_size_detecting_failed">Afficher les statistiques de trafic dans la notification.</string>
+    <string name="decoy_traffic_warning">Détection automatique de la taille des paquets...</string>
+    <string name="auto_detecting_packet_size">Définir comme préféré</string>
+    <string name="explain_me">Personnalisez l’écran de connexion dans l’application.</string>
+    <string name="app_background_description">RÉSEAU ACTUEL</string>
+    <string name="please_confirm_email_first">Envoie régulièrement des paquets NAT keepalive à son homologue pour maintenir la session NAT active, afin que l’homologue puisse accéder au périphérique (IKEv2 uniquement)</string>
+    <string name="location_order_description">Accès à des serveurs dans plus de 60 pays et 110 centres de données.</string>
+    <string name="access_to_multiple_servers">Votre journal de débogage a été reçu. Veuillez contacter le support si vous souhaitez obtenir de l’aide pour résoudre ce problème.</string>
+    <string name="auto_secure_description_secondary">Échec de connexion!</string>
+    <string name="i_understand">Trafic leurre</string>
+    <string name="decoy_traffic">Assez explicite. Utilisez autant de bande passante que vous le souhaitez.</string>
+    <string name="as_much_as_bandwidth_you_like">Connectez-vous automatiquement au dernier emplacement connecté au démarrage de l’appareil.</string>
+    <string name="appearance_description">Titre de la configuration</string>
+    <string name="location_load_description">(obligatoire)</string>
+    <string name="required">Rechercher</string>
+    <string name="search">Lumière</string>
+    <string name="light">Indisponible</string>
+    <string name="referee_must_provide_your_username_at_sign_up_and_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">Vous ne pouvez pas accéder à Windscribe ? Connectez-vous à nos serveurs pour bloquer votre réseau restrictif.</string>
+    <string name="language_description">Localisez Windscribe dans les langues prises en charge.</string>
+    <string name="caution">Prudence</string>
+    <string name="custom">Coutume</string>
+    <string name="latency_display_description">Affichez la latence sous forme de barres d’intensité du signal ou en millisecondes.</string>
+    <string name="package_size_detected_successfully">Taille de paquet détectée avec succès.</string>
+    <string name="add_to_mock_location_explain_android_12">Une fois déverrouillé, allez dans « Options du développeur » dans les paramètres.  Sous « Emplacement », choisissez Windscribe comme « Application de localisation fictive ».</string>
+    <string name="play_store_generic_api_error">Réponse inattendue reçue du Play Store. Cela peut se produire en raison d’achats récemment annulés. Réessayez plus tard.</string>
+    <string name="decoy_caution_description">Cela peut utiliser une quantité importante de données, alors assurez-vous de ne pas laisser cette fonctionnalité activée à moins que vous n’en ayez vraiment besoin, et d’avoir un plan de données volumineux. Cette fonctionnalité ne garantit pas la sécurité, donc utiliser à vos risques et périls.</string>
+    <string name="allow_lan_description">Choisissez d’autoriser ou non l’accès aux ressources sur le même réseau (serveurs de fichiers, imprimantes, boîtiers multimédias, etc.) lorsque vous êtes connecté à Windscribe.</string>
+    <string name="preferred_protocol_description_secondary">Choisissez le meilleur protocole pour ce réseau. Cela remplace tous les paramètres de connexion globale.</string>
+    <string name="packet_size_description">Choisissez de laisser Windscribe décider de la MTU pour votre connexion ou de la remplacer manuellement.</string>
+    <string name="reddit">Reddit</string>
+    <string name="if_you_go_pro_they_ll_go_pro_too">Si vous devenez Pro, ils le deviendront aussi !</string>
+    <string name="share_app_description">« %s vous invite à rejoindre Windscribe. Fournissez leur nom d’utilisateur lors de l’inscription et vous obtiendrez tous les deux 1 Go de données gratuites ajoutées à vos comptes. Si vous devenez pro, ils le deviendront aussi !\n%s »</string>
+    <string name="bars">Bars</string>
+    <string name="ms">Ms</string>
+    <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe utilisera toujours ce protocole pour se connecter à ce réseau à l’avenir afin d’éviter toute interruption.</string>
+    <string name="connection_mode_description">Choisissez de laisser Windscribe choisir automatiquement la combinaison protocole/port la plus optimale pour votre configuration ou de le faire manuellement vous-même.</string>
+    <string name="terms_policy_en">Vous obtiendrez tous les deux 1 Go supplémentaires par mois lorsqu’ils s’inscriront.</string>
+    <string name="first_reason_to_use_share">Veuillez d’abord fournir un e-mail.</string>
+    <string name="well_we_gave_it_our_best_shot_we_just_couldn_t_connect_you_on_this_network_send_us_your_debug_log_so_we_can_figure_out_what_happened">« Erreur »</string>
+    <string name="fake_traffic_volume">Protocole VPN extrêmement simple mais rapide et moderne.</string>
+    <string name="successfully_updated_robert_rules">Géographie</string>
+    <string name="if_they_go_pro_you_ll_go_pro_to">Ajout d’un e-mail avec succès.</string>
+    <string name="added_email_successfully">Erreur lors de l’envoi d’un e-mail.</string>
+    <string name="failed_to_update_robert_rules">Vous devez confirmer votre adresse e-mail pour que les avantages ci-dessus s’appliquent à vous et au référent.</string>
+    <string name="you_must_confirm_your_email_in_order_for_the_benefits_above_to_apply_to_you_and_the_referrer">Inclusif</string>
+    <string name="inclusive">Nom d’utilisateur référent</string>
+    <string name="referral_username">Encapsule votre trafic HTTPS avec des sockets Web.</string>
+    <string name="protocol_change_is_not_available_for_custom_config">Technique</string>
+    <string name="technical">Drapeaux</string>
+    <string name="data_left_in_your_plan">Se référer aux données</string>
+    <string name="share_app">Vous êtes maintenant connecté au serveur Windscribe. Réessayez de vous connecter.</string>
+    <string name="a_la_carte_unlimited_plan">Vitesse et sécurité équilibrées.</string>
+    <string name="referred_by_someone">La détection automatique de la taille des paquets a échoué.</string>
+    <string name="notification_stats_description">Il s’agit d’une fonctionnalité expérimentale qui tente de lutter contre les attaques de corrélation de trafic sur les réseaux adverses. Lorsqu’elle est activée, l’application génère une activité aléatoire sur le tunnel, et charge et télécharge des données aléatoires à des intervalles choisis.</string>
+    <string name="set_as_preferred">Expliquez-moi!</string>
+    <string name="current_network">Reconnectez-vous rapidement à l’aide d’un protocole différent.</string>
+    <string name="protocol_change_description">Alphabet</string>
+    <string name="alphabet">Confirmation par e-mail envoyée avec succès.</string>
+    <string name="email_confirmation_sent_successfully">Veuillez d’abord confirmer l’adresse e-mail.</string>
+    <string name="keep_alive_description">Organisez la liste des emplacements dans l’ordre croissant de l’alphabet, de la géographie ou de la latence.</string>
+    <string name="your_debug_log_has_been_received_please_contact_support_if_you_want_assistance_with_this_issue">Le chemin du fichier s’affichera ici</string>
+    <string name="file_path_will_show_here">Vous obtiendrez tous les deux 1 Go supplémentaires par mois lorsque vous vous inscrivez.</string>
+    <string name="first_reason_to_use_referral">Déconnecter du VPN</string>
+    <string name="disconnect_from_vpn">AUTRES RÉSEAUX</string>
+    <string name="other_networks">Le répondant doit confirmer son adresse e-mail pour que les avantages ci-dessus s’appliquent à votre compte.</string>
+    <string name="referee_must_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">Connectez-vous automatiquement sur ce réseau Wi-Fi à
+dernier emplacement choisi.</string>
+    <string name="connection_failure">Je comprends</string>
+    <string name="auto_connect_on_boot_description">Partager le lien d’invitation</string>
+    <string name="share_invite_link">Clair ou sombre. Choisissez un camp et choisissez judicieusement.</string>
+    <string name="config_title">Mettez à niveau et vous obtiendrez tous les deux Pro.</string>
+    <string name="second_reason_to_use_referral">Affichez la charge d’emplacement sous forme de barre. Plus la barre est courte, moins la charge sur l’emplacement est faible (par rapport à la capacité totale de l’emplacement).</string>
+    <string name="unavailable">Windscribe se déconnecte automatiquement lorsque vous vous connectez à un réseau wifi non sécurisé.</string>
+    <string name="network_options_description">Le parrain doit fournir votre nom d’utilisateur lors de l’inscription et confirmer son adresse e-mail pour que les avantages ci-dessus s’appliquent à votre compte.</string>
+    <string name="emergency_connect_description">Utilisez-le si OpenVPN UDP échoue.</string>
+    <string name="Tcp_description">Déguise votre trafic en trafic HTTPS avec TLS</string>
+    <string name="Stealth_description">Mode de trafic leurre</string>
 </resources>
