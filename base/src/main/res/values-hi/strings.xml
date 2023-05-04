@@ -1,9 +1,5 @@
-﻿<!--
-  ~ Copyright (c) 2021 Windscribe Limited.
-  -->
-
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <!--- User-->
     <string name="username_empty">नाम खाली है!</string>
     <string name="password_empty">पासवर्ड खाली है!</string>
     <string name="enter_username">अपना नाम एंटर करे!</string>
@@ -29,24 +25,20 @@
     <string name="sign_up_description">अपने खाते को सुरक्षित रखें, किसी भी उपकरण से अपनी सेटिंग एक्सेस करें और अधिक डेटा प्राप्त करें।</string>
     <string name="choose_username">अपना नाम चुनें</string>
     <string name="choose_password">अपना पासवर्ड चुनें</string>
-    <string name="email_description"><![CDATA[पासवर्ड रिकवरी, अपडेट और प्रोमो के लिए ही। कोई स्पैम नहीं]]></string>
+    <string name="email_description">पासवर्ड रिकवरी, अपडेट और प्रोमो के लिए ही। कोई स्पैम नहीं</string>
     <string name="sign_up_failed_network_alert">खैर हमने इसे अपना सर्वश्रेष्ठ  प्रयास किया, हम किसी कारण से इस नेटवर्क का उपयोग करके आपको साइन अप नहीं कर सकते।</string>
-
-    <!--Api -->
-    <string name="backup_api_end_point">बैकअप एपीआई एंडपॉइंट उपयोग कर रहे है&#8230;</string>
-    <string name="signing_in">साइन इन कर रहे है&#8230;</string>
-    <string name="signing_up">साइन अप कर रहे हैै&#8230;</string>
-    <string name="getting_session">सेशन पा रहे है&#8230;</string>
-    <string name="getting_port_maps">पोर्ट मैप पा रहे है&#8230;</string>
-    <string name="getting_server_config">सर्वर कॉन्फिग पा रहे है&#8230;</string>
-    <string name="getting_server_credentials">सर्वर क्रेडेंटिअल्स पा रहे है&#8230;</string>
-    <string name="getting_best_location">बेस्ट लोकेशन पा रहे है&#8230;</string>
-    <string name="getting_server_list">सर्वर लिस्ट पा रहे है&#8230;</string>
-    <string name="preparing_your_dashboard">डैशबोर्ड तैयार कर रहे है&#8230;</string>
-    <string name="trying_static_endpoint">स्टैटिक एंडपॉइंट उपयोग कर रहे है&#8230;</string>
-    <string name="getting_reg_token">रजिस्ट्रेशन टोकन पा रहे है&#8230;</string>
-
-    <!--- Email-->
+    <string name="backup_api_end_point">बैकअप एपीआई एंडपॉइंट उपयोग कर रहे है…</string>
+    <string name="signing_in">साइन इन कर रहे है…</string>
+    <string name="signing_up">साइन अप कर रहे हैै…</string>
+    <string name="getting_session">सेशन पा रहे है…</string>
+    <string name="getting_port_maps">पोर्ट मैप पा रहे है…</string>
+    <string name="getting_server_config">सर्वर कॉन्फिग पा रहे है…</string>
+    <string name="getting_server_credentials">सर्वर क्रेडेंटिअल्स पा रहे है…</string>
+    <string name="getting_best_location">बेस्ट लोकेशन पा रहे है…</string>
+    <string name="getting_server_list">सर्वर लिस्ट पा रहे है…</string>
+    <string name="preparing_your_dashboard">डैशबोर्ड तैयार कर रहे है…</string>
+    <string name="trying_static_endpoint">स्टैटिक एंडपॉइंट उपयोग कर रहे है…</string>
+    <string name="getting_reg_token">रजिस्ट्रेशन टोकन पा रहे है…</string>
     <string name="invalid_email_format">अवैध ईमेल!</string>
     <string name="email_empty">खाली ईमेल!</string>
     <string name="email">ईमेल</string>
@@ -54,13 +46,9 @@
     <string name="confirm_email">ईमेल की पुष्टि करें</string>
     <string name="resend_verification_email">वेरिफिकेशन ईमेल पुनः भेजे</string>
     <string name="change_email">ईमेल बदले</string>
-
-    <!--Network -->
     <string name="no_internet">इंटरनेट नहीं है!</string>
     <string name="no_network_detected">कोई नेटवर्क नहीं मिला!</string>
     <string name="this_network_hates_us">यह नेटवर्क हमसे नफरत करता है</string>
-
-    <!-- Upgrade-->
     <string name="upgrade">अपग्रेड</string>
     <string name="upgrade_case_normal">अपग्रेड</string>
     <string name="renew_plan">प्लान रेनू</string>
@@ -77,20 +65,16 @@
     <string name="warning_no_email_pro_account">यदि आप अपना पासवर्ड भूल जाते हैं तो अपना खाता पुनर्प्राप्त करने के लिए ईमेल जोड़ें।</string>
     <string name="free_reason_to_confirm">कृपया 10GB / महीना पाने के लिए अपने ईमेल की पुष्टि करें</string>
     <string name="pro_reason_to_confirm">कृपया अपने खाते की सुरक्षा के लिए अपने ईमेल की पुष्टि करें</string>
-
-    <!-- Connection states -->
     <string name="connected">कनेक्टेड</string>
-    <string name="connecting">कनेक्टिंग&#160;</string>
+    <string name="connecting">कनेक्टिंग </string>
     <string name="connecting_to">%s से कनेक्ट हो रहा है</string>
     <string name="connected_to">%s से कनेक्टेड है</string>
     <string name="disconnecting">डिस्कनेक्ट हो रहा है</string>
     <string name="disconnected">डिस्कनेक्ट हो गया</string>
-    <string name="tunnel_test_failed">कनेक्शन की विफलता&#8230;</string>
-    <string name="checking_connectivity">कनेक्टिविटी की जाँच&#8230;</string>
-    <string name="connectivity_test_failed">कनेक्टिविटी परीक्षण विफल रहा&#8230;</string>
+    <string name="tunnel_test_failed">कनेक्शन की विफलता…</string>
+    <string name="checking_connectivity">कनेक्टिविटी की जाँच…</string>
+    <string name="connectivity_test_failed">कनेक्टिविटी परीक्षण विफल रहा…</string>
     <string name="best_location">सर्वश्रेष्ठ लोकेशन</string>
-
-    <!--Connection preference-->
     <string name="connection_mode">कनेक्शन मोड</string>
     <string name="preferred_protocol">पसंदीदा प्रोटोकॉल</string>
     <string name="protocol">प्रोटोकॉल</string>
@@ -105,12 +89,10 @@
     <string name="keep_alive">keep alive</string>
     <string name="connection_automatic">Auto</string>
     <string name="connection_manual">Manual</string>
-
-    <!-- Account-->
     <string name="plan_pro">प्रो</string>
     <string name="expiry_date">समाप्ति तिथि</string>
     <string name="reset_date">रीसेट दिनांक</string>
-    <string name="gb_per_month">&#160;जीबी/महीना</string>
+    <string name="gb_per_month"> जीबी/महीना</string>
     <string name="my_account">खाता</string>
     <string name="cancel">रद्द करे</string>
     <string name="edit_account">खाता एडिट करें</string>
@@ -121,20 +103,16 @@
     <string name="other">अन्य</string>
     <string name="enter_code">कोड दर्ज करें</string>
     <string name="enter">दर्ज करे</string>
-
-    <!-- Billing-->
     <string name="billing_unavailable">इस उपकरण के लिए प्ले बिलिंग उपलब्ध नहीं है</string>
     <string name="item_unavailable">आपके द्वारा अनुरोधित आइटम उपलब्ध नहीं है। https://windscribe.com/support पर कृपया संपर्क करें!</string>
     <string name="billing_service_unavailable">बिलिंग सेवा उपलब्ध नहीं है। कृपया अपना नेटवर्क कनेक्शन जांचें और पुनः प्रयास करें!</string>
     <string name="unknown_billing_error">अज्ञात त्रुटि। कृपया https://windscribe.com/support पर समर्थन से संपर्क करें!</string>
-    <string name="fatal_error">बिलिंग सेवा से कनेक्ट नहीं कर सका &#8230; कृपया अपना नेटवर्क कनेक्शन जांचें!</string>
+    <string name="fatal_error">बिलिंग सेवा से कनेक्ट नहीं कर सका … कृपया अपना नेटवर्क कनेक्शन जांचें!</string>
     <string name="unable_to_process_request">हम आपके अनुरोध को संसाधित करने में असमर्थ थे। कृपया पुन: प्रयास करें!</string>
     <string name="play_store_updating">प्रक्रिया में स्टोर अपडेट खेलें! कृपया अद्यतन समाप्त होने के बाद प्रयास करें.</string>
     <string name="purchase_cancelled">खरीद रद्द!</string>
     <string name="purchase_successful">सफल खरीद!</string>
     <string name="_2gb_left">2 जीबी शेष</string>
-
-    <!-- Notification/Status Strings -->
     <string name="state_connecting">कनेक्ट</string>
     <string name="state_wait">सर्वर के जवाब का इंतजार है</string>
     <string name="state_auth">प्रमाणित कर रहा है</string>
@@ -150,19 +128,13 @@
     <string name="state_tcp_connect">कनेक्टिंग (TCP)</string>
     <string name="state_auth_failed">प्रमाणीकरण विफल</string>
     <string name="state_no_network">नेटवर्क की प्रतीक्षा की जा रही है</string>
-
-    <!--News feed -->
     <string name="news_feed">समाचार फ़ीड</string>
     <string name="news_feed_welcome">आपको यहां घोषणाएं और सामान्य Windscribe संबंधित समाचार मिलेंगे। शायद स्वादिष्ट केक, हर कोई केक प्यार करता है!</string>
     <string name="news_feed_welcome_title">WINDSCRIBE में आपका स्वागत है</string>
-
-    <!-- Rate dialog -->
     <string name="rate_the_app">रेट Windscribe</string>
     <string name="may_be_later">शायद बाद में</string>
     <string name="never_ask_again">भाग जाओ</string>
     <string name="rate_message">क्या आप Windscribe का आनंद ले रहे हैं? हमें Play Store में रेट करें, और हम आपके लम्बे समय तक आभारी रहेंगे।</string>
-
-    <!-- GPS spoofing -->
     <string name="gps_spoofing_explain">इस सुविधा के लिए आपको अपनी एंड्रॉइड सेटिंग्स को संशोधित करना होगा। कृपया इसे सक्रिय करने के लिए अगले कुछ चरणों का पालन करें।</string>
     <string name="let_s_do_it">हो जाए</string>
     <string name="unlock_developer_mode">डेवलपर विकल्प अनलॉक करें</string>
@@ -174,8 +146,6 @@
     <string name="gps_spoofing_success">आपका GPS स्थान आपके VPN स्थान के समान होगा।</string>
     <string name="gps_spoofing_not_set">GPS स्पूफिंग सक्रिय नहीं कर सके</string>
     <string name="gps_spoofing_error">कृपया इसे सक्रिय करने के लिए फिर से गाइड का अनुसरण करें।</string>
-
-    <!--Ghost mode -->
     <string name="add_email">ईमेल जोड़ें</string>
     <string name="unlimited_data">असीमित डेटा</string>
     <string name="preferences">प्रेफरेंस</string>
@@ -188,16 +158,15 @@
     <string name="all_locations">समस्त लोकेशन</string>
     <string name="robert">रोबर्ट</string>
     <string name="robert_description">R.O.B.E.R.T. एक सर्वर-साइड डोमेन और आईपी ब्लॉकिंग टूल है। स्विच को टॉगल करके उन ब्लॉक सूचियों का चयन करें जिन्हें आप अपने सभी उपकरणों पर लागू करना चाहते हैं।</string>
-    <string name="terms"><![CDATA[खरीद के बाद ऐप स्टोर अकाउंट सेटिंग्स पर जाकर मासिक, वार्षिक या बंद किए गए सदस्यता को प्रबंधित किया जा सकता है। सभी कीमतों में लागू कर शामिल हैं।]]></string>
+    <string name="terms">खरीद के बाद ऐप स्टोर अकाउंट सेटिंग्स पर जाकर मासिक, वार्षिक या बंद किए गए सदस्यता को प्रबंधित किया जा सकता है। सभी कीमतों में लागू कर शामिल हैं।</string>
     <string name="account_set_up">खाता स्थापित करना</string>
     <string name="account_set_up_description">अपने खाते को सुरक्षित रखें और इसे किसी भी उपकरण से एक्सेस करें।</string>
     <string name="continue_free_10gb_mo">नि: शुल्क 10GB/महीना प्राप्त करें</string>
     <string name="continue_without_email">ईमेल के बिना जारी रखें</string>
     <string name="no_email_warning">ईमेल के बिना, आपका मुफ्त खाता 2GB/Mo तक सीमित रहेगा और आप अपना पासवर्ड रीसेट नहीं कर पाएंगे।</string>
     <string name="get_started">शुरू हो जाओ</string>
-    <!-- Actions -->
     <string name="error_try_again">त्रुटि फिर से प्रयास करें!</string>
-    <string name="please_wait">कृपया प्रतीक्षा करें&#8230;</string>
+    <string name="please_wait">कृपया प्रतीक्षा करें…</string>
     <string name="resend">पुन: भेजें</string>
     <string name="loading">लोड हो रहा है..</string>
     <string name="retry">पुन: प्रयास करें</string>
@@ -207,16 +176,12 @@
     <string name="set_up_later">बाद में सेटअप करें</string>
     <string name="back">वापस</string>
     <string name="ok">ठीक है</string>
-
-    <!-- Log -->
     <string name="view_log">लॉग देखें</string>
     <string name="send_log">लॉग भेजें</string>
     <string name="send_charon_log">IkEv2 लॉग भेजें</string>
     <string name="sent_thanks">भेजा गया धन्यवाद!</string>
     <string name="sending_log">लॉग भेजा जा रहा है …</string>
     <string name="export_log">निर्यात लॉग</string>
-
-    <!--Home -->
     <string name="no_favourites">कोई पसंदीदा नहीं</string>
     <string name="no_custom_configs">कोई कस्टम कॉन्फिग नहीं</string>
     <string name="add_profile">एक प्रोफ़ाइल जोड़ें</string>
@@ -225,7 +190,6 @@
     <string name="under_maintenance">यह स्थान अंडर रखरखाव है</string>
     <string name="check_status_description">अधिक जानकारी के लिए बाद में पुन: प्रयास करें या हमारे स्टेटस पेज पर जाएं</string>
     <string name="added_to_favourites">फेवरट में जोड़ा गया</string>
-    <!--Main Menu-->
     <string name="general">सामान्य</string>
     <string name="account">खाता</string>
     <string name="connection">कनेक्शन</string>
@@ -234,8 +198,6 @@
     <string name="logout">लॉग आउट</string>
     <string name="preference">प्रेफरेंस</string>
     <string name="logout_alert_description">क्या आप लॉग आउट करना चाहते हैं?</string>
-
-    <!--General Settings-->
     <string name="sort_by">लोकेशन छांटना</string>
     <string name="display_latency">लेटेंसी डिस्प्ले</string>
     <string name="preferred_language">भाषा</string>
@@ -247,9 +209,6 @@
     <string name="disconnected_lower_case">डिस्कनेक्टेड</string>
     <string name="connected_lower_case">कनेक्टेड</string>
     <string name="show_location_health">शो लोकेशन हेल्थ</string>
-
-
-    <!-- Split tunneling -->
     <string name="split_tunneling_feature">कनेक्ट होने पर Windscribe से बाहर निकालने या शामिल करने के लिए कौन से ऐप्स चुनें</string>
     <string name="mode">मोड</string>
     <string name="split_tunneling">स्प्लिट टनलिंग</string>
@@ -258,42 +217,30 @@
     <string name="feature_tunnel_mode_exclusive">नीचे दिए गए एप्लिकेशन कनेक्ट होने पर Windscribe के माध्यम से नहीं जाएंगे</string>
     <string name="feature_tunnel_mode_inclusive">नीचे दिए गए एप्लिकेशन कनेक्ट होने पर Windscribe के माध्यम से जाएंगे</string>
     <string name="apps">ऐप्स</string>
-
-    <!--Always on -->
     <string name="always_on">ऑलवेज ऑन वीपीएन</string>
     <string name="always_on_warning">\"ऑलवेज ऑन वीपीएन\" एंड्रॉइड को वीपीएन कनेक्शन को नियंत्रित करने और यह सुनिश्चित करने की अनुमति देता है कि जब तक वीपीएन सुरंग नहीं है तब तक कोई डेटा डिवाइस को नहीं छोड़ सकता है।</string>
     <string name="always_on_setting">Android 10+ डिवाइसों को डिवाइस बूट पर शुरू करने के लिए Windscribe को कॉन्फ़िगर करने के लिए ऑलवेज ऑन वीपीएन की आवश्यकता होती है।</string>
-
-    <!-- Network security -->
     <string name="forget_network">नेटवर्क को भूल जाओ</string>
     <string name="network_secured">सुरक्षित</string>
     <string name="network_unsecured">असुरक्षित</string>
     <string name="preferred_protocol_description">इस नेटवर्क के लिए एक डिफ़ॉल्ट प्रोटोकॉल चुनें, यदि आपके पास कनेक्ट करने में समस्याएँ हैं</string>
     <string name="unknown">अज्ञात नेटवर्क</string>
-    <string name="loading_network_list">नेटवर्क सूची लोड हो रही है \n कृपया प्रतीक्षा करें&#8230;</string>
+    <string name="loading_network_list">नेटवर्क सूची लोड हो रही है \n कृपया प्रतीक्षा करें…</string>
     <string name="no_saved_network_list">कोई सेव्ड गई नेटवर्क सूची नहीं!</string>
     <string name="network_options">नेटवर्क विकल्प</string>
     <string name="auto_secure">ऑटो-सिक्योर</string>
     <string name="auto_secure_description">जब आप इस नेटवर्क से जुड़ेंगे तो Windscribe अपने आप चालू हो जाएगा.</string>
-
-    <!--Auto connect on boot-->
     <string name="auto_start_on_boot">बूट पर ऑटो-कनेक्ट</string>
     <string name="enable_start_on_boot">बूट पर स्टार्ट इनेबल करें</string>
-
-    <!--Location permission -->
     <string name="grant_permission">अनुदान अनुमति</string>
     <string name="reason_for_location_permission">Windscribe को लोकेशन अनुमति की आवश्यकता है, जबकि यह बैकग्राउंड में चल रहा है ताकि \ "नेटवर्क व्हिटेलिस्ट" फीचर काम कर सके। Wifi नेटवर्क नामों तक पहुँचने के लिए यह अनुमति आवश्यक है। यह अनुमति केवल इस सुविधा के साथ-साथ GPS स्पूफिंग कार्यक्षमता के लिए उपयोग की जाती है। आपका स्थान डेटा आपके डिवाइस को नहीं छोड़ता है, और इसका उपयोग किसी और चीज़ के लिए नहीं किया जाता है।</string>
     <string name="location_permission_for_ssid">पसंदीदा प्रोटोकॉल और ऑटो कनेक्ट स्थापित करने के लिए आवश्यक लोकेशन अनुमति।</string>
     <string name="disclaimer">अस्वीकरण</string>
     <string name="location_permission">लोकेशन की अनुमति</string>
-
-    <!-- Features -->
     <string name="feature1">100 से अधिक स्थानों पर सर्वर</string>
     <string name="feature2">विज्ञापनों और मैलवेयर को ब्लॉक करें</string>
     <string name="feature3">कोई लॉगिंग नहीं</string>
     <string name="feature4">स्ट्रीमिंग अनलॉक</string>
-
-    <!--Help -->
     <string name="knowledge_base">ज्ञानधार</string>
     <string name="knowledge_base_description">WindScribe के बारे में सब कुछ है।</string>
     <string name="talk_to_garry">गैरी से बात करो</string>
@@ -302,9 +249,6 @@
     <string name="send_ticket_description">आप जो ढूंढ रहे हैं वह नहीं मिल सकता है? हमें टिकट भेज दो।</string>
     <string name="community_support">सामुदायिक समर्थन</string>
     <string name="community_support_description">अन्य उपयोगकर्ताओं की मदद करने और पाने के लिए सर्वश्रेष्ठ स्थान।</string>
-
-
-    <!-- About -->
     <string name="about">अबाउट</string>
     <string name="about_us">हमारे बारे में</string>
     <string name="status">स्टेटस</string>
@@ -312,42 +256,29 @@
     <string name="terms_title">शर्तें</string>
     <string name="blog">ब्लॉग</string>
     <string name="jobs">जॉब्स</string>
-
-
-    <!--Send ticket -->
     <string name="how_to_send_ticket">नीचे दिए गए फ़ील्ड भरें और हमारे समर्थन एजेंटों में से एक व्यक्तिगत रूप से बहुत जल्द आपको जवाब देगा™</string>
     <string name="category">श्रेणी</string>
     <string name="email_reason_for_contact">इसलिए हम आपसे संपर्क कर सकते हैं, हमने इसे किसी और चीज़ के लिए उपयोग नहीं किया है</string>
     <string name="what_is_the_issue">मुद्दा क्या है?</string>
     <string name="message">संदेश</string>
     <string name="subject">विषय</string>
-
-    <!--Config -->
     <string name="edit_config_file">कॉन्फ़िग फ़ाइल संपादित करें</string>
     <string name="name">नाम</string>
     <string name="save_credentials">क्रेडेंशियल सहेजें?</string>
     <string name="update">अपडेट करें</string>
     <string name="enter_credentials">क्रेडेंशियल दर्ज करें</string>
     <string name="connect">कनेक्ट</string>
-
-    <!--Debug -->
     <string name="send_debug_log">डीबग लॉग भेजें</string>
     <string name="send_ikev2_log">IKEv2 लॉग भेजें</string>
-
-
-    <!--Home -->
     <string name="failed">असफल हुआ</string>
     <string name="next_in_up">"अगले में %d"</string>
     <string name="step_1_3">स्टेप 1/3</string>
     <string name="step_2_3">स्टेप 2/3</string>
     <string name="remove_from_favourites">फेवरेट से निकाला गया</string>
     <string name="config_added">कॉन्फिग जोड़ा गया</string>
-
-    <!-- Home -->
     <string name="locations">लोकेशन</string>
     <string name="notifications">नोटिफिकेशन</string>
     <string name="support">सपोर्ट</string>
-
     <string name="connected_lowercase">जुड़े हुए</string>
     <string name="decoy_traffic">डिकॉय ट्रैफ़िक</string>
     <string name="decoy_traffic_mode">डिकॉय ट्रैफ़िक मोड</string>
@@ -361,7 +292,9 @@
     <string name="a_la_carte_unlimited_plan">असीमित</string>
     <string name="play_store_generic_api_error">प्ले स्टोर से अप्रत्याशित प्रतिक्रिया प्राप्त हुई। यह हाल ही में रद्द की गई खरीदारियों के कारण हो सकता है। बाद में फिर से कोशिश करें।</string>
     <string name="add_to_mock_location_explain_android_12">एक बार अनलॉक होने के बाद, सेटिंग्स में “डेवलपर विकल्प” पर जाएं। "लोकेशन" के तहत Windscribe को "मॉक लोकेशन ऐप" के रूप में चुनें।</string>
-    <string name="terms_policy_en"><b>उपयोग की शर्तें</b> और <b>गोपनीयता नीति।</b></string>
+    <string name="terms_policy_en">
+    <b>उपयोग की शर्तें</b> और <b>गोपनीयता नीति।</b>
+  </string>
     <string name="add_vpn_config">कस्टम कॉन्फ़िग जोड़ें</string>
     <string name="config_title">कॉन्फ़िग शीर्षक</string>
     <string name="software_licenses">सॉफ़्टवेयर लाइसेंस</string>
@@ -537,4 +470,6 @@
     <string name="search">खोजें</string>
     <string name="failed_to_update_robert_rules">रोबर्ट नियमों को अपडेट करने में विफल रहा।</string>
     <string name="successfully_updated_robert_rules">रोबर्ट नियमों को सफलतापूर्वक अपडेट किया गया।</string>
+    <string name="share_app_description">"%s आपको विंडस्क्राइब में शामिल होने के लिए आमंत्रित कर रहा है। साइनअप पर उनका उपयोगकर्ता नाम प्रदान करें और आप दोनों को अपने खातों में जोड़ा गया 1 जीबी मुफ्त डेटा मिलेगा। यदि आप प्रो जाते हैं, तो वे भी प्रो जाएंगे!\</string>
+    <string name="share_app">साझा अनुप्रयोग</string>
 </resources>

@@ -1,9 +1,5 @@
-﻿<!--
-  ~ Copyright (c) 2021 Windscribe Limited.
-  -->
-
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <!--- User-->
     <string name="username_empty">Порожнє ім’я користувача!</string>
     <string name="password_empty">Порожній пароль!</string>
     <string name="enter_username">Введіть своє ім’я користувача!</string>
@@ -29,10 +25,8 @@
     <string name="sign_up_description">Захистіть свій обліковий запис, забезпечте доступ до своїх налаштувань із будь-якого пристрою, а також отримайте більше даних.</string>
     <string name="choose_username">Виберіть ім’я користувача</string>
     <string name="choose_password">Виберіть пароль</string>
-    <string name="email_description"><![CDATA[Тільки для відновлення пароля, отримання оновлень та реклами. Без спаму]]></string>
+    <string name="email_description">Тільки для відновлення пароля, отримання оновлень та реклами. Без спаму</string>
     <string name="sign_up_failed_network_alert">Ми зробили все можливе, але з якоїсь причини не змогли зареєструвати вас у цій мережі.</string>
-
-    <!--Api -->
     <string name="backup_api_end_point">Перевірка резервної кінцевої точки API…</string>
     <string name="signing_in">Вхід…</string>
     <string name="signing_up">Реєстрація…</string>
@@ -45,8 +39,6 @@
     <string name="preparing_your_dashboard">Підготовка інформаційної панелі…</string>
     <string name="trying_static_endpoint">Перевірка статичної кінцевої точки…</string>
     <string name="getting_reg_token">Отримання токену реєстрації…</string>
-
-    <!--- Email-->
     <string name="invalid_email_format">Недійсна електронна адреса!</string>
     <string name="email_empty">Порожня електронна адреса!</string>
     <string name="email">Електронна адреса</string>
@@ -54,13 +46,9 @@
     <string name="confirm_email">Підтвердити електронну адресу</string>
     <string name="resend_verification_email">Повторно надіслати електронного листа для підтвердження</string>
     <string name="change_email">Змінити електронну адресу</string>
-
-    <!--Network -->
     <string name="no_internet">НЕМАЄ ПІДКЛЮЧЕННЯ ДО ІНТЕРНЕТУ!</string>
     <string name="no_network_detected">Мережу не виявлено!</string>
     <string name="this_network_hates_us">Ми не можемо працювати в цій мережі</string>
-
-    <!-- Upgrade-->
     <string name="upgrade">ПЕРЕЙТИ НА ВИЩУ ВЕРСІЮ</string>
     <string name="upgrade_case_normal">Перейти на вищу версію</string>
     <string name="renew_plan">Поновити план</string>
@@ -77,8 +65,6 @@
     <string name="warning_no_email_pro_account">Додайте електронну адресу, щоб відновити обліковий запис на випадок, якщо ви забудете свій пароль.</string>
     <string name="free_reason_to_confirm">Підтвердьте свою електронну адресу, щоб отримати 10 ГБ на місяць</string>
     <string name="pro_reason_to_confirm">Підтвердьте свою електронну адресу, щоб захистити свій обліковий запис</string>
-
-    <!-- Connection states -->
     <string name="connected">ПІДКЛЮЧЕНО</string>
     <string name="connected_lowercase">Підключено</string>
     <string name="connecting">ПІДКЛЮЧЕННЯ </string>
@@ -90,8 +76,6 @@
     <string name="checking_connectivity">Перевірка підключення…</string>
     <string name="connectivity_test_failed">Не вдалося перевірити підключення…</string>
     <string name="best_location">Найкраще розташування</string>
-
-    <!--Connection preference-->
     <string name="connection_mode">Режим підключення</string>
     <string name="preferred_protocol">Бажаний протокол</string>
     <string name="protocol">Протокол</string>
@@ -106,8 +90,6 @@
     <string name="natKeepAlive">IKE keepalive</string>
     <string name="keep_alive">keep alive</string>
     <string name="auto_detecting">Автоматичне визначення…</string>
-
-    <!-- Account-->
     <string name="plan_pro">Pro</string>
     <string name="expiry_date">Дата закінчення терміну дії</string>
     <string name="reset_date">Дата скидання</string>
@@ -119,8 +101,6 @@
     <string name="plan">ПЛАН</string>
     <string name="please_login">Для підключення необхідно виконати вхід!</string>
     <string name="please_login_to_see_account_details">Зареєструйтеся або увійдіть, щоб переглянути дані свого облікового запису та захистити свої налаштування.</string>
-
-    <!-- Billing-->
     <string name="billing_unavailable">Оплата Play недоступна для цього пристрою</string>
     <string name="item_unavailable">Продукт, який ви запитали, недоступний. \nЗверніться в службу підтримки: https://windscribe.com/support!</string>
     <string name="billing_service_unavailable">Служба виставлення рахунків недоступна. Перевірте підключення до мережі та повторіть спробу!</string>
@@ -131,8 +111,6 @@
     <string name="purchase_cancelled">Покупку скасовано!</string>
     <string name="purchase_successful">Покупку виконано успішно!</string>
     <string name="_2gb_left">ЗАЛИШИЛОСЯ 2 ГБ</string>
-
-    <!-- Notification/Status Strings -->
     <string name="state_connecting">Підключення</string>
     <string name="state_wait">Очікування відповіді сервера</string>
     <string name="state_auth">Автентифікація</string>
@@ -148,19 +126,13 @@
     <string name="state_tcp_connect">Підключення (TCP)</string>
     <string name="state_auth_failed">Помилка автентифікації</string>
     <string name="state_no_network">Очікування доступної для використання мережі</string>
-
-    <!--News feed -->
     <string name="news_feed">Стрічка новин</string>
     <string name="news_feed_welcome">Тут ви знайдете оголошення та загальні новини, пов’язані з Windscribe. А може навіть смачний торт. Усі люблять торт!</string>
     <string name="news_feed_welcome_title">ЛАСКАВО ПРОСИМО ДО WINDSCRIBE!</string>
-
-    <!-- Rate dialog -->
     <string name="rate_the_app">Оцініть Windscribe</string>
     <string name="may_be_later">Можливо, пізніше</string>
     <string name="never_ask_again">Йдіть геть</string>
     <string name="rate_message">Вам подобається Windscribe? Звичайно. Оцініть нас у Play Store, і ми станемо гарними друзями.</string>
-
-    <!-- GPS spoofing -->
     <string name="gps_spoofing_explain">Ця функція вимагає змінити налаштування Android. Виконайте наступні кроки, щоб активувати її.</string>
     <string name="let_s_do_it">Давайте зробимо це</string>
     <string name="unlock_developer_mode">Розблокування параметрів розробника</string>
@@ -172,8 +144,6 @@
     <string name="gps_spoofing_success">Ваше місцезнаходження GPS буде відповідати розташуванню VPN.</string>
     <string name="gps_spoofing_not_set">Не вдалося ввімкнути GPS-спуфінг</string>
     <string name="gps_spoofing_error">Для активації цієї функції повторіть спробу, дотримуючи рекомендацій із посібника.</string>
-
-    <!--Ghost mode -->
     <string name="add_email">Додати електронну адресу</string>
     <string name="unlimited_data">Необмежені дані</string>
     <string name="preferences">Вподобання</string>
@@ -185,14 +155,13 @@
     <string name="pricing">ЦІНИ</string>
     <string name="all_locations">Усі розташування</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[Ви можете придбати місячну, річну підписку або вимкнути її, перейшовши в налаштування облікового запису App Store після покупки. Усі ціни включають відповідні податки.]]></string>
+    <string name="terms">Ви можете придбати місячну, річну підписку або вимкнути її, перейшовши в налаштування облікового запису App Store після покупки. Усі ціни включають відповідні податки.</string>
     <string name="account_set_up">Налаштування облікового запису</string>
     <string name="account_set_up_description">Захистіть свій обліковий запис та забезпечте доступ до нього з будь-якого пристрою.</string>
     <string name="continue_free_10gb_mo">Отримайте безкоштовно 10 ГБ на місяць</string>
     <string name="continue_without_email">Продовжити без електронної адреси</string>
     <string name="no_email_warning">Без електронної адреси для вашого безкоштовного облікового запису буде встановлено обмеження 2 ГБ на місяць, і ви не зможете скинути пароль.</string>
     <string name="get_started">Почати</string>
-    <!-- Actions -->
     <string name="error_try_again">Помилка. Повторіть спробу!</string>
     <string name="please_wait">Зачекайте...</string>
     <string name="resend">Надіслати повторно</string>
@@ -204,16 +173,12 @@
     <string name="set_up_later">Налаштувати пізніше</string>
     <string name="back">Назад</string>
     <string name="ok">OK</string>
-
-    <!-- Log -->
     <string name="view_log">Переглянути журнал налагодження</string>
     <string name="send_log">Надіслати журнал налагодження</string>
     <string name="send_charon_log">Надіслати журнал IkEv2</string>
     <string name="sent_thanks">Надіслано, дякуємо!</string>
     <string name="sending_log">Надсилання журналу…</string>
     <string name="export_log">Експортувати журнал</string>
-
-    <!--Home -->
     <string name="no_favourites">Немає обраного</string>
     <string name="no_custom_configs">Спеціальні конфігурації дозволяють підключатися до будь-якого сервера OpenVPN або Wireguard. Просто додайте дійсний файл конфігурації, і він з’явиться на цій вкладці.</string>
     <string name="add_profile">Додати профіль VPN</string>
@@ -223,8 +188,6 @@
     <string name="check_status_description">Повторіть спробу пізніше або перейдіть на нашу сторінку статусу для отримання додаткової інформації</string>
     <string name="added_to_favourites">Додано до обраного</string>
     <string name="add_vpn_config">Додати користувацьку конфігурацію</string>
-
-    <!--Main Menu-->
     <string name="general">Загальне</string>
     <string name="account">Обліковий запис</string>
     <string name="connection">Підключення</string>
@@ -233,8 +196,6 @@
     <string name="logout">Вийти</string>
     <string name="preference">Вподобання</string>
     <string name="logout_alert_description">Ви дійсно хочете вийти з Windscribe?</string>
-
-    <!--General Settings-->
     <string name="sort_by">Порядок розташувань</string>
     <string name="display_latency">Відображення затримки</string>
     <string name="preferred_language">Мова</string>
@@ -243,9 +204,6 @@
     <string name="haptic_setting_label">Вібрація</string>
     <string name="version">Версія</string>
     <string name="show_location_health">Показувати завантаження розташування</string>
-
-
-    <!-- Split tunneling -->
     <string name="split_tunneling_feature">Виберіть, які програми виключати або включати з Windscribe під час підключення</string>
     <string name="mode">Режим</string>
     <string name="split_tunneling">Розділене тунелювання</string>
@@ -254,13 +212,9 @@
     <string name="feature_tunnel_mode_exclusive">До вибраних нижче додатків не буде застосовуватися Windscribe при підключенні</string>
     <string name="feature_tunnel_mode_inclusive">До вибраних нижче додатків буде застосовуватися Windscribe при підключенні</string>
     <string name="apps">ДОДАТКИ</string>
-
-    <!--Always on -->
     <string name="always_on">Завжди увімк. VPN</string>
     <string name="always_on_warning">Параметр «Завжди увімк. VPN» дозволяє Android керувати VPN-підключенням і гарантувати відсутність передачі даних із пристрою, якщо VPN-тунель не запущено.</string>
     <string name="always_on_setting">Пристроям Android 10+ потрібно налаштувати параметр «Завжди увімк. VPN», щоб Windscribe запускався під час завантаження пристрою.</string>
-
-    <!-- Network security -->
     <string name="forget_network">Забути мережу</string>
     <string name="network_secured">Захищено</string>
     <string name="network_unsecured">Не захищено</string>
@@ -271,25 +225,17 @@
     <string name="network_options">Параметри мережі</string>
     <string name="auto_secure">Автоматичний захист</string>
     <string name="auto_secure_description">Windscribe автоматично вмикається, коли ви підключаєтеся до цієї мережі.</string>
-
-    <!--Auto connect on boot-->
     <string name="auto_start_on_boot">Автоматичне підключення під час завантаження</string>
     <string name="enable_start_on_boot">Увімкніть запуск під час завантаження</string>
-
-    <!--Location permission -->
     <string name="grant_permission">Надати дозвіл</string>
     <string name="reason_for_location_permission">Щоб функція «Білий список мережі» працювала, додаток Windscribe потребує дозволу на доступ до відомостей про розташування під час роботи у фоновому режимі. Цей дозвіл потрібен для доступу до імен мереж Wi-Fi. Цей дозвіл використовується виключно для цієї функції, а також для функції GPS-спуфінгу. Дані про розташування не передаються з вашого пристрою і не використовуються для інших цілей.</string>
     <string name="location_permission_for_ssid">Для налаштування бажаних протоколів і автоматичного підключення потрібен дозвіл на доступ до відомостей про розташування.</string>
     <string name="disclaimer">Відмова від відповідальності</string>
     <string name="location_permission">Дозвіл на доступ до відомостей про розташування</string>
-
-    <!-- Features -->
     <string name="feature1">Сервери в більш ніж 100 місцях</string>
     <string name="feature2">Блокування реклами та шкідливого програмного забезпечення</string>
     <string name="feature3">Без журналювання</string>
     <string name="feature4">Розблокування потокового передавання</string>
-
-    <!--Help -->
     <string name="knowledge_base">База знань</string>
     <string name="knowledge_base_description">Усе, що вам потрібно знати про Windscribe.</string>
     <string name="talk_to_garry">Поговорити з Гаррі</string>
@@ -298,43 +244,31 @@
     <string name="send_ticket_description">Виникла проблема? Надішліть нам запит.</string>
     <string name="community_support">Підтримка спільноти</string>
     <string name="community_support_description">Найкраще місце для надання та отримання допомоги від інших користувачів.</string>
-
-
-    <!--Send ticket -->
     <string name="how_to_send_ticket">Заповніть поля нижче, і один із наших агентів служби підтримки незабаром особисто зв’яжеться з вами</string>
     <string name="category">Категорія</string>
     <string name="email_reason_for_contact">Ми можемо зв’язатися з вами, але не будемо використовувати ці дані для інших цілей</string>
     <string name="what_is_the_issue">У чому проблема?</string>
     <string name="message">Повідомлення</string>
     <string name="subject">Тема</string>
-
-    <!--Config -->
     <string name="edit_config_file">Редагувати файл конфігурації</string>
     <string name="name">назва</string>
     <string name="save_credentials">Зберегти облікові дані?</string>
     <string name="update">Оновити</string>
     <string name="enter_credentials">Введіть облікові дані</string>
     <string name="connect">Підключити</string>
-
-    <!--Debug -->
     <string name="send_debug_log">Надіслати журнал налагодження</string>
     <string name="send_ikev2_log">Надіслати журнал IkEv2</string>
-
-    <!--Home -->
     <string name="failed">ПОМИЛКА</string>
     <string name="next_in_up">«Далі: %d»</string>
     <string name="step_1_3">Крок 1/3</string>
     <string name="step_2_3">Крок 2/3</string>
     <string name="remove_from_favourites">Видалено з обраного</string>
     <string name="config_added">Додано в конфігурації</string>
-
     <string name="app_background">Фон додатка</string>
     <string name="disconnected_lower_case">Відключено</string>
     <string name="connected_lower_case">Підключено</string>
     <string name="x_press_login">Лінивий вхід</string>
     <string name="other">ІНШЕ</string>
-
-    <!-- About -->
     <string name="about">Інформація</string>
     <string name="about_us">Про нас</string>
     <string name="status">Статус</string>
@@ -343,11 +277,6 @@
     <string name="blog">Блог</string>
     <string name="jobs">Вакансії</string>
     <string name="software_licenses">Ліцензії на програмне забезпечення</string>
-
-
-    <!-- ********** TV ************* -->
-
-    <!-- UPGRADE STRINGS -->
     <string name="benefit_unlimited_data">Необмежені дані</string>
     <string name="choose_plan">ОБЕРІТЬ ПЛАН</string>
     <string name="monthly">МІСЯЧНИЙ</string>
@@ -355,33 +284,22 @@
     <string name="upgrade_title">Ви заслуговуєте на конфіденційність без обмежень.</string>
     <string name="text_login">Увійти</string>
     <string name="text_sign_up">Реєстрація</string>
-
-    <!-- Log -->
     <string name="sending_debug_log">Надсилання журналу налагодження\nБудь ласка, зачекайте…</string>
     <string name="app_log_submitted">Дякуємо! Журнал додатка надіслано.</string>
     <string name="log_submission_failed">Помилка надсилання файлу журналу!</string>
-
-    <!-- Home -->
     <string name="add_your_email_address">Додайте свою електронну адресу на випадок, якщо ви забудете свій пароль. А ми за це подаруємо вам 10 ГБ.</string>
     <string name="locations">розташування</string>
     <string name="notifications">Сповіщення</string>
     <string name="support">Підтримка</string>
     <string name="support_content">Перейдіть за вказаною вище адресою на своєму телефоні або комп’ютері, щоб отримати всі запити щодо підтримки.</string>
     <string name="add_email_title">Додати електронну адресу</string>
-
-    <!-- Upgrade -->
     <string name="upgradeNoData">Схоже, ви не можете розраховувати на повну конфіденційність</string>
     <string name="upgradeToUnlock">Ви заслуговуєте на конфіденційність без обмежень</string>
     <string name="restore_purchase">Відновити покупку</string>
     <string name="servers_in_over_60_countries_and_110_cities">Сервери в більш ніж 60 країнах і 110 містах</string>
     <string name="no_bandwidth_interruptions_stay_protected_forever">Без переривань пропускної здатності. Залишайтеся захищеними назавжди</string>
-
-
     <string name="skip">Пропустити</string>
     <string name="robert_detail">Блокує шкідливе програмне забезпечення та рекламу на всіх ваших пристроях.</string>
-
-
-    <!-- Settings -->
     <string name="settings">Налаштування</string>
     <string name="sort_type">Упорядкувати розташування за</string>
     <string name="split_routing">Розділена маршрутизація</string>
@@ -395,8 +313,6 @@
     <string name="start_on_boot">Запускати під час завантаження</string>
     <string name="split_routing_content" translatable="false">Виберіть, які програми виключати або включати з Windscribe під час підключення</string>
     <string name="show_system_apps">Показати системні програми</string>
-
-    <!-- Login -->
     <string name="login_label" translatable="false">Якщо у вас вже є обліковий запис</string>
     <string name="ghost_account_sign_up" translatable="false">Зареєструйтеся або увійдіть, щоб переглянути дані свого облікового запису та захистити свої налаштування</string>
     <string name="ghost_account_claim" translatable="false">Заявіть права на свій обліковий запис, щоб запобігти втраті статусу Pro</string>
@@ -423,8 +339,6 @@
     <string name="support_url">windscribe.com/support</string>
     <string name="enter_code">Введіть код</string>
     <string name="enter">Введіть</string>
-
-    <!-- Server list -->
     <string name="ping_time">%d МС</string>
     <string name="trying_next_protocol">«Спроба ввести наступний протокол через %d»</string>
     <string name="all">Усі</string>
@@ -437,14 +351,120 @@
     <string name="load_nothing_found" translatable="false">Тут нічого немає</string>
     <string name="load_error" translatable="false">Помилка завантаження.</string>
     <string name="select_location">Спочатку виберіть розташування!</string>
-
-    <!-- Actions -->
     <string name="text_ok">OK</string>
-
-    <!--Robert -->
     <string name="robert_description">R.O.B.E.R.T. – це настроюваний серверний інструмент для блокування домену та IP-адреси. Виберіть списки блокування, які потрібно застосувати на всіх своїх пристроях, за допомогою перемикача.</string>
     <string name="learn_more">Дізнайтеся більше</string>
     <string name="manage_custom_rules">Керування користувацькими правилами</string>
     <string name="blocking">Блокувати</string>
     <string name="allowing">Дозволити</string>
+    <string name="latency">Затримки</string>
+    <string name="ad_malware_blocker">Найкраще шкідливе програмне забезпечення та блокувальник реклами, який ви коли-небудь використовували. Серйозно.</string>
+    <string name="decoy">ДЕКОЙ</string>
+    <string name="send">Надіслати</string>
+    <string name="app_requires_background_location_permission">Додаток вимагає дозволу на визначення місцезнаходження у фоновому режимі для доступу до SSID WIFI на Android 11+. Якщо ви бажаєте скористатися цією функцією, натисніть кнопку OK і виберіть \"Дозволити весь час\" у діалоговому вікні дозволів.</string>
+    <string name="sales">Продажу</string>
+    <string name="lazy_login_description">Увійдіть у телевізійні програми Windscribe за допомогою короткого коду.</string>
+    <string name="gps_spoofing_description">Підробіть GPS-координати вашого пристрою.</string>
+    <string name="auto_secure_new_networks">Автоматичний захист нових мереж</string>
+    <string name="dark">Темний</string>
+    <string name="haptic_feedback_description">Фізичні реакції (вібрація) на дії користувача</string>
+    <string name="set_this_protocol_as_preferred">Встановити \"%s\" як бажаний протокол?</string>
+    <string name="the_protocol_you_ve_chosen_has_failed_to_connect_windscribe_will_attempt_to_reconnect_using_the_first_protocol_below">Вибраний протокол не вдалося підключити. Windscribe спробує повторно підключитися за допомогою першого протоколу, наведеного нижче.</string>
+    <string name="feedback">Зворотний зв\язок</string>
+    <string name="please_provide_email_first">Ну, ми зробили найкращий знімок, ми просто не могли підключити вас до цієї мережі. Надішліть нам свій журнал налагодження, щоб ми могли з\ясувати, що сталося.</string>
+    <string name="error">Фальшивий обсяг трафіку</string>
+    <string name="Wireguard_description">Успішно оновлені правила Роберта.</string>
+    <string name="geography">Орієнтовне використання даних</string>
+    <string name="potential_data_use">Поділіться Windscribe з другом!</string>
+    <string name="share_windscribe_with_a_friend">Позначте всі нові мережі як захищені.</string>
+    <string name="auto_secure_new_networks_description">Ворожнечу</string>
+    <string name="discord">Якщо вони стануть Pro, ви також підете Pro!</string>
+    <string name="error_sending_email">Отримайте 10 ГБ/місяць даних і отримайте можливість скинути пароль.</string>
+    <string name="get_10gb_data">IKEv2 — протокол тунелювання на основі IPsec.</string>
+    <string name="iKEV2_description">Видалити з уподобань</string>
+    <string name="remove_it_from_favourites">Не вдалося оновити правила Роберта.</string>
+    <string name="WSTunnel_description">Зміна протоколу недоступна для користувацьких конфігурацій.</string>
+    <string name="flags">Залишилися дані</string>
+    <string name="refer_for_data">Поділитися додатком</string>
+    <string name="emergency_connected_description">Змінити протокол</string>
+    <string name="protocol_change">Відключити</string>
+    <string name="Udp_description">Автоматичного</string>
+    <string name="emergency_connect">Хтось направив?</string>
+    <string name="auto_package_size_detecting_failed">Показати статистику трафіку в сповіщенні.</string>
+    <string name="decoy_traffic_warning">Автоматичне визначення розміру пакета...</string>
+    <string name="auto_detecting_packet_size">Установити за бажаним</string>
+    <string name="explain_me">Налаштуйте екран підключення через додаток.</string>
+    <string name="app_background_description">ПОТОЧНА МЕРЕЖА</string>
+    <string name="please_confirm_email_first">Регулярно надсилає пакети NAT keepalive своєму вузлу, щоб зберегти сеанс NAT, щоб одноранговий доступ до пристрою (лише IKEv2)</string>
+    <string name="location_order_description">Доступ до серверів у більш ніж 60 країнах та центрів обробки даних 110.</string>
+    <string name="access_to_multiple_servers">Ваш журнал налагодження отримано. Зверніться до служби підтримки, якщо вам потрібна допомога з цією проблемою.</string>
+    <string name="auto_secure_description_secondary">Збій підключення!</string>
+    <string name="i_understand">Рух-приманка</string>
+    <string name="decoy_traffic">Досить зрозуміло. Використовуйте стільки, скільки хочете пропускної здатності.</string>
+    <string name="as_much_as_bandwidth_you_like">Автоматично підключатися до останнього підключеного розташування під час запуску пристрою.</string>
+    <string name="appearance_description">Конфігурація заголовка</string>
+    <string name="location_load_description">(Обов\язково)</string>
+    <string name="required">Шукати</string>
+    <string name="search">Світлий</string>
+    <string name="light">Недоступний</string>
+    <string name="referee_must_provide_your_username_at_sign_up_and_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">Не вдається отримати доступ до Windscribe? Підключіться до наших серверів, щоб заблокувати вашу обмежувальну мережу.</string>
+    <string name="language_description">Локалізуйте Windscribe підтримуваними мовами.</string>
+    <string name="caution">Обережність</string>
+    <string name="custom">Нестандартний</string>
+    <string name="latency_display_description">Відображайте затримку як смужки рівня сигналу або в мілісекундах.</string>
+    <string name="package_size_detected_successfully">Розмір пакета успішно виявлено.</string>
+    <string name="add_to_mock_location_explain_android_12">Після розблокування перейдіть до «Параметри розробника» в налаштуваннях.  У розділі "Місцезнаходження" виберіть Windscribe як "Імітаційний додаток для визначення місцезнаходження".</string>
+    <string name="play_store_generic_api_error">Несподівана відповідь надійшла від магазину Play. Це може статися через нещодавно скасовані покупки. Повторіть спробу пізніше.</string>
+    <string name="decoy_caution_description">Для цього може знадобитися значний обсяг даних, тому не залишайте цю функцію ввімкненою, якщо вона вам дійсно не потрібна, і не використовуйте великий тарифний план. Ця особливість не гарантує безпеку, тому використовуйте на свій страх і ризик.</string>
+    <string name="allow_lan_description">Виберіть, чи дозволяти доступ до ресурсів у тій самій мережі (наприклад, файлових серверів, принтерів, медіа-боксів тощо) під час підключення до Windscribe.</string>
+    <string name="preferred_protocol_description_secondary">Виберіть найкращий протокол для цієї мережі. Це замінює всі глобальні налаштування підключення.</string>
+    <string name="packet_size_description">Виберіть, чи дозволити Windscribe визначати MTU для вашого з\єднання, чи змінити його вручну.</string>
+    <string name="reddit">Reddit</string>
+    <string name="if_you_go_pro_they_ll_go_pro_too">Якщо ви перейдете на Pro, вони також стануть Pro!</string>
+    <string name="share_app_description">«%s запрошує вас приєднатися до Windscribe. Вкажіть їх ім\я користувача під час реєстрації, і ви обидва отримаєте 1 ГБ безкоштовних даних, доданих до своїх облікових записів. Якщо ви підете професіоналом, вони також стануть професіоналами!\n%s"</string>
+    <string name="bars">Барів</string>
+    <string name="ms">Пані</string>
+    <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe завжди використовуватиме цей протокол для підключення до цієї мережі в майбутньому, щоб уникнути будь-яких перебоїв.</string>
+    <string name="connection_mode_description">Виберіть, чи дозволити Windscribe автоматично вибрати комбінацію протоколів/портів, найбільш оптимальну для вашого налаштування, або зробити це вручну.</string>
+    <string name="terms_policy_en">Ви обидва отримаєте додаткові 1 ГБ на місяць, коли вони зареєструються.</string>
+    <string name="first_reason_to_use_share">Будь ласка, спочатку вкажіть електронну пошту.</string>
+    <string name="well_we_gave_it_our_best_shot_we_just_couldn_t_connect_you_on_this_network_send_us_your_debug_log_so_we_can_figure_out_what_happened">"Помилка "</string>
+    <string name="fake_traffic_volume">Надзвичайно простий, але швидкий і сучасний протокол VPN.</string>
+    <string name="successfully_updated_robert_rules">Географія</string>
+    <string name="if_they_go_pro_you_ll_go_pro_to">Успішно додано електронну пошту.</string>
+    <string name="added_email_successfully">Помилка під час надсилання електронної пошти.</string>
+    <string name="failed_to_update_robert_rules">Ви повинні підтвердити свою електронну адресу, щоб наведені вище переваги застосовувалися до вас і реферала.</string>
+    <string name="you_must_confirm_your_email_in_order_for_the_benefits_above_to_apply_to_you_and_the_referrer">Включно</string>
+    <string name="inclusive">Посилання на ім\я користувача</string>
+    <string name="referral_username">Обгортає ваш трафік HTTPS веб-сокетами.</string>
+    <string name="protocol_change_is_not_available_for_custom_config">Технічний</string>
+    <string name="technical">Прапори</string>
+    <string name="data_left_in_your_plan">Зверніться до даних</string>
+    <string name="share_app">Тепер ви підключені до сервера Windscribe. Спробуйте увійти ще раз.</string>
+    <string name="a_la_carte_unlimited_plan">Збалансована швидкість і безпека.</string>
+    <string name="referred_by_someone">Помилка автоматичного визначення розміру пакета.</string>
+    <string name="notification_stats_description">Це експериментальна функція, яка намагається боротися з атакою кореляції трафіку на змагальні мережі. Якщо ввімкнено, додаток генеруватиме випадкову активність у тунелі, а також завантажуватиме та завантажуватиме випадкові дані через вибрані проміжки часу.</string>
+    <string name="set_as_preferred">Поясніть мені!</string>
+    <string name="current_network">Швидко повторно підключайтеся за допомогою іншого протоколу.</string>
+    <string name="protocol_change_description">Абетка</string>
+    <string name="alphabet">Підтвердження електронною поштою успішно відправлено.</string>
+    <string name="email_confirmation_sent_successfully">Будь ласка, спочатку підтвердьте електронну адресу.</string>
+    <string name="keep_alive_description">Упорядкування списку розташувань за зростанням алфавіту, географії або затримки.</string>
+    <string name="your_debug_log_has_been_received_please_contact_support_if_you_want_assistance_with_this_issue">Тут відобразиться шлях до файлу</string>
+    <string name="file_path_will_show_here">Ви обидва отримаєте додаткові 1 ГБ на місяць під час реєстрації.</string>
+    <string name="first_reason_to_use_referral">Відключення від VPN</string>
+    <string name="disconnect_from_vpn">ІНШІ МЕРЕЖІ</string>
+    <string name="other_networks">Особа, якій рекомендують має підтвердити свою електронну адресу, щоб наведені вище переваги застосовувалися до вашого облікового запису.</string>
+    <string name="referee_must_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">Автоматично під\єднувати пристрій у цій мережі Wi-Fi до
+Остання обрана локація.</string>
+    <string name="connection_failure">Я розумію</string>
+    <string name="auto_connect_on_boot_description">Поділитися посиланням із запрошенням</string>
+    <string name="share_invite_link">Світлий або темний. Вибирайте сторону, і вибирайте з розумом.</string>
+    <string name="config_title">Оновіть, і ви обидва отримаєте Pro.</string>
+    <string name="second_reason_to_use_referral">Відображення навантаження на розташування у вигляді смужки. Чим коротша планка, тим менше навантаження на локацію (по відношенню до загальної місткості локації).</string>
+    <string name="unavailable">Windscribe автоматично відключиться, коли ви приєднаєтеся до незахищеної мережі Wi-Fi.</string>
+    <string name="network_options_description">Особа, якій рекомендують, повинна вказати ваше ім\я користувача під час реєстрації та підтвердити свою електронну адресу, щоб вищезазначені переваги застосовувалися до вашого облікового запису.</string>
+    <string name="emergency_connect_description">Використовуйте його, якщо OpenVPN UDP не працює.</string>
+    <string name="Tcp_description">Маскування трафіку під трафік HTTPS за допомогою протоколу TLS</string>
+    <string name="Stealth_description">Режим руху приманки</string>
 </resources>
