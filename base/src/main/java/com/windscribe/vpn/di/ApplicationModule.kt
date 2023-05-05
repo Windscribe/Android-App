@@ -665,12 +665,12 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     @Singleton
     fun providesVPNConnectionStateManager(
         scope: CoroutineScope,
-        connectionDataRepository: ConnectionDataRepository,
+        autoConnectionManager: AutoConnectionManager,
         preferencesHelper: PreferencesHelper,
         userRepository: Lazy<UserRepository>
     ): VPNConnectionStateManager {
         return VPNConnectionStateManager(
-            scope, connectionDataRepository, preferencesHelper, userRepository
+            scope, autoConnectionManager, preferencesHelper, userRepository
         )
     }
 
