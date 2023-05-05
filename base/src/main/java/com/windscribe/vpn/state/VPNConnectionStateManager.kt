@@ -8,11 +8,11 @@ import android.os.Build
 import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connected
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.repository.ConnectionDataRepository
 import com.windscribe.vpn.repository.UserRepository
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Singleton
 
 @Singleton
-class VPNConnectionStateManager(val scope: CoroutineScope, val connectionDataRepository: ConnectionDataRepository, val preferencesHelper: PreferencesHelper, val userRepository: Lazy<UserRepository>) {
+class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionManager: AutoConnectionManager, val preferencesHelper: PreferencesHelper, val userRepository: Lazy<UserRepository>) {
     private val logger = LoggerFactory.getLogger("vpn_backend")
 
     private val _events = MutableStateFlow(VPNState(Disconnected))
@@ -71,6 +71,9 @@ class VPNConnectionStateManager(val scope: CoroutineScope, val connectionDataRep
                     )
                     logger.info(logFile)
                     logger.debug("VPN state initialized with ${it.status}")
+                    if (autoConnectionManager.listOfProtocols.isEmpty()){
+                        autoConnectionManager.reset()
+                    }
                 }
             }
         }
