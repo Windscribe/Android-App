@@ -146,7 +146,6 @@
   <string name="disconnected_lower_case">연결이 끊어진 </string>
   <string name="manual_login">수동 로그인</string>
   <string name="getting_server_credentials">서버 자격 증명 가져오는 중...</string>
-  <string name="you_ve_violated_our_terms">귀하의 계정은 nour 약관을 위반 한 경우 ndisabled 되었습니다</string>
   <string name="auto_package_size_detecting_failed">자동 패킷 크기 검색에 실패했습니다.</string>
   <string name="protocol">프로토콜</string>
   <string name="Udp_description">균형 잡힌 속도와 보안.</string>
@@ -243,7 +242,6 @@
   <string name="protocol_change_description">다른 프로토콜을 사용하여 빠르게 다시 연결합니다.</string>
   <string name="servers_in_over_60_countries_and_110_cities">60개 이상의 국가와 110개 도시에 서버</string>
   <string name="text_sign_up">등록하세요</string>
-  <string name="upgrade_to_stay_protected">업그레이드 유지 nprotected 또는 다음 달의 재설정까지 기다립니다</string>
   <string name="network_unsecured">무담보</string>
   <string name="getting_session">세션 가져오기 중...</string>
   <string name="go_to_settings">설정으로 바로 가기</string>
@@ -372,7 +370,6 @@
   <string name="latency_display_description">지연 시간을 신호 강도 막대 또는 밀리초 단위로 표시합니다.</string>
   <string name="app_background">앱 배경</string>
   <string name="account_set_up_description">계정을 보호하고 모든 장치에서 액세스할 수 있습니다.</string>
-  <string name="you_ve_been_downgraded_to_free_for_now">당신은 지금 무료로 다운 그레이드 된 nto</string>
   <string name="unavailable">사용할</string>
   <string name="next_in_up">"%d의 다음 단계"</string>
   <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe는 중단을 피하기 위해 향후 이 네트워크에 연결하기 위해 항상 이 프로토콜을 사용할 것입니다.</string>
@@ -453,4 +450,7 @@
   <string name="allow_lan_description">Windscribe에 연결되어 있는 동안 동일한 네트워크(예: 파일 서버, 프린터, 미디어 박스 등)의 리소스에 대한 액세스를 허용할지 여부를 선택합니다.</string>
   <string name="learn_more">더 알아보세요</string>
   <string name="play_store_updating">Play 스토어 업데이트가 진행 중입니다! 업데이트가 완료된 후 다시 시도하십시오.</string>
+  <string name="upgrade_to_stay_protected">보호를 유지하려면 업그레이드하거나 다음 달 재설정까지 기다리세요.</string>
+  <string name="you_ve_been_downgraded_to_free_for_now">지금은 무료로 다운그레이드되었습니다.</string>
+  <string name="you_ve_violated_our_terms">귀하의 계정은 약관 위반으로 인해 비활성화되었습니다.</string>
 </resources>

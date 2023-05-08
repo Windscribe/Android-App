@@ -50,13 +50,13 @@
     <string name="upgrade">UPGRADE</string>
     <string name="upgrade_case_normal">Upgrade</string>
     <string name="renew_plan">Renew Plan</string>
-    <string name="you_ve_been_downgraded_to_free_for_now">You’ve been downgraded \nto free for now</string>
-    <string name="you_ve_violated_our_terms">Your account has been \ndisabled for violating \nour terms</string>
+    <string name="you_ve_been_downgraded_to_free_for_now">You’ve been downgraded to free for now</string>
+    <string name="you_ve_violated_our_terms">Your account has been disabled for violating our terms</string>
     <string name="you_r_pro_plan_expired">Your Pro Plan expired!</string>
     <string name="you_re_out_of_data">You’re out of data</string>
     <string name="you_ve_been_banned">You’ve been banned</string>
     <string name="upgrade_later">I’ll upgrade later</string>
-    <string name="upgrade_to_stay_protected">Upgrade to stay \nprotected or wait until \nnext month’s reset</string>
+    <string name="upgrade_to_stay_protected">Upgrade to stay protected or wait until next month’s reset</string>
     <string name="get_more_data">GET MORE DATA</string>
     <string name="data_left">%1$.2f GB Left</string>
     <string name="gb_month">- GB/Month</string>

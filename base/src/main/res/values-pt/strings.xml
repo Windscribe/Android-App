@@ -146,7 +146,6 @@
   <string name="disconnected_lower_case">Desconectado </string>
   <string name="manual_login">Manual Login</string>
   <string name="getting_server_credentials">Obtendo credenciais de servidor...</string>
-  <string name="you_ve_violated_our_terms">A sua conta foi \ndesativada por violar \nos termos</string>
   <string name="auto_package_size_detecting_failed">Falha na deteção automática do tamanho do pacote.</string>
   <string name="protocol">Protocolo</string>
   <string name="Udp_description">Velocidade e segurança equilibradas.</string>
@@ -243,7 +242,6 @@
   <string name="protocol_change_description">Reconecte-se rapidamente usando um protocolo diferente.</string>
   <string name="servers_in_over_60_countries_and_110_cities">Servidores em mais de 60 países e 110 cidades</string>
   <string name="text_sign_up">Registar-me</string>
-  <string name="upgrade_to_stay_protected">Atualize para permanecer \nprotegido ou aguarde até \nredefinição do próximo mês</string>
   <string name="network_unsecured">Sem segurança</string>
   <string name="getting_session">Obtendo sessão...</string>
   <string name="go_to_settings">Ir para configurações</string>
@@ -372,7 +370,6 @@
   <string name="latency_display_description">Exibir latência como barras de intensidade de sinal ou em milissegundos.</string>
   <string name="app_background">Plano de fundo do aplicativo</string>
   <string name="account_set_up_description">Proteja a sua conta e aceda à mesma a partir de qualquer dispositivo.</string>
-  <string name="you_ve_been_downgraded_to_free_for_now">Você foi rebaixado \nto livre por enquanto</string>
   <string name="unavailable">Indisponível</string>
   <string name="next_in_up">"Próximo em %d"</string>
   <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">A Windscribe utilizará sempre este protocolo para se ligar a esta rede no futuro para evitar quaisquer interrupções.</string>
@@ -453,4 +450,7 @@
   <string name="allow_lan_description">Escolha se deseja permitir o acesso a recursos na mesma rede (como servidores de arquivos, impressoras, caixas de mídia, etc.) enquanto estiver conectado ao Windscribe.</string>
   <string name="learn_more">Saiba mais</string>
   <string name="play_store_updating">Atualização da Play Store em processo! Tente depois que a atualização for concluída.</string>
+  <string name="upgrade_to_stay_protected">Atualize para ficar protegido ou aguarde até a redefinição do próximo mês</string>
+  <string name="you_ve_been_downgraded_to_free_for_now">Você foi rebaixado para livre por enquanto</string>
+  <string name="you_ve_violated_our_terms">A sua conta foi desativada por violar os nossos termos</string>
 </resources>

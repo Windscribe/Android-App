@@ -146,7 +146,6 @@
   <string name="disconnected_lower_case">قطع اتصال </string>
   <string name="manual_login">تسجيل الدخول اليدوي</string>
   <string name="getting_server_credentials">الحصول على بيانات اعتماد الخادم ...</string>
-  <string name="you_ve_violated_our_terms">تم تعطيل حسابك لانتهاكه شروط</string>
   <string name="auto_package_size_detecting_failed">فشل الكشف التلقائي عن حجم الحزمة.</string>
   <string name="protocol">بروتوكول</string>
   <string name="Udp_description">سرعة وأمان متوازنان.</string>
@@ -243,7 +242,6 @@
   <string name="protocol_change_description">أعد الاتصال بسرعة باستخدام بروتوكول مختلف.</string>
   <string name="servers_in_over_60_countries_and_110_cities">خوادم في أكثر من 60 دولة و 110 مدينة</string>
   <string name="text_sign_up">التسجيل</string>
-  <string name="upgrade_to_stay_protected">قم بالترقية للبقاء \nprotected أو انتظر حتى إعادة تعيين الشهر التالي</string>
   <string name="network_unsecured">غير المضمونين</string>
   <string name="getting_session">الحصول على جلسة...</string>
   <string name="go_to_settings">انتقل إلى الإعدادات</string>
@@ -372,7 +370,6 @@
   <string name="latency_display_description">عرض زمن الوصول كأشرطة قوة الإشارة أو بالمللي ثانية.</string>
   <string name="app_background">خلفية التطبيق</string>
   <string name="account_set_up_description">حماية حسابك والوصول إليه من أي جهاز.</string>
-  <string name="you_ve_been_downgraded_to_free_for_now">لقد تم تخفيض تصنيفك \nto مجانا في الوقت الحالي</string>
   <string name="unavailable">غير متوفر</string>
   <string name="next_in_up">"التالي في ٪d"</string>
   <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">ستستخدم Windscribe دائما هذا البروتوكول للاتصال بهذه الشبكة في المستقبل لتجنب أي انقطاع.</string>
@@ -453,4 +450,7 @@
   <string name="allow_lan_description">اختر ما إذا كنت تريد السماح بالوصول إلى الموارد الموجودة على نفس الشبكة (مثل خوادم الملفات والطابعات وصناديق الوسائط وما إلى ذلك) أثناء الاتصال ب Windscribe.</string>
   <string name="learn_more">التعرف على المزيد</string>
   <string name="play_store_updating">لعب تحديث المتجر في العملية! يرجى المحاولة بعد انتهاء التحديث.</string>
+  <string name="upgrade_to_stay_protected">قم بالترقية للبقاء محميا أو انتظر حتى إعادة تعيين الشهر المقبل</string>
+  <string name="you_ve_been_downgraded_to_free_for_now">لقد تم تخفيض تصنيفك إلى مجاني في الوقت الحالي</string>
+  <string name="you_ve_violated_our_terms">تم تعطيل حسابك بسبب انتهاك شروطنا</string>
 </resources>
