@@ -146,7 +146,6 @@
   <string name="disconnected_lower_case">Бессвязный </string>
   <string name="manual_login">Ручной вход в систему</string>
   <string name="getting_server_credentials">Получение учетных данных сервера...</string>
-  <string name="you_ve_violated_our_terms">Ваша учетная запись была отключена за нарушение наших условий</string>
   <string name="auto_package_size_detecting_failed">Ошибка автоматического определения размера пакета.</string>
   <string name="protocol">Протокол</string>
   <string name="Udp_description">Сбалансированная скорость и безопасность.</string>
@@ -243,7 +242,6 @@
   <string name="protocol_change_description">Быстрое повторное подключение с использованием другого протокола.</string>
   <string name="servers_in_over_60_countries_and_110_cities">Серверы в более чем 60 странах и 110 городах</string>
   <string name="text_sign_up">Регистрация</string>
-  <string name="upgrade_to_stay_protected">Обновите, чтобы оставаться защищенным, или подождите до сброса в следующем месяце</string>
   <string name="network_unsecured">Необеспеченный</string>
   <string name="getting_session">Получение сеанса...</string>
   <string name="go_to_settings">Перейти к настройкам</string>
@@ -372,7 +370,6 @@
   <string name="latency_display_description">Отображение задержки в виде полос уровня сигнала или в миллисекундах.</string>
   <string name="app_background">Предыстория приложения</string>
   <string name="account_set_up_description">Защитите свою учетную запись и получите к ней доступ с любого устройства.</string>
-  <string name="you_ve_been_downgraded_to_free_for_now">Вы были понижены \nto бесплатно на данный момент</string>
   <string name="unavailable">Недоступный</string>
   <string name="next_in_up">"Далее в %d"</string>
   <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe всегда будет использовать этот протокол для подключения к этой сети в будущем, чтобы избежать каких-либо перерывов.</string>
@@ -453,4 +450,7 @@
   <string name="allow_lan_description">Выберите, следует ли разрешить доступ к ресурсам в той же сети (например, файловым серверам, принтерам, медиабоксам и т. д.) при подключении к Windscribe.</string>
   <string name="learn_more">Подробнее</string>
   <string name="play_store_updating">Обновление Play Store в процессе! Пожалуйста, попробуйте после завершения обновления.</string>
+  <string name="upgrade_to_stay_protected">Обновите, чтобы оставаться защищенным, или подождите до сброса в следующем месяце</string>
+  <string name="you_ve_been_downgraded_to_free_for_now">На данный момент вы были понижены до бесплатного</string>
+  <string name="you_ve_violated_our_terms">Ваша учетная запись была отключена за нарушение наших условий</string>
 </resources>
