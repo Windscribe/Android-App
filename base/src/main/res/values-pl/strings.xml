@@ -146,7 +146,6 @@ ostatnio wybrana lokalizacja.</string>
   <string name="disconnected_lower_case">Bezładny </string>
   <string name="manual_login">Logowanie ręczne</string>
   <string name="getting_server_credentials">Uzyskiwanie poświadczeń serwera...</string>
-  <string name="you_ve_violated_our_terms">Twoje konto zostało \nwyłączone z powodu naruszenia \nour warunków</string>
   <string name="auto_package_size_detecting_failed">Automatyczne wykrywanie rozmiaru pakietu nie powiodło się.</string>
   <string name="protocol">Protokół</string>
   <string name="Udp_description">Zrównoważona szybkość i bezpieczeństwo.</string>
@@ -243,7 +242,6 @@ ostatnio wybrana lokalizacja.</string>
   <string name="protocol_change_description">Szybko połącz się ponownie przy użyciu innego protokołu.</string>
   <string name="servers_in_over_60_countries_and_110_cities">Serwery w ponad 60 krajach i 110 miastach</string>
   <string name="text_sign_up">Zarejestruj się</string>
-  <string name="upgrade_to_stay_protected">Uaktualnij, aby pozostać \nprotected lub poczekaj na reset \nnext miesiąc</string>
   <string name="network_unsecured">Niezabezpieczonych</string>
   <string name="getting_session">Sesja wstępna...</string>
   <string name="go_to_settings">Przejdź do ustawień</string>
@@ -372,7 +370,6 @@ ostatnio wybrana lokalizacja.</string>
   <string name="latency_display_description">Opóźnienie wyświetlania jako paski siły sygnału lub w milisekundach.</string>
   <string name="app_background">Tło aplikacji</string>
   <string name="account_set_up_description">Chroń swoje konto i uzyskuj do niego dostęp z dowolnego urządzenia.</string>
-  <string name="you_ve_been_downgraded_to_free_for_now">Na razie zostałeś obniżony \nto za darmo</string>
   <string name="unavailable">Niedostępny</string>
   <string name="next_in_up">"Następny w %d"</string>
   <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe zawsze będzie używać tego protokołu do łączenia się z tą siecią w przyszłości, aby uniknąć przerw.</string>
@@ -453,4 +450,7 @@ ostatnio wybrana lokalizacja.</string>
   <string name="allow_lan_description">Wybierz, czy chcesz zezwolić na dostęp do zasobów w tej samej sieci (takich jak serwery plików, drukarki, media boxy itp.) podczas połączenia z Windscribe.</string>
   <string name="learn_more">Dowiedz się więcej</string>
   <string name="play_store_updating">Aktualizacja Sklepu Play w toku! Spróbuj po zakończeniu aktualizacji.</string>
+  <string name="upgrade_to_stay_protected">Uaktualnij, aby zachować ochronę, lub poczekaj na reset w przyszłym miesiącu</string>
+  <string name="you_ve_been_downgraded_to_free_for_now">Na razie zmieniono Twoją wersję na bezpłatną</string>
+  <string name="you_ve_violated_our_terms">Twoje konto zostało wyłączone z powodu naruszenia naszych warunków</string>
 </resources>

@@ -146,7 +146,6 @@ Ultima posizione scelta.</string>
   <string name="disconnected_lower_case">Sconnesso </string>
   <string name="manual_login">Login manuale</string>
   <string name="getting_server_credentials">Ottenere le credenziali del server...</string>
-  <string name="you_ve_violated_our_terms">Il tuo account è stato \ndisabilitato per aver violato i \nostri termini</string>
   <string name="auto_package_size_detecting_failed">Rilevamento automatico delle dimensioni dei pacchetti non riuscito.</string>
   <string name="protocol">Protocollo</string>
   <string name="Udp_description">Velocità e sicurezza bilanciate.</string>
@@ -243,7 +242,6 @@ Ultima posizione scelta.</string>
   <string name="protocol_change_description">Riconnettersi rapidamente utilizzando un protocollo diverso.</string>
   <string name="servers_in_over_60_countries_and_110_cities">Server in oltre 60 paesi e 110 città</string>
   <string name="text_sign_up">Registrati</string>
-  <string name="upgrade_to_stay_protected">Eseguire l\aggiornamento per rimanere \nprotetti o attendere fino al ripristino del mese successivo</string>
   <string name="network_unsecured">Non protetto</string>
   <string name="getting_session">Ottenere la sessione...</string>
   <string name="go_to_settings">Vai alle impostazioni</string>
@@ -372,7 +370,6 @@ Ultima posizione scelta.</string>
   <string name="latency_display_description">Visualizza la latenza come barre di potenza del segnale o in millisecondi.</string>
   <string name="app_background">Sfondo dell\app</string>
   <string name="account_set_up_description">Proteggi il tuo account e accedi da qualsiasi dispositivo.</string>
-  <string name="you_ve_been_downgraded_to_free_for_now">Sei stato declassato \nto gratuito per ora</string>
   <string name="unavailable">Indisponibile</string>
   <string name="next_in_up">"Avanti in %d"</string>
   <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe utilizzerà sempre questo protocollo per connettersi a questa rete in futuro per evitare interruzioni.</string>
@@ -453,4 +450,7 @@ Ultima posizione scelta.</string>
   <string name="allow_lan_description">Scegli se consentire l\accesso alle risorse sulla stessa rete (come file server, stampanti, media box e così via) mentre sei connesso a Windscribe.</string>
   <string name="learn_more">Ulteriori informazioni</string>
   <string name="play_store_updating">Aggiornamento del Play Store in corso! Prova al termine dell\aggiornamento.</string>
+  <string name="upgrade_to_stay_protected">Esegui l\upgrade per rimanere protetto o attendi fino al ripristino del mese successivo</string>
+  <string name="you_ve_been_downgraded_to_free_for_now">Per ora sei stato declassato a gratuito</string>
+  <string name="you_ve_violated_our_terms">Il tuo account è stato disattivato per aver violato i nostri termini</string>
 </resources>

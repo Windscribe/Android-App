@@ -339,10 +339,10 @@ def translate_xml_file(source_file, default_android_string_file: str, target_lan
 def load_temp_language_file_from_remote(target_language: str):
     print("Pulling remote language file.")
     master_file_path = target_language + ".xlf"
+    print(master_file_path.lower())
     gl = gitlab.Gitlab(url=__gitlab_project_url, private_token=os.environ.get(_gitlab_project_token))
     project = gl.projects.get(__project_id)
     remote_file = project.files.get(file_path=master_file_path.lower(), ref='master')
-    print("Saving temporary language file.")
     local_file = open(master_file_path, 'w')
     local_file.write(remote_file.decode().decode(encoding="utf-8"))
 
@@ -517,6 +517,41 @@ def handle_dir_input(source_dir):
             break
 
 
+def remove_from_android_local_dir(source_dir: str, values_to_remove: list[str]):
+    for code, _ in android_language_code_mappings.items():
+        file_path = "{0}/values-{1}/strings.xml".format(source_dir, code)
+        english_file = XM.parse("{0}/values/strings.xml".format(source_dir))
+        english_strings = {elem.attrib['name']: elem.text for elem in english_file.getroot()}
+        local_file = XM.parse(file_path)
+        elements = local_file.getroot().findall("./")
+        resource_tag = local_file.getroot()
+        for i in elements:
+            for v in values_to_remove:
+                key_to_delete = key_from_value(english_strings, v)
+                if i.get("name") == key_to_delete:
+                    resource_tag.remove(i)
+        XM.register_namespace("", "urn:oasis:names:tc:xliff:document:1.2")
+        XM.indent(local_file.getroot())
+        local_file.write(file_path, xml_declaration=True, encoding="unicode", default_namespace=None)
+
+
+def remove_values_from_remote(values_to_remove: list[str]):
+    for local_code, language_code in android_language_code_mappings.items():
+        temp_file_path = "{0}.xlf".format(language_code)
+        load_temp_language_file_from_remote(language_code)
+        xml_file = XM.parse(temp_file_path)
+        elements = xml_file.getroot().findall("./*/*/*")
+        body = xml_file.getroot().find("./*/*")
+        for i in elements:
+            if has_tag(i, "trans-unit"):
+                if values_to_remove.__contains__(i[0].text):
+                    body.remove(i)
+        XM.register_namespace("", "urn:oasis:names:tc:xliff:document:1.2")
+        XM.indent(xml_file.getroot())
+        xml_file.write(temp_file_path, xml_declaration=True, encoding="unicode", default_namespace=None)
+        upload_temp_language_file_to_remote(language_code)
+
+
 def handle_file_input(file_path):
     if file_path.endswith(".xml"):
         translate_xml_file(file_path, args.android_default_string_file, args.language, )
@@ -541,22 +576,34 @@ if __name__ == "__main__":  # pragma: no cover
                         help="Override target language.")
     parser.add_argument('--android_default_string_file', type=str, action='store',
                         help="Android string file to match ids.")
+    parser.add_argument('--remove', nargs='*', default=[], help="Removes values from all language files.")
+    parser.add_argument('--remove-android-local-values', nargs='*', default=[],
+                        help="Removes matching values  from android language files.")
     args = parser.parse_args()
 
     try:
-        path = os.path.abspath(args.source)
-        if args.simulate:
+        if args.remove:
+            remove_values_from_remote(args.remove)
+        if args.remove_android_local_values:
+            path = os.path.abspath(args.source)
+            remove_from_android_local_dir(path, args.remove_android_local_values)
+        elif args.simulate:
+            path = os.path.abspath(args.source)
             simulate(path)
         elif args.remove_vanished:
+            path = os.path.abspath(args.source)
             remove_vanished(path)
         else:
             if __mstranslator_environ_key_name__ not in os.environ:
                 raise IOError("Please set the '{}' environment variable to your API key.".format(
                     __mstranslator_environ_key_name__))
-        if os.path.isfile(path):
-            handle_file_input(path)
-        elif os.path.isdir(path):
-            handle_dir_input(path)
+            path = os.path.abspath(args.source)
+            if args.source:
+                path = os.path.abspath(args.source)
+            if os.path.isfile(path):
+                handle_file_input(path)
+            elif os.path.isdir(path):
+                handle_dir_input(path)
     except HTTPError as http_err:
         print(f'HTTP error occurred: {http_err}')
     except IOError as io_err:

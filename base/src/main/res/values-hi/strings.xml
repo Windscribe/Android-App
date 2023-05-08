@@ -146,7 +146,6 @@
   <string name="disconnected_lower_case">डिस्कनेक्ट </string>
   <string name="manual_login">मैन्युअल लॉगिन</string>
   <string name="getting_server_credentials">सर्वर क्रेडेंशियल्स प्राप्त करना...</string>
-  <string name="you_ve_violated_our_terms">आपके खाते को \nour शर्तों का उल्लंघन करने के लिए \ndisbable कर दिया गया है</string>
   <string name="auto_package_size_detecting_failed">ऑटो पैकेट आकार का पता लगाना विफल रहा.</string>
   <string name="protocol">प्रोटोकॉल</string>
   <string name="Udp_description">संतुलित गति और सुरक्षा।</string>
@@ -243,7 +242,6 @@
   <string name="protocol_change_description">एक अलग प्रोटोकॉल का उपयोग करके जल्दी से पुन: कनेक्ट करें।</string>
   <string name="servers_in_over_60_countries_and_110_cities">60 से अधिक देशों और 110 शहरों में सर्वर</string>
   <string name="text_sign_up">नाम लिखो</string>
-  <string name="upgrade_to_stay_protected">असुरक्षित रहने के लिए अपग्रेड करें या \nnext महीने के रीसेट तक प्रतीक्षा करें</string>
   <string name="network_unsecured">असुरक्षित</string>
   <string name="getting_session">सत्र प्राप्त हो रहा है ...</string>
   <string name="go_to_settings">सेटिंग्स पर जाएं</string>
@@ -372,7 +370,6 @@
   <string name="latency_display_description">विलंबता को सिग्नल शक्ति सलाखों के रूप में या मिलीसेकंड में प्रदर्शित करें।</string>
   <string name="app_background">अनुप्रयोग पृष्ठभूमि</string>
   <string name="account_set_up_description">अपने खाते की सुरक्षा करें और इसे किसी भी डिवाइस से एक्सेस करें।</string>
-  <string name="you_ve_been_downgraded_to_free_for_now">आपको अभी के लिए मुफ्त में डाउनग्रेड किया गया है</string>
   <string name="unavailable">अनुपलब्ध</string>
   <string name="next_in_up">"अगला %d में"</string>
   <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">विंडस्क्राइब हमेशा किसी भी रुकावट से बचने के लिए भविष्य में इस नेटवर्क पर कनेक्ट करने के लिए इस प्रोटोकॉल का उपयोग करेगा।</string>
@@ -453,4 +450,7 @@
   <string name="allow_lan_description">विंडस्क्राइब से कनेक्ट होने के दौरान चुनें कि एक ही नेटवर्क (जैसे फ़ाइल सर्वर, प्रिंटर, मीडिया बॉक्स, आदि) पर संसाधनों तक पहुंच की अनुमति दी जाए या नहीं।</string>
   <string name="learn_more">और जानो</string>
   <string name="play_store_updating">प्ले स्टोर अपडेट प्रक्रिया में! कृपया अद्यतन समाप्त होने के बाद प्रयास करें।</string>
+  <string name="upgrade_to_stay_protected">सुरक्षित रहने के लिए अपग्रेड करें या अगले महीने के रीसेट तक प्रतीक्षा करें</string>
+  <string name="you_ve_been_downgraded_to_free_for_now">आपको अभी के लिए मुफ्त में डाउनग्रेड कर दिया गया है</string>
+  <string name="you_ve_violated_our_terms">हमारी शर्तों का उल्लंघन करने के लिए आपका खाता अक्षम कर दिया गया है</string>
 </resources>
