@@ -26,9 +26,7 @@
 
         <ImageView
             android:id="@+id/request_alert_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@null"
+            style="@style/IconStyle"
             android:src="@drawable/ic_network_security_feature_icon"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -36,15 +34,8 @@
 
         <TextView
             android:id="@+id/request_alert_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/padding_24"
-            android:fontFamily="@font/ibm_font_family"
-            android:gravity="center"
+            style="@style/DialogTitle"
             android:text="@string/edit_config_file"
-            android:textColor="@color/colorWhite"
-            android:textSize="24sp"
-            android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/request_alert_icon" />
@@ -201,23 +192,8 @@
 
         <TextView
             android:id="@+id/request_alert_ok"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="68dp"
-            android:layout_marginLeft="68dp"
-            android:layout_marginRight="68dp"
-            android:layout_marginStart="68dp"
-            android:layout_marginTop="@dimen/padding_32"
-            android:background="@drawable/modal_location_permission_states"
-            android:clickable="true"
-            android:focusable="true"
-            android:fontFamily="@font/ibm_font_family"
-            android:gravity="center"
-            android:paddingBottom="14dp"
-            android:paddingTop="14dp"
+            style="@style/DialogPrimaryButton"
             android:text="@string/update"
-            android:textColor="@color/colorDeepBlue95"
-            android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/save_credentials_label" />
@@ -227,11 +203,8 @@
 
 
     <ImageView
+        style="@style/ModelCloseIcon"
         android:id="@+id/request_alert_cancel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/reg_32dp"
-        android:layout_marginTop="@dimen/reg_60dp"
         android:background="@drawable/close_icon_with_background"
         android:contentDescription="@string/image_description"
         app:layout_constraintEnd_toEndOf="parent"

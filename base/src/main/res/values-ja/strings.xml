@@ -146,7 +146,6 @@
   <string name="disconnected_lower_case">途切れ途切れ</string>
   <string name="manual_login">手動ログイン</string>
   <string name="getting_server_credentials">サーバー資格情報を取得しています...</string>
-  <string name="you_ve_violated_our_terms">あなたのアカウントは\n利用規約に違反したため\n無効になっています</string>
   <string name="auto_package_size_detecting_failed">パケット サイズの自動検出に失敗しました。</string>
   <string name="protocol">議定書</string>
   <string name="Udp_description">バランスの取れた速度とセキュリティ。</string>
@@ -243,7 +242,6 @@
   <string name="protocol_change_description">別のプロトコルを使用してすばやく再接続します。</string>
   <string name="servers_in_over_60_countries_and_110_cities">60か国以上、110都市にサーバーあり</string>
   <string name="text_sign_up">サインアップ</string>
-  <string name="upgrade_to_stay_protected">アップグレードして保護された状態を維持するか、\n翌月のリセットまで\n待ちます</string>
   <string name="network_unsecured">無担保</string>
   <string name="getting_session">セッションを取得しています...</string>
   <string name="go_to_settings">設定に移動</string>
@@ -372,7 +370,6 @@
   <string name="latency_display_description">遅延を信号強度バーまたはミリ秒単位で表示します。</string>
   <string name="app_background">アプリの背景</string>
   <string name="account_set_up_description">アカウントを保護し、どのデバイスからでもアクセスできます。</string>
-  <string name="you_ve_been_downgraded_to_free_for_now">あなたは今のところ無料で\nダウングレードされました</string>
   <string name="unavailable">使用禁止</string>
   <string name="next_in_up">"次は %d です"</string>
   <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribeは、中断を避けるために、将来このネットワーク上で接続するために常にこのプロトコルを使用します。</string>
@@ -453,4 +450,7 @@
   <string name="allow_lan_description">Windscribeに接続しているときに、同じネットワーク上のリソース(ファイルサーバー、プリンター、メディアボックスなど)へのアクセスを許可するかどうかを選択します。</string>
   <string name="learn_more">詳細情報</string>
   <string name="play_store_updating">プレイストアの更新が進行中です!アップデート終了後にお試しください。</string>
+  <string name="upgrade_to_stay_protected">アップグレードして保護された状態を維持するか、翌月のリセットまで待ちます</string>
+  <string name="you_ve_been_downgraded_to_free_for_now">あなたは今のところ無料にダウングレードされました</string>
+  <string name="you_ve_violated_our_terms">利用規約に違反したため、アカウントが無効になりました</string>
 </resources>

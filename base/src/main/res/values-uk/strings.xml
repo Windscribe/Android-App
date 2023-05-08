@@ -146,7 +146,6 @@
   <string name="disconnected_lower_case">Відключено </string>
   <string name="manual_login">Вхід вручну</string>
   <string name="getting_server_credentials">Отримання облікових даних сервера...</string>
-  <string name="you_ve_violated_our_terms">Ваш обліковий запис вимкнено через порушення \nour умов</string>
   <string name="auto_package_size_detecting_failed">Помилка автоматичного визначення розміру пакета.</string>
   <string name="protocol">Протокол</string>
   <string name="Udp_description">Збалансована швидкість і безпека.</string>
@@ -243,7 +242,6 @@
   <string name="protocol_change_description">Швидко повторно підключайтеся за допомогою іншого протоколу.</string>
   <string name="servers_in_over_60_countries_and_110_cities">Сервери розташовані в більш ніж 60 країнах і містах 110</string>
   <string name="text_sign_up">Зареєструватися</string>
-  <string name="upgrade_to_stay_protected">Оновіть, щоб залишитися \nprotected, або зачекайте до скидання \nnext month</string>
   <string name="network_unsecured">Незабезпечені</string>
   <string name="getting_session">Початок сеансу...</string>
   <string name="go_to_settings">Перейдіть до налаштувань</string>
@@ -372,7 +370,6 @@
   <string name="latency_display_description">Відображайте затримку як смужки рівня сигналу або в мілісекундах.</string>
   <string name="app_background">Фон програми</string>
   <string name="account_set_up_description">Захистіть свій обліковий запис і отримайте доступ до нього з будь-якого пристрою.</string>
-  <string name="you_ve_been_downgraded_to_free_for_now">Наразі вас понизили \nto безкоштовно</string>
   <string name="unavailable">Недоступний</string>
   <string name="next_in_up">"Далі в %d"</string>
   <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe завжди використовуватиме цей протокол для підключення до цієї мережі в майбутньому, щоб уникнути будь-яких перебоїв.</string>
@@ -453,4 +450,7 @@
   <string name="allow_lan_description">Виберіть, чи дозволяти доступ до ресурсів у тій самій мережі (наприклад, файлових серверів, принтерів, медіа-боксів тощо) під час підключення до Windscribe.</string>
   <string name="learn_more">Дізнатися більше</string>
   <string name="play_store_updating">Оновлення магазину Play в процесі! Спробуйте після завершення оновлення.</string>
+  <string name="upgrade_to_stay_protected">Оновіть, щоб залишатися захищеними, або дочекайтеся скидання наступного місяця</string>
+  <string name="you_ve_been_downgraded_to_free_for_now">Наразі вас понизили до безкоштовного</string>
+  <string name="you_ve_violated_our_terms">Ваш обліковий запис вимкнено через порушення наших умов</string>
 </resources>

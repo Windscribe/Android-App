@@ -146,7 +146,6 @@ son seçilen yer.</string>
   <string name="disconnected_lower_case">Bağlantısı kesilmiş </string>
   <string name="manual_login">Manuel Giriş</string>
   <string name="getting_server_credentials">Sunucu Kimlik Bilgileri Alınıyor...</string>
-  <string name="you_ve_violated_our_terms">Hesabınız \nour şartlarını ihlal ettiği için \ndisabled edildi</string>
   <string name="auto_package_size_detecting_failed">Otomatik paket boyutu algılama başarısız oldu.</string>
   <string name="protocol">Protokol</string>
   <string name="Udp_description">Dengeli hız ve güvenlik.</string>
@@ -243,7 +242,6 @@ son seçilen yer.</string>
   <string name="protocol_change_description">Farklı bir protokol kullanarak hızla yeniden bağlanın.</string>
   <string name="servers_in_over_60_countries_and_110_cities">60\tan fazla ülkede ve 110 şehirde sunucular</string>
   <string name="text_sign_up">Kaydol</string>
-  <string name="upgrade_to_stay_protected">\nprotected olarak kalmak için yükseltin veya \nnext ayın sıfırlamasına kadar bekleyin</string>
   <string name="network_unsecured">Güvenli olmayan</string>
   <string name="getting_session">Oturum Açılıyor...</string>
   <string name="go_to_settings">Ayarlara git</string>
@@ -372,7 +370,6 @@ son seçilen yer.</string>
   <string name="latency_display_description">Gecikmeyi sinyal gücü çubukları olarak veya milisaniye cinsinden görüntüleyin.</string>
   <string name="app_background">Uygulama Arka Planı</string>
   <string name="account_set_up_description">Hesabınızı koruyun ve herhangi bir cihazdan erişin.</string>
-  <string name="you_ve_been_downgraded_to_free_for_now">Şimdilik düşürüldünüz \nto ücretsiz</string>
   <string name="unavailable">Kullanılamaz</string>
   <string name="next_in_up">"Sıradaki% d"</string>
   <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe, herhangi bir kesintiyi önlemek için gelecekte bu ağa bağlanmak için her zaman bu protokolü kullanacaktır.</string>
@@ -453,4 +450,7 @@ son seçilen yer.</string>
   <string name="allow_lan_description">Windscribe\a bağlıyken aynı ağdaki kaynaklara (dosya sunucuları, yazıcılar, medya kutuları vb.) erişime izin verip vermeyeceğinizi seçin.</string>
   <string name="learn_more">Daha fazla bilgi edinin</string>
   <string name="play_store_updating">Play Store güncellemesi devam ediyor! Lütfen güncelleştirme tamamlandıktan sonra deneyin.</string>
+  <string name="upgrade_to_stay_protected">Korunmaya devam etmek için yükseltin veya gelecek ayın sıfırlamasına kadar bekleyin</string>
+  <string name="you_ve_been_downgraded_to_free_for_now">Şimdilik ücretsiz olarak düşürüldünüz</string>
+  <string name="you_ve_violated_our_terms">Hesabınız şartlarımızı ihlal ettiği için devre dışı bırakıldı</string>
 </resources>
