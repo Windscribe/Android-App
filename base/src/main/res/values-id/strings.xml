@@ -146,7 +146,6 @@ Lokasi terakhir yang dipilih.</string>
   <string name="disconnected_lower_case">Terputus </string>
   <string name="manual_login">Manual Login</string>
   <string name="getting_server_credentials">Mendapatkan Kredensial Server...</string>
-  <string name="you_ve_violated_our_terms">Akun Anda telah \ndinonaktifkan karena melanggar \nour terms</string>
   <string name="auto_package_size_detecting_failed">Deteksi ukuran paket otomatis gagal.</string>
   <string name="protocol">Protokol</string>
   <string name="Udp_description">Kecepatan dan keamanan seimbang.</string>
@@ -243,7 +242,6 @@ Lokasi terakhir yang dipilih.</string>
   <string name="protocol_change_description">Sambungkan kembali dengan cepat menggunakan protokol yang berbeda.</string>
   <string name="servers_in_over_60_countries_and_110_cities">Server di lebih dari 60 negara dan 110 kota</string>
   <string name="text_sign_up">Tandatangan</string>
-  <string name="upgrade_to_stay_protected">Tingkatkan untuk tetap \nprotected atau tunggu hingga \nreset bulan depan</string>
   <string name="network_unsecured">Tidak aman</string>
   <string name="getting_session">Mendapatkan Sesi...</string>
   <string name="go_to_settings">Buka pengaturan</string>
@@ -372,7 +370,6 @@ Lokasi terakhir yang dipilih.</string>
   <string name="latency_display_description">Menampilkan latensi sebagai bilah kekuatan sinyal atau dalam milidetik.</string>
   <string name="app_background">Latar Belakang Aplikasi</string>
   <string name="account_set_up_description">Lindungi akun Anda dan akses dari perangkat apa pun.</string>
-  <string name="you_ve_been_downgraded_to_free_for_now">Anda telah diturunkan \nke gratis untuk saat ini</string>
   <string name="unavailable">Tidak tersedia</string>
   <string name="next_in_up">"Selanjutnya dalam% d"</string>
   <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe akan selalu menggunakan protokol ini untuk terhubung di jaringan ini di masa mendatang untuk menghindari gangguan.</string>
@@ -453,4 +450,7 @@ Lokasi terakhir yang dipilih.</string>
   <string name="allow_lan_description">Pilih apakah akan mengizinkan akses ke sumber daya di jaringan yang sama (seperti server file, printer, kotak media, dll.) saat terhubung ke Windscribe.</string>
   <string name="learn_more">Pelajari lebih lanjut</string>
   <string name="play_store_updating">Pembaruan Play store dalam proses! Silakan coba setelah pembaruan selesai.</string>
+  <string name="upgrade_to_stay_protected">Tingkatkan untuk tetap terlindungi atau tunggu hingga reset bulan depan</string>
+  <string name="you_ve_been_downgraded_to_free_for_now">Anda telah diturunkan ke gratis untuk saat ini</string>
+  <string name="you_ve_violated_our_terms">Akun Anda telah dinonaktifkan karena melanggar ketentuan kami</string>
 </resources>

@@ -146,7 +146,6 @@ Vị trí được chọn cuối cùng.</string>
   <string name="disconnected_lower_case">Rời rạc </string>
   <string name="manual_login">Đăng nhập thủ công</string>
   <string name="getting_server_credentials">Nhận thông tin đăng nhập máy chủ...</string>
-  <string name="you_ve_violated_our_terms">Tài khoản của bạn đã bị vô hiệu hóa do vi phạm \nour terms</string>
   <string name="auto_package_size_detecting_failed">Tự động phát hiện kích thước gói không thành công.</string>
   <string name="protocol">Protocol</string>
   <string name="Udp_description">Cân bằng tốc độ và bảo mật.</string>
@@ -243,7 +242,6 @@ Vị trí được chọn cuối cùng.</string>
   <string name="protocol_change_description">Nhanh chóng kết nối lại bằng một giao thức khác.</string>
   <string name="servers_in_over_60_countries_and_110_cities">Máy chủ tại hơn 60 quốc gia và 110 thành phố</string>
   <string name="text_sign_up">Đăng ký</string>
-  <string name="upgrade_to_stay_protected">Nâng cấp để ở lại \nprotected hoặc đợi cho đến khi \nnext tháng đặt lại</string>
   <string name="network_unsecured">Unsecured</string>
   <string name="getting_session">Bắt phiên...</string>
   <string name="go_to_settings">Đi tới cài đặt</string>
@@ -372,7 +370,6 @@ Vị trí được chọn cuối cùng.</string>
   <string name="latency_display_description">Hiển thị độ trễ dưới dạng thanh cường độ tín hiệu hoặc tính bằng mili giây.</string>
   <string name="app_background">Nền ứng dụng</string>
   <string name="account_set_up_description">Bảo vệ tài khoản của bạn và truy cập nó từ mọi thiết bị.</string>
-  <string name="you_ve_been_downgraded_to_free_for_now">Bạn đã bị hạ cấp \nto miễn phí ngay bây giờ</string>
   <string name="unavailable">Không khả dụng</string>
   <string name="next_in_up">"Tiếp theo trong %d"</string>
   <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe sẽ luôn sử dụng giao thức này để kết nối trên mạng này trong tương lai nhằm tránh mọi gián đoạn.</string>
@@ -453,4 +450,7 @@ Vị trí được chọn cuối cùng.</string>
   <string name="allow_lan_description">Chọn có cho phép truy cập vào các tài nguyên trên cùng một mạng (như máy chủ tệp, máy in, hộp phương tiện, v.v.) trong khi kết nối với Windscribe hay không.</string>
   <string name="learn_more">Tìm hiểu thêm</string>
   <string name="play_store_updating">Cập nhật cửa hàng Play trong quá trình này! Vui lòng thử sau khi cập nhật xong.</string>
+  <string name="upgrade_to_stay_protected">Nâng cấp để luôn được bảo vệ hoặc đợi cho đến khi đặt lại tháng sau</string>
+  <string name="you_ve_been_downgraded_to_free_for_now">Hiện tại, bạn đã bị hạ cấp xuống miễn phí</string>
+  <string name="you_ve_violated_our_terms">Tài khoản của bạn đã bị vô hiệu hóa do vi phạm các điều khoản của chúng tôi</string>
 </resources>
