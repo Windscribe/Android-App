@@ -146,7 +146,6 @@
   <string name="disconnected_lower_case">قطع </string>
   <string name="manual_login">ورود دستی</string>
   <string name="getting_server_credentials">دریافت اعتبار کارگزار...</string>
-  <string name="you_ve_violated_our_terms">حساب شما به دلیل نقض \nour terms\ndisabled شده است</string>
   <string name="auto_package_size_detecting_failed">اشکارسازی خودکار اندازه بسته شکست خورد.</string>
   <string name="protocol">پروتکل</string>
   <string name="Udp_description">سرعت و امنیت متعادل</string>
@@ -243,7 +242,6 @@
   <string name="protocol_change_description">به سرعت با استفاده از یک پروتکل متفاوت دوباره متصل شوید.</string>
   <string name="servers_in_over_60_countries_and_110_cities">سرورها در بیش از 60 کشور و 110 شهر</string>
   <string name="text_sign_up">ثبت نام</string>
-  <string name="upgrade_to_stay_protected">ارتقا برای ماندن\nprotected یا صبر کردن تا بازنشانی ماه بعدی</string>
   <string name="network_unsecured">نا امن</string>
   <string name="getting_session">در حال گرفتن جلسه...</string>
   <string name="go_to_settings">رفتن به تنظیمات</string>
@@ -372,7 +370,6 @@
   <string name="latency_display_description">نمایش تاخیر به عنوان میله های قدرت سیگنال یا در میلی ثانیه.</string>
   <string name="app_background">زمینه برنامه</string>
   <string name="account_set_up_description">از حساب خود محافظت کنید و از هر دستگاهی به ان دسترسی پیدا کنید.</string>
-  <string name="you_ve_been_downgraded_to_free_for_now">شما در حال حاضر \n را به صورت رایگان کاهش داده اید</string>
   <string name="unavailable">دسترس نیست</string>
   <string name="next_in_up">"نفر بعدی در ٪D"</string>
   <string name="windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions">Windscribe همیشه از این پروتکل برای اتصال به این شبکه در اینده برای جلوگیری از هرگونه وقفه استفاده خواهد کرد.</string>
@@ -453,4 +450,7 @@
   <string name="allow_lan_description">انتخاب کنید که ایا اجازه دسترسی به منابع در همان شبکه (مانند سرورهای فایل، چاپگرها، جعبه های رسانه و غیره) در حالی که به Windscribe متصل هستید.</string>
   <string name="learn_more">بیشتر بدانید</string>
   <string name="play_store_updating">بازی به روز رسانی فروشگاه در روند! لطفا سعی کنید پس از به روز رسانی به پایان رسید.</string>
+  <string name="upgrade_to_stay_protected">ارتقا دهید تا محافظت شود یا تا بازنشانی ماه اینده صبر کنید</string>
+  <string name="you_ve_been_downgraded_to_free_for_now">شما در حال حاضر به رایگان کاهش یافته اید</string>
+  <string name="you_ve_violated_our_terms">حساب شما به دلیل نقض شرایط ما غیرفعال شده است</string>
 </resources>
