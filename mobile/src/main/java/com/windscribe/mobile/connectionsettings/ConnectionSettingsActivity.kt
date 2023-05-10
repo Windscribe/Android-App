@@ -6,9 +6,7 @@ package com.windscribe.mobile.connectionsettings
 import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
@@ -25,15 +23,13 @@ import com.windscribe.mobile.dialogs.*
 import com.windscribe.mobile.gpsspoofing.GpsSpoofingSettingsActivity
 import com.windscribe.mobile.networksecurity.NetworkSecurityActivity
 import com.windscribe.mobile.splittunneling.SplitTunnelingActivity
+import com.windscribe.mobile.utils.PermissionManager
 import com.windscribe.mobile.utils.UiUtil
-import com.windscribe.mobile.utils.UiUtil.isBackgroundLocationPermissionGranted
-import com.windscribe.mobile.utils.UiUtil.showBackgroundLocationPermissionAlert
 import com.windscribe.vpn.constants.FeatureExplainer
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
-class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView,
-    PermissionRationaleDialogCallback, ExtraDataUseWarningDialogCallBack {
+class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, ExtraDataUseWarningDialogCallBack {
 
     private val logger = LoggerFactory.getLogger(TAG)
 
@@ -82,6 +78,9 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView,
     @BindView(R.id.network_options_right_icon)
     lateinit var networkOptionsArrow: ImageView
 
+    @Inject
+    lateinit var permissionManager: PermissionManager
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,6 +91,7 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView,
         logger.info("Setting up layout based on saved mode settings...")
         presenter.init()
         activityTitleView.text = getString(R.string.connection)
+        permissionManager.register(this)
     }
 
     override fun onStart() {
@@ -107,17 +107,6 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView,
     override fun onDestroy() {
         presenter.onDestroy()
         super.onDestroy()
-    }
-
-    override fun getLocationPermission(requestCode: Int) {
-        checkLocationPermission(R.id.connection_parent, requestCode)
-    }
-
-    override fun goToAppInfoSettings() {
-        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        val uri = Uri.fromParts("package", packageName, null)
-        intent.data = uri
-        startActivity(intent)
     }
 
     override fun gotoSplitTunnelingSettings() {
@@ -276,7 +265,7 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView,
 
     @OnClick(R.id.network_options_right_icon, R.id.network_options_title)
     fun onWhitelistClick() {
-        checkLocationPermission(R.id.connection_parent, REQUEST_LOCATION_PERMISSION)
+        presenter.onNetworkOptionsClick()
     }
 
     override fun openGpsSpoofSettings() {
@@ -287,30 +276,6 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView,
         (packetSizeModeDropDownView.childView as PacketSizeView).packetSizeDetectionProgress(
             progress
         )
-    }
-
-    override fun permissionDenied(requestCode: Int) {
-        Toast.makeText(
-            this,
-            "Please provide location permission to access this feature.",
-            Toast.LENGTH_SHORT
-        ).show()
-    }
-
-    override fun permissionGranted(requestCode: Int) {
-        if (REQUEST_LOCATION_PERMISSION == requestCode) {
-            if (isBackgroundLocationPermissionGranted(this)) {
-                startActivity(NetworkSecurityActivity.getStartIntent(this))
-            } else {
-                showBackgroundLocationPermissionAlert(this)
-            }
-        } else if (requestCode == LOCATION_PERMISSION_FOR_SPOOF) {
-            if (isBackgroundLocationPermissionGranted(this)) {
-                presenter.onPermissionProvided()
-            } else {
-                showBackgroundLocationPermissionAlert(this)
-            }
-        }
     }
 
     override fun setAutoStartOnBootToggle(toggleDrawable: Int) {
@@ -362,10 +327,6 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView,
         gpsToggleView.visibility = View.VISIBLE
     }
 
-    override fun showLocationRational(requestCode: Int) {
-        LocationPermissionRationaleDialog.show(this)
-    }
-
     override fun showToast(toastString: String) {
         Toast.makeText(this, toastString, Toast.LENGTH_SHORT).show()
     }
@@ -406,8 +367,11 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView,
         decoyTrafficToggleView.setToggleImage(toggleDrawable)
     }
 
+    override fun goToNetworkSecurity() {
+        startActivity(NetworkSecurityActivity.getStartIntent(this))
+    }
+
     companion object {
-        const val LOCATION_PERMISSION_FOR_SPOOF = 901
         private const val TAG = "conn_settings_a"
         fun getStartIntent(context: Context?): Intent {
             return Intent(context, ConnectionSettingsActivity::class.java)

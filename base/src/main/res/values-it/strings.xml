@@ -450,7 +450,7 @@ Ultima posizione scelta.</string>
   <string name="allow_lan_description">Scegli se consentire l\accesso alle risorse sulla stessa rete (come file server, stampanti, media box e così via) mentre sei connesso a Windscribe.</string>
   <string name="learn_more">Ulteriori informazioni</string>
   <string name="play_store_updating">Aggiornamento del Play Store in corso! Prova al termine dell\aggiornamento.</string>
-  <string name="upgrade_to_stay_protected">Esegui l\upgrade per rimanere protetto o attendi fino al ripristino del mese successivo</string>
+  <string name="upgrade_to_stay_protected">Esegui l upgrade per rimanere protetto o attendi fino al ripristino del mese successivo</string>
   <string name="you_ve_been_downgraded_to_free_for_now">Per ora sei stato declassato a gratuito</string>
   <string name="you_ve_violated_our_terms">Il tuo account è stato disattivato per aver violato i nostri termini</string>
 </resources>

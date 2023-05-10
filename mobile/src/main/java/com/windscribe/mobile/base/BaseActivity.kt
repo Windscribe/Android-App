@@ -3,11 +3,8 @@
  */
 package com.windscribe.mobile.base
 
-import android.Manifest
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.PixelFormat
 import android.graphics.Rect
@@ -16,11 +13,8 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -28,8 +22,6 @@ import butterknife.ButterKnife
 import com.windscribe.mobile.R
 import com.windscribe.mobile.di.ActivityComponent
 import com.windscribe.mobile.di.ActivityModule
-import com.windscribe.mobile.dialogs.LocationPermissionDialog
-import com.windscribe.mobile.dialogs.LocationPermissionDialogCallback
 import com.windscribe.mobile.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.commonutils.WindUtilities
@@ -39,51 +31,13 @@ import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class BaseActivity : AppCompatActivity(), LocationPermissionDialogCallback {
+abstract class BaseActivity : AppCompatActivity() {
     val coldLoad = AtomicBoolean()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setWindow()
         window.setFormat(PixelFormat.RGBA_8888)
     }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            permissionGranted(requestCode)
-        } else {
-            permissionDenied(requestCode)
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-
-    fun checkLocationPermission(disclaimerContainer: Int, requestCode: Int) {
-        if (isLocationPermissionAvailable) {
-            permissionGranted(requestCode)
-        } else {
-            if (shouldShowLocationPermissionRationale()) {
-                showLocationRational(requestCode)
-            } else {
-                showLocationDisclaimer(disclaimerContainer, requestCode)
-            }
-        }
-    }
-
-    private val isLocationPermissionAvailable: Boolean
-        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            (
-                    ContextCompat
-                            .checkSelfPermission(
-                                    appContext,
-                                    Manifest.permission.ACCESS_FINE_LOCATION
-                            )
-                            == PackageManager.PERMISSION_GRANTED
-                    )
-        } else {
-            true
-        }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
@@ -112,21 +66,6 @@ abstract class BaseActivity : AppCompatActivity(), LocationPermissionDialogCallb
         }
     }
 
-    override fun onRequestPermission(requestCode: Int) {
-        supportFragmentManager.popBackStack()
-        ActivityCompat.requestPermissions(
-                this,
-                arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                ),
-                requestCode
-        )
-    }
-
-    open fun permissionDenied(requestCode: Int) {}
-    open fun permissionGranted(requestCode: Int) {}
-
     open fun setTheme(context: Context) {
         val savedThem = appContext.preference.selectedTheme
         if (savedThem == PreferencesKeyConstants.DARK_THEME) {
@@ -145,29 +84,6 @@ abstract class BaseActivity : AppCompatActivity(), LocationPermissionDialogCallb
         window.statusBarColor = statusBarColor
     }
 
-    private fun shouldShowLocationPermissionRationale(): Boolean {
-        return ActivityCompat
-                .shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)
-    }
-
-    private fun showLocationDisclaimer(disclaimerContainer: Int, requestCode: Int) {
-        LocationPermissionDialog.show(this, requestCode)
-    }
-
-    open fun showLocationRational(requestCode: Int) {
-        val alertDialog = AlertDialog.Builder(this, R.style.alert_dialog_theme)
-                .setCancelable(true)
-                .setMessage(
-                        "Location permission is required to get network SSID.Go to Settings > Apps > Windscribe > Location permission."
-                )
-                .setOnCancelListener { permissionDenied(requestCode) }
-                .setOnDismissListener { permissionDenied(requestCode) }
-                .setPositiveButton("Ok") { _: DialogInterface?, _: Int ->
-                    permissionDenied(requestCode)
-                }
-                .create()
-        alertDialog.show()
-    }
 
     val isConnectedToNetwork: Boolean
         get() = WindUtilities.isOnline()
@@ -219,9 +135,6 @@ abstract class BaseActivity : AppCompatActivity(), LocationPermissionDialogCallb
     }
 
     companion object {
-        const val REQUEST_LOCATION_PERMISSION = 201
-        const val REQUEST_LOCATION_PERMISSION_FOR_PREFERRED_NETWORK = 202
-        const val NETWORK_NAME_PERMISSION = 203
         const val FILE_PICK_REQUEST = 204
         const val CONNECTED_FLAG_PATH_PICK_REQUEST = 205
         const val DISCONNECTED_FLAG_PATH_PICK_REQUEST = 206
