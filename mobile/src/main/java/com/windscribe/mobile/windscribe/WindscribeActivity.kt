@@ -21,7 +21,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.Settings
 import android.transition.AutoTransition
 import android.transition.Slide
 import android.view.*
@@ -58,8 +57,7 @@ import com.windscribe.mobile.fragments.ServerListFragment
 import com.windscribe.mobile.mainmenu.MainMenuActivity
 import com.windscribe.mobile.newsfeedactivity.NewsFeedActivity
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
-import com.windscribe.mobile.utils.UiUtil.isBackgroundLocationPermissionGranted
-import com.windscribe.mobile.utils.UiUtil.showBackgroundLocationPermissionAlert
+import com.windscribe.mobile.utils.PermissionManager
 import com.windscribe.mobile.welcome.WelcomeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.utils.WindVpnController
@@ -85,8 +83,7 @@ import javax.inject.Inject
 import javax.inject.Named
 
 class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
-    RateAppDialogCallback, EditConfigFileDialogCallback, FragmentClickListener,
-    PermissionRationaleDialogCallback, DeviceStateListener, NodeStatusDialogCallback,
+    RateAppDialogCallback, EditConfigFileDialogCallback, FragmentClickListener, DeviceStateListener, NodeStatusDialogCallback,
     AccountStatusDialogCallback {
     enum class NetworkLayoutState {
         CLOSED, OPEN_1, OPEN_2, OPEN_3
@@ -342,6 +339,9 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
     @BindView(R.id.tv_protocol_label)
     var tvProtocolLabel: TextView? = null
 
+    @Inject
+    lateinit var permissionManager: PermissionManager
+
     private var protocolAdapter: ArrayAdapter<String>? = null
 
     var transition: AutoTransition? = null
@@ -373,6 +373,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         layoutTransition?.enableTransitionType(LayoutTransition.CHANGING)
         presenter.setMainCustomConstraints()
         setServerListView(false)
+        permissionManager.register(this)
         registerDataChangeObserver()
         activityScope { presenter.observeVPNState() }
         activityScope { presenter.observeNextProtocolToConnect() }
@@ -467,17 +468,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
     override val flagViewWidth: Int
         get() = flagDimensionsGuideView?.measuredWidth ?: 0
 
-    override fun getLocationPermission(requestCode: Int) {
-        checkLocationPermission(R.id.cl_windscribe_main, requestCode)
-    }
-
-    override fun goToAppInfoSettings() {
-        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        val uri = Uri.fromParts("package", packageName, null)
-        intent.data = uri
-        startActivity(intent)
-    }
-
     override fun gotoLoginRegistrationActivity() {
         val intent = WelcomeActivity.getStartIntent(this)
         intent.addFlags(
@@ -533,7 +523,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
     @OnClick(R.id.collapse_expand_icon)
     fun onCollapseExpandClick() {
         logger.info("User clicked on collapse/expand icon")
-        presenter.togglePreferredProtocolLayout()
+        presenter.onCollapseExpandIconClick()
     }
 
     override fun onConfigFileUpdated(configFile: ConfigFile) {
@@ -574,16 +564,12 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     @OnClick(R.id.network_icon)
     fun onNetworkIconClick() {
-        checkLocationPermission(R.id.cl_windscribe_main, NETWORK_NAME_PERMISSION)
+
     }
 
     @OnClick(R.id.network_name)
     fun onNetworkNameClick() {
-        if (textViewConnectedNetworkName?.text?.equals("Unknown Network") == true) {
-            checkLocationPermission(R.id.cl_windscribe_main, NETWORK_NAME_PERMISSION)
-        } else {
-            presenter.toggleBlurNetworkName()
-        }
+        presenter.onNetworkNameClick()
     }
 
     override fun onNetworkStateChanged() {
@@ -843,24 +829,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
                 HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
             )
         }
-    }
-
-    override fun permissionGranted(requestCode: Int) {
-        if (requestCode == NETWORK_NAME_PERMISSION) {
-            textViewConnectedNetworkName?.let {
-                if (it.text == "Unknown Network") {
-                    presenter.onNetworkStateChanged()
-                }
-            }
-        } else if (requestCode == REQUEST_LOCATION_PERMISSION_FOR_PREFERRED_NETWORK && isBackgroundLocationPermissionGranted(
-                this
-            )) {
-            presenter.reloadNetworkInfo()
-            presenter.setProtocolPreferred()
-        } else {
-            showBackgroundLocationPermissionAlert(this)
-        }
-        super.permissionGranted(requestCode)
     }
 
     override fun rateLaterClicked() {
@@ -1520,10 +1488,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
             )
             constraintSetServerList.applyTo(constraintLayoutServerList)
         }
-    }
-
-    override fun showLocationRational(requestCode: Int) {
-        LocationPermissionRationaleDialog.show(this)
     }
 
     override fun showNotificationCount(count: Int) {
