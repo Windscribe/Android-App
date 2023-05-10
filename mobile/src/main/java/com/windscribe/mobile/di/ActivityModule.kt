@@ -64,6 +64,8 @@ import com.windscribe.mobile.ticket.SendTicketView
 import com.windscribe.mobile.upgradeactivity.UpgradePresenter
 import com.windscribe.mobile.upgradeactivity.UpgradePresenterImpl
 import com.windscribe.mobile.upgradeactivity.UpgradeView
+import com.windscribe.mobile.utils.PermissionManager
+import com.windscribe.mobile.utils.PermissionManagerImpl
 import com.windscribe.mobile.welcome.WelcomePresenter
 import com.windscribe.mobile.welcome.WelcomePresenterImpl
 import com.windscribe.mobile.welcome.WelcomeView
@@ -268,9 +270,10 @@ class ActivityModule {
 
     @Provides
     fun provideConnectionPresenter(
-        activityInteractor: ActivityInteractor
+        activityInteractor: ActivityInteractor,
+        permissionManager: PermissionManager
     ): ConnectionSettingsPresenter {
-        return ConnectionSettingsPresenterImpl(connectionSettingsView, activityInteractor)
+        return ConnectionSettingsPresenterImpl(connectionSettingsView, activityInteractor, permissionManager)
     }
 
     @Provides
@@ -429,9 +432,10 @@ class ActivityModule {
 
     @Provides
     fun provideWindscribePresenter(
-        activityInteractor: ActivityInteractor
+        activityInteractor: ActivityInteractor,
+        permissionManager: PermissionManager
     ): WindscribePresenter {
-        return WindscribePresenterImpl(windscribeView, activityInteractor)
+        return WindscribePresenterImpl(windscribeView, activityInteractor, permissionManager)
     }
 
     @Provides
@@ -447,6 +451,12 @@ class ActivityModule {
     @Provides
     fun providesActivityScope(): LifecycleCoroutineScope {
         return activity.lifecycleScope
+    }
+
+    @Provides
+    @PerActivity
+    fun providesPermissionManager(): PermissionManager {
+        return PermissionManagerImpl(activity)
     }
 
     @Provides

@@ -25,7 +25,6 @@ interface WindscribeView {
     fun exitSearchLayout()
     val flagViewHeight: Int
     val flagViewWidth: Int
-    fun getLocationPermission(requestCode: Int)
     val networkLayoutState: NetworkLayoutState?
     val uiConnectionState: ConnectionUiState?
     fun gotoLoginRegistrationActivity()

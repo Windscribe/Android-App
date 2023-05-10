@@ -470,4 +470,10 @@ last chosen location.</string>
     <string name="successfully_updated_robert_rules">Successfully updated Robert rules.</string>
     <string name="share_app">Share App</string>
     <string name="share_app_description">"%s is inviting you to join Windscribe. Provide their username at signup and you’ll both get 1gb of free data added to your accounts. If you go pro, they’ll go pro too!\n%s"</string>
+    <string name="allow_all_the_time_location_access_required">“Allow all the time” Location Access Required!</string>
+    <string name="enable_location_access">Enable Location Access</string>
+    <string name="location_permission_required">Location permission required</string>
+    <string name="foreground_location_permission_reason">Windscribe needs the location permission in order to make the \"Network Whitelist\" feature work.  This permission is required to access Wifi network names. This permission is used solely for this feature as well as GPS spoofing functionality. Your location data does not leave your device, and is not used for anything else.</string>
+    <string name="missing_location_permission">Missing location permission</string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Location permission is required to use this feature. Go to app settings > Permissions > Location and select Allow all the time.]]></string>
 </resources>
