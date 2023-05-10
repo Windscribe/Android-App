@@ -258,6 +258,7 @@ open class Windscribe : MultiDexApplication() {
     }
 
     override fun onTrimMemory(level: Int) {
+        if(level > 60)
         logger.debug("Device is asking for memory trim with level = $level.")
         super.onTrimMemory(level)
     }

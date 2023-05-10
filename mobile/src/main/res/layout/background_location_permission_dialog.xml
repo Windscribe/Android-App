@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout style="@style/MatchMatchContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:clickable="true"
+    android:elevation="4dp"
+    android:focusable="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/img_logo"
+            style="@style/WarningIcon"
+            android:contentDescription="@null"
+            android:src="@drawable/location_instruction_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed" />
+
+
+        <TextView
+            android:id="@+id/tv_title"
+            style="@style/WarningTitle"
+            android:layout_marginEnd="@dimen/margin_32"
+            android:layout_marginStart="@dimen/margin_32"
+            android:layout_marginTop="@dimen/margin_54"
+            android:text="@string/allow_all_the_time_location_access_required"
+            app:layout_constraintBottom_toTopOf="@id/tv_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/img_logo" />
+
+
+        <TextView
+            android:id="@+id/tv_description"
+            style="@style/WarningText"
+            android:gravity="center"
+            android:layout_marginEnd="@dimen/margin_32"
+            android:layout_marginStart="@dimen/margin_32"
+            android:layout_marginTop="@dimen/reg_40dp"
+            android:text= "@string/reason_for_location_permission"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_title" />
+
+        <TextView
+            android:id="@+id/tv_ok"
+            style="@style/NextToPremiumButton"
+            android:layout_marginTop="@dimen/margin_48"
+            android:enabled="true"
+            android:layout_marginEnd="@dimen/margin_32"
+            android:layout_marginStart="@dimen/margin_32"
+            android:text="@string/enable_location_access"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_description"
+            app:layout_constraintVertical_bias="1.0" />
+
+        <TextView
+            android:id="@+id/tv_cancel"
+            style="@style/NoBackgroundButtonBold"
+            android:text="@string/cancel"
+            android:layout_marginTop="@dimen/margin_24"
+            app:layout_constraintTop_toBottomOf="@id/tv_ok"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
