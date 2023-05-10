@@ -4,8 +4,8 @@
 package com.windscribe.mobile.connectionsettings
 
 interface ConnectionSettingsView {
-    fun getLocationPermission(requestCode: Int)
     fun gotoSplitTunnelingSettings()
+    fun goToNetworkSecurity()
     fun openGpsSpoofSettings()
     fun packetSizeDetectionProgress(progress: Boolean)
     fun setAutoStartOnBootToggle(toggleDrawable: Int)

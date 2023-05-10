@@ -32,4 +32,5 @@ interface ConnectionSettingsPresenter {
     fun onDecoyTrafficClick()
     fun turnOnDecoyTraffic()
     fun onFakeTrafficVolumeSelected(label: String)
+    fun onNetworkOptionsClick()
 }
