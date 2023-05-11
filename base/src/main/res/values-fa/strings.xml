@@ -52,7 +52,6 @@
   <string name="sales">فروش</string>
   <string name="my_account">حساب</string>
   <string name="add_static_ip">افزودن IP استاتیک</string>
-  <string name="connect">اتصال</string>
   <string name="email_empty">ایمیل خالی!</string>
   <string name="preferences">تنظیمات</string>
   <string name="please_confirm_email_first">لطفا ابتدا ایمیل را تایید کنید.</string>
@@ -94,7 +93,6 @@
   <string name="back">بازگشت</string>
   <string name="node_under_construction_text">این مکان تحت تعمیر و نگهداری است. بعدا دوباره امتحان کنید یا برای اطلاعات بیشتر به صفحه وضعیت ما بروید. https://windscribe.com/status</string>
   <string name="decoy_traffic_mode">حالت ترافیک طعمه</string>
-  <string name="emergency_connect_description">نمی توانید به Windscribe دسترسی داشته باشد؟ برای مسدود کردن شبکه محدود کننده خود به سرورهای ما وصل شوید.</string>
   <string name="change_email">تغییر ایمیل</string>
   <string name="state_exiting">خروج</string>
   <string name="connected_lower_case">متصل </string>
@@ -453,4 +451,12 @@
   <string name="upgrade_to_stay_protected">ارتقا دهید تا محافظت شود یا تا بازنشانی ماه اینده صبر کنید</string>
   <string name="you_ve_been_downgraded_to_free_for_now">شما در حال حاضر به رایگان کاهش یافته اید</string>
   <string name="you_ve_violated_our_terms">حساب شما به دلیل نقض شرایط ما غیرفعال شده است</string>
+  <string name="location_permission_required">مجوز مکان مورد نیاز است</string>
+  <string name="foreground_location_permission_reason">Windscribe نیاز به مجوز مکان دارد تا ویژگی \"Network Whitelist\" کار کند.  این مجوز برای دسترسی به نام شبکه WiFi مورد نیاز است. این مجوز صرفا برای این ویژگی و همچنین قابلیت جعل GPS استفاده می شود. داده های مکان شما دستگاه شما را ترک نمی کند و برای هیچ چیز دیگری استفاده نمی شود.</string>
+  <string name="enable_location_access">فعالسازی دسترسی به مکان</string>
+  <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">برای استفاده از این ویژگی به مجوز مکان نیاز است. به تنظیمات برنامه &gt; Permissions &gt; Location بروید و Allow all the time را انتخاب کنید.</string>
+  <string name="allow_all_the_time_location_access_required">"اجازه می دهد تمام وقت" دسترسی به مکان مورد نیاز!</string>
+  <string name="missing_location_permission">مجوز مکان از دست رفته</string>
+  <string name="connect">اتصال</string>
+  <string name="emergency_connect_description">نمی توانید به Windscribe دسترسی داشته باشد؟ برای رفع انسداد شبکه محدود کننده خود به سرورهای ما متصل شوید.</string>
 </resources>
