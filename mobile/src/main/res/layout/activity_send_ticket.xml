@@ -78,7 +78,7 @@
                 <TextView
                     android:id="@+id/tv_current_category"
                     style="@style/MenuItemLabelThree"
-                    android:text="@string/account"
+                    android:text="@string/my_account"
                     android:includeFontPadding="false"
                     app:layout_constraintEnd_toStartOf="@id/img_category_drop_down_btn"
                     app:layout_constraintRight_toLeftOf="@id/img_category_drop_down_btn"

@@ -82,7 +82,7 @@ class MainMenuPresenterImpl @Inject constructor(
         mainMenuView.resetAllTextResources(
             interactor.getResourceString(R.string.preference),
             interactor.getResourceString(R.string.general),
-            interactor.getResourceString(R.string.account),
+            interactor.getResourceString(R.string.my_account),
             interactor.getResourceString(R.string.connection),
             interactor.getResourceString(R.string.help_me),
             interactor.getResourceString(R.string.logout),

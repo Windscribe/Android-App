@@ -50,7 +50,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider_general"
-            app:ItemLinkViewTitle="@string/account"
+            app:ItemLinkViewTitle="@string/my_account"
             app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
             app:ItemLinkViewLeftIcon="@drawable/ic_myaccount_icon" />
 

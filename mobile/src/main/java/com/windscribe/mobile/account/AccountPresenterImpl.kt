@@ -204,7 +204,7 @@ class AccountPresenterImpl @Inject constructor(
     }
 
     private fun setUserInfo(user: User) {
-        accountView.setActivityTitle(interactor.getResourceString(R.string.account))
+        accountView.setActivityTitle(interactor.getResourceString(R.string.my_account))
         if (user.isGhost) {
             accountView.setupLayoutForGhostMode(user.isPro)
         } else if (user.maxData != -1L) {

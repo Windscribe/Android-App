@@ -84,7 +84,7 @@
             android:focusable="true"
             android:gravity="left|center"
             android:fontFamily="@font/ibm_plex_sans_bold"
-            android:text="@string/account"
+            android:text="@string/my_account"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/general" />

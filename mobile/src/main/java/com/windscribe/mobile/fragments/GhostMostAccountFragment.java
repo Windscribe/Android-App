@@ -67,7 +67,7 @@ public class GhostMostAccountFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        titleView.setText(getString(R.string.account));
+        titleView.setText(getString(R.string.my_account));
 
         if (getArguments() != null) {
             proUser = getArguments().getBoolean("pro_user", false);
