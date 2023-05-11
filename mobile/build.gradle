@@ -36,11 +36,9 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            manifestPlaceholders["networkSecurityConfig"] = "@xml/network_security_config"
         }
         debug{
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            manifestPlaceholders["networkSecurityConfig"] = "@xml/test_network_security_config"
         }
     }
     compileOptions {

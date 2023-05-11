@@ -52,7 +52,6 @@
   <string name="sales">बिक्री</string>
   <string name="my_account">खाता</string>
   <string name="add_static_ip">स्थैतिक IP जोड़ें</string>
-  <string name="connect">जोड़ना</string>
   <string name="email_empty">खाली ईमेल!</string>
   <string name="preferences">प्राथमिकताएँ</string>
   <string name="please_confirm_email_first">कृपया पहले ईमेल की पुष्टि करें।</string>
@@ -94,7 +93,6 @@
   <string name="back">पीठ</string>
   <string name="node_under_construction_text">यह स्थान रखरखाव के अधीन है। बाद में पुन: प्रयास करें या अधिक जानकारी के लिए हमारे स्थिति पृष्ठ पर जाएँ. https://windscribe.com/status</string>
   <string name="decoy_traffic_mode">डिकॉय ट्रैफिक मोड</string>
-  <string name="emergency_connect_description">विंडस्क्राइब तक नहीं पहुंच सकते? अपने प्रतिबंधात्मक नेटवर्क को ब्लॉक करने के लिए हमारे सर्वर से कनेक्ट करें।</string>
   <string name="change_email">ईमेल बदलें</string>
   <string name="state_exiting">निकल</string>
   <string name="connected_lower_case">जुड़ा </string>
@@ -453,4 +451,12 @@
   <string name="upgrade_to_stay_protected">सुरक्षित रहने के लिए अपग्रेड करें या अगले महीने के रीसेट तक प्रतीक्षा करें</string>
   <string name="you_ve_been_downgraded_to_free_for_now">आपको अभी के लिए मुफ्त में डाउनग्रेड कर दिया गया है</string>
   <string name="you_ve_violated_our_terms">हमारी शर्तों का उल्लंघन करने के लिए आपका खाता अक्षम कर दिया गया है</string>
+  <string name="location_permission_required">स्थान अनुमति आवश्यक है</string>
+  <string name="foreground_location_permission_reason">विंडस्क्राइब को "नेटवर्क व्हाइटलिस्ट" सुविधा को काम करने के लिए स्थान अनुमति की आवश्यकता होती है।  वाईफ़ाई नेटवर्क नामों तक पहुँचने के लिए यह अनुमति आवश्यक है. इस अनुमति का उपयोग केवल इस सुविधा के साथ-साथ जीपीएस स्पूफिंग कार्यक्षमता के लिए किया जाता है। आपका स्थान डेटा आपके डिवाइस को नहीं छोड़ता है, और किसी और चीज़ के लिए उपयोग नहीं किया जाता है।</string>
+  <string name="enable_location_access">स्थान पहुँच सक्षम करें</string>
+  <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">इस सुविधा का उपयोग करने के लिए स्थान अनुमति आवश्यक है. स्थान &gt; अनुमतियों &gt; ऐप सेटिंग्स पर जाएं और हर समय अनुमति दें का चयन करें।</string>
+  <string name="allow_all_the_time_location_access_required">"हर समय अनुमति दें" स्थान पहुंच की आवश्यकता है!</string>
+  <string name="missing_location_permission">स्थान अनुमति अनुपलब्ध</string>
+  <string name="connect">जोड़ना</string>
+  <string name="emergency_connect_description">विंडस्क्राइब तक नहीं पहुंच सकते? अपने प्रतिबंधात्मक नेटवर्क को अनब्लॉक करने के लिए हमारे सर्वर से कनेक्ट करें।</string>
 </resources>

@@ -52,7 +52,6 @@ Zuletzt gewählter Ort.</string>
   <string name="sales">Umsatz</string>
   <string name="my_account">Konto</string>
   <string name="add_static_ip">Statische IP-Adresse hinzufügen</string>
-  <string name="connect">Verbinden</string>
   <string name="email_empty">Leere E-Mail!</string>
   <string name="preferences">Einstellungen</string>
   <string name="please_confirm_email_first">Bitte bestätigen Sie zuerst die E-Mail.</string>
@@ -94,7 +93,6 @@ Zuletzt gewählter Ort.</string>
   <string name="back">Zurück</string>
   <string name="node_under_construction_text">Dieser Standort wird derzeit gewartet. Versuchen Sie es später noch einmal oder besuchen Sie unsere Statusseite, um weitere Informationen zu erhalten. https://windscribe.com/status</string>
   <string name="decoy_traffic_mode">Lockvogel-Verkehrsmodus</string>
-  <string name="emergency_connect_description">Sie können nicht auf Windscribe zugreifen? Verbinden Sie sich mit unseren Servern, um Ihr restriktives Netzwerk zu blockieren.</string>
   <string name="change_email">E-Mail-Adresse ändern</string>
   <string name="state_exiting">Weggehend</string>
   <string name="connected_lower_case">Verbunden </string>
@@ -453,4 +451,12 @@ Zuletzt gewählter Ort.</string>
   <string name="upgrade_to_stay_protected">Aktualisieren Sie, um geschützt zu bleiben, oder warten Sie bis zum Zurücksetzen im nächsten Monat</string>
   <string name="you_ve_been_downgraded_to_free_for_now">Sie wurden vorerst auf kostenlos herabgestuft</string>
   <string name="you_ve_violated_our_terms">Ihr Konto wurde deaktiviert, weil es gegen unsere Nutzungsbedingungen verstoßen hat</string>
+  <string name="location_permission_required">Standortgenehmigung erforderlich</string>
+  <string name="foreground_location_permission_reason">Windscribe benötigt die Standortberechtigung, damit die Funktion "Netzwerk-Whitelist" funktioniert.  Diese Berechtigung ist für den Zugriff auf WLAN-Netzwerknamen erforderlich. Diese Berechtigung wird ausschließlich für diese Funktion sowie für die GPS-Spoofing-Funktionalität verwendet. Ihre Standortdaten verlassen Ihr Gerät nicht und werden für nichts anderes verwendet.</string>
+  <string name="enable_location_access">Aktivieren des Standortzugriffs</string>
+  <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Für die Verwendung dieser Funktion ist eine Standortberechtigung erforderlich. Gehen Sie zu den App-Einstellungen &gt; Berechtigungen &gt; Standort und wählen Sie Ständig zulassen aus.</string>
+  <string name="allow_all_the_time_location_access_required">"Erlauben Sie die ganze Zeit" Standortzugriff erforderlich!</string>
+  <string name="missing_location_permission">Fehlende Standortberechtigung</string>
+  <string name="connect">Verbinden</string>
+  <string name="emergency_connect_description">Sie können nicht auf Windscribe zugreifen? Verbinden Sie sich mit unseren Servern, um Ihr restriktives Netzwerk zu entsperren.</string>
 </resources>

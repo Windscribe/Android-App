@@ -52,7 +52,6 @@ Vị trí được chọn cuối cùng.</string>
   <string name="sales">Bán hàng</string>
   <string name="my_account">Tài khoản</string>
   <string name="add_static_ip">Thêm IP tĩnh</string>
-  <string name="connect">Kết nối</string>
   <string name="email_empty">Email trống!</string>
   <string name="preferences">Sở thích</string>
   <string name="please_confirm_email_first">Vui lòng xác nhận email trước.</string>
@@ -94,7 +93,6 @@ Vị trí được chọn cuối cùng.</string>
   <string name="back">Lưng</string>
   <string name="node_under_construction_text">Vị trí này đang được bảo trì. Hãy thử lại sau hoặc truy cập trang Trạng thái của chúng tôi để biết thêm thông tin. https://windscribe.com/status</string>
   <string name="decoy_traffic_mode">Chế độ giao thông mồi nhử</string>
-  <string name="emergency_connect_description">Không thể truy cập Windscribe? Kết nối với máy chủ của chúng tôi để chặn mạng hạn chế của bạn.</string>
   <string name="change_email">Thay đổi email</string>
   <string name="state_exiting">Thoát</string>
   <string name="connected_lower_case">Kết nối </string>
@@ -453,4 +451,12 @@ Vị trí được chọn cuối cùng.</string>
   <string name="upgrade_to_stay_protected">Nâng cấp để luôn được bảo vệ hoặc đợi cho đến khi đặt lại tháng sau</string>
   <string name="you_ve_been_downgraded_to_free_for_now">Hiện tại, bạn đã bị hạ cấp xuống miễn phí</string>
   <string name="you_ve_violated_our_terms">Tài khoản của bạn đã bị vô hiệu hóa do vi phạm các điều khoản của chúng tôi</string>
+  <string name="location_permission_required">Yêu cầu quyền truy cập thông tin vị trí</string>
+  <string name="foreground_location_permission_reason">Windscribe cần quyền truy cập vị trí để làm cho tính năng \"Network Whitelist\" hoạt động.  Quyền này là bắt buộc để truy cập tên mạng Wifi. Quyền này chỉ được sử dụng cho tính năng này cũng như chức năng giả mạo GPS. Dữ liệu vị trí của bạn không rời khỏi thiết bị của bạn và không được sử dụng cho bất kỳ mục đích nào khác.</string>
+  <string name="enable_location_access">Bật quyền truy cập thông tin vị trí</string>
+  <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Cần có quyền truy cập vị trí để sử dụng tính năng này. Đi tới cài đặt ứng dụng &gt; Quyền &gt; Vị trí và chọn Cho phép mọi lúc.</string>
+  <string name="allow_all_the_time_location_access_required">Yêu cầu truy cập vị trí "Cho phép mọi lúc"!</string>
+  <string name="missing_location_permission">Thiếu quyền truy cập thông tin vị trí</string>
+  <string name="connect">Kết nối</string>
+  <string name="emergency_connect_description">Không thể truy cập Windscribe? Kết nối với máy chủ của chúng tôi để bỏ chặn mạng hạn chế của bạn.</string>
 </resources>

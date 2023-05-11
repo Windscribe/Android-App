@@ -52,7 +52,6 @@
   <string name="sales">مبيعات</string>
   <string name="my_account">حساب</string>
   <string name="add_static_ip">إضافة IP ثابت</string>
-  <string name="connect">عشق</string>
   <string name="email_empty">بريد إلكتروني فارغ!</string>
   <string name="preferences">التفضيلات</string>
   <string name="please_confirm_email_first">يرجى تأكيد البريد الإلكتروني أولا.</string>
@@ -94,7 +93,6 @@
   <string name="back">ظهر</string>
   <string name="node_under_construction_text">هذا الموقع تحت الصيانة. حاول مرة أخرى لاحقا أو انتقل إلى صفحة الحالة للحصول على مزيد من المعلومات. https://windscribe.com/status</string>
   <string name="decoy_traffic_mode">وضع حركة المرور شرك</string>
-  <string name="emergency_connect_description">لا يمكنك الوصول إلى Windscribe؟ اتصل بخوادمنا لحظر شبكتك المقيدة.</string>
   <string name="change_email">تغيير البريد الإلكتروني</string>
   <string name="state_exiting">انهاء</string>
   <string name="connected_lower_case">متصل </string>
@@ -453,4 +451,12 @@
   <string name="upgrade_to_stay_protected">قم بالترقية للبقاء محميا أو انتظر حتى إعادة تعيين الشهر المقبل</string>
   <string name="you_ve_been_downgraded_to_free_for_now">لقد تم تخفيض تصنيفك إلى مجاني في الوقت الحالي</string>
   <string name="you_ve_violated_our_terms">تم تعطيل حسابك بسبب انتهاك شروطنا</string>
+  <string name="location_permission_required">إذن الموقع مطلوب</string>
+  <string name="foreground_location_permission_reason">يحتاج Windscribe إلى إذن الموقع من أجل جعل ميزة \"القائمة البيضاء للشبكة\" تعمل.  هذا الإذن مطلوب للوصول إلى أسماء شبكات Wifi. يتم استخدام هذا الإذن فقط لهذه الميزة بالإضافة إلى وظيفة انتحال GPS. لا تغادر بيانات موقعك جهازك ، ولا يتم استخدامها لأي شيء آخر.</string>
+  <string name="enable_location_access">تمكين الوصول إلى الموقع</string>
+  <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">مطلوب إذن الموقع لاستخدام هذه الميزة. انتقل إلى إعدادات التطبيق &gt; أذونات &gt; الموقع وحدد السماح طوال الوقت.</string>
+  <string name="allow_all_the_time_location_access_required">"السماح طوال الوقت" الوصول إلى الموقع مطلوب!</string>
+  <string name="missing_location_permission">إذن الموقع مفقود</string>
+  <string name="connect">عشق</string>
+  <string name="emergency_connect_description">لا يمكنك الوصول إلى Windscribe؟ اتصل بخوادمنا لإلغاء حظر شبكتك المقيدة.</string>
 </resources>

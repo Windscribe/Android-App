@@ -52,7 +52,6 @@ son seçilen yer.</string>
   <string name="sales">Satış</string>
   <string name="my_account">Hesap</string>
   <string name="add_static_ip">Statik IP Ekle</string>
-  <string name="connect">Bağlamak</string>
   <string name="email_empty">Boş e-posta!</string>
   <string name="preferences">Tercihler</string>
   <string name="please_confirm_email_first">Lütfen önce e-postayı onaylayın.</string>
@@ -94,7 +93,6 @@ son seçilen yer.</string>
   <string name="back">Geri</string>
   <string name="node_under_construction_text">Bu konum bakım altındadır. Daha sonra tekrar deneyin veya daha fazla bilgi için Durum sayfamıza gidin. https://windscribe.com/status</string>
   <string name="decoy_traffic_mode">Aldatıcı Trafik Modu</string>
-  <string name="emergency_connect_description">Windscribe\a erişemiyor musunuz? Kısıtlayıcı ağınızı engellemek için sunucularımıza bağlanın.</string>
   <string name="change_email">E-postayı Değiştir</string>
   <string name="state_exiting">Çıkma</string>
   <string name="connected_lower_case">Bağlandı </string>
@@ -453,4 +451,12 @@ son seçilen yer.</string>
   <string name="upgrade_to_stay_protected">Korunmaya devam etmek için yükseltin veya gelecek ayın sıfırlamasına kadar bekleyin</string>
   <string name="you_ve_been_downgraded_to_free_for_now">Şimdilik ücretsiz olarak düşürüldünüz</string>
   <string name="you_ve_violated_our_terms">Hesabınız şartlarımızı ihlal ettiği için devre dışı bırakıldı</string>
+  <string name="location_permission_required">Konum izni gereklidir</string>
+  <string name="foreground_location_permission_reason">Windscribe\ın "Ağ Beyaz Listesi\" özelliğinin çalışması için konum iznine ihtiyacı vardır.  Bu izin, Wifi ağ adlarına erişmek için gereklidir. Bu izin yalnızca bu özellik ve GPS kimlik sahtekarlığı işlevi için kullanılır. Konum verileriniz cihazınızdan çıkmaz ve başka hiçbir şey için kullanılmaz.</string>
+  <string name="enable_location_access">Konum Erişimini Etkinleştir</string>
+  <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Bu özelliği kullanmak için konum izni gereklidir. Uygulama ayarları\&gt; İzinler &gt; Konum\a gidin ve Her zaman izin ver\i seçin.</string>
+  <string name="allow_all_the_time_location_access_required">"Her zaman izin ver" Konum Erişimi Gerekli!</string>
+  <string name="missing_location_permission">Eksik konum izni</string>
+  <string name="connect">Bağlamak</string>
+  <string name="emergency_connect_description">Windscribe\a erişemiyor musunuz? Kısıtlayıcı ağınızın engelini kaldırmak için sunucularımıza bağlanın.</string>
 </resources>

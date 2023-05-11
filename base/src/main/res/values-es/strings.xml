@@ -52,7 +52,6 @@
   <string name="sales">Ventas</string>
   <string name="my_account">Cuenta</string>
   <string name="add_static_ip">Agregar IP estática</string>
-  <string name="connect">Conectar</string>
   <string name="email_empty">¡Correo electrónico vacío!</string>
   <string name="preferences">Preferencias</string>
   <string name="please_confirm_email_first">Por favor, confirme el correo electrónico primero.</string>
@@ -94,7 +93,6 @@
   <string name="back">Atrás</string>
   <string name="node_under_construction_text">Esta ubicación está en mantenimiento. Inténtalo de nuevo más tarde o ve a nuestra página de Estado para obtener más información. https://windscribe.com/status</string>
   <string name="decoy_traffic_mode">Modo de tráfico señuelo</string>
-  <string name="emergency_connect_description">¿No puede acceder a Windscribe? Conéctese a nuestros servidores para bloquear su red restrictiva.</string>
   <string name="change_email">Cambiar correo electrónico</string>
   <string name="state_exiting">Salir</string>
   <string name="connected_lower_case">Conexo </string>
@@ -453,4 +451,12 @@
   <string name="upgrade_to_stay_protected">Actualice para mantenerse protegido o espere hasta el restablecimiento del próximo mes</string>
   <string name="you_ve_been_downgraded_to_free_for_now">Has sido degradado a gratis por ahora</string>
   <string name="you_ve_violated_our_terms">Tu cuenta ha sido inhabilitada por infringir nuestras condiciones</string>
+  <string name="location_permission_required">Se requiere permiso de ubicación</string>
+  <string name="foreground_location_permission_reason">Windscribe necesita el permiso de ubicación para que la función \"Lista blanca de red\" funcione.  Este permiso es necesario para acceder a los nombres de las redes Wifi. Este permiso se utiliza únicamente para esta función, así como para la funcionalidad de suplantación de GPS. Sus datos de ubicación no salen de su dispositivo y no se utilizan para nada más.</string>
+  <string name="enable_location_access">Habilitar el acceso a la ubicación</string>
+  <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Se requiere permiso de ubicación para usar esta función. Vaya a la configuración de la aplicación &gt; Permisos &gt; ubicación y seleccione Permitir todo el tiempo.</string>
+  <string name="allow_all_the_time_location_access_required">"Permitir todo el tiempo" ¡Se requiere acceso a la ubicación!</string>
+  <string name="missing_location_permission">Falta el permiso de ubicación</string>
+  <string name="connect">Conectar</string>
+  <string name="emergency_connect_description">¿No puede acceder a Windscribe? Conéctese a nuestros servidores para desbloquear su red restrictiva.</string>
 </resources>

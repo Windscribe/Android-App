@@ -52,7 +52,6 @@
   <string name="sales">Продажу</string>
   <string name="my_account">Рахунок</string>
   <string name="add_static_ip">Додати статичну IP-адресу</string>
-  <string name="connect">Підключатися</string>
   <string name="email_empty">Порожня електронна пошта!</string>
   <string name="preferences">Налаштування</string>
   <string name="please_confirm_email_first">Будь ласка, спочатку підтвердьте електронну адресу.</string>
@@ -94,7 +93,6 @@
   <string name="back">Задній</string>
   <string name="node_under_construction_text">Це місце знаходиться на технічному обслуговуванні. Повторіть спробу пізніше або перейдіть на сторінку Статус, щоб дізнатися більше. https://windscribe.com/status</string>
   <string name="decoy_traffic_mode">Режим руху приманки</string>
-  <string name="emergency_connect_description">Не вдається отримати доступ до Windscribe? Підключіться до наших серверів, щоб заблокувати вашу обмежувальну мережу.</string>
   <string name="change_email">Змінити адресу електронної пошти</string>
   <string name="state_exiting">Виходу</string>
   <string name="connected_lower_case">Підключений </string>
@@ -453,4 +451,12 @@
   <string name="upgrade_to_stay_protected">Оновіть, щоб залишатися захищеними, або дочекайтеся скидання наступного місяця</string>
   <string name="you_ve_been_downgraded_to_free_for_now">Наразі вас понизили до безкоштовного</string>
   <string name="you_ve_violated_our_terms">Ваш обліковий запис вимкнено через порушення наших умов</string>
+  <string name="location_permission_required">Потрібен дозвіл на місцезнаходження</string>
+  <string name="foreground_location_permission_reason">Windscribe потрібен дозвіл на розташування, щоб функція \"Білий список мережі\" працювала.  Цей дозвіл потрібен для доступу до імен мереж Wi-Fi. Цей дозвіл використовується виключно для цієї функції, а також для функції підміни GPS. Дані про ваше місцезнаходження не залишають ваш пристрій і не використовуються ні для чого іншого.</string>
+  <string name="enable_location_access">Увімкнення доступу до геоданих</string>
+  <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Для використання цієї функції потрібен дозвіл на доступ до геоданих. Перейдіть до налаштувань програми &gt; Дозволи &gt; Місцезнаходження та виберіть Дозволити постійно.</string>
+  <string name="allow_all_the_time_location_access_required">"Дозволяти весь час" Потрібен доступ до місцезнаходження!</string>
+  <string name="missing_location_permission">Дозвіл на доступ до місцезнаходження відсутній</string>
+  <string name="connect">Підключатися</string>
+  <string name="emergency_connect_description">Не вдається отримати доступ до Windscribe? Підключіться до наших серверів, щоб розблокувати доступ до обмежувальної мережі.</string>
 </resources>

@@ -52,7 +52,6 @@ Ultima posizione scelta.</string>
   <string name="sales">Vendite</string>
   <string name="my_account">Conto</string>
   <string name="add_static_ip">Aggiungi IP statico</string>
-  <string name="connect">Connettersi</string>
   <string name="email_empty">Email vuota!</string>
   <string name="preferences">Preferenze</string>
   <string name="please_confirm_email_first">Si prega di confermare prima l\e-mail.</string>
@@ -94,7 +93,6 @@ Ultima posizione scelta.</string>
   <string name="back">Indietro</string>
   <string name="node_under_construction_text">Questa posizione è in manutenzione. Riprova più tardi o vai alla nostra pagina Stato per ulteriori informazioni. https://windscribe.com/status</string>
   <string name="decoy_traffic_mode">Modalità traffico esca</string>
-  <string name="emergency_connect_description">Non riesci ad accedere a Windscribe? Connettiti ai nostri server per bloccare la tua rete restrittiva.</string>
   <string name="change_email">Cambia email</string>
   <string name="state_exiting">Uscita</string>
   <string name="connected_lower_case">Connesso </string>
@@ -453,4 +451,12 @@ Ultima posizione scelta.</string>
   <string name="upgrade_to_stay_protected">Esegui l upgrade per rimanere protetto o attendi fino al ripristino del mese successivo</string>
   <string name="you_ve_been_downgraded_to_free_for_now">Per ora sei stato declassato a gratuito</string>
   <string name="you_ve_violated_our_terms">Il tuo account è stato disattivato per aver violato i nostri termini</string>
+  <string name="location_permission_required">È richiesta l\autorizzazione alla posizione</string>
+  <string name="foreground_location_permission_reason">Windscribe ha bisogno dell\autorizzazione di posizione per far funzionare la funzione \"Network Whitelist\".  Questa autorizzazione è necessaria per accedere ai nomi delle reti Wifi. Questa autorizzazione viene utilizzata esclusivamente per questa funzione e per la funzionalità di spoofing GPS. I dati sulla tua posizione non lasciano il tuo dispositivo e non vengono utilizzati per nient\altro.</string>
+  <string name="enable_location_access">Abilita accesso alla posizione</string>
+  <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Per utilizzare questa funzione è necessaria l\autorizzazione alla posizione. Vai alle impostazioni dell\app &gt; Autorizzazioni &gt; posizione e seleziona Consenti sempre.</string>
+  <string name="allow_all_the_time_location_access_required">"Consenti sempre" Accesso alla posizione richiesto!</string>
+  <string name="missing_location_permission">Autorizzazione posizione mancante</string>
+  <string name="connect">Connettersi</string>
+  <string name="emergency_connect_description">Non riesci ad accedere a Windscribe? Connettiti ai nostri server per sbloccare la tua rete restrittiva.</string>
 </resources>

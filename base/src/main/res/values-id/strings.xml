@@ -52,7 +52,6 @@ Lokasi terakhir yang dipilih.</string>
   <string name="sales">Penjualan</string>
   <string name="my_account">Rekening</string>
   <string name="add_static_ip">Tambahkan IP Statis</string>
-  <string name="connect">Sambung</string>
   <string name="email_empty">Email kosong!</string>
   <string name="preferences">Preferensi</string>
   <string name="please_confirm_email_first">Harap konfirmasi email terlebih dahulu.</string>
@@ -94,7 +93,6 @@ Lokasi terakhir yang dipilih.</string>
   <string name="back">Belakang</string>
   <string name="node_under_construction_text">Lokasi ini sedang dalam pemeliharaan. Coba lagi nanti atau buka halaman Status kami untuk info lebih lanjut. https://windscribe.com/status</string>
   <string name="decoy_traffic_mode">Mode Lalu Lintas Umpan</string>
-  <string name="emergency_connect_description">Tidak dapat mengakses Windscribe? Hubungkan ke server kami untuk memblokir jaringan terbatas Anda.</string>
   <string name="change_email">Ubah Email</string>
   <string name="state_exiting">Keluar</string>
   <string name="connected_lower_case">Terhubung </string>
@@ -453,4 +451,12 @@ Lokasi terakhir yang dipilih.</string>
   <string name="upgrade_to_stay_protected">Tingkatkan untuk tetap terlindungi atau tunggu hingga reset bulan depan</string>
   <string name="you_ve_been_downgraded_to_free_for_now">Anda telah diturunkan ke gratis untuk saat ini</string>
   <string name="you_ve_violated_our_terms">Akun Anda telah dinonaktifkan karena melanggar ketentuan kami</string>
+  <string name="location_permission_required">Izin lokasi diperlukan</string>
+  <string name="foreground_location_permission_reason">Windscribe memerlukan izin lokasi untuk membuat fitur \"Network Whitelist\" berfungsi.  Izin ini diperlukan untuk mengakses nama jaringan Wifi. Izin ini hanya digunakan untuk fitur ini serta fungsi spoofing GPS. Data lokasi Anda tidak meninggalkan perangkat Anda, dan tidak digunakan untuk hal lain.</string>
+  <string name="enable_location_access">Aktifkan Akses Lokasi</string>
+  <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Izin lokasi diperlukan untuk menggunakan fitur ini. Buka pengaturan aplikasi &gt; Izin &gt; Lokasi dan pilih Izinkan sepanjang waktu.</string>
+  <string name="allow_all_the_time_location_access_required">"Izinkan sepanjang waktu" Diperlukan Akses Lokasi!</string>
+  <string name="missing_location_permission">Izin lokasi tidak ada</string>
+  <string name="connect">Sambung</string>
+  <string name="emergency_connect_description">Tidak dapat mengakses Windscribe? Hubungkan ke server kami untuk membuka blokir jaringan terbatas Anda.</string>
 </resources>

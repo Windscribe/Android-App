@@ -52,7 +52,6 @@
   <string name="sales">영업</string>
   <string name="my_account">계좌</string>
   <string name="add_static_ip">고정 IP 추가</string>
-  <string name="connect">연결하다</string>
   <string name="email_empty">빈 이메일!</string>
   <string name="preferences">선호</string>
   <string name="please_confirm_email_first">먼저 이메일을 확인해 주세요.</string>
@@ -94,7 +93,6 @@
   <string name="back">뒤로</string>
   <string name="node_under_construction_text">이 위치는 유지 보수 중입니다. 나중에 다시 시도하거나 상태 페이지로 이동하여 자세한 내용을 확인하세요. https://windscribe.com/status</string>
   <string name="decoy_traffic_mode">미끼 트래픽 모드</string>
-  <string name="emergency_connect_description">Windscribe에 액세스할 수 없습니까? 당사 서버에 연결하여 제한적인 네트워크를 차단하십시오.</string>
   <string name="change_email">이메일 변경</string>
   <string name="state_exiting">종료</string>
   <string name="connected_lower_case">연결 </string>
@@ -453,4 +451,12 @@
   <string name="upgrade_to_stay_protected">보호를 유지하려면 업그레이드하거나 다음 달 재설정까지 기다리세요.</string>
   <string name="you_ve_been_downgraded_to_free_for_now">지금은 무료로 다운그레이드되었습니다.</string>
   <string name="you_ve_violated_our_terms">귀하의 계정은 약관 위반으로 인해 비활성화되었습니다.</string>
+  <string name="location_permission_required">위치 정보 사용 권한 필요</string>
+  <string name="foreground_location_permission_reason">Windscribe는 \"네트워크 화이트리스트\" 기능이 작동하도록 위치 권한이 필요합니다.  이 권한은 Wi-Fi 네트워크 이름에 액세스하는 데 필요합니다. 이 권한은 이 기능과 GPS 스푸핑 기능에만 사용됩니다. 위치 데이터는 기기 외부로 유출되지 않으며 다른 용도로 사용되지 않습니다.</string>
+  <string name="enable_location_access">위치 액세스 사용 설정</string>
+  <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">이 기능을 사용하려면 위치 권한이 필요합니다. 앱 설정으로 이동하여 권한 &gt; 위치를 &gt; 항상 허용을 선택합니다.</string>
+  <string name="allow_all_the_time_location_access_required">"항상 허용" 위치 액세스 필요!</string>
+  <string name="missing_location_permission">위치 정보 액세스 권한 누락</string>
+  <string name="connect">연결하다</string>
+  <string name="emergency_connect_description">Windscribe에 액세스할 수 없습니까? 당사 서버에 연결하여 제한적인 네트워크의 차단을 해제하세요.</string>
 </resources>

@@ -52,7 +52,6 @@
   <string name="sales">セールス</string>
   <string name="my_account">アカウント</string>
   <string name="add_static_ip">静的 IP の追加</string>
-  <string name="connect">繋ぐ</string>
   <string name="email_empty">空のメール!</string>
   <string name="preferences">設定</string>
   <string name="please_confirm_email_first">まずはメールをご確認ください。</string>
@@ -94,7 +93,6 @@
   <string name="back">戻る</string>
   <string name="node_under_construction_text">この場所はメンテナンス中です。しばらくしてからもう一度お試しいただくか、ステータスページで詳細をご確認ください。https://windscribe.com/status</string>
   <string name="decoy_traffic_mode">おとりトラフィックモード</string>
-  <string name="emergency_connect_description">ウィンドスクライブにアクセスできませんか?当社のサーバーに接続して、制限の厳しいネットワークをブロックします。</string>
   <string name="change_email">メールアドレスを変更</string>
   <string name="state_exiting">終了</string>
   <string name="connected_lower_case">接続</string>
@@ -453,4 +451,12 @@
   <string name="upgrade_to_stay_protected">アップグレードして保護された状態を維持するか、翌月のリセットまで待ちます</string>
   <string name="you_ve_been_downgraded_to_free_for_now">あなたは今のところ無料にダウングレードされました</string>
   <string name="you_ve_violated_our_terms">利用規約に違反したため、アカウントが無効になりました</string>
+  <string name="location_permission_required">ロケーション許可が必要</string>
+  <string name="foreground_location_permission_reason">Windscribe は "Network Whitelist\" 機能を動作させるために位置情報の許可を必要とします。 この権限は、Wifiネットワーク名にアクセスするために必要です。この権限は、この機能とGPSスプーフィング機能にのみ使用されます。あなたの位置データはあなたのデバイスから離れず、他の何にも使用されません。</string>
+  <string name="enable_location_access">位置情報アクセスの有効化</string>
+  <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">この機能を使用するには、位置情報の許可が必要です。[アプリの設定] &gt; [場所] &gt; [アクセス許可] に移動し、[常に許可] を選択します。</string>
+  <string name="allow_all_the_time_location_access_required">「常に許可する」位置情報へのアクセスが必要です!</string>
+  <string name="missing_location_permission">位置情報のアクセス許可がありません</string>
+  <string name="connect">繋ぐ</string>
+  <string name="emergency_connect_description">ウィンドスクライブにアクセスできませんか?当社のサーバーに接続して、制限の厳しいネットワークのブロックを解除します。</string>
 </resources>

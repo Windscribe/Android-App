@@ -52,7 +52,6 @@
   <string name="sales">销售</string>
   <string name="my_account">帐户</string>
   <string name="add_static_ip">添加静态 IP</string>
-  <string name="connect">连接</string>
   <string name="email_empty">空电子邮件！</string>
   <string name="preferences">偏好</string>
   <string name="please_confirm_email_first">请先确认电子邮件。</string>
@@ -94,7 +93,6 @@
   <string name="back">返回</string>
   <string name="node_under_construction_text">此位置正在维护中。请稍后重试或转到我们的状态页面以获取更多信息。https://windscribe.com/status</string>
   <string name="decoy_traffic_mode">诱饵流量模式</string>
-  <string name="emergency_connect_description">无法访问风抄写员？连接到我们的服务器以阻止您的限制性网络。</string>
   <string name="change_email">更改电子邮件</string>
   <string name="state_exiting">退出</string>
   <string name="connected_lower_case">连接</string>
@@ -453,4 +451,12 @@
   <string name="upgrade_to_stay_protected">升级以保持受保护或等到下个月的重置</string>
   <string name="you_ve_been_downgraded_to_free_for_now">您目前已被降级为免费</string>
   <string name="you_ve_violated_our_terms">您的帐户因违反我们的条款而被禁用</string>
+  <string name="location_permission_required">需要位置权限</string>
+  <string name="foreground_location_permission_reason">Windscribe需要位置权限才能使“网络白名单”功能正常工作。 需要此权限才能访问 Wifi 网络名称。此权限仅用于此功能以及 GPS 欺骗功能。您的位置数据不会离开您的设备，也不会用于其他任何用途。</string>
+  <string name="enable_location_access">启用位置信息访问</string>
+  <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">需要位置权限才能使用此功能。转到“应用设置”&gt;“权限”&gt;“位置”，然后选择“始终允许”。</string>
+  <string name="allow_all_the_time_location_access_required">“一直允许”需要位置访问！</string>
+  <string name="missing_location_permission">缺少位置权限</string>
+  <string name="connect">连接</string>
+  <string name="emergency_connect_description">无法访问风抄写员？连接到我们的服务器以解锁您的限制性网络。</string>
 </resources>
