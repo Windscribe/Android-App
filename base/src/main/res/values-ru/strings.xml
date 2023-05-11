@@ -52,7 +52,6 @@
   <string name="sales">Сбытовой</string>
   <string name="my_account">Счет</string>
   <string name="add_static_ip">Добавить статический IP-адрес</string>
-  <string name="connect">Соединять</string>
   <string name="email_empty">Пустое письмо!</string>
   <string name="preferences">Предпочтения</string>
   <string name="please_confirm_email_first">Пожалуйста, сначала подтвердите адрес электронной почты.</string>
@@ -94,7 +93,6 @@
   <string name="back">Назад</string>
   <string name="node_under_construction_text">Это местоположение находится на техническом обслуживании. Повторите попытку позже или перейдите на страницу «Статус» для получения дополнительной информации. https://windscribe.com/status</string>
   <string name="decoy_traffic_mode">Режим движения-приманки</string>
-  <string name="emergency_connect_description">Не можете получить доступ к Windscribe? Подключитесь к нашим серверам, чтобы заблокировать вашу ограниченную сеть.</string>
   <string name="change_email">Изменить адрес электронной почты</string>
   <string name="state_exiting">Выхода</string>
   <string name="connected_lower_case">Связанный </string>
@@ -453,4 +451,12 @@
   <string name="upgrade_to_stay_protected">Обновите, чтобы оставаться защищенным, или подождите до сброса в следующем месяце</string>
   <string name="you_ve_been_downgraded_to_free_for_now">На данный момент вы были понижены до бесплатного</string>
   <string name="you_ve_violated_our_terms">Ваша учетная запись была отключена за нарушение наших условий</string>
+  <string name="location_permission_required">Требуется разрешение на определение местоположения</string>
+  <string name="foreground_location_permission_reason">Windscribe требуется разрешение на определение местоположения для того, чтобы функция «Белый список сети» работала.  Это разрешение требуется для доступа к именам сетей Wi-Fi. Это разрешение используется исключительно для этой функции, а также для функции подмены GPS. Данные о вашем местоположении не покидают ваше устройство и не используются ни для чего другого.</string>
+  <string name="enable_location_access">Включить доступ к местоположению</string>
+  <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Для использования этой функции требуется разрешение на определение местоположения. Перейдите в настройки приложения &gt; Разрешения &gt; Местоположение и выберите Разрешить все время.</string>
+  <string name="allow_all_the_time_location_access_required">«Разрешить все время» Требуется доступ к местоположению!</string>
+  <string name="missing_location_permission">Отсутствует разрешение на определение местоположения</string>
+  <string name="connect">Соединять</string>
+  <string name="emergency_connect_description">Не можете получить доступ к Windscribe? Подключитесь к нашим серверам, чтобы разблокировать свою ограниченную сеть.</string>
 </resources>

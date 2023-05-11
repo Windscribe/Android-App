@@ -52,7 +52,6 @@ dernier emplacement choisi.</string>
   <string name="sales">Ventes</string>
   <string name="my_account">Compte</string>
   <string name="add_static_ip">Ajouter une adresse IP statique</string>
-  <string name="connect">Relier</string>
   <string name="email_empty">E-mail vide!</string>
   <string name="preferences">Préférences</string>
   <string name="please_confirm_email_first">Veuillez d’abord confirmer l’adresse e-mail.</string>
@@ -94,7 +93,6 @@ dernier emplacement choisi.</string>
   <string name="back">Précédent</string>
   <string name="node_under_construction_text">Cet emplacement est en cours de maintenance. Réessayez plus tard ou rendez-vous sur notre page Statut pour plus d’informations. https://windscribe.com/status</string>
   <string name="decoy_traffic_mode">Mode de trafic leurre</string>
-  <string name="emergency_connect_description">Vous ne pouvez pas accéder à Windscribe ? Connectez-vous à nos serveurs pour bloquer votre réseau restrictif.</string>
   <string name="change_email">Modifier l’adresse e-mail</string>
   <string name="state_exiting">Sortie</string>
   <string name="connected_lower_case">Relié </string>
@@ -453,4 +451,12 @@ dernier emplacement choisi.</string>
   <string name="upgrade_to_stay_protected">Effectuez une mise à niveau pour rester protégé ou attendez la réinitialisation du mois prochain</string>
   <string name="you_ve_been_downgraded_to_free_for_now">Vous avez été rétrogradé à gratuit pour l’instant</string>
   <string name="you_ve_violated_our_terms">Votre compte a été désactivé pour avoir enfreint nos conditions</string>
+  <string name="location_permission_required">Autorisation de localisation requise</string>
+  <string name="foreground_location_permission_reason">Windscribe a besoin de l’autorisation de localisation pour faire fonctionner la fonctionnalité \"Liste blanche réseau\ ».  Cette autorisation est requise pour accéder aux noms de réseau Wifi. Cette autorisation est utilisée uniquement pour cette fonctionnalité ainsi que pour la fonctionnalité d’usurpation GPS. Vos données de localisation ne quittent pas votre appareil et ne sont utilisées pour rien d’autre.</string>
+  <string name="enable_location_access">Activer l’accès à l’emplacement</string>
+  <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Une autorisation de localisation est requise pour utiliser cette fonctionnalité. Accédez aux paramètres de l’application &gt; Autorisations &gt; emplacement et sélectionnez Autoriser tout le temps.</string>
+  <string name="allow_all_the_time_location_access_required">« Autoriser tout le temps » Accès à l’emplacement requis!</string>
+  <string name="missing_location_permission">Autorisation de localisation manquante</string>
+  <string name="connect">Relier</string>
+  <string name="emergency_connect_description">Vous ne pouvez pas accéder à Windscribe ? Connectez-vous à nos serveurs pour débloquer votre réseau restrictif.</string>
 </resources>
