@@ -125,7 +125,7 @@
         <item>Ms</item>
     </string-array>
     <string-array name="query_types">
-        <item>@string/account</item>
+        <item>@string/my_account</item>
         <item>@string/technical</item>
         <item>@string/sales</item>
         <item>@string/feedback</item>
