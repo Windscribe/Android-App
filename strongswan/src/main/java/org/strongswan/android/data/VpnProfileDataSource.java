@@ -2,7 +2,8 @@
  * Copyright (C) 2012-2019 Tobias Brunner
  * Copyright (C) 2012 Giuliano Grassi
  * Copyright (C) 2012 Ralf Sager
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -235,7 +236,7 @@ public class VpnProfileDataSource
 					{
 						ContentValues values = new ContentValues();
 						values.put(KEY_UUID, UUID.randomUUID().toString());
-						db.update(TABLE_VPNPROFILE, values, KEY_ID + " = " + cursor.getLong(cursor.getColumnIndex(KEY_ID)), null);
+						db.update(TABLE_VPNPROFILE, values, KEY_ID + " = " + cursor.getLong(cursor.getColumnIndexOrThrow(KEY_ID)), null);
 					}
 					cursor.close();
 					db.setTransactionSuccessful();
@@ -433,29 +434,29 @@ public class VpnProfileDataSource
 	private VpnProfile VpnProfileFromCursor(Cursor cursor)
 	{
 		VpnProfile profile = new VpnProfile();
-		profile.setId(cursor.getLong(cursor.getColumnIndex(KEY_ID)));
-		profile.setUUID(UUID.fromString(cursor.getString(cursor.getColumnIndex(KEY_UUID))));
-		profile.setName(cursor.getString(cursor.getColumnIndex(KEY_NAME)));
-		profile.setGateway(cursor.getString(cursor.getColumnIndex(KEY_GATEWAY)));
-		profile.setVpnType(VpnType.fromIdentifier(cursor.getString(cursor.getColumnIndex(KEY_VPN_TYPE))));
-		profile.setUsername(cursor.getString(cursor.getColumnIndex(KEY_USERNAME)));
-		profile.setPassword(cursor.getString(cursor.getColumnIndex(KEY_PASSWORD)));
-		profile.setCertificateAlias(cursor.getString(cursor.getColumnIndex(KEY_CERTIFICATE)));
-		profile.setUserCertificateAlias(cursor.getString(cursor.getColumnIndex(KEY_USER_CERTIFICATE)));
-		profile.setMTU(getInt(cursor, cursor.getColumnIndex(KEY_MTU)));
-		profile.setPort(getInt(cursor, cursor.getColumnIndex(KEY_PORT)));
-		profile.setSplitTunneling(getInt(cursor, cursor.getColumnIndex(KEY_SPLIT_TUNNELING)));
-		profile.setLocalId(cursor.getString(cursor.getColumnIndex(KEY_LOCAL_ID)));
-		profile.setRemoteId(cursor.getString(cursor.getColumnIndex(KEY_REMOTE_ID)));
-		profile.setExcludedSubnets(cursor.getString(cursor.getColumnIndex(KEY_EXCLUDED_SUBNETS)));
-		profile.setIncludedSubnets(cursor.getString(cursor.getColumnIndex(KEY_INCLUDED_SUBNETS)));
-		profile.setSelectedAppsHandling(getInt(cursor, cursor.getColumnIndex(KEY_SELECTED_APPS)));
-		profile.setSelectedApps(cursor.getString(cursor.getColumnIndex(KEY_SELECTED_APPS_LIST)));
-		profile.setNATKeepAlive(getInt(cursor, cursor.getColumnIndex(KEY_NAT_KEEPALIVE)));
-		profile.setFlags(getInt(cursor, cursor.getColumnIndex(KEY_FLAGS)));
-		profile.setIkeProposal(cursor.getString(cursor.getColumnIndex(KEY_IKE_PROPOSAL)));
-		profile.setEspProposal(cursor.getString(cursor.getColumnIndex(KEY_ESP_PROPOSAL)));
-		profile.setDnsServers(cursor.getString(cursor.getColumnIndex(KEY_DNS_SERVERS)));
+		profile.setId(cursor.getLong(cursor.getColumnIndexOrThrow(KEY_ID)));
+		profile.setUUID(UUID.fromString(cursor.getString(cursor.getColumnIndexOrThrow(KEY_UUID))));
+		profile.setName(cursor.getString(cursor.getColumnIndexOrThrow(KEY_NAME)));
+		profile.setGateway(cursor.getString(cursor.getColumnIndexOrThrow(KEY_GATEWAY)));
+		profile.setVpnType(VpnType.fromIdentifier(cursor.getString(cursor.getColumnIndexOrThrow(KEY_VPN_TYPE))));
+		profile.setUsername(cursor.getString(cursor.getColumnIndexOrThrow(KEY_USERNAME)));
+		profile.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(KEY_PASSWORD)));
+		profile.setCertificateAlias(cursor.getString(cursor.getColumnIndexOrThrow(KEY_CERTIFICATE)));
+		profile.setUserCertificateAlias(cursor.getString(cursor.getColumnIndexOrThrow(KEY_USER_CERTIFICATE)));
+		profile.setMTU(getInt(cursor, cursor.getColumnIndexOrThrow(KEY_MTU)));
+		profile.setPort(getInt(cursor, cursor.getColumnIndexOrThrow(KEY_PORT)));
+		profile.setSplitTunneling(getInt(cursor, cursor.getColumnIndexOrThrow(KEY_SPLIT_TUNNELING)));
+		profile.setLocalId(cursor.getString(cursor.getColumnIndexOrThrow(KEY_LOCAL_ID)));
+		profile.setRemoteId(cursor.getString(cursor.getColumnIndexOrThrow(KEY_REMOTE_ID)));
+		profile.setExcludedSubnets(cursor.getString(cursor.getColumnIndexOrThrow(KEY_EXCLUDED_SUBNETS)));
+		profile.setIncludedSubnets(cursor.getString(cursor.getColumnIndexOrThrow(KEY_INCLUDED_SUBNETS)));
+		profile.setSelectedAppsHandling(getInt(cursor, cursor.getColumnIndexOrThrow(KEY_SELECTED_APPS)));
+		profile.setSelectedApps(cursor.getString(cursor.getColumnIndexOrThrow(KEY_SELECTED_APPS_LIST)));
+		profile.setNATKeepAlive(getInt(cursor, cursor.getColumnIndexOrThrow(KEY_NAT_KEEPALIVE)));
+		profile.setFlags(getInt(cursor, cursor.getColumnIndexOrThrow(KEY_FLAGS)));
+		profile.setIkeProposal(cursor.getString(cursor.getColumnIndexOrThrow(KEY_IKE_PROPOSAL)));
+		profile.setEspProposal(cursor.getString(cursor.getColumnIndexOrThrow(KEY_ESP_PROPOSAL)));
+		profile.setDnsServers(cursor.getString(cursor.getColumnIndexOrThrow(KEY_DNS_SERVERS)));
 		return profile;
 	}
 

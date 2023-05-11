@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2017-2018 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -57,6 +58,7 @@ public class SimpleFetcher
 				HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 				conn.setConnectTimeout(10000);
 				conn.setReadTimeout(10000);
+				conn.setRequestProperty("Connection", "close");
 				try
 				{
 					if (contentType != null)
@@ -118,7 +120,7 @@ public class SimpleFetcher
 	/**
 	 * Disable the fetcher and abort any future requests.
 	 *
-	 * The native thread is not cancelable as it is working on an IKE_SA (cancelling the methods of
+	 * The native thread is not cancelable as it is working on an IKE_SA (canceling the methods of
 	 * HttpURLConnection is not reliably possible anyway), so to abort while fetching we cancel the
 	 * Future (causing a return from fetch() immediately) and let the executor thread continue its
 	 * thing in the background.
