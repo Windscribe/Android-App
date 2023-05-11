@@ -31,7 +31,6 @@
         android:largeHeap="true"
         android:supportsRtl="false"
         android:extractNativeLibs="true"
-        android:networkSecurityConfig="${networkSecurityConfig}"
         android:roundIcon="@mipmap/ws_launcher"
         android:theme="@style/AppTheme.NoActionBar"
         tools:ignore="GoogleAppIndexingWarning"

@@ -13,4 +13,5 @@ interface NetworkSecurityView {
     fun setAdapter(mNetworkList: List<NetworkInfo>?)
     fun showProgress(progressTitle: String)
     fun setAutoSecureToggle(resourceId: Int)
+    fun hideCurrentNetwork()
 }
