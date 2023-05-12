@@ -415,7 +415,6 @@ Ultima posizione scelta.</string>
   <string name="exclusive_mode">Esclusivo</string>
   <string name="disconnected">SCONNESSO</string>
   <string name="network_options">Opzioni di rete</string>
-  <string name="other">ALTRO</string>
   <string name="ping_time">%d SM</string>
   <string name="gps_spoofing_error">Prova a seguire di nuovo la guida per attivarla.</string>
   <string name="let_s_do_it">Facciamolo</string>
@@ -459,4 +458,5 @@ Ultima posizione scelta.</string>
   <string name="missing_location_permission">Autorizzazione posizione mancante</string>
   <string name="connect">Connettersi</string>
   <string name="emergency_connect_description">Non riesci ad accedere a Windscribe? Connettiti ai nostri server per sbloccare la tua rete restrittiva.</string>
+  <string name="other">ALTRO</string>
 </resources>

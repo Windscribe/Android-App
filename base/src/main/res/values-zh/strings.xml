@@ -415,7 +415,6 @@
   <string name="exclusive_mode">独家</string>
   <string name="disconnected">断开</string>
   <string name="network_options">网络选项</string>
-  <string name="other">其他</string>
   <string name="ping_time">%d 毫秒</string>
   <string name="gps_spoofing_error">请尝试再次按照指南进行操作以激活它。</string>
   <string name="let_s_do_it">让我们去做吧</string>
@@ -459,4 +458,5 @@
   <string name="missing_location_permission">缺少位置权限</string>
   <string name="connect">连接</string>
   <string name="emergency_connect_description">无法访问风抄写员？连接到我们的服务器以解锁您的限制性网络。</string>
+  <string name="other">其他</string>
 </resources>

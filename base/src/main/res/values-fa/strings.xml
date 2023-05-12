@@ -415,7 +415,6 @@
   <string name="exclusive_mode">انحصاری</string>
   <string name="disconnected">قطع</string>
   <string name="network_options">گزینههای شبکه</string>
-  <string name="other">دیگر</string>
   <string name="ping_time">٪D میلیثانیه</string>
   <string name="gps_spoofing_error">لطفا دوباره این راهنما را دنبال کنید تا فعال شود.</string>
   <string name="let_s_do_it">بیایید ان را انجام دهیم</string>
@@ -459,4 +458,5 @@
   <string name="missing_location_permission">مجوز مکان از دست رفته</string>
   <string name="connect">اتصال</string>
   <string name="emergency_connect_description">نمی توانید به Windscribe دسترسی داشته باشد؟ برای رفع انسداد شبکه محدود کننده خود به سرورهای ما متصل شوید.</string>
+  <string name="other">دیگر</string>
 </resources>

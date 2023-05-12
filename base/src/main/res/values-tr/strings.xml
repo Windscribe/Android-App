@@ -415,7 +415,6 @@ son seçilen yer.</string>
   <string name="exclusive_mode">Seçkin</string>
   <string name="disconnected">BAĞLANTISI KESİLMİŞ</string>
   <string name="network_options">Ağ Seçenekleri</string>
-  <string name="other">BAŞKA</string>
   <string name="ping_time">%d MS</string>
   <string name="gps_spoofing_error">Lütfen etkinleştirmek için kılavuzu tekrar izlemeyi deneyin.</string>
   <string name="let_s_do_it">Hadi yapalım</string>
@@ -459,4 +458,5 @@ son seçilen yer.</string>
   <string name="missing_location_permission">Eksik konum izni</string>
   <string name="connect">Bağlamak</string>
   <string name="emergency_connect_description">Windscribe\a erişemiyor musunuz? Kısıtlayıcı ağınızın engelini kaldırmak için sunucularımıza bağlanın.</string>
+  <string name="other">BAŞKA</string>
 </resources>

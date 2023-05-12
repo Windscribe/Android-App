@@ -415,7 +415,6 @@ Vị trí được chọn cuối cùng.</string>
   <string name="exclusive_mode">Độc quyền</string>
   <string name="disconnected">RỜI RẠC</string>
   <string name="network_options">Tùy chọn mạng</string>
-  <string name="other">KHÁC __________</string>
   <string name="ping_time">%d MS</string>
   <string name="gps_spoofing_error">Vui lòng thử làm theo hướng dẫn một lần nữa để kích hoạt nó.</string>
   <string name="let_s_do_it">Hãy làm điều đó</string>
@@ -459,4 +458,5 @@ Vị trí được chọn cuối cùng.</string>
   <string name="missing_location_permission">Thiếu quyền truy cập thông tin vị trí</string>
   <string name="connect">Kết nối</string>
   <string name="emergency_connect_description">Không thể truy cập Windscribe? Kết nối với máy chủ của chúng tôi để bỏ chặn mạng hạn chế của bạn.</string>
+  <string name="other">KHÁC</string>
 </resources>

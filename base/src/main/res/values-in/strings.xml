@@ -415,7 +415,6 @@ Lokasi terakhir yang dipilih.</string>
   <string name="exclusive_mode">Eksklusif</string>
   <string name="disconnected">TERPUTUS</string>
   <string name="network_options">Opsi Jaringan</string>
-  <string name="other">LAINNYA__________</string>
   <string name="ping_time">%d MS</string>
   <string name="gps_spoofing_error">Silakan coba ikuti panduan lagi untuk mengaktifkannya.</string>
   <string name="let_s_do_it">Ayo lakukan</string>
@@ -459,4 +458,5 @@ Lokasi terakhir yang dipilih.</string>
   <string name="missing_location_permission">Izin lokasi tidak ada</string>
   <string name="connect">Sambung</string>
   <string name="emergency_connect_description">Tidak dapat mengakses Windscribe? Hubungkan ke server kami untuk membuka blokir jaringan terbatas Anda.</string>
+  <string name="other">LAINNYA</string>
 </resources>

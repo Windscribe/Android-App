@@ -415,7 +415,6 @@
   <string name="exclusive_mode">निवारक</string>
   <string name="disconnected">डिस्कनेक्ट</string>
   <string name="network_options">नेटवर्क विकल्प</string>
-  <string name="other">दूसरा</string>
   <string name="ping_time">%d MS</string>
   <string name="gps_spoofing_error">कृपया इसे सक्रिय करने के लिए मार्गदर्शिका का पुन: अनुसरण करने का प्रयास करें.</string>
   <string name="let_s_do_it">चलो इसे करते हैं</string>
@@ -459,4 +458,5 @@
   <string name="missing_location_permission">स्थान अनुमति अनुपलब्ध</string>
   <string name="connect">जोड़ना</string>
   <string name="emergency_connect_description">विंडस्क्राइब तक नहीं पहुंच सकते? अपने प्रतिबंधात्मक नेटवर्क को अनब्लॉक करने के लिए हमारे सर्वर से कनेक्ट करें।</string>
+  <string name="other">दूसरा</string>
 </resources>

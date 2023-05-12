@@ -415,7 +415,6 @@
   <string name="exclusive_mode">Исключительный</string>
   <string name="disconnected">БЕССВЯЗНЫЙ</string>
   <string name="network_options">Параметры сети</string>
-  <string name="other">ДРУГОЕ__________</string>
   <string name="ping_time">%d МС</string>
   <string name="gps_spoofing_error">Пожалуйста, попробуйте еще раз следовать инструкциям, чтобы активировать его.</string>
   <string name="let_s_do_it">Давайте сделаем это</string>
@@ -459,4 +458,5 @@
   <string name="missing_location_permission">Отсутствует разрешение на определение местоположения</string>
   <string name="connect">Соединять</string>
   <string name="emergency_connect_description">Не можете получить доступ к Windscribe? Подключитесь к нашим серверам, чтобы разблокировать свою ограниченную сеть.</string>
+  <string name="other">ДРУГОЕ</string>
 </resources>
