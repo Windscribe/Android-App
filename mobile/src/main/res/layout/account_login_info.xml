@@ -109,6 +109,7 @@
             <TextView
                 android:id="@+id/tv_warning"
                 style="@style/MenuAttentionLabel"
+                android:layout_width="0dp"
                 android:gravity="left|center_vertical"
                 android:text="@string/get_10_gb"
                 android:layout_margin="0dp"
@@ -117,6 +118,7 @@
                 android:textSize="@dimen/text_size_14"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/resend_email_btn"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintTop_toTopOf="parent" />
 
