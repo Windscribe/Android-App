@@ -69,6 +69,7 @@ class CharonVpnServiceWrapper : CharonVpnService() {
         if (intent == null || intent.action == VpnService.SERVICE_INTERFACE) {
             logger.debug("System relaunched service, starting shortcut state manager")
             shortcutStateManager.connect()
+            stopSelf()
             return START_NOT_STICKY
         }
         return when (intent.action) {
