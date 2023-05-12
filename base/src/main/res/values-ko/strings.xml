@@ -415,7 +415,6 @@
   <string name="exclusive_mode">독점적인</string>
   <string name="disconnected">연결이 끊어진</string>
   <string name="network_options">네트워크 옵션</string>
-  <string name="other">다른</string>
   <string name="ping_time">%dMS</string>
   <string name="gps_spoofing_error">가이드에 따라 활성화하십시오.</string>
   <string name="let_s_do_it">해보자</string>
@@ -459,4 +458,5 @@
   <string name="missing_location_permission">위치 정보 액세스 권한 누락</string>
   <string name="connect">연결하다</string>
   <string name="emergency_connect_description">Windscribe에 액세스할 수 없습니까? 당사 서버에 연결하여 제한적인 네트워크의 차단을 해제하세요.</string>
+  <string name="other">다른</string>
 </resources>

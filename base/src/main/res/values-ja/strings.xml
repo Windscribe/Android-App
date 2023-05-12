@@ -415,7 +415,6 @@
   <string name="exclusive_mode">排他的</string>
   <string name="disconnected">途切れ途切れ</string>
   <string name="network_options">ネットワーク オプション</string>
-  <string name="other">他</string>
   <string name="ping_time">%d ミリ秒</string>
   <string name="gps_spoofing_error">もう一度ガイドに従って有効にしてみてください。</string>
   <string name="let_s_do_it">やってみましょう</string>
@@ -459,4 +458,5 @@
   <string name="missing_location_permission">位置情報のアクセス許可がありません</string>
   <string name="connect">繋ぐ</string>
   <string name="emergency_connect_description">ウィンドスクライブにアクセスできませんか?当社のサーバーに接続して、制限の厳しいネットワークのブロックを解除します。</string>
+  <string name="other">他</string>
 </resources>

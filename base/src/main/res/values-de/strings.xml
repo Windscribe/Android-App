@@ -415,7 +415,6 @@ Zuletzt gewählter Ort.</string>
   <string name="exclusive_mode">Ausschließlich</string>
   <string name="disconnected">ENTFERNT</string>
   <string name="network_options">Netzwerk-Optionen</string>
-  <string name="other">ANDERE</string>
   <string name="ping_time">%d MS</string>
   <string name="gps_spoofing_error">Bitte versuchen Sie erneut, der Anleitung zu folgen, um sie zu aktivieren.</string>
   <string name="let_s_do_it">Lass es uns tun</string>
@@ -459,4 +458,5 @@ Zuletzt gewählter Ort.</string>
   <string name="missing_location_permission">Fehlende Standortberechtigung</string>
   <string name="connect">Verbinden</string>
   <string name="emergency_connect_description">Sie können nicht auf Windscribe zugreifen? Verbinden Sie sich mit unseren Servern, um Ihr restriktives Netzwerk zu entsperren.</string>
+  <string name="other">ANDERE</string>
 </resources>
