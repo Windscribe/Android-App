@@ -27,7 +27,7 @@ class TranslationUnit:
 # android uses two letter language code , iOS and desktop use 4 letter language codes.
 android_language_code_mappings = {'ar': 'ar-eg', 'de': 'de-de', 'es': 'es-es', 'fa': 'fa-ir', 'fr': 'fr-fr',
                                   'hi': 'hi-in',
-                                  'id': 'id-id', 'it': 'it-it',
+                                  'in': 'id-id', 'it': 'it-it',
                                   'ja': 'ja-jp', 'ko': 'ko-kr', 'pl': 'pl-pl', 'pt': 'pt-pt', 'ru': 'ru-ru',
                                   'tr': 'tr-tr',
                                   'uk': 'uk-ua', 'vi': 'vi-vn',

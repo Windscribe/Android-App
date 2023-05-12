@@ -67,6 +67,8 @@ class DropDownView @JvmOverloads constructor(
         spinner?.adapter = selectionAdapter
         spinner?.isSelected = false
         spinner?.setSelection(keys.indexOf(selectedKey))
-        current?.text = localiseValues[keys.indexOf(selectedKey)]
+        if (keys.indexOf(selectedKey) != -1) {
+            current?.text = localiseValues[keys.indexOf(selectedKey)]
+        }
     }
 }

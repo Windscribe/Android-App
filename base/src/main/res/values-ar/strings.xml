@@ -415,7 +415,6 @@
   <string name="exclusive_mode">خاص</string>
   <string name="disconnected">قطع اتصال</string>
   <string name="network_options">خيارات الشبكة</string>
-  <string name="other">آخر</string>
   <string name="ping_time">٪d MS</string>
   <string name="gps_spoofing_error">يرجى محاولة اتباع الدليل مرة أخرى لتفعيله.</string>
   <string name="let_s_do_it">دعونا نفعل ذلك</string>
@@ -459,4 +458,5 @@
   <string name="missing_location_permission">إذن الموقع مفقود</string>
   <string name="connect">عشق</string>
   <string name="emergency_connect_description">لا يمكنك الوصول إلى Windscribe؟ اتصل بخوادمنا لإلغاء حظر شبكتك المقيدة.</string>
+  <string name="other">آخر</string>
 </resources>

@@ -415,7 +415,6 @@
   <string name="exclusive_mode">Монопольний</string>
   <string name="disconnected">ВІДКЛЮЧЕНО</string>
   <string name="network_options">Параметри мережі</string>
-  <string name="other">ІНШЕ __________</string>
   <string name="ping_time">%d MS</string>
   <string name="gps_spoofing_error">Будь ласка, спробуйте ще раз скористатися інструкцією, щоб активувати його.</string>
   <string name="let_s_do_it">Давайте зробимо це</string>
@@ -459,4 +458,5 @@
   <string name="missing_location_permission">Дозвіл на доступ до місцезнаходження відсутній</string>
   <string name="connect">Підключатися</string>
   <string name="emergency_connect_description">Не вдається отримати доступ до Windscribe? Підключіться до наших серверів, щоб розблокувати доступ до обмежувальної мережі.</string>
+  <string name="other">ІНШЕ</string>
 </resources>
