@@ -190,7 +190,7 @@ class SendTicketActivity : BaseActivity(), SendTicketView, TextWatcher {
         subjectView.setText("")
         messageView.setText("")
         queryTypeSpinner.setSelection(0)
-        SuccessDialog.show(this, message, ThemeUtils.getColor(this, R.attr.overlayContainerBackground, R.color.colorBackgroundDark))
+        SuccessDialog.show(this, message, ThemeUtils.getColor(this, R.attr.overlayContainerBackground, R.color.colorBackgroundDark), true)
     }
 
     private fun hideKeyBoard() {
