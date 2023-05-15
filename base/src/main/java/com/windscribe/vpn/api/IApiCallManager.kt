@@ -60,5 +60,5 @@ interface IApiCallManager {
         sizeToReceive: String?
     ): Single<GenericResponseClass<String?, ApiErrorResponse?>>
 
-    suspend fun getLatency(host: String): Result<GenericResponseClass<Latency?, ApiErrorResponse?>>
+    suspend fun getLatency(url: String, ip: String): Result<GenericResponseClass<Latency?, ApiErrorResponse?>>
 }

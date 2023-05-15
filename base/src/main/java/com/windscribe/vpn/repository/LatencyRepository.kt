@@ -1,5 +1,6 @@
 package com.windscribe.vpn.repository
 
+import android.util.Log
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.Util
@@ -71,7 +72,7 @@ class LatencyRepository @Inject constructor(
         val context = currentCoroutineContext()
         return CoroutineScope(context).async {
             val pingTime = getPingTime(city.getId(), city.regionID, false, city.pro == 1)
-            return@async getLatencyFromApi(city.pingHost, pingTime)
+            return@async getLatencyFromApi(city.pingHost, city.pingIp, pingTime)
         }
     }
 
@@ -79,7 +80,7 @@ class LatencyRepository @Inject constructor(
         val context = currentCoroutineContext()
         return CoroutineScope(context).async {
             val pingTime = getPingTime(region.id, region.ipId, isStatic = true, isPro = true)
-            return@async getLatencyFromApi(region.pingHost, pingTime)
+            return@async getLatencyFromApi(region.pingHost, region.staticIpNode.ip, pingTime)
         }
     }
 
@@ -222,7 +223,7 @@ class LatencyRepository @Inject constructor(
     }
 
     private suspend fun getLatencyFromApi(
-        host: String?,
+        host: String?, ip: String,
         ping: PingTime,
     ): PingTime {
         if (skipPing) {
@@ -232,7 +233,7 @@ class LatencyRepository @Inject constructor(
             return ping.apply { pingTime = -1 }
         }
         val updatedPing = withTimeoutOrNull(3000) {
-            iApiCallManager.getLatency(host).mapCatching {
+            iApiCallManager.getLatency(host, ip).mapCatching {
                 return@mapCatching ping.apply {
                     pingTime = it.dataClass?.rtt?.toInt()?.div(1000) ?: -1
                 }
