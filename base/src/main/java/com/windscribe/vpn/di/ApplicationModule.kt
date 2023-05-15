@@ -697,10 +697,11 @@ class ApplicationModule(private val windscribeApp: Windscribe) {
     fun providesWindApiFactory(
         retrofitBuilder: Retrofit.Builder,
         httpBuilder: OkHttpClient.Builder,
-        protectedApiFactory: ProtectedApiFactory
+        protectedApiFactory: ProtectedApiFactory,
+        windscribeDnsResolver: WindscribeDnsResolver
     ): WindApiFactory {
         return WindApiFactory(
-            retrofitBuilder, httpBuilder, protectedApiFactory
+            retrofitBuilder, httpBuilder, windscribeDnsResolver, protectedApiFactory,
         )
     }
 
