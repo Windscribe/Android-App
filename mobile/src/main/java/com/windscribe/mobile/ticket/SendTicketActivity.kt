@@ -23,6 +23,7 @@ import com.windscribe.mobile.dialogs.ProgressDialog
 import com.windscribe.mobile.dialogs.SuccessDialog
 import com.windscribe.mobile.welcome.SoftInputAssist
 import com.windscribe.vpn.api.response.QueryType
+import com.windscribe.vpn.commonutils.ThemeUtils
 import java.util.*
 import javax.inject.Inject
 
@@ -185,8 +186,11 @@ class SendTicketActivity : BaseActivity(), SendTicketView, TextWatcher {
     }
 
     override fun setSuccessLayout(message: String) {
-        setInputState(false)
-        SuccessDialog.show(this, message, null)
+        emailView.setText("")
+        subjectView.setText("")
+        messageView.setText("")
+        queryTypeSpinner.setSelection(0)
+        SuccessDialog.show(this, message, ThemeUtils.getColor(this, R.attr.overlayContainerBackground, R.color.colorBackgroundDark))
     }
 
     private fun hideKeyBoard() {
