@@ -1,0 +1,450 @@
+﻿<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<resources>
+    <!--- User-->
+    <string name="username_empty">Nama pengguna kosong!</string>
+    <string name="password_empty">Kata sandi kosong!</string>
+    <string name="enter_username">Harap masukkan nama pengguna Anda!</string>
+    <string name="enter_password">Harap masukkan kata sandi Anda!</string>
+    <string name="password_too_short">Terlalu pendek!</string>
+    <string name="login_credential_error">Ada yang salah dengan nama pengguna atau kata sandi Anda :(</string>
+    <string name="sign_out">Keluar</string>
+    <string name="username">Nama pengguna</string>
+    <string name="password">Kata sandi</string>
+    <string name="login_with_username">Karakter khusus atau email tidak boleh digunakan dalam bidang isian nama pengguna.</string>
+    <string name="weak_password">Kata sandi harus berisi minimal satu huruf besar dan huruf kecil.</string>
+    <string name="small_password">Panjang kata sandi harus minimal 8 karakter.</string>
+    <string name="password_requirement">8 karakter atau lebih dengan minimal satu huruf besar dan huruf kecil</string>
+    <string name="failed_network_alert">Kami sudah mencoba semaksimal mungkin, namun tidak dapat menghubungkan Anda di jaringan ini karena hal tertentu.</string>
+    <string name="fa_required_error">Kode 2FA wajib diisi</string>
+    <string name="fa_invalid_error">Kode 2FA tidak valid</string>
+    <string name="login">Masuk</string>
+    <string name="two_fa">Kode 2FA</string>
+    <string name="two_fa_description">Jika diaktifkan, gunakan apl. otentikasi untuk membuat kodenya.</string>
+    <string name="forgot_password">Lupa Kata Sandi?</string>
+    <string name="next">Lanjutkan</string>
+    <string name="sign_up">Mendaftar secara gratis</string>
+    <string name="sign_up_description">Lindungi akun Anda, buka pengaturan dari perangkat apapun dan dapatkan lebih banyak data.</string>
+    <string name="choose_username">Pilih Nama Pengguna</string>
+    <string name="choose_password">Pilih Kata Sandi</string>
+    <string name="email_description"><![CDATA[Khusus untuk pemulihan kata sandi, pembaruan & promo. Tidak ada spam]]></string>
+    <string name="sign_up_failed_network_alert">Kami sudah mencoba semaksimal mungkin, namun tidak dapat mendaftarkan Anda di jaringan ini karena hal tertentu.</string>
+
+    <!--Api -->
+    <string name="backup_api_end_point">Mencoba backup api end point…</string>
+    <string name="signing_in">Sedang masuk...</string>
+    <string name="signing_up">Sedang mendaftarkan...</string>
+    <string name="getting_session">Mendapatkan Sesi...</string>
+    <string name="getting_port_maps">Mendapatkan Port Map...</string>
+    <string name="getting_server_config">Mendapatkan Konfigurasi Server...</string>
+    <string name="getting_server_credentials">Mendapatkan Kredensial Server...</string>
+    <string name="getting_best_location">Mendapatkan Lokasi Terbaik...</string>
+    <string name="getting_server_list">Mendapatkan Daftar Server...</string>
+    <string name="preparing_your_dashboard">Menyiapkan dasbor Anda...</string>
+    <string name="trying_static_endpoint">Mencoba static endpoint...</string>
+    <string name="getting_reg_token">Mendapatkan token reg...</string>
+
+    <!--- Email-->
+    <string name="invalid_email_format">Email tidak valid!</string>
+    <string name="email_empty">Email kosong!</string>
+    <string name="email">Email</string>
+    <string name="confirm_your_email">Konfirmasikan email Anda</string>
+    <string name="confirm_email">Konfirmasikan Email</string>
+    <string name="resend_verification_email">Kirim Ulang Email Verifikasi</string>
+    <string name="change_email">Ganti Email</string>
+
+    <!--Network -->
+    <string name="no_internet">TIDAK ADA INTERNET!</string>
+    <string name="no_network_detected">Jaringan tidak terdeteksi!</string>
+    <string name="this_network_hates_us">Jaringan ini tidak menyukai kami</string>
+
+    <!-- Upgrade-->
+    <string name="upgrade">TINGKATKAN</string>
+    <string name="upgrade_case_normal">Tingkatkan</string>
+    <string name="renew_plan">Perpanjang Paket</string>
+    <string name="you_ve_been_downgraded_to_free_for_now">Versi Anda diturunkan \nke gratis untuk saat ini</string>
+    <string name="you_ve_violated_our_terms">Akun Anda telah \ndinonaktifkan karena melanggar \nketentuan kami</string>
+    <string name="you_r_pro_plan_expired">Paket Pro Anda telah berakhir!</string>
+    <string name="you_re_out_of_data">Data Anda habis</string>
+    <string name="you_ve_been_banned">Anda telah diblokir</string>
+    <string name="upgrade_later">Saya akan meningkatkan versi nanti</string>
+    <string name="upgrade_to_stay_protected">Tingkatkan untuk tetap \nterlindungi atau tunggu hingga \nreset bulan depan</string>
+    <string name="get_more_data">DAPATKAN LEBIH BANYAK DATA</string>
+    <string name="data_left">%1$.2f GB tersisa</string>
+    <string name="gb_month">- GB/Bulan</string>
+    <string name="warning_no_email_pro_account">Tambahkan email untuk memulihkan akun Anda jika lupa kata sandi.</string>
+    <string name="free_reason_to_confirm">Harap konfirmasikan email Anda untuk mendapatkan 10GB/Bulan</string>
+    <string name="pro_reason_to_confirm">Harap konfirmasikan email Anda untuk melindungi akun</string>
+
+    <!-- Connection states -->
+    <string name="connected">TERSAMBUNG</string>
+    <string name="connected_lowercase">Tersambung</string>
+    <string name="connecting">MENYAMBUNGKAN </string>
+    <string name="connecting_to">Menyambungkan ke %s</string>
+    <string name="connected_to">Tersambung ke %s</string>
+    <string name="disconnecting">MEMUTUSKAN</string>
+    <string name="disconnected">TERPUTUS</string>
+    <string name="tunnel_test_failed">SAMBUNGAN GAGAL…</string>
+    <string name="checking_connectivity">Memeriksa sambungan...</string>
+    <string name="connectivity_test_failed">Tes sambungan gagal...</string>
+    <string name="best_location">Lokasi Terbaik</string>
+
+    <!--Connection preference-->
+    <string name="connection_mode">Mode Sambungan</string>
+    <string name="preferred_protocol">Protokol Pilihan</string>
+    <string name="protocol">Protokol</string>
+    <string name="port">Port</string>
+    <string name="connection_automatic">Otomatis</string>
+    <string name="connection_manual">Manual</string>
+    <string name="go_to_settings">Buka pengaturan</string>
+    <string name="always_on_not_supported">Fitur ini memerlukan android versi 7.0+</string>
+    <string name="packet_size">Ukuran paket</string>
+    <string name="lan_by_pass">Izinkan lalu lintas LAN</string>
+    <string name="gps_spoofing">Pemalsuan GPS</string>
+    <string name="natKeepAlive">IKE keepalive</string>
+    <string name="keep_alive">tetap aktifkan</string>
+    <string name="auto_detecting">Mendeteksi otomatis...</string>
+
+    <!-- Account-->
+    <string name="plan_pro">Pro</string>
+    <string name="expiry_date">Tanggal Kedaluwarsa</string>
+    <string name="reset_date">Tanggal Reset</string>
+    <string name="gb_per_month"> GB/Bulan</string>
+    <string name="my_account">Akun</string>
+    <string name="cancel">Batal</string>
+    <string name="edit_account">Edit Akun</string>
+    <string name="info">INFO</string>
+    <string name="plan">PAKET</string>
+    <string name="please_login">Silakan masuk terlebih dahulu untuk menyambungkan!</string>
+    <string name="please_login_to_see_account_details">Mendaftar atau Masuk untuk melihat detail akun Anda dan melindungi preferensi Anda.</string>
+
+    <!-- Billing-->
+    <string name="billing_unavailable">Tagihan bermain tidak tersedia untuk perangkat ini</string>
+    <string name="item_unavailable">Item yang Anda minta tidak tersedia. \nHubungi layanan pelanggan di https://windscribe.com/support!</string>
+    <string name="billing_service_unavailable">Layanan tagihan tidak tersedia. Periksa sambungan jaringan Anda dan coba lagi!</string>
+    <string name="unknown_billing_error">Kesalahan yang tidak dikenal. Hubungi layanan pelanggan di https://windscribe.com/support!</string>
+    <string name="fatal_error">Tidak dapat tersambung ke layanan tagihan. Periksa sambungan jaringan Anda!</string>
+    <string name="unable_to_process_request">Kami tidak dapat memproses permintaan Anda. Silakan coba lagi!</string>
+    <string name="play_store_updating">Pembaruan play store sedang diproses! Harap coba setelah pembaruan selesai.</string>
+    <string name="purchase_cancelled">Pembelian dibatalkan!</string>
+    <string name="purchase_successful">Pembelian berhasil!</string>
+    <string name="_2gb_left">2GB TERSISA</string>
+
+    <!-- Notification/Status Strings -->
+    <string name="state_connecting">Menyambungkan</string>
+    <string name="state_wait">Menunggu balasan server</string>
+    <string name="state_auth">Mengotentikasi</string>
+    <string name="state_get_config">Mendapatkan konfigurasi client</string>
+    <string name="state_assign_ip">Menetapkan alamat IP</string>
+    <string name="state_add_routes">Menambah rute</string>
+    <string name="state_connected">Tersambung</string>
+    <string name="state_disconnected">Putuskan</string>
+    <string name="state_reconnecting">Menyambungkan kembali</string>
+    <string name="state_exiting">Keluar</string>
+    <string name="state_noprocess">Tidak berjalan</string>
+    <string name="state_resolve">Menyelesaikan nama host</string>
+    <string name="state_tcp_connect">Menyambungkan (TCP)</string>
+    <string name="state_auth_failed">Otentikasi gagal</string>
+    <string name="state_no_network">Menunggu jaringan yang dapat digunakan</string>
+
+    <!--News feed -->
+    <string name="news_feed">Kabar Berita</string>
+    <string name="news_feed_welcome">Di sini, Anda bisa mendapatkan pengumuman dan berita terkait Windscribe Bahkan mungkin kue yang lezat, Semua orang suka kue!</string>
+    <string name="news_feed_welcome_title">SELAMAT DATANG DI WINDSCRIBE</string>
+
+    <!-- Rate dialog -->
+    <string name="rate_the_app">Beri Nilai Windscribe</string>
+    <string name="may_be_later">Nanti Saja</string>
+    <string name="never_ask_again">Hapus</string>
+    <string name="rate_message">Apakah Anda menyukai Windscribe? Pastinya. Beri kami nilai di Play Store dan kami akan menyayangi Anda selamanya.</string>
+
+    <!-- GPS spoofing -->
+    <string name="gps_spoofing_explain">Fitur ini mengharuskan Anda untuk mengubah pengaturan android. Harap ikuti langkah berikutnya untuk mengaktifkannya.</string>
+    <string name="let_s_do_it">Ayo lakukan</string>
+    <string name="unlock_developer_mode">Aktifkan Opsi Pengembang</string>
+    <string name="unlock_developer_mode_explain">Buka Pengaturan dan cari bagian "Tentang Ponsel". Cari nomor build di dalam "Info Perangkat Lunak" dan ketuk 7 kali.</string>
+    <string name="open_settings">Buka Pengaturan</string>
+    <string name="add_to_mock_location">Pilih Apl Mock Location</string>
+    <string name="add_to_mock_location_explain">Setelah diaktifkan, buka "Opsi Pengembang" di Pengaturan. Di bawah "Debugging" pilih Windscribe sebagai "Apl mock location".</string>
+    <string name="you_are_done">Selesai!</string>
+    <string name="gps_spoofing_success">Lokasi GPS Anda akan sama seperti lokasi VPN Anda.</string>
+    <string name="gps_spoofing_not_set">Tidak dapat mengaktifkan pemalsuan GPS</string>
+    <string name="gps_spoofing_error">Harap coba ikuti panduan sekali lagi untuk mengaktifkannya.</string>
+
+    <!--Ghost mode -->
+    <string name="add_email">Tambahkan Email</string>
+    <string name="unlimited_data">Data Tak Terbatas</string>
+    <string name="preferences">Preferensi</string>
+    <string name="optional">(Opsional)</string>
+    <string name="get_10_gb">Dapatkan 10GB/Bln</string>
+    <string name="plans">Paket</string>
+    <string name="pro">Pro</string>
+    <string name="benefits">Manfaat</string>
+    <string name="pricing">HARGA</string>
+    <string name="all_locations">Semua Lokasi</string>
+    <string name="robert">R.O.B.E.R.T.</string>
+    <string name="terms"><![CDATA[Langganan dapat dikelola secara bulanan, tahuan atau dinonaktifkan dengan membuka Pengaturan Akun App Store setelah pembelian. Semua harga sudah termasuk pajak.]]></string>
+    <string name="account_set_up">Pembuatan Akun</string>
+    <string name="account_set_up_description">Lindungi akun Anda dan akses dari perangkat manapun.</string>
+    <string name="continue_free_10gb_mo">Dapatkan Gratis 10GB/Bln</string>
+    <string name="continue_without_email">Lanjutkan Tanpa Email</string>
+    <string name="no_email_warning">Tanpa email, akun gratis Anda akan dibatasi hingga 2GB/Bln dan kata sandi Anda tidak dapat diatur ulang.</string>
+    <string name="get_started">Memulai</string>
+    <!-- Actions -->
+    <string name="error_try_again">Kesalahan coba lagi!</string>
+    <string name="please_wait">Harap tunggu...</string>
+    <string name="resend">Kirim Ulang</string>
+    <string name="loading">Memuat...</string>
+    <string name="retry">Coba lagi</string>
+    <string name="try_again">Coba Lagi</string>
+    <string name="close">Tutup</string>
+    <string name="contact_support">Layanan Pelanggan</string>
+    <string name="set_up_later">Buat nanti</string>
+    <string name="back">Kembali</string>
+    <string name="ok">OK</string>
+
+    <!-- Log -->
+    <string name="view_log">Lihat Log Debug</string>
+    <string name="send_log">Kirim Log Debug</string>
+    <string name="send_charon_log">Kirim Log IKEv</string>
+    <string name="sent_thanks">Terkirim, terima kasih!</string>
+    <string name="sending_log">Mengirim log...</string>
+    <string name="export_log">Ekspor log</string>
+
+    <!--Home -->
+    <string name="no_favourites">Tidak ada favorit</string>
+    <string name="no_custom_configs">Konfigurasi kustom memungkinkan Anda untuk menyambungkan ke server OvenVPN atau Wireguard Cukup tambahkan file konfigurasi yang valid dan akan ia muncul di tab ini.</string>
+    <string name="add_profile">Tambahkan Profil VPN</string>
+    <string name="add_static_ip">Tambahkan IP Statis</string>
+    <string name="check_status">Periksa status</string>
+    <string name="under_maintenance">Lokasi ini Sedang Dalam Pemeliharaan</string>
+    <string name="check_status_description">Coba lagi nanti atau buka Halaman status untuk info selengkapnya</string>
+    <string name="added_to_favourites">Ditambahkan ke favorit</string>
+    <string name="add_vpn_config">Tambahkan Konfigurasi Kustom</string>
+
+    <!--Main Menu-->
+    <string name="general">Umum</string>
+    <string name="account">Akun</string>
+    <string name="connection">Sambungan</string>
+    <string name="debug">Debug</string>
+    <string name="help_me">Bantu Saya!</string>
+    <string name="logout">Keluar</string>
+    <string name="preference">Preferensi</string>
+    <string name="logout_alert_description">Anda yakin ingin keluar dari Windscribe?</string>
+
+    <!--General Settings-->
+    <string name="sort_by">Susunan Lokasi</string>
+    <string name="display_latency">Tampilkan Latensi</string>
+    <string name="preferred_language">Bahasa</string>
+    <string name="theme">Tampilan</string>
+    <string name="show_timer_in_notifications">Statistik Notifikasi</string>
+    <string name="haptic_setting_label">Haptic Feedback</string>
+    <string name="version">Versi</string>
+    <string name="show_location_health">Tampilkan Muatan Lokasi</string>
+
+
+    <!-- Split tunneling -->
+    <string name="split_tunneling_feature">Pilih aplikasi mana yang ingin dikecualikan atau dimasukkan dalam Windscribe saat tersambung</string>
+    <string name="mode">Mode</string>
+    <string name="split_tunneling">Split Tunneling</string>
+    <string name="off">Mati</string>
+    <string name="on">Hidup</string>
+    <string name="feature_tunnel_mode_exclusive">Aplikasi yang dipilih di bawah ini tidak akan melalui Windscribe saat tersambung</string>
+    <string name="feature_tunnel_mode_inclusive">Aplikasi yang dipilih di bawah ini akan melalui Windscribe saat tersambung</string>
+    <string name="apps">APLIKASI</string>
+
+    <!--Always on -->
+    <string name="always_on">VPN selalu menyala</string>
+    <string name="always_on_warning">VPN \"Selalu Menyala\" memungkinkan Android untuk mengontrol sambungan VPN dan memastikan bahwa tidak ada data yang keluar dari perangkat kecuali jika tunnel VPN menyala.</string>
+    <string name="always_on_setting">Perangkat Android 10+ mengharuskan VPN Selalu-Menyala untuk dikonfigurasi pada Windscribe untuk mulai menyalakan perangkat.</string>
+
+    <!-- Network security -->
+    <string name="forget_network">Lupakan jaringan</string>
+    <string name="network_secured">Aman</string>
+    <string name="network_unsecured">Tidak aman</string>
+    <string name="preferred_protocol_description">Pilih protokol default untuk jaringan ini jika Anda sambungan Anda bermasalah</string>
+    <string name="unknown">Jaringan yang tidak dikenal</string>
+    <string name="loading_network_list">Memuat daftar jaringan\nHarap tunggu…</string>
+    <string name="no_saved_network_list">Tidak ada daftar jaringan yang disimpan!</string>
+    <string name="network_options">Opsi Jaringan</string>
+    <string name="auto_secure">Amankan Otomatis</string>
+    <string name="auto_secure_description">Windscribe akan otomatis menyala saat Anda menyambungkan ke jaringan ini.</string>
+
+    <!--Auto connect on boot-->
+    <string name="auto_start_on_boot">Sambungkan otomatis saat menyala</string>
+    <string name="enable_start_on_boot">Aktifkan Sambungan Saat Menyala</string>
+
+    <!--Location permission -->
+    <string name="grant_permission">Izinkan</string>
+    <string name="reason_for_location_permission">Windscribe membutuhkan izin lokasi saat berjalan di latar belakang agar fitur \"Daftar Aman\" berfungsi. Izin ini diperlukan untuk mengakses nama jaringan Wifi. Izin ini semata-mata digunakan untuk fitur ini, serta fungsi pemalsuan GPS. Data lokasi Anda tidak keluar dari perangkat Anda, dan tidak digunakan untuk hal lain.</string>
+    <string name="location_permission_for_ssid">Izin lokasi diperlukan untuk membuat protokol pilihan dan sambungan otomatis.</string>
+    <string name="disclaimer">Penafian</string>
+    <string name="location_permission">Izin lokasi</string>
+
+    <!-- Features -->
+    <string name="feature1">Server di lebih dari 100 lokasi</string>
+    <string name="feature2">Blokir iklan dan malware</string>
+    <string name="feature3">Tidak ada log</string>
+    <string name="feature4">Buka streaming</string>
+
+    <!--Help -->
+    <string name="knowledge_base">Sumber Informasi</string>
+    <string name="knowledge_base_description">Semua yang perlu Anda ketahui tentang Windscribe.</string>
+    <string name="talk_to_garry">Ngobrol dengan Garry</string>
+    <string name="talk_to_garry_description">Tidak secerdas Siri namun masih dapat menjawab pertanyaan.</string>
+    <string name="send_ticket">Kirim Tiket</string>
+    <string name="send_ticket_description">Bingung? Kirimi kami tiket.</string>
+    <string name="community_support">Bantuan Komunitas</string>
+    <string name="community_support_description">Tempat terbaik untuk membantu dan dibantu oleh pengguna lain.</string>
+
+
+    <!--Send ticket -->
+    <string name="how_to_send_ticket">Isi formulir berikut dan salah satu agen kami akan segera menghubungi Anda™</string>
+    <string name="category">Kategori</string>
+    <string name="email_reason_for_contact">Agar kami dapat menghubungi Anda, tidak akan digunakan untuk hal lain</string>
+    <string name="what_is_the_issue">Apa masalahnya?</string>
+    <string name="message">Pesan</string>
+    <string name="subject">Perihal</string>
+
+    <!--Config -->
+    <string name="edit_config_file">Edit file Konfigurasi</string>
+    <string name="name">nama</string>
+    <string name="save_credentials">Simpan kredensial?</string>
+    <string name="update">Perbarui</string>
+    <string name="enter_credentials">Masukkan Kredensial</string>
+    <string name="connect">Sambungkan</string>
+
+    <!--Debug -->
+    <string name="send_debug_log">Kirim Log Debug</string>
+    <string name="send_ikev2_log">Kirim Log IKEv</string>
+
+    <!--Home -->
+    <string name="failed">GAGAL</string>
+    <string name="next_in_up">"Berikutnya dalam %d"</string>
+    <string name="step_1_3">Langkah 1/3</string>
+    <string name="step_2_3">Langkah 2/3</string>
+    <string name="remove_from_favourites">Dihapus dari favorit</string>
+    <string name="config_added">Ditambahkan ke konfigurasi</string>
+
+    <string name="app_background">Latar Belakang Apl.</string>
+    <string name="disconnected_lower_case">Terputus</string>
+    <string name="connected_lower_case">Tersambung</string>
+    <string name="x_press_login">Masuk Mudah</string>
+    <string name="other">LAINNYA</string>
+
+    <!-- About -->
+    <string name="about">Tentang</string>
+    <string name="about_us">Tentang Kami</string>
+    <string name="status">Status</string>
+    <string name="privacy_policy">Kebijakan Privasi</string>
+    <string name="terms_title">Ketentuan</string>
+    <string name="blog">Blog</string>
+    <string name="jobs">Pekerjaan</string>
+    <string name="software_licenses">Lisensi Perangkat Lunak</string>
+
+
+    <!-- ********** TV ************* -->
+
+    <!-- UPGRADE STRINGS -->
+    <string name="benefit_unlimited_data">Data Tak Terbatas</string>
+    <string name="choose_plan">PILIH PAKET</string>
+    <string name="monthly">BULANAN</string>
+    <string name="yearly">TAHUNAN - HEMAT 55%</string>
+    <string name="upgrade_title">Anda berhak mendapatkan lebih dari privasi terbatas.</string>
+    <string name="text_login">Masuk</string>
+    <string name="text_sign_up">Daftar</string>
+
+    <!-- Log -->
+    <string name="sending_debug_log">Mengirim log debut\nHarap tunggu…</string>
+    <string name="app_log_submitted">Terima kasih Log apl. dikirim.</string>
+    <string name="log_submission_failed">Gagal mengirim file log!</string>
+
+    <!-- Home -->
+    <string name="add_your_email_address">Tambahkan alamat email untuk antisipasi jika Anda lupa kata sandi. Kami bahkan akan memberi Anda 10GB.</string>
+    <string name="locations">lokasi</string>
+    <string name="notifications">Notifikasi</string>
+    <string name="support">Dukungan</string>
+    <string name="support_content">Buka alamat di atas pada ponsel atau komputer Anda untuk semua pertanyaan terkait bantuan.</string>
+    <string name="add_email_title">Tambahkan Email</string>
+
+    <!-- Upgrade -->
+    <string name="upgradeNoData">Sepertinya privasi berharga Anda sudah habis</string>
+    <string name="upgradeToUnlock">Anda berhak mendapatkan lebih dari privasi terbatas</string>
+    <string name="restore_purchase">Pulihkan pembelian</string>
+    <string name="servers_in_over_60_countries_and_110_cities">Server di lebih dari 60 negara dan 110 kota</string>
+    <string name="no_bandwidth_interruptions_stay_protected_forever">Tanpa gangguan bandwidth. Tetap terlindungi selamanya</string>
+
+
+    <string name="skip">Lewati</string>
+    <string name="robert_detail">Memblokir malware dan iklan pada semua perangkat Anda.</string>
+
+
+    <!-- Settings -->
+    <string name="settings">Pengaturan</string>
+    <string name="sort_type">Susun lokasi menurut</string>
+    <string name="split_routing">Split routing</string>
+    <string name="exclusive_mode">Eksklusif</string>
+    <string name="disabled">Mati</string>
+    <string name="apps_to_exclude">Apl. yang ingin dikecualikan</string>
+    <string name="apps_to_include">Apl. yang ingin dimasukkan</string>
+    <string name="lan_traffic">Lalu lintas LAN</string>
+    <string name="allow">Izinkan</string>
+    <string name="block">Blokir</string>
+    <string name="start_on_boot">Sambungkan Saat Menyala</string>
+    <string name="split_routing_content" translatable="false">Pilih aplikasi mana yang ingin dikecualikan atau dimasukkan dalam Windscribe saat tersambung</string>
+    <string name="show_system_apps">Tampilkan aplikasi sistem</string>
+
+    <!-- Login -->
+    <string name="login_label" translatable="false">Jika Anda sudah memiliki akun</string>
+    <string name="ghost_account_sign_up" translatable="false">Mendaftar atau masuk untuk melihat detail akun Anda dan melindungi preferensi Anda</string>
+    <string name="ghost_account_claim" translatable="false">Klaim akun Anda agar status pro tidak hilang</string>
+    <string name="claim_account" translatable="false">Klaim Akun</string>
+    <string name="reason_to_get_more_data" translatable="false">"Daftar untuk mendapatkan 10GB/Bulan, atau tingkatkan dan hilangkan batasan secara permanen. "</string>
+    <string name="sign_up_to_get_10" translatable="false">Daftar - 10GB/Bulan</string>
+    <string name="get_pro" translatable="false">Dapatkan Pro - Tak Terbatas</string>
+    <string name="add_email_pro" translatable="false">Tambahkan Email</string>
+    <string name="text_two_fa" translatable="false">2FA diperlukan untuk melanjutkan. Gunakan aplikasi otentikasi untuk membuat kodenya.</string>
+    <string name="free_reason_to_add_email" translatable="false">Harap tambahkan email Anda untuk mendapatkan 10GB/Bulan</string>
+    <string name="pro_reason_to_add_email" translatable="false">Harap tambahkan email Anda untuk melindungi akun</string>
+    <string name="confirm_email_title" translatable="false">Konfirmasikan Email</string>
+    <string name="back_uppercase" translatable="false">Kembali</string>
+    <string name="Error" translatable="false">Kesalahan</string>
+    <string name="text_account_set_up" translatable="false">Daftar</string>
+    <string name="xpress_login" translatable="false">Masuk Mudah</string>
+    <string name="web_login_description" translatable="false">Buka <b>https://windscribe.com/lazy</b> pada perangkat manapun dan masukkan kodenya di bawah ini.</string>
+    <string name="app_login_description" translatable="false">Dengan menggunakan aplikasi Windscribe untuk android di ponsel atau tablet, buka Preferensi (Kiri Atas), di bawah "Akun" pilih "Masuk Mudah" dan masukkan kode berikut.</string>
+    <string name="or" translatable="false">ATAU</string>
+    <string name="generate_code" translatable="false">Buat Kode</string>
+    <string name="manual_login" translatable="false">Masuk Manual</string>
+    <string name="keep_your_secrets">Jaga\nAnda Tetap Rahasia.</string>
+    <string name="reset_password_description">Harap kunjungi windscribe.com untuk mengatur ulang kata sandi Anda</string>
+    <string name="support_url">windscribe.com/support</string>
+    <string name="enter_code">Masukkan Kode</string>
+    <string name="enter">Masukkan</string>
+
+    <!-- Server list -->
+    <string name="ping_time">%d MS</string>
+    <string name="trying_next_protocol">"Mencoba protokol berikutnya dalam %d"</string>
+    <string name="all">Semua</string>
+    <string name="favourite">Favorit</string>
+    <string name="windflix">Windflix</string>
+    <string name="static_ip">IP Statis</string>
+    <string name="disconnect_alert_no_network" translatable="false">Tunnel VPN Windscribe dijeda karena tidak ada sambungan jaringan - harap periksa pengaturan jaringan Anda</string>
+    <string name="node_under_construction_text" translatable="false">Lokasi ini Sedang Dalam Pemeliharaan. Coba lagi nanti atau buka Halaman status untuk info selengkapnya https://windscribe.com/status</string>
+    <string name="load_loading" translatable="false">Memuat</string>
+    <string name="load_nothing_found" translatable="false">Tidak ada apa-apa di sini</string>
+    <string name="load_error" translatable="false">Gagal memuat.</string>
+    <string name="select_location">Harap pilih lokasi lebih dahulu!</string>
+
+    <!-- Actions -->
+    <string name="text_ok">OK</string>
+
+    <!--Robert -->
+    <string name="robert_description">R.O.B.E.R.T. merupakan domain server-side yang dapat disesuaikan dan pemblokir IP. Pilih daftar blokir yang ingin Anda terapkan pada semua perangkat Anda dengan mengaktifkan tombol.</string>
+    <string name="learn_more">Pelajari Selengkapnya</string>
+    <string name="manage_custom_rules">Kelola Aturan Kustom</string>
+    <string name="blocking">Memblokir</string>
+    <string name="allowing">Mengizinkan</string>
+</resources>
