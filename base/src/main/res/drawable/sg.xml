@@ -1,0 +1,19 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="500dp"
+    android:height="250dp"
+    android:viewportWidth="500.0"
+    android:viewportHeight="250.0">
+    <path
+        android:fillColor="#ED2939"
+        android:pathData="M0 0h500v250H0z" />
+    <path
+        android:fillColor="#FFF"
+        android:pathData="M93.74 105.91A46 46 0 1 1 96.34 19a43.5 43.5 0 0 0-2.6 86.91z" />
+    <path
+        android:fillColor="#FFF"
+        android:pathData="M85.18 63L79 58.26 72.82 63l2.38-7.65-6.2-4.7h7.65L79 43l2.35 7.66L89 50.64l-6.2 4.71zm48.99-0.08L128 58.2l-6.15 4.72 2.37-7.61-6.18-4.7 7.62 0.02 2.34-7.62 2.34 7.62 7.62-0.02-6.17 4.7zm-24-18L104 40.2l-6.15 4.72 2.37-7.61-6.18-4.7 7.62 0.02 2.34-7.62 2.34 7.62 7.62-0.02-6.17 4.7zm-16 47L88 87.2l-6.15 4.72 2.37-7.61-6.18-4.7 7.62 0.02L88 72.01l2.34 7.62 7.62-0.02-6.17 4.7zm31 0L119 87.2l-6.15 4.72 2.37-7.61-6.18-4.7 7.62 0.02 2.34-7.62 2.34 7.62 7.62-0.02-6.17 4.7zM0 125h500v125H0z" />
+</vector>

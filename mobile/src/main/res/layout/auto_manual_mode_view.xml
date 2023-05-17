@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/margin_16"
+    android:id="@+id/auto_manual_mode_container"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/img_connection_mode_divider"
+        style="@style/PreferenceDivider"
+        android:layout_marginStart="0dp"
+        android:contentDescription="@string/image_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!--PROTOCOL -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_protocol"
+        style="@style/MenuItemContainer"
+        android:paddingStart="0dp"
+        android:paddingEnd="0dp"
+        android:layout_marginStart="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/img_connection_mode_divider">
+
+        <TextView
+            android:id="@+id/tv_protocol_label"
+            style="@style/MenuItemSpinnerLabel"
+            android:text="@string/protocol"
+            android:paddingStart="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
+
+        <ImageView
+            android:id="@+id/img_protocol_drop_down_btn"
+            style="@style/MenuDropDownIcon"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="@id/tv_current_protocol"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_current_protocol" />
+
+        <TextView
+            android:id="@+id/tv_current_protocol"
+            style="@style/MenuItemLabelThree"
+            app:layout_constraintBottom_toBottomOf="@id/tv_protocol_label"
+            app:layout_constraintEnd_toStartOf="@id/img_protocol_drop_down_btn"
+            app:layout_constraintRight_toLeftOf="@id/img_protocol_drop_down_btn"
+            app:layout_constraintTop_toTopOf="@id/tv_protocol_label" />
+
+        <Spinner
+            android:id="@+id/spinner_protocol"
+            style="@style/MenuSpinner"
+            android:layout_marginTop="@dimen/margin_8"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/img_connection_settings_divider"
+        style="@style/PreferenceDivider"
+        android:contentDescription="@string/image_description"
+        android:layout_marginStart="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_protocol" />
+
+
+    <!--PORT -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_port"
+        style="@style/MenuItemContainer"
+        android:layout_marginStart="0dp"
+        android:paddingStart="0dp"
+        android:paddingEnd="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/img_connection_settings_divider">
+
+        <TextView
+            android:id="@+id/tv_port_label"
+            style="@style/MenuItemSpinnerLabel"
+            android:text="@string/port"
+            android:paddingStart="0dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
+
+        <ImageView
+            android:id="@+id/img_port_drop_down_btn"
+            style="@style/MenuDropDownIcon"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintBottom_toBottomOf="@id/tv_current_port"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_current_port" />
+
+        <TextView
+            android:id="@+id/tv_current_port"
+            style="@style/MenuItemLabelThree"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="@id/tv_port_label"
+            app:layout_constraintEnd_toStartOf="@id/img_port_drop_down_btn"
+            app:layout_constraintRight_toLeftOf="@id/img_port_drop_down_btn"
+            app:layout_constraintTop_toTopOf="@id/tv_port_label" />
+
+        <Spinner
+            android:id="@+id/spinner_port"
+            style="@style/MenuSpinner"
+            android:layout_marginTop="@dimen/margin_8"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_port_label" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

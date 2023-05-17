@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.windscribe.mobile.gpsspoofing.fragments.GpsSpoofingStart">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginEnd="56dp"
+        android:layout_marginStart="56dp">
+
+        <ImageView
+            android:id="@+id/feature_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/image_description"
+            android:src="@drawable/ic_network_security_feature_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/feature_title"
+            style="@style/titleText"
+            android:layout_marginTop="@dimen/reg_32dp"
+            android:text="@string/gps_spoofing"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/feature_icon" />
+
+        <TextView
+            android:id="@+id/feature_explain"
+            style="@style/FeatureText"
+            android:layout_marginTop="@dimen/reg_16dp"
+            android:text="@string/gps_spoofing_explain"
+            android:textColor="?attr/wdSecondaryColor"
+            android:gravity="center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/feature_title" />
+
+        <TextView
+            android:id="@+id/start"
+            style="@style/NextButton"
+            android:layout_width="0dp"
+            android:layout_marginTop="@dimen/reg_32dp"
+            android:enabled="true"
+            android:text="@string/let_s_do_it"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/feature_explain" />
+
+        <TextView
+            android:id="@+id/back"
+            style="@style/NoBackgroundButtonBold"
+            android:layout_width="0dp"
+            android:layout_marginTop="@dimen/reg_16dp"
+            android:text="@string/back"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/start" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>

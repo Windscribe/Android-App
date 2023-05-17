@@ -1,0 +1,37 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+    compileSdkVersion rootProject.appCompiledSdk
+    defaultConfig {
+        minSdkVersion rootProject.appMinSdk
+        targetSdkVersion rootProject.appTargetSdk
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
+    }
+    namespace 'com.windscribe.test'
+}
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation project(path: ':base')
+    implementation "androidx.test:core:$coreVersion"
+    implementation "androidx.test:core-ktx:$coreVersion"
+    implementation "androidx.test.ext:junit:$extJUnitVersion"
+    implementation "androidx.test.ext:junit-ktx:$extJUnitVersion"
+    implementation "androidx.test:runner:$runnerVersion"
+    implementation 'androidx.test.ext:truth:' + rootProject.extTruthVersion
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
+    implementation "androidx.test.espresso:espresso-core:$espressoVersion"
+    implementation "androidx.test.espresso:espresso-intents:$espressoVersion"
+    implementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"
+    implementation 'com.squareup.rx.idler:rx2-idler:0.11.0'
+    implementation 'androidx.test:monitor:1.6.1'
+}

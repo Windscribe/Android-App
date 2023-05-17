@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/welcome_container"
+    style="@style/MatchMatchContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.windscribe.mobile.welcome.WelcomeActivity">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_50"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent=".50" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/image_description"
+        android:scaleType="fitXY"
+        android:src="@drawable/ws_splash" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/featureTabDots"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/reg_48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tabBackground="@drawable/tab_selector"
+        app:tabGravity="center"
+        app:tabIndicatorHeight="0dp"
+        app:tabMaxWidth="@dimen/reg_16dp" />
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/feature_pager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/featureTabDots" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/ic_background_overlay"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/guideline_50" />
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="UseCompoundDrawables">
+
+        <ImageView
+            android:id="@+id/logo"
+            style="@style/Logo"
+            android:layout_gravity="center"
+            android:contentDescription="@string/image_description" />
+
+        <TextView
+            style="@style/LogoText"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/margin_24" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/get_started_button"
+        style="@style/NextButton"
+        android:layout_marginBottom="@dimen/reg_16dp"
+        android:layout_marginEnd="@dimen/margin_48"
+        android:layout_marginStart="@dimen/margin_48"
+        android:enabled="true"
+        android:fontFamily="@font/ibm_plex_sans_regular"
+        android:text="@string/get_started"
+        android:textStyle="normal"
+        app:layout_constraintBottom_toTopOf="@id/loginButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/loginButton"
+        style="@style/NoBackgroundButtonBold"
+        android:layout_marginBottom="@dimen/margin_24"
+        android:text="@string/login"
+        app:layout_constraintBottom_toTopOf="@id/emergencyConnectButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/emergencyConnectButton"
+        android:layout_height="@dimen/reg_32dp"
+        android:layout_width="@dimen/reg_32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:src="@drawable/emergency_icon"
+        android:layout_marginBottom="@dimen/margin_24"
+        android:layout_gravity="center"
+        android:clickable="true"
+        android:background="@drawable/ripple_round"
+        android:contentDescription="@string/image_description"
+        android:focusable="true" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

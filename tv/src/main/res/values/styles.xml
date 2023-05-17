@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<resources>
+
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorBlack</item>
+        <item name="colorAccent">@color/colorWhite</item>
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="StyleNeonGreen" parent="ThemeOverlay.AppCompat.Light">
+        <item name="colorAccent">@color/sea_green</item>
+    </style>
+
+    <style name="BaseButtonStyle" parent="Widget.AppCompat.Button.Colored">
+        <item name="android:layout_width">@dimen/reg_150</item>
+        <item name="android:layout_height">@dimen/reg_50</item>
+    </style>
+
+    <style name="ButtonStyle" parent="BaseButtonStyle">
+        <item name="android:background">@color/ascent_color</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:layout_gravity">bottom|end</item>
+    </style>
+
+    <style name="overlay_screen" parent="@style/Theme.Transparent_custom" />
+
+    <style name="overlay_title" parent="TextAppearance.AppCompat">
+        <item name="android:layout_margin">@dimen/reg_24dp</item>
+        <item name="android:textColor">@color/colorWhite25</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="android:textSize">@dimen/text_size_48</item>
+    </style>
+
+    <style name="overlay_title_low_margin" parent="TextAppearance.AppCompat">
+        <item name="android:layout_marginStart">0dp</item>
+        <item name="android:layout_marginEnd">@dimen/reg_24dp</item>
+        <item name="android:layout_marginTop">18dp</item>
+        <item name="android:layout_marginBottom">@dimen/reg_24dp</item>
+        <item name="android:textColor">@color/colorWhite25</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="android:textSize">@dimen/text_size_48</item>
+    </style>
+
+    <style name="WindowAnimationTransition">
+        <item name="android:windowEnterAnimation">@anim/fade_in</item>
+        <item name="android:windowExitAnimation">@anim/fade_out</item>
+    </style>
+
+    <style name="preference_item_title" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/colorWhite24</item>
+        <item name="android:textSize">@dimen/text_size_16</item>
+        <item name="android:letterSpacing">.13</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="android:focusable">false</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="preference_item" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/colorWhite40</item>
+        <item name="android:textSize">@dimen/text_size_21</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:focusable">true</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:paddingStart">@dimen/reg_16dp</item>
+        <item name="android:paddingEnd">@dimen/reg_16dp</item>
+        <item name="android:paddingBottom">@dimen/reg_8dp</item>
+        <item name="android:paddingTop">@dimen/reg_8dp</item>
+        <item name="android:gravity">start|center_vertical</item>
+    </style>
+
+    <style name="preference_item_static" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:textSize">@dimen/text_size_21</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="android:focusable">false</item>
+    </style>
+
+    <style name="preference_item_static_end" parent="preference_item_static">
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:gravity">end|center_vertical</item>
+        <item name="android:focusable">false</item>
+
+    </style>
+
+    <style name="payment_feature_detail" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/colorWhite50</item>
+        <item name="android:textSize">@dimen/text_size_21</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:focusable">false</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:gravity">start</item>
+    </style>
+
+    <style name="payment_feature_item" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:textSize">@dimen/text_size_21</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="android:focusable">false</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:gravity">start|center_vertical</item>
+
+    </style>
+
+    <style name="Input_EditText">
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:textSize">21sp</item>
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:lines">1</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorControlHighlight">@color/colorBlue</item>
+        <item name="android:navigationBarColor">@color/colorBlack</item>
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="Theme.Transparent_custom" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:navigationBarColor">@color/colorBlack</item>
+        <item name="colorPrimaryDark">@android:color/transparent</item>
+    </style>
+
+    <style name="AppTheme.WindLauncher">
+        <item name="android:windowBackground">@drawable/launcher_background</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:navigationBarColor">@color/colorBlack</item>
+    </style>
+
+    <style name="CheckBox" parent="@android:style/Widget.CompoundButton.CheckBox">
+        <item name="colorControlHighlight">@color/colorWhite40</item>
+        <item name="colorControlActivated">@color/colorWhite40</item>
+        <item name="colorControlNormal">@color/colorWhite</item>
+    </style>
+
+    <style name="ButtonLabel">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/colorWhite50</item>
+        <item name="android:textSize">@dimen/text_size_16</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:text">@string/login_label</item>
+    </style>
+
+    <style name="LabelButton">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/colorWhite50</item>
+        <item name="android:textSize">21sp</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:text">Back</item>
+        <item name="android:focusable">true</item>
+        <item name="android:padding">8dp</item>
+    </style>
+
+    <style name="RoundedCornerButton">
+        <item name="android:layout_height">@dimen/reg_48dp</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/colorWhite50</item>
+        <item name="android:textSize">21sp</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:layout_marginEnd">@dimen/reg_40dp</item>
+        <item name="android:layout_marginStart">@dimen/reg_40dp</item>
+        <item name="android:text">Login</item>
+        <item name="android:background">@drawable/rounded_corner_button</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+        <item name="android:textColorHighlight">@color/colorWhite50</item>
+    </style>
+
+    <style name="ProgressBar">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:indeterminateTint">@color/colorWhite50</item>
+    </style>
+
+    <style name="ProgressText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:textColor">@color/colorWhite50</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:textSize">@dimen/text_size_16</item>
+        <item name="android:layout_marginTop">@dimen/reg_8dp</item>
+        <item name="android:paddingEnd">@dimen/reg_16dp</item>
+        <item name="android:paddingStart">@dimen/reg_16dp</item>
+        <item name="android:lineSpacingExtra">1sp</item>
+    </style>
+
+    <style name="WarningActionButton" parent="RoundedCornerButton">
+        <item name="android:layout_marginBottom">@dimen/reg_16dp</item>
+        <item name="android:enabled">true</item>
+        <item name="android:textColor">@color/colorWhite</item>
+    </style>
+
+    <style name="LargeRoundedButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">@dimen/reg_56</item>
+        <item name="android:background">@drawable/round_button_selector</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="android:textColor">@color/colorWhite50</item>
+        <item name="android:textSize">@dimen/text_size_16</item>
+    </style>
+
+    <style name="errorView">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/colorRed</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:focusable">false</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:padding">@dimen/reg_12dp</item>
+    </style>
+
+    <style name="dialog_button">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/reg_16dp</item>
+        <item name="android:background">@drawable/rounded_corner_button</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+        <item name="android:text">Back</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/colorWhite50</item>
+        <item name="android:textSize">@dimen/text_size_16</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="ShowPasswordCheckBox">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:textColor">@color/colorWhite50</item>
+        <item name="android:checked">false</item>
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:textSize">21sp</item>
+        <item name="android:buttonTint">@color/colorWhite50</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:button">@drawable/visibility_toggle_background</item>
+    </style>
+
+    <style name="LoginButtonStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/reg_56</item>
+        <item name="android:background">@drawable/login_main_btn_background</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="android:text">@string/login</item>
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:textSize">@dimen/text_size_16</item>
+    </style>
+
+    <style name="loginDescriptionStyle">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:textSize">21sp</item>
+        <item name="android:textColor">@color/colorWhite50</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="secretCodeStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">@font/ibm_plex_mono_regular</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:visibility">gone</item>
+        <item name="android:background">@drawable/secret_code_background</item>
+        <item name="android:paddingStart">58dp</item>
+        <item name="android:paddingEnd">58dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:letterSpacing">0.17</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="blinkt.dialog" parent="android:Theme.DeviceDefault.Light.Dialog" />
+
+</resources>

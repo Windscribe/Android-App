@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="0dp"
+        android:layout_marginStart="@dimen/margin_16"
+        android:layout_marginEnd="@dimen/margin_16"
+        >
+
+        <ImageView
+            android:id="@+id/top_background"
+            android:background="@drawable/top_corner_rounded_background"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/container"
+            />
+
+        <ImageView
+            android:id="@+id/bottom_background"
+            android:background="@drawable/bottom_corner_rounded_background_with_padding"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/container"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
+
+        <ImageView
+            android:id="@+id/clip_corner_background"
+            android:layout_width="match_parent"
+            android:layout_height="14dp"
+            android:layout_marginStart="@dimen/reg_2dp"
+            android:layout_marginEnd="@dimen/reg_2dp"
+            android:background="@drawable/bottom_corner_rounded_background"
+            app:layout_constraintStart_toStartOf="@id/container"
+            app:layout_constraintTop_toBottomOf="@id/container"
+            />
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/container"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="0dp"
+            android:paddingStart="@dimen/padding_16"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            >
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/barrier"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:orientation="horizontal"
+                app:layout_constraintGuide_begin="@dimen/margin_16"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                />
+
+            <ImageView
+                android:id="@+id/left_icon"
+                style="@style/MenuActionTitleIcon"
+                tools:reference="LeftIcon"
+                android:src="@drawable/ic_app_background"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/barrier"
+                app:layout_constraintTop_toTopOf="@id/barrier" />
+
+            <TextView
+                android:id="@+id/label"
+                style="@style/MenuItemLabelTwo"
+                android:text="@string/app_background"
+                android:paddingStart="@dimen/padding_16"
+                android:layout_marginTop="0dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:includeFontPadding="false"
+                app:layout_constraintBottom_toBottomOf="@id/barrier"
+                app:layout_constraintStart_toEndOf="@id/left_icon"
+                app:layout_constraintTop_toTopOf="@id/barrier" />
+
+            <ImageView
+                android:id="@+id/dropdown"
+                style="@style/MenuDropDownIcon"
+                android:paddingBottom="0dp"
+                android:paddingTop="0dp"
+                android:importantForAccessibility="no"
+                app:layout_constraintBottom_toBottomOf="@id/barrier"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/barrier" />
+
+            <TextView
+                android:id="@+id/current"
+                style="@style/MenuItemLabelThree"
+                android:paddingBottom="0dp"
+                android:paddingTop="0dp"
+                tools:text="Custom"
+                android:includeFontPadding="false"
+                android:importantForAccessibility="no"
+                app:layout_constraintEnd_toStartOf="@id/dropdown"
+                app:layout_constraintRight_toLeftOf="@id/dropdown"
+                app:layout_constraintBottom_toBottomOf="@id/barrier"
+                app:layout_constraintTop_toTopOf="@id/barrier" />
+
+            <Spinner
+                android:id="@+id/spinner"
+                style="@style/MenuSpinner"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:id="@+id/clickable_area"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/divider1"
+                app:layout_constraintStart_toStartOf="@id/current"
+                />
+
+            <ImageView
+                android:id="@+id/divider1"
+                style="@style/PreferenceDivider"
+                app:layout_constraintTop_toBottomOf="@id/label"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="@dimen/margin_16"
+                android:layout_marginStart="0dp"
+                />
+
+            <TextView
+                android:id="@+id/label1"
+                style="@style/MenuActionTitle"
+                android:textColor="?attr/wdPrimaryColor"
+                android:layout_width="wrap_content"
+                android:text="@string/disconnected_lower_case"
+                android:layout_marginStart="0dp"
+                android:fontFamily="@font/ibm_plex_sans_regular"
+                android:layout_marginTop="@dimen/margin_16"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/divider1" />
+
+            <TextView
+                android:id="@+id/first_item_title"
+                style="@style/MenuActionTitle"
+                android:layout_width="0dp"
+                tools:text="(1080x70)"
+                android:layout_marginStart="0dp"
+                android:fontFamily="@font/ibm_plex_sans_regular"
+                android:layout_marginTop="@dimen/margin_16"
+                app:layout_constraintStart_toEndOf="@id/label1"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintTop_toBottomOf="@id/divider1" />
+
+            <TextView
+                android:id="@+id/first_item_description"
+                style="@style/MenuActionTitle"
+                android:layout_width="0dp"
+                android:text="@string/file_path_will_show_here"
+                android:ellipsize="start"
+                android:singleLine="true"
+                android:gravity="left"
+                android:layout_marginStart="0dp"
+                android:fontFamily="@font/ibm_plex_sans_regular"
+                android:layout_marginTop="@dimen/margin_16"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/first_item_right_icon"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintTop_toBottomOf="@id/first_item_title" />
+
+            <ImageView
+                android:id="@+id/first_item_right_icon"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/first_item_description"
+                app:layout_constraintTop_toTopOf="@id/first_item_title"
+                android:layout_width="@dimen/reg_32dp"
+                android:layout_height="@dimen/reg_32dp"
+                android:padding="@dimen/padding_8"
+                android:rotationY="@integer/rtl_support_auto_mirror_flip"
+                android:background="@drawable/ripple_round"
+                android:scaleType="fitEnd"
+                app:srcCompat="@drawable/ic_edit_icon"
+                android:layout_marginRight="@dimen/reg_8dp"
+                android:layout_marginEnd="@dimen/reg_8dp"
+                />
+
+            <ImageView
+                android:id="@+id/divider2"
+                style="@style/PreferenceDivider"
+                app:layout_constraintTop_toBottomOf="@id/first_item_description"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="@dimen/margin_16"
+                android:layout_marginStart="0dp"
+                />
+
+            <TextView
+                android:id="@+id/second_item_title"
+                style="@style/MenuActionTitle"
+                android:layout_width="0dp"
+                tools:text="(1080x70)"
+                android:fontFamily="@font/ibm_plex_sans_regular"
+                android:layout_marginTop="@dimen/margin_16"
+                android:layout_marginStart="0dp"
+                app:layout_constraintStart_toEndOf="@id/label2"
+                app:layout_constraintTop_toBottomOf="@id/divider2" />
+
+            <TextView
+                android:id="@+id/label2"
+                style="@style/MenuActionTitle"
+                android:layout_width="wrap_content"
+                android:text="@string/connected_lower_case"
+                android:textColor="?attr/wdPrimaryColor"
+                android:layout_marginStart="0dp"
+                android:fontFamily="@font/ibm_plex_sans_regular"
+                android:layout_marginTop="@dimen/margin_16"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/divider2" />
+
+            <TextView
+                android:id="@+id/second_item_description"
+                style="@style/MenuActionTitle"
+                android:layout_width="0dp"
+                android:text="@string/file_path_will_show_here"
+                android:ellipsize="start"
+                android:gravity="left"
+                android:singleLine="true"
+                android:layout_marginStart="0dp"
+                android:fontFamily="@font/ibm_plex_sans_regular"
+                android:layout_marginTop="@dimen/margin_16"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/second_item_right_icon"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintTop_toBottomOf="@id/second_item_title" />
+
+            <ImageView
+                android:id="@+id/second_item_right_icon"
+                android:layout_width="@dimen/reg_32dp"
+                android:layout_height="@dimen/reg_32dp"
+                android:padding="@dimen/padding_8"
+                android:rotationY="@integer/rtl_support_auto_mirror_flip"
+                android:background="@drawable/ripple_round"
+                android:scaleType="fitEnd"
+                app:srcCompat="@drawable/ic_edit_icon"
+                android:layout_marginRight="@dimen/reg_8dp"
+                android:layout_marginEnd="@dimen/reg_8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/second_item_description"
+                app:layout_constraintTop_toTopOf="@id/second_item_title" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:layout_marginTop="@dimen/reg_8dp"
+            android:id="@+id/description"
+            style="@style/MenuActionDescription"
+            android:layout_marginStart="@dimen/margin_16"
+            android:paddingBottom="@dimen/padding_16"
+            android:paddingTop="@dimen/padding_16"
+            android:layout_marginEnd="@dimen/margin_8"
+            android:text="@string/app_background_description"
+            app:layout_constraintStart_toStartOf="@id/container"
+            app:layout_constraintTop_toBottomOf="@id/container" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</merge>

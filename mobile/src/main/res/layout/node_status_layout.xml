@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/OverlayContainer">
+
+    <ImageView
+        android:id="@+id/nodeStatusGaryIcon"
+        style="@style/IconStyle"
+        android:src="@drawable/garry_con"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/nodeStatusTitle"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:ignore="DuplicateIncludedIds" />
+
+
+    <TextView
+        android:id="@+id/nodeStatusTitle"
+        style="@style/DialogTitle"
+        android:text="@string/under_maintenance"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <TextView
+        android:id="@+id/nodeStatusDescription"
+        style="@style/DialogDescription"
+        android:text="@string/check_status_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/nodeStatusTitle" />
+
+
+    <TextView
+        android:id="@+id/nodeStatusPrimaryButton"
+        style="@style/DialogPrimaryButton"
+        android:text="@string/check_status"
+        android:layout_marginBottom="@dimen/margin_32"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/nodeStatusSecondaryButton" />
+
+
+    <TextView
+        android:id="@+id/nodeStatusSecondaryButton"
+        style="@style/DialogSecondaryButton"
+        android:text="@string/back"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

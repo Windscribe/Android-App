@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/welcome_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusable="false"
+    tools:context="com.windscribe.tv.welcome.WelcomeActivity">
+
+
+    <include layout="@layout/keep_secrets_layout" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/right_container"
+        android:layout_width="368dp"
+        android:layout_height="match_parent"
+        android:background="@color/colorDeepBlue90"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/buttonLabel"
+            style="@style/ButtonLabel"
+            android:layout_marginTop="76dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <Button
+            android:id="@+id/continue_without_account"
+            style="@style/LoginButtonStyle"
+            android:layout_marginStart="@dimen/reg_40dp"
+            android:layout_marginEnd="@dimen/reg_40dp"
+            android:text="@string/get_started"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/login"
+            style="@style/LoginButtonStyle"
+            android:layout_marginStart="@dimen/reg_40dp"
+            android:layout_marginTop="@dimen/reg_16dp"
+            android:layout_marginEnd="@dimen/reg_40dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/continue_without_account"
+            app:layout_constraintVertical_bias="0.0" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

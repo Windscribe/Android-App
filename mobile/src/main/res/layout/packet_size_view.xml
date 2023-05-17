@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/packet_size_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/img_packet_size_settings_divider"
+        style="@style/PreferenceDivider"
+        android:contentDescription="@string/image_description"
+        android:layout_marginStart="@dimen/margin_16"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <!--PACKET SIZE OPTIONS -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_packet_size"
+        style="@style/MenuItemContainer"
+        android:layout_marginStart="16dp"
+        android:paddingStart="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/img_packet_size_settings_divider">
+
+
+        <EditText
+            android:id="@+id/edit_packet_size"
+            style="@style/transparentEditableText"
+            android:enabled="false"
+            android:gravity="start|center_vertical"
+            android:hint="@string/packet_size"
+            android:importantForAutofill="no"
+            android:inputType="number"
+            android:lines="1"
+            android:paddingStart="0dp"
+            android:maxLength="4"
+            android:maxLines="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
+
+        <TextView
+            android:id="@+id/edit_packet_progress"
+            style="@style/transparentEditableText"
+            android:enabled="false"
+            android:lines="1"
+            android:maxLines="1"
+            android:gravity="start"
+            android:text="@string/auto_detecting"
+            android:visibility="invisible"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/edit_packet_size"
+            app:layout_constraintBottom_toBottomOf="@id/edit_packet_size"
+            />
+
+        <ImageView
+            android:id="@+id/img_auto_fill_packet_size"
+            style="@style/IconStyle"
+            android:layout_marginEnd="@dimen/margin_8"
+            android:contentDescription="@string/image_description"
+            android:src="@drawable/ic_auto_detect_icon"
+            app:layout_constraintBottom_toBottomOf="@id/edit_packet_size"
+            app:layout_constraintEnd_toStartOf="@id/make_packet_size_editable"
+            app:layout_constraintTop_toTopOf="@id/edit_packet_size" />
+
+        <ProgressBar
+            android:id="@+id/progress_packet_size"
+            style="@style/SmallProgressCircle"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="@id/img_auto_fill_packet_size"
+            app:layout_constraintEnd_toStartOf="@id/make_packet_size_editable"
+            app:layout_constraintTop_toTopOf="@id/img_auto_fill_packet_size" />
+
+        <ImageView
+            android:id="@+id/make_packet_size_editable"
+            style="@style/IconStyle"
+            android:layout_marginEnd="@dimen/margin_8"
+            android:contentDescription="@string/image_description"
+            android:src="@drawable/ic_edit_icon"
+            app:layout_constraintBottom_toBottomOf="@id/edit_packet_size"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/edit_packet_size" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
