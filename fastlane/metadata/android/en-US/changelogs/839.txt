@@ -1,7 +1,0 @@
-Change Log: (Staging)
-1. Capitalized Russian language label.
-2. Stop/Start decoy traffic from connection settings.
-3. Updated russian translation file.
-4. Updated upgrade menu info popups in russian .
-5. Max data use information.
-6. Traffic Multiplier dropdowns.

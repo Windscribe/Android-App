@@ -1,5 +1,0 @@
-1. New preference UI #114
-   (Some text may need rewording, Feature links are just placeholders.)
-2. Robert dynamic blocklist #133
-3. Google play payments not verifying in background #159
-4. New format for direct ip api calls.

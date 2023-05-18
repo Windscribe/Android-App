@@ -1,0 +1,3 @@
+* Added ECH fail-over for API.
+* Improved latency checks.
+* Improved translations from ML.

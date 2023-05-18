@@ -1,4 +1,0 @@
-* Fixed Auto secure.
-* Log export + permission issue.
-* Hide network name.
-* Check for username and password for OpenVPN custom configs.
