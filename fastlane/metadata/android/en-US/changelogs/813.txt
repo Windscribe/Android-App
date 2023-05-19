@@ -1,5 +1,0 @@
-Change Log:
-
-1. Fixed wireguard crash on Android 7 and below
-2. Fixed some dependency injection issues.
-3. Added force update to session worker on fresh start.
