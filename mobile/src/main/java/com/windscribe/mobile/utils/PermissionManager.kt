@@ -121,7 +121,7 @@ class PermissionManagerImpl(private val activity: AppCompatActivity) : Permissio
     private lateinit var backgroundPermissionRequest: PermissionRequest
 
     override fun isBackgroundPermissionGranted(): Boolean {
-        return backgroundPermissionRequest.isGranted(activity)
+        return ::backgroundPermissionRequest.isInitialized && backgroundPermissionRequest.isGranted(activity)
     }
 
     /**
