@@ -204,12 +204,17 @@ class AccountPresenterImpl @Inject constructor(
     }
 
     private fun setUserInfo(user: User) {
-        accountView.setActivityTitle(interactor.getResourceString(R.string.account))
+        accountView.setActivityTitle(interactor.getResourceString(R.string.my_account))
         if (user.isGhost) {
             accountView.setupLayoutForGhostMode(user.isPro)
         } else if (user.maxData != -1L) {
             accountView.setupLayoutForFreeUser(
                 interactor.getResourceString(R.string.upgrade_case_normal),
+                interactor.getThemeColor(R.attr.wdSecondaryColor)
+            )
+        } else if (user.isAlaCarteUnlimitedPlan) {
+            accountView.setupLayoutForPremiumUser(
+                interactor.getResourceString(R.string.a_la_carte_unlimited_plan),
                 interactor.getThemeColor(R.attr.wdSecondaryColor)
             )
         } else {
@@ -278,7 +283,7 @@ class AccountPresenterImpl @Inject constructor(
     private fun setExpiryOrResetDate(user: User) {
         val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         var date: String? = null
-        if (user.isPro && user.expiryDate != null) {
+        if ((user.isPro && user.expiryDate != null) || user.isAlaCarteUnlimitedPlan) {
             date = user.expiryDate
         } else if (user.resetDate != null) {
             date = user.resetDate
@@ -288,7 +293,7 @@ class AccountPresenterImpl @Inject constructor(
                 val lastResetDate = formatter.parse(date)
                 val c = Calendar.getInstance()
                 c.time = Objects.requireNonNull(lastResetDate)
-                if (!user.isPro) {
+                if (!user.isPro && user.isAlaCarteUnlimitedPlan.not()) {
                     c.add(Calendar.MONTH, 1)
                     val nextResetDate = c.time
                     accountView.setResetDate(

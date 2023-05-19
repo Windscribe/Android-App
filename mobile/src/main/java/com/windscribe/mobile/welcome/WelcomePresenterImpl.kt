@@ -174,9 +174,8 @@ class WelcomePresenterImpl @Inject constructor(
             welcomeView.prepareUiForApiCallStart()
             val loginMap = createLoginMap(username, password, twoFa)
             interactor.getCompositeDisposable().add(
-                interactor.getApiCallManager()
-                    .logUserIn(loginMap)
-                    .doOnSubscribe { welcomeView.updateCurrentProcess("Signing in...") }
+                interactor.getApiCallManager().logUserIn(loginMap)
+                    .doOnSubscribe { welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.signing_in)) }
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(
@@ -307,17 +306,15 @@ class WelcomePresenterImpl @Inject constructor(
         }
 
     private fun onAccountClaimSuccess(username: String) {
-        welcomeView.updateCurrentProcess("Getting session")
+        welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_session))
         interactor.getCompositeDisposable().add(
             interactor.getApiCallManager().getSessionGeneric(null)
                 .flatMapCompletable { sessionResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> ->
-                    Completable.fromSingle(
-                        Single.fromCallable {
-                            interactor.getUserRepository().reload(sessionResponse.dataClass, null)
-                            true
-                        })
-                }.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                    Completable.fromSingle(Single.fromCallable {
+                        interactor.getUserRepository().reload(sessionResponse.dataClass, null)
+                        true
+                    })
+                }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableCompletableObserver() {
                     override fun onComplete() {
                         welcomeView.gotoHomeActivity(true)
@@ -367,7 +364,7 @@ class WelcomePresenterImpl @Inject constructor(
     }
 
     private fun prepareLoginRegistrationDashboard(sessionMap: Map<String, String>) {
-        welcomeView.updateCurrentProcess("Getting session")
+        welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_session))
         interactor.getCompositeDisposable()
             .add(interactor.getApiCallManager().getSessionGeneric(sessionMap)
                 .flatMapCompletable { sessionResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> ->
@@ -388,9 +385,9 @@ class WelcomePresenterImpl @Inject constructor(
                         true
                     })
                 }.andThen(updateStaticIps())
-                .doOnComplete { welcomeView.updateCurrentProcess("Getting user credentials") }
+                .doOnComplete { welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_server_credentials)) }
                 .andThen(interactor.getConnectionDataUpdater().update())
-                .doOnComplete { welcomeView.updateCurrentProcess("Getting server list") }
+                .doOnComplete { welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_server_list)) }
                 .andThen(interactor.getServerListUpdater().update())
                 .andThen(Completable.fromAction {
                     interactor.getPreferenceChangeObserver().postCityServerChange()

@@ -6,9 +6,7 @@ package com.windscribe.mobile.connectionsettings
 import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
@@ -18,25 +16,20 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import butterknife.BindView
 import butterknife.OnClick
 import com.windscribe.mobile.R
-import com.windscribe.mobile.alert.AlwaysOnFragment.AlwaysOnDialogCallBack
-import com.windscribe.mobile.alert.ExtraDataUseWarningFragment
-import com.windscribe.mobile.alert.LocationPermissionRationale
-import com.windscribe.mobile.alert.PermissionRationaleListener
 import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.custom_view.preferences.*
 import com.windscribe.mobile.di.ActivityModule
+import com.windscribe.mobile.dialogs.*
 import com.windscribe.mobile.gpsspoofing.GpsSpoofingSettingsActivity
 import com.windscribe.mobile.networksecurity.NetworkSecurityActivity
 import com.windscribe.mobile.splittunneling.SplitTunnelingActivity
+import com.windscribe.mobile.utils.PermissionManager
 import com.windscribe.mobile.utils.UiUtil
-import com.windscribe.mobile.utils.UiUtil.isBackgroundLocationPermissionGranted
-import com.windscribe.mobile.utils.UiUtil.showBackgroundLocationPermissionAlert
 import com.windscribe.vpn.constants.FeatureExplainer
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
-class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, AlwaysOnDialogCallBack,
-    PermissionRationaleListener, ExtraDataUseWarningFragment.CallBack {
+class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, ExtraDataUseWarningDialogCallBack {
 
     private val logger = LoggerFactory.getLogger(TAG)
 
@@ -85,6 +78,9 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Alway
     @BindView(R.id.network_options_right_icon)
     lateinit var networkOptionsArrow: ImageView
 
+    @Inject
+    lateinit var permissionManager: PermissionManager
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,6 +91,7 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Alway
         logger.info("Setting up layout based on saved mode settings...")
         presenter.init()
         activityTitleView.text = getString(R.string.connection)
+        permissionManager.register(this)
     }
 
     override fun onStart() {
@@ -110,23 +107,6 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Alway
     override fun onDestroy() {
         presenter.onDestroy()
         super.onDestroy()
-    }
-
-    @OnClick(R.id.always_on_container)
-    fun clickOnAlwaysOn() {
-        logger.info("User clicked to always on..")
-        onGoToSettings()
-    }
-
-    override fun getLocationPermission(requestCode: Int) {
-        checkLocationPermission(R.id.connection_parent, requestCode)
-    }
-
-    override fun goToAppInfoSettings() {
-        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        val uri = Uri.fromParts("package", packageName, null)
-        intent.data = uri
-        startActivity(intent)
     }
 
     override fun gotoSplitTunnelingSettings() {
@@ -263,25 +243,29 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Alway
         onBackPressed()
     }
 
-    override fun onGoToSettings() {
-        val intent = Intent("android.net.vpn.SETTINGS")
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        if (intent.resolveActivity(packageManager) != null) {
-            startActivity(intent)
-        } else {
-            Toast.makeText(this, "VPN settings not found.", Toast.LENGTH_SHORT).show()
-        }
-    }
-
     @OnClick(R.id.split_tunnel_title, R.id.split_tunnel_status, R.id.split_tunnel_right_icon)
     fun onSplitTunnelingClick() {
         logger.info("User clicked on split tunneling...")
         presenter.onSplitTunnelingOptionClicked()
     }
 
+    @OnClick(R.id.open_always_setting)
+    fun openAlwaysVPNSettingsClick() {
+        logger.info("User clicked on open VPN Settings...")
+        goToSettings()
+    }
+
+    private fun goToSettings() {
+        val intent = Intent("android.net.vpn.SETTINGS")
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        }
+    }
+
     @OnClick(R.id.network_options_right_icon, R.id.network_options_title)
     fun onWhitelistClick() {
-        checkLocationPermission(R.id.connection_parent, REQUEST_LOCATION_PERMISSION)
+        presenter.onNetworkOptionsClick()
     }
 
     override fun openGpsSpoofSettings() {
@@ -292,30 +276,6 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Alway
         (packetSizeModeDropDownView.childView as PacketSizeView).packetSizeDetectionProgress(
             progress
         )
-    }
-
-    override fun permissionDenied(requestCode: Int) {
-        Toast.makeText(
-            this,
-            "Please provide location permission to access this feature.",
-            Toast.LENGTH_SHORT
-        ).show()
-    }
-
-    override fun permissionGranted(requestCode: Int) {
-        if (REQUEST_LOCATION_PERMISSION == requestCode) {
-            if (isBackgroundLocationPermissionGranted(this)) {
-                startActivity(NetworkSecurityActivity.getStartIntent(this))
-            } else {
-                showBackgroundLocationPermissionAlert(this)
-            }
-        } else if (requestCode == LOCATION_PERMISSION_FOR_SPOOF) {
-            if (isBackgroundLocationPermissionGranted(this)) {
-                presenter.onPermissionProvided()
-            } else {
-                showBackgroundLocationPermissionAlert(this)
-            }
-        }
     }
 
     override fun setAutoStartOnBootToggle(toggleDrawable: Int) {
@@ -367,23 +327,12 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Alway
         gpsToggleView.visibility = View.VISIBLE
     }
 
-    override fun showLocationRational(requestCode: Int) {
-        val locationPermissionRationale = LocationPermissionRationale()
-        if (!supportFragmentManager.isStateSaved && !locationPermissionRationale.isAdded) {
-            locationPermissionRationale.show(supportFragmentManager, null)
-        }
-    }
-
     override fun showToast(toastString: String) {
         Toast.makeText(this, toastString, Toast.LENGTH_SHORT).show()
     }
 
     override fun showExtraDataUseWarning() {
-        val extraDataUseWarningFragment = ExtraDataUseWarningFragment()
-        extraDataUseWarningFragment.showNow(
-            supportFragmentManager,
-            extraDataUseWarningFragment.javaClass.name
-        )
+        ExtraDataUseWarningDialog.show(this)
     }
 
     override fun turnOnDecoyTraffic() {
@@ -418,8 +367,11 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Alway
         decoyTrafficToggleView.setToggleImage(toggleDrawable)
     }
 
+    override fun goToNetworkSecurity() {
+        startActivity(NetworkSecurityActivity.getStartIntent(this))
+    }
+
     companion object {
-        const val LOCATION_PERMISSION_FOR_SPOOF = 901
         private const val TAG = "conn_settings_a"
         fun getStartIntent(context: Context?): Intent {
             return Intent(context, ConnectionSettingsActivity::class.java)

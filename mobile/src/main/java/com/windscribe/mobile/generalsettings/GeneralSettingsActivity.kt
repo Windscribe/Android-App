@@ -194,7 +194,7 @@ class GeneralSettingsActivity : BaseActivity(), GeneralSettingsView {
         }
         appBackgroundDropDown.delegate = object : AppBackgroundView.Delegate {
             override fun onItemSelect(value: String) {
-                presenter.onCustomFlagToggleButtonClicked(value)
+                presenter.onAppBackgroundValueChanged(value)
             }
 
             override fun onFirstRightIconClick() {
@@ -290,27 +290,34 @@ class GeneralSettingsActivity : BaseActivity(), GeneralSettingsView {
         locationSelectionDropDown.setCurrentValue(selection)
     }
 
-    override fun setThemeTextView(theme: String) {
-        themeDropDown.setCurrentValue(theme)
-        reloadApp()
-    }
-
-    override fun setupCustomFlagAdapter(saved: String, options: Array<String>) {
-        appBackgroundDropDown.setAdapter(saved, options)
+    override fun setupCustomFlagAdapter(
+        localiseValues: Array<String>,
+        selectedKey: String,
+        keys: Array<String>
+    ) {
+        appBackgroundDropDown.setAdapter(localiseValues, selectedKey, keys)
     }
 
     override fun setupHapticToggleImage(ic_toggle_button_off: Int) {
         hapticToggle.setToggleImage(ic_toggle_button_off)
     }
 
-    override fun setupLanguageAdapter(savedLanguage: String, language: Array<String>) {
+    override fun setupLanguageAdapter(
+        localiseValues: Array<String>,
+        selectedKey: String,
+        keys: Array<String>
+    ) {
         logger.info("Setting up language adapter...")
-        languageDropDown.setAdapter(savedLanguage, language)
+        languageDropDown.setAdapter(localiseValues, selectedKey, keys)
     }
 
-    override fun setupLatencyAdapter(savedLatency: String, latencyTypes: Array<String>) {
+    override fun setupLatencyAdapter(
+        localiseValues: Array<String>,
+        selelctedKey: String,
+        keys: Array<String>
+    ) {
         logger.info("Setting up latency adapter...")
-        latencyDropDown.setAdapter(savedLatency, latencyTypes)
+        latencyDropDown.setAdapter(localiseValues, selelctedKey, keys)
     }
 
     override fun setupLocationHealthToggleImage(image: Int) {
@@ -321,14 +328,22 @@ class GeneralSettingsActivity : BaseActivity(), GeneralSettingsView {
         notificationToggle.setToggleImage(ic_toggle_button_off)
     }
 
-    override fun setupSelectionAdapter(savedSelection: String, selections: Array<String>) {
+    override fun setupSelectionAdapter(
+        localiseValues: Array<String>,
+        selectedKey: String,
+        keys: Array<String>
+    ) {
         logger.info("Setting up selection adapter...")
-        locationSelectionDropDown.setAdapter(savedSelection, selections)
+        locationSelectionDropDown.setAdapter(localiseValues, selectedKey, keys)
     }
 
-    override fun setupThemeAdapter(savedTheme: String, themeList: Array<String>) {
+    override fun setupThemeAdapter(
+        localiseValues: Array<String>,
+        selectedKey: String,
+        keys: Array<String>
+    ) {
         logger.info("Setting up theme adapter..")
-        themeDropDown.setAdapter(savedTheme, themeList)
+        themeDropDown.setAdapter(localiseValues, selectedKey, keys)
     }
 
     fun showToast(toastString: String) {
@@ -347,12 +362,10 @@ class GeneralSettingsActivity : BaseActivity(), GeneralSettingsView {
         } else false
     }
 
-    private fun reloadApp() {
-        TaskStackBuilder.create(this)
-            .addNextIntent(WindscribeActivity.getStartIntent(this))
+    override fun reloadApp() {
+        TaskStackBuilder.create(this).addNextIntent(WindscribeActivity.getStartIntent(this))
             .addNextIntent(MainMenuActivity.getStartIntent(this))
-            .addNextIntentWithParentStack(intent)
-            .startActivities()
+            .addNextIntentWithParentStack(intent).startActivities()
     }
 
     private fun uriToFile(fileUri: Uri): File? {

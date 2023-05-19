@@ -18,6 +18,7 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.model.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.await
 import org.slf4j.LoggerFactory
@@ -32,6 +33,8 @@ class UserRepository(
 ) {
     var user = MutableLiveData<User>()
     private val logger = LoggerFactory.getLogger("user_repo")
+    private val _userInfo = MutableSharedFlow<User>()
+    val userInfo = _userInfo
 
     init {
         logger.debug("Starting user repository.")
@@ -39,25 +42,28 @@ class UserRepository(
     }
 
     fun reload(
-        response: UserSessionResponse? = null,
-        callback: (suspend (user: User) -> Unit)? = null
+        response: UserSessionResponse? = null, callback: (suspend (user: User) -> Unit)? = null
     ) {
         scope.launch(Dispatchers.IO) {
             response?.let { it ->
                 serviceInteractor.preferenceHelper.saveResponseStringData(PreferencesKeyConstants.GET_SESSION, Gson().toJson(it))
                 val newUser = User(it)
                 user.postValue(newUser)
+                _userInfo.emit(newUser)
                 serviceInteractor.preferenceHelper.userStatus = if (newUser.isPro) 1 else 0
                 serviceInteractor.preferenceHelper.userName = newUser.userName
                 callback?.invoke(newUser)
             } ?: kotlin.run {
                 try {
                     logger.debug("Loading user info from cache")
-                    val cachedSessionResponse = serviceInteractor.preferenceHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
-                    val userSession = Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
+                    val cachedSessionResponse =
+                        serviceInteractor.preferenceHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
+                    val userSession =
+                        Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
                     user.postValue(User(userSession))
-                } catch (e: Exception) {
-                    logger.debug("Error loading user info: ${e.message}")
+                    _userInfo.emit(User(userSession))
+                } catch (ignored: Exception) {
+                    logger.debug("No user is logged in.")
                 }
             }
         }
@@ -66,11 +72,14 @@ class UserRepository(
     fun synchronizedReload(){
         try {
             logger.debug("Loading user info from cache")
-            val cachedSessionResponse = serviceInteractor.preferenceHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
-            val userSession = Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
+            val cachedSessionResponse =
+                serviceInteractor.preferenceHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
+            val userSession =
+                Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
             user.postValue(User(userSession))
-        } catch (e: Exception) {
-            logger.debug("Error loading user info: ${e.message}")
+            _userInfo.tryEmit(User(userSession))
+        } catch (ignored: Exception) {
+            logger.debug("No user is logged in.")
         }
     }
 

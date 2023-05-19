@@ -18,14 +18,16 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import butterknife.ButterKnife
 import com.windscribe.mobile.R
-import com.windscribe.mobile.alert.UnknownErrorAlert
-import com.windscribe.mobile.alert.UnknownErrorAlert.LoginAttemptFailedAlertInterface
 import com.windscribe.mobile.base.BaseActivity
-import com.windscribe.mobile.custom_view.ErrorFragment
-import com.windscribe.mobile.custom_view.ProgressFragment
 import com.windscribe.mobile.di.ActivityModule
 import com.windscribe.mobile.di.DaggerActivityComponent
+import com.windscribe.mobile.dialogs.ErrorDialog
+import com.windscribe.mobile.dialogs.ProgressDialog
+import com.windscribe.mobile.dialogs.UnknownErrorDialog
+import com.windscribe.mobile.dialogs.UnknownErrorDialogCallback
 import com.windscribe.mobile.welcome.fragment.*
+import com.windscribe.mobile.welcome.state.EmergencyConnectUIState
+import com.windscribe.mobile.welcome.viewmodal.EmergencyConnectViewModal
 import com.windscribe.mobile.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.constants.NetworkKeyConstants
@@ -33,11 +35,13 @@ import com.windscribe.vpn.constants.NetworkKeyConstants.getWebsiteLink
 import java.io.File
 import javax.inject.Inject
 
-class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
-    LoginAttemptFailedAlertInterface {
+class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView, UnknownErrorDialogCallback {
 
     @Inject
     lateinit var presenter: WelcomePresenter
+
+    @Inject
+    lateinit var emergencyConnectViewModal: Lazy<EmergencyConnectViewModal>
 
     private val requestLocationPermissionCode = 201
     private var softInputAssist: SoftInputAssist? = null
@@ -47,8 +51,7 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
         setContentView(R.layout.activity_welcome)
         DaggerActivityComponent.builder().activityModule(ActivityModule(this, this))
             .applicationComponent(
-                appContext
-                    .applicationComponent
+                appContext.applicationComponent
             ).build().inject(this)
         ButterKnife.bind(this)
         addStartFragment()
@@ -71,8 +74,7 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<String>, grantResults: IntArray
     ) {
         if (requestCode == requestLocationPermissionCode) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -101,14 +103,17 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
 
     override fun goToSignUp() {
         val signUpFragment = SignUpFragment.newInstance(false)
-        val direction = GravityCompat
-            .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
-        signUpFragment.enterTransition =
-            Slide(direction).addTarget(R.id.sign_up_container)
+        val direction = GravityCompat.getAbsoluteGravity(
+            GravityCompat.END, resources.configuration.layoutDirection
+        )
+        signUpFragment.enterTransition = Slide(direction).addTarget(R.id.sign_up_container)
         replaceFragment(signUpFragment, true)
     }
 
     override fun gotoHomeActivity(clearTop: Boolean) {
+        if (emergencyConnectViewModal.value.uiState.value != EmergencyConnectUIState.Disconnected) {
+            emergencyConnectViewModal.value.disconnect()
+        }
         val startIntent = Intent(this, WindscribeActivity::class.java)
         if (clearTop) {
             startIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -120,27 +125,19 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
     override fun hideSoftKeyboard() {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(
-            window.decorView.windowToken,
-            InputMethodManager.HIDE_NOT_ALWAYS
+            window.decorView.windowToken, InputMethodManager.HIDE_NOT_ALWAYS
         )
     }
 
     override fun launchShareIntent(file: File) {
         val fileUri = FileProvider.getUriForFile(
-            this,
-            "com.windscribe.vpn.provider",
-            file
+            this, "com.windscribe.vpn.provider", file
         )
-        ShareCompat.IntentBuilder.from(this)
-            .setType("*/*")
-            .setStream(fileUri).startChooser()
+        ShareCompat.IntentBuilder.from(this).setType("*/*").setStream(fileUri).startChooser()
     }
 
     override fun onAccountClaimButtonClick(
-        username: String,
-        password: String,
-        email: String,
-        ignoreEmptyEmail: Boolean
+        username: String, password: String, email: String, ignoreEmptyEmail: Boolean
     ) {
         presenter.startAccountClaim(username, password, email, ignoreEmptyEmail)
     }
@@ -166,12 +163,16 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
         presenter.startLoginProcess(username, password, twoFa)
     }
 
+    override fun onEmergencyClick() {
+        EmergencyConnectFragment.show(supportFragmentManager, R.id.fragment_container)
+    }
+
     override fun onLoginClick() {
         val loginFragment = LoginFragment()
-        val direction = GravityCompat
-            .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
-        loginFragment.enterTransition =
-            Slide(direction).addTarget(R.id.login_container)
+        val direction = GravityCompat.getAbsoluteGravity(
+            GravityCompat.END, resources.configuration.layoutDirection
+        )
+        loginFragment.enterTransition = Slide(direction).addTarget(R.id.login_container)
         replaceFragment(loginFragment, true)
     }
 
@@ -186,11 +187,7 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
             supportFragmentManager.popBackStack()
         }
         presenter.startSignUpProcess(
-            username,
-            password,
-            email,
-            referralUsername,
-            ignoreEmptyEmail
+            username, password, email, referralUsername, ignoreEmptyEmail
         )
     }
 
@@ -201,8 +198,9 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
     }
 
     override fun prepareUiForApiCallFinished() {
+        ProgressDialog.hide(this)
         val progressFragment = supportFragmentManager.findFragmentById(R.id.progress_container)
-        if (progressFragment is ProgressFragment || progressFragment is NoEmailAttentionFragment) {
+        if (progressFragment is NoEmailAttentionFragment) {
             supportFragmentManager.popBackStack()
         }
         val mainFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
@@ -212,19 +210,12 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
     }
 
     override fun prepareUiForApiCallStart() {
-        supportFragmentManager.findFragmentById(R.id.progress_container)?.let {
-            if (it !is ProgressFragment) {
-                ProgressFragment.getInstance().add(this, R.id.progress_container, true)
-            }
-        } ?: kotlin.run {
-            ProgressFragment.getInstance().add(this, R.id.progress_container, true)
-        }
+        ProgressDialog.show(this)
     }
 
     private fun replaceFragment(fragment: Fragment, addToBackStack: Boolean) {
-        val transaction = supportFragmentManager
-            .beginTransaction()
-            .replace(R.id.fragment_container, fragment)
+        val transaction =
+            supportFragmentManager.beginTransaction().replace(R.id.fragment_container, fragment)
         if (addToBackStack) {
             transaction.addToBackStack(fragment.javaClass.name)
         }
@@ -281,28 +272,23 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
     }
 
     override fun showError(error: String) {
-        ErrorFragment.getInstance().add(error, this, R.id.fragment_container, true)
+        ErrorDialog.show(this, error)
     }
 
     override fun showFailedAlert(error: String) {
-        runOnUiThread {
-            val unknownErrorAlert = UnknownErrorAlert.newInstance(error)
-            unknownErrorAlert.show(supportFragmentManager, "failed_login")
-        }
+        UnknownErrorDialog.show(this, error)
     }
 
     override fun showNoEmailAttentionFragment(
-        username: String, password: String, accountClaim: Boolean,
-        pro: Boolean
+        username: String, password: String, accountClaim: Boolean, pro: Boolean
     ) {
         val noEmailAttentionFragment =
             NoEmailAttentionFragment(accountClaim, username, password, pro)
-        noEmailAttentionFragment.enterTransition = Slide(Gravity.BOTTOM)
-            .addTarget(R.id.email_fragment_container)
+        noEmailAttentionFragment.enterTransition =
+            Slide(Gravity.BOTTOM).addTarget(R.id.email_fragment_container)
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, noEmailAttentionFragment)
-            .addToBackStack(noEmailAttentionFragment.javaClass.name)
-            .commit()
+            .addToBackStack(noEmailAttentionFragment.javaClass.name).commit()
     }
 
     override fun showToast(message: String) {
@@ -310,11 +296,9 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
     }
 
     override fun updateCurrentProcess(mCurrentCall: String) {
-        runOnUiThread {
-            val fragment = supportFragmentManager.findFragmentById(R.id.progress_container)
-            if (fragment is ProgressFragment) {
-                fragment.updateProgressStatus(mCurrentCall)
-            }
+        val fragment = supportFragmentManager.findFragmentByTag(ProgressDialog.tag)
+        if (fragment is ProgressDialog) {
+            fragment.updateProgressStatus(mCurrentCall)
         }
     }
 
@@ -341,10 +325,10 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView,
         bundle.putString("startFragmentName", startFragmentName)
         bundle.putBoolean("skipToHome", skipToHome)
         fragment.arguments = bundle
-        val direction = GravityCompat
-            .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
-        fragment.enterTransition =
-            Slide(direction).addTarget(R.id.welcome_container)
+        val direction = GravityCompat.getAbsoluteGravity(
+            GravityCompat.END, resources.configuration.layoutDirection
+        )
+        fragment.enterTransition = Slide(direction).addTarget(R.id.welcome_container)
         replaceFragment(fragment, false)
     }
 

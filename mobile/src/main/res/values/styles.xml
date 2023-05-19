@@ -232,6 +232,11 @@
 
     <style name="FullScreenDialog" parent="Theme.Transparent" />
 
+
+    <style name="FullScreenWithNoStatusBar" parent="FullScreenDialog">
+        <item name="android:statusBarColor">?attr/overlayContainerBackground</item>
+    </style>
+
     <style name="WrapWrapContainer">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -1005,7 +1010,7 @@
         <item name="android:textColor">?attr/requiredLabelColor</item>
         <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
         <item name="android:textSize">@dimen/text_size_16</item>
-        <item name="android:text">(Required)</item>
+        <item name="android:text">@string/required</item>
         <item name="android:includeFontPadding">false</item>
         <item name="android:layout_marginStart">4dp</item>
         <item name="android:layout_marginEnd">@dimen/margin_16</item>
@@ -1061,6 +1066,49 @@
         <item name="android:rotationY">@integer/rtl_support_auto_mirror_flip</item>
         <item name="android:src">@drawable/ic_modal_close_button</item>
     </style>
+
+
+    <style name="DialogTitle">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:textSize">@dimen/text_size_24</item>
+        <item name="android:textColor">?attr/warningTitleColor</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:layout_marginTop">@dimen/margin_32</item>
+        <item name="android:layout_marginStart">@dimen/reg_68dp</item>
+        <item name="android:layout_marginEnd">@dimen/reg_68dp</item>
+    </style>
+
+    <style name="DialogDescription">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:textSize">@dimen/text_size_16</item>
+        <item name="android:textColor">?attr/warningTextColor</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:layout_marginStart">@dimen/reg_68dp</item>
+        <item name="android:layout_marginEnd">@dimen/reg_68dp</item>
+        <item name="android:layout_marginTop">@dimen/margin_16</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="DialogPrimaryButton" parent="NextButton">
+        <item name="android:layout_marginTop">@dimen/margin_32</item>
+        <item name="android:enabled">true</item>
+    </style>
+
+    <style name="DialogSecondaryButton" parent="NoBackgroundButtonBold">
+        <item name="android:layout_marginTop">@dimen/margin_32</item>
+    </style>
+
+    <style name="DialogExplainer">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">@dimen/text_size_12</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textColor">?attr/wdSecondaryColor</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+    </style>
+
 
     <!-- OpenVPN -->
     <style name="blinkt.dialog" parent="android:Theme.DeviceDefault.Light.Dialog" />

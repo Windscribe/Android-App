@@ -6,7 +6,9 @@ package com.windscribe.vpn.backend
 
 import android.app.Activity
 import android.content.Context
+import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
@@ -14,6 +16,7 @@ import com.windscribe.vpn.commonutils.ThreadSafeList
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.exceptions.WindScribeException
+import com.windscribe.vpn.serverlist.entity.Node
 import com.wireguard.config.BadConfigException
 import com.wireguard.config.Config
 import inet.ipaddr.AddressStringException
@@ -182,37 +185,37 @@ object Util {
         val protocol1 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_IKev2,
             PreferencesKeyConstants.DEFAULT_IKEV2_PORT,
-            "IKEv2 is an IPsec based tunneling protocol.",
+            appContext.getString(R.string.iKEV2_description),
             ProtocolConnectionStatus.Disconnected
         )
         val protocol2 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_UDP,
             PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT,
-            "Balanced speed and security.",
+            appContext.getString(R.string.Udp_description),
             ProtocolConnectionStatus.Disconnected
         )
         val protocol3 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_TCP,
             PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT,
-            "Use it if OpenVPN UDP fails.",
+            appContext.getString(R.string.Tcp_description),
             ProtocolConnectionStatus.Disconnected
         )
         val protocol4 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_STEALTH,
             PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT,
-            "Disguises your traffic as HTTPS traffic with TLS",
+            appContext.getString(R.string.Stealth_description),
             ProtocolConnectionStatus.Disconnected
         )
         val protocol5 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_WIRE_GUARD,
             PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT,
-            "Extremely simple yet fast and modern VPN protocol.",
+            appContext.getString(R.string.Wireguard_description),
             ProtocolConnectionStatus.Disconnected
         )
         val protocol6 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_WS_TUNNEL,
             PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT,
-            "Wraps your HTTPS traffic with web sockets.",
+            appContext.getString(R.string.WSTunnel_description),
             ProtocolConnectionStatus.Disconnected
         )
         return ThreadSafeList<ProtocolInformation>().apply {
@@ -247,5 +250,32 @@ object Util {
             PreferencesKeyConstants.PROTO_WS_TUNNEL -> "WStunnel"
             else -> "IKEv2"
         }
+    }
+
+    /**
+     * @return Random node index based on weight ignoring the last attempted node.
+     */
+    fun getRandomNode(lastUsedIndex: Int, attempt: Int, nodes: List<Node>): Int {
+        if (nodes.size == 1) {
+            return 0
+        }
+        var index = getRandomNode(nodes)
+        while (lastUsedIndex == index && attempt > 0) {
+            index = getRandomNode(nodes)
+        }
+        return index
+    }
+
+    private fun getRandomNode(nodes: List<Node>): Int {
+        var bestNode = 0
+        var weightCounter = Math.random() * (nodes.sumOf { it.weight })
+        for (node in nodes) {
+            weightCounter += node.weight
+            if (weightCounter <= 0.0) {
+                break
+            }
+            bestNode = nodes.indexOf(node)
+        }
+        return bestNode
     }
 }

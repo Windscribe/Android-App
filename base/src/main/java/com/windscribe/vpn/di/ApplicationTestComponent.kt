@@ -4,9 +4,12 @@
 
 package com.windscribe.vpn.di
 
+import com.windscribe.vpn.Windscribe
 import dagger.Component
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [ApplicationTestModule::class])
-interface ApplicationTestComponent : ApplicationComponent
+@Component(modules = [ApplicationModule::class, TestNetworkModule::class, TestVPNModule::class, TestPersistentModule::class])
+interface ApplicationTestComponent : ApplicationComponent {
+    override fun inject(app: Windscribe)
+}

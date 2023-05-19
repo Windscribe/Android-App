@@ -19,9 +19,9 @@ import butterknife.OnClick
 import com.windscribe.mobile.R
 import com.windscribe.mobile.adapter.RobertSettingsAdapter
 import com.windscribe.mobile.base.BaseActivity
-import com.windscribe.mobile.custom_view.ErrorFragment
-import com.windscribe.mobile.custom_view.ProgressFragment
 import com.windscribe.mobile.di.ActivityModule
+import com.windscribe.mobile.dialogs.ErrorDialog
+import com.windscribe.mobile.dialogs.ProgressDialog
 import com.windscribe.mobile.utils.UiUtil
 import javax.inject.Inject
 
@@ -66,10 +66,7 @@ class RobertSettingsActivity : BaseActivity(), RobertSettingsView {
     }
 
     override fun hideProgress() {
-        val fragment = supportFragmentManager.findFragmentById(R.id.cl_robert)
-        if (fragment is ProgressFragment) {
-            fragment.finishProgress()
-        }
+        ProgressDialog.hide(this)
     }
 
     override fun openUrl(url: String) {
@@ -93,15 +90,15 @@ class RobertSettingsActivity : BaseActivity(), RobertSettingsView {
     }
 
     override fun showError(error: String) {
-        ErrorFragment.getInstance().add(error, this, R.id.cl_robert, false)
+        ErrorDialog.show(this, error)
     }
 
     override fun showErrorDialog(error: String) {
-        ErrorFragment.getInstance().add(error, this, R.id.cl_robert, true)
+        ErrorDialog.show(this, error)
     }
 
     override fun showProgress() {
-        ProgressFragment.getInstance().add(this, R.id.cl_robert, true)
+        ProgressDialog.show(this)
     }
 
     override fun showToast(message: String) {

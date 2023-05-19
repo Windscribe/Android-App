@@ -11,10 +11,12 @@ import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.ApiConstants.DEVICE_ID
 import com.windscribe.vpn.constants.ApiConstants.HOSTNAME
 import com.windscribe.vpn.constants.ApiConstants.WG_PUBLIC_KEY
+import com.windscribe.vpn.constants.ApiConstants.WG_TTL
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_WG_INVALID_PUBLIC_KEY
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_WG_UNABLE_TO_GENERATE_PSK
+import com.windscribe.vpn.constants.VpnPreferenceConstants
 import com.wireguard.crypto.Key
 import com.wireguard.crypto.KeyPair
 import io.reactivex.Single
@@ -135,7 +137,11 @@ class WgConfigRepository(val scope: CoroutineScope, val interactor: ServiceInter
     }
 
     private suspend fun wgConnect(hostname: String, userPublicKey: String, protect: Boolean): CallResult<WgConnectConfig> {
-        val params = mutableMapOf(Pair(HOSTNAME, hostname), Pair(WG_PUBLIC_KEY, userPublicKey))
+        val params = mutableMapOf(
+            Pair(HOSTNAME, hostname),
+            Pair(WG_PUBLIC_KEY, userPublicKey),
+            Pair(WG_TTL, VpnPreferenceConstants.WG_CONNECT_DEFAULT_TTL)
+        )
         if (interactor.preferenceHelper.isConnectingToStaticIp) {
             runCatching {
                 return@runCatching interactor.preferenceHelper.getDeviceUUID(interactor.preferenceHelper.userName)
@@ -152,7 +158,8 @@ class WgConfigRepository(val scope: CoroutineScope, val interactor: ServiceInter
                     interactor.apiManager.wgConnect(
                         mapOf(
                             Pair(HOSTNAME, hostname),
-                            Pair(WG_PUBLIC_KEY, userPublicKey)
+                            Pair(WG_PUBLIC_KEY, userPublicKey),
+                            Pair(WG_TTL, VpnPreferenceConstants.WG_CONNECT_DEFAULT_TTL)
                         ), protect
                     )
                 } else {

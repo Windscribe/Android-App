@@ -8,16 +8,16 @@ plugins {
     id("com.android.library")
     id("checkstyle")
     kotlin("android")
-    kotlin("android.extensions")
+   // kotlin("android.extensions")
 }
 
 android {
-    compileSdkVersion(31)
+    compileSdkVersion(33)
     ndkVersion = "23.0.7599858"
 
     defaultConfig {
-        minSdkVersion(14)
-        targetSdkVersion(31) // 'Q'.toInt()
+        minSdkVersion(21)
+        targetSdkVersion(33) // 'Q'.toInt()
 //        versionCode = 175
 //        versionName = "0.7.21"
 
@@ -54,6 +54,7 @@ android {
         getByName("release") {
         }*/
     }
+    flavorDimensions += listOf("implementation")
 
 /*    signingConfigs {
         create("release") {
@@ -89,7 +90,6 @@ android {
         }
     }
 */
-    flavorDimensions("implementation")
 
     productFlavors {
         /*
@@ -99,7 +99,7 @@ android {
         }
         */
         create("skeleton") {
-            setDimension("implementation")
+            dimension = "implementation"
             buildConfigField("boolean", "openvpn3", "false")
         }
     }
@@ -117,6 +117,7 @@ android {
             isUniversalApk = true
         }
     }
+    namespace = "de.blinkt.openvpn"
 }
 
 var swigcmd = "swig"

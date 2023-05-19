@@ -18,7 +18,6 @@ import butterknife.OnClick
 import com.windscribe.tv.R
 import com.windscribe.tv.listeners.SettingsFragmentListener
 import com.windscribe.tv.settings.SettingActivity
-import java.lang.ClassCastException
 
 class AccountFragment : Fragment() {
     enum class Status {
@@ -114,6 +113,7 @@ class AccountFragment : Fragment() {
                 confirmContainer?.visibility = View.GONE
                 emailContainer?.isFocusable = true
             }
+            else -> {}
         }
     }
 

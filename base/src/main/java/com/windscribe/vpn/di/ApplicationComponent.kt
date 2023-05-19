@@ -5,10 +5,7 @@ package com.windscribe.vpn.di
 
 import android.content.Context
 import com.windscribe.vpn.Windscribe
-import com.windscribe.vpn.api.AuthorizationGenerator
-import com.windscribe.vpn.api.IApiCallManager
-import com.windscribe.vpn.api.WindApiFactory
-import com.windscribe.vpn.api.WindCustomApiFactory
+import com.windscribe.vpn.api.*
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.TrafficCounter
@@ -32,7 +29,7 @@ import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [ApplicationModule::class])
+@Component(modules = [ApplicationModule::class, NetworkModule::class, VPNModule::class, PersistentModule::class])
 interface ApplicationComponent {
     //Main
     val coroutineScope: CoroutineScope
@@ -89,6 +86,9 @@ interface ApplicationComponent {
     val notificationRepository: NotificationRepository
     val userRepository: UserRepository
     val latencyRepository: LatencyRepository
+    val ipRepository: IpRepository
+    val favouriteRepository: FavouriteRepository
+    val emergencyConnectRepository: EmergencyConnectRepository
 
     //Inject
     fun inject(app: Windscribe)

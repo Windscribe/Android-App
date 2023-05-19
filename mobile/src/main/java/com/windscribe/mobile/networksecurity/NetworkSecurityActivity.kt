@@ -114,7 +114,13 @@ class NetworkSecurityActivity : BaseActivity(), NetworkSecurityView, NetworkAdap
         val protectionStatus = if (networkInfo.isAutoSecureOn) appContext
             .getText(R.string.network_secured)
             .toString() else appContext.getText(R.string.network_unsecured).toString()
+        currentNetworkProtection.visibility = View.VISIBLE
         currentNetworkProtection.text = protectionStatus
+    }
+
+    override fun hideCurrentNetwork(){
+        clCurrentNetwork.visibility = View.GONE
+        currentNetworkProtection.visibility = View.GONE
     }
 
     override fun onAdapterLoadFailed(showUpdate: String) {

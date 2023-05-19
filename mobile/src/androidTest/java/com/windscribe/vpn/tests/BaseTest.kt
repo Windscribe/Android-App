@@ -4,43 +4,40 @@
 
 package com.windscribe.vpn.tests
 
-import com.windscribe.test.BaseRobot
+import androidx.test.espresso.IdlingRegistry
+import androidx.test.espresso.idling.CountingIdlingResource
+import androidx.test.espresso.intent.Intents
 import com.windscribe.test.dispatcher.MockServerDispatcher
 import com.windscribe.vpn.Windscribe
-import com.windscribe.vpn.robots.HomeRobot
-import com.windscribe.vpn.robots.LoginRobot
-import com.windscribe.vpn.robots.SignUpRobot
+import com.windscribe.vpn.di.TestConfiguration
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
-import kotlin.reflect.KClass
-import kotlin.reflect.full.createInstance
 
 open class BaseTest {
 
-    val buildLoginRobot = robotRunner(LoginRobot::class)
-    val buildSignUpRobot = robotRunner(SignUpRobot::class)
-    val buildHomeRobot = robotRunner(HomeRobot::class)
-
-    private fun <T : BaseRobot> robotRunner(cls: KClass<T>) = { func: T.() -> Unit ->
-        cls.createInstance().apply {
-            func()
-        }
-    }
-
-    lateinit var mockServer: MockWebServer
+    private var mockServer: MockWebServer? = null
+    private var app = Windscribe.appContext.applicationComponent
+    var countingIdlingResource = CountingIdlingResource("countingResource")
 
     @Before
-    fun setUp() {
+    open fun setup() {
+        Intents.init()
+        IdlingRegistry.getInstance().register(countingIdlingResource)
         mockServer = MockWebServer()
-        mockServer.dispatcher = MockServerDispatcher.ResponseDispatcher()
-        mockServer.start(8080)
+        mockServer?.dispatcher = MockServerDispatcher.ResponseDispatcher()
+        mockServer?.start(8080)
     }
 
     @After
-    fun tearDown() {
-        mockServer.shutdown()
-        Windscribe.appContext.windscribeDatabase.clearAllTables()
-        Windscribe.appContext.preference.clearAllData()
+    open fun tearDown() {
+        Intents.release()
+        IdlingRegistry.getInstance().unregister(countingIdlingResource)
+        mockServer?.shutdown()
+    }
+
+    fun updatedUserConfiguration(testConfiguration: TestConfiguration = TestConfiguration()) {
+        testConfiguration.update(app.preferencesHelper)
+        app.userRepository.synchronizedReload()
     }
 }

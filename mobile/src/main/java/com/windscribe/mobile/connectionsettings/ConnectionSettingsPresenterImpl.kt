@@ -11,6 +11,7 @@ import android.net.LinkProperties
 import android.os.Build
 import androidx.core.content.ContextCompat
 import com.windscribe.mobile.R
+import com.windscribe.mobile.utils.PermissionManager
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.ActivityInteractorImpl.PortMapLoadCallback
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -42,8 +43,9 @@ import java.util.*
 import javax.inject.Inject
 
 class ConnectionSettingsPresenterImpl @Inject constructor(
-    private var connSettingsView: ConnectionSettingsView,
-    private var interactor: ActivityInteractor
+        private var connSettingsView: ConnectionSettingsView,
+        private var interactor: ActivityInteractor,
+        private val permissionManager: PermissionManager
 ) : ConnectionSettingsPresenter {
     private val logger = LoggerFactory.getLogger("con_settings_p")
     private var currentPoint = 1500
@@ -53,14 +55,14 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
             //Split tunnel is on
             logger.info("Split tunnel settings is ON")
             connSettingsView.setSplitTunnelText(
-                interactor.getResourceString(R.string.on),
-                interactor.getThemeColor(R.attr.wdActionColor)
+                    interactor.getResourceString(R.string.on),
+                    interactor.getThemeColor(R.attr.wdActionColor)
             )
         } else {
             logger.info("Split tunnel settings is OFF")
             connSettingsView.setSplitTunnelText(
-                interactor.getResourceString(R.string.off),
-                interactor.getThemeColor(R.attr.wdSecondaryColor)
+                    interactor.getResourceString(R.string.off),
+                    interactor.getThemeColor(R.attr.wdSecondaryColor)
             )
         }
         setAutoStartMenu()
@@ -144,14 +146,14 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
     private fun setDecoyTrafficParameters() {
         val multiplierOptions = getFakeTrafficVolumeOptions()
         val lowerLimit =
-            interactor.getAppPreferenceInterface().fakeTrafficVolume.name
+                interactor.getAppPreferenceInterface().fakeTrafficVolume.name
         connSettingsView.setupFakeTrafficVolumeAdapter(lowerLimit, multiplierOptions)
         resetPotentialTrafficInfo()
     }
 
     override fun onFakeTrafficVolumeSelected(label: String) {
         interactor.getAppPreferenceInterface().fakeTrafficVolume =
-            FakeTrafficVolume.valueOf(label)
+                FakeTrafficVolume.valueOf(label)
         resetPotentialTrafficInfo()
     }
 
@@ -174,10 +176,12 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
     }
 
     override fun onGpsSpoofingClick() {
-        if (isPermissionProvided) {
-            onPermissionProvided()
-        } else {
-            connSettingsView.getLocationPermission(ConnectionSettingsActivity.LOCATION_PERMISSION_FOR_SPOOF)
+        permissionManager.withBackgroundLocationPermission {error ->
+            if (error != null) {
+                logger.debug(error)
+            } else {
+                onPermissionProvided()
+            }
         }
     }
 
@@ -187,20 +191,32 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
 
     override fun onKeepAliveAutoModeClicked() {
         val keepAliveSizeModeAuto =
-            interactor.getAppPreferenceInterface().isKeepAliveModeAuto
+                interactor.getAppPreferenceInterface().isKeepAliveModeAuto
         if (!keepAliveSizeModeAuto) {
             interactor.getAppPreferenceInterface().isKeepAliveModeAuto = true
-            connSettingsView.setKeepAliveModeAdapter("Auto", arrayOf("Auto", "Manual"))
+            connSettingsView.setKeepAliveModeAdapter(
+                    interactor.getResourceString(R.string.auto),
+                    arrayOf(
+                            interactor.getResourceString(R.string.auto),
+                            interactor.getResourceString(R.string.manual)
+                    )
+            )
         }
     }
 
     override fun onKeepAliveManualModeClicked() {
         val keepAliveSizeModeAuto =
-            interactor.getAppPreferenceInterface().isKeepAliveModeAuto
+                interactor.getAppPreferenceInterface().isKeepAliveModeAuto
         if (keepAliveSizeModeAuto) {
             setKeepAlive(interactor.getAppPreferenceInterface().keepAlive)
             interactor.getAppPreferenceInterface().isKeepAliveModeAuto = false
-            connSettingsView.setKeepAliveModeAdapter("Manual", arrayOf("Auto", "Manual"))
+            connSettingsView.setKeepAliveModeAdapter(
+                    interactor.getResourceString(R.string.manual),
+                    arrayOf(
+                            interactor.getResourceString(R.string.auto),
+                            interactor.getResourceString(R.string.manual)
+                    )
+            )
         }
     }
 
@@ -211,7 +227,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
 
     override fun onPacketSizeAutoModeClicked() {
         val packetSizeModeAuto =
-            interactor.getAppPreferenceInterface().isPackageSizeModeAuto
+                interactor.getAppPreferenceInterface().isPackageSizeModeAuto
         if (!packetSizeModeAuto) {
             interactor.getAppPreferenceInterface().setPacketSizeModeToAuto(true)
         }
@@ -219,7 +235,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
 
     override fun onPacketSizeManualModeClicked() {
         val packetSizeModeAuto =
-            interactor.getAppPreferenceInterface().isPackageSizeModeAuto
+                interactor.getAppPreferenceInterface().isPackageSizeModeAuto
         if (packetSizeModeAuto) {
             interactor.getAppPreferenceInterface().setPacketSizeModeToAuto(false)
         }
@@ -227,7 +243,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
 
     override fun onPermissionProvided() {
         if (isAppSelectedInMockLocationList(appContext)
-            && isDevModeOn(appContext)
+                && isDevModeOn(appContext)
         ) {
             if (interactor.getAppPreferenceInterface().isGpsSpoofingOn) {
                 connSettingsView.setGpsSpoofingToggle(R.drawable.ic_toggle_button_off)
@@ -254,26 +270,32 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
                         logger.info("Saving selected IKev2 port...")
                         interactor.getAppPreferenceInterface().saveIKEv2Port(port)
                     }
+
                     PROTO_UDP -> {
                         logger.info("Saving selected udp port...")
                         interactor.saveUDPPort(port)
                     }
+
                     PROTO_TCP -> {
                         logger.info("Saving selected tcp port...")
                         interactor.saveTCPPort(port)
                     }
+
                     PROTO_STEALTH -> {
                         logger.info("Saving selected stealth port...")
                         interactor.saveSTEALTHPort(port)
                     }
+
                     PROTO_WS_TUNNEL -> {
                         logger.info("Saving selected ws tunnel port...")
                         interactor.saveWSTunnelPort(port)
                     }
+
                     PROTO_WIRE_GUARD -> {
                         logger.info("Saving selected wire guard port...")
                         interactor.getAppPreferenceInterface().saveWireGuardPort(port)
                     }
+
                     else -> {
                         logger.info("Saving default port (udp)...")
                         interactor.saveUDPPort(port)
@@ -356,7 +378,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
                 val savedProtocol = interactor.getSavedProtocol()
                 val savedConnectionMode = interactor.getSavedConnectionMode()
                 connSettingsView.setKeepAliveContainerVisibility(
-                    savedProtocol == PROTO_IKev2 && savedConnectionMode == CONNECTION_MODE_MANUAL
+                        savedProtocol == PROTO_IKev2 && savedConnectionMode == CONNECTION_MODE_MANUAL
                 )
                 setUpKeepAlive()
             }
@@ -365,33 +387,68 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
 
     fun setUpKeepAlive() {
         val isKeepAliveModeAuto =
-            interactor.getAppPreferenceInterface().isKeepAliveModeAuto
+                interactor.getAppPreferenceInterface().isKeepAliveModeAuto
         if (isKeepAliveModeAuto) {
-            connSettingsView.setKeepAliveModeAdapter("Auto", arrayOf("Auto", "Manual"))
+            connSettingsView.setKeepAliveModeAdapter(
+                    interactor.getResourceString(R.string.auto),
+                    arrayOf(
+                            interactor.getResourceString(R.string.auto),
+                            interactor.getResourceString(R.string.manual)
+                    )
+            )
         } else {
-            connSettingsView.setKeepAliveModeAdapter("Manual", arrayOf("Auto", "Manual"))
+            connSettingsView.setKeepAliveModeAdapter(
+                    interactor.getResourceString(R.string.manual),
+                    arrayOf(
+                            interactor.getResourceString(R.string.auto),
+                            interactor.getResourceString(R.string.manual)
+                    )
+            )
         }
         val keepAliveTime = interactor.getAppPreferenceInterface().keepAlive
         connSettingsView.setKeepAlive(keepAliveTime)
     }
 
     private fun setupLayoutBasedOnConnectionMode() {
-        setGpsSpoofingMenu()
-        val savedConnectionMode = interactor.getSavedConnectionMode()
-        connSettingsView.setupConnectionModeAdapter(
-            savedConnectionMode,
-            arrayOf("Auto", "Manual")
-        )
+        if (interactor.getSavedConnectionMode() == CONNECTION_MODE_AUTO) {
+            connSettingsView.setupConnectionModeAdapter(
+                    interactor.getResourceString(R.string.auto),
+                    arrayOf(
+                            interactor.getResourceString(R.string.auto),
+                            interactor.getResourceString(R.string.manual)
+                    )
+            )
+        } else {
+            connSettingsView.setupConnectionModeAdapter(
+                    interactor.getResourceString(R.string.manual),
+                    arrayOf(
+                            interactor.getResourceString(R.string.auto),
+                            interactor.getResourceString(R.string.manual)
+                    )
+            )
+        }
         setProtocolAdapter()
     }
 
     private fun setupPacketSizeMode() {
         val packetSizeModeAuto =
-            interactor.getAppPreferenceInterface().isPackageSizeModeAuto
+                interactor.getAppPreferenceInterface().isPackageSizeModeAuto
         if (packetSizeModeAuto) {
-            connSettingsView.setupPacketSizeModeAdapter("Auto", arrayOf("Auto", "Manual"))
+            connSettingsView.setupPacketSizeModeAdapter(
+                    interactor.getResourceString(R.string.auto),
+                    arrayOf(
+                            interactor.getResourceString(R.string.auto),
+                            interactor.getResourceString(R.string.manual)
+                    )
+            )
         } else {
-            connSettingsView.setupPacketSizeModeAdapter("Manual", arrayOf("Auto", "Manual"))
+            connSettingsView.setupPacketSizeModeAdapter(
+                    interactor.getResourceString(R.string.manual),
+                    arrayOf(
+                            interactor.getResourceString(R.string.auto),
+                            interactor.getResourceString(R.string.manual)
+                    )
+            )
         }
         val packetSize = interactor.getAppPreferenceInterface().packetSize
         connSettingsView.setPacketSize(packetSize.toString())
@@ -412,8 +469,8 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
                 selectedPortMap = selectedPortMap ?: portMapResponse.portmap[0]
                 if (selectedPortMap != null) {
                     connSettingsView.setupProtocolAdapter(
-                        selectedPortMap.heading,
-                        protocols.toTypedArray()
+                            selectedPortMap.heading,
+                            protocols.toTypedArray()
                     )
                     setPortMapAdapter(selectedPortMap.heading)
                 }
@@ -426,17 +483,17 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
         get() {
             // check network first
             if (interactor.getVpnConnectionStateManager().isVPNConnected()) {
-                connSettingsView.showToast("Disconnect from VPN")
+                connSettingsView.showToast(interactor.getResourceString(R.string.disconnect_from_vpn))
                 return
             }
             val manager = appContext
-                .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                    .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             if (manager.activeNetworkInfo == null || manager.activeNetworkInfo?.isConnected != true) {
-                connSettingsView.showToast("No Network Detected")
+                connSettingsView.showToast(interactor.getResourceString(R.string.no_network_detected))
                 return
             }
             connSettingsView.packetSizeDetectionProgress(true)
-            connSettingsView.setPacketSize("Auto detecting packet size...")
+            connSettingsView.setPacketSize(interactor.getResourceString(R.string.auto_detecting_packet_size))
             var prop: LinkProperties? = null
             val iFace: NetworkInterface
             val networks = manager.allNetworks
@@ -496,10 +553,10 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
     private val isPermissionProvided: Boolean
         get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             (ContextCompat
-                .checkSelfPermission(
-                    appContext,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                )
+                    .checkSelfPermission(
+                            appContext,
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                    )
                     == PackageManager.PERMISSION_GRANTED)
         } else {
             true
@@ -510,7 +567,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
         val runtime = Runtime.getRuntime()
         return try {
             val process = runtime
-                .exec("/system/bin/ping -c 2 -s $size -i 0.5 -W 3 -M do checkip.windscribe.com")
+                    .exec("/system/bin/ping -c 2 -s $size -i 0.5 -W 3 -M do checkip.windscribe.com")
             val inputStream = process.inputStream
             if (inputStream != null) {
                 IOUtils.toString(inputStream, StandardCharsets.UTF_8)
@@ -526,31 +583,31 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
 
     private fun repeatPing() {
         interactor.getCompositeDisposable()
-            .add(
-                Observable.fromCallable { ping(currentPoint) }.subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeWith(object : DisposableObserver<String>() {
-                        override fun onComplete() {
-                            dispose()
-                        }
+                .add(
+                        Observable.fromCallable { ping(currentPoint) }.subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribeWith(object : DisposableObserver<String>() {
+                                    override fun onComplete() {
+                                        dispose()
+                                    }
 
-                        override fun onError(e: Throwable) {
-                            showMtuFailed()
-                            dispose()
-                        }
+                                    override fun onError(e: Throwable) {
+                                        showMtuFailed()
+                                        dispose()
+                                    }
 
-                        override fun onNext(s: String) {
-                            if (isMtuSmallEnough(s)) {
-                                showMtuResult()
-                            } else {
-                                if (currentPoint > 10) {
-                                    currentPoint -= 10
-                                    repeatPing()
-                                }
-                            }
-                        }
-                    })
-            )
+                                    override fun onNext(s: String) {
+                                        if (isMtuSmallEnough(s)) {
+                                            showMtuResult()
+                                        } else {
+                                            if (currentPoint > 10) {
+                                                currentPoint -= 10
+                                                repeatPing()
+                                            }
+                                        }
+                                    }
+                                })
+                )
     }
 
     private fun setAutoStartMenu() {
@@ -568,7 +625,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
     private fun setGpsSpoofingMenu() {
         connSettingsView.showGpsSpoofing()
         if (!isAppSelectedInMockLocationList(appContext.applicationContext)
-            or !isDevModeOn(appContext) or !isPermissionProvided
+                or !isDevModeOn(appContext) or permissionManager.isBackgroundPermissionGranted().not()
         ) {
             interactor.getAppPreferenceInterface().setGpsSpoofing(false)
         }
@@ -593,7 +650,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
                 val savedProtocol = interactor.getSavedProtocol()
                 val savedConnectionMode = interactor.getSavedConnectionMode()
                 connSettingsView.setKeepAliveContainerVisibility(
-                    savedProtocol == PROTO_IKev2 && savedConnectionMode == CONNECTION_MODE_MANUAL
+                        savedProtocol == PROTO_IKev2 && savedConnectionMode == CONNECTION_MODE_MANUAL
                 )
             }
         })
@@ -602,14 +659,14 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
     private fun showMtuFailed() {
         connSettingsView.setPacketSize("")
         connSettingsView.packetSizeDetectionProgress(false)
-        connSettingsView.showToast("Auto packet size detection failed.")
+        connSettingsView.showToast(interactor.getResourceString(R.string.auto_package_size_detecting_failed))
         logger.info("Error getting optimal MTU size.")
     }
 
     private fun showMtuResult() {
         connSettingsView.setPacketSize(currentPoint.toString())
         interactor.getAppPreferenceInterface().packetSize = currentPoint
-        connSettingsView.showToast("Packet size detected successfully.")
+        connSettingsView.showToast(interactor.getResourceString(R.string.package_size_detected_successfully))
         connSettingsView.packetSizeDetectionProgress(false)
         currentPoint = 1500
     }
@@ -618,28 +675,38 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
         val trafficVolume = interactor.getAppPreferenceInterface().fakeTrafficVolume
         if (trafficVolume === FakeTrafficVolume.Low) {
             connSettingsView.setPotentialTrafficUse(
-                String.format(
-                    Locale.getDefault(),
-                    "%dMB/Hour",
-                    1737
-                )
+                    String.format(
+                            Locale.getDefault(),
+                            "%dMB/Hour",
+                            1737
+                    )
             )
         } else if (trafficVolume === FakeTrafficVolume.Medium) {
             connSettingsView.setPotentialTrafficUse(
-                String.format(
-                    Locale.getDefault(),
-                    "%dMB/Hour",
-                    6948
-                )
+                    String.format(
+                            Locale.getDefault(),
+                            "%dMB/Hour",
+                            6948
+                    )
             )
         } else {
             connSettingsView.setPotentialTrafficUse(
-                String.format(
-                    Locale.getDefault(),
-                    "%dMB/Hour",
-                    16572
-                )
+                    String.format(
+                            Locale.getDefault(),
+                            "%dMB/Hour",
+                            16572
+                    )
             )
+        }
+    }
+
+    override fun onNetworkOptionsClick() {
+        permissionManager.withBackgroundLocationPermission {error ->
+            if (error != null) {
+                logger.debug(error)
+            } else {
+                connSettingsView.goToNetworkSecurity()
+            }
         }
     }
 }

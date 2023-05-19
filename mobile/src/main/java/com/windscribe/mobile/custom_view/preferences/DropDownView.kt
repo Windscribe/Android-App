@@ -23,7 +23,7 @@ class DropDownView @JvmOverloads constructor(
     private var current: TextView? = null
     private val attributes: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.DropDownView)
     private val view: View = View.inflate(context, R.layout.drop_down_view, this)
-
+    private var keys: Array<String>? = null
     init {
         attributes.getString(R.styleable.DropDownView_DropDownDescription)?.let {
             view.findViewById<TextView>(R.id.description).text = it
@@ -44,26 +44,31 @@ class DropDownView @JvmOverloads constructor(
     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         view?.findViewById<TextView>(R.id.tv_drop_down)?. text = ""
         spinner?.selectedItem.toString().let {
-            delegate?.onItemSelect(it)
+            current?.text = it
+            delegate?.onItemSelect(keys?.get(position) ?: "")
         }
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {}
 
-    fun setCurrentValue(value: String){
+    fun setCurrentValue(value: String) {
         view.findViewById<TextView>(R.id.current).text = value
     }
 
-    fun setTitle(value: String){
+    fun setTitle(value: String) {
         view.findViewById<TextView>(R.id.label).text = value
     }
 
-    fun setAdapter(savedSelection: String, selections: Array<String>) {
-        val selectionAdapter: ArrayAdapter<String> = ArrayAdapter<String>(context, R.layout.drop_down_layout,
-                R.id.tv_drop_down, selections)
+    fun setAdapter(localiseValues: Array<String>, selectedKey: String, keys: Array<String>) {
+        this.keys = keys
+        val selectionAdapter: ArrayAdapter<String> = ArrayAdapter<String>(
+            context, R.layout.drop_down_layout, R.id.tv_drop_down, localiseValues
+        )
         spinner?.adapter = selectionAdapter
         spinner?.isSelected = false
-        spinner?.setSelection(selectionAdapter.getPosition(savedSelection))
-        current?.text = savedSelection
+        spinner?.setSelection(keys.indexOf(selectedKey))
+        if (keys.indexOf(selectedKey) != -1) {
+            current?.text = localiseValues[keys.indexOf(selectedKey)]
+        }
     }
 }

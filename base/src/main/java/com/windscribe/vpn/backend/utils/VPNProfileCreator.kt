@@ -27,6 +27,7 @@ import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_VALID_CONFIG_NOT_FOU
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.exceptions.InvalidVPNConfigException
 import com.windscribe.vpn.exceptions.WindScribeException
+import com.windscribe.vpn.model.OpenVPNConnectionInfo
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.WgConfigRepository
 import com.windscribe.vpn.repository.WgRemoteParams
@@ -367,7 +368,7 @@ class VPNProfileCreator @Inject constructor(
     suspend fun updateWireGuardConfig(config: Config): CallResult<Config> {
         val builder = Config.Builder()
         val serverPublicKey = config.peers[0].publicKey.toBase64()
-        val hostName = config.`interface`.addresses.first().address.hostName
+        val hostName = config.`interface`.addresses.first().address.hostAddress ?: ""
         val ip = config.peers[0].endpoint.get().host
         val port = config.peers[0].endpoint.get().port.toString()
         logger.debug("Requesting wg remote params.")
@@ -627,5 +628,28 @@ class VPNProfileCreator @Inject constructor(
             preferencesHelper.lastConnectedUsingSplit = false
             profile.selectedAppsHandling = SELECTED_APPS_DISABLE
         }
+    }
+
+    fun createOpenVPNProfile(openVPNConnectionInfo: OpenVPNConnectionInfo) {
+        val configParser = ConfigParser()
+        val reader = StringReader(openVPNConnectionInfo.serverConfig)
+        try {
+            configParser.parseConfig(reader)
+        } catch (e: Exception) {
+            throw e
+        }
+        val vpnProfile = configParser.convertProfile()
+        vpnProfile.mUsername = openVPNConnectionInfo.username
+        vpnProfile.mPassword = openVPNConnectionInfo.password
+        vpnProfile.writeConfigFile(
+            appContext,
+            openVPNConnectionInfo.base64EncodedServerConfig,
+            openVPNConnectionInfo.ip,
+            openVPNConnectionInfo.protocol,
+            openVPNConnectionInfo.port,
+            null,
+            null
+        )
+        saveProfile(vpnProfile)
     }
 }

@@ -59,11 +59,11 @@ class OverlayPresenterImp @Inject constructor(
         if (state == FavouriteState.Favourite) {
             logger.debug("Removed from favourites")
             removeFromFavourite(city.getId())
-            overlayView.showToast("Removed from favourites")
+            overlayView.showToast(interactor.getResourceString(R.string.remove_from_favourites))
         } else {
             addToFav(city.getId())
             logger.debug("Added to favourites")
-            overlayView.showToast("Added to favourites")
+            overlayView.showToast(interactor.getResourceString(R.string.added_to_favourites))
         }
     }
 
@@ -236,8 +236,10 @@ class OverlayPresenterImp @Inject constructor(
                             logger.debug("Favourite node loaded Successfully ")
                         } else {
                             overlayView.setState(
-                                LoadState.NoResult, R.drawable.ic_fav_nav_icon,
-                                R.string.load_nothing_found, 2
+                                LoadState.NoResult,
+                                R.drawable.ic_fav_nav_icon,
+                                R.string.load_nothing_found,
+                                2
                             )
                             logger.debug("No favourite nodes found.")
                         }
@@ -246,8 +248,10 @@ class OverlayPresenterImp @Inject constructor(
         )
     }
 
-    override fun allLocationViewReady() {
-        resetAllAdapter(interactor.getServerListUpdater().regions.value.toMutableList())
+    override suspend fun allLocationViewReady() {
+        interactor.getServerListUpdater().regions.collectLatest {
+            resetAllAdapter(it.toMutableList())
+        }
     }
 
     override fun favouriteViewReady() {
@@ -259,8 +263,10 @@ class OverlayPresenterImp @Inject constructor(
         interactor.getStaticListUpdater().load()
     }
 
-    override fun windLocationViewReady() {
-        resetWindAdapter(interactor.getServerListUpdater().regions.value.toMutableList())
+    override suspend fun windLocationViewReady() {
+        interactor.getServerListUpdater().regions.collectLatest {
+            resetWindAdapter(it.toMutableList())
+        }
     }
 
     override suspend fun observeStaticRegions() {

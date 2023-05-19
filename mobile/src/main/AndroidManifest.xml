@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.windscribe.mobile"
     tools:ignore="LockedOrientationActivity">
 
     <application
@@ -12,7 +11,7 @@
         android:roundIcon="@mipmap/ws_launcher"
         android:supportsRtl="false"
         android:theme="@style/DarkTheme"
-        tools:targetApi="m">
+        tools:targetApi="n">
         <activity
             android:name=".robert.RobertSettingsActivity"
             android:exported="false"

@@ -136,7 +136,7 @@ class DetailsPresenterImp(
 
                     override fun onSuccess(favourites: List<Favourite>) {
                         logger.debug("Removed from favourites.")
-                        detailView.showToast("Removed from favourites")
+                        detailView.showToast(interactor.getResourceString(R.string.remove_from_favourites))
                         detailViewAdapter?.setFavourites(favourites)
                     }
                 }))
@@ -157,7 +157,7 @@ class DetailsPresenterImp(
 
                 override fun onSuccess(favourites: List<Favourite>) {
                     logger.debug("Added to favourites.")
-                    detailView.showToast("Added to favourites")
+                    detailView.showToast(interactor.getResourceString(R.string.added_to_favourites))
                     detailViewAdapter?.setFavourites(favourites)
                 }
             })

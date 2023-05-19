@@ -402,6 +402,14 @@ class SettingsPresenterImp @Inject constructor(
             settingView.setupLayoutForPremiumUser(
                 interactor.getResourceString(R.string.plan_pro)
             )
+        } else if (user.isAlaCarteUnlimitedPlan) {
+            setExpiryOrResetDate(true, user.expiryDate)
+            settingView.setPlanName(
+                interactor.getResourceString(R.string.unlimited_data)
+            )
+            settingView.setupLayoutForPremiumUser(
+                interactor.getResourceString(R.string.a_la_carte_unlimited_plan)
+            )
         } else {
             settingView.setupLayoutForFreeUser(
                 interactor.getResourceString(R.string.upgrade_case_normal)
@@ -414,8 +422,7 @@ class SettingsPresenterImp @Inject constructor(
             } else {
                 val maxTrafficData: Long = user.maxData / UserStatusConstants.GB_DATA
                 settingView.setPlanName(
-                    maxTrafficData.toString() + interactor
-                        .getResourceString(R.string.gb_per_month)
+                    maxTrafficData.toString() + interactor.getResourceString(R.string.gb_per_month)
                 )
             }
         }
@@ -462,10 +469,9 @@ class SettingsPresenterImp @Inject constructor(
     }
 
     override fun setupLayoutForDebugTab() {
-        settingView.setDebugLogProgress("Loading logs..", "")
-        interactor.getCompositeDisposable().add(
-            Single.fromCallable { interactor.getPartialLog() }
-                .subscribeOn(Schedulers.io())
+        settingView.setDebugLogProgress(interactor.getResourceString(R.string.loading), "")
+        interactor.getCompositeDisposable()
+            .add(Single.fromCallable { interactor.getPartialLog() }.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableSingleObserver<List<String>>() {
                     override fun onError(e: Throwable) {
@@ -485,7 +491,11 @@ class SettingsPresenterImp @Inject constructor(
         // Setup language settings
         settingView.setupLanguageAdapter(savedLanguage, interactor.getLanguageList())
         val savedSort = interactor.getAppPreferenceInterface().selection
-        settingView.setupSortAdapter(savedSort, interactor.getSortList())
+        settingView.setupSortAdapter(
+            interactor.getStringArray(R.array.order_list),
+            savedSort,
+            interactor.getStringArray(R.array.order_list_keys)
+        )
     }
 
     override fun showLayoutBasedOnUserType() {

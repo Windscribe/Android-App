@@ -3,8 +3,10 @@
  */
 package com.windscribe.vpn.api
 
+import com.windscribe.vpn.api.response.Latency
 import io.reactivex.Single
 import okhttp3.ResponseBody
+import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
@@ -159,10 +161,27 @@ interface ApiService {
     @Streaming
     @FormUrlEncoded
     @POST("/")
-    fun sendDecoyTraffic(@FieldMap params: Map<String, String>?, @Header("Content-Type") contentType: String, @Header("X-DECOY-RESPONSE") xDecoyResponse: String ): Single<ResponseBody>
+    fun sendDecoyTraffic(
+        @FieldMap params: Map<String, String>?,
+        @Header("Content-Type") contentType: String,
+        @Header("X-DECOY-RESPONSE") xDecoyResponse: String
+    ): Single<ResponseBody>
 
     @Streaming
     @FormUrlEncoded
     @POST("/")
-    fun sendDecoyTraffic(@FieldMap params: Map<String, String>?, @Header("Content-Type") contentType: String): Single<ResponseBody>
+    fun sendDecoyTraffic(
+        @FieldMap params: Map<String, String>?, @Header("Content-Type") contentType: String
+    ): Single<ResponseBody>
+
+    @GET("/resolve")
+    @Headers("accept: application/dns-json")
+    fun getGoogleDOHTxtRecord(@QueryMap params: Map<String, String>?): Single<ResponseBody>
+
+    @GET("/dns-query")
+    @Headers("accept: application/dns-json")
+    fun getCloudflareTxtRecord(@QueryMap params: Map<String, String>?): Single<ResponseBody>
+
+    @GET("/latency")
+    suspend fun getLatency(): Response<Latency>
 }

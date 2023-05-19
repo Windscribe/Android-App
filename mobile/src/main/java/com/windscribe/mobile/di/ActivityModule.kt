@@ -4,9 +4,8 @@
 package com.windscribe.mobile.di
 
 import android.animation.ArgbEvaluator
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import com.windscribe.mobile.about.AboutPresenter
@@ -53,7 +52,6 @@ import com.windscribe.mobile.newsfeedactivity.NewsFeedView
 import com.windscribe.mobile.robert.RobertSettingsPresenter
 import com.windscribe.mobile.robert.RobertSettingsPresenterImpl
 import com.windscribe.mobile.robert.RobertSettingsView
-import com.windscribe.mobile.share.ShareAppLink
 import com.windscribe.mobile.splash.SplashPresenter
 import com.windscribe.mobile.splash.SplashPresenterImpl
 import com.windscribe.mobile.splash.SplashView
@@ -66,9 +64,12 @@ import com.windscribe.mobile.ticket.SendTicketView
 import com.windscribe.mobile.upgradeactivity.UpgradePresenter
 import com.windscribe.mobile.upgradeactivity.UpgradePresenterImpl
 import com.windscribe.mobile.upgradeactivity.UpgradeView
+import com.windscribe.mobile.utils.PermissionManager
+import com.windscribe.mobile.utils.PermissionManagerImpl
 import com.windscribe.mobile.welcome.WelcomePresenter
 import com.windscribe.mobile.welcome.WelcomePresenterImpl
 import com.windscribe.mobile.welcome.WelcomeView
+import com.windscribe.mobile.welcome.viewmodal.EmergencyConnectViewModal
 import com.windscribe.mobile.windscribe.WindscribePresenter
 import com.windscribe.mobile.windscribe.WindscribePresenterImpl
 import com.windscribe.mobile.windscribe.WindscribeView
@@ -89,7 +90,6 @@ import com.windscribe.vpn.workers.WindScribeWorkManager
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
-import javax.inject.Inject
 import javax.inject.Named
 
 @Module
@@ -258,8 +258,7 @@ class ActivityModule {
 
     @Provides
     fun provideConfirmEmailPresenter(
-        confirmEmailView: ConfirmEmailView,
-        activityInteractor: ActivityInteractor
+        confirmEmailView: ConfirmEmailView, activityInteractor: ActivityInteractor
     ): ConfirmEmailPresenter {
         return ConfirmEmailPresenterImp(confirmEmailView, activityInteractor)
     }
@@ -271,9 +270,10 @@ class ActivityModule {
 
     @Provides
     fun provideConnectionPresenter(
-        activityInteractor: ActivityInteractor
+        activityInteractor: ActivityInteractor,
+        permissionManager: PermissionManager
     ): ConnectionSettingsPresenter {
-        return ConnectionSettingsPresenterImpl(connectionSettingsView, activityInteractor)
+        return ConnectionSettingsPresenterImpl(connectionSettingsView, activityInteractor, permissionManager)
     }
 
     @Provides
@@ -432,9 +432,10 @@ class ActivityModule {
 
     @Provides
     fun provideWindscribePresenter(
-        activityInteractor: ActivityInteractor
+        activityInteractor: ActivityInteractor,
+        permissionManager: PermissionManager
     ): WindscribePresenter {
-        return WindscribePresenterImpl(windscribeView, activityInteractor)
+        return WindscribePresenterImpl(windscribeView, activityInteractor, permissionManager)
     }
 
     @Provides
@@ -450,6 +451,12 @@ class ActivityModule {
     @Provides
     fun providesActivityScope(): LifecycleCoroutineScope {
         return activity.lifecycleScope
+    }
+
+    @Provides
+    @PerActivity
+    fun providesPermissionManager(): PermissionManager {
+        return PermissionManagerImpl(activity)
     }
 
     @Provides
@@ -495,25 +502,20 @@ class ActivityModule {
             workManager,
             decoyTrafficController,
             trafficCounter,
-            autoConnectionManager,
-            latencyRepository
+            autoConnectionManager, latencyRepository
         )
     }
 
     @Provides
-    @PerActivity
-    fun providesCustomFragmentFactory(activityInteractor: ActivityInteractor): CustomFragmentFactory {
-        return CustomFragmentFactory(activityInteractor)
-    }
-
-    @PerActivity
-    class CustomFragmentFactory @Inject constructor(private val activityInteractor: ActivityInteractor) :
-        FragmentFactory() {
-        override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
-            return when (loadFragmentClass(classLoader, className)) {
-                ShareAppLink::class.java -> ShareAppLink.newInstance(activityInteractor)
-                else -> super.instantiate(classLoader, className)
-            }
+    fun providesEmergencyConnectViewModal(
+        scope: CoroutineScope,
+        windVpnController: WindVpnController,
+        vpnConnectionStateManager: VPNConnectionStateManager
+    ): Lazy<EmergencyConnectViewModal> {
+        return activity.viewModels {
+            return@viewModels EmergencyConnectViewModal.provideFactory(
+                scope, windVpnController, vpnConnectionStateManager
+            )
         }
     }
 }

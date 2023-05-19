@@ -30,9 +30,8 @@ class OpenVPNBackend(
     var networkInfoManager: NetworkInfoManager,
     vpnStateManager: VPNConnectionStateManager,
     var serviceInteractor: ServiceInteractor,
-) : VpnBackend(scope, vpnStateManager, serviceInteractor),
-    VpnStatus.StateListener,
-    VpnStatus.ByteCountListener {
+) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager),
+    VpnStatus.StateListener, VpnStatus.ByteCountListener {
 
     override var active = false
     private var stickyDisconnectEvent = false
@@ -68,6 +67,7 @@ class OpenVPNBackend(
     override suspend fun disconnect(error: VPNState.Error?) {
         this.error = error
         if (active) {
+            stickyDisconnectEvent = false
             vpnLogger.debug("Stopping Open VPN Service.")
             connectionJob?.cancel()
             startOpenVPN(OpenVPNService.PAUSE_VPN)

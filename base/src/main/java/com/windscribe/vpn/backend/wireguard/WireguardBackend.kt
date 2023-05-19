@@ -5,6 +5,12 @@
 package com.windscribe.vpn.backend.wireguard
 
 import android.content.Context
+import android.content.Context.CONNECTIVITY_SERVICE
+import android.net.ConnectivityManager
+import android.net.ConnectivityManager.NetworkCallback
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.Build
 import android.os.PowerManager
 import com.windscribe.vpn.ServiceInteractor
@@ -19,7 +25,6 @@ import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes.EXPIRED_OR_BANNED_ACCOUNT
-import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.DeviceStateManager
@@ -47,7 +52,7 @@ class WireguardBackend(
     val vpnProfileCreator: VPNProfileCreator,
     val userRepository: Lazy<UserRepository>,
     val deviceStateManager: DeviceStateManager
-) : VpnBackend(scope, vpnStateManager, serviceInteractor) {
+) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager) {
 
     var service: WireGuardWrapperService? = null
     var connectionStateJob: Job? = null
@@ -57,6 +62,24 @@ class WireguardBackend(
     private var healthJob: Job? = null
     override var active = false
     private val maxHandshakeTimeInSeconds = 180L
+    private val connectivityManager =
+        appContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+    private val powerManager = appContext.getSystemService(Context.POWER_SERVICE) as PowerManager
+    private val networkRequest =
+        NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build()
+    private val callback = object : NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            super.onAvailable(network)
+            vpnLogger.debug("Network found.")
+            healthJob?.cancel()
+            healthJob = scope.launch {
+                vpnLogger.debug(checkTunnelHealth().getOrElse { it.message })
+            }
+        }
+    }
+    private val isHealthServiceRunning
+        get() = healthJob?.isActive ?: false
 
     fun serviceCreated(vpnService: WireGuardWrapperService) {
         vpnLogger.debug("WireGuard service created.")
@@ -68,10 +91,8 @@ class WireguardBackend(
         service = null
     }
 
-    val testTunnel = WireGuardTunnel(
-            name = "windscribe-wireguard",
-            config = null,
-            state = DOWN
+    private val testTunnel = WireGuardTunnel(
+        name = "windscribe-wireguard", config = null, state = DOWN
     )
 
     private var stickyDisconnectEvent = false
@@ -161,55 +182,55 @@ class WireguardBackend(
         }
         connectionHealthJob = scope.launch {
             while (true) {
-                delay(1000 * 60)
-                vpnLogger.debug("Checking tunnel health.")
-                healthJob?.cancel()
-                healthJob = scope.launch { checkTunnelHealth() }
+                delay(1000 * 15)
+                if (isHealthServiceRunning.not()) {
+                    checkLastHandshake()
+                }
             }
         }
         deviceIdleJob = scope.launch {
             deviceStateManager.isDeviceInteractive.collectLatest {
                 if (it) {
-                    vpnLogger.debug("Device state changed: Checking tunnel health.")
-                    healthJob?.cancel()
-                    healthJob = scope.launch { checkLastHandshake() }
+                    if (isHealthServiceRunning.not()) {
+                        vpnLogger.debug("Device is active: Checking tunnel health.")
+                        checkLastHandshake()
+                    }
                 }
             }
         }
         appActivationJob = scope.launch {
             appContext.appLifeCycleObserver.appActivationState.collectIndexed { index, value ->
                 if (index > 0) {
-                    vpnLogger.debug("App state changed: Checking tunnel health.")
-                    healthJob?.cancel()
-                    healthJob = scope.launch { checkTunnelHealth() }
+                    if (isHealthServiceRunning.not()) {
+                        vpnLogger.debug("App is active: checking tunnel health.")
+                        checkLastHandshake()
+                    }
                 }
             }
         }
     }
 
-    private suspend fun checkLastHandshake() {
+    private fun checkLastHandshake() {
+        runCatching { connectivityManager.unregisterNetworkCallback(callback) }
         backend.handshakeNSecAgo()?.let { lastHandshakeTimeInSeconds ->
-            vpnLogger.debug("Last Wg handshake $lastHandshakeTimeInSeconds seconds ago")
-            if (active && WindUtilities.isOnline() && lastHandshakeTimeInSeconds > maxHandshakeTimeInSeconds && userRepository.get() != null && userRepository.get().user.value?.accountStatus == User.AccountStatus.Okay) {
-                checkTunnelHealth()
+            if (active && lastHandshakeTimeInSeconds > maxHandshakeTimeInSeconds) {
+                vpnLogger.debug("Last Wg handshake $lastHandshakeTimeInSeconds seconds ago Waiting for network.")
+                connectivityManager.requestNetwork(networkRequest, callback)
             }
-        } ?: kotlin.run {
-            vpnLogger.debug("Unable to get handshake time from wg binary..")
-        }
+        } ?: vpnLogger.debug("Unable to get handshake time from wg binary..")
     }
 
-    private suspend fun checkTunnelHealth() {
+    private suspend fun checkTunnelHealth(): Result<String> {
         vpnLogger.debug("Requesting new interface address.")
-        Util.getProfile<WireGuardVpnProfile>()?.content?.let {
+        return Util.getProfile<WireGuardVpnProfile>()?.content?.let {
             vpnLogger.debug("Creating config from saved params")
-            val pm = appContext.getSystemService(Context.POWER_SERVICE) as PowerManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 vpnLogger.debug(
-                    "Power options: Interactive:${pm.isInteractive} Power Save mode: ${pm.isPowerSaveMode} Ignore battery optimization: ${
-                        pm.isIgnoringBatteryOptimizations(
+                    "Power options: Interactive:${powerManager.isInteractive} Power Save mode: ${powerManager.isPowerSaveMode} Ignore battery optimization: ${
+                        powerManager.isIgnoringBatteryOptimizations(
                             appContext.packageName
                         )
-                    } Device Idle: ${pm.isDeviceIdleMode}"
+                    } Device Idle: ${powerManager.isDeviceIdleMode}"
                 )
             }
             try {
@@ -221,29 +242,30 @@ class WireguardBackend(
                             reconnecting = true
                             try {
                                 backend.setState(testTunnel, UP, response.data)
+                                return Result.success("updated wg state with new interface address.")
                             } catch (e: Exception) {
                                 reconnecting = false
-                                vpnLogger.debug("Failed to apply new config :${e.message} Trying reconnect.")
                                 appContext.vpnController.connectAsync()
+                                return Result.failure(e)
                             }
                         } else {
-                            vpnLogger.debug("Interface address unchanged.")
+                            return Result.success("interface address unchanged.")
                         }
                     }
                     is CallResult.Error -> {
-                        vpnLogger.debug("Failed to create wg params :$response")
                         when (response.code) {
                             EXPIRED_OR_BANNED_ACCOUNT -> {
                                 appContext.vpnController.disconnectAsync()
                             }
                             else -> {}
                         }
+                        return Result.failure(Exception(response.errorMessage))
                     }
                 }
-            }catch (e:Exception){
-                vpnLogger.debug("Failed to create wg params :${e.message}")
+            } catch (e: Exception) {
+                return Result.failure(e)
             }
-        }
+        } ?: return Result.failure(Exception("Failed to read wg profile from storage."))
     }
 
     private fun GoBackend.handshakeNSecAgo(): Long? {
