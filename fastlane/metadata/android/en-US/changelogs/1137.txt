@@ -1,6 +1,0 @@
-Wireguard ip now updates on network changes.
-Fixed duplicate network name bug in network options.
-Fixed favourites tab with no items to stil able refresh.
-Fixed able to forget in use networks.
-Fixed android 12 TV Stuck on loading.
-Many more minor ui issues fix.
