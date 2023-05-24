@@ -5,7 +5,6 @@
 package com.windscribe.vpn.workers
 
 import android.content.Context
-import android.content.pm.PackageManager
 import androidx.work.*
 import androidx.work.Constraints.Builder
 import androidx.work.ExistingPeriodicWorkPolicy.REPLACE
@@ -63,7 +62,7 @@ class WindScribeWorkManager(private val context: Context, private val scope: Cor
         foregroundSessionUpdateJob?.cancel()
     }
 
-    private fun createOneTimeWorkerRequest(workerClass: Class<out ListenableWorker>, data: Data = Data.EMPTY): OneTimeWorkRequest {
+    fun createOneTimeWorkerRequest(workerClass: Class<out ListenableWorker>, data: Data = Data.EMPTY): OneTimeWorkRequest {
         return OneTimeWorkRequest.Builder(workerClass)
                 .setBackoffCriteria(BackoffPolicy.LINEAR, 10, SECONDS)
                 .setInputData(data)
@@ -119,24 +118,6 @@ class WindScribeWorkManager(private val context: Context, private val scope: Cor
                 LatencyWorker::class.java
             )
         )
-    }
-
-    fun checkPendingAccountUpgrades() {
-        val pkgManager: PackageManager = context.packageManager
-        val installerPackageName = pkgManager.getInstallerPackageName(context.packageName)
-        if (installerPackageName != null && installerPackageName.startsWith("com.amazon")) {
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                PENDING_AMAZON_RECEIPT_WORKER_KEY,
-                ExistingWorkPolicy.REPLACE,
-                createOneTimeWorkerRequest(AmazonPendingReceiptValidator::class.java)
-            )
-        } else {
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                PENDING_GOGGLE_RECEIPT_WORKER_KEY,
-                ExistingWorkPolicy.REPLACE,
-                createOneTimeWorkerRequest(GooglePendingReceiptValidator::class.java)
-            )
-        }
     }
 
     fun updateSession(inputData: Data = Data.EMPTY) {
