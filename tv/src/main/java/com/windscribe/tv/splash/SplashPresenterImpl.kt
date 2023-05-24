@@ -125,7 +125,7 @@ class SplashPresenterImpl @Inject constructor(
             logger.info("Session auth hash present. User is already logged in...")
             if (WindUtilities.isOnline()) {
                 interactor.getWorkManager().updateNodeLatencies()
-                interactor.getWorkManager().checkPendingAccountUpgrades()
+                interactor.getReceiptValidator().checkPendingAccountUpgrades()
             }
             splashView.navigateToHome()
         } else {

@@ -25,6 +25,12 @@ android {
     }
     sourceSets {
         androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
+        fdroid {
+            main.jniLibs.srcDirs = ['/frdroid/src/libs', 'libs']
+        }
+        google {
+            main.jniLibs.srcDirs = ['/google/src/libs', 'libs']
+        }
     }
     packagingOptions {
         jniLibs {
@@ -56,17 +62,19 @@ android {
             }
         }
     }
-
-
+    flavorDimensions "dim"
+    productFlavors {
+        fdroid {
+            dimension = "dim"
+        }
+        google {
+            dimension = "dim"
+        }
+    }
 }
-/*
- * Copyright (c) 2021 Windscribe Limited.
- */
-
 
 dependencies {
     //Android
-    implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
     api "androidx.appcompat:appcompat:$appCompat"
     api "com.google.android.material:material:$material"
     api 'androidx.vectordrawable:vectordrawable:1.1.0'
@@ -84,10 +92,6 @@ dependencies {
     //VPN
     implementation project(path: ':openvpn')
     implementation project(path: ':strongswan')
-    // api 'com.wireguard.android:tunnel:1.0.20200407'
-    //Billing
-    api files('libs/in-app-purchasing-2.0.76.jar')
-    api 'com.android.billingclient:billing:5.0.0'
     //Rxjava
     api 'io.reactivex.rxjava2:rxandroid:2.1.1'
     api 'io.reactivex.rxjava2:rxjava:2.2.13'
@@ -108,8 +112,6 @@ dependencies {
     api "androidx.room:room-runtime:$room"
     kapt "androidx.room:room-compiler:$room"
     implementation "androidx.room:room-testing:$room"
-    // Push notifications
-    api "com.google.firebase:firebase-messaging:$fireBase"
     // Work manager
     api "androidx.work:work-runtime:$work_manager"
     api "androidx.work:work-rxjava2:$work_manager"
@@ -142,4 +144,10 @@ dependencies {
     implementation 'info.guardianproject.conscrypt:conscrypt-android:2.6.alpha1638179154.job1828169525'
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'commons-net:commons-net:3.6'
+    // Google only dependencies
+    googleApi "com.google.firebase:firebase-messaging:$fireBase"
+    googleApi files("$projectDir/src/google/libs/in-app-purchasing-2.0.76.jar")
+    googleApi 'com.android.billingclient:billing:5.0.0'
+    googleImplementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
+    fdroidImplementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
 }

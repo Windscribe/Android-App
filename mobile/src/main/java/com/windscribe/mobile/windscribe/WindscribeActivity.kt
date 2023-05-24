@@ -59,7 +59,6 @@ import com.windscribe.mobile.newsfeedactivity.NewsFeedActivity
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.utils.PermissionManager
 import com.windscribe.mobile.welcome.WelcomeActivity
-import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.ThemeUtils
 import com.windscribe.vpn.commonutils.WindUtilities
@@ -421,8 +420,8 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
             setLanguage()
             presenter.onHotStart()
         }
-        presenter.checkForWgIpChange();
-        appContext.workManager.checkPendingAccountUpgrades()
+        presenter.checkForWgIpChange()
+        presenter.checkPendingAccountUpgrades()
     }
 
     override fun onStop() {

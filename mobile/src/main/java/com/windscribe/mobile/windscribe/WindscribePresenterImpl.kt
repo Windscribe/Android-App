@@ -2285,4 +2285,8 @@ class WindscribePresenterImpl @Inject constructor(
                             })
         }
     }
+
+    override fun checkPendingAccountUpgrades() {
+        interactor.getReceiptValidator().checkPendingAccountUpgrades()
+    }
 }

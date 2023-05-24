@@ -39,6 +39,15 @@ android {
             manifestPlaceholders["networkSecurityConfig"] = "@xml/test_network_security_config"
         }
     }
+    flavorDimensions "dim"
+    productFlavors {
+        fdroid {
+            dimension = "dim"
+        }
+        google {
+            dimension = "dim"
+        }
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
