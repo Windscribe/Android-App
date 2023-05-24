@@ -91,4 +91,5 @@ interface WindscribePresenter {
     suspend fun showShareLinkDialog()
     fun onLocationSettingsChanged()
     fun checkForWgIpChange()
+    fun checkPendingAccountUpgrades()
 }

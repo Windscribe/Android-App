@@ -5,10 +5,8 @@ package com.windscribe.tv.welcome
 
 import android.text.TextUtils
 import android.util.Patterns
-import com.google.firebase.messaging.FirebaseMessaging
 import com.windscribe.tv.R
 import com.windscribe.vpn.ActivityInteractor
-import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.api.CreateHashMap.createClaimAccountMap
 import com.windscribe.vpn.api.CreateHashMap.createGhostModeMap
 import com.windscribe.vpn.api.CreateHashMap.createLoginMap
@@ -190,7 +188,9 @@ class WelcomePresenterImpl @Inject constructor(
                         ) {
                             response.dataClass?.let {
                                 interactor.getAppPreferenceInterface().sessionHash = it.sessionAuthHash
-                                setFireBaseDeviceToken
+                                interactor.getFireBaseManager().getFirebaseToken { session ->
+                                    prepareLoginRegistrationDashboard(session)
+                                }
                             } ?: response.errorClass?.let {
                                 logger.debug(it.errorMessage)
                                 welcomeView.prepareUiForApiCallFinished()
@@ -229,7 +229,9 @@ class WelcomePresenterImpl @Inject constructor(
                                     logger.info("Logged user in successfully...")
                                     welcomeView.updateCurrentProcess("Login successful...")
                                     interactor.getAppPreferenceInterface().sessionHash = it.sessionAuthHash
-                                    setFireBaseDeviceToken
+                                    interactor.getFireBaseManager().getFirebaseToken { session ->
+                                        prepareLoginRegistrationDashboard(session)
+                                    }
                                 } ?: response.errorClass?.let {
                                     logger.info("Login error...$it")
                                     onLoginResponseError(it, username, password)
@@ -285,7 +287,9 @@ class WelcomePresenterImpl @Inject constructor(
                                     logger.info("Sign up user successfully...")
                                     welcomeView.updateCurrentProcess("SignUp successful...")
                                     interactor.getAppPreferenceInterface().sessionHash = it.sessionAuthHash
-                                    setFireBaseDeviceToken
+                                    interactor.getFireBaseManager().getFirebaseToken { session ->
+                                        prepareLoginRegistrationDashboard(session)
+                                    }
                                 } ?: response.errorClass?.let {
                                     logger.info("SignUp Failed...$it")
                                     onLoginResponseError(it, username, password)
@@ -324,7 +328,9 @@ class WelcomePresenterImpl @Inject constructor(
                                 logger.debug("Successfully verified XPress login code.")
                                 val sessionAuth = it.sessionAuth
                                 interactor.getAppPreferenceInterface().sessionHash = sessionAuth
-                                setFireBaseDeviceToken
+                                interactor.getFireBaseManager().getFirebaseToken { session ->
+                                    prepareLoginRegistrationDashboard(session)
+                                }
                             }
                             invalidateLoginCode(startTime, xPressLoginCodeResponse)
                         }
@@ -337,25 +343,6 @@ class WelcomePresenterImpl @Inject constructor(
         return password.matches(pattern)
     }
 
-    // Get and set firebase device token
-    private val setFireBaseDeviceToken: Unit
-        get() {
-            val sessionMap: MutableMap<String, String> = java.util.HashMap()
-            if (BuildConfig.API_KEY.isEmpty()) {
-                prepareLoginRegistrationDashboard(sessionMap)
-            } else {
-                FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-                    if (!task.isSuccessful) {
-                        logger.debug("Failed to get token.")
-                    } else {
-                        val newToken = task.result
-                        logger.info("Received firebase device token: $newToken")
-                        sessionMap[NetworkKeyConstants.FIREBASE_DEVICE_ID_KEY] = newToken
-                    }
-                    prepareLoginRegistrationDashboard(sessionMap)
-                }
-            }
-        }
     private fun invalidateLoginCode(
         startTime: Long, xPressLoginCodeResponse: XPressLoginCodeResponse
     ) {

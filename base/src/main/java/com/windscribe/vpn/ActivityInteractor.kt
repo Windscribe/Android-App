@@ -17,9 +17,11 @@ import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.tables.*
 import com.windscribe.vpn.repository.*
 import com.windscribe.vpn.serverlist.entity.*
+import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.windscribe.vpn.services.ReceiptValidator
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import io.reactivex.Completable
 import io.reactivex.Flowable
@@ -135,4 +137,6 @@ interface ActivityInteractor {
     fun getAutoConnectionManager(): AutoConnectionManager
     fun getLatencyRepository(): LatencyRepository
     fun getStringArray(resourceId: Int): Array<String>
+    fun getReceiptValidator(): ReceiptValidator
+    fun getFireBaseManager(): FirebaseManager
 }
