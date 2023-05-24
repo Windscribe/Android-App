@@ -284,10 +284,10 @@ class WireguardBackend(
         val key = stats.peers().first()
         val timeInMills = stats.peer(key)?.latestHandshakeEpochMillis
         if (timeInMills != null) {
-            val wgDate = Date(timeInMills)
+            val handshakeDate = Date(timeInMills)
             val currentDate = Date()
-            val leftTime = currentDate.time - wgDate.time
-            return TimeUnit.SECONDS.convert(leftTime, TimeUnit.MILLISECONDS)
+            val diff = currentDate.time - handshakeDate.time
+            return TimeUnit.SECONDS.convert(diff, TimeUnit.MILLISECONDS)
         }
         return null
     }
