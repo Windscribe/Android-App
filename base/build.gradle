@@ -93,6 +93,7 @@ dependencies {
     implementation project(path: ':openvpn')
     implementation project(path: ':strongswan')
     api 'com.wireguard.android:tunnel:1.0.20230427'
+    implementation 'com.github.Windscribe:wstunnel:1.0.0'
     //Rxjava
     api 'io.reactivex.rxjava2:rxandroid:2.1.1'
     api 'io.reactivex.rxjava2:rxjava:2.2.13'
@@ -149,6 +150,4 @@ dependencies {
     googleApi "com.google.firebase:firebase-messaging:$fireBase"
     googleApi files("$projectDir/src/google/libs/in-app-purchasing-2.0.76.jar")
     googleApi 'com.android.billingclient:billing:5.0.0'
-    googleImplementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
-    fdroidImplementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
 }
