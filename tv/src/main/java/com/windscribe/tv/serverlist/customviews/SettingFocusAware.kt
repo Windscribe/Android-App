@@ -8,7 +8,6 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.Nullable
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.gms.common.util.ArrayUtils
 import com.windscribe.tv.R
 
 class SettingFocusAware : ConstraintLayout {
@@ -29,12 +28,8 @@ class SettingFocusAware : ConstraintLayout {
         context, attrs, defStyleAttr
     )
 
-    override fun focusSearch(@Nullable focused: View, direction: Int): View? {
-        return if (direction == FOCUS_LEFT && ArrayUtils.contains(
-                contentIds,
-                focused.id
-            )
-        ) {
+    override fun focusSearch(focused: View, direction: Int): View? {
+        return if (direction == FOCUS_LEFT && contentIds.contains(focused.id)) {
             findViewById(headerIds[currentFragment])
         } else {
             return super.focusSearch(focused, direction) ?: focused

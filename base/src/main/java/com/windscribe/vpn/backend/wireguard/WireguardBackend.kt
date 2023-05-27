@@ -31,27 +31,34 @@ import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.wireguard.android.backend.GoBackend
-import com.wireguard.android.backend.GoBackend.wgGetConfig
-import com.wireguard.android.backend.Tunnel.State.*
+import com.wireguard.android.backend.Tunnel.State.DOWN
+import com.wireguard.android.backend.Tunnel.State.TOGGLE
+import com.wireguard.android.backend.Tunnel.State.UP
 import dagger.Lazy
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
+
 @Singleton
 class WireguardBackend(
-    var backend: GoBackend,
-    var scope: CoroutineScope,
-    var networkInfoManager: NetworkInfoManager,
-    var vpnStateManager: VPNConnectionStateManager,
-    var serviceInteractor: ServiceInteractor,
-    val vpnProfileCreator: VPNProfileCreator,
-    val userRepository: Lazy<UserRepository>,
-    val deviceStateManager: DeviceStateManager
+        var backend: GoBackend,
+        var scope: CoroutineScope,
+        var networkInfoManager: NetworkInfoManager,
+        var vpnStateManager: VPNConnectionStateManager,
+        var serviceInteractor: ServiceInteractor,
+        val vpnProfileCreator: VPNProfileCreator,
+        val userRepository: Lazy<UserRepository>,
+        val deviceStateManager: DeviceStateManager
 ) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager) {
 
     var service: WireGuardWrapperService? = null
@@ -63,11 +70,11 @@ class WireguardBackend(
     override var active = false
     private val maxHandshakeTimeInSeconds = 180L
     private val connectivityManager =
-        appContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+            appContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
     private val powerManager = appContext.getSystemService(Context.POWER_SERVICE) as PowerManager
     private val networkRequest =
-        NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-            .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build()
+            NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                    .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build()
     private val callback = object : NetworkCallback() {
         override fun onAvailable(network: Network) {
             super.onAvailable(network)
@@ -92,7 +99,7 @@ class WireguardBackend(
     }
 
     private val testTunnel = WireGuardTunnel(
-        name = "windscribe-wireguard", config = null, state = DOWN
+            name = "windscribe-wireguard", config = null, state = DOWN
     )
 
     private var stickyDisconnectEvent = false
@@ -108,9 +115,11 @@ class WireguardBackend(
                             updateState(VPNState(Disconnected))
                         }
                     }
+
                     TOGGLE -> {
                         updateState(VPNState(Connecting))
                     }
+
                     UP -> {
                         testConnectivity()
                     }
@@ -226,11 +235,11 @@ class WireguardBackend(
             vpnLogger.debug("Creating config from saved params")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 vpnLogger.debug(
-                    "Power options: Interactive:${powerManager.isInteractive} Power Save mode: ${powerManager.isPowerSaveMode} Ignore battery optimization: ${
-                        powerManager.isIgnoringBatteryOptimizations(
-                            appContext.packageName
-                        )
-                    } Device Idle: ${powerManager.isDeviceIdleMode}"
+                        "Power options: Interactive:${powerManager.isInteractive} Power Save mode: ${powerManager.isPowerSaveMode} Ignore battery optimization: ${
+                            powerManager.isIgnoringBatteryOptimizations(
+                                    appContext.packageName
+                            )
+                        } Device Idle: ${powerManager.isDeviceIdleMode}"
                 )
             }
             try {
@@ -252,11 +261,13 @@ class WireguardBackend(
                             return Result.success("interface address unchanged.")
                         }
                     }
+
                     is CallResult.Error -> {
                         when (response.code) {
                             EXPIRED_OR_BANNED_ACCOUNT -> {
                                 appContext.vpnController.disconnectAsync()
                             }
+
                             else -> {}
                         }
                         return Result.failure(Exception(response.errorMessage))
@@ -269,16 +280,14 @@ class WireguardBackend(
     }
 
     private fun GoBackend.handshakeNSecAgo(): Long? {
-        if (currentTunnelHandle != -1) {
-            val config = wgGetConfig(currentTunnelHandle)
-            val lines = config?.split("\n")
-            val timeInSecondsPassed = lines?.firstOrNull {
-                it.startsWith("last_handshake_time_sec")
-            }?.split("=")?.get(1)?.toLong()
-            val currentTimeSeconds = TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-            return timeInSecondsPassed?.let {
-                currentTimeSeconds - it
-            }
+        val stats = getStatistics(testTunnel)
+        val key = stats.peers().first()
+        val timeInMills = stats.peer(key)?.latestHandshakeEpochMillis
+        if (timeInMills != null) {
+            val handshakeDate = Date(timeInMills)
+            val currentDate = Date()
+            val diff = currentDate.time - handshakeDate.time
+            return TimeUnit.SECONDS.convert(diff, TimeUnit.MILLISECONDS)
         }
         return null
     }

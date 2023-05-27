@@ -15,8 +15,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.multidex.MultiDexApplication
-import com.google.firebase.FirebaseApp
-import com.google.firebase.FirebaseOptions
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.FragmentType
@@ -24,12 +22,18 @@ import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.ikev2.CharonVpnServiceWrapper
 import com.windscribe.vpn.backend.ikev2.StrongswanCertificateManager.init
 import com.windscribe.vpn.backend.utils.WindVpnController
-import com.windscribe.vpn.billing.AmazonBillingManager
-import com.windscribe.vpn.billing.GoogleBillingManager
 import com.windscribe.vpn.constants.PreferencesKeyConstants
-import com.windscribe.vpn.di.*
+import com.windscribe.vpn.di.ActivityComponent
+import com.windscribe.vpn.di.ApplicationComponent
+import com.windscribe.vpn.di.ApplicationModule
+import com.windscribe.vpn.di.DaggerActivityComponent
+import com.windscribe.vpn.di.DaggerApplicationComponent
+import com.windscribe.vpn.di.DaggerServiceComponent
+import com.windscribe.vpn.di.ServiceComponent
+import com.windscribe.vpn.di.ServiceModule
 import com.windscribe.vpn.localdatabase.WindscribeDatabase
 import com.windscribe.vpn.mocklocation.MockLocationManager
+import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -61,30 +65,41 @@ open class Windscribe : MultiDexApplication() {
         val isTV: Boolean
         fun setTheme()
         fun launchFragment(
-            protocolInformationList: List<ProtocolInformation>,
-            fragmentType: FragmentType,
-            autoConnectionModeCallback: AutoConnectionModeCallback,
-            protocolInformation: ProtocolInformation? = null
+                protocolInformationList: List<ProtocolInformation>,
+                fragmentType: FragmentType,
+                autoConnectionModeCallback: AutoConnectionModeCallback,
+                protocolInformation: ProtocolInformation? = null
         ): Boolean
     }
 
     private val logger = LoggerFactory.getLogger("Windscribe")
     var activeActivity: AppCompatActivity? = null
     lateinit var applicationInterface: ApplicationInterface
+
     @Inject
     lateinit var preference: PreferencesHelper
+
     @Inject
     lateinit var appLifeCycleObserver: AppLifeCycleObserver
+
     @Inject
     lateinit var deviceStateManager: DeviceStateManager
+
     @Inject
     lateinit var workManager: WindScribeWorkManager
+
     @Inject
     lateinit var windscribeDatabase: WindscribeDatabase
+
+    @Inject
+    lateinit var firebaseManager: FirebaseManager
+
     @Inject
     lateinit var vpnConnectionStateManager: VPNConnectionStateManager
+
     @Inject
     lateinit var mockLocationManager: MockLocationManager
+
     @Inject
     lateinit var vpnController: WindVpnController
     lateinit var applicationComponent: ApplicationComponent
@@ -117,23 +132,12 @@ open class Windscribe : MultiDexApplication() {
         RxJavaPlugins.setErrorHandler { throwable: Throwable -> logger.info(throwable.toString()) }
         initStrongswan()
         if (BuildConfig.APP_ID.isNotEmpty()) {
-            FirebaseApp.initializeApp(this, FirebaseOptions.Builder()
-                .setGcmSenderId(BuildConfig.GCM_SENDER_ID)
-                .setApplicationId(BuildConfig.APP_ID)
-                .setProjectId(BuildConfig.PROJECT_ID)
-                .setApiKey(BuildConfig.API_KEY)
-                .build())
+            firebaseManager.initialise()
         }
         deviceStateManager.init(this)
         workManager.updateNodeLatencies()
         mockLocationManager.init()
     }
-
-    val amazonBillingManager: AmazonBillingManager
-        get() = AmazonBillingManager.getInstance(this)
-
-    val billingManager: GoogleBillingManager
-        get() = GoogleBillingManager.getInstance(this)
 
     private fun initStrongswan() {
         StrongSwanApplication.setContext(applicationContext)
@@ -142,29 +146,29 @@ open class Windscribe : MultiDexApplication() {
     }
 
     private fun languageToCode(language: String): String {
-        val firstIndex =  language.indexOfLast { it == "(".single() }
+        val firstIndex = language.indexOfLast { it == "(".single() }
         return language.substring(firstIndex + 1, language.length - 1)
     }
 
-    fun getAppSupportedSystemLanguage(): String{
+    fun getAppSupportedSystemLanguage(): String {
         val languageCode = if (VERSION.SDK_INT >= VERSION_CODES.N) {
             resources.configuration.locales.get(0).language
-        }else{
+        } else {
             resources.configuration.locale.language
         }
-        return appContext.resources.getStringArray(R.array.language).firstOrNull{
+        return appContext.resources.getStringArray(R.array.language).firstOrNull {
             languageCode == languageToCode(it)
-        }?: PreferencesKeyConstants.DEFAULT_LANGUAGE
+        } ?: PreferencesKeyConstants.DEFAULT_LANGUAGE
     }
 
-    fun getSavedLocale(): Locale{
+    fun getSavedLocale(): Locale {
         val selectedLanguage = appContext.preference.savedLanguage
-        val firstIndex =  selectedLanguage.indexOfLast { it == "(".single() }
+        val firstIndex = selectedLanguage.indexOfLast { it == "(".single() }
         val language = selectedLanguage.substring(firstIndex + 1, selectedLanguage.length - 1)
-        return if(language.contains("-")){
+        return if (language.contains("-")) {
             val splits = language.split("-")
             Locale(splits[0], splits[1])
-        }else{
+        } else {
             Locale(language)
         }
     }
@@ -172,15 +176,15 @@ open class Windscribe : MultiDexApplication() {
     private fun setUpNewInstallation() {
         if (preference.getResponseString(PreferencesKeyConstants.NEW_INSTALLATION) == null) {
             preference.saveResponseStringData(
-                PreferencesKeyConstants.NEW_INSTALLATION,
-                PreferencesKeyConstants.I_OLD
+                    PreferencesKeyConstants.NEW_INSTALLATION,
+                    PreferencesKeyConstants.I_OLD
             )
             // This will be true for legacy app but not beta version users
             if (preference.getResponseString(PreferencesKeyConstants.CONNECTION_STATUS) == null) {
                 // Only Recording for legacy to new version
                 preference.saveResponseStringData(
-                    PreferencesKeyConstants.NEW_INSTALLATION,
-                    PreferencesKeyConstants.I_NEW
+                        PreferencesKeyConstants.NEW_INSTALLATION,
+                        PreferencesKeyConstants.I_NEW
                 )
                 preference.removeResponseData(PreferencesKeyConstants.SESSION_HASH)
             }
@@ -193,20 +197,20 @@ open class Windscribe : MultiDexApplication() {
     private fun setupStrictMode() {
         if (VERSION.SDK_INT >= VERSION_CODES.O) {
             StrictMode.setThreadPolicy(
-                Builder()
-                    .detectAll()
-                    .permitDiskReads()
-                    .permitDiskWrites()
-                    .permitUnbufferedIo()
-                    .penaltyLog()
-                    .build()
+                    Builder()
+                            .detectAll()
+                            .permitDiskReads()
+                            .permitDiskWrites()
+                            .permitUnbufferedIo()
+                            .penaltyLog()
+                            .build()
             )
             StrictMode.setVmPolicy(
-                VmPolicy.Builder()
-                    .detectLeakedSqlLiteObjects()
-                    .detectLeakedClosableObjects().detectActivityLeaks().detectFileUriExposure()
-                    .detectLeakedRegistrationObjects().detectContentUriWithoutPermission()
-                    .penaltyLog().build()
+                    VmPolicy.Builder()
+                            .detectLeakedSqlLiteObjects()
+                            .detectLeakedClosableObjects().detectActivityLeaks().detectFileUriExposure()
+                            .detectLeakedRegistrationObjects().detectContentUriWithoutPermission()
+                            .penaltyLog().build()
             )
         }
     }
@@ -214,7 +218,7 @@ open class Windscribe : MultiDexApplication() {
     private fun setupConscrypt() {
         if (VERSION.SDK_INT >= VERSION_CODES.O) {
             Security.insertProviderAt(
-                Conscrypt.newProviderBuilder().defaultTlsProtocol("TLSv1.3").build(), 1
+                    Conscrypt.newProviderBuilder().defaultTlsProtocol("TLSv1.3").build(), 1
             )
             Security.removeProvider("AndroidOpenSSL")
         }
@@ -237,14 +241,14 @@ open class Windscribe : MultiDexApplication() {
 
     open fun getApplicationModuleComponent(): ApplicationComponent {
         return DaggerApplicationComponent.builder()
-            .applicationModule(ApplicationModule(this)).build()
+                .applicationModule(ApplicationModule(this)).build()
     }
 
     private fun serviceComponent(): ServiceComponent {
         return DaggerServiceComponent.builder()
-            .serviceModule(ServiceModule())
-            .applicationComponent(applicationComponent)
-            .build()
+                .serviceModule(ServiceModule())
+                .applicationComponent(applicationComponent)
+                .build()
     }
 
     override fun onLowMemory() {
@@ -258,8 +262,8 @@ open class Windscribe : MultiDexApplication() {
     }
 
     override fun onTrimMemory(level: Int) {
-        if(level > 60)
-        logger.debug("Device is asking for memory trim with level = $level.")
+        if (level > 60)
+            logger.debug("Device is asking for memory trim with level = $level.")
         super.onTrimMemory(level)
     }
 

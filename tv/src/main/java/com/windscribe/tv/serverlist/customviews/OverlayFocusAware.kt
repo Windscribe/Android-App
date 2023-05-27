@@ -7,7 +7,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.gms.common.util.ArrayUtils
 import com.windscribe.tv.R
 
 class OverlayFocusAware : ConstraintLayout {
@@ -32,12 +31,12 @@ class OverlayFocusAware : ConstraintLayout {
 
     override fun focusSearch(focused: View, direction: Int): View {
         var viewId: Int? = null
-        if (direction == FOCUS_LEFT && ArrayUtils.contains(contentIds, focused.id)) {
+        if (direction == FOCUS_LEFT && contentIds.contains(focused.id)) {
             if (nextFocusLeftId == -1) {
                 viewId = headerIds[currentFragment]
             }
         }
-        if (direction == FOCUS_RIGHT && ArrayUtils.contains(headerIds, focused.id)) {
+        if (direction == FOCUS_RIGHT && headerIds.contains(focused.id)) {
             if (nextFocusRightId == -1) {
                 viewId = contentIds[currentFragment]
             }
