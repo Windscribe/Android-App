@@ -6,8 +6,6 @@ package com.windscribe.mobile.welcome
 import android.text.TextUtils
 import android.util.Patterns
 import android.view.View
-import com.google.firebase.messaging.FirebaseMessaging
-import com.windscribe.mobile.BuildConfig
 import com.windscribe.mobile.R
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.api.CreateHashMap.createClaimAccountMap
@@ -159,7 +157,9 @@ class WelcomePresenterImpl @Inject constructor(
                         is CallResult.Success -> {
                             interactor.getAppPreferenceInterface().sessionHash =
                                 result.data.sessionAuthHash
-                            setFireBaseDeviceToken
+                            interactor.getFireBaseManager().getFirebaseToken { session ->
+                                prepareLoginRegistrationDashboard(session)
+                            }
                         }
                     }
                 }
@@ -210,7 +210,9 @@ class WelcomePresenterImpl @Inject constructor(
                                         welcomeView.updateCurrentProcess("Login successful...")
                                         interactor.getAppPreferenceInterface().sessionHash =
                                             result.data.sessionAuthHash
-                                        setFireBaseDeviceToken
+                                        interactor.getFireBaseManager().getFirebaseToken { session ->
+                                            prepareLoginRegistrationDashboard(session)
+                                        }
                                     }
                                 }
                             }
@@ -272,7 +274,9 @@ class WelcomePresenterImpl @Inject constructor(
                                 welcomeView.updateCurrentProcess("SignUp successful...")
                                 interactor.getAppPreferenceInterface().sessionHash =
                                     result.data.sessionAuthHash
-                                setFireBaseDeviceToken
+                                interactor.getFireBaseManager().getFirebaseToken { session ->
+                                    prepareLoginRegistrationDashboard(session)
+                                }
                             }
                         }
                     }
@@ -285,25 +289,6 @@ class WelcomePresenterImpl @Inject constructor(
         val pattern = Regex("(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}")
         return password.matches(pattern)
     }
-
-    private val setFireBaseDeviceToken: Unit
-        get() {
-            val sessionMap: MutableMap<String, String> = HashMap()
-            if (BuildConfig.API_KEY.isEmpty()) {
-                prepareLoginRegistrationDashboard(sessionMap)
-            } else {
-                FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-                    if (!task.isSuccessful) {
-                        logger.debug("Failed to get token.")
-                    } else {
-                        val newToken = task.result
-                        logger.info("Received firebase device token: $newToken")
-                        sessionMap[NetworkKeyConstants.FIREBASE_DEVICE_ID_KEY] = newToken
-                    }
-                    prepareLoginRegistrationDashboard(sessionMap)
-                }
-            }
-        }
 
     private fun onAccountClaimSuccess(username: String) {
         welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_session))
