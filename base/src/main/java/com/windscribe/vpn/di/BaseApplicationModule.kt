@@ -734,10 +734,11 @@ open class BaseApplicationModule {
     fun providesWindApiFactory(
             retrofitBuilder: Retrofit.Builder,
             httpBuilder: OkHttpClient.Builder,
-            protectedApiFactory: ProtectedApiFactory
+            protectedApiFactory: ProtectedApiFactory,
+            dnsResolver: WindscribeDnsResolver
     ): WindApiFactory {
         return WindApiFactory(
-                retrofitBuilder, httpBuilder, protectedApiFactory
+                retrofitBuilder, httpBuilder, dnsResolver, protectedApiFactory,
         )
     }
 
