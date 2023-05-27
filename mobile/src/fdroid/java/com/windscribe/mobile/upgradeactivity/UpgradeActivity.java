@@ -10,6 +10,7 @@ import android.os.Bundle;
 
 import com.windscribe.mobile.R;
 import com.windscribe.mobile.base.BaseActivity;
+import com.windscribe.mobile.dialogs.ErrorDialog;
 
 
 public class UpgradeActivity extends BaseActivity {
@@ -22,5 +23,6 @@ public class UpgradeActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentLayout(R.layout.activity_upgrade, false);
+        ErrorDialog.show(this, getString(R.string.billing_unavailable), null, true);
     }
 }
