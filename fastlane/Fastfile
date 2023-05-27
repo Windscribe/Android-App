@@ -43,6 +43,7 @@ end
   lane :buildAndSign do |options|
     gradle(
     task: options[:task],
+    flavor: "google",
     build_type: "Release",
     print_command: false
  )
@@ -51,6 +52,7 @@ end
  desc "Build debug apk"
    lane :buildAndDebug do
      gradle(task: "assemble",
+     flavor: "google",
      build_type: "Debug",
      print_command: false
   )
