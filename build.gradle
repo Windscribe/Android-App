@@ -6,8 +6,8 @@ project.ext {
     appTargetSdk = 33
     appCompiledSdk = 33
     appBuildTool = "33.0.2"
-    appVersionCode = 1201
-    appVersionName = "3.71"
+    appVersionCode = 1207
+    appVersionName = "3.72"
 
 }
 

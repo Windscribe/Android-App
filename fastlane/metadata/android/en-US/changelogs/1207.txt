@@ -1,0 +1,3 @@
+* Fdroid preparations.
+* Separate project in to flavours.
+* Removed proprietary dependencies.

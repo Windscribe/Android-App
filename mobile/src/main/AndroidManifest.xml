@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="LockedOrientationActivity"
-    android:versionCode="1201"
+    android:versionCode="1207"
     >
 
     <application
