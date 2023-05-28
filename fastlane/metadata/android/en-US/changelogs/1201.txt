@@ -1,0 +1,6 @@
+* Added Emergency connect.
+* Added ECH fail-over for API.
+* Improved latency checks.
+* Improved flow of requesting location permissions.
+* Improved translations from ML.
+* Fixed accidental duplicate tickets.

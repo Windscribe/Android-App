@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <solid android:color="@color/colorNeonGreen" />
+    <size
+        android:width="8dp"
+        android:height="8dp" />
+    <corners android:radius="4dp" />
+</shape>

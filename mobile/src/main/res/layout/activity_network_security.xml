@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout style="@style/MatchMatchContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <include layout="@layout/nav_bar" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/page_description"
+        android:textColor="?attr/wdSecondaryColor"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:layout_marginStart="@dimen/margin_16"
+        android:layout_marginTop="@dimen/margin_24"
+        android:gravity="left"
+        android:fontFamily="@font/ibm_plex_sans_regular"
+        android:text="@string/network_options_description"
+        android:background="@drawable/preference_rounded_stroke_background"
+        app:layout_constraintTop_toBottomOf="@id/nav_bar"
+        />
+
+    <com.windscribe.mobile.custom_view.preferences.ToggleView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/page_description"
+        android:id="@+id/auto_secure_new_networks"
+        app:ToggleTitle="@string/auto_secure_new_networks"
+        app:ToggleLeftIcon="@drawable/ic_auto_secure_icon"
+        android:layout_marginTop="@dimen/margin_16"
+        app:ToggleShowRightIcon="false"
+        app:ToggleDescription="@string/auto_secure_new_networks_description"
+        />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/auto_secure_new_networks"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/cl_current_network"
+        android:visibility="visible"
+        >
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/current_network_title"
+            app:layout_constraintStart_toStartOf="parent"
+            android:gravity="left"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:layout_marginTop="@dimen/margin_16"
+            android:fontFamily="@font/ibm_plex_sans_bold"
+            android:layout_marginStart="@dimen/margin_32"
+            android:text="@string/current_network"
+            android:letterSpacing="0.244"
+            app:layout_constraintTop_toTopOf="parent"
+            android:textColor="?attr/wdSecondaryColor"
+            />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="@dimen/reg_48dp"
+            android:background="@drawable/preferences_rounded_corner_background"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="@dimen/margin_16"
+            android:layout_marginEnd="@dimen/margin_16"
+            app:layout_constraintTop_toTopOf="@id/network_name"
+            app:layout_constraintBottom_toBottomOf="@id/network_name"
+            android:id="@+id/background"
+            />
+        <TextView
+            android:id="@+id/network_name"
+            style="@style/MenuItemLabelTwo"
+            android:textColor="?attr/wdSecondaryColor"
+            android:layout_marginTop="@dimen/reg_16dp"
+            android:paddingStart="@dimen/padding_16"
+            app:layout_constraintStart_toStartOf="@id/background"
+            app:layout_constraintEnd_toStartOf="@id/tv_current_protection"
+            android:layout_width="0dp"
+            android:singleLine="true"
+            android:gravity="start|center_vertical"
+            app:layout_constraintTop_toBottomOf="@id/current_network_title" />
+
+        <TextView
+            android:id="@+id/tv_current_protection"
+            style="@style/MenuItemLabelThree"
+            android:maxWidth="@dimen/reg_150dp"
+            android:singleLine="true"
+            app:layout_constraintBottom_toBottomOf="@id/network_name"
+            app:layout_constraintEnd_toStartOf="@id/img_network_protection_drop_down_btn"
+            app:layout_constraintTop_toTopOf="@id/network_name" />
+
+        <ImageView
+            android:id="@+id/img_network_protection_drop_down_btn"
+            style="@style/ForwardArrowIcon"
+            android:contentDescription="@string/image_description"
+            android:importantForAccessibility="no"
+            app:layout_constraintBottom_toBottomOf="@id/network_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:paddingEnd="@dimen/margin_16"
+            app:layout_constraintTop_toTopOf="@id/network_name" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/other_network_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:layout_marginStart="@dimen/margin_32"
+        android:layout_marginTop="@dimen/margin_16"
+        android:gravity="left"
+        android:fontFamily="@font/ibm_plex_sans_bold"
+        android:text="@string/other_networks"
+        android:letterSpacing="0.244"
+        android:textColor="?attr/wdSecondaryColor"
+        app:layout_constraintTop_toBottomOf="@id/cl_current_network"
+        />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:background="@drawable/preferences_rounded_corner_background"
+        android:id="@+id/recycler_view_network_list"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/reg_16dp"
+        android:layout_marginEnd="@dimen/reg_16dp"
+        android:layout_marginStart="@dimen/margin_16"
+        android:layout_marginTop="@dimen/margin_16"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/other_network_title" />
+
+    <TextView
+        android:id="@+id/tv_no_network_list"
+        style="@style/ProgressText"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

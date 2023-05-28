@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/fragment_container"
+    style="@style/MatchMatchContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <include layout="@layout/nav_bar" />
+
+    <ScrollView
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/nav_bar"
+        style="@style/ScrollableContainer">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/margin_24">
+
+            <include
+                android:id="@+id/cl_login_layout"
+                layout="@layout/account_login_info"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <include
+                android:id="@+id/cl_account_info_layout"
+                layout="@layout/account_account_info"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_16"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cl_login_layout" />
+
+            <TextView
+                android:id="@+id/x_press_login_title"
+                style="@style/MenuItemTitle"
+                android:layout_marginStart="@dimen/margin_32"
+                android:layout_marginTop="@dimen/margin_16"
+                android:text="@string/other"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cl_edit_account" />
+
+            <com.windscribe.mobile.custom_view.preferences.SingleLinkExplainView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/x_press_login_title"
+                android:id="@+id/cl_account_lazy_login"
+                app:Title="@string/xpress_login"
+                app:RightMargin="18"
+                android:layout_marginTop="@dimen/reg_16dp"
+                app:Description="@string/lazy_login_description" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                style="@style/preferenceRoundCornerButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_height="@dimen/reg_48dp"
+                app:layout_constraintTop_toBottomOf="@id/cl_account_info_layout"
+                android:id="@+id/cl_edit_account">
+
+                <TextView
+                    android:id="@+id/tv_edit_account"
+                    style="@style/preferenceRoundCornerButtonLabel"
+                    android:layout_width="0dp"
+                    android:text="@string/edit_account"
+                    android:gravity="left"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:includeFontPadding="false"
+                    app:layout_constraintEnd_toStartOf="@id/edit_arrow"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+                <ImageView
+                    android:id="@+id/edit_arrow"
+                    style="@style/ForwardArrowIcon"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:contentDescription="@string/image_description"
+                    app:layout_constraintBottom_toBottomOf="@id/tv_edit_account"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/tv_edit_account" />
+
+                <ProgressBar
+                    android:id="@+id/edit_progress"
+                    style="@style/SmallProgressCircle"
+                    android:visibility="invisible"
+                    android:clickable="false"
+                    android:focusable="false"
+                    app:layout_constraintBottom_toBottomOf="@id/edit_arrow"
+                    app:layout_constraintEnd_toEndOf="@id/edit_arrow"
+                    app:layout_constraintTop_toTopOf="@id/edit_arrow" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

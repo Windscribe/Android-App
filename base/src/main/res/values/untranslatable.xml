@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<resources>
+    <string name="app_name" translatable="false">Windscribe</string>
+    <string name="force_expand" translatable="false">forceExpand</string>
+    <!-- Open VPN-->
+    <string name="unknown_state" translatable="false">Unknown state</string>
+    <string name="state_user_vpn_permission" translatable="false">Waiting for user permission to use VPN API</string>
+    <string name="state_user_vpn_permission_cancelled" translatable="false">VPN API permission dialog cancelled</string>
+    <string name="bits_per_second" translatable="false">%.0f bit/s</string>
+    <string name="kbits_per_second" translatable="false">%.1f kbit/s</string>
+    <string name="mbits_per_second" translatable="false">%.1f Mbit/s</string>
+    <string name="gbits_per_second" translatable="false">%.1f Gbit/s</string>
+    <string name="volume_byte" translatable="false">%.0f B</string>
+    <string name="volume_kbyte" translatable="false">%.1f kB</string>
+    <string name="volume_mbyte" translatable="false">%.1f MB</string>
+    <string name="volume_gbyte" translatable="false">%.1f GB</string>
+    <string name="log_file_header" translatable="false">[DeviceInfo]\n-------------\n[API]: %1$d\n[Brand]: %2$s\n[Device]: %3$s\n[Model]: %4$s\n[Manufacturer]: %5$s\n[Release]: %6$s\n[App Release Version]: %7$s\n[Start of log]:\n------------------------------------------------------\n</string>
+    <string name="reason_to_try_backup_endpoint" translatable="false">&#032;&#8212;Reason to try backup end point:&#032;</string>
+    <!-- Strings arrays  -->
+    <string name="OFF" translatable="false">OFF</string>
+    <string name="empty_dash" translatable="false">--</string>
+    <string name="image_description" translatable="false">Image</string>
+    <string name="empty_ip_address" translatable="false">000.000.000.000</string>
+    <string name="english" translatable="false">English</string>
+    <string name="permission_revoked" translatable="false">VPN permission revoked by OS (e.g. other VPN program started), stopping VPN</string>
+    <!--Ignore -->
+    <string name="building_configration" translatable="false">Building Configuration&#8230;</string>
+    <string name="last_openvpn_tun_config" translatable="false">Opening tun interface:</string>
+    <string name="opentun_no_ipaddr" translatable="false">Refusing to open tun device without IP information</string>
+    <string name="dns_add_error" translatable="false">Could not add DNS Server \"%1$s\", rejected by the system: %2$s</string>
+
+    <!--Ignore these-->
+    <!-- ICS OpenVPN Strings only used for logs-->
+    <string name="ip_add_error" translatable="false">Could not configure IP Address \"%1$s\", rejected by the system: %2$s</string>
+    <string name="ignore_multicast_route" translatable="false">Ignoring multicast route: %s</string>
+    <string name="route_rejected" translatable="false">Route rejected by Android</string>
+    <string name="local_ip_info" translatable="false">Local IPv4: %1$s/%2$d IPv6: %3$s MTU: %4$d</string>
+    <string name="dns_server_info" translatable="false">DNS Server: %1$s, Domain: %2$s</string>
+    <string name="routes_info_incl" translatable="false">Routes: %1$s %2$s</string>
+    <string name="routes_info_excl" translatable="false">Routes excluded: %1$s %2$s</string>
+    <string name="routes_debug" translatable="false">VpnService routes installed: %1$s %2$s</string>
+    <string name="ip_not_cidr" translatable="false">Got interface information %1$s and %2$s, assuming second address is peer address of remote. Using /32 netmask for local IP. Mode given by OpenVPN is \"%3$s\".</string>
+    <string name="route_not_cidr" translatable="false">Cannot make sense of %1$s and %2$s as IP route with CIDR netmask, using /32 as netmask.</string>
+    <string name="route_not_netip" translatable="false">Corrected route %1$s/%2$s to %3$s/%2$s</string>
+    <string name="session_ipv4string" translatable="false">%1$s - %2$s</string>
+    <string name="session_ipv6string" translatable="false">%1$s - %3$s, %2$s</string>
+    <string name="warn_no_dns" translatable="false">No DNS servers being used. Name resolution may not work. Consider setting custom DNS Servers. Please also note that Android will keep using your proxy settings specified for your mobile/Wi-Fi connection when no DNS servers are set.</string>
+    <string name="tun_open_error" translatable="false">Failed to open the tun interface</string>
+    <string name="app_no_longer_exists" translatable="false">Package %s is no longer installed, removing it from app allow/disallow list</string>
+    <string name="no_allowed_app" translatable="false">No allowed app added. Adding ourselves (%s) to have at least one app in the allowed app list to not allow all apps</string>
+    <string name="allowed_vpn_apps_info" translatable="false">Allowed VPN apps: %1$s</string>
+    <string name="disallowed_vpn_apps_info" translatable="false">Disallowed VPN apps: %1$s</string>
+    <string name="ip_looks_like_subnet" translatable="false">Vpn topology \"%3$s\" specified but ifconfig %1$s %2$s looks more like an IP address with a network mask. Assuming \"subnet\" topology.</string>
+    <string name="unhandled_exception" translatable="false">Unhandled exception: %1$s\n\n%2$s</string>
+    <string name="unhandled_exception_context" translatable="false">%3$s: %1$s\n\n%2$s</string>
+    <string name="state_waitconnectretry" translatable="false">Waiting %ss seconds between connection attempt</string>
+    <string name="mobile_info" translatable="false">%10$s %9$s running on %3$s %1$s (%2$s), Android %6$s (%7$s) API %4$d, ABI %5$s, (%8$s)</string>
+    <string name="state_userpause" translatable="false">VPN pause requested by user</string>
+    <string name="state_screenoff" translatable="false">VPN paused - screen off</string>
+    <string name="state_disconnecting" translatable="false">Disconnecting</string>
+    <string name="getproxy_error" translatable="false">Error getting proxy settings: %s</string>
+    <string name="minidump_generated" translatable="false">OpenVPN crashed unexpectedly. Please consider using the send Minidump option in the main menu</string>
+    <string name="using_proxy" translatable="false">Using proxy %1$s %2$d</string>
+    <string name="reread_log" translatable="false">Reread (%d) log items from log cache file</string>
+    <string name="keychain_nocacert" translatable="false">No CA Certificate returned while reading from Android keystore. Authentication will probably fail.</string>
+    <string name="keyChainAccessError" translatable="false">KeyChain Access error: %s</string>
+    <string name="keychain_access" translatable="false">Cannot access the Android Keychain Certificates. This can be caused by a firmware upgrade or by restoring a backup of the app/app settings. Please edit the VPN and reselect the certificate under basic settings to recreate the permission to access the certificate.</string>
+    <string name="no_error_found" translatable="false">No error found</string>
+    <string name="error_rsa_sign" translatable="false">Error signing with Android keystore key %1$s: %2$s</string>
+    <string name="screenoff_pause" translatable="false">Pausing connection in screen off state: less than %1$s in %2$ss</string>
+    <string name="screen_nopersistenttun" translatable="false">Warning: Persistent tun not enabled for this VPN. Traffic will use the normal Internet connection when the screen is off.</string>
+    <string name="netstatus" translatable="false">Network Status: %s</string>
+    <string name="no_vpn_support_image" translatable="false">Your image does not support the VPNService API, sorry :(</string>
+    <string name="nought_alwayson_warning" translatable="false"><![CDATA[If you did not get a VPN confirmation dialog, you have \"Always on VPN\" enabled for another app. In that case only that app is allowed to connect to a VPN. Check under Settings-> Networks more .. -> VPNS]]></string>
+    <string name="config_pwd_request_description" translatable="false">Enter the username and password associated with this custom config</string>
+    <string-array name="default_skus">
+        <item>premium_monthly</item>
+        <item>premium_yearly</item>
+    </string-array>
+    <string-array name="order_list">
+        <item>@string/geography</item>
+        <item>@string/alphabet</item>
+        <item>@string/latency</item>
+    </string-array>
+    <string-array name="order_list_keys">
+        <item>Geography</item>
+        <item>Alphabet</item>
+        <item>Latency</item>
+    </string-array>
+    <string-array name="theme_list">
+        <item>@string/light</item>
+        <item>@string/dark</item>
+    </string-array>
+    <string-array name="theme_list_keys">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    <string-array name="split_mode_list">
+        <item>@string/exclusive</item>
+        <item>@string/inclusive</item>
+    </string-array>
+    <string-array name="split_mode_list_keys">
+        <item>Exclusive</item>
+        <item>Inclusive</item>
+    </string-array>
+
+    <string-array name="background_list">
+        <item>@string/flags</item>
+        <item>@string/custom</item>
+    </string-array>
+    <string-array name="background_list_keys">
+        <item>Flags</item>
+        <item>Custom</item>
+    </string-array>
+
+    <string-array name="latency_selection">
+        <item>@string/bars</item>
+        <item>@string/ms</item>
+    </string-array>
+    <string-array name="latency_selection_keys">
+        <item>Bars</item>
+        <item>Ms</item>
+    </string-array>
+    <string-array name="query_types">
+        <item>@string/my_account</item>
+        <item>@string/technical</item>
+        <item>@string/sales</item>
+        <item>@string/feedback</item>
+    </string-array>
+    <string-array name="language">
+        <item>English (en)</item>
+        <item>Tiếng Việt (vi)</item>
+        <item>中文 (zh)</item>
+        <item>中文(台灣) (zh-TW)</item>
+        <item>العربية (ar)</item>
+        <item>فارسی (fa)</item>
+        <item>Italiano (it)</item>
+        <item>Español (es)</item>
+        <item>Português (pt)</item>
+        <item>한국어 (ko)</item>
+        <item>Deutsch (de)</item>
+        <item>Polski (pl)</item>
+        <item>Français (fr)</item>
+        <item>Indonesian (in)</item>
+        <item>Українська (uk)</item>
+        <item>日本語 (ja)</item>
+        <item>Turkish (tr)</item>
+        <item>Pусский (ru)</item>
+        <item>हिंदी (hi)</item>
+    </string-array>
+</resources>

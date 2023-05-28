@@ -1,0 +1,79 @@
+default_platform(:android)
+
+desc "Runs tests"
+lane :test do
+gradle(task: "test")
+end
+
+  desc "Pull Build number from play store, increment and update gradle."
+  lane :updateBuildVersion do
+     code = google_play_track_version_codes(package_name: ENV['PACKAGE_NAME'],track: "internal")
+          mobile_version = code[1] + 1
+          tv_version = mobile_version + 1
+     increment_version_code(
+        gradle_file_path: "mobile/build.gradle",
+        app_folder_name:"mobile",
+        version_code: mobile_version
+  )
+      increment_version_code(
+         gradle_file_path: "tv/build.gradle",
+         app_folder_name:"tv",
+         version_code: tv_version
+  )
+  end
+
+   desc "Pull Build number from play store and update gradle with same."
+    lane :keepBuildVersion do
+       code = google_play_track_version_codes(package_name: ENV['PACKAGE_NAME'],track: "internal")
+            mobile_version = code[0]
+            tv_version = code[1]
+       increment_version_code(
+          gradle_file_path: "mobile/build.gradle",
+          app_folder_name:"mobile",
+          version_code: mobile_version
+    )
+        increment_version_code(
+           gradle_file_path: "tv/build.gradle",
+           app_folder_name:"tv",
+           version_code: tv_version
+    )
+    end
+
+  desc "Build and sign"
+  lane :buildAndSign do |options|
+    gradle(
+    task: options[:task],
+    flavor: "google",
+    build_type: "Release",
+    print_command: false
+ )
+ end
+
+ desc "Build debug apk"
+   lane :buildAndDebug do
+     gradle(task: "assemble",
+     flavor: "google",
+     build_type: "Debug",
+     print_command: false
+  )
+  end
+
+  desc "Publish app to play store (Internal channel)"
+  lane :publishToInternal do
+    buildAndSign(task:"clean bundle")
+
+
+supply(
+  version_name: ENV['VERSION_NAME'],
+  track: "internal",
+  skip_upload_metadata: true,
+  skip_upload_images: true,
+  skip_upload_screenshots: true,
+  aab_paths: Actions.lane_context[SharedValues::GRADLE_ALL_AAB_OUTPUT_PATHS]
+)
+end
+
+ desc "Build Signed Apks for all modules."
+ lane :buildReleaseApk do
+  buildAndSign(task:"clean mobile:assemble tv:assemble")
+ end

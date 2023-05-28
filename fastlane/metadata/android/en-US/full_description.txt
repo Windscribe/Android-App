@@ -1,0 +1,21 @@
+Windscribe VPN is a tool that secures Wifi and helps you safeguard your privacy online. Best part? It’s absolutely free to use and offers up to 10GB of bandwidth per month, if you supply a confirmed email address! That’s something you can actually use!
+
+With Windscribe VPN, you'll never mess with confusing settings and option menus again; just turn it on once and forget about it.
+
+Get up to 10GB of data per month for FREE, which you can use on your iPhone, iPad, Mac or Windows PC, or as a browser add-on for Chrome, Firefox and Opera.
+
+<b>Free Features</b>
+•	Super easy to use, just turn it on with a single tap
+•	Unblocks most geo-restricted content
+•	Network whitelisting - auto-enable/disable the VPN when you get home, or join any other wifi network.
+•	Split Tunneling - choose which apps should go over the VPN tunnel.
+•	Encrypts all your data so nobody can spy on your Internet activities
+•	Strict no-logging policy
+•	4 protocols to choose from (OpenVPN UDP/TCP, IKEv2, Stealth)
+•	Access to servers in 10 countries (Including US, Canada, UK and more)
+
+<b>Pro Features</b>
+•	Same as the free features, plus:
+•	Unlimited bandwidth
+•	Unlimited connections
+•	Access to servers in over 63 countries and over 110 data-centers

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<resources>
+    <dimen name="network_layout_top_margin">18dp</dimen>
+    <dimen name="server_list_toolbar_top_margin">0dp</dimen>
+    <dimen name="network_layout_items_text_size">10sp</dimen>
+</resources>

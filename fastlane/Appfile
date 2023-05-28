@@ -1,0 +1,2 @@
+json_key_file("gcm_key.json")
+package_name("com.windscribe.vpn")

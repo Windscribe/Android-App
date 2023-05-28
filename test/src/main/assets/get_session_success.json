@@ -1,0 +1,23 @@
+{
+  "data": {
+    "ignore_udp_tests": 1,
+    "username": "test",
+    "user_id": "test_id",
+    "traffic_used": 700519742,
+    "traffic_max": -1,
+    "status": 1,
+    "email": "test@gmail.com",
+    "email_status": 1,
+    "billing_plan_id": 3,
+    "is_premium": 1,
+    "rebill": 1,
+    "premium_expiry_date": "2022-02-26",
+    "reg_date": 1508859394,
+    "last_reset": "2022-01-15",
+    "sip": {
+      "count": 1
+    },
+    "loc_rev": 7768,
+    "loc_hash": "-x-x-x-x-x-x-x--x-n"
+  }
+}

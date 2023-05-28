@@ -1,0 +1,156 @@
+image: $CI_REGISTRY_IMAGE
+
+variables:
+  LC_ALL: "en_US.UTF-8"
+  LANG: "en_US.UTF-8"
+  GIT_STRATEGY: clone
+  CHANGE_LOG_PATH: "${CI_PROJECT_DIR}/fastlane/metadata/android/en-US/changelogs/"
+  SIGN_KEY_NAME: "release.jks"
+  SIGN_KEY_PATH: "${CI_PROJECT_DIR}/${SIGN_KEY_NAME}"
+  GCM_KEY_PATH: "${CI_PROJECT_DIR}/gcm_key.json"
+  BUILD_PROPERTIES_PATH: "${CI_PROJECT_DIR}/config/build.properties"
+  SIGN_PROPERTIES_PATH: "${CI_PROJECT_DIR}/config/sign.properties"
+  MOBILE_APK_PATH: "${CI_PROJECT_DIR}/mobile/build/outputs/apk/release/mobile-release.apk"
+  TV_APK_PATH: "${CI_PROJECT_DIR}/tv/build/outputs/apk/release/tv-universal-release.apk"
+
+stages:
+  - Test
+  - Deploy
+
+#Upload to play store
+UploadToPlayStoreInternalChannel:
+  stage: Deploy
+  when: manual
+  extends:
+    - ".signUpdateBuildNumber"
+  script:
+    - echo "VERSION_CODE=$VERSION_CODE" >> build.env
+    - echo "VERSION_NAME=$VERSION_NAME" >> build.env
+    - export DIRECTORY=${VERSION_NAME}
+    - fastlane publishToInternal
+
+  artifacts:
+    reports:
+      dotenv: build.env
+
+#Upload binaries to nexus private channel.
+UploadToNexusPrivate:
+  stage: Deploy
+  when: on_success
+  dependencies:
+    - UploadToPlayStoreInternalChannel
+  needs:
+    - UploadToPlayStoreInternalChannel
+  extends:
+    - ".signKeepBuildNumber"
+  script:
+    - echo "VERSION_CODE=$VERSION_CODE" >> build.env
+    - echo "VERSION_NAME=$VERSION_NAME" >> build.env
+    - export DIRECTORY=${VERSION_NAME}
+    - fastlane buildReleaseApk
+    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${MOBILE_APK_PATH} "${NEXUS_SERVER_PRIVATE}${DIRECTORY}/windscribe-mobile.apk"
+    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${TV_APK_PATH} "${NEXUS_SERVER_PRIVATE}${DIRECTORY}/windscribe-tv.apk"
+
+#Upload binaries to nexus public channel.
+UploadToNexusPublic:
+  stage: Deploy
+  extends:
+    - ".signKeepBuildNumber"
+  only:
+    - tags
+  except:
+    - branches
+  script:
+    - if [ "$DEV" == "true" ]; then NEXUS_SERVER=$NEXUS_SERVER_PRIVATE; fi
+    - echo "VERSION_CODE=$VERSION_CODE" >> build.env
+    - echo "VERSION_NAME=$VERSION_NAME" >> build.env
+    - export DIRECTORY=${VERSION_NAME}
+    - echo $NEXUS_SERVER
+    - fastlane buildReleaseApk
+    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${MOBILE_APK_PATH} "${NEXUS_SERVER}${DIRECTORY}/windscribe-mobile.apk"
+    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${TV_APK_PATH} "${NEXUS_SERVER}${DIRECTORY}/windscribe-tv.apk"
+
+  artifacts:
+    reports:
+      dotenv: build.env
+
+# update build number.
+".signUpdateBuildNumber":
+  stage: Deploy
+  before_script:
+    - apk -U upgrade
+    - apk --no-cache add curl
+    - apk add jq
+    - authToken=$(curl -X POST https://pki.int.windscribe.com:8200/v1/auth/approle/login -d "role_id=$role_id&secret_id=$secret_id" | jq       --raw-output '.auth.client_token')
+    - secretData=$(curl -H "X-Vault-Token:$authToken" -X GET https://pki.int.windscribe.com:8200/v1/kv/cicd/client-android)
+    - echo $secretData
+    - signProperties=$(echo "$secretData" | jq '.data."sign.properties"')
+    - echo $signProperties
+    - echo "$signProperties" | base64 -d -i > $SIGN_PROPERTIES_PATH
+    - buildProperties=$(echo "$secretData" | jq '.data."build.properties"')
+    - echo $buildProperties
+    - echo "$buildProperties" | base64 -d -i > $BUILD_PROPERTIES_PATH
+    - uploadKey=$(echo "$secretData" | jq '.data.android_play_store_upload_key')
+    - echo "$uploadKey" | base64 -d -i > $GCM_KEY_PATH
+    - signKey=$(echo "$secretData" | jq '.data.android_play_store_sign_key')
+    - echo "$signKey" | base64 -d -i > $SIGN_KEY_PATH
+    - export GRADLE_USER_HOME=$(pwd)/.gradle
+    - chmod +x ./gradlew
+    - extras fastlane
+    - apk --no-cache add swig
+    - fastlane updateBuildVersion
+    - export VERSION_CODE=$(grep -E "versionCode" mobile/build.gradle | cut -d '"' -f2
+      | tr -d '"' | tr -d 'versionCode ')
+    - export VERSION_NAME=${MAJOR}.${MINOR}.${VERSION_CODE}
+    - touch ${CHANGE_LOG_PATH}${VERSION_CODE}.txt
+
+# update build version to same as play store.
+".signKeepBuildNumber":
+  stage: Deploy
+  before_script:
+    - apk -U upgrade
+    - apk --no-cache add curl
+    - apk add jq
+    - authToken=$(curl -X POST https://pki.int.windscribe.com:8200/v1/auth/approle/login -d "role_id=$role_id&secret_id=$secret_id" | jq       --raw-output '.auth.client_token')
+    - secretData=$(curl -H "X-Vault-Token:$authToken" -X GET https://pki.int.windscribe.com:8200/v1/kv/cicd/client-android)
+    - signProperties=$(echo "$secretData" | jq '.data."sign.properties"')
+    - echo "$signProperties" | base64 -d -i > $SIGN_PROPERTIES_PATH
+    - buildProperties=$(echo "$secretData" | jq '.data."build.properties"')
+    - echo "$buildProperties" | base64 -d -i > $BUILD_PROPERTIES_PATH
+    - uploadKey=$(echo "$secretData" | jq '.data.android_play_store_upload_key')
+    - echo "$uploadKey" | base64 -d -i > $GCM_KEY_PATH
+    - signKey=$(echo "$secretData" | jq '.data.android_play_store_sign_key')
+    - echo "$signKey" | base64 -d -i > $SIGN_KEY_PATH
+    - export GRADLE_USER_HOME=$(pwd)/.gradle
+    - chmod +x ./gradlew
+    - extras fastlane
+    - apk --no-cache add swig
+    - fastlane keepBuildVersion
+    - export VERSION_CODE=$(grep -E "versionCode" mobile/build.gradle | cut -d '"' -f2
+      | tr -d '"' | tr -d 'versionCode ')
+    - export VERSION_NAME=${MAJOR}.${MINOR}.${VERSION_CODE}
+    - touch ${CHANGE_LOG_PATH}${VERSION_CODE}.txt
+
+
+Slack:
+  stage: Deploy
+  when: on_success
+  dependencies:
+    - UploadToNexusPrivate
+  needs:
+    - UploadToNexusPrivate
+  extends:
+    - ".curl"
+  script:
+    - export TITLE="Available on play store Release $VERSION_NAME"
+    - export CHANGE_LOG=$(cat $CHANGE_LOG_PATH${VERSION_CODE}.txt)
+    - export SPACE=$'\n\n'
+    - export MESSAGE=$TITLE$SPACE$CHANGE_LOG
+    - export PAYLOAD={\"text\":\"$MESSAGE\"}
+    - curl --retry 5 -X POST $SLACK_URL --show-error --fail -d "$PAYLOAD"
+
+".curl":
+  stage: Deploy
+  before_script:
+    - extras fastlane
+    - apk --no-cache add curl

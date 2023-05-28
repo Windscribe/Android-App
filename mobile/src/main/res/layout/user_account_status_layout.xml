@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/OverlayContainer">
+
+    <ImageView
+        android:id="@+id/userAccountStatusIcon"
+        style="@style/IconStyle"
+        android:src="@drawable/garry_nodata"
+        app:layout_constraintBottom_toTopOf="@+id/userAccountStatusTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/userAccountStatusTitle"
+        style="@style/DialogTitle"
+        android:text="@string/you_re_out_of_data"
+        app:layout_constraintBottom_toTopOf="@+id/userAccountStatusDescription"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/userAccountStatusIcon" />
+
+    <TextView
+        android:id="@+id/userAccountStatusDescription"
+        style="@style/DialogDescription"
+        android:text="@string/upgrade_to_stay_protected"
+        app:layout_constraintBottom_toTopOf="@+id/userAccountStatusPrimaryButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/userAccountStatusTitle" />
+
+    <TextView
+        android:id="@+id/userAccountStatusPrimaryButton"
+        style="@style/DialogPrimaryButton"
+        android:text="@string/upgrade_case_normal"
+        app:layout_constraintBottom_toTopOf="@+id/userAccountStatusSecondaryButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/userAccountStatusDescription" />
+
+
+    <TextView
+        android:id="@+id/userAccountStatusSecondaryButton"
+        style="@style/DialogSecondaryButton"
+        android:text="@string/upgrade_later"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/userAccountStatusPrimaryButton" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

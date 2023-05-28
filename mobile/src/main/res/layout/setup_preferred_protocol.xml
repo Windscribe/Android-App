@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusableInTouchMode="true"
+    android:focusable="true"
+    android:background="?attr/wdPrimaryInvertedColor"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/img_close_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        style="@style/ModelCloseIcon" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/container"
+        android:paddingBottom="@dimen/margin_16">
+
+        <ImageView
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            style="@style/WarningIcon"
+            android:src="@drawable/ic_attention_icon"
+            android:id="@+id/icon" />
+
+        <TextView
+            style="@style/titleText"
+            android:layout_width="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/icon"
+            android:layout_marginTop="@dimen/margin_32"
+            android:gravity="center"
+            android:text="Set “UDP” as preferred protocol?"
+            android:textSize="21sp"
+            android:id="@+id/title"
+            app:layout_constraintWidth_max="300dp"
+            app:layout_constraintWidth_percent=".60" />
+
+        <TextView
+            style="@style/PageDescription"
+            android:text="@string/windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/title"
+            android:id="@+id/description"
+            android:textSize="@dimen/text_size_16"
+            android:fontFamily="@font/ibm_plex_sans_regular"
+            android:textStyle="normal"
+            android:textColor="?attr/wdSecondaryColor"
+            app:layout_constraintWidth_percent=".65"
+            app:layout_constraintWidth_max="300dp" />
+
+        <Button
+            style="@style/NextButton"
+            android:enabled="true"
+            android:layout_width="0dp"
+            app:layout_constraintTop_toBottomOf="@id/description"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/margin_32"
+            android:text="@string/set_as_preferred"
+            android:id="@+id/set_as_preferred"
+            app:layout_constraintWidth_percent=".75"
+            app:layout_constraintWidth_max="350dp" />
+
+        <Button
+            style="@style/NoBackgroundButtonBold"
+            android:enabled="true"
+            android:layout_width="0dp"
+            app:layout_constraintTop_toBottomOf="@id/set_as_preferred"
+            app:layout_constraintStart_toStartOf="@id/set_as_preferred"
+            app:layout_constraintEnd_toEndOf="@id/set_as_preferred"
+            android:layout_marginTop="@dimen/margin_24"
+            android:text="@string/cancel"
+            android:id="@+id/cancel" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

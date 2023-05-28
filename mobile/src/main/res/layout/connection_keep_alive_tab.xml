@@ -1,0 +1,55 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/keep_alive_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/keep_alive_divider"
+        style="@style/PreferenceDivider"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginStart="@dimen/margin_16"
+        android:contentDescription="@null"
+        android:scaleType="fitXY"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/keep_alive_edit_view"
+        style="@style/transparentEditableText"
+        android:enabled="false"
+        android:hint="@string/keep_alive"
+        android:gravity="start"
+        android:importantForAutofill="no"
+        android:inputType="number"
+        android:lines="1"
+        android:maxLength="4"
+        android:text="100"
+        android:paddingStart="@dimen/padding_16"
+        android:maxLines="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <ImageView
+        android:id="@+id/keep_alive_edit_button"
+        android:layout_width="@dimen/reg_32dp"
+        android:layout_height="@dimen/reg_32dp"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:contentDescription="@string/image_description"
+        android:padding="@dimen/reg_8dp"
+        android:rotationY="@integer/rtl_support_auto_mirror_flip"
+        android:scaleType="fitEnd"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_edit_icon" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

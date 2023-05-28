@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<lint>
+    <issue id="IconLauncherShape">
+        <ignore path="src/main/res/drawable-nodpi/tv_banner.png" />
+    </issue>
+</lint>

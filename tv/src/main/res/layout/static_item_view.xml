@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/reg_10dp"
+    android:descendantFocusability="beforeDescendants"
+    android:focusable="false">
+
+
+    <LinearLayout
+        android:id="@+id/labelWrapper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:focusable="false"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/nodeName"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_gravity="start|center_vertical"
+            android:alpha="0.40"
+            android:focusable="false"
+            android:fontFamily="@font/ibm_plex_sans_bold"
+            android:textColor="@color/colorWhite"
+            android:textSize="@dimen/text_size_32" />
+
+        <TextView
+            android:id="@+id/nodeNickName"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_gravity="start|center_vertical"
+            android:layout_marginStart="@dimen/reg_10dp"
+            android:alpha="0.40"
+            android:focusable="false"
+            android:fontFamily="@font/ibm_plex_sans_regular"
+            android:textColor="@color/colorWhite"
+            android:textSize="@dimen/text_size_32" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/latency"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|center_vertical"
+        android:alpha="0.40"
+        android:focusable="false"
+        android:fontFamily="@font/ibm_plex_sans_regular"
+        android:textColor="@color/colorWhite"
+        android:textSize="@dimen/text_size_16"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/labelWrapper"
+
+        />
+
+    <TextView
+        android:id="@+id/extra"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|center_vertical"
+        android:layout_marginStart="@dimen/reg_10dp"
+        android:alpha="0.40"
+        android:focusable="false"
+        android:fontFamily="@font/ibm_plex_sans_regular"
+        android:gravity="center_vertical|start"
+        android:textColor="@color/colorWhite"
+        android:textSize="@dimen/text_size_16"
+        app:layout_constraintBottom_toBottomOf="@id/latency"
+        app:layout_constraintStart_toEndOf="@id/latency"
+        app:layout_constraintTop_toTopOf="@id/latency" />
+
+    <ImageView
+        android:id="@+id/pro_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|center_vertical"
+        android:layout_marginStart="@dimen/reg_6dp"
+        android:alpha="0.40"
+        android:focusable="false"
+        android:fontFamily="@font/ibm_plex_sans_regular"
+        android:src="@drawable/pro_loc_icon"
+        android:textColor="@color/colorWhite"
+        android:textSize="@dimen/text_size_32"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@id/latency"
+        app:layout_constraintStart_toEndOf="@id/latency"
+        app:layout_constraintTop_toTopOf="@id/latency"
+        app:tint="@color/colorWhite" />
+
+    <TextView
+        android:id="@+id/highlightedText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|center_vertical"
+        android:layout_marginStart="@dimen/reg_10dp"
+        android:layout_marginEnd="@dimen/reg_24dp"
+        android:focusable="false"
+        android:fontFamily="@font/ibm_plex_sans_regular"
+        android:text="@string/connect"
+        android:textColor="@color/colorWhite50"
+        android:textSize="@dimen/text_size_24"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@id/connect"
+        app:layout_constraintEnd_toStartOf="@id/connect"
+        app:layout_constraintTop_toTopOf="@id/connect"
+
+
+        />
+
+    <com.windscribe.tv.serverlist.customviews.ConnectButtonView
+        android:id="@+id/connect"
+        android:layout_width="@dimen/reg_56"
+        android:layout_height="@dimen/reg_56"
+        android:layout_marginEnd="@dimen/reg_24dp"
+        android:focusable="true"
+        android:fontFamily="@font/ibm_plex_sans_regular"
+        android:gravity="start|center_vertical"
+        android:maxLines="1"
+        android:nextFocusLeft="@+id/header_item_all"
+        android:nextFocusRight="@id/fav"
+        android:paddingStart="@dimen/reg_10dp"
+        android:paddingEnd="@dimen/reg_10dp"
+        android:textAllCaps="false"
+        android:tint="@color/colorWhite"
+        app:autoSizeMaxTextSize="100sp"
+        app:autoSizeMinTextSize="24sp"
+        app:autoSizeStepGranularity="1sp"
+        app:autoSizeTextType="uniform"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/labelWrapper" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
