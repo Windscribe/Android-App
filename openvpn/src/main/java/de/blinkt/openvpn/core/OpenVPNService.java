@@ -791,6 +791,28 @@ public abstract class OpenVPNService extends VpnService implements StateListener
         return cfg;
     }
 
+    public boolean isPrivateIPAddress(String ipAddress) {
+        String[] ipParts = ipAddress.split("\\.");
+        if (ipParts.length != 4) {
+            return false; // Invalid IP address format
+        }
+        int[] ipBytes = new int[4];
+        for (int i = 0; i < 4; i++) {
+            try {
+                ipBytes[i] = Integer.parseInt(ipParts[i]);
+            } catch (NumberFormatException e) {
+                return false; // Invalid IP address format
+            }
+        }
+        if (ipBytes[0] == 10) {
+            return true;
+        } else if (ipBytes[0] == 172 && ipBytes[1] >= 16 && ipBytes[1] <= 31) {
+            return true;
+        } else if (ipBytes[0] == 192 && ipBytes[1] == 168) {
+            return true;
+        } else return ipBytes[0] == 169 && ipBytes[1] == 254;
+    }
+
     public ParcelFileDescriptor openTun() {
 
         //Debug.startMethodTracing(getExternalFilesDir(null).toString() + "/opentun.trace", 40* 1024 * 1024);
@@ -1020,11 +1042,13 @@ public abstract class OpenVPNService extends VpnService implements StateListener
             if (ipAddr.equals(mLocalIP.mIp))
                 continue;
 
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT && !mProfile.mAllowLocalLAN) {
-                mRoutes.addIPSplit(new CIDRIP(ipAddr, netMask), true);
-
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && mProfile.mAllowLocalLAN)
-                mRoutes.addIP(new CIDRIP(ipAddr, netMask), false);
+            if (mProfile.mAllowLocalLAN) {
+                if(isPrivateIPAddress(ipAddr)) {
+                    mRoutes.addIP(new CIDRIP(ipAddr, netMask), false);
+                } else {
+                    VpnStatus.logDebug("Non Rfc-1918 address found "+ ipAddr);
+                }
+            }
         }
 
         // IPv6 is Lollipop+ only so we can skip the lower than KITKAT case
