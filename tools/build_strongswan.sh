@@ -5,7 +5,7 @@ strongswanRoot="$PWD/../strongswan-src"
 cd $strongswanRoot
 lib="$PWD/src/frontends/android/app/src/main/jni/openssl"
 PATH=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
-pushd $$OpenSSL$$
+pushd $OpenSSL
 CC=armv7a-linux-androideabi16-clang ./Configure android-arm no-shared no-ssl3 no-engine no-dso no-asm no-hw no-comp no-stdio -fPIC -DOPENSSL_PIC -D__ANDROID_API__=16 -ffast-math -O3 -funroll-loops
 make -j $(nproc) > config.log
 mkdir -p "${lib}/armeabi-v7a"
