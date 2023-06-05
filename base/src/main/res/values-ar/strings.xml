@@ -166,7 +166,7 @@
   <string name="no_bandwidth_interruptions_stay_protected_forever">لا انقطاع عرض النطاق الترددي. ابق محميا إلى الأبد</string>
   <string name="reddit">رديت</string>
   <string name="notifications">الاخطارات</string>
-  <string name="data_left">٪1$.2f GB متبقي</string>
+  <string name="data_left">%1$.2f GB متبقي</string>
   <string name="packet_size">حجم الحزمة</string>
   <string name="password_requirement">8 أحرف أو أكثر بأحرف كبيرة وصغيرة واحدة على الأقل</string>
   <string name="tunnel_test_failed">فشل الاتصال...</string>
