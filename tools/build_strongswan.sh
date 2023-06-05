@@ -40,7 +40,3 @@ cd $strongswanRoot
 ./configure --disable-defaults > config.log
 make dist -j $(nproc) > config.log
 rm config.log
-cd src/frontends/android/app
-sed -i 's/compileSdkVersion 32/compileSdkVersion 32\n    ndkVersion "21.4.7075529"/g'build.gradle
-gradle assembleRelease
-cp -r $strongswanLibsSrc $strongswanLibsDst
