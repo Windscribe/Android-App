@@ -211,15 +211,16 @@ class AutoConnectionManager(
         networkInfoManager.networkInfo?.let {
             setupPreferredProtocol(it, appSupportedProtocolOrder)
         }
+        if (preferredProtocol?.second != null) {
+            lastKnownProtocolInformation?.let {
+                appSupportedProtocolOrder = moveProtocolToTop(it.second, appSupportedProtocolOrder)
+            }
+        }
         manualProtocol?.let {
             appSupportedProtocolOrder = moveProtocolToTop(it, appSupportedProtocolOrder)
         }
         preferredProtocol?.second?.let {
             appSupportedProtocolOrder = moveProtocolToTop(it, appSupportedProtocolOrder)
-        } ?: kotlin.run {
-            lastKnownProtocolInformation?.let {
-                appSupportedProtocolOrder = moveProtocolToTop(it.second, appSupportedProtocolOrder)
-            }
         }
         appSupportedProtocolOrder.filter { it.type == ProtocolConnectionStatus.NextUp }
             .forEachIterable { it.type = ProtocolConnectionStatus.Disconnected }
