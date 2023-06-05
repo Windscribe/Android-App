@@ -166,7 +166,7 @@
   <string name="no_bandwidth_interruptions_stay_protected_forever">بدون وقفه پهنای باند. برای همیشه محافظت شوید</string>
   <string name="reddit">بد</string>
   <string name="notifications">اطلاعیه ها</string>
-  <string name="data_left">٪1$.2f گیگابایت باقیمانده</string>
+  <string name="data_left">%1$.2f گیگابایت باقیمانده</string>
   <string name="packet_size">اندازه بسته</string>
   <string name="password_requirement">8 کاراکتر یا بیشتر با حداقل یک حرف بزرگ و کوچک</string>
   <string name="tunnel_test_failed">خرابی در اتصال...</string>

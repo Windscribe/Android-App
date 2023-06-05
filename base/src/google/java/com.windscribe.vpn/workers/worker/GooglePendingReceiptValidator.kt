@@ -36,9 +36,12 @@ class GooglePendingReceiptValidator(appContext: Context, params: WorkerParameter
         }
         return try {
             val result = initBillingClient().takeIf { true }.run {
+                logger.debug("Getting product history.")
                 getProductHistory().map {
+                    logger.debug("Consuming product.")
                     tryToAcknowledgeProduct(it)
                 }.map {
+                    logger.debug("Verifying product.")
                     verifyPayment(it)
                 }.toList().first { true }
             }
@@ -70,7 +73,6 @@ class GooglePendingReceiptValidator(appContext: Context, params: WorkerParameter
             }
 
             override fun onBillingSetupFinished(billingResult: BillingResult) {
-                resumed.set(true)
                 logger.debug("Billing client setup was successful.")
                 if (BillingClient.BillingResponseCode.OK == billingResult.responseCode) {
                     logger.debug("Getting list of purchased products")
