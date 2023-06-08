@@ -25,8 +25,11 @@ import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import retrofit2.HttpException
 import retrofit2.Response
+import java.util.concurrent.ThreadLocalRandom
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
+
 
 @Singleton
 open class ApiCallManager @Inject constructor(
@@ -253,11 +256,12 @@ open class ApiCallManager @Inject constructor(
                             return@onErrorResumeNext (if (BuildConfig.DEV || BuildConfig.BACKUP_API_ENDPOINT_STRING.isEmpty()) {
                                 throw WindScribeException("Hash domains are disabled.")
                             } else {
+                                val randomNum = ThreadLocalRandom.current().nextInt(0, 2 + 1)
                                 callOrSkip(
                                         apiCallType,
                                         service,
                                         DomainType.Hashed1,
-                                        backupApiEndPoint[0],
+                                        backupApiEndPoint[randomNum],
                                         protect,
                                         params
                                 )
@@ -269,47 +273,6 @@ open class ApiCallManager @Inject constructor(
                         } else {
                             domainFailOverManager.setDomainBlocked(
                                     DomainType.Hashed1, apiCallType
-                            )
-                            return@onErrorResumeNext (if (BuildConfig.DEV || BuildConfig.BACKUP_API_ENDPOINT_STRING.isEmpty()) {
-                                throw WindScribeException("Hash domains are disabled.")
-                            } else {
-                                callOrSkip(
-                                        apiCallType,
-                                        service,
-                                        DomainType.Hashed2,
-                                        backupApiEndPoint[1],
-                                        protect,
-                                        params
-                                )
-                            }
-                                    )
-                        }
-                    }.onErrorResumeNext {
-                        if (it is HttpException && isErrorBodyValid(it)) {
-                            return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
-                        } else {
-                            domainFailOverManager.setDomainBlocked(
-                                    DomainType.Hashed2, apiCallType
-                            )
-                            return@onErrorResumeNext (if (BuildConfig.DEV || BuildConfig.BACKUP_API_ENDPOINT_STRING.isEmpty()) {
-                                throw WindScribeException("Hash domains are disabled.")
-                            } else {
-                                callOrSkip(
-                                        apiCallType,
-                                        service,
-                                        DomainType.Hashed3,
-                                        backupApiEndPoint[2],
-                                        protect,
-                                        params
-                                )
-                            })
-                        }
-                    }.onErrorResumeNext {
-                        if (it is HttpException && isErrorBodyValid(it)) {
-                            return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
-                        } else {
-                            domainFailOverManager.setDomainBlocked(
-                                    DomainType.Hashed3, apiCallType
                             )
                             return@onErrorResumeNext (if (BuildConfig.DEV || BuildConfig.ECH_DOMAIN.isEmpty() || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
                                 throw WindScribeException("Ech domain disabled.")
