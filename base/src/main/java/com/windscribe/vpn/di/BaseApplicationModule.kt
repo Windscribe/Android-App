@@ -669,6 +669,7 @@ open class BaseApplicationModule {
         builder.readTimeout(5, TimeUnit.SECONDS)
         builder.writeTimeout(5, TimeUnit.SECONDS)
         builder.callTimeout(15, TimeUnit.SECONDS)
+        builder.retryOnConnectionFailure(false)
         builder.connectionPool(connectionPool).addInterceptor(httpLoggingInterceptor)
         builder.dns(windscribeDnsResolver)
         return builder
