@@ -664,11 +664,14 @@ open class BaseApplicationModule {
     fun providesOkHttpBuilder(windscribeDnsResolver: WindscribeDnsResolver): OkHttpClient.Builder {
         val connectionPool = ConnectionPool(0, 5, TimeUnit.MINUTES)
         httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BASIC
-        return OkHttpClient.Builder().connectTimeout(
-                NetworkKeyConstants.NETWORK_REQUEST_CONNECTION_TIMEOUT, TimeUnit.SECONDS
-        ).readTimeout(5, TimeUnit.SECONDS).writeTimeout(5, TimeUnit.SECONDS)
-                .connectionPool(connectionPool).addInterceptor(httpLoggingInterceptor)
-                .dns(windscribeDnsResolver)
+        val builder = OkHttpClient.Builder()
+        builder.connectTimeout(NetworkKeyConstants.NETWORK_REQUEST_CONNECTION_TIMEOUT, TimeUnit.SECONDS)
+        builder.readTimeout(5, TimeUnit.SECONDS)
+        builder.writeTimeout(5, TimeUnit.SECONDS)
+        builder.callTimeout(15, TimeUnit.SECONDS)
+        builder.connectionPool(connectionPool).addInterceptor(httpLoggingInterceptor)
+        builder.dns(windscribeDnsResolver)
+        return builder
     }
 
     private var httpLoggingInterceptor =
