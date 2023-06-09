@@ -133,9 +133,9 @@ open class BaseApplicationModule {
     }
 
     @Provides
-    @Named("backupEndPointList")
-    fun provideBackupEndpoint(): List<String> {
-        return HashDomainGenerator.create(NetworkKeyConstants.API_HOST_GENERIC)
+    @Named("backupEndPoint")
+    fun provideBackupEndpoint(): String {
+        return HashDomainGenerator.create(NetworkKeyConstants.API_HOST_GENERIC).random()
     }
 
     @Provides
@@ -549,9 +549,8 @@ open class BaseApplicationModule {
     @Singleton
     fun providesApiCallManagerInterface(
             windApiFactory: WindApiFactory,
-            echApiFactory: EchApiFactory,
             windCustomApiFactory: WindCustomApiFactory,
-            @Named("backupEndPointList") backupEndpoint: List<String>,
+            @Named("backupEndPoint") backupEndpoint: String,
             authorizationGenerator: AuthorizationGenerator,
             @Named("accessIpList") accessIpList: List<String>,
             @Named("PrimaryApiEndpointMap") primaryApiEndpointMap: Map<HostType, String>,
@@ -560,7 +559,6 @@ open class BaseApplicationModule {
     ): IApiCallManager {
         return ApiCallManager(
                 windApiFactory,
-                echApiFactory,
                 windCustomApiFactory,
                 backupEndpoint,
                 authorizationGenerator,
