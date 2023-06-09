@@ -534,7 +534,6 @@ open class ApiCallManager @Inject constructor(private val apiFactory: WindApiFac
         }.flatMap {
             try {
                 val response = it.string()
-                logger.info("Doh server response $response")
                 return@flatMap Single.fromCallable {
                     return@fromCallable Gson().fromJson<DOHTxtRecord?>(response, DOHTxtRecord::class.java).answer.first<TxtAnswer>()
                 }
