@@ -65,7 +65,7 @@ class DomainFailOverManager(private val preferencesHelper: PreferencesHelper) {
 }
 
 enum class DomainType {
-    Primary, Secondary, DYNAMIC_DOH, Hashed1, Hashed2, Hashed3, Ech, DirectIp1, DirectIp2
+    Primary, Secondary, DYNAMIC_DOH, Hashed, Ech, DirectIp1, DirectIp2
 }
 
 enum class ApiCallType {
