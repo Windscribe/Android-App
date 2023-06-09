@@ -233,7 +233,6 @@ open class ApiCallManager @Inject constructor(
                                 throw WindScribeException("Dynamic doh disabled.")
                             } else {
                                 getDynamicDohEndpoint(hostType).flatMap { dynamicEndpoint ->
-                                    logger.info(dynamicEndpoint)
                                     callOrSkip(
                                             apiCallType,
                                             service,
