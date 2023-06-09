@@ -28,6 +28,7 @@ import retrofit2.Response
 import java.util.concurrent.ThreadLocalRandom
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
 
 
 @Singleton
@@ -248,6 +249,7 @@ open class ApiCallManager @Inject constructor(
                         if (it is HttpException && isErrorBodyValid(it)) {
                             return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
                         } else {
+                            lastUsedDynamicEndpoint = null
                             domainFailOverManager.setDomainBlocked(
                                     DomainType.DYNAMIC_DOH, apiCallType
                             )
@@ -258,7 +260,7 @@ open class ApiCallManager @Inject constructor(
                                 callOrSkip(
                                         apiCallType,
                                         service,
-                                        DomainType.Hashed,
+                                        DomainType.Hashed1,
                                         backupApiEndPoint[randomNum],
                                         protect,
                                         params
@@ -270,7 +272,7 @@ open class ApiCallManager @Inject constructor(
                             return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
                         } else {
                             domainFailOverManager.setDomainBlocked(
-                                    DomainType.Hashed, apiCallType
+                                    DomainType.Hashed1, apiCallType
                             )
                             return@onErrorResumeNext (if (BuildConfig.DEV || BuildConfig.ECH_DOMAIN.isEmpty() || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
                                 throw WindScribeException("Ech domain disabled.")
@@ -747,13 +749,18 @@ open class ApiCallManager @Inject constructor(
         }
     }
 
+    private var lastUsedDynamicEndpoint: String? = null
     private fun getDynamicDohEndpoint(hostType: HostType): Single<String> {
+        if (lastUsedDynamicEndpoint != null) {
+            return Single.fromCallable { "${hostType.text}$lastUsedDynamicEndpoint" }
+        }
         return echApiFactory.dohResolver.getTxtAnswerAsync(BuildConfig.DYNAMIC_DNS, true).flatMap {
             try {
                 val endpoint = it.data.replace(
                         "\"", ""
                 )
-                return@flatMap Single.fromCallable { "${hostType.text}$endpoint" }
+                lastUsedDynamicEndpoint = endpoint
+                return@flatMap Single.fromCallable { "${hostType.text}$lastUsedDynamicEndpoint" }
             } catch (e: JsonSyntaxException) {
                 throw WindScribeException("Doh endpoint returned unknown data.")
             }
