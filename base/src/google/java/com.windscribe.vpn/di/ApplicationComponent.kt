@@ -48,8 +48,8 @@ interface ApplicationComponent {
     val authorizationGenerator: AuthorizationGenerator
 
     //Backup
-    @get:Named("backupEndPointList")
-    val backupEndpointList: List<String>
+    @get:Named("backupEndPoint")
+    val backupEndpoint: String
 
     @get:Named("backupEndPointListForIp")
     val backupEndpointListForIp: List<String>
