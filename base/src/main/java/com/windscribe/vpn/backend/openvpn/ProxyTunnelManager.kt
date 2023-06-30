@@ -30,10 +30,11 @@ class ProxyTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBacke
             if (isWSTunnel) {
                 val remote =
                     "wss://$ip:$port/$PROXY_TUNNEL_PROTOCOL/$PROXY_TUNNEL_ADDRESS/$WS_TUNNEL_PORT"
-                startProxy(":$PROXY_TUNNEL_PORT", remote, 1, mtu)
+                startProxy(":$PROXY_TUNNEL_PORT", remote, 1, mtu, false)
             } else {
                 val remote = "https://$ip:$port"
-                startProxy(":$PROXY_TUNNEL_PORT", remote, 2, mtu)
+                val tlsPadding = appContext.preference.isTlsPaddingOn
+                startProxy(":$PROXY_TUNNEL_PORT", remote, 2, mtu, tlsPadding)
             }
             logger.debug("Exiting tunnel proxy.")
         }

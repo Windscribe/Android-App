@@ -163,4 +163,5 @@ object PreferencesKeyConstants {
     const val AUTO_SECURE_NEW_NETWORKS = "auto_secure_new_networks"
     const val WG_CONNECT_API_FAIL_OVER_STATE = "wg_connect_api_fail_over_state"
     const val ALREADY_SHOWN_SHARE_APP_LINK = "already_shown_share_app_link"
+    const val TLS_PADDING = "tls_padding"
 }

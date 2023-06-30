@@ -77,6 +77,11 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
             connSettingsView.setDecoyTrafficToggle(R.drawable.ic_toggle_button_off)
         }
         setDecoyTrafficParameters()
+        if (interactor.getAppPreferenceInterface().isTlsPaddingOn) {
+            connSettingsView.setTlsPaddingToggle(R.drawable.ic_toggle_button_on)
+        } else {
+            connSettingsView.setTlsPaddingToggle(R.drawable.ic_toggle_button_off)
+        }
     }
 
     override fun onDestroy() {
@@ -176,7 +181,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
     }
 
     override fun onGpsSpoofingClick() {
-        permissionManager.withBackgroundLocationPermission {error ->
+        permissionManager.withBackgroundLocationPermission { error ->
             if (error != null) {
                 logger.debug(error)
             } else {
@@ -701,12 +706,22 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
     }
 
     override fun onNetworkOptionsClick() {
-        permissionManager.withBackgroundLocationPermission {error ->
+        permissionManager.withBackgroundLocationPermission { error ->
             if (error != null) {
                 logger.debug(error)
             } else {
                 connSettingsView.goToNetworkSecurity()
             }
+        }
+    }
+
+    override fun onTlsPaddingClick() {
+        if (interactor.getAppPreferenceInterface().isTlsPaddingOn) {
+            connSettingsView.setTlsPaddingToggle(R.drawable.ic_toggle_button_off)
+            interactor.getAppPreferenceInterface().isTlsPaddingOn = false
+        } else {
+            connSettingsView.setTlsPaddingToggle(R.drawable.ic_toggle_button_on)
+            interactor.getAppPreferenceInterface().isTlsPaddingOn = true
         }
     }
 }
