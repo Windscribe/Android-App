@@ -66,6 +66,9 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
     @BindView(R.id.cl_decoy_traffic)
     lateinit var decoyTrafficToggleView: ExpandableToggleView
 
+    @BindView(R.id.cl_tls_padding)
+    lateinit var clTlsPaddingToggleView: ToggleView
+
     @BindView(R.id.split_tunnel_title)
     lateinit var splitTunnelLabel: TextView
 
@@ -235,6 +238,12 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
             iconView = networkOptionsArrow,
             textView = networkOptionsLabel
         )
+        clTlsPaddingToggleView.delegate = object : ToggleView.Delegate {
+            override fun onToggleClick() {
+                presenter.onTlsPaddingClick()
+            }
+            override fun onExplainClick() {}
+        }
     }
 
     @OnClick(R.id.nav_button)
@@ -365,6 +374,10 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
 
     override fun setDecoyTrafficToggle(toggleDrawable: Int) {
         decoyTrafficToggleView.setToggleImage(toggleDrawable)
+    }
+
+    override fun setTlsPaddingToggle(toggleDrawable: Int) {
+        clTlsPaddingToggleView.setToggleImage(toggleDrawable)
     }
 
     override fun goToNetworkSecurity() {

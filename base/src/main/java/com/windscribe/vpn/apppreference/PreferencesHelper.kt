@@ -89,6 +89,7 @@ interface PreferencesHelper {
     var isShowLocationHealthEnabled: Boolean
     var isStartedByAlwaysOn: Boolean
     var isDecoyTrafficOn: Boolean
+    var isTlsPaddingOn: Boolean
     var wgLocalParams: WgLocalParams?
     fun nextProtocol(protocol: String?)
     fun removeResponseData(key: String?)
