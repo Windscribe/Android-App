@@ -16,6 +16,7 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.DECOY_TRAFFIC
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_IKEV2_PORT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.FAKE_TRAFFIC_VOLUME
+import com.windscribe.vpn.constants.PreferencesKeyConstants.TLS_PADDING
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_CONNECT_API_FAIL_OVER_STATE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_LOCAL_PARAMS
 import com.windscribe.vpn.constants.VpnPreferenceConstants
@@ -233,40 +234,40 @@ class AppPreferenceHelper(
 
     override val savedLanguage: String
         get() = preference.getString(
-            PreferencesKeyConstants.USER_LANGUAGE,
-            appContext.getAppSupportedSystemLanguage()
+                PreferencesKeyConstants.USER_LANGUAGE,
+                appContext.getAppSupportedSystemLanguage()
         )
-            ?: appContext.getAppSupportedSystemLanguage()
+                ?: appContext.getAppSupportedSystemLanguage()
     override val savedProtocol: String
         get() = preference.getString(
-            PreferencesKeyConstants.PROTOCOL_KEY,
-            PreferencesKeyConstants.PROTO_IKev2
+                PreferencesKeyConstants.PROTOCOL_KEY,
+                PreferencesKeyConstants.PROTO_IKev2
         )
-            ?: PreferencesKeyConstants.PROTO_IKev2
+                ?: PreferencesKeyConstants.PROTO_IKev2
     override val savedSTEALTHPort: String
         get() = preference.getString(
-            PreferencesKeyConstants.SAVED_STEALTH_PORT,
-            PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT
+                PreferencesKeyConstants.SAVED_STEALTH_PORT,
+                PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT
         )
-            ?: PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT
+                ?: PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT
     override val savedWSTunnelPort: String
         get() = preference.getString(
-            PreferencesKeyConstants.SAVED_WS_TUNNEL_PORT,
-            PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT
+                PreferencesKeyConstants.SAVED_WS_TUNNEL_PORT,
+                PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT
         )
-            ?: PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT
+                ?: PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT
     override val savedTCPPort: String
         get() = preference.getString(
-            PreferencesKeyConstants.SAVED_TCP_PORT,
-            PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT
+                PreferencesKeyConstants.SAVED_TCP_PORT,
+                PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT
         )
-            ?: PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT
+                ?: PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT
     override val savedUDPPort: String
         get() = preference.getString(
-            PreferencesKeyConstants.SAVED_UDP_PORT,
-            PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT
+                PreferencesKeyConstants.SAVED_UDP_PORT,
+                PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT
         )
-            ?: PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT
+                ?: PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT
     override var selectedCity: Int
         get() = preference.getInt(PreferencesKeyConstants.SELECTED_CITY_ID, -1)
         set(cityId) {
@@ -285,20 +286,20 @@ class AppPreferenceHelper(
         }
     override var selectedProtocol: String
         get() = preference.getString(
-            VpnPreferenceConstants.SELECTED_PROTOCOL,
-            PreferencesKeyConstants.PROTO_IKev2
+                VpnPreferenceConstants.SELECTED_PROTOCOL,
+                PreferencesKeyConstants.PROTO_IKev2
         )
-            ?: PreferencesKeyConstants.PROTO_IKev2
+                ?: PreferencesKeyConstants.PROTO_IKev2
         set(selectedProtocol) {
             preference.put(VpnPreferenceConstants.SELECTED_PROTOCOL, selectedProtocol)
         }
     override var selectedProtocolType: ProtocolConnectionStatus
         get() = preference.getString(
-            VpnPreferenceConstants.SELECTED_PROTOCOL_TYPE,
-            ProtocolConnectionStatus.Disconnected.name
+                VpnPreferenceConstants.SELECTED_PROTOCOL_TYPE,
+                ProtocolConnectionStatus.Disconnected.name
         )?.let {
             ProtocolConnectionStatus.valueOf(
-                it
+                    it
             )
         } ?: ProtocolConnectionStatus.Disconnected
         set(type) {
@@ -596,6 +597,11 @@ class AppPreferenceHelper(
         set(value) {
             preference.put(DECOY_TRAFFIC, value)
         }
+    override var isTlsPaddingOn: Boolean
+        get() = preference.getBoolean(TLS_PADDING, false)
+        set(value) {
+            preference.put(TLS_PADDING, value)
+        }
 
     override var isAutoSecureOn: Boolean
         get() = preference.getBoolean(AUTO_SECURE_NEW_NETWORKS, true)
@@ -606,7 +612,7 @@ class AppPreferenceHelper(
     override var fakeTrafficVolume: FakeTrafficVolume
         get() {
             val value = preference.getString(FAKE_TRAFFIC_VOLUME, FakeTrafficVolume.High.name)
-                ?: FakeTrafficVolume.High.name
+                    ?: FakeTrafficVolume.High.name
             return FakeTrafficVolume.valueOf(value)
         }
         set(value) {

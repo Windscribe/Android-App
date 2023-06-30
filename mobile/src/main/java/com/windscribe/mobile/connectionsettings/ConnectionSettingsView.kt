@@ -27,4 +27,5 @@ interface ConnectionSettingsView {
     fun setPotentialTrafficUse(value: String)
     fun showAutoStartOnBoot()
     fun setKeepAliveContainerVisibility(isAutoKeepAlive: Boolean)
+    fun setTlsPaddingToggle(toggleDrawable: Int)
 }
