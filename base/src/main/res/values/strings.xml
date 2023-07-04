@@ -475,4 +475,6 @@ last chosen location.</string>
     <string name="foreground_location_permission_reason">Windscribe needs the location permission in order to make the \"Network Whitelist\" feature work.  This permission is required to access Wifi network names. This permission is used solely for this feature as well as GPS spoofing functionality. Your location data does not leave your device, and is not used for anything else.</string>
     <string name="missing_location_permission">Missing location permission</string>
     <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Location permission is required to use this feature. Go to app settings > Permissions > Location and select Allow all the time.]]></string>
+    <string name="tls_padding">TLS Padding</string>
+    <string name="tls_padding_explainer">Adds random amount of TLS Padding Extension to stealth connections</string>
 </resources>
