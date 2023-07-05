@@ -1,3 +1,4 @@
-* Fdroid preparations.
-* Separate project in to flavours.
-* Removed proprietary dependencies.
+Build 3.73.1207 (Mobile)
+* Added Initial fdroid build.
+* Added tls padding option for Stunnel
+* Fixed Wireguard + allow lan ipv6 leak
