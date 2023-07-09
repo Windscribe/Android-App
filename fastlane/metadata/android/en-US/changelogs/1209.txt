@@ -1,0 +1,3 @@
+Build 3.74.1209 (Mobile)
+Build 3.74.1210 (TV)
+* Fixed Wireguard + allow lan ipv6 leak.
