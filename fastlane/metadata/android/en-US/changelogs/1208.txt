@@ -1,3 +1,4 @@
-Build 3.73.1207 (Tv)
+Build 3.73.1207 (Mobile)
+Build 3.73.1208 (TV)
 * Added Initial fdroid build.
-* Fixed Wireguard + allow lan ipv6 leak
+* Fixed Wireguard + allow lan ipv6 leak.

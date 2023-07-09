@@ -1,4 +1,4 @@
 Build 3.73.1207 (Mobile)
+Build 3.73.1208 (TV)
 * Added Initial fdroid build.
-* Added tls padding option for Stunnel
-* Fixed Wireguard + allow lan ipv6 leak
+* Fixed Wireguard + allow lan ipv6 leak.
