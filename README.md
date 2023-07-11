@@ -35,9 +35,17 @@ https://wiki.strongswan.org/projects/strongswan/wiki/AndroidVPNClientBuild
   Avoid circular dependencies between modules. It should always follow
   this path: Feature > base > UI
 
+# **Download**
+
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+     alt="Get it on F-Droid"
+     height="80">](https://f-droid.org/packages/com.windscribe.vpn/)
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
+     alt="Get it on Google Play"
+     height="80">](https://play.google.com/store/apps/details?id=com.windscribe.vpn)
+
 # **Versioning**
 
 format: [major][minor][BuildNumber]
-
 
 Copyright (c) 2021 Windscribe Limited
