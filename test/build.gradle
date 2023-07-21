@@ -17,8 +17,19 @@ android {
             }
         }
     }
+
     namespace 'com.windscribe.test'
+    flavorDimensions 'dim'
+    productFlavors {
+        fdroid {
+            dimension 'dim'
+        }
+        google {
+            dimension 'dim'
+        }
+    }
 }
+
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(path: ':base')
