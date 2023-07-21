@@ -175,6 +175,7 @@ class VPNProfileCreator @Inject constructor(
         if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
             profile.mTunMtu = preferencesHelper.packetSize
         }
+
         var port: String? = null
         var protocol: String? = null
         var serverConfig: String? = null
@@ -201,6 +202,13 @@ class VPNProfileCreator @Inject constructor(
                 ip = vpnParameters.tcpIp
                 protocol = "tcp"
                 serverConfig = preferencesHelper.getOpenVPNServerConfig()
+                // Append additional anti-censorship options
+                if (preferencesHelper.isAntiCensorshipOn && serverConfig != null) {
+                    serverConfig = String(org.spongycastle.util.encoders.Base64.decode(serverConfig))
+                    serverConfig += "\nudp-stuffing"
+                    serverConfig += "\ntcp-split-reset"
+                    serverConfig = String(org.spongycastle.util.encoders.Base64.encode(serverConfig.toByteArray()))
+                }
                 port = protocolInformation.port
                 proxyIp = null
             }
@@ -208,6 +216,13 @@ class VPNProfileCreator @Inject constructor(
                 ip = vpnParameters.udpIp
                 protocol = "udp"
                 serverConfig = preferencesHelper.getOpenVPNServerConfig()
+                // Append additional anti-censorship options
+                if (preferencesHelper.isAntiCensorshipOn && serverConfig != null) {
+                    serverConfig = String(org.spongycastle.util.encoders.Base64.decode(serverConfig))
+                    serverConfig += "\nudp-stuffing"
+                    serverConfig += "\ntcp-split-reset"
+                    serverConfig = String(org.spongycastle.util.encoders.Base64.encode(serverConfig.toByteArray()))
+                }
                 port = protocolInformation.port
                 proxyIp = null
             }
