@@ -16,7 +16,7 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.DECOY_TRAFFIC
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_IKEV2_PORT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.FAKE_TRAFFIC_VOLUME
-import com.windscribe.vpn.constants.PreferencesKeyConstants.TLS_PADDING
+import com.windscribe.vpn.constants.PreferencesKeyConstants.ANTI_CENSORSHIP
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_CONNECT_API_FAIL_OVER_STATE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_LOCAL_PARAMS
 import com.windscribe.vpn.constants.VpnPreferenceConstants
@@ -597,10 +597,10 @@ class AppPreferenceHelper(
         set(value) {
             preference.put(DECOY_TRAFFIC, value)
         }
-    override var isTlsPaddingOn: Boolean
-        get() = preference.getBoolean(TLS_PADDING, false)
+    override var isAntiCensorshipOn: Boolean
+        get() = preference.getBoolean(ANTI_CENSORSHIP, false)
         set(value) {
-            preference.put(TLS_PADDING, value)
+            preference.put(ANTI_CENSORSHIP, value)
         }
 
     override var isAutoSecureOn: Boolean
