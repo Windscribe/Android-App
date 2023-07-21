@@ -115,16 +115,16 @@
                 app:layout_constraintTop_toBottomOf="@id/cl_gps_settings" />
 
             <com.windscribe.mobile.custom_view.preferences.ToggleView
-                android:id="@+id/cl_tls_padding"
+                android:id="@+id/cl_anti_censorship"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/cl_decoy_traffic"
-                app:ToggleTitle="@string/tls_padding"
-                app:ToggleDescription="@string/tls_padding_explainer"
+                app:ToggleTitle="@string/anti_censorship"
+                app:ToggleDescription="@string/anti_censorship_explainer"
                 android:layout_marginTop="@dimen/margin_16"
                 app:ToggleShowRightIcon="false"
-                app:ToggleLeftIcon="@drawable/ic_connection_icon"
+                app:ToggleLeftIcon="@drawable/ic_anti_censorship_icon"
                 />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

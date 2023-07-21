@@ -66,8 +66,8 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
     @BindView(R.id.cl_decoy_traffic)
     lateinit var decoyTrafficToggleView: ExpandableToggleView
 
-    @BindView(R.id.cl_tls_padding)
-    lateinit var clTlsPaddingToggleView: ToggleView
+    @BindView(R.id.cl_anti_censorship)
+    lateinit var clAntiCensorshipToggleView: ToggleView
 
     @BindView(R.id.split_tunnel_title)
     lateinit var splitTunnelLabel: TextView
@@ -238,9 +238,9 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
             iconView = networkOptionsArrow,
             textView = networkOptionsLabel
         )
-        clTlsPaddingToggleView.delegate = object : ToggleView.Delegate {
+        clAntiCensorshipToggleView.delegate = object : ToggleView.Delegate {
             override fun onToggleClick() {
-                presenter.onTlsPaddingClick()
+                presenter.onAntiCensorshipClick()
             }
             override fun onExplainClick() {}
         }
@@ -376,8 +376,8 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
         decoyTrafficToggleView.setToggleImage(toggleDrawable)
     }
 
-    override fun setTlsPaddingToggle(toggleDrawable: Int) {
-        clTlsPaddingToggleView.setToggleImage(toggleDrawable)
+    override fun setAntiCensorshipToggle(toggleDrawable: Int) {
+        clAntiCensorshipToggleView.setToggleImage(toggleDrawable)
     }
 
     override fun goToNetworkSecurity() {
