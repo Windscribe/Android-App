@@ -33,5 +33,5 @@ interface ConnectionSettingsPresenter {
     fun turnOnDecoyTraffic()
     fun onFakeTrafficVolumeSelected(label: String)
     fun onNetworkOptionsClick()
-    fun onTlsPaddingClick()
+    fun onAntiCensorshipClick()
 }

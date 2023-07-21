@@ -77,10 +77,10 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
             connSettingsView.setDecoyTrafficToggle(R.drawable.ic_toggle_button_off)
         }
         setDecoyTrafficParameters()
-        if (interactor.getAppPreferenceInterface().isTlsPaddingOn) {
-            connSettingsView.setTlsPaddingToggle(R.drawable.ic_toggle_button_on)
+        if (interactor.getAppPreferenceInterface().isAntiCensorshipOn) {
+            connSettingsView.setAntiCensorshipToggle(R.drawable.ic_toggle_button_on)
         } else {
-            connSettingsView.setTlsPaddingToggle(R.drawable.ic_toggle_button_off)
+            connSettingsView.setAntiCensorshipToggle(R.drawable.ic_toggle_button_off)
         }
     }
 
@@ -715,13 +715,13 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
         }
     }
 
-    override fun onTlsPaddingClick() {
-        if (interactor.getAppPreferenceInterface().isTlsPaddingOn) {
-            connSettingsView.setTlsPaddingToggle(R.drawable.ic_toggle_button_off)
-            interactor.getAppPreferenceInterface().isTlsPaddingOn = false
+    override fun onAntiCensorshipClick() {
+        if (interactor.getAppPreferenceInterface().isAntiCensorshipOn) {
+            connSettingsView.setAntiCensorshipToggle(R.drawable.ic_toggle_button_off)
+            interactor.getAppPreferenceInterface().isAntiCensorshipOn = false
         } else {
-            connSettingsView.setTlsPaddingToggle(R.drawable.ic_toggle_button_on)
-            interactor.getAppPreferenceInterface().isTlsPaddingOn = true
+            connSettingsView.setAntiCensorshipToggle(R.drawable.ic_toggle_button_on)
+            interactor.getAppPreferenceInterface().isAntiCensorshipOn = true
         }
     }
 }
