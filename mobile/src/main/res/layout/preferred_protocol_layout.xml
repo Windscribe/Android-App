@@ -8,7 +8,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:animateLayoutChanges="true">
+    android:animateLayoutChanges="true"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!--Network name and ip-->
     <ImageView
@@ -91,7 +92,7 @@
             android:fontFamily="@font/ibm_plex_sans_bold"
             android:maxLines="1"
             android:singleLine="true"
-            android:text="@string/empty_ip_address"
+            tools:text="0000:0000:0000:0000:0000:0000:0000:0000"
             android:textColor="@color/colorWhite"
             android:textSize="@dimen/network_layout_items_text_size"
             android:textStyle="bold"
@@ -102,7 +103,7 @@
 
         <TextView
             android:id="@+id/network_name"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/margin_8"
             android:layout_marginStart="@dimen/reg_8dp"
