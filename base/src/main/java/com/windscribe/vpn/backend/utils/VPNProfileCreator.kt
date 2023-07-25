@@ -54,6 +54,7 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
+import java.net.DatagramSocket
 
 @Singleton
 class VPNProfileCreator @Inject constructor(
@@ -458,6 +459,7 @@ class VPNProfileCreator @Inject constructor(
     }
 
     private fun createWireGuardInterface(wgRemoteParams: WgRemoteParams): Interface {
+        val mPreferencesHelper = appContext.preference
         val builder = Builder()
         builder.parsePrivateKey(wgRemoteParams.privateKey)
         builder.parseAddresses(wgRemoteParams.address)
@@ -477,6 +479,16 @@ class VPNProfileCreator @Inject constructor(
             }
         } else {
             preferencesHelper.lastConnectedUsingSplit = false
+        }
+        if (mPreferencesHelper.isAntiCensorshipOn) {
+            try {
+                val socket = DatagramSocket(0)
+                val localPort = socket.getLocalPort()
+                socket.close()
+                builder.setListenPort(localPort)
+            } catch (e: Exception) {
+                logger.error("Can't bind socket! $e")
+            }
         }
         return builder.build()
     }
