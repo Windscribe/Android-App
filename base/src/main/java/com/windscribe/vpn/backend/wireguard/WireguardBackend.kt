@@ -22,6 +22,7 @@ import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
 import com.windscribe.vpn.backend.utils.SelectedLocationType
+import com.windscribe.vpn.backend.utils.VPNParameters
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes.EXPIRED_OR_BANNED_ACCOUNT
@@ -34,6 +35,7 @@ import com.wireguard.android.backend.GoBackend
 import com.wireguard.android.backend.Tunnel.State.DOWN
 import com.wireguard.android.backend.Tunnel.State.TOGGLE
 import com.wireguard.android.backend.Tunnel.State.UP
+import com.wireguard.config.Config
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,9 +46,15 @@ import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import kotlin.jvm.optionals.getOrDefault
+import kotlin.jvm.optionals.toSet
+import kotlin.random.Random
 
 
 @Singleton
@@ -137,7 +145,39 @@ class WireguardBackend(
         vpnLogger.debug("WireGuard backend deactivated.")
     }
 
+    private fun sendUdpStuffingForWireGuard(
+            config: Config
+    ) {
+        try {
+            //Open a port to send the package
+            val socket = DatagramSocket(config.`interface`.listenPort.getOrDefault(0))
+            val localPort = socket.getLocalPort()
+            val ntpBuf = ByteArray(48)
+            ntpBuf[0] = 0x23 // ntp ver=4, mode=client
+            ntpBuf[2] = 0x09 // polling interval=9
+            ntpBuf[3] = 0x20 // clock precision
+            // repeat up to 5 times.
+            val rnds = (1..5).random()
+            for (i in 1 until rnds) {
+                for (j in 40..47) {
+                    ntpBuf[j] = Random.nextInt().toByte()
+                }
+                for (k in config.peers) {
+                    k.endpoint.toSet().forEach {
+                        val sendPacket = socket.send(DatagramPacket(ntpBuf, ntpBuf.size,
+                                InetAddress.getByName(it.host), it.port
+                        ))
+                    }
+                }
+            }
+            socket.close()
+        } catch (e: Exception) {
+            vpnLogger.error("Can't send staffing packet! $e")
+        }
+    }
+
     override fun connect(protocolInformation: ProtocolInformation, connectionId: UUID) {
+        val mPreferencesHelper = appContext.preference
         this.protocolInformation = protocolInformation
         this.connectionId = connectionId
         startConnectionJob()
@@ -146,8 +186,12 @@ class WireguardBackend(
             Util.getProfile<WireGuardVpnProfile>()?.let {
                 withContext(Dispatchers.IO) {
                     val content = WireGuardVpnProfile.createConfigFromString(it.content)
+                    if (mPreferencesHelper.isAntiCensorshipOn) {
+                        sendUdpStuffingForWireGuard(content)
+                    }
                     vpnLogger.debug("Setting WireGuard state UP.")
                     try {
+
                         backend.setState(testTunnel, UP, content)
                     } catch (e: Exception) {
                         vpnLogger.error("Exception while setting WireGuard state UP.", e)
