@@ -531,7 +531,8 @@ open class BaseApplicationModule {
             serviceInteractor: ServiceInteractor,
             vpnProfileCreator: VPNProfileCreator,
             userRepository: Lazy<UserRepository>,
-            deviceStateManager: DeviceStateManager
+            deviceStateManager: DeviceStateManager,
+            preferencesHelper: PreferencesHelper
     ): WireguardBackend {
         return WireguardBackend(
                 goBackend,
@@ -541,7 +542,8 @@ open class BaseApplicationModule {
                 serviceInteractor,
                 vpnProfileCreator,
                 userRepository,
-                deviceStateManager
+                deviceStateManager,
+                preferencesHelper
         )
     }
 

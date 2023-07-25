@@ -15,6 +15,7 @@ import android.os.Build
 import android.os.PowerManager
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
@@ -34,6 +35,7 @@ import com.wireguard.android.backend.GoBackend
 import com.wireguard.android.backend.Tunnel.State.DOWN
 import com.wireguard.android.backend.Tunnel.State.TOGGLE
 import com.wireguard.android.backend.Tunnel.State.UP
+import com.wireguard.config.Config
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,9 +46,15 @@ import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import kotlin.jvm.optionals.getOrDefault
+import kotlin.jvm.optionals.toSet
+import kotlin.random.Random
 
 
 @Singleton
@@ -54,11 +62,12 @@ class WireguardBackend(
         var backend: GoBackend,
         var scope: CoroutineScope,
         var networkInfoManager: NetworkInfoManager,
-        var vpnStateManager: VPNConnectionStateManager,
+        vpnStateManager: VPNConnectionStateManager,
         var serviceInteractor: ServiceInteractor,
         val vpnProfileCreator: VPNProfileCreator,
         val userRepository: Lazy<UserRepository>,
-        val deviceStateManager: DeviceStateManager
+        val deviceStateManager: DeviceStateManager,
+        val preferencesHelper: PreferencesHelper
 ) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager) {
 
     var service: WireGuardWrapperService? = null
@@ -137,6 +146,38 @@ class WireguardBackend(
         vpnLogger.debug("WireGuard backend deactivated.")
     }
 
+    @Suppress("UNUSED_VARIABLE")
+    private fun sendUdpStuffingForWireGuard(
+            config: Config
+    ) {
+        try {
+            //Open a port to send the package
+            val socket = DatagramSocket(config.`interface`.listenPort.getOrDefault(0))
+            val localPort = socket.localPort
+            val ntpBuf = ByteArray(48)
+            ntpBuf[0] = 0x23 // ntp ver=4, mode=client
+            ntpBuf[2] = 0x09 // polling interval=9
+            ntpBuf[3] = 0x20 // clock precision
+            // repeat up to 5 times.
+            val rnds = (1..5).random()
+            for (i in 1 until rnds) {
+                for (j in 40..47) {
+                    ntpBuf[j] = Random.nextInt().toByte()
+                }
+                for (k in config.peers) {
+                    k.endpoint.toSet().forEach {
+                        val sendPacket = socket.send(DatagramPacket(ntpBuf, ntpBuf.size,
+                                InetAddress.getByName(it.host), it.port
+                        ))
+                    }
+                }
+            }
+            socket.close()
+        } catch (e: Exception) {
+            vpnLogger.error("Can't send staffing packet! $e")
+        }
+    }
+
     override fun connect(protocolInformation: ProtocolInformation, connectionId: UUID) {
         this.protocolInformation = protocolInformation
         this.connectionId = connectionId
@@ -146,6 +187,9 @@ class WireguardBackend(
             Util.getProfile<WireGuardVpnProfile>()?.let {
                 withContext(Dispatchers.IO) {
                     val content = WireGuardVpnProfile.createConfigFromString(it.content)
+                    if (preferencesHelper.isAntiCensorshipOn) {
+                        sendUdpStuffingForWireGuard(content)
+                    }
                     vpnLogger.debug("Setting WireGuard state UP.")
                     try {
                         backend.setState(testTunnel, UP, content)
@@ -281,8 +325,8 @@ class WireguardBackend(
 
     private fun GoBackend.handshakeNSecAgo(): Long? {
         val stats = getStatistics(testTunnel)
-        val key = stats.peers().first()
-        val timeInMills = stats.peer(key)?.latestHandshakeEpochMillis
+        val key = stats.peers().firstOrNull()
+        val timeInMills = key?.let { stats.peer(it)?.latestHandshakeEpochMillis }
         if (timeInMills != null) {
             val handshakeDate = Date(timeInMills)
             val currentDate = Date()
