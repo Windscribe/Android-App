@@ -15,6 +15,7 @@ import android.os.Build
 import android.os.PowerManager
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
@@ -22,7 +23,6 @@ import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
 import com.windscribe.vpn.backend.utils.SelectedLocationType
-import com.windscribe.vpn.backend.utils.VPNParameters
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes.EXPIRED_OR_BANNED_ACCOUNT
@@ -62,11 +62,12 @@ class WireguardBackend(
         var backend: GoBackend,
         var scope: CoroutineScope,
         var networkInfoManager: NetworkInfoManager,
-        var vpnStateManager: VPNConnectionStateManager,
+        vpnStateManager: VPNConnectionStateManager,
         var serviceInteractor: ServiceInteractor,
         val vpnProfileCreator: VPNProfileCreator,
         val userRepository: Lazy<UserRepository>,
-        val deviceStateManager: DeviceStateManager
+        val deviceStateManager: DeviceStateManager,
+        val preferencesHelper: PreferencesHelper
 ) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager) {
 
     var service: WireGuardWrapperService? = null
@@ -145,13 +146,14 @@ class WireguardBackend(
         vpnLogger.debug("WireGuard backend deactivated.")
     }
 
+    @Suppress("UNUSED_VARIABLE")
     private fun sendUdpStuffingForWireGuard(
             config: Config
     ) {
         try {
             //Open a port to send the package
             val socket = DatagramSocket(config.`interface`.listenPort.getOrDefault(0))
-            val localPort = socket.getLocalPort()
+            val localPort = socket.localPort
             val ntpBuf = ByteArray(48)
             ntpBuf[0] = 0x23 // ntp ver=4, mode=client
             ntpBuf[2] = 0x09 // polling interval=9
@@ -177,7 +179,6 @@ class WireguardBackend(
     }
 
     override fun connect(protocolInformation: ProtocolInformation, connectionId: UUID) {
-        val mPreferencesHelper = appContext.preference
         this.protocolInformation = protocolInformation
         this.connectionId = connectionId
         startConnectionJob()
@@ -186,12 +187,11 @@ class WireguardBackend(
             Util.getProfile<WireGuardVpnProfile>()?.let {
                 withContext(Dispatchers.IO) {
                     val content = WireGuardVpnProfile.createConfigFromString(it.content)
-                    if (mPreferencesHelper.isAntiCensorshipOn) {
+                    if (preferencesHelper.isAntiCensorshipOn) {
                         sendUdpStuffingForWireGuard(content)
                     }
                     vpnLogger.debug("Setting WireGuard state UP.")
                     try {
-
                         backend.setState(testTunnel, UP, content)
                     } catch (e: Exception) {
                         vpnLogger.error("Exception while setting WireGuard state UP.", e)
@@ -325,8 +325,8 @@ class WireguardBackend(
 
     private fun GoBackend.handshakeNSecAgo(): Long? {
         val stats = getStatistics(testTunnel)
-        val key = stats.peers().first()
-        val timeInMills = stats.peer(key)?.latestHandshakeEpochMillis
+        val key = stats.peers().firstOrNull()
+        val timeInMills = key?.let { stats.peer(it)?.latestHandshakeEpochMillis }
         if (timeInMills != null) {
             val handshakeDate = Date(timeInMills)
             val currentDate = Date()
