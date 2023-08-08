@@ -1143,6 +1143,8 @@ class WindscribePresenterImpl @Inject constructor(
                                 it, connectionOptions, appContext
                         )
                 )
+            } else {
+                updateLocationUI(it, true)
             }
         }
     }
