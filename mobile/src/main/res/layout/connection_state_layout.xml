@@ -135,7 +135,7 @@
         android:contentDescription="@string/image_description"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/tv_connection_state"
-        app:layout_constraintStart_toEndOf="@id/img_preferred_protocol_status"
+        app:layout_constraintStart_toEndOf="@id/anti_censor_ship_status"
         app:layout_constraintTop_toTopOf="@id/tv_connection_state" />
 
     <!--Port view-->
