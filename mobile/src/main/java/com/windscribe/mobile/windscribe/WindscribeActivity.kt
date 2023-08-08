@@ -299,6 +299,10 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
     var decoyArrow: ImageView? = null
 
     @JvmField
+    @BindView(R.id.anti_censor_ship_status)
+    var antiCensorShipIcon: ImageView? = null
+
+    @JvmField
     @BindView(R.id.img_protocol_change_arrow)
     var changeProtocolArrow: ImageView? = null
 
@@ -1761,6 +1765,9 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         preferenceChangeObserver.addLocationSettingsChangeObserver(this) {
             presenter.onLocationSettingsChanged()
         }
+        preferenceChangeObserver.addAntiCensorShipStatusChangeObserver(this) {
+            presenter.onAntiCensorShipStatusChanged()
+        }
     }
 
     private fun setBarSelected(
@@ -1794,6 +1801,9 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         } else {
             changeProtocolArrow?.visibility = GONE
         }
+        antiCensorShipIcon?.visibility = state.antiCensorShipStatusVisibility
+        antiCensorShipIcon?.setImageDrawable(state.antiCensorShipStatusDrawable)
+
         constraintSetMain.setAlpha(R.id.tv_protocol, state.badgeViewAlpha)
     }
 
@@ -1904,6 +1914,10 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
     @OnClick(R.id.img_protocol_change_arrow)
     fun onProtocolChangeClick() {
         presenter.onProtocolChangeClick()
+    }
+
+    override fun setCensorShipIconVisibility(visible: Int) {
+        antiCensorShipIcon?.visibility = visible
     }
 
     companion object {
