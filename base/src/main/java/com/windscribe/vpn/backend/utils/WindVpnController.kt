@@ -264,9 +264,9 @@ open class WindVpnController @Inject constructor(
     ) {
         try {
             logger.debug("Connecting to VPN with connectionId: $connectionId")
+            setLocationToConnect()
             vpnConnectionStateManager.setState(VPNState(Connecting, connectionId = connectionId))
             interactor.preferenceHelper.whitelistOverride = true
-            setLocationToConnect()
             val protocolInformation = selectedProtocol?.let {
                 autoConnectionManager.setSelectedProtocol(it)
                 return@let it
