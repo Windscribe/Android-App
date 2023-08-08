@@ -752,6 +752,17 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
+    override fun onConnectingAnimationCancelled() {
+        selectedLocation?.let {
+            windscribeView.setCountryFlag(FlagIconResource.getFlag(it.countryCode))
+            windscribeView.setupLayoutConnecting(
+                    ConnectingState(
+                            it, connectionOptions, appContext
+                    )
+            )
+        }
+    }
+
     override fun onDisconnectIntentReceived() {
         stopVpnFromUI()
     }
