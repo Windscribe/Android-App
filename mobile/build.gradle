@@ -25,7 +25,7 @@ android {
         applicationId rootProject.AppId
         minSdkVersion rootProject.appMinSdk
         targetSdkVersion rootProject.appTargetSdk
-        versionName System.getenv().getOrDefault("VERSION_NAME", "3.73")
+        versionName System.getenv().getOrDefault("VERSION_NAME", "3.74")
         versionCode 1207
         vectorDrawables.useSupportLibrary = true
 
