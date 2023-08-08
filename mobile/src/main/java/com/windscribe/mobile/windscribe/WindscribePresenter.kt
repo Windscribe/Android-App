@@ -93,4 +93,5 @@ interface WindscribePresenter {
     fun checkForWgIpChange()
     fun checkPendingAccountUpgrades()
     fun onAntiCensorShipStatusChanged()
+    fun onConnectingAnimationCancelled()
 }
