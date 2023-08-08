@@ -14,12 +14,12 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.setFragmentResultListener
-import com.windscribe.mobile.dialogs.ForegroundLocationPermissionDialog
 import com.windscribe.mobile.dialogs.BackgroundLocationPermissionDialog
+import com.windscribe.mobile.dialogs.ForegroundLocationPermissionDialog
 import com.windscribe.mobile.dialogs.LocationPermissionMissingDialog
 import com.windscribe.mobile.utils.PermissionManagerImpl.Companion.disabledFeatureTag
-import com.windscribe.mobile.utils.PermissionManagerImpl.Companion.rationaleTag
 import com.windscribe.mobile.utils.PermissionManagerImpl.Companion.okButtonKey
+import com.windscribe.mobile.utils.PermissionManagerImpl.Companion.rationaleTag
 import com.windscribe.mobile.utils.PermissionManagerImpl.Companion.resultKey
 
 /**
@@ -121,7 +121,10 @@ class PermissionManagerImpl(private val activity: AppCompatActivity) : Permissio
     private lateinit var backgroundPermissionRequest: PermissionRequest
 
     override fun isBackgroundPermissionGranted(): Boolean {
-        return ::backgroundPermissionRequest.isInitialized && backgroundPermissionRequest.isGranted(activity)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return ::backgroundPermissionRequest.isInitialized && backgroundPermissionRequest.isGranted(activity)
+        }
+        return true
     }
 
     /**

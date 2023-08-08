@@ -7,18 +7,17 @@ package com.windscribe.vpn.mocklocation
 import android.content.Context
 import android.location.LocationManager
 import android.provider.Settings.Global
-import android.provider.Settings.Secure
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import javax.inject.Singleton
 
 @Singleton
 class MockLocationManager(val context: Context, val scope: CoroutineScope, val vpnConnectionStateManager: VPNConnectionStateManager, val preferencesHelper: PreferencesHelper) {
@@ -99,9 +98,9 @@ class MockLocationManager(val context: Context, val scope: CoroutineScope, val v
 
         @JvmStatic
         fun isDevModeOn(applicationContext: Context): Boolean {
-            return Secure.getInt(
-                applicationContext.contentResolver,
-                Global.DEVELOPMENT_SETTINGS_ENABLED, 0
+            return Global.getInt(
+                    applicationContext.contentResolver,
+                    Global.DEVELOPMENT_SETTINGS_ENABLED, 0
             ) != 0
         }
     }
