@@ -115,8 +115,8 @@
 
     <ImageView
         android:id="@+id/anti_censor_ship_status"
-        android:layout_width="@dimen/reg_10dp"
-        android:layout_height="@dimen/reg_10dp"
+        android:layout_width="@dimen/reg_14dp"
+        android:layout_height="@dimen/reg_14dp"
         android:layout_marginStart="@dimen/reg_12dp"
         android:contentDescription="@string/image_description"
         android:visibility="gone"
