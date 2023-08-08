@@ -99,4 +99,16 @@ open class ConnectionUiState internal constructor(
     get() = appContext.preference.isCustomBackground
 
     open val decoyTrafficBadgeVisibility: Int = View.GONE
+
+    open val antiCensorShipStatusVisibility: Int
+        get() {
+            return if (appContext.preference.isAntiCensorshipOn) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+        }
+
+    open val antiCensorShipStatusDrawable: Drawable?
+        get() = getDrawable(R.drawable.ic_anti_censorship_disabled)
 }

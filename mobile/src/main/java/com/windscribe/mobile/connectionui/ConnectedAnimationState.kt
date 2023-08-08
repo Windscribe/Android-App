@@ -69,4 +69,7 @@ open class ConnectedAnimationState(
                 View.GONE
             }
         }
+
+    override val antiCensorShipStatusDrawable
+        get() = getDrawable(R.drawable.ic_anti_censorship_enabled)
 }
