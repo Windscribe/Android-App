@@ -104,4 +104,5 @@ interface WindscribeView {
     fun setDecoyTrafficInfoVisibility(visibility: Int)
     fun showShareLinkDialog()
     fun setupAccountStatusOkay()
+    fun setCensorShipIconVisibility(visible: Int)
 }

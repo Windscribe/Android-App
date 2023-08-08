@@ -44,4 +44,7 @@ open class ConnectingAnimationState(
         }
     override val progressRingVisibility: Int
         get() = ConstraintSet.VISIBLE
+
+    override val antiCensorShipStatusDrawable
+        get() = getDrawable(R.drawable.ic_anti_censorship_enabling)
 }
