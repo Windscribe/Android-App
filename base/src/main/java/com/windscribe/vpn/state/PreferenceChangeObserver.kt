@@ -18,6 +18,7 @@ class PreferenceChangeObserver {
     private val cityServerListChange = MutableLiveData<Boolean>()
     private val configListChange = MutableLiveData<Boolean>()
     private val locationSettingsChange = MutableLiveData<Boolean>()
+    private val antiCenterShipStatus = MutableLiveData<Boolean>()
 
     fun addConfigListObserver(owner: LifecycleOwner, observer: Observer<Boolean>) {
         configListChange.observe(owner, observer)
@@ -33,6 +34,10 @@ class PreferenceChangeObserver {
 
     fun addLocationSettingsChangeObserver(owner: LifecycleOwner, observer: Observer<Boolean>) {
         locationSettingsChange.observe(owner, observer)
+    }
+
+    fun addAntiCensorShipStatusChangeObserver(owner: LifecycleOwner, observer: Observer<Boolean>) {
+        antiCenterShipStatus.observe(owner, observer)
     }
 
     fun postLocationSettingsChange() {
@@ -57,5 +62,8 @@ class PreferenceChangeObserver {
 
     fun postShowLocationHealthChange() {
         showLocationHealthChange.postValue(true)
+    }
+    fun postAntiCensorShipStatusChange() {
+        antiCenterShipStatus.postValue(true)
     }
 }

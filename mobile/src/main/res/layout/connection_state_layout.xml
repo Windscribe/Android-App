@@ -98,7 +98,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:src="@drawable/ic_change_protocol_arrow"
-        app:layout_constraintStart_toEndOf="@id/img_preferred_protocol_status" />
+        app:layout_constraintStart_toEndOf="@id/anti_censor_ship_status" />
 
     <!--preferred protocol on-->
     <ImageView
@@ -112,6 +112,18 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/tv_port" />
+
+    <ImageView
+        android:id="@+id/anti_censor_ship_status"
+        android:layout_width="@dimen/reg_10dp"
+        android:layout_height="@dimen/reg_10dp"
+        android:layout_marginStart="@dimen/reg_12dp"
+        android:contentDescription="@string/image_description"
+        android:visibility="gone"
+        android:src="@drawable/ic_anti_censorship_disabled"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/img_preferred_protocol_status" />
 
     <!--divider view-->
     <ImageView
