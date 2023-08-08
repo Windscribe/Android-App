@@ -2289,4 +2289,12 @@ class WindscribePresenterImpl @Inject constructor(
     override fun checkPendingAccountUpgrades() {
         interactor.getReceiptValidator().checkPendingAccountUpgrades()
     }
+
+    override fun onAntiCensorShipStatusChanged() {
+        if (interactor.getAppPreferenceInterface().isAntiCensorshipOn) {
+            windscribeView.setCensorShipIconVisibility(View.VISIBLE)
+        } else {
+            windscribeView.setCensorShipIconVisibility(View.GONE)
+        }
+    }
 }
