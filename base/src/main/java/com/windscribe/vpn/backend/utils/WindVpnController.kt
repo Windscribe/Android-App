@@ -125,8 +125,9 @@ open class WindVpnController @Inject constructor(
     ): String {
         val cityAndRegion = interactor.getCityAndRegionByID(selectedCity)
         val city = cityAndRegion.city
-        val randomIndex = Util.getRandomNode(lastUsedRandomIndex, attempt, city.nodes)
-        val selectedNode: Node = cityAndRegion.city.getNodes()[randomIndex]
+        val nodes = city.getNodes()
+        val randomIndex = Util.getRandomNode(lastUsedRandomIndex, attempt, nodes)
+        val selectedNode: Node = nodes[randomIndex]
         logger.debug("$selectedNode")
         lastUsedRandomIndex = randomIndex
         val coordinatesArray = city.coordinates.split(",".toRegex()).toTypedArray()
