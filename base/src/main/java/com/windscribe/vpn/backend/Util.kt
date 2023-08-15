@@ -22,7 +22,13 @@ import com.wireguard.config.Config
 import inet.ipaddr.AddressStringException
 import inet.ipaddr.IPAddressString
 import io.reactivex.Single
-import java.io.*
+import java.io.BufferedReader
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
+import java.io.Reader
+import java.io.StringReader
 
 
 object Util {
@@ -270,11 +276,11 @@ object Util {
         var bestNode = 0
         var weightCounter = Math.random() * (nodes.sumOf { it.weight })
         for (node in nodes) {
-            weightCounter += node.weight
+            weightCounter -= node.weight
             if (weightCounter <= 0.0) {
+                bestNode = nodes.indexOf(node)
                 break
             }
-            bestNode = nodes.indexOf(node)
         }
         return bestNode
     }
