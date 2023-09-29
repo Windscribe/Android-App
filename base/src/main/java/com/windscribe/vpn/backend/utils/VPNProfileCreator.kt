@@ -40,12 +40,15 @@ import com.wireguard.config.Peer
 import de.blinkt.openvpn.core.ConfigParser
 import org.slf4j.LoggerFactory
 import org.strongswan.android.data.VpnProfile
-import org.strongswan.android.data.VpnProfile.SelectedAppsHandling.*
+import org.strongswan.android.data.VpnProfile.SelectedAppsHandling.SELECTED_APPS_DISABLE
+import org.strongswan.android.data.VpnProfile.SelectedAppsHandling.SELECTED_APPS_EXCLUDE
+import org.strongswan.android.data.VpnProfile.SelectedAppsHandling.SELECTED_APPS_ONLY
 import org.strongswan.android.data.VpnType
 import java.io.BufferedReader
 import java.io.Reader
 import java.io.StringReader
 import java.math.BigInteger
+import java.net.DatagramSocket
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
@@ -54,7 +57,6 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
-import java.net.DatagramSocket
 
 @Singleton
 class VPNProfileCreator @Inject constructor(
@@ -89,6 +91,8 @@ class VPNProfileCreator @Inject constructor(
         //Changing it to use altered ip instead of hostname.
         //profile.gateway = vpnParameters.hostName
         profile.gateway = vpnParameters.ikev2Ip
+        profile.espProposal = "aes256gcm16-sha256-ecp384"
+        profile.ikeProposal = "aes256gcm16-sha256-ecp384"
         profile.remoteId = vpnParameters.hostName
         profile.vpnType = VpnType.fromIdentifier("ikev2-eap")
         if (preferencesHelper.isKeepAliveModeAuto) {
