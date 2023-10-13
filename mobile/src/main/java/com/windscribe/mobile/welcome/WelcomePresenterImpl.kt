@@ -7,6 +7,7 @@ import android.text.TextUtils
 import android.util.Patterns
 import android.view.View
 import com.windscribe.mobile.R
+import com.windscribe.vpn.commonutils.CommonPasswordChecker
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.api.CreateHashMap.createClaimAccountMap
 import com.windscribe.vpn.api.CreateHashMap.createGhostModeMap
@@ -464,6 +465,12 @@ class WelcomePresenterImpl @Inject constructor(
             logger.info("[Password] is weak, displaying toast to the user...")
             welcomeView.setPasswordError(interactor.getResourceString(R.string.weak_password))
             welcomeView.showToast(interactor.getResourceString(R.string.weak_password))
+            return false
+        }
+        if (!isLogin && CommonPasswordChecker.isAMatch(password)) {
+            logger.info("[Password] matches worst password list, displaying toast to the user...")
+            welcomeView.setPasswordError(interactor.getResourceString(R.string.common_password))
+            welcomeView.showToast(interactor.getResourceString(R.string.common_password))
             return false
         }
         return true
