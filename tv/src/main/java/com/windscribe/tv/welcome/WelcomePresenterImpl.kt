@@ -13,6 +13,7 @@ import com.windscribe.vpn.api.CreateHashMap.createLoginMap
 import com.windscribe.vpn.api.CreateHashMap.createRegistrationMap
 import com.windscribe.vpn.api.CreateHashMap.createVerifyXPressCodeMap
 import com.windscribe.vpn.api.response.*
+import com.windscribe.vpn.commonutils.CommonPasswordChecker
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.UserStatusConstants
@@ -537,6 +538,12 @@ class WelcomePresenterImpl @Inject constructor(
         if (!isLogin && !evaluatePassword(password)) {
             logger.info("[Password] is weak, displaying toast to the user...")
             welcomeView.showToast(interactor.getResourceString(R.string.weak_password))
+            return false
+        }
+        if (!isLogin && CommonPasswordChecker.isAMatch(password)) {
+            logger.info("[Password] matches worst password list, displaying toast to the user...")
+            welcomeView.setPasswordError(interactor.getResourceString(R.string.common_password))
+            welcomeView.showToast(interactor.getResourceString(R.string.common_password))
             return false
         }
         return true
