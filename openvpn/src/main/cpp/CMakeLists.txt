@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4.1)
+cmake_minimum_required(VERSION 3.22.1)
 # Git version string
 
 include(GetGitRevisionDescription.cmake)
@@ -235,13 +235,14 @@ else ()
 endif ()
 
 add_executable(libovpnexec.so minivpn/minivpn.c)
-target_compile_options(libovpnexec.so PRIVATE -fPIE)
-target_link_libraries(libovpnexec.so PRIVATE openvpn -fPIE -pie)
+target_link_libraries(libovpnexec.so PRIVATE openvpn)
 
 add_executable(pie_openvpn.${ANDROID_ABI} minivpn/minivpn.c)
 target_compile_options(pie_openvpn.${ANDROID_ABI} PRIVATE -fPIE)
 target_link_libraries(pie_openvpn.${ANDROID_ABI} PRIVATE openvpn -fPIE -pie)
 
+target_compile_options(libovpnexec.so PRIVATE -fstack-protector-all -D_FORTIFY_SOURCE=2)
+target_compile_options(openvpn PRIVATE -fstack-protector-all -D_FORTIFY_SOURCE=2)
 # Hack to copy OpenVPN binaries to assets directory
 SET(OVPN_ASSET_DIR ${CMAKE_SOURCE_DIR}/../../../build/ovpnassets)
 
