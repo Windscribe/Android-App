@@ -41,7 +41,7 @@ class StaticIpAdapter(
                 latencyView.text =
                     latencyView.resources.getString(R.string.ping_time, pingTime)
             }
-            extraView.text = region.staticIpNode.ip
+            extraView.text = region.staticIp
             btnConnect.setColorFilter(
                 ContextCompat.getColor(itemView.context, R.color.colorWhite40),
                 PorterDuff.Mode.MULTIPLY
