@@ -10,8 +10,8 @@ variables:
   GCM_KEY_PATH: "${CI_PROJECT_DIR}/gcm_key.json"
   BUILD_PROPERTIES_PATH: "${CI_PROJECT_DIR}/config/build.properties"
   SIGN_PROPERTIES_PATH: "${CI_PROJECT_DIR}/config/sign.properties"
-  MOBILE_APK_PATH: "${CI_PROJECT_DIR}/mobile/google/release/mobile-google-release.apk"
-  TV_APK_PATH: "${CI_PROJECT_DIR}/tv/google/release/tv-google-release.apk"
+  MOBILE_APK_PATH: "${CI_PROJECT_DIR}/mobile/build/outputs/apk/google/release/mobile-google-release.apk"
+  TV_APK_PATH: "${CI_PROJECT_DIR}/tv/build/outputs/apk/google/release/tv-google-release.apk"
 
 stages:
   - Test
