@@ -11,6 +11,7 @@ apply from: "$rootDir/depedencycheck.gradle"
 
 android {
     namespace 'com.windscribe.tv'
+    ndkVersion "23.0.7599858"
     bundle {
         language {
             enableSplit = false
