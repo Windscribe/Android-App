@@ -34,6 +34,8 @@ import com.windscribe.vpn.di.ServiceModule
 import com.windscribe.vpn.localdatabase.WindscribeDatabase
 import com.windscribe.vpn.mocklocation.MockLocationManager
 import com.windscribe.vpn.services.FirebaseManager
+import com.windscribe.vpn.services.canAccessNetworkName
+import com.windscribe.vpn.services.startAutoConnectService
 import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -135,8 +137,13 @@ open class Windscribe : MultiDexApplication() {
             firebaseManager.initialise()
         }
         deviceStateManager.init(this)
-        workManager.updateNodeLatencies()
+        if (preference.sessionHash != null) {
+            workManager.updateNodeLatencies()
+        }
         mockLocationManager.init()
+        if (preference.sessionHash != null && preference.autoConnect && canAccessNetworkName()) {
+            startAutoConnectService()
+        }
     }
 
     private fun initStrongswan() {
