@@ -57,6 +57,7 @@ import org.strongswan.android.utils.Utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -64,6 +65,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
 import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
@@ -716,19 +719,26 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 					return null;
 				}
 				certs.add(cert.getEncoded());
-			}
-			else
-			{
-				for (X509Certificate cert : certman.getAllCACertificates().values())
-				{
+			} else {
+				for (X509Certificate cert : certman.getAllCACertificates().values()) {
 					certs.add(cert.getEncoded());
 				}
 			}
-		}
-		catch (CertificateEncodingException e)
-		{
+			// Android 7.1.1 and below do not trust ISRG Root X1 hence app will fail to connect.
+			// Workaround is to add ISRG Root X1 to Strongswan's trusted certificate.
+			// https://letsencrypt.org/certificates/
+			// https://letsencrypt.org/docs/dst-root-ca-x3-expiration-september-2021/
+			if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1) {
+				CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+				InputStream certificateInputStream = getAssets().open("isrgrootx1.pem");
+				X509Certificate certificate = (X509Certificate) certificateFactory.generateCertificate(certificateInputStream);
+				certs.add(certificate.getEncoded());
+			}
+		} catch (CertificateException e) {
 			e.printStackTrace();
 			return null;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 		return certs.toArray(new byte[certs.size()][]);
 	}
