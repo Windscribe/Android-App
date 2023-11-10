@@ -102,6 +102,9 @@
         <service
             android:name="com.windscribe.vpn.backend.ikev2.CharonVpnServiceWrapper"
             android:permission="android.permission.BIND_VPN_SERVICE" />
+        <service
+            android:name=".services.AutoConnectService"
+            android:enabled="true" />
     </application>
 
 </manifest>

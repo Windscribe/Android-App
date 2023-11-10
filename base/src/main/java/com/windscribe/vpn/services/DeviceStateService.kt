@@ -9,6 +9,8 @@ import android.content.Intent
 import androidx.core.app.JobIntentWorkAroundService
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.exceptions.WindScribeException
@@ -31,6 +33,9 @@ class DeviceStateService : JobIntentWorkAroundService() {
 
     @Inject
     lateinit var scope: CoroutineScope
+
+    @Inject
+    lateinit var preferencesHelper: PreferencesHelper
 
     @Inject
     lateinit var vpnConnectionStateManager: VPNConnectionStateManager
@@ -85,8 +90,8 @@ class DeviceStateService : JobIntentWorkAroundService() {
     }
 
     private fun resetConnectState(networkInfo: NetworkInfo) {
-        logger.debug("SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelist override: ${interactor.preferenceHelper.whitelistOverride} | Connect Intent: ${interactor.preferenceHelper.globalUserConnectionPreference}")
-        if (networkInfo.isAutoSecureOn.not() && interactor.preferenceHelper.whitelistOverride.not()) {
+        logger.debug("SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelist override: ${preferencesHelper.whitelistOverride} | Connect Intent: ${preferencesHelper.globalUserConnectionPreference}")
+        if (preferencesHelper.autoConnect && networkInfo.isAutoSecureOn.not() && preferencesHelper.whitelistOverride.not() && vpnConnectionStateManager.state.value.status == VPNState.Status.Connected) {
             logger.debug("${networkInfo.networkName} is unsecured. Starting network whitelist service.")
             vpnController.disconnectAsync(true)
         }

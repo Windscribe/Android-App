@@ -69,6 +69,9 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
     @BindView(R.id.cl_anti_censorship)
     lateinit var clAntiCensorshipToggleView: ToggleView
 
+    @BindView(R.id.cl_auto_connect)
+    lateinit var clAutoConnectToggleView: ToggleView
+
     @BindView(R.id.split_tunnel_title)
     lateinit var splitTunnelLabel: TextView
 
@@ -244,6 +247,12 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
             }
             override fun onExplainClick() {}
         }
+        clAutoConnectToggleView.delegate = object : ToggleView.Delegate {
+            override fun onToggleClick() {
+                presenter.onAutoConnectClick()
+            }
+            override fun onExplainClick() {}
+        }
     }
 
     @OnClick(R.id.nav_button)
@@ -378,6 +387,10 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
 
     override fun setAntiCensorshipToggle(toggleDrawable: Int) {
         clAntiCensorshipToggleView.setToggleImage(toggleDrawable)
+    }
+
+    override fun setAutoConnectToggle(toggleDrawable: Int) {
+        clAutoConnectToggleView.setToggleImage(toggleDrawable)
     }
 
     override fun goToNetworkSecurity() {

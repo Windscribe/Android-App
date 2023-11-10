@@ -164,4 +164,5 @@ object PreferencesKeyConstants {
     const val WG_CONNECT_API_FAIL_OVER_STATE = "wg_connect_api_fail_over_state"
     const val ALREADY_SHOWN_SHARE_APP_LINK = "already_shown_share_app_link"
     const val ANTI_CENSORSHIP = "anti_censorship"
+    const val AUTO_CONNECT = "auto_connect"
 }
