@@ -30,10 +30,15 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WS_TUNNEL
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.mocklocation.MockLocationManager.Companion.isAppSelectedInMockLocationList
 import com.windscribe.vpn.mocklocation.MockLocationManager.Companion.isDevModeOn
+import com.windscribe.vpn.services.AutoConnectService
+import com.windscribe.vpn.services.canAccessNetworkName
+import com.windscribe.vpn.services.startAutoConnectService
+import com.windscribe.vpn.services.stopAutoConnectService
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.observers.DisposableObserver
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.launch
 import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -81,6 +86,11 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
             connSettingsView.setAntiCensorshipToggle(R.drawable.ic_toggle_button_on)
         } else {
             connSettingsView.setAntiCensorshipToggle(R.drawable.ic_toggle_button_off)
+        }
+        if (interactor.getAppPreferenceInterface().autoConnect) {
+            connSettingsView.setAutoConnectToggle(R.drawable.ic_toggle_button_on)
+        } else {
+            connSettingsView.setAutoConnectToggle(R.drawable.ic_toggle_button_off)
         }
     }
 
@@ -724,5 +734,26 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
             interactor.getAppPreferenceInterface().isAntiCensorshipOn = true
         }
         interactor.getPreferenceChangeObserver().postAntiCensorShipStatusChange()
+    }
+
+    override fun onAutoConnectClick() {
+        val status = interactor.getAppPreferenceInterface().autoConnect
+        if (status) {
+            connSettingsView.setAutoConnectToggle(R.drawable.ic_toggle_button_off)
+            interactor.getAppPreferenceInterface().autoConnect = false
+        } else {
+            connSettingsView.setAutoConnectToggle(R.drawable.ic_toggle_button_on)
+            interactor.getAppPreferenceInterface().autoConnect = true
+        }
+        val updatedStatus = status.not()
+        interactor.getMainScope().launch {
+            if (interactor.getVpnConnectionStateManager().isVPNConnected().not()) {
+                if (updatedStatus && appContext.canAccessNetworkName() && AutoConnectService.isAutoConnectingServiceRunning.not()) {
+                    appContext.startAutoConnectService()
+                } else if (updatedStatus.not() && AutoConnectService.isAutoConnectingServiceRunning) {
+                    appContext.stopAutoConnectService()
+                }
+            }
+        }
     }
 }

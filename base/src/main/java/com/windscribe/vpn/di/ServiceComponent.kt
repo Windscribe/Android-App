@@ -7,6 +7,7 @@ import com.windscribe.vpn.backend.ikev2.CharonVpnServiceWrapper
 import com.windscribe.vpn.backend.openvpn.OpenVPNWrapperService
 import com.windscribe.vpn.backend.wireguard.WireGuardWrapperService
 import com.windscribe.vpn.bootreceiver.BootSessionService
+import com.windscribe.vpn.services.AutoConnectService
 import com.windscribe.vpn.services.DeviceStateService
 import com.windscribe.vpn.services.DisconnectService
 import com.windscribe.vpn.services.NetworkWhiteListService
@@ -24,4 +25,5 @@ interface ServiceComponent {
     fun inject(bootSessionService: BootSessionService)
     fun inject(tileService: VpnTileService)
     fun inject(charonVpnServiceWrapper: CharonVpnServiceWrapper)
+    fun inject(autoConnectService: AutoConnectService)
 }
