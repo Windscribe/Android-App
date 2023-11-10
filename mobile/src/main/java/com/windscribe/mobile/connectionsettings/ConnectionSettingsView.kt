@@ -28,4 +28,5 @@ interface ConnectionSettingsView {
     fun showAutoStartOnBoot()
     fun setKeepAliveContainerVisibility(isAutoKeepAlive: Boolean)
     fun setAntiCensorshipToggle(toggleDrawable: Int)
+    fun setAutoConnectToggle(toggleDrawable: Int)
 }
