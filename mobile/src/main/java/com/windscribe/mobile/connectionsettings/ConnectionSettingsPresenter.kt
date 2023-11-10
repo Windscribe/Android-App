@@ -34,4 +34,5 @@ interface ConnectionSettingsPresenter {
     fun onFakeTrafficVolumeSelected(label: String)
     fun onNetworkOptionsClick()
     fun onAntiCensorshipClick()
+    fun onAutoConnectClick()
 }

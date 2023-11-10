@@ -11,12 +11,13 @@ import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.ALREADY_SHOWN_SHARE_APP_LINK
+import com.windscribe.vpn.constants.PreferencesKeyConstants.ANTI_CENSORSHIP
+import com.windscribe.vpn.constants.PreferencesKeyConstants.AUTO_CONNECT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.AUTO_SECURE_NEW_NETWORKS
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DECOY_TRAFFIC
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_IKEV2_PORT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.FAKE_TRAFFIC_VOLUME
-import com.windscribe.vpn.constants.PreferencesKeyConstants.ANTI_CENSORSHIP
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_CONNECT_API_FAIL_OVER_STATE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_LOCAL_PARAMS
 import com.windscribe.vpn.constants.VpnPreferenceConstants
@@ -634,5 +635,11 @@ class AppPreferenceHelper(
         get() = preference.getBoolean(ALREADY_SHOWN_SHARE_APP_LINK, false)
         set(value) {
             preference.put(ALREADY_SHOWN_SHARE_APP_LINK, value)
+        }
+
+    override var autoConnect: Boolean
+        get() = preference.getBoolean(AUTO_CONNECT, false)
+        set(value) {
+            preference.put(AUTO_CONNECT, value)
         }
 }
