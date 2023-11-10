@@ -478,4 +478,6 @@ last chosen location.</string>
     <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Location permission is required to use this feature. Go to app settings > Permissions > Location and select Allow all the time.]]></string>
     <string name="anti_censorship">Circumvent Censorship</string>
     <string name="anti_censorship_explainer">Connect to the VPN even in hostile environment</string>
+    <string name="auto_connect">Auto-Connect</string>
+    <string name="auto_connect_explainer">Connects to last used location when the app launches or joins a network.</string>
 </resources>

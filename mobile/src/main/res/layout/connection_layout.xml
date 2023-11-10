@@ -27,6 +27,19 @@
             <include layout="@layout/connection_multiline_link" />
             <include layout="@layout/always_on_tab"/>
 
+            <com.windscribe.mobile.custom_view.preferences.ToggleView
+                android:id="@+id/cl_auto_connect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:ToggleTitle="@string/auto_connect"
+                app:ToggleDescription="@string/auto_connect_explainer"
+                app:ToggleShowRightIcon="false"
+                app:ToggleLeftIcon="@drawable/auto_connect"
+                android:layout_marginTop="@dimen/reg_16dp"
+                app:layout_constraintTop_toBottomOf="@id/cl_always_on"
+                />
+
             <com.windscribe.mobile.custom_view.preferences.ExpandableDropDownView
                 android:id="@+id/cl_connection_mode"
                 android:layout_width="match_parent"
@@ -37,7 +50,7 @@
                 app:ExpandableDropDownChildType="ConnectionMode"
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginTop="@dimen/reg_16dp"
-                app:layout_constraintTop_toBottomOf="@id/cl_always_on" />
+                app:layout_constraintTop_toBottomOf="@id/cl_auto_connect" />
 
 
             <com.windscribe.mobile.custom_view.preferences.ExpandableDropDownView

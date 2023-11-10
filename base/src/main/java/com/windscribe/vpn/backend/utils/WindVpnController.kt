@@ -41,6 +41,8 @@ import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.repository.*
 import com.windscribe.vpn.serverlist.entity.Node
 import com.windscribe.vpn.services.NetworkWhiteListService
+import com.windscribe.vpn.services.canAccessNetworkName
+import com.windscribe.vpn.services.startAutoConnectService
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
@@ -346,14 +348,13 @@ open class WindVpnController @Inject constructor(
             delay(100)
             logger.debug("Force disconnected")
         }
-        checkForReconnect(waitForNextProtocol)
+        checkForReconnect()
     }
 
-    private fun checkForReconnect(waitForNextProtocol: Boolean) {
-        if (waitForNextProtocol) {
-            interactor.preferenceHelper.globalUserConnectionPreference = true
-            vpnConnectionStateManager.setState(VPNState(UnsecuredNetwork))
-            NetworkWhiteListService.startService(appContext)
+    private fun checkForReconnect() {
+        if (appContext.preference.autoConnect && appContext.canAccessNetworkName()) {
+            appContext.preference.globalUserConnectionPreference = true
+            appContext.startAutoConnectService()
         }
     }
 

@@ -91,6 +91,7 @@ interface PreferencesHelper {
     var isDecoyTrafficOn: Boolean
     var isAntiCensorshipOn: Boolean
     var wgLocalParams: WgLocalParams?
+    var autoConnect: Boolean
     fun nextProtocol(protocol: String?)
     fun removeResponseData(key: String?)
     fun requiredReconnect(): Boolean
