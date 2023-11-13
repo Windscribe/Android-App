@@ -1811,7 +1811,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         }
         antiCensorShipIcon?.visibility = state.antiCensorShipStatusVisibility
         antiCensorShipIcon?.setImageDrawable(state.antiCensorShipStatusDrawable)
-        if (lastFlag != state.flag) {
+        if (lastFlag != state.flag && state.isCustomBackgroundEnabled.not()) {
             flagView?.setImageResource(state.flag)
         }
         constraintSetMain.setAlpha(R.id.tv_protocol, state.badgeViewAlpha)
