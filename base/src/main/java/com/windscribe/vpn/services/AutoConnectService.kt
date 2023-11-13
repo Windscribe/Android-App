@@ -16,6 +16,8 @@ import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
+import com.windscribe.vpn.model.User
+import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -44,6 +46,9 @@ class AutoConnectService : Service(), NetworkInfoListener {
 
     @Inject
     lateinit var vpnController: WindVpnController
+
+    @Inject
+    lateinit var userRepository: UserRepository
 
     @Inject
     lateinit var preferencesHelper: PreferencesHelper
@@ -100,7 +105,7 @@ class AutoConnectService : Service(), NetworkInfoListener {
 
     override fun onNetworkInfoUpdate(networkInfo: NetworkInfo?, userReload: Boolean) {
         if (preferencesHelper.autoConnect) {
-            if (networkInfo?.isAutoSecureOn == true && vpnConnectionStateManager.state.value.status == VPNState.Status.Disconnected) {
+            if (networkInfo?.isAutoSecureOn == true && vpnConnectionStateManager.state.value.status == VPNState.Status.Disconnected && userRepository.user.value?.accountStatus == User.AccountStatus.Okay) {
                 logger.debug("Auto secured turned on for SSID: ${networkInfo.networkName} and connecting to VPN")
                 vpnController.connectAsync()
             } else if (networkInfo?.isAutoSecureOn == false && vpnConnectionStateManager.state.value.status == VPNState.Status.Connected) {
