@@ -41,4 +41,5 @@ interface SettingView {
     fun showProgress(progressText: String)
     fun showToast(toastString: String)
     fun updateLocale()
+    fun setAntiCensorshipMode(enabled: Boolean)
 }

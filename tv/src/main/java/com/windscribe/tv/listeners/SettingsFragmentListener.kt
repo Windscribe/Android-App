@@ -27,4 +27,6 @@ interface SettingsFragmentListener {
     fun onSortSelect(newSort: String)
     fun onUpgradeClick(planName: String)
     fun startSplitTunnelingHelpActivity()
+    fun onAllowAntiCensorshipClicked()
+    fun onBlockAntiCensorshipClicked()
 }
