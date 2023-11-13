@@ -52,6 +52,14 @@ class ConnectionFragment : Fragment() {
     var blockBootStart: PreferenceItem? = null
 
     @JvmField
+    @BindView(R.id.allow_anti_censorship)
+    var allowAntiCensorship: PreferenceItem? = null
+
+    @JvmField
+    @BindView(R.id.block_anti_censorship)
+    var blockAntiCensorship: PreferenceItem? = null
+
+    @JvmField
     @BindView(R.id.block)
     var blockLanView: PreferenceItem? = null
 
@@ -128,9 +136,9 @@ class ConnectionFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_connection, container, false)
         ButterKnife.bind(this, view)
@@ -188,7 +196,7 @@ class ConnectionFragment : Fragment() {
                 selectedProtocol?.let { protocol ->
                     selectedItemKey?.let {
                         listener?.onPortSelected(
-                            protocol, selectedItemKey
+                                protocol, selectedItemKey
                         )
                     }
                 }
@@ -231,6 +239,7 @@ class ConnectionFragment : Fragment() {
                 titleSplitRoutingApps?.text = getString(R.string.apps)
                 showAppsView(false)
             }
+
             EXCLUSIVE_MODE -> {
                 inclusiveModeView?.setState(State.MenuButtonState.NotSelected)
                 disabledModeView?.setState(State.MenuButtonState.NotSelected)
@@ -238,6 +247,7 @@ class ConnectionFragment : Fragment() {
                 titleSplitRoutingApps?.text = getString(R.string.apps_to_exclude)
                 showAppsView(true)
             }
+
             INCLUSIVE_MODE -> {
                 exclusiveModeView?.setState(State.MenuButtonState.NotSelected)
                 disabledModeView?.setState(State.MenuButtonState.NotSelected)
@@ -298,6 +308,16 @@ class ConnectionFragment : Fragment() {
         listener?.startSplitTunnelingHelpActivity()
     }
 
+    @OnClick(R.id.allow_anti_censorship)
+    fun onAllowAntiCensorshipClick() {
+        listener?.onAllowAntiCensorshipClicked()
+    }
+
+    @OnClick(R.id.block_anti_censorship)
+    fun onBlockAntiCensorshipClicked() {
+        listener?.onBlockAntiCensorshipClicked()
+    }
+
     private fun showAppsView(show: Boolean) {
         if (show) {
             TransitionManager.beginDelayedTransition(mainLayout)
@@ -308,6 +328,16 @@ class ConnectionFragment : Fragment() {
             titleSplitRoutingApps?.visibility = View.GONE
             showSystemApps?.visibility = View.GONE
             appsView?.visibility = View.GONE
+        }
+    }
+
+    fun setAntiCensorshipMode(enabled: Boolean) {
+        if (enabled) {
+            allowAntiCensorship?.setState(State.MenuButtonState.Selected)
+            blockAntiCensorship?.setState(State.MenuButtonState.NotSelected)
+        } else {
+            blockAntiCensorship?.setState(State.MenuButtonState.Selected)
+            allowAntiCensorship?.setState(State.MenuButtonState.NotSelected)
         }
     }
 }
