@@ -256,5 +256,38 @@
         app:layout_constraintStart_toEndOf="@id/allow_boot_start"
         app:layout_constraintTop_toTopOf="@id/allow_boot_start" />
 
+    <TextView
+        android:id="@+id/title_anti_censorship"
+        style="@style/preference_item_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/reg_24dp"
+        android:text="@string/anti_censorship"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/block_boot_start" />
+
+
+    <com.windscribe.tv.serverlist.customviews.PreferenceItem
+        android:id="@+id/allow_anti_censorship"
+        style="@style/preference_item"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/reg_24dp"
+        android:text="@string/allow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title_anti_censorship" />
+
+
+    <com.windscribe.tv.serverlist.customviews.PreferenceItem
+        android:id="@+id/block_anti_censorship"
+        style="@style/preference_item"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/reg_24dp"
+        android:text="@string/block"
+        app:layout_constraintBottom_toBottomOf="@id/allow_anti_censorship"
+        app:layout_constraintStart_toEndOf="@id/allow_anti_censorship"
+        app:layout_constraintTop_toTopOf="@id/allow_anti_censorship" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

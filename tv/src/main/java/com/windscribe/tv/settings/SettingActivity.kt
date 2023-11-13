@@ -40,9 +40,9 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants
 import javax.inject.Inject
 
 class SettingActivity :
-    BaseActivity(),
-    SettingView,
-    SettingsFragmentListener {
+        BaseActivity(),
+        SettingView,
+        SettingsFragmentListener {
 
     @Inject
     lateinit var vpnController: WindVpnController
@@ -156,7 +156,7 @@ class SettingActivity :
     override fun gotoLoginRegistrationActivity() {
         val intent = WelcomeActivity.getStartIntent(this)
         intent.addFlags(
-            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_CLEAR_TASK
         )
         startActivity(intent)
         overridePendingTransition(R.anim.slide_up, R.anim.slide_down)
@@ -185,6 +185,14 @@ class SettingActivity :
 
     override fun onBlockLanClicked() {
         presenter.onBlockLanClicked()
+    }
+
+    override fun onAllowAntiCensorshipClicked() {
+        presenter.onAllowAntiCensorshipClicked()
+    }
+
+    override fun onBlockAntiCensorshipClicked() {
+        presenter.onBlockAntiCensorshipClicked()
     }
 
     override fun onContainerHidden(hidden: Boolean) {
@@ -298,6 +306,10 @@ class SettingActivity :
         if (fragment is ConnectionFragment) {
             (fragment as ConnectionFragment).setBootOnStart(mode)
         }
+    }
+
+    override fun setAntiCensorshipMode(enabled: Boolean) {
+        (fragment as? ConnectionFragment)?.setAntiCensorshipMode(enabled)
     }
 
     override fun setDebugLog(log: List<String>) {
@@ -430,9 +442,9 @@ class SettingActivity :
     }
 
     override fun setupSortAdapter(
-        localiseValues: Array<String>,
-        selectedItem: String,
-        values: Array<String>
+            localiseValues: Array<String>,
+            selectedItem: String,
+            values: Array<String>
     ) {
         if (fragment is GeneralFragment) {
             (fragment as GeneralFragment).setSortAdapter(localiseValues, selectedItem, values)
@@ -443,7 +455,7 @@ class SettingActivity :
         runOnUiThread {
             sendDebugDialog?.show()
             (sendDebugDialog?.findViewById<View>(R.id.tv_dialog_header) as TextView).text =
-                progressText
+                    progressText
         }
     }
 
@@ -522,6 +534,7 @@ class SettingActivity :
                 fragment = GeneralFragment()
                 mainLayout?.setCurrentFragment(0)
             }
+
             2 -> if (currentFragment !is AccountFragment) {
                 onContainerHidden(false)
                 TransitionManager.beginDelayedTransition(mainLayout)
@@ -532,6 +545,7 @@ class SettingActivity :
                 fragment = AccountFragment()
                 mainLayout?.setCurrentFragment(1)
             }
+
             3 -> if (currentFragment !is ConnectionFragment) {
                 onContainerHidden(false)
                 TransitionManager.beginDelayedTransition(mainLayout)
@@ -542,6 +556,7 @@ class SettingActivity :
                 fragment = ConnectionFragment()
                 mainLayout?.setCurrentFragment(2)
             }
+
             4 -> if (currentFragment !is DebugFragment) {
                 onContainerHidden(false)
                 TransitionManager.beginDelayedTransition(mainLayout)
@@ -552,6 +567,7 @@ class SettingActivity :
                 fragment = DebugFragment()
                 mainLayout?.setCurrentFragment(3)
             }
+
             5 -> if (currentFragment !is GhostAccountFragment) {
                 onContainerHidden(false)
                 TransitionManager.beginDelayedTransition(mainLayout)
@@ -571,7 +587,7 @@ class SettingActivity :
             slide.duration = 400
             TransitionManager.beginDelayedTransition(mainLayout, slide)
             supportFragmentManager.beginTransaction().replace(R.id.container, it)
-                .commitNow()
+                    .commitNow()
         }
     }
 

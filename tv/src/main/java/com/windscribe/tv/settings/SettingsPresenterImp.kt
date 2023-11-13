@@ -116,6 +116,20 @@ class SettingsPresenterImp @Inject constructor(
         }
     }
 
+    override fun onAllowAntiCensorshipClicked() {
+        if (interactor.getAppPreferenceInterface().isAntiCensorshipOn.not()) {
+            interactor.getAppPreferenceInterface().isAntiCensorshipOn = true
+            settingView.setAntiCensorshipMode(true)
+        }
+    }
+
+    override fun onBlockAntiCensorshipClicked() {
+        if (interactor.getAppPreferenceInterface().isAntiCensorshipOn) {
+            interactor.getAppPreferenceInterface().isAntiCensorshipOn = false
+            settingView.setAntiCensorshipMode(false)
+        }
+    }
+
     override fun onConnectionModeAutoClicked() {
         if (CONNECTION_MODE_AUTO != interactor.getSavedConnectionMode()) {
             getExecutorService().submit {
@@ -465,6 +479,7 @@ class SettingsPresenterImp @Inject constructor(
         settingView.setLanTrafficMode(if (allowLanTraffic) LAN_ALLOW else LAN_BLOCK)
         val allowBootStart = interactor.getAppPreferenceInterface().autoStartOnBoot
         settingView.setBootStartMode(if (allowBootStart) BOOT_ALLOW else BOOT_BLOCK)
+        settingView.setAntiCensorshipMode(interactor.getAppPreferenceInterface().isAntiCensorshipOn)
         setupAppListAdapter()
     }
 
