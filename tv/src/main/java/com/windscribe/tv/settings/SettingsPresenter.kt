@@ -33,4 +33,6 @@ interface SettingsPresenter {
     fun showLayoutBasedOnUserType()
     fun updateUserDataFromApi()
     fun observeUserData(settingsActivity: SettingActivity)
+    fun onAllowAntiCensorshipClicked()
+    fun onBlockAntiCensorshipClicked()
 }
