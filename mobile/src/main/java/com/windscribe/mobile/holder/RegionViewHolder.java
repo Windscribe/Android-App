@@ -25,6 +25,8 @@ public class RegionViewHolder extends GroupViewHolder {
     public interface ItemExpandListener {
 
         void onItemExpand();
+
+        void onItemCollapse();
     }
 
     public final ImageView imgAnimationLine;
@@ -74,6 +76,9 @@ public class RegionViewHolder extends GroupViewHolder {
             @Override
             public void onAnimationEnd(Animator animation) {
                 valueAnimator.removeAllListeners();
+                if (itemExpandListener != null) {
+                    itemExpandListener.onItemCollapse();
+                }
             }
 
             @Override
