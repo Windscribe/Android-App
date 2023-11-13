@@ -206,15 +206,8 @@ public class RegionsAdapter extends ExpandableRecyclerViewAdapter<RegionViewHold
         setPremiumStatus(region.getPremium(), holder);
         // Setup force expand
         holder.tvCountryName.setTag(R.string.force_expand, 1);
-
         // Show expand icon
         holder.imgDropDown.setVisibility(View.VISIBLE);
-
-        holder.setItemExpandListener(() -> {
-            int scrollTo = holder.getAdapterPosition() + (Math.min(cities.size(), 5));
-            mListener.setScrollTo(scrollTo);
-        });
-
         int averageHealth = 0;
         int numberOfCities = 0;
         for (City city : cities) {
@@ -226,6 +219,18 @@ public class RegionsAdapter extends ExpandableRecyclerViewAdapter<RegionViewHold
         if (averageHealth > 0 && numberOfCities > 0) {
             averageHealth = averageHealth / numberOfCities;
         }
+        int finalAverageHealth = averageHealth;
+        holder.setItemExpandListener(new RegionViewHolder.ItemExpandListener() {
+            @Override
+            public void onItemExpand() {
+                int scrollTo = holder.getAdapterPosition() + (Math.min(cities.size(), 5));
+                mListener.setScrollTo(scrollTo);
+            }
+            @Override
+            public void onItemCollapse() {
+                setGroupHealth(finalAverageHealth, holder);
+            }
+        });
         setGroupHealth(averageHealth, holder);
     }
 
