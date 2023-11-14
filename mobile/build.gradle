@@ -67,10 +67,7 @@ android {
     }
     packagingOptions {
         jniLibs {
-            excludes += ['lib/arm64-v8a/libwg-quick.so', 'lib/armeabi-v7a/libwg-quick.so', 'lib/x86/libwg-quick.so', 'lib/x86_64/libwg-quick.so',
-                         'lib/arm64-v8a/libjbcrypto.so', 'lib/armeabi-v7a/libjbcrypto.so', 'lib/x86/libjbcrypto.so', 'lib/x86_64/libjbcrypto.so',
-                         'lib/arm64-v8a/libovpn3.so', 'lib/armeabi-v7a/libovpn3.so', 'lib/x86/libovpn3.so', 'lib/x86_64/libovpn3.so',
-                         'lib/arm64-v8a/libosslspeedtest.so', 'lib/arm64-v8a/libosslspeedtest.so', 'lib/arm64-v8a/libosslspeedtest.so', 'lib/arm64-v8a/libosslspeedtest.so',
+            excludes += ['lib/arm64-v8a/libwg-quick.so', 'lib/armeabi-v7a/libwg-quick.so', 'lib/x86/libwg-quick.so', 'lib/x86_64/libwg-quick.so'
             ]
         }
     }
