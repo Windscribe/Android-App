@@ -1,6 +1,5 @@
 package com.windscribe.vpn.repository
 
-import android.util.Log
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.Util
@@ -47,7 +46,7 @@ class LatencyRepository @Inject constructor(
     }
 
     companion object {
-        const val MINIMUM_PING_VALIDATION_INTERVAL = 5
+        const val MINIMUM_PING_VALIDATION_MINUTES = 5
     }
     private val logger = LoggerFactory.getLogger("latency")
     private var _latencyEvent = MutableStateFlow(Pair(false, LatencyType.Servers))
@@ -75,7 +74,7 @@ class LatencyRepository @Inject constructor(
         val currentIp = preferencesHelper.getResponseString(PreferencesKeyConstants.USER_IP)
         val validPings = localDbInterface.allPingTimes.await().filter {
             val isSameIp = currentIp == it.ip
-            val isWithinTimeLimit = (System.currentTimeMillis() - it.updatedAt).toDuration(DurationUnit.MILLISECONDS).inWholeMinutes <= MINIMUM_PING_VALIDATION_INTERVAL
+            val isWithinTimeLimit = (System.currentTimeMillis() - it.updatedAt).toDuration(DurationUnit.MILLISECONDS).inWholeMinutes <= MINIMUM_PING_VALIDATION_MINUTES
             val isPingValid = it.pingTime != -1
             return@filter isSameIp && isWithinTimeLimit && isPingValid
         }.map { it.id }
