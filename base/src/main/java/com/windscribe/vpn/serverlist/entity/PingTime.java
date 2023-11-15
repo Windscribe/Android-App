@@ -30,6 +30,12 @@ public class PingTime {
     @ColumnInfo(name = "region_id")
     public int regionId;
 
+    @ColumnInfo(name = "updated_at")
+    public long updatedAt = System.currentTimeMillis();
+
+    @ColumnInfo(name = "ip")
+    public String ip = "";
+
     public int getId() {
         return ping_id;
     }
@@ -77,6 +83,10 @@ public class PingTime {
     public void setStatic(boolean aStatic) {
         isStatic = aStatic;
     }
+
+    public void setIp(String ip) { this.ip = ip; }
+
+    public void setUpdatedAt(long updatedAt) { this.updatedAt = updatedAt; }
 
     @NonNull
     @Ignore

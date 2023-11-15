@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 33,
-    "identityHash": "d4f4313d87b9b9d57c0fdb780d2c9bcd",
+    "identityHash": "3a598c80b4a2b71fa6d9d85c139ccf19",
     "entities": [
       {
         "tableName": "ping_results",
@@ -355,7 +355,7 @@
       },
       {
         "tableName": "PingTime",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`static` INTEGER NOT NULL, `ping_time` INTEGER NOT NULL, `ping_id` INTEGER NOT NULL, `isPro` INTEGER NOT NULL, `region_id` INTEGER NOT NULL, PRIMARY KEY(`ping_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`static` INTEGER NOT NULL, `ping_time` INTEGER NOT NULL, `ping_id` INTEGER NOT NULL, `isPro` INTEGER NOT NULL, `region_id` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `ip` TEXT, PRIMARY KEY(`ping_id`))",
         "fields": [
           {
             "fieldPath": "isStatic",
@@ -386,6 +386,18 @@
             "columnName": "region_id",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ip",
+            "columnName": "ip",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -727,7 +739,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd4f4313d87b9b9d57c0fdb780d2c9bcd')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3a598c80b4a2b71fa6d9d85c139ccf19')"
     ]
   }
 }
