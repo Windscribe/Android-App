@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<inset android:drawable="@drawable/ic_monochrome"
+    android:insetLeft="15%"
+    android:insetTop="15%"
+    android:insetRight="15%"
+    android:insetBottom="15%"
+    xmlns:android="http://schemas.android.com/apk/res/android" />
