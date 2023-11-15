@@ -55,7 +55,7 @@ public class Migrations {
         @Override
         public void migrate(@NonNull final SupportSQLiteDatabase database) {
             database.execSQL("ALTER TABLE PingTime"
-                    + " ADD COLUMN updated_at NOT NULL DEFAULT 0");
+                    + " ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0");
             database.execSQL("ALTER TABLE PingTime"
                     + " ADD COLUMN ip Text");
             invalidateData();
