@@ -217,7 +217,9 @@ open class BaseApplicationModule {
                         super.onDestructiveMigration(db)
                     }
                 }).addMigrations(Migrations.migration_26_27).addMigrations(Migrations.migration_27_28)
-                .addMigrations(Migrations.migration_29_31).build()
+                .addMigrations(Migrations.migration_29_31)
+                .addMigrations(Migrations.migration_33_34).build()
+
     }
 
     @Provides
