@@ -51,6 +51,18 @@ public class Migrations {
         }
     };
 
+    public static final Migration migration_33_34 = new Migration(33, 34) {
+        @Override
+        public void migrate(@NonNull final SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE PingTime"
+                    + " ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0");
+            database.execSQL("ALTER TABLE PingTime"
+                    + " ADD COLUMN ip Text");
+            invalidateData();
+            logger.debug("Migrated database from version:33 to version:34");
+        }
+    };
+
     private static void invalidateData() {
         Windscribe.getAppContext().getPreference().setMigrationRequired(true);
     }

@@ -878,8 +878,7 @@ class WindscribePresenterImpl @Inject constructor(
      * Set Ui based on network
      * */
     override fun onNetworkStateChanged() {
-        if (WindUtilities.isOnline() && !interactor.getVpnConnectionStateManager()
-                        .isVPNActive() && interactor.getAppPreferenceInterface().pingTestRequired && !interactor.getAppPreferenceInterface().isReconnecting) {
+        if (WindUtilities.isOnline() && !interactor.getVpnConnectionStateManager().isVPNActive() && !interactor.getAppPreferenceInterface().isReconnecting) {
             interactor.getWorkManager().updateNodeLatencies()
         }
         setIpFromLocalStorage()
