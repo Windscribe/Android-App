@@ -1,11 +1,11 @@
 package com.windscribe.vpn.repository
 
-import android.util.Log
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.wireguard.WireGuardVpnProfile
 import com.windscribe.vpn.commonutils.WindUtilities
+import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.serverlist.entity.City
@@ -24,49 +24,35 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.rx2.await
 import kotlinx.coroutines.withTimeoutOrNull
+import org.slf4j.LoggerFactory
 import java.net.Inet4Address
 import java.net.InetSocketAddress
 import java.net.Socket
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.roundToInt
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 @Singleton
 class LatencyRepository @Inject constructor(
-    private val preferencesHelper: PreferencesHelper,
-    private val localDbInterface: LocalDbInterface,
-    private val iApiCallManager: IApiCallManager,
-    private val vpnConnectionStateManager: dagger.Lazy<VPNConnectionStateManager>
+        private val preferencesHelper: PreferencesHelper,
+        private val localDbInterface: LocalDbInterface,
+        private val iApiCallManager: IApiCallManager,
+        private val vpnConnectionStateManager: dagger.Lazy<VPNConnectionStateManager>
 ) {
     enum class LatencyType {
         Servers, StaticIp, Config
     }
 
+    companion object {
+        const val MINIMUM_PING_VALIDATION_MINUTES = 5
+    }
+    private val logger = LoggerFactory.getLogger("latency")
     private var _latencyEvent = MutableStateFlow(Pair(false, LatencyType.Servers))
     val latencyEvent: StateFlow<Pair<Boolean, LatencyType>> = _latencyEvent.asStateFlow()
     private val skipPing
         get() = vpnConnectionStateManager.get().isVPNActive() || WindUtilities.isOnline().not()
-
-    suspend fun getPing(locationId: Int): PingTime {
-        return localDbInterface.allPingTimes.await().firstOrNull { it.id == locationId }?.let {
-            return it
-        } ?: kotlin.run {
-            val regionAndCity = localDbInterface.getCityAndRegion(locationId)
-            val pingTime = getPingTime(
-                regionAndCity.city.getId(),
-                regionAndCity.region.id,
-                false,
-                regionAndCity.city.pro == 1
-            )
-            kotlin.runCatching {
-                return@run getLatency(regionAndCity.city.pingHost, pingTime)
-            }.getOrElse {
-                pingTime.apply {
-                    pingTime.pingTime = -1
-                }
-            }
-        }
-    }
 
     private suspend fun pingJobAsync(city: City): Deferred<PingTime> {
         val context = currentCoroutineContext()
@@ -85,8 +71,20 @@ class LatencyRepository @Inject constructor(
     }
 
     suspend fun updateAllServerLatencies(): Boolean {
-        val cities = localDbInterface.pingableCities.await()
-        val pingJobs = cities.map { pingJobAsync(it) }
+        val currentIp = preferencesHelper.getResponseString(PreferencesKeyConstants.USER_IP)
+        val validPings = localDbInterface.allPingTimes.await().filter {
+            val isSameIp = currentIp == it.ip
+            val isWithinTimeLimit = (System.currentTimeMillis() - it.updatedAt).toDuration(DurationUnit.MILLISECONDS).inWholeMinutes <= MINIMUM_PING_VALIDATION_MINUTES
+            val isPingValid = it.pingTime != -1
+            return@filter isSameIp && isWithinTimeLimit && isPingValid
+        }.map { it.id }
+        val pingJobs = localDbInterface.pingableCities.await()
+                .filter { city ->
+                    return@filter !validPings.contains(city.id)
+                }.map {
+                    pingJobAsync(it)
+                }
+        logger.debug("Requesting latency for ${pingJobs.count()} cities.")
         val cityPings = runCatching {
             pingJobs.awaitAll().map { pingTime ->
                 localDbInterface.addPing(pingTime).await()
@@ -105,7 +103,7 @@ class LatencyRepository @Inject constructor(
 
     suspend fun updateFavouriteCityLatencies(): Boolean {
         val cities =
-            localDbInterface.favourites.await().map { localDbInterface.getCityByID(it.id).await() }
+                localDbInterface.favourites.await().map { localDbInterface.getCityByID(it.id).await() }
         val pingJobs = cities.map { pingJobAsync(it) }
         val cityPings = runCatching {
             pingJobs.awaitAll().map { pingTime ->
@@ -174,7 +172,7 @@ class LatencyRepository @Inject constructor(
                     Util.getHostNameFromOpenVPNConfig(configFile.content)
                 }
                 val pingTime =
-                    getPingTime(configFile.getPrimaryKey(), 0, isStatic = false, isPro = false)
+                        getPingTime(configFile.getPrimaryKey(), 0, isStatic = false, isPro = false)
                 getLatency(hostname, pingTime)
             }.map { pingTime ->
                 localDbInterface.addPing(pingTime).await()
@@ -191,6 +189,10 @@ class LatencyRepository @Inject constructor(
             pro = isPro
             setRegionId(regionId)
             setStatic(isStatic)
+            setUpdatedAt(System.currentTimeMillis())
+            preferencesHelper.getResponseString(PreferencesKeyConstants.USER_IP)?.let {
+                setIp(it)
+            }
         }
     }
 
@@ -223,8 +225,8 @@ class LatencyRepository @Inject constructor(
     }
 
     private suspend fun getLatencyFromApi(
-        host: String?, ip: String,
-        ping: PingTime,
+            host: String?, ip: String,
+            ping: PingTime,
     ): PingTime {
         if (skipPing) {
             throw WindScribeException("Latency check not allowed once vpn is connected.")
