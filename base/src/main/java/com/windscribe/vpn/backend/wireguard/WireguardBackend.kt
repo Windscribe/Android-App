@@ -13,6 +13,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
 import android.os.PowerManager
+import com.windscribe.vpn.R
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -108,7 +109,7 @@ class WireguardBackend(
     }
 
     private val testTunnel = WireGuardTunnel(
-            name = "windscribe-wireguard", config = null, state = DOWN
+            name = appContext.getString(R.string.app_name), config = null, state = DOWN
     )
 
     private var stickyDisconnectEvent = false
