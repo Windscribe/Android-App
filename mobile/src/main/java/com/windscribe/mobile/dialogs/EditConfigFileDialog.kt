@@ -59,7 +59,7 @@ class EditConfigFileDialog : FullScreenDialog() {
             binding?.requestAlertOk?.setOnClickListener {
                 configFile.name = binding?.name?.text.toString()
                 configFile.username = binding?.username?.text.toString()
-                configFile.password = binding?.password?.toString()
+                configFile.password = binding?.password?.text.toString()
                 configFile.type = 1
                 requestDialogCallback?.onConfigFileUpdated(configFile)
                 dismiss()

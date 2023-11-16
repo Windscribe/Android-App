@@ -52,6 +52,7 @@ class UsernameAndPasswordRequestDialog : FullScreenDialog() {
             binding?.requestAlertOk?.setOnClickListener {
                 configFile.username = binding?.username?.text.toString()
                 configFile.password = binding?.password?.text.toString()
+                dismiss()
                 requestDialogCallback?.onSubmitUsernameAndPassword(configFile)
             }
             binding?.requestAlertCancel?.setOnClickListener {
