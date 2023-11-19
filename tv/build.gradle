@@ -88,4 +88,5 @@ dependencies {
     kapt "androidx.room:room-compiler:$room"
     kapt "com.jakewharton:butterknife-compiler:$butterknife"
     kapt "com.google.dagger:dagger-compiler:$dagger"
+    implementation "androidx.core:core-splashscreen:1.0.1"
 }
