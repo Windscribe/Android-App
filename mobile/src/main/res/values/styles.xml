@@ -197,8 +197,7 @@
 
     <style name="AppTheme.WindLauncher" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/colorDeepBlue</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash</item>
-        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_static</item>
         <item name="postSplashScreenTheme">@style/AppTheme</item>
     </style>
 
