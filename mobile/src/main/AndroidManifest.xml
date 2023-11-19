@@ -12,6 +12,7 @@
         android:icon="@mipmap/ws_launcher"
         android:roundIcon="@mipmap/ws_launcher_round"
         android:supportsRtl="false"
+        android:largeHeap="true"
         android:theme="@style/DarkTheme"
         tools:targetApi="n">
         <activity

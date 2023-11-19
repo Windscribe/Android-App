@@ -97,4 +97,5 @@ dependencies {
     androidTestImplementation "androidx.work:work-testing:$work_manager"
     implementation "androidx.test.espresso:espresso-intents:3.5.1"
     implementation 'androidx.test.uiautomator:uiautomator:2.2.0'
+    implementation "androidx.core:core-splashscreen:1.0.1"
 }
