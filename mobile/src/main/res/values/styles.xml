@@ -195,10 +195,11 @@
         <item name="wdWarningColor50">@color/colorOrange50</item>
     </style>
 
-    <style name="AppTheme.WindLauncher">
-        <item name="android:windowBackground">@drawable/launcher_background</item>
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
+    <style name="AppTheme.WindLauncher" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/colorDeepBlue</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash</item>
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <item name="postSplashScreenTheme">@style/AppTheme</item>
     </style>
 
     <style name="StyleNeonGreen" parent="ThemeOverlay.AppCompat.Light">
