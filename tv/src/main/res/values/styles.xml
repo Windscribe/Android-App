@@ -132,10 +132,11 @@
         <item name="colorPrimaryDark">@android:color/transparent</item>
     </style>
 
-    <style name="AppTheme.WindLauncher" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/colorDeepBlue</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_static</item>
-        <item name="postSplashScreenTheme">@style/AppTheme</item>
+    <style name="AppTheme.WindLauncher">
+        <item name="android:windowBackground">@drawable/launcher_background</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:navigationBarColor">@color/colorBlack</item>
     </style>
 
     <style name="CheckBox" parent="@android:style/Widget.CompoundButton.CheckBox">
