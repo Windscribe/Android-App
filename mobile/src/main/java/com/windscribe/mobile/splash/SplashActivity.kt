@@ -5,7 +5,9 @@ package com.windscribe.mobile.splash
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.windscribe.mobile.R
 import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.di.ActivityModule
@@ -23,15 +25,19 @@ class SplashActivity : BaseActivity(), SplashView {
     lateinit var presenter: SplashPresenter
 
     private val logger = LoggerFactory.getLogger("splash_a")
-
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         DaggerActivityComponent.builder().activityModule(ActivityModule(this, this))
-            .applicationComponent(
-                appContext
-                    .applicationComponent
-            ).build().inject(this)
-        setContentView(R.layout.activity_splash)
+                .applicationComponent(
+                        appContext
+                                .applicationComponent
+                ).build().inject(this)
+        if (Build.VERSION.SDK_INT >= 23) {
+            splashScreen.setKeepOnScreenCondition { true }
+        } else {
+            setContentView(R.layout.activity_splash)
+        }
         logger.info("OnCreate: Splash Activity")
         presenter.checkNewMigration()
     }
