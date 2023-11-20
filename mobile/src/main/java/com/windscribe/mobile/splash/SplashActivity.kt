@@ -4,11 +4,9 @@
 package com.windscribe.mobile.splash
 
 import android.annotation.SuppressLint
-import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.windscribe.mobile.R
 import com.windscribe.mobile.base.BaseActivity
