@@ -34,7 +34,7 @@
         android:supportsRtl="false"
         android:extractNativeLibs="true"
         android:roundIcon="@mipmap/ws_launcher"
-        android:theme="@style/AppTheme"
+        android:theme="@style/AppTheme.NoActionBar"
         tools:ignore="GoogleAppIndexingWarning"
         tools:targetApi="n">
         <activity android:name="com.windscribe.tv.moredata.GetMoreDataActivity" />
