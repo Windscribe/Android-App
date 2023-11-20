@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:oneshot="true"
+    >
+    <item android:drawable="@drawable/splash_00" android:duration="41" />
+    <item android:drawable="@drawable/splash_01" android:duration="41" />
+    <item android:drawable="@drawable/splash_02" android:duration="41" />
+    <item android:drawable="@drawable/splash_03" android:duration="41" />
+    <item android:drawable="@drawable/splash_04" android:duration="41" />
+    <item android:drawable="@drawable/splash_05" android:duration="41" />
+    <item android:drawable="@drawable/splash_06" android:duration="41" />
+    <item android:drawable="@drawable/splash_07" android:duration="41" />
+    <item android:drawable="@drawable/splash_08" android:duration="41" />
+    <item android:drawable="@drawable/splash_09" android:duration="41" />
+    <item android:drawable="@drawable/splash_10" android:duration="41" />
+    <item android:drawable="@drawable/splash_11" android:duration="41" />
+    <item android:drawable="@drawable/splash_12" android:duration="41" />
+    <item android:drawable="@drawable/splash_13" android:duration="41" />
+    <item android:drawable="@drawable/splash_14" android:duration="41" />
+    <item android:drawable="@drawable/splash_15" android:duration="41" />
+    <item android:drawable="@drawable/splash_16" android:duration="41" />
+    <item android:drawable="@drawable/splash_17" android:duration="41" />
+    <item android:drawable="@drawable/splash_18" android:duration="41" />
+    <item android:drawable="@drawable/splash_19" android:duration="41" />
+    <item android:drawable="@drawable/splash_20" android:duration="41" />
+    <item android:drawable="@drawable/splash_21" android:duration="41" />
+    <item android:drawable="@drawable/splash_22" android:duration="41" />
+    <item android:drawable="@drawable/splash_23" android:duration="41" />
+    <item android:drawable="@drawable/splash_24" android:duration="41" />
+</animation-list>
