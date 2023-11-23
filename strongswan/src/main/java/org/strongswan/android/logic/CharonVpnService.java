@@ -54,15 +54,19 @@ import org.strongswan.android.utils.IPRangeSet;
 import org.strongswan.android.utils.SettingsWriter;
 import org.strongswan.android.utils.Utils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -71,6 +75,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.SortedSet;
 
 
@@ -98,6 +103,7 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 	private BuilderAdapter mBuilderAdapter = new BuilderAdapter();
 	private Handler mHandler;
 	private VpnStateService mService;
+	private static final String ISRGX1Sha256Hash = "22B557A27055B33606B6559F37703928D3E4AD79F110B407D04986E1843543D1";
 	private final Object mServiceLock = new Object();
 	private final ServiceConnection mServiceConnection = new ServiceConnection() {
 		@Override
@@ -732,7 +738,12 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 				CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
 				InputStream certificateInputStream = getAssets().open("isrgrootx1.pem");
 				X509Certificate certificate = (X509Certificate) certificateFactory.generateCertificate(certificateInputStream);
-				certs.add(certificate.getEncoded());
+				certificate.checkValidity();
+				String hash = assetFileToSha256Hash("isrgrootx1.pem");
+				if (Objects.equals(hash, ISRGX1Sha256Hash)){
+					certs.add(certificate.getEncoded());
+				}
+
 			}
 		} catch (CertificateException e) {
 			e.printStackTrace();
@@ -741,6 +752,33 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 			throw new RuntimeException(e);
 		}
 		return certs.toArray(new byte[certs.size()][]);
+	}
+
+	public String assetFileToSha256Hash(String fileName) {
+		try(InputStream inputStream = getAssets().open(fileName)) {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			StringBuilder builder = new StringBuilder();
+			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+			BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+			String line;
+			while ((line = bufferedReader.readLine()) != null) {
+				builder.append(line);
+				builder.append("\n");
+			}
+			digest.update(builder.toString().getBytes(StandardCharsets.UTF_8));
+			byte [] hashBytes = digest.digest();
+			return convertHashToString(hashBytes);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	private static String convertHashToString(byte[] hashBytes) {
+		StringBuilder returnVal = new StringBuilder();
+		for (byte hashByte : hashBytes) {
+			returnVal.append(Integer.toString((hashByte & 0xff) + 0x100, 16).substring(1));
+		}
+		return returnVal.toString().toUpperCase();
 	}
 
 	/**
