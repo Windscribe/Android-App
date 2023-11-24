@@ -26,6 +26,7 @@ import com.windscribe.mobile.upgradeactivity.UpgradePresenterImpl
 import com.windscribe.mobile.upgradeactivity.UpgradeView
 import com.windscribe.mobile.welcome.WelcomeView
 import com.windscribe.mobile.windscribe.WindscribeView
+import com.windscribe.mobile.advance.AdvanceParamView
 import com.windscribe.vpn.ActivityInteractor
 import dagger.Module
 import dagger.Provides
@@ -135,6 +136,11 @@ open class ActivityModule : BaseActivityModule {
     constructor(mActivity: AppCompatActivity, upgradeView: UpgradeView) {
         this.activity = mActivity
         this.upgradeView = upgradeView
+    }
+
+    constructor(mActivity: AppCompatActivity, advanceParamView: AdvanceParamView) {
+        this.activity = mActivity
+        this.advanceParamView = advanceParamView
     }
 
     @Provides

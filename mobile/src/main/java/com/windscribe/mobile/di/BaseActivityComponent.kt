@@ -2,6 +2,7 @@ package com.windscribe.mobile.di
 
 import com.windscribe.mobile.about.AboutActivity
 import com.windscribe.mobile.account.AccountActivity
+import com.windscribe.mobile.advance.AdvanceParamsActivity
 import com.windscribe.mobile.confirmemail.ConfirmActivity
 import com.windscribe.mobile.connectionsettings.ConnectionSettingsActivity
 import com.windscribe.mobile.debug.DebugViewActivity
@@ -42,4 +43,5 @@ interface BaseActivityComponent {
     fun inject(aboutActivity: AboutActivity)
     fun inject(robertSettingsActivity: RobertSettingsActivity)
     fun inject(debugViewActivity: DebugViewActivity)
+    fun inject(advanceParamsActivity: AdvanceParamsActivity)
 }

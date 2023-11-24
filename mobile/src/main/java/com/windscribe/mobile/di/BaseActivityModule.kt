@@ -11,6 +11,9 @@ import com.windscribe.mobile.about.AboutView
 import com.windscribe.mobile.account.AccountPresenter
 import com.windscribe.mobile.account.AccountPresenterImpl
 import com.windscribe.mobile.account.AccountView
+import com.windscribe.mobile.advance.AdvanceParamPresenter
+import com.windscribe.mobile.advance.AdvanceParamView
+import com.windscribe.mobile.advance.AdvanceParamsPresenterImpl
 import com.windscribe.mobile.confirmemail.ConfirmEmailPresenter
 import com.windscribe.mobile.confirmemail.ConfirmEmailPresenterImp
 import com.windscribe.mobile.confirmemail.ConfirmEmailView
@@ -115,6 +118,7 @@ open class BaseActivityModule {
     lateinit var sendTicketView: SendTicketView
     lateinit var welcomeView: WelcomeView
     lateinit var debugView: DebugView
+    lateinit var advanceParamView: AdvanceParamView
 
     @Provides
     fun provideAboutPresenter(activityInteractor: ActivityInteractor): AboutPresenter {
@@ -139,6 +143,11 @@ open class BaseActivityModule {
     @Provides
     fun provideDebugView(): DebugView {
         return debugView
+    }
+
+    @Provides
+    fun provideAdvanceParamsView(): AdvanceParamView {
+        return advanceParamView
     }
 
     @Provides
@@ -233,6 +242,11 @@ open class BaseActivityModule {
     @Provides
     fun provideNetworkDetailPresenter(activityInteractor: ActivityInteractor): NetworkDetailPresenter {
         return NetworkDetailPresenterImp(networkDetailView, activityInteractor)
+    }
+
+    @Provides
+    fun provideAdvanceParamsPresenter(preferencesHelper: PreferencesHelper): AdvanceParamPresenter {
+        return AdvanceParamsPresenterImpl(advanceParamView, preferencesHelper)
     }
 
     @Provides
