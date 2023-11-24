@@ -69,7 +69,7 @@ interface ApiService {
             @Path("plan") billing_plan: String?,
             @Path("loc_rev") locRev: String?,
             @Query("alc") alcList: String?,
-            @Query("country_override") country_override: String?
+            @Query("country_override") country_override: String?,
     ): Single<ResponseBody>
 
     // Deprecated, exception with direct IP

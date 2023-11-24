@@ -14,6 +14,7 @@ import com.windscribe.mobile.about.AboutView
 import com.windscribe.mobile.account.AccountPresenter
 import com.windscribe.mobile.account.AccountPresenterImpl
 import com.windscribe.mobile.account.AccountView
+import com.windscribe.mobile.advance.AdvanceParamView
 import com.windscribe.mobile.confirmemail.ConfirmEmailPresenter
 import com.windscribe.mobile.confirmemail.ConfirmEmailPresenterImp
 import com.windscribe.mobile.confirmemail.ConfirmEmailView
@@ -109,6 +110,11 @@ open class ActivityModule: BaseActivityModule {
     constructor(mActivity: AppCompatActivity, helpView: HelpView) {
         this.activity = mActivity
         this.helpView = helpView
+    }
+
+    constructor(mActivity: AppCompatActivity, advanceParamView: AdvanceParamView) {
+        this.activity = mActivity
+        this.advanceParamView = advanceParamView
     }
 
     constructor(mActivity: AppCompatActivity, sendTicketView: SendTicketView) {

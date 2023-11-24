@@ -9,6 +9,7 @@ import android.content.Context.ACTIVITY_SERVICE
 import android.content.Intent
 import android.net.VpnService
 import androidx.work.Data
+import com.windscribe.vpn.BuildConfig.DEV
 import com.windscribe.vpn.R
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -24,6 +25,7 @@ import com.windscribe.vpn.backend.openvpn.WindStunnelUtility
 import com.windscribe.vpn.backend.utils.SelectedLocationType.CityLocation
 import com.windscribe.vpn.backend.utils.SelectedLocationType.StaticIp
 import com.windscribe.vpn.commonutils.WindUtilities
+import com.windscribe.vpn.constants.AdvanceParamKeys
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA
@@ -39,6 +41,7 @@ import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.exceptions.InvalidVPNConfigException
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.repository.*
+import com.windscribe.vpn.serverlist.entity.City
 import com.windscribe.vpn.serverlist.entity.Node
 import com.windscribe.vpn.services.NetworkWhiteListService
 import com.windscribe.vpn.services.canAccessNetworkName
@@ -122,13 +125,30 @@ open class WindVpnController @Inject constructor(
     }
 
     private var lastUsedRandomIndex = 0
+
+    private fun getForcedNodeIndex(city: City): Int {
+        if (DEV) {
+            val extraKeys = WindUtilities.toKeyValuePairs(appContext.preference.advanceParamText)
+            if (extraKeys.containsKey(AdvanceParamKeys.FORCE_NODE) && city.nodesAvailable()) {
+                val preferredNode = extraKeys[AdvanceParamKeys.FORCE_NODE]
+                return city.nodes.indexOfFirst { it.hostname == preferredNode }
+            }
+        }
+        return -1
+    }
+
     private suspend fun createVpnProfileFromCity(
         selectedCity: Int, config: ProtocolInformation, attempt: Int = 0
     ): String {
         val cityAndRegion = interactor.getCityAndRegionByID(selectedCity)
         val city = cityAndRegion.city
         val nodes = city.getNodes()
-        val randomIndex = Util.getRandomNode(lastUsedRandomIndex, attempt, nodes)
+        var randomIndex = Util.getRandomNode(lastUsedRandomIndex, attempt, nodes)
+        val forcedNodeIndex = getForcedNodeIndex(city)
+        if (forcedNodeIndex != -1){
+            logger.debug("Forcing node to ${nodes[forcedNodeIndex]}")
+            randomIndex = forcedNodeIndex
+        }
         val selectedNode: Node = nodes[randomIndex]
         logger.debug("$selectedNode")
         lastUsedRandomIndex = randomIndex
