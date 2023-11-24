@@ -31,6 +31,11 @@ import com.windscribe.vpn.exceptions.NoNetworkException;
 import com.windscribe.vpn.exceptions.WindScribeException;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -210,6 +215,20 @@ public class WindUtilities {
         } else {
             return true;
         }
+    }
+
+    public static HashMap<String, String> toKeyValuePairs(String text){
+        HashMap<String, String> map = new HashMap<String,String>();
+        if (!text.isEmpty() && text.split("\n").length > 0){
+         String[] lines = text.split("\n");
+            for (String line: lines) {
+                String[] kv = line.split("=");
+                if (kv.length == 2) {
+                  map.put(kv[0], kv[1]);
+                }
+            }
+        }
+        return map;
     }
 }
 

@@ -10,6 +10,7 @@ import com.windscribe.vpn.api.response.NewsFeedNotification
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.constants.PreferencesKeyConstants.ADVANCE_PARAM_TEXT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.ALREADY_SHOWN_SHARE_APP_LINK
 import com.windscribe.vpn.constants.PreferencesKeyConstants.ANTI_CENSORSHIP
 import com.windscribe.vpn.constants.PreferencesKeyConstants.AUTO_CONNECT
@@ -641,5 +642,10 @@ class AppPreferenceHelper(
         get() = preference.getBoolean(AUTO_CONNECT, false)
         set(value) {
             preference.put(AUTO_CONNECT, value)
+        }
+    override var advanceParamText: String
+        get() = preference.getString(ADVANCE_PARAM_TEXT, "") ?: ""
+        set(value) {
+            preference.put(ADVANCE_PARAM_TEXT, value)
         }
 }
