@@ -132,12 +132,35 @@
             app:layout_constraintTop_toBottomOf="@id/cl_refer_for_data" />
 
         <com.windscribe.mobile.custom_view.preferences.IconLinkView
+            android:id="@+id/cl_advance"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cl_refer_for_data"
+            app:ItemLinkViewTitle="@string/advance"
+            android:visibility="gone"
+            app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
+            app:ItemLinkViewLeftIcon="@drawable/advance" />
+
+        <ImageView
+            android:id="@+id/divider_advance"
+            style="@style/divider"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cl_advance" />
+
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
             android:id="@+id/cl_help"
             android:layout_width="match_parent"
             android:layout_height="@dimen/reg_50dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/divider_refer_for_data"
+            app:layout_constraintTop_toBottomOf="@id/divider_advance"
             app:ItemLinkViewTitle="@string/help_me"
             app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
             app:ItemLinkViewLeftIcon="@drawable/ic_helpme_icon" />
@@ -172,6 +195,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/cl_about" />
+
 
         <com.windscribe.mobile.custom_view.preferences.IconLinkView
             android:id="@+id/cl_sign"

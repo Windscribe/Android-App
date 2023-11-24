@@ -15,9 +15,11 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import butterknife.BindView
 import butterknife.OnClick
+import com.windscribe.mobile.BuildConfig
 import com.windscribe.mobile.R
 import com.windscribe.mobile.about.AboutActivity
 import com.windscribe.mobile.account.AccountActivity
+import com.windscribe.mobile.advance.AdvanceParamsActivity
 import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.confirmemail.ConfirmActivity
 import com.windscribe.mobile.connectionsettings.ConnectionSettingsActivity
@@ -31,6 +33,8 @@ import com.windscribe.mobile.robert.RobertSettingsActivity
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.utils.UiUtil
 import com.windscribe.mobile.welcome.WelcomeActivity
+import com.windscribe.vpn.BuildConfig.BUILD_TYPE
+import com.windscribe.vpn.BuildConfig.DEV
 import com.windscribe.vpn.alert.showAlertDialog
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.PreferenceChangeObserver
@@ -104,6 +108,12 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
     @BindView(R.id.cl_refer_for_data)
     lateinit var referForDataView: IconLinkView
 
+    @BindView(R.id.cl_advance)
+    lateinit var advanceView: IconLinkView
+
+    @BindView(R.id.divider_advance)
+    lateinit var advanceParamDivider: ImageView
+
     @BindView(R.id.divider_refer_for_data)
     lateinit var referForDataDivider: ImageView
 
@@ -115,6 +125,10 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
         presenter.observeUserChange(this)
         preferenceChangeObserver.addLanguageChangeObserver(this) { presenter.onLanguageChanged() }
         setupCustomLayoutDelegates()
+        if (BuildConfig.SHOW_ADVANCE_PARAMS) {
+            advanceView.visibility = View.VISIBLE
+            advanceParamDivider.visibility = View.VISIBLE
+        }
     }
 
     private fun setupCustomLayoutDelegates() {
@@ -149,6 +163,9 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
         referForDataView.onClick {
             performHapticFeedback(it)
             presenter.onReferForDataClick()
+        }
+        advanceView.onClick {
+            presenter.advanceViewClick()
         }
         UiUtil.setupOnTouchListener(textViewContainer = tvDataUpgrade, textView = tvDataUpgrade)
     }
@@ -351,6 +368,11 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
     override fun showShareLinkOption() {
         referForDataView.visibility = View.VISIBLE
         referForDataDivider.visibility = View.VISIBLE
+    }
+
+    override fun showAdvanceParamsActivity() {
+        val startIntent = Intent(this, AdvanceParamsActivity::class.java)
+        startActivity(startIntent)
     }
 
     companion object {

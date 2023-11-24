@@ -281,6 +281,7 @@
     <string name="connected_lower_case">Connected </string>
     <string name="other">OTHER</string>
     <string name="about">About</string>
+    <string name="advance">Advance Parameters</string>
     <string name="about_us">About Us</string>
     <string name="status">Status</string>
     <string name="privacy_policy">Privacy Policy</string>
@@ -480,4 +481,7 @@ last chosen location.</string>
     <string name="anti_censorship_explainer">Connect to the VPN even in hostile environment</string>
     <string name="auto_connect">Auto-Connect</string>
     <string name="auto_connect_explainer">Connects to last used location when the app launches or joins a network.</string>
+    <string name="save">Save</string>
+    <string name="clear">Clear</string>
+    <string name="enter_1_key_value_per_line">Enter 1 key=value per line.</string>
 </resources>

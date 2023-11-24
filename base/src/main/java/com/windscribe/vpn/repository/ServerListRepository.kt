@@ -5,7 +5,10 @@ package com.windscribe.vpn.repository
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.commonutils.WindUtilities
+import com.windscribe.vpn.constants.AdvanceParamKeys
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.serverlist.entity.City
@@ -51,8 +54,18 @@ class ServerListRepository @Inject constructor(
         }
     }
 
-    suspend fun updateServerList() {
-        update().await()
+    private fun getCountryOverride(): String? {
+        val extraKeys = WindUtilities.toKeyValuePairs(appContext.preference.advanceParamText)
+        return if (extraKeys.containsKey(AdvanceParamKeys.WS_SERVER_LIST_COUNTRY_OVERRIDE)) {
+            val countryCode = extraKeys[AdvanceParamKeys.WS_SERVER_LIST_COUNTRY_OVERRIDE]
+            if (countryCode == "ignore") {
+                "ZZ"
+            } else {
+                countryCode
+            }
+        } else {
+            appLifeCycleObserver.overriddenCountryCode
+        }
     }
 
     fun update(): Completable {
@@ -61,14 +74,16 @@ class ServerListRepository @Inject constructor(
                 it.dataClass?.let { userSession ->
                     userRepository.reload(userSession)
                     val user = User(userSession)
-                    if (appLifeCycleObserver.overriddenCountryCode != null) {
+                    val countryOverride = getCountryOverride()
+                    if (countryOverride != null){
                         globalServerList = false
                     }
+                    logger.debug("Country override: $countryOverride")
                     apiCallManager.getServerList(
                         null,
                         user.userStatusInt.toString(),
                         user.locationHash,
-                        user.alcList, appLifeCycleObserver.overriddenCountryCode
+                        user.alcList, countryOverride
                     )
                 } ?: it.errorClass?.let { error ->
                     logger.debug("Error updating session $error")

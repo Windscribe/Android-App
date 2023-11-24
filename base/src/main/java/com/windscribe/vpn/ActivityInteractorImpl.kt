@@ -21,6 +21,7 @@ import com.windscribe.vpn.backend.openvpn.ProxyTunnelManager
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.ThemeUtils
 import com.windscribe.vpn.commonutils.WindUtilities
+import com.windscribe.vpn.constants.AdvanceParamKeys
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.RateDialogConstants
@@ -225,7 +226,12 @@ class ActivityInteractorImpl(
     }
 
     override fun getDebugFilePath(): String {
-        return Windscribe.appContext.cacheDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
+        val advanceParams = WindUtilities.toKeyValuePairs(preferenceHelper.advanceParamText)
+        val ikev2Log = advanceParams.containsKey(AdvanceParamKeys.SHOW_IKEV2_LOG)
+        if (ikev2Log && advanceParams[AdvanceParamKeys.SHOW_IKEV2_LOG] == "true"){
+            return "${appContext.filesDir}/charon.log"
+        }
+        return appContext.cacheDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
     }
 
     @Throws(Exception::class)

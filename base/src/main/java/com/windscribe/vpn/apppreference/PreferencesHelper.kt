@@ -92,6 +92,7 @@ interface PreferencesHelper {
     var isAntiCensorshipOn: Boolean
     var wgLocalParams: WgLocalParams?
     var autoConnect: Boolean
+    var advanceParamText: String
     fun nextProtocol(protocol: String?)
     fun removeResponseData(key: String?)
     fun requiredReconnect(): Boolean
