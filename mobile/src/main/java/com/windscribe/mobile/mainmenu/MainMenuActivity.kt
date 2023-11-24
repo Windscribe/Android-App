@@ -125,7 +125,7 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
         presenter.observeUserChange(this)
         preferenceChangeObserver.addLanguageChangeObserver(this) { presenter.onLanguageChanged() }
         setupCustomLayoutDelegates()
-        if (BuildConfig.SHOW_ADVANCE_PARAMS) {
+        if (BuildConfig.DEV) {
             advanceView.visibility = View.VISIBLE
             advanceParamDivider.visibility = View.VISIBLE
         }
