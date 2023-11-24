@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/MatchMatchContainer"
+    tools:context=".advance.AdvanceParamsActivity">
+
+    <include layout="@layout/nav_bar" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:padding="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nav_bar"
+        android:layout_marginTop="@dimen/margin_24"
+        android:layout_marginStart="@dimen/margin_24"
+        android:layout_marginEnd="@dimen/margin_24"
+        style="@style/InputBox"
+        android:id="@+id/advance_params_text"
+        android:textColorHint="?attr/largeInputHintColor"
+        android:gravity="start"
+        android:hint="@string/enter_1_key_value_per_line"
+        android:textSize="@dimen/text_size_12"
+        android:inputType="textMultiLine"
+        android:fontFamily="@font/ibm_plex_sans_regular"
+        android:textCursorDrawable="@drawable/cursor_background"
+        />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/DialogPrimaryButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/advance_params_text"
+        android:id="@+id/saveAdvanceParams"
+        android:text="@string/save"
+        />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/NoBackgroundButtonBold"
+        android:layout_marginTop="@dimen/margin_16"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/saveAdvanceParams"
+        android:id="@+id/clearAdvanceParams"
+        android:text="@string/clear"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

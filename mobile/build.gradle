@@ -83,6 +83,7 @@ dependencies {
     //kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_std_lib"
     implementation "androidx.core:core-ktx:$ktx_core"
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugarJdk"
     //Core Module
     implementation project(path: ':base')
