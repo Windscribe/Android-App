@@ -16,6 +16,11 @@
         android:theme="@style/DarkTheme"
         tools:targetApi="n">
         <activity
+            android:name=".advance.AdvanceParamsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            />
+        <activity
             android:name=".robert.RobertSettingsActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
