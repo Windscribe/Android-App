@@ -130,8 +130,9 @@ class VPNProfileCreator @Inject constructor(
             } else {
                 logger.info("Failed to set lan by pass for gateway ip")
             }
-            logger.info("Excluded Subnet: $subNetBuilder")
-            profile.excludedSubnets = subNetBuilder.toString()
+            val includedIps = modifyAllowedIps("0.0.0.0/0", "10.255.255.1,10.255.255.2,10.255.255.3").replace(",", "")
+            logger.info("Included Ip: $includedIps")
+            profile.includedSubnets = includedIps
         }
 
         val apps: SortedSet<String> = TreeSet(preferencesHelper.installedApps())
