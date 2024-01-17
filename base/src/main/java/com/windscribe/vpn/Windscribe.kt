@@ -152,26 +152,31 @@ open class Windscribe : MultiDexApplication() {
         init(this)
     }
 
-    private fun languageToCode(language: String): String {
-        val firstIndex = language.indexOfLast { it == "(".single() }
-        return language.substring(firstIndex + 1, language.length - 1)
+    fun getLanguageCode(selectedLanguage: String): String {
+        val appLanguageArray = appContext.resources.getStringArray(R.array.language)
+        val appLanguageCodeArray = appContext.resources.getStringArray(R.array.language_codes)
+        return if (appLanguageArray.contains(selectedLanguage)) {
+            appLanguageCodeArray[appLanguageArray.indexOf(selectedLanguage)]
+        } else {
+            val firstIndex = selectedLanguage.indexOfLast { it == "(".single() }
+            selectedLanguage.substring(firstIndex + 1, selectedLanguage.length - 1)
+        }
     }
 
     fun getAppSupportedSystemLanguage(): String {
-        val languageCode = if (VERSION.SDK_INT >= VERSION_CODES.N) {
+        val systemLanguageCode = if (VERSION.SDK_INT >= VERSION_CODES.N) {
             resources.configuration.locales.get(0).language
         } else {
             resources.configuration.locale.language
         }
         return appContext.resources.getStringArray(R.array.language).firstOrNull {
-            languageCode == languageToCode(it)
+            systemLanguageCode == getLanguageCode(it)
         } ?: PreferencesKeyConstants.DEFAULT_LANGUAGE
     }
 
     fun getSavedLocale(): Locale {
         val selectedLanguage = appContext.preference.savedLanguage
-        val firstIndex = selectedLanguage.indexOfLast { it == "(".single() }
-        val language = selectedLanguage.substring(firstIndex + 1, selectedLanguage.length - 1)
+        val language = getLanguageCode(selectedLanguage)
         return if (language.contains("-")) {
             val splits = language.split("-")
             Locale(splits[0], splits[1])
