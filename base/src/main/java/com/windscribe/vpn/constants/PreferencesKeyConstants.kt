@@ -45,7 +45,7 @@ object PreferencesKeyConstants {
     const val DEFAULT_WIRE_GUARD_PORT = "443"
     const val DEFAULT_IKEV2_PORT = "500"
     const val USER_LANGUAGE = "locale"
-    const val DEFAULT_LANGUAGE = "English (en)"
+    const val DEFAULT_LANGUAGE = "English"
     const val WHITELIST_OVERRIDE = "whitelist_override"
     const val ALWAYS_ON = "always_on"
     const val GLOBAL_CONNECTION_PREFERENCE = "global_preference"
