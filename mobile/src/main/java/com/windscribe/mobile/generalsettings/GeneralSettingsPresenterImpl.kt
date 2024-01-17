@@ -112,9 +112,7 @@ class GeneralSettingsPresenterImpl @Inject constructor(
         if (savedLanguage == selectedLanguage) {
             logger.info("Language selected is same as saved. No action taken...")
         } else {
-            val locale = selectedLanguage.substring(
-                selectedLanguage.indexOf("(") + 1, selectedLanguage.indexOf(")")
-            )
+            val locale = appContext.getLanguageCode(selectedLanguage)
             logger.info("Saving selected language: $selectedLanguage Locale: $locale")
             interactor.saveSelectedLanguage(selectedLanguage)
             settingsView.setLanguageTextView(selectedLanguage)
