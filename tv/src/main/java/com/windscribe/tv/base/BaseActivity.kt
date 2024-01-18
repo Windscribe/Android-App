@@ -37,19 +37,12 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     protected fun updateLanguage() {
-        val selectedLanguage = appContext.preference.savedLanguage
-        val language = selectedLanguage.substring(
-            selectedLanguage.indexOf("(") + 1,
-            selectedLanguage.indexOf(")")
-        )
-        val locale = Locale(language)
-        Locale.setDefault(locale)
+        val newLocale = appContext.getSavedLocale()
+        Locale.setDefault(newLocale)
         val config = Configuration()
-        config.locale = locale
-        baseContext.resources.updateConfiguration(
-            config,
-            baseContext.resources.displayMetrics
-        )
+        config.locale = newLocale
+        appContext.resources.updateConfiguration(config, baseContext.resources.displayMetrics)
+        resources.updateConfiguration(config, baseContext.resources.displayMetrics)
     }
 
     fun activityScope(block: suspend CoroutineScope.() -> Unit) {
