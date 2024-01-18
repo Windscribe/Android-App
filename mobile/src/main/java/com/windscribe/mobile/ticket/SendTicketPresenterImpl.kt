@@ -26,7 +26,7 @@ class SendTicketPresenterImpl @Inject constructor(
 ) : SendTicketPresenter {
     private var queryType = QueryType.Account
     override fun init() {
-        sendTicketView.setActivityTitle(interactor.getResourceString(R.string.send_ticket))
+        sendTicketView.setActivityTitle(interactor.getResourceString(R.string.contact_humans))
         sendTicketView.setQueryTypeSpinner()
         sendTicketView.addTextChangeListener()
         interactor.getUserRepository().user.value?.email?.let {
