@@ -122,7 +122,7 @@ class LocationRepository @Inject constructor(
     private val randomLocation: Single<Int>
         get() = localDbInterface.cities
                 .flatMap { cities: List<City> ->
-                    Single.fromCallable {
+                    return@flatMap Single.fromCallable {
                         for (city in cities) {
                             if (city.nodesAvailable()) {
                                 return@fromCallable city.getId()
