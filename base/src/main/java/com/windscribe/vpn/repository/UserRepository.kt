@@ -19,6 +19,7 @@ import com.windscribe.vpn.model.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.await
 import org.slf4j.LoggerFactory
@@ -33,8 +34,8 @@ class UserRepository(
 ) {
     var user = MutableLiveData<User>()
     private val logger = LoggerFactory.getLogger("user_repo")
-    private val _userInfo = MutableSharedFlow<User>()
-    val userInfo = _userInfo
+    private val _userInfo = MutableSharedFlow<User>(replay = 1)
+    val userInfo: SharedFlow<User> = _userInfo
 
     init {
         logger.debug("Starting user repository.")
