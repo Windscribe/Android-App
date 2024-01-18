@@ -9,4 +9,5 @@ interface HelpView {
     fun setActivityTitle(title: String)
     fun showProgress(inProgress: Boolean, success: Boolean)
     fun showToast(message: String)
+    fun setSendTicketVisibility(visible: Boolean)
 }

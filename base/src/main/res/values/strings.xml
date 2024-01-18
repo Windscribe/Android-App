@@ -250,9 +250,9 @@
     <string name="knowledge_base">Knowledge Base</string>
     <string name="knowledge_base_description">All you need to know about Windscribe.</string>
     <string name="talk_to_garry">Talk to Garry</string>
-    <string name="talk_to_garry_description">Not Siri smart but can still answer questions.</string>
-    <string name="send_ticket">Send Ticket</string>
-    <string name="send_ticket_description">Stuck? Send us a ticket.</string>
+    <string name="talk_to_garry_description">Need help? Garry can help you with most issues, go talk to him.</string>
+    <string name="contact_humans">Contact Humans</string>
+    <string name="contact_humans_description">Have a Problem that Garry can\'t resolve? Contact human support.</string>
     <string name="community_support">Community Support</string>
     <string name="community_support_description">Best places to help and get help from other users.</string>
     <string name="how_to_send_ticket">Fill in the fields bellow and one of our support agents will personally get back to you very soon™</string>
