@@ -26,7 +26,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class WindScribeWorkManager(private val context: Context, private val scope: CoroutineScope, private val vpnConnectionStateManager: VPNConnectionStateManager, val preferencesHelper: PreferencesHelper) {
-    var foregroundSessionUpdateJob: Job? = null
+    private var foregroundSessionUpdateJob: Job? = null
     private var logger = LoggerFactory.getLogger("work_manager")
     fun onAppStart() {
         if (preferencesHelper.sessionHash == null) return
@@ -42,12 +42,17 @@ class WindScribeWorkManager(private val context: Context, private val scope: Cor
         logger.debug("Starting every day work requests")
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(NOTIFICATION_DAY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(NotificationWorker::class.java, DAYS))
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(SESSION_DAY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(SessionWorker::class.java, DAYS))
+        keepSessionUpdated()
     }
 
     fun onAppMovedToForeground() {
         if (preferencesHelper.sessionHash == null) return
         logger.debug("Starting foreground session update")
         WorkManager.getInstance(context).enqueueUniqueWork(SERVER_LIST_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(SessionWorker::class.java))
+        keepSessionUpdated()
+    }
+
+    private fun keepSessionUpdated(){
         foregroundSessionUpdateJob = scope.launch {
             while (true) {
                 delay(1000 * 60)

@@ -50,6 +50,9 @@ class HelpActivity : BaseActivity(), HelpView {
     @BindView(R.id.cl_debug_view)
     lateinit var debugView: ConstraintLayout
 
+    @BindView(R.id.sendTicket)
+    lateinit var sendTicketView: SingleLinkExplainView
+
     private var logSent = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,6 +61,9 @@ class HelpActivity : BaseActivity(), HelpView {
         setContentLayout(R.layout.activity_help, true)
         presenter.init()
         addClickListeners()
+        activityScope {
+            presenter.observeUserStatus()
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -119,6 +125,14 @@ class HelpActivity : BaseActivity(), HelpView {
             imgProgress.visibility = View.INVISIBLE
             sendDebugLogLabel.text = getString(R.string.send_log)
             logSent = true
+        }
+    }
+
+    override fun setSendTicketVisibility(visible: Boolean) {
+        if (visible) {
+            sendTicketView.visibility = View.VISIBLE
+        } else {
+            sendTicketView.visibility = View.GONE
         }
     }
 
