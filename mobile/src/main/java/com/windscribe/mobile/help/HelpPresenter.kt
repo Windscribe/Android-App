@@ -14,4 +14,5 @@ interface HelpPresenter {
     fun onSendDebugClicked()
     fun onSendTicketClick()
     fun setTheme(context: Context)
+    suspend fun observeUserStatus()
 }
