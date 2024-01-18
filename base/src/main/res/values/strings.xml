@@ -320,8 +320,8 @@
     <string name="apps_to_exclude">Apps to exclude</string>
     <string name="apps_to_include">Apps to include</string>
     <string name="lan_traffic">Lan traffic</string>
-    <string name="allow">Allow</string>
-    <string name="block">Block</string>
+    <string name="allow">Enabled</string>
+    <string name="block">Disabled</string>
     <string name="start_on_boot">Start on boot</string>
     <string name="split_routing_content">Choose which apps to exclude or include from Windscribe when connected</string>
     <string name="show_system_apps">Show system apps</string>
