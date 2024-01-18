@@ -18,16 +18,24 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 class HelpPresenterImpl @Inject constructor(
-    private val helpView: HelpView,
-    private val interactor: ActivityInteractor
+        private val helpView: HelpView,
+        private val interactor: ActivityInteractor
 ) : HelpPresenter {
     private val logger = LoggerFactory.getLogger("help_p")
     override fun init() {
         helpView.setActivityTitle(interactor.getResourceString(R.string.help_me))
+    }
+
+    override suspend fun observeUserStatus() {
+        interactor.getUserRepository().userInfo.collectLatest {
+            helpView.setSendTicketVisibility(it.isPro)
+        }
     }
 
     override fun onDiscordClick() {
@@ -56,38 +64,38 @@ class HelpPresenterImpl @Inject constructor(
         logger.info("Preparing debug file...")
         val logMap: MutableMap<String, String> = HashMap()
         logMap[UserStatusConstants.CURRENT_USER_NAME] = interactor.getAppPreferenceInterface()
-            .userName
+                .userName
         interactor.getCompositeDisposable().add(
-            Single.fromCallable { interactor.getEncodedLog() }
-                .flatMap { encodedLog: String ->
-                    logger.info("Reading log file successful, submitting app log...")
-                    //Add log file and user name
-                    logMap[NetworkKeyConstants.POST_LOG_FILE_KEY] = encodedLog
-                    interactor.getApiCallManager()
-                        .postDebugLog(logMap)
-                }.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(
-                    object :
-                        DisposableSingleObserver<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>() {
-                        override fun onError(e: Throwable) {
-                            helpView.showProgress(inProgress = false, success = false)
-                            if (e is Exception) {
-                                logger.debug(
-                                    "Error Submitting Log: "
-                                            + instance.rxErrorToString(e)
-                                )
-                            }
-                        }
+                Single.fromCallable { interactor.getEncodedLog() }
+                        .flatMap { encodedLog: String ->
+                            logger.info("Reading log file successful, submitting app log...")
+                            //Add log file and user name
+                            logMap[NetworkKeyConstants.POST_LOG_FILE_KEY] = encodedLog
+                            interactor.getApiCallManager()
+                                    .postDebugLog(logMap)
+                        }.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(
+                                object :
+                                        DisposableSingleObserver<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>() {
+                                    override fun onError(e: Throwable) {
+                                        helpView.showProgress(inProgress = false, success = false)
+                                        if (e is Exception) {
+                                            logger.debug(
+                                                    "Error Submitting Log: "
+                                                            + instance.rxErrorToString(e)
+                                            )
+                                        }
+                                    }
 
-                        override fun onSuccess(
-                            appLogSubmissionResponse: GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
-                        ) {
-                            helpView.showProgress(
-                                false, appLogSubmissionResponse.dataClass != null && appLogSubmissionResponse.dataClass?.isSuccessful == true
-                            )
-                        }
-                    })
+                                    override fun onSuccess(
+                                            appLogSubmissionResponse: GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
+                                    ) {
+                                        helpView.showProgress(
+                                                false, appLogSubmissionResponse.dataClass != null && appLogSubmissionResponse.dataClass?.isSuccessful == true
+                                        )
+                                    }
+                                })
         )
     }
 

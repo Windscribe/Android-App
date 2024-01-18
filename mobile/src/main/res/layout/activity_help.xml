@@ -72,8 +72,8 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginTop="@dimen/reg_16dp"
                 android:id="@+id/sendTicket"
-                app:Title="@string/send_ticket"
-                app:Description="@string/send_ticket_description"
+                app:Title="@string/contact_humans"
+                app:Description="@string/contact_humans_description"
                 app:LeftIcon="@drawable/ic_ticket"
                 />
 
