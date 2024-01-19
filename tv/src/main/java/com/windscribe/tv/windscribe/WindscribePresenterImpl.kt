@@ -92,7 +92,7 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getAutoConnectionManager().nextInLineProtocol.collectLatest { protocol ->
             if (interactor.getVpnConnectionStateManager().isVPNActive().not()) {
                 protocol?.let {
-                    windscribeView.setBadgeIcon(Util.getProtocolLabel(it.protocol), true)
+                    windscribeView.setBadgeIcon("${Util.getProtocolLabel(it.protocol)} ${protocol.port}", true)
                 }
             }
         }
@@ -102,7 +102,7 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getAutoConnectionManager().connectedProtocol.collectLatest { protocol ->
             if (interactor.getVpnConnectionStateManager().isVPNActive()) {
                 protocol?.let {
-                    windscribeView.setBadgeIcon(Util.getProtocolLabel(it.protocol), false)
+                    windscribeView.setBadgeIcon("${Util.getProtocolLabel(it.protocol)} ${protocol.port}", false)
                 }
             }
         }
@@ -302,7 +302,7 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.setGlowVisibility(View.GONE)
         windscribeView.setVpnButtonState()
         windscribeView.setBadgeIcon(
-            Util.getProtocolLabel(interactor.getAppPreferenceInterface().selectedProtocol),
+            "${Util.getProtocolLabel(interactor.getAppPreferenceInterface().selectedProtocol)} ${interactor.getAppPreferenceInterface().selectedPort}",
             false
         )
         selectedLocation?.let {

@@ -126,11 +126,11 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     var rgbEvaluator: ArgbEvaluator? = null
 
     @JvmField
-    @BindView(id.badge_view)
+    @BindView(id.protocol_badge_view)
     var protocolBadgeBackground: ImageView? = null
 
     @JvmField
-    @BindView(id.badge_text)
+    @BindView(id.protocol_badge_text)
     var protocolBadgeText: TextView? = null
 
     @JvmField
