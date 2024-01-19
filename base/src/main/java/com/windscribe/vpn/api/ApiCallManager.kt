@@ -163,7 +163,11 @@ open class ApiCallManager @Inject constructor(private val apiFactory: WindApiFac
                             return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
                         } else {
                             domainFailOverManager.setDomainBlocked(DomainType.Primary, apiCallType)
-                            return@onErrorResumeNext (callOrSkip(apiCallType, service, DomainType.Secondary, secondaryDomain!!, protect, params))
+                            if (BuildConfig.DEV) {
+                                throw WindScribeException("Secondary domains are disabled.")
+                            } else {
+                                return@onErrorResumeNext (callOrSkip(apiCallType, service, DomainType.Secondary, secondaryDomain!!, protect, params))
+                            }
                         }
                     }.onErrorResumeNext {
                         if (it is HttpException && isErrorBodyValid(it)) {

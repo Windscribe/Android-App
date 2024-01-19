@@ -70,7 +70,7 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
     }
 
     override suspend fun doWork(): Result {
-        if(!userRepository.loggedIn())return Result.failure()
+        if (!userRepository.loggedIn()) return Result.failure()
         return try {
             val userSession = getSession()
             val changed = userRepository.whatChanged(userSession)
@@ -124,10 +124,10 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
         } ?: throw Exception("Unexpected data returned")
     }
 
-    private suspend fun handleAccountStatusChange(user: User){
+    private fun handleAccountStatusChange(user: User) {
         logger.debug("User account status: ${user.accountStatus} is VPN Connected: ${vpnStateManager.isVPNConnected()}")
-        if (user.accountStatus!=User.AccountStatus.Okay) {
-            if(vpnStateManager.isVPNConnected()){
+        if (user.accountStatus != User.AccountStatus.Okay) {
+            if (vpnStateManager.isVPNConnected()) {
                 logger.debug("Disconnecting...")
                 vpnController.disconnectAsync()
             }
@@ -143,6 +143,9 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
             if (updatedLocation != previousLocation && preferencesHelper.globalUserConnectionPreference) {
                 logger.debug("Last selected location is changed Now Reconnecting")
                 locationRepository.setSelectedCity(updatedLocation)
+                vpnController.connectAsync()
+            } else if (preferencesHelper.globalUserConnectionPreference && !locationRepository.isNodeAvailable()) {
+                logger.debug("Missing currently connected node Now Reconnecting to same location.")
                 vpnController.connectAsync()
             }
         } catch (e: Exception) {

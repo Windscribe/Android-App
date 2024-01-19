@@ -78,6 +78,18 @@ class LocationRepository @Inject constructor(
         }
     }
 
+    suspend fun isNodeAvailable(): Boolean {
+        if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CityLocation) {
+            return localDbInterface.getCityByID(preferencesHelper.selectedCity).map {
+                it.getNodes()
+            }.flatMap {
+               return@flatMap Single.just(ipAvailable(preferencesHelper.selectedIp, it))
+            }.onErrorReturnItem(false).await()
+        } else {
+            return true
+        }
+    }
+
     private val sisterLocation: Single<Int>
         get() {
             val selectedCity = preferencesHelper.selectedCity
@@ -136,7 +148,7 @@ class LocationRepository @Inject constructor(
         nodes.firstOrNull {
             ip == it.hostname || (ip == it.ip) or (ip == it.ip2) || (ip == it.ip3)
         }?.let {
-            return false
+            return true
         } ?: kotlin.run {
             return false
         }
