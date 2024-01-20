@@ -346,21 +346,20 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/city_name" />
-
         <ImageView
-            android:id="@+id/badge_view"
+            android:id="@+id/protocol_badge_view"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="@id/badge_text"
-            app:layout_constraintEnd_toEndOf="@id/badge_text"
-            app:layout_constraintTop_toTopOf="@id/badge_text"
-            app:layout_constraintStart_toStartOf="@id/badge_text"
+            app:layout_constraintBottom_toBottomOf="@id/protocol_badge_text"
+            app:layout_constraintEnd_toEndOf="@id/protocol_badge_text"
+            app:layout_constraintTop_toTopOf="@id/protocol_badge_text"
+            app:layout_constraintStart_toStartOf="@id/protocol_badge_text"
             android:background="@drawable/badge_background" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="44dp"
-            android:id="@+id/badge_text"
+            android:id="@+id/protocol_badge_text"
             android:gravity="center"
             android:layout_marginEnd="@dimen/reg_8dp"
             app:layout_constraintBottom_toBottomOf="@id/connection_status"
@@ -371,7 +370,7 @@
             android:paddingEnd="@dimen/padding_16"
             android:textSize="@dimen/text_size_24"
             android:fontFamily="@font/ibm_plex_sans_bold"
-            android:text="IKEv2"
+            android:text="IKEv2 500"
             android:includeFontPadding="false" />
 
         <TextView
@@ -391,7 +390,7 @@
             android:textSize="24sp"
             android:layout_marginBottom="18dp"
             app:layout_constraintBottom_toTopOf="@id/city_name"
-            app:layout_constraintEnd_toStartOf="@id/badge_view" />
+            app:layout_constraintEnd_toStartOf="@id/protocol_badge_view" />
 
         <ImageView
             android:id="@+id/split_routing_view"
