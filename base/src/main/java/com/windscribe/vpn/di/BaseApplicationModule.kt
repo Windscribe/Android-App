@@ -680,9 +680,10 @@ open class BaseApplicationModule {
     private var httpLoggingInterceptor =
             HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
                 override fun log(message: String) {
-                    if (BuildConfig.DEV) {
-                        logger.debug(message)
-                    }
+                    // Log each api call when testing locally.
+//                    if (BuildConfig.DEV) {
+//                        logger.debug(message)
+//                    }
                 }
             })
 
