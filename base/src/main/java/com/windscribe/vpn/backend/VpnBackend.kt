@@ -64,11 +64,7 @@ abstract class VpnBackend(
         }
         connectionJob = mainScope.launch {
             vpnLogger.debug("Connection timer started.")
-            if (this@VpnBackend is WireguardBackend) {
-                delay(WG_CONNECTING_WAIT)
-            } else {
-                delay(CONNECTING_WAIT)
-            }
+            delay(CONNECTING_WAIT)
             connectionTimeout()
         }
     }
