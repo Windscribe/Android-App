@@ -1,0 +1,3 @@
+Build 3.75.1297 (Mobile)
+Build 3.75.1298 (TV)
+* Fixed older android devices(7.1.1 and below) not connecting via IKEv2

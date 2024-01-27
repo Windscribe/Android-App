@@ -1,0 +1,9 @@
+Build 3.75.1297 (Mobile)
+Build 3.75.1298 (TV)
+* Fixed older android devices(7.1.1 and below) not connecting via IKEv2
+* Fixed Custom background image not working correctly.
+* Fixed unable to scroll network list.
+* Updated 10 GBPS icon.
+* Added auto connect toggle.
+* Added adaptive and themed icon support.
+* Updated splash screen.
