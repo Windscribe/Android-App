@@ -285,6 +285,7 @@ class VPNProfileCreator @Inject constructor(
                 proxyTunnelManager.startProxyTunnel(proxyIp, protocolInformation.port, true)
             }
         }
+        preferencesHelper.selectedIp = vpnParameters.hostName
         saveSelectedLocation(lastSelectedLocation)
         saveProfile(profile)
         return "$lastSelectedLocation"
@@ -447,6 +448,7 @@ class VPNProfileCreator @Inject constructor(
                         stringBuilder.append(logLine).append(" ")
                     }
                 }
+                preferencesHelper.selectedIp = vpnParameters.hostName
                 logger.debug(stringBuilder.toString())
                 saveSelectedLocation(lastSelectedLocation)
                 saveProfile(WireGuardVpnProfile(content))
