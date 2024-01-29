@@ -79,14 +79,18 @@ xmlns:app="http://schemas.android.com/apk/res-auto">
         <TextView
             android:id="@+id/label"
             style="@style/MenuItemLabelTwo"
+            android:layout_width="0dp"
             android:text="@string/always_on"
             android:paddingStart="@dimen/padding_16"
             android:layout_marginTop="0dp"
             android:paddingTop="0dp"
+            android:paddingEnd="0dp"
             android:paddingBottom="0dp"
             android:includeFontPadding="false"
+            android:gravity="left"
             app:layout_constraintBottom_toBottomOf="@id/barrier"
             app:layout_constraintStart_toEndOf="@id/left_icon"
+            app:layout_constraintEnd_toStartOf="@id/open_always_setting"
             app:layout_constraintTop_toTopOf="@id/barrier" />
 
         <TextView
