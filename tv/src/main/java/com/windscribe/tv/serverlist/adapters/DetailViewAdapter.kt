@@ -70,7 +70,9 @@ class DetailViewAdapter(
                     PorterDuff.Mode.MULTIPLY
                 )
                 btnConnect.setOnClickListener {
-                    if (!selectedCity.nodesAvailable() && dataDetails.isProUser) {
+                    if (!dataDetails.isProUser && selectedCity.pro == 1) {
+                        listener.onConnectClick(selectedCity)
+                    } else if (!selectedCity.nodesAvailable()) {
                         listener.onDisabledClick()
                     } else {
                         listener.onConnectClick(selectedCity)
