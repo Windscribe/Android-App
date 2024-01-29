@@ -19,7 +19,7 @@ import java.io.OutputStream
 import javax.inject.Inject
 
 class GeneralSettingsPresenterImpl @Inject constructor(
-    private var settingsView: GeneralSettingsView, private var interactor: ActivityInteractor
+        private var settingsView: GeneralSettingsView, private var interactor: ActivityInteractor
 ) : GeneralSettingsPresenter {
 
     private val logger = LoggerFactory.getLogger("gen_settings_p")
@@ -36,7 +36,7 @@ class GeneralSettingsPresenterImpl @Inject constructor(
         get() {
             val selectedLanguage = interactor.getAppPreferenceInterface().savedLanguage
             return selectedLanguage.substring(
-                selectedLanguage.indexOf("(") + 1, selectedLanguage.indexOf(")")
+                    selectedLanguage.indexOf("(") + 1, selectedLanguage.indexOf(")")
             )
         }
 
@@ -92,31 +92,31 @@ class GeneralSettingsPresenterImpl @Inject constructor(
 
     override fun onLanguageChanged() {
         settingsView.resetTextResources(
-            interactor.getResourceString(R.string.general),
-            interactor.getResourceString(R.string.sort_by),
-            interactor.getResourceString(R.string.display_latency),
-            interactor.getResourceString(R.string.preferred_language),
-            interactor.getResourceString(R.string.theme),
-            interactor.getResourceString(R.string.show_timer_in_notifications),
-            interactor.getResourceString(R.string.haptic_setting_label),
-            interactor.getResourceString(R.string.version),
-            interactor.getResourceString(R.string.connected_lower_case),
-            interactor.getResourceString(R.string.disconnected_lower_case),
-            interactor.getResourceString(R.string.app_background)
+                interactor.getResourceString(R.string.general),
+                interactor.getResourceString(R.string.sort_by),
+                interactor.getResourceString(R.string.display_latency),
+                interactor.getResourceString(R.string.preferred_language),
+                interactor.getResourceString(R.string.theme),
+                interactor.getResourceString(R.string.show_timer_in_notifications),
+                interactor.getResourceString(R.string.haptic_setting_label),
+                interactor.getResourceString(R.string.version),
+                interactor.getResourceString(R.string.connected_lower_case),
+                interactor.getResourceString(R.string.disconnected_lower_case),
+                interactor.getResourceString(R.string.app_background)
         )
     }
 
-    override fun onLanguageSelected(selectedLanguage: String) {
+    override fun onLanguageSelected(selectedKey: String) {
         //Save the selected language
         val savedLanguage = interactor.getSavedLanguage()
+        val selectedIndex = interactor.getStringArray(R.array.language_codes).indexOf(selectedKey)
+        val selectedLanguage = interactor.getStringArray(R.array.language)[selectedIndex]
         if (savedLanguage == selectedLanguage) {
             logger.info("Language selected is same as saved. No action taken...")
         } else {
-            val locale = appContext.getLanguageCode(selectedLanguage)
-            logger.info("Saving selected language: $selectedLanguage Locale: $locale")
             interactor.saveSelectedLanguage(selectedLanguage)
             settingsView.setLanguageTextView(selectedLanguage)
-            interactor.getPreferenceChangeObserver().postLanguageChange(locale)
+            interactor.getPreferenceChangeObserver().postLanguageChange(selectedLanguage)
         }
     }
 
@@ -206,46 +206,46 @@ class GeneralSettingsPresenterImpl @Inject constructor(
 
         //Setup language settings
         settingsView.setupLanguageAdapter(
-            interactor.getLanguageList(), savedLanguage, interactor.getLanguageList()
+                interactor.getStringArray(R.array.language), appContext.getLanguageCode(savedLanguage), interactor.getStringArray(R.array.language_codes)
         )
 
         // Setup notification stats toggle
         settingsView.setupNotificationToggleImage(
-            if (interactor.getAppPreferenceInterface().notificationStat) R.drawable.ic_toggle_button_on else R.drawable.ic_toggle_button_off
+                if (interactor.getAppPreferenceInterface().notificationStat) R.drawable.ic_toggle_button_on else R.drawable.ic_toggle_button_off
         )
 
         // Setup Haptic toggle
         settingsView.setupHapticToggleImage(
-            if (interactor.getAppPreferenceInterface().isHapticFeedbackEnabled) R.drawable.ic_toggle_button_on else R.drawable.ic_toggle_button_off
+                if (interactor.getAppPreferenceInterface().isHapticFeedbackEnabled) R.drawable.ic_toggle_button_on else R.drawable.ic_toggle_button_off
         )
 
         // Setup Show Location health
         settingsView.setupLocationHealthToggleImage(
-            if (interactor.getAppPreferenceInterface().isShowLocationHealthEnabled) R.drawable.ic_toggle_button_on else R.drawable.ic_toggle_button_off
+                if (interactor.getAppPreferenceInterface().isShowLocationHealthEnabled) R.drawable.ic_toggle_button_on else R.drawable.ic_toggle_button_off
         )
 
         // Setup selection settings
         val savedSelection = interactor.getAppPreferenceInterface().selection
         settingsView.setupSelectionAdapter(
-            interactor.getStringArray(R.array.order_list),
-            savedSelection,
-            interactor.getStringArray(R.array.order_list_keys)
+                interactor.getStringArray(R.array.order_list),
+                savedSelection,
+                interactor.getStringArray(R.array.order_list_keys)
         )
 
         // Setup theme
         val savedTheme = interactor.getAppPreferenceInterface().selectedTheme
         settingsView.setupThemeAdapter(
-            interactor.getStringArray(R.array.theme_list),
-            savedTheme,
-            interactor.getStringArray(R.array.theme_list_keys)
+                interactor.getStringArray(R.array.theme_list),
+                savedTheme,
+                interactor.getStringArray(R.array.theme_list_keys)
         )
 
         // Setup latency settings
         val savedLatencyType = interactor.getAppPreferenceInterface().latencyType
         settingsView.setupLatencyAdapter(
-            interactor.getStringArray(R.array.latency_selection),
-            savedLatencyType,
-            interactor.getStringArray(R.array.latency_selection_keys)
+                interactor.getStringArray(R.array.latency_selection),
+                savedLatencyType,
+                interactor.getStringArray(R.array.latency_selection_keys)
         )
         settingsView.setAppVersionText(WindUtilities.getVersionName())
         settingsView.setActivityTitle(interactor.getResourceString(R.string.general))
@@ -261,16 +261,16 @@ class GeneralSettingsPresenterImpl @Inject constructor(
         if (custom) {
             interactor.getAppPreferenceInterface().isCustomBackground = true
             settingsView.setupCustomFlagAdapter(
-                interactor.getStringArray(R.array.background_list),
-                interactor.getStringArray(R.array.background_list_keys)[1],
-                interactor.getStringArray(R.array.background_list_keys)
+                    interactor.getStringArray(R.array.background_list),
+                    interactor.getStringArray(R.array.background_list_keys)[1],
+                    interactor.getStringArray(R.array.background_list_keys)
             )
         } else {
             interactor.getAppPreferenceInterface().isCustomBackground = false
             settingsView.setupCustomFlagAdapter(
-                interactor.getStringArray(R.array.background_list),
-                interactor.getStringArray(R.array.background_list_keys)[0],
-                interactor.getStringArray(R.array.background_list_keys)
+                    interactor.getStringArray(R.array.background_list),
+                    interactor.getStringArray(R.array.background_list_keys)[0],
+                    interactor.getStringArray(R.array.background_list_keys)
             )
         }
         setAppBackgroundPaths()
@@ -288,14 +288,14 @@ class GeneralSettingsPresenterImpl @Inject constructor(
         val disconnectedFlagPath = interactor.getAppPreferenceInterface().disConnectedFlagPath
         val connectedFlagPath = interactor.getAppPreferenceInterface().connectedFlagPath
         settingsView.setDisconnectedFlagPath(
-            (if (disconnectedFlagPath != null) Uri.parse(
-                disconnectedFlagPath
-            ).path else "")!!
+                (if (disconnectedFlagPath != null) Uri.parse(
+                        disconnectedFlagPath
+                ).path else "")!!
         )
         settingsView.setConnectedFlagPath(
-            (if (connectedFlagPath != null) Uri.parse(
-                connectedFlagPath
-            ).path else "")!!
+                (if (connectedFlagPath != null) Uri.parse(
+                        connectedFlagPath
+                ).path else "")!!
         )
     }
 

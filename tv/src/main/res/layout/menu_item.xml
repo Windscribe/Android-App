@@ -13,6 +13,7 @@
     <com.windscribe.tv.serverlist.customviews.PreferenceItem
         android:id="@+id/label"
         style="@style/preference_item"
+        android:gravity="left"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:focusable="true"

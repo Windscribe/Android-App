@@ -13,11 +13,14 @@ import com.windscribe.tv.settings.fragment.AccountFragment
 import com.windscribe.tv.sort.SortByName
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.ActivityInteractorImpl.PortMapLoadCallback
-import com.windscribe.vpn.WindContextWrapper.Companion.changeLocale
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.Windscribe.Companion.getExecutorService
-import com.windscribe.vpn.api.response.*
+import com.windscribe.vpn.api.response.ApiErrorResponse
+import com.windscribe.vpn.api.response.GenericResponseClass
+import com.windscribe.vpn.api.response.GenericSuccess
+import com.windscribe.vpn.api.response.PortMapResponse
 import com.windscribe.vpn.api.response.PortMapResponse.PortMap
+import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.BOOT_ALLOW
 import com.windscribe.vpn.constants.PreferencesKeyConstants.BOOT_BLOCK
@@ -55,8 +58,8 @@ import javax.inject.Inject
 
 @PerActivity
 class SettingsPresenterImp @Inject constructor(
-    private var settingView: SettingView,
-    private var interactor: ActivityInteractor
+        private var settingView: SettingView,
+        private var interactor: ActivityInteractor
 ) : SettingsPresenter, InstalledAppsAdapter.InstalledAppListener {
     private val installedAppList: MutableList<InstalledAppsData> = ArrayList()
     private var installedAppsAdapter: InstalledAppsAdapter? = null
@@ -73,9 +76,9 @@ class SettingsPresenterImp @Inject constructor(
         get() = interactor.getAppPreferenceInterface().userIsInGhostMode()
     override val isUserPro: Boolean
         get() = (
-            interactor.getAppPreferenceInterface().userStatus
-                == UserStatusConstants.USER_STATUS_PREMIUM
-            )
+                interactor.getAppPreferenceInterface().userStatus
+                        == UserStatusConstants.USER_STATUS_PREMIUM
+                )
 
     override fun onAddEmailClicked() {
         logger.info("Showing account in browser...")
@@ -94,7 +97,7 @@ class SettingsPresenterImp @Inject constructor(
         val allowByPassLanTraffic = interactor.getAppPreferenceInterface().lanByPass
         if (!allowByPassLanTraffic) {
             getExecutorService()
-                .submit { interactor.getAppPreferenceInterface().lanByPass = true }
+                    .submit { interactor.getAppPreferenceInterface().lanByPass = true }
             settingView.setLanTrafficMode(LAN_ALLOW)
         }
     }
@@ -103,7 +106,7 @@ class SettingsPresenterImp @Inject constructor(
         val allowStartOnBoot = interactor.getAppPreferenceInterface().autoStartOnBoot
         if (allowStartOnBoot) {
             getExecutorService()
-                .submit { interactor.getAppPreferenceInterface().autoStartOnBoot = false }
+                    .submit { interactor.getAppPreferenceInterface().autoStartOnBoot = false }
             settingView.setBootStartMode(BOOT_BLOCK)
         }
     }
@@ -155,9 +158,9 @@ class SettingsPresenterImp @Inject constructor(
         val splitRouting = interactor.getAppPreferenceInterface().splitTunnelToggle
         if (splitRouting) {
             getExecutorService()
-                .submit {
-                    interactor.getAppPreferenceInterface().splitTunnelToggle = false
-                }
+                    .submit {
+                        interactor.getAppPreferenceInterface().splitTunnelToggle = false
+                    }
             settingView.setSplitRouteMode(DISABLED_MODE)
         }
     }
@@ -194,19 +197,19 @@ class SettingsPresenterImp @Inject constructor(
 
     override fun onInstalledAppClick(updatedModel: InstalledAppsData?, reloadAdapter: Boolean) {
         interactor.getCompositeDisposable().add(
-            interactor.getAppPreferenceInterface().installedApps
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribeWith(object : DisposableSingleObserver<List<String>>() {
-                    override fun onError(e: Throwable) {
-                        val list: MutableList<String> = ArrayList()
-                        updatedModel?.let { saveApps(list, it, reloadAdapter) }
-                    }
+                interactor.getAppPreferenceInterface().installedApps
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeOn(Schedulers.io())
+                        .subscribeWith(object : DisposableSingleObserver<List<String>>() {
+                            override fun onError(e: Throwable) {
+                                val list: MutableList<String> = ArrayList()
+                                updatedModel?.let { saveApps(list, it, reloadAdapter) }
+                            }
 
-                    override fun onSuccess(installedAppsData: List<String>) {
-                        updatedModel?.let { saveApps(installedAppsData, it, reloadAdapter) }
-                    }
-                })
+                            override fun onSuccess(installedAppsData: List<String>) {
+                                updatedModel?.let { saveApps(installedAppsData, it, reloadAdapter) }
+                            }
+                        })
         )
     }
 
@@ -214,15 +217,9 @@ class SettingsPresenterImp @Inject constructor(
         // Save the selected language
         val savedLanguage = interactor.getSavedLanguage()
         if (savedLanguage == selectedLanguage) {
-            // Do nothing
             logger.info("Language selected is same as saved. No action taken...")
         } else {
-            val locale = selectedLanguage
-                .substring(selectedLanguage.indexOf("(") + 1, selectedLanguage.indexOf(")"))
-            logger.info("Saving selected language: $selectedLanguage Locale: $locale")
             interactor.saveSelectedLanguage(selectedLanguage)
-            settingView.updateLocale()
-            changeLocale(appContext, locale)
             settingView.reloadApp()
         }
     }
@@ -230,9 +227,9 @@ class SettingsPresenterImp @Inject constructor(
     override fun onLoginAndClaimClick() {
         val ghostMode = interactor.getAppPreferenceInterface().userIsInGhostMode()
         val proUser = (
-            interactor.getAppPreferenceInterface().userStatus
-                == UserStatusConstants.USER_STATUS_PREMIUM
-            )
+                interactor.getAppPreferenceInterface().userStatus
+                        == UserStatusConstants.USER_STATUS_PREMIUM
+                )
         if (!proUser && ghostMode) {
             settingView.goToLogin()
         } else if (ghostMode) {
@@ -249,26 +246,32 @@ class SettingsPresenterImp @Inject constructor(
                         logger.info("Saving selected IKev2 port...")
                         interactor.getAppPreferenceInterface().saveIKEv2Port(port)
                     }
+
                     PROTO_UDP -> {
                         logger.info("Saving selected udp port...")
                         interactor.saveUDPPort(port)
                     }
+
                     PROTO_TCP -> {
                         logger.info("Saving selected tcp port...")
                         interactor.saveTCPPort(port)
                     }
+
                     PROTO_STEALTH -> {
                         logger.info("Saving selected stealth port...")
                         interactor.saveSTEALTHPort(port)
                     }
+
                     PROTO_WS_TUNNEL -> {
                         logger.info("Saving selected ws port...")
                         interactor.saveWSTunnelPort(port)
                     }
+
                     PROTO_WIRE_GUARD -> {
                         logger.info("Saving selected wire guard port...")
                         interactor.getAppPreferenceInterface().saveWireGuardPort(port)
                     }
+
                     else -> {
                         logger.info("Saving default port (udp)...")
                         interactor.saveUDPPort(port)
@@ -300,52 +303,52 @@ class SettingsPresenterImp @Inject constructor(
         settingView.showProgress(settingView.getResourceString(R.string.sending_debug_log))
         val logMap: MutableMap<String, String> = HashMap()
         logMap[UserStatusConstants.CURRENT_USER_NAME] =
-            interactor.getAppPreferenceInterface().userName
+                interactor.getAppPreferenceInterface().userName
         interactor.getCompositeDisposable().add(
-            Single.fromCallable { interactor.getEncodedLog() }
-                .flatMap { encodedLog: String ->
-                    logger.info("Reading log file successful, submitting app log...")
-                    logMap[NetworkKeyConstants.POST_LOG_FILE_KEY] = encodedLog
-                    interactor.getApiCallManager().postDebugLog(logMap)
-                }.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(
-                    object :
-                        DisposableSingleObserver<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>?>() {
-                        override fun onError(e: Throwable) {
-                            logger.debug(
-                                "Error Submitting Log: " +
-                                    WindError.instance.convertThrowableToString(e)
-                            )
-                            settingView.showToast(
-                                interactor.getResourceString(R.string.log_submission_failed)
-                            )
-                            settingView.hideProgress()
-                        }
-
-                        override fun onSuccess(
-                            appLogSubmissionResponse: GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
-                        ) {
-                            settingView.hideProgress()
-                            if (appLogSubmissionResponse.dataClass?.isSuccessful == true) {
-                                settingView.showToast(
-                                    interactor.getResourceString(R.string.app_log_submitted)
-                                )
-                            } else if (appLogSubmissionResponse.errorClass != null) {
-                                appLogSubmissionResponse.errorClass?.let {
-                                    settingView.showToast(
-                                        SessionErrorHandler.instance.getErrorMessage(
-                                            it
+                Single.fromCallable { interactor.getEncodedLog() }
+                        .flatMap { encodedLog: String ->
+                            logger.info("Reading log file successful, submitting app log...")
+                            logMap[NetworkKeyConstants.POST_LOG_FILE_KEY] = encodedLog
+                            interactor.getApiCallManager().postDebugLog(logMap)
+                        }.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(
+                                object :
+                                        DisposableSingleObserver<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>?>() {
+                                    override fun onError(e: Throwable) {
+                                        logger.debug(
+                                                "Error Submitting Log: " +
+                                                        WindError.instance.convertThrowableToString(e)
                                         )
-                                    )
-                                }
-                            } else {
-                                settingView.showToast(
-                                    interactor.getResourceString(R.string.log_submission_failed)
-                                )
-                            }
-                        }
-                    })
+                                        settingView.showToast(
+                                                interactor.getResourceString(R.string.log_submission_failed)
+                                        )
+                                        settingView.hideProgress()
+                                    }
+
+                                    override fun onSuccess(
+                                            appLogSubmissionResponse: GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
+                                    ) {
+                                        settingView.hideProgress()
+                                        if (appLogSubmissionResponse.dataClass?.isSuccessful == true) {
+                                            settingView.showToast(
+                                                    interactor.getResourceString(R.string.app_log_submitted)
+                                            )
+                                        } else if (appLogSubmissionResponse.errorClass != null) {
+                                            appLogSubmissionResponse.errorClass?.let {
+                                                settingView.showToast(
+                                                        SessionErrorHandler.instance.getErrorMessage(
+                                                                it
+                                                        )
+                                                )
+                                            }
+                                        } else {
+                                            settingView.showToast(
+                                                    interactor.getResourceString(R.string.log_submission_failed)
+                                            )
+                                        }
+                                    }
+                                })
         )
     }
 
@@ -356,19 +359,19 @@ class SettingsPresenterImp @Inject constructor(
     override fun onSortSelected(newSort: String) {
         interactor.getAppPreferenceInterface().saveSelection(newSort)
         interactor.getCompositeDisposable().add(
-            interactor.getServerStatus()
-                .flatMapCompletable(
-                    Function { serverStatusUpdateTable: ServerStatusUpdateTable ->
-                        interactor
-                            .updateServerList(if (serverStatusUpdateTable.serverStatus == 0) 1 else 0)
-                    } as Function<ServerStatusUpdateTable, Completable>
-                )
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribeWith(object : DisposableCompletableObserver() {
-                    override fun onComplete() {}
-                    override fun onError(e: Throwable) {}
-                })
+                interactor.getServerStatus()
+                        .flatMapCompletable(
+                                Function { serverStatusUpdateTable: ServerStatusUpdateTable ->
+                                    interactor
+                                            .updateServerList(if (serverStatusUpdateTable.serverStatus == 0) 1 else 0)
+                                } as Function<ServerStatusUpdateTable, Completable>
+                        )
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeOn(Schedulers.io())
+                        .subscribeWith(object : DisposableCompletableObserver() {
+                            override fun onComplete() {}
+                            override fun onError(e: Throwable) {}
+                        })
         )
     }
 
@@ -386,6 +389,7 @@ class SettingsPresenterImp @Inject constructor(
     override fun observeUserData(settingsActivity: SettingActivity) {
         interactor.getUserRepository().user.observe(settingsActivity, this::setAccountInfo)
     }
+
     private fun setAccountInfo(user: User) {
         settingView.hideProgress()
         // Username
@@ -394,16 +398,18 @@ class SettingsPresenterImp @Inject constructor(
         when (user.emailStatus) {
             User.EmailStatus.NoEmail -> {
                 settingView.setEmailState(
-                    if (user.isPro) AccountFragment.Status.NOT_ADDED_PRO else AccountFragment.Status.NOT_ADDED,
-                    null
+                        if (user.isPro) AccountFragment.Status.NOT_ADDED_PRO else AccountFragment.Status.NOT_ADDED,
+                        null
                 )
             }
+
             User.EmailStatus.EmailProvided -> {
-                    settingView.setEmailState(AccountFragment.Status.NOT_CONFIRMED, user.email)
-                }
+                settingView.setEmailState(AccountFragment.Status.NOT_CONFIRMED, user.email)
+            }
+
             User.EmailStatus.Confirmed -> {
                 settingView.setEmailState(AccountFragment.Status.CONFIRMED, user.email)
-                }
+            }
         }
         user.email?.let { settingView.setEmail(it) }
 
@@ -411,32 +417,32 @@ class SettingsPresenterImp @Inject constructor(
         if (user.isPro) {
             setExpiryOrResetDate(true, user.expiryDate)
             settingView.setPlanName(
-                interactor.getResourceString(R.string.unlimited_data)
+                    interactor.getResourceString(R.string.unlimited_data)
             )
             settingView.setupLayoutForPremiumUser(
-                interactor.getResourceString(R.string.plan_pro)
+                    interactor.getResourceString(R.string.plan_pro)
             )
         } else if (user.isAlaCarteUnlimitedPlan) {
             setExpiryOrResetDate(true, user.expiryDate)
             settingView.setPlanName(
-                interactor.getResourceString(R.string.unlimited_data)
+                    interactor.getResourceString(R.string.unlimited_data)
             )
             settingView.setupLayoutForPremiumUser(
-                interactor.getResourceString(R.string.a_la_carte_unlimited_plan)
+                    interactor.getResourceString(R.string.a_la_carte_unlimited_plan)
             )
         } else {
             settingView.setupLayoutForFreeUser(
-                interactor.getResourceString(R.string.upgrade_case_normal)
+                    interactor.getResourceString(R.string.upgrade_case_normal)
             )
             setExpiryOrResetDate(false, user.resetDate)
             if (user.maxData == -1L) {
                 settingView.setPlanName(
-                    interactor.getResourceString(R.string.unlimited_data)
+                        interactor.getResourceString(R.string.unlimited_data)
                 )
             } else {
                 val maxTrafficData: Long = user.maxData / UserStatusConstants.GB_DATA
                 settingView.setPlanName(
-                    maxTrafficData.toString() + interactor.getResourceString(R.string.gb_per_month)
+                        maxTrafficData.toString() + interactor.getResourceString(R.string.gb_per_month)
                 )
             }
         }
@@ -445,9 +451,9 @@ class SettingsPresenterImp @Inject constructor(
     override fun setUpTabMenu() {
         val ghostMode = interactor.getAppPreferenceInterface().userIsInGhostMode()
         val proUser = (
-            interactor.getAppPreferenceInterface().userStatus
-                == UserStatusConstants.USER_STATUS_PREMIUM
-            )
+                interactor.getAppPreferenceInterface().userStatus
+                        == UserStatusConstants.USER_STATUS_PREMIUM
+                )
         if (!proUser && ghostMode) {
             settingView.setUpTabLayoutForGhostMode()
         } else if (ghostMode) {
@@ -462,10 +468,10 @@ class SettingsPresenterImp @Inject constructor(
         if (CONNECTION_MODE_MANUAL == savedConnectionMode) {
             settingView.setupLayoutForManualMode()
             logger
-                .info(
-                    "Saved connection mode is " + savedConnectionMode + ". No need to change layout settings." +
-                        " Continue with manual mode as default"
-                )
+                    .info(
+                            "Saved connection mode is " + savedConnectionMode + ". No need to change layout settings." +
+                                    " Continue with manual mode as default"
+                    )
             val savedProtocol = interactor.getSavedProtocol()
             setProtocolAdapter(savedProtocol)
         } else {
@@ -486,19 +492,19 @@ class SettingsPresenterImp @Inject constructor(
     override fun setupLayoutForDebugTab() {
         settingView.setDebugLogProgress(interactor.getResourceString(R.string.loading), "")
         interactor.getCompositeDisposable()
-            .add(Single.fromCallable { interactor.getPartialLog() }.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSingleObserver<List<String>>() {
-                    override fun onError(e: Throwable) {
-                        settingView.setDebugLogProgress("", "Error loading logs")
-                    }
+                .add(Single.fromCallable { interactor.getPartialLog() }.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(object : DisposableSingleObserver<List<String>>() {
+                            override fun onError(e: Throwable) {
+                                settingView.setDebugLogProgress("", "Error loading logs")
+                            }
 
-                    override fun onSuccess(s: List<String>) {
-                        settingView.setDebugLog(s)
-                        settingView.setDebugLogProgress("", "")
-                    }
-                })
-        )
+                            override fun onSuccess(s: List<String>) {
+                                settingView.setDebugLog(s)
+                                settingView.setDebugLogProgress("", "")
+                            }
+                        })
+                )
     }
 
     override fun setupLayoutForGeneralTab() {
@@ -507,9 +513,9 @@ class SettingsPresenterImp @Inject constructor(
         settingView.setupLanguageAdapter(savedLanguage, interactor.getLanguageList())
         val savedSort = interactor.getAppPreferenceInterface().selection
         settingView.setupSortAdapter(
-            interactor.getStringArray(R.array.order_list),
-            savedSort,
-            interactor.getStringArray(R.array.order_list_keys)
+                interactor.getStringArray(R.array.order_list),
+                savedSort,
+                interactor.getStringArray(R.array.order_list_keys)
         )
     }
 
@@ -526,35 +532,35 @@ class SettingsPresenterImp @Inject constructor(
 
     override fun updateUserDataFromApi() {
         interactor.getCompositeDisposable().add(
-            interactor.getApiCallManager()
-                .getSessionGeneric(null)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(
-                    object :
-                        DisposableSingleObserver<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>?>() {
-                        override fun onError(e: Throwable) {
-                            // Error in API Call
-                            logger.debug(
-                                "Error while making get session call:" +
-                                    WindError.instance.convertThrowableToString(e)
-                            )
-                        }
+                interactor.getApiCallManager()
+                        .getSessionGeneric(null)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(
+                                object :
+                                        DisposableSingleObserver<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>?>() {
+                                    override fun onError(e: Throwable) {
+                                        // Error in API Call
+                                        logger.debug(
+                                                "Error while making get session call:" +
+                                                        WindError.instance.convertThrowableToString(e)
+                                        )
+                                    }
 
-                        override fun onSuccess(
-                            userSessionResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>
-                        ) {
-                            if (userSessionResponse.dataClass != null) {
-                                interactor.getUserRepository().reload(userSessionResponse.dataClass)
-                            } else if (userSessionResponse.errorClass != null) {
-                                // Server responded with error!
-                                logger.debug(
-                                    "Server returned error during get session call." +
-                                        userSessionResponse.errorClass.toString()
-                                )
-                            }
-                        }
-                    })
+                                    override fun onSuccess(
+                                            userSessionResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>
+                                    ) {
+                                        if (userSessionResponse.dataClass != null) {
+                                            interactor.getUserRepository().reload(userSessionResponse.dataClass)
+                                        } else if (userSessionResponse.errorClass != null) {
+                                            // Server responded with error!
+                                            logger.debug(
+                                                    "Server returned error during get session call." +
+                                                            userSessionResponse.errorClass.toString()
+                                            )
+                                        }
+                                    }
+                                })
         )
     }
 
@@ -564,8 +570,8 @@ class SettingsPresenterImp @Inject constructor(
         try {
             val applicationInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
             val mData = InstalledAppsData(
-                pm.getApplicationLabel(applicationInfo).toString(),
-                applicationInfo.packageName, pm.getApplicationIcon(applicationInfo), false
+                    pm.getApplicationLabel(applicationInfo).toString(),
+                    applicationInfo.packageName, pm.getApplicationIcon(applicationInfo), false
             )
             mData.isChecked = checked
             onInstalledAppClick(mData, true)
@@ -600,53 +606,53 @@ class SettingsPresenterImp @Inject constructor(
     private fun modifyList(savedApps: List<String>) {
         val pm = appContext.packageManager
         interactor.getCompositeDisposable().add(
-            Single.fromCallable {
-                pm.getInstalledApplications(
-                    PackageManager.GET_META_DATA
-                )
-            }.flatMap { packages: List<ApplicationInfo> ->
-                installedAppList.clear()
-                for (applicationInfo in packages) {
-                    val isSystemApp = applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM == 1
-                    val mData = InstalledAppsData(
-                        pm.getApplicationLabel(applicationInfo).toString(),
-                        applicationInfo.packageName,
-                        pm.getApplicationIcon(applicationInfo),
-                        isSystemApp
+                Single.fromCallable {
+                    pm.getInstalledApplications(
+                            PackageManager.GET_META_DATA
                     )
-                    for (installedAppsData in savedApps) {
-                        if (mData.packageName == installedAppsData) {
-                            mData.isChecked = true
-                        }
-                    }
-                    installedAppList.add(mData)
-                }
-                Collections.sort(installedAppList, SortByName())
-                Single.fromCallable { installedAppList }
-            }.observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribeWith(object : DisposableSingleObserver<List<InstalledAppsData?>?>() {
-                    override fun onError(e: Throwable) {
-                        settingView.hideProgress()
-                    }
-
-                    override fun onSuccess(packages: List<InstalledAppsData?>) {
-                        settingView.hideProgress()
-                        installedAppsAdapter = InstalledAppsAdapter(
-                            installedAppList, this@SettingsPresenterImp
+                }.flatMap { packages: List<ApplicationInfo> ->
+                    installedAppList.clear()
+                    for (applicationInfo in packages) {
+                        val isSystemApp = applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM == 1
+                        val mData = InstalledAppsData(
+                                pm.getApplicationLabel(applicationInfo).toString(),
+                                applicationInfo.packageName,
+                                pm.getApplicationIcon(applicationInfo),
+                                isSystemApp
                         )
-                        installedAppsAdapter?.let {
-                            settingView.setupAppsAdapter(it)
+                        for (installedAppsData in savedApps) {
+                            if (mData.packageName == installedAppsData) {
+                                mData.isChecked = true
+                            }
                         }
+                        installedAppList.add(mData)
                     }
-                })
+                    Collections.sort(installedAppList, SortByName())
+                    Single.fromCallable { installedAppList }
+                }.observeOn(AndroidSchedulers.mainThread())
+                        .subscribeOn(Schedulers.io())
+                        .subscribeWith(object : DisposableSingleObserver<List<InstalledAppsData?>?>() {
+                            override fun onError(e: Throwable) {
+                                settingView.hideProgress()
+                            }
+
+                            override fun onSuccess(packages: List<InstalledAppsData?>) {
+                                settingView.hideProgress()
+                                installedAppsAdapter = InstalledAppsAdapter(
+                                        installedAppList, this@SettingsPresenterImp
+                                )
+                                installedAppsAdapter?.let {
+                                    settingView.setupAppsAdapter(it)
+                                }
+                            }
+                        })
         )
     }
 
     private fun saveApps(
-        savedList: List<String>,
-        updatedApp: InstalledAppsData,
-        reloadAdapter: Boolean
+            savedList: List<String>,
+            updatedApp: InstalledAppsData,
+            reloadAdapter: Boolean
     ) {
         val list = savedList.toMutableList()
         if (updatedApp.isChecked) {
@@ -655,9 +661,9 @@ class SettingsPresenterImp @Inject constructor(
             list.remove(updatedApp.packageName)
         }
         getExecutorService()
-            .submit {
-                interactor.getAppPreferenceInterface().saveInstalledApps(list)
-            }
+                .submit {
+                    interactor.getAppPreferenceInterface().saveInstalledApps(list)
+                }
         if (reloadAdapter) {
             installedAppsAdapter?.updateApp(updatedApp.packageName, updatedApp.isChecked)
         }
@@ -675,22 +681,22 @@ class SettingsPresenterImp @Inject constructor(
                         c.add(Calendar.DATE, 30)
                         val nextResetDate = c.time
                         settingView.setResetDate(
-                            interactor.getResourceString(R.string.reset_date),
-                            formatter.format(nextResetDate)
+                                interactor.getResourceString(R.string.reset_date),
+                                formatter.format(nextResetDate)
                         )
                     } else {
                         val nextResetDate = c.time
                         settingView.setResetDate(
-                            interactor.getResourceString(R.string.expiry_date),
-                            formatter.format(nextResetDate)
+                                interactor.getResourceString(R.string.expiry_date),
+                                formatter.format(nextResetDate)
                         )
                     }
                 }
             } catch (e: ParseException) {
                 logger.debug(
-                    "Could not parse date data. " + WindError.instance.convertErrorToString(
-                        e
-                    )
+                        "Could not parse date data. " + WindError.instance.convertErrorToString(
+                                e
+                        )
                 )
             }
         }
@@ -737,20 +743,20 @@ class SettingsPresenterImp @Inject constructor(
     private fun setupAppListAdapter() {
         settingView.showProgress(interactor.getResourceString(R.string.loading))
         interactor.getCompositeDisposable()
-            .add(
-                interactor.getAppPreferenceInterface().installedApps
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeOn(Schedulers.io())
-                    .subscribeWith(object : DisposableSingleObserver<List<String>>() {
-                        override fun onError(e: Throwable) {
-                            settingView.hideProgress()
-                            modifyList(emptyList())
-                        }
+                .add(
+                        interactor.getAppPreferenceInterface().installedApps
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribeOn(Schedulers.io())
+                                .subscribeWith(object : DisposableSingleObserver<List<String>>() {
+                                    override fun onError(e: Throwable) {
+                                        settingView.hideProgress()
+                                        modifyList(emptyList())
+                                    }
 
-                        override fun onSuccess(installedAppsData: List<String>) {
-                            modifyList(installedAppsData)
-                        }
-                    })
-            )
+                                    override fun onSuccess(installedAppsData: List<String>) {
+                                        modifyList(installedAppsData)
+                                    }
+                                })
+                )
     }
 }

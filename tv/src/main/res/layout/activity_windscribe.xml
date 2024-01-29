@@ -316,7 +316,7 @@
             android:ellipsize="end"
             android:focusable="false"
             android:fontFamily="sans-serif-black"
-            android:gravity="end|center_vertical"
+            android:gravity="right|center_vertical"
             android:includeFontPadding="false"
             android:lineSpacingExtra="0dp"
             android:maxLines="1"
