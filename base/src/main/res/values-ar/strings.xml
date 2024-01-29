@@ -349,7 +349,7 @@
     <string name="support_url">windscribe.com/support</string>
     <string name="enter_code">أدخل الرمز</string>
     <string name="enter">دخل</string>
-    <string name="ping_time">٪d MS</string>
+    <string name="ping_time">MS %d</string>
     <string name="trying_next_protocol">"تجربة البروتوكول التالي في ٪d"</string>
     <string name="all">كل</string>
     <string name="favourite">المفضله</string>
