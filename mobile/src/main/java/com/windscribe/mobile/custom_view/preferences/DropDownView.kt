@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.*
 import androidx.core.content.res.getResourceIdOrThrow
 import com.windscribe.mobile.R
+import java.util.concurrent.atomic.AtomicBoolean
 
 class DropDownView @JvmOverloads constructor(
         context: Context,
@@ -24,6 +25,7 @@ class DropDownView @JvmOverloads constructor(
     private val attributes: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.DropDownView)
     private val view: View = View.inflate(context, R.layout.drop_down_view, this)
     private var keys: Array<String>? = null
+    private var ignoreInitialEvent = AtomicBoolean(false)
     init {
         attributes.getString(R.styleable.DropDownView_DropDownDescription)?.let {
             view.findViewById<TextView>(R.id.description).text = it
@@ -42,10 +44,12 @@ class DropDownView @JvmOverloads constructor(
     }
 
     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        view?.findViewById<TextView>(R.id.tv_drop_down)?. text = ""
-        spinner?.selectedItem.toString().let {
-            current?.text = it
-            delegate?.onItemSelect(keys?.get(position) ?: "")
+        if (ignoreInitialEvent.getAndSet(true)) {
+            view?.findViewById<TextView>(R.id.tv_drop_down)?. text = ""
+            spinner?.selectedItem.toString().let {
+                current?.text = it
+                delegate?.onItemSelect(keys?.get(position) ?: "")
+            }
         }
     }
 
