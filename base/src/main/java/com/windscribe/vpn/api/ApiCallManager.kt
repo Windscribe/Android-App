@@ -174,7 +174,7 @@ open class ApiCallManager @Inject constructor(private val apiFactory: WindApiFac
                             return@onErrorResumeNext Single.fromCallable { it.response()?.errorBody() }
                         } else {
                             domainFailOverManager.setDomainBlocked(DomainType.Secondary, apiCallType)
-                            return@onErrorResumeNext (if (BuildConfig.DYNAMIC_DNS.isEmpty()) {
+                            return@onErrorResumeNext (if ( BuildConfig.DEV || BuildConfig.DYNAMIC_DNS.isEmpty()) {
                                 throw WindScribeException("Dynamic doh disabled.")
                             } else {
                                 getDynamicDohEndpoint(hostType).flatMap { dynamicEndpoint ->
