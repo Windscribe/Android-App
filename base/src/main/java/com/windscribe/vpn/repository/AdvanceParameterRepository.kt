@@ -6,7 +6,7 @@ import com.windscribe.vpn.constants.AdvanceParamKeys.SERVER_LIST_COUNTRY_OVERRID
 import com.windscribe.vpn.constants.AdvanceParamKeys.SHOW_STRONG_SWAN_LOG
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_START_DELAY
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_TEST_ATTEMPTS
-import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_TEST_TIMEOUT
+import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_TEST_RETRY_DELAY
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +18,7 @@ interface AdvanceParameterRepository {
     fun getForceNode(): String?
     fun showStrongSwanLog(): Boolean
     fun getTunnelStartDelay(): Long?
-    fun getTunnelTestTimeout(): Long?
+    fun getTunnelTestRetryDelay(): Long?
     fun getTunnelTestAttempts(): Long?
 }
 
@@ -52,8 +52,8 @@ class AdvanceParameterRepositoryImpl(val scope: CoroutineScope, val preferencesH
         return params.value[TUNNEL_START_DELAY]?.toLongOrNull()
     }
 
-    override fun getTunnelTestTimeout(): Long? {
-        return params.value[TUNNEL_TEST_TIMEOUT]?.toLongOrNull()
+    override fun getTunnelTestRetryDelay(): Long? {
+        return params.value[TUNNEL_TEST_RETRY_DELAY]?.toLongOrNull()
     }
 
     override fun getTunnelTestAttempts(): Long? {

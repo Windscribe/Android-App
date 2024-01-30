@@ -10,6 +10,7 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
@@ -88,17 +89,27 @@ abstract class VpnBackend(
     fun testConnectivity() {
         connectionJob?.cancel()
         connectivityTestJob.clear()
-        vpnLogger.debug("Testing internet connectivity.")
+        vpnLogger.debug("Starting connectivity test.")
+        val startDelay = advanceParameterRepository.getTunnelStartDelay() ?: 500
+        val retryDelay = advanceParameterRepository.getTunnelTestRetryDelay() ?: 500
+        // Max Attempts = First attempt + retries
+        val maxAttempts = advanceParameterRepository.getTunnelTestAttempts() ?: 3
+        var maxRetries = maxAttempts
+        if (maxAttempts >= 1) {
+            maxRetries -= 1
+        }
+        var failedAttemptIndex = 0
         connectivityTestJob.add(
-                vpnServiceInteractor.apiManager
-                        .getConnectedIp()
-                        .retryWhen {
-                            it.take(advanceParameterRepository.getTunnelTestAttempts()
-                                    ?: 3).delay(advanceParameterRepository.getTunnelTestTimeout()
-                                    ?: 500, TimeUnit.MILLISECONDS)
-                        }.timeout(20, TimeUnit.SECONDS)
-                        .delaySubscription(advanceParameterRepository.getTunnelStartDelay()
-                                ?: 500, TimeUnit.MILLISECONDS)
+                Single.just(true).delay(startDelay, TimeUnit.MILLISECONDS).flatMap {
+                    vpnServiceInteractor.apiManager
+                            .getConnectedIp()
+                            .doOnError {
+                                failedAttemptIndex++
+                                vpnLogger.debug("Failed Attempt: $failedAttemptIndex")
+                            }.retryWhen { error ->
+                                return@retryWhen error.take(maxRetries).delay(retryDelay, TimeUnit.MILLISECONDS)
+                            }
+                }.timeout(20, TimeUnit.SECONDS)
                         .observeOn(Schedulers.io())
                         .subscribeOn(Schedulers.io())
                         .subscribe(
