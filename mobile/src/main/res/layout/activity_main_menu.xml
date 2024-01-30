@@ -139,7 +139,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/cl_refer_for_data"
             app:ItemLinkViewTitle="@string/advance"
-            android:visibility="gone"
             app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_settings"
             app:ItemLinkViewLeftIcon="@drawable/advance" />
 
@@ -149,7 +148,6 @@
             android:layout_marginStart="@dimen/reg_16dp"
             android:layout_marginTop="0dp"
             android:layout_marginBottom="0dp"
-            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/cl_advance" />

@@ -68,7 +68,7 @@ open class WindVpnController @Inject constructor(
     val vpnBackendHolder: VpnBackendHolder,
     private val locationRepository: LocationRepository,
     private val wgConfigRepository: WgConfigRepository,
-    private val userRepository: Lazy<UserRepository>,
+    private val advanceParameterRepository: Lazy<AdvanceParameterRepository>,
     private val autoConnectionManager: AutoConnectionManager,
     private val emergencyConnectRepository: EmergencyConnectRepository
 
@@ -127,14 +127,12 @@ open class WindVpnController @Inject constructor(
     private var lastUsedRandomIndex = 0
 
     private fun getForcedNodeIndex(city: City): Int {
-        if (DEV) {
-            val extraKeys = WindUtilities.toKeyValuePairs(appContext.preference.advanceParamText)
-            if (extraKeys.containsKey(AdvanceParamKeys.FORCE_NODE) && city.nodesAvailable()) {
-                val preferredNode = extraKeys[AdvanceParamKeys.FORCE_NODE]
-                return city.nodes.indexOfFirst { it.hostname == preferredNode }
-            }
+        val forceNode = advanceParameterRepository.get().getForceNode()
+        return if (forceNode != null && city.nodesAvailable()) {
+            city.nodes.indexOfFirst { it.hostname == forceNode }
+        } else {
+            -1
         }
-        return -1
     }
 
     private suspend fun createVpnProfileFromCity(

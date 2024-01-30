@@ -6,6 +6,7 @@ package com.windscribe.vpn
 
 import android.os.Build
 import android.os.Build.VERSION
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleCoroutineScope
 import com.google.gson.Gson
@@ -21,7 +22,6 @@ import com.windscribe.vpn.backend.openvpn.ProxyTunnelManager
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.ThemeUtils
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.constants.AdvanceParamKeys
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.RateDialogConstants
@@ -81,7 +81,8 @@ class ActivityInteractorImpl(
     private val autoConnectionManager: AutoConnectionManager,
     private val latencyRepository: LatencyRepository,
     private val receiptValidator: ReceiptValidator,
-    private val firebaseManager: FirebaseManager
+    private val firebaseManager: FirebaseManager,
+    private val advanceParameterRepository: AdvanceParameterRepository
 ) : ActivityInteractor {
 
     interface PortMapLoadCallback {
@@ -226,12 +227,11 @@ class ActivityInteractorImpl(
     }
 
     override fun getDebugFilePath(): String {
-        val advanceParams = WindUtilities.toKeyValuePairs(preferenceHelper.advanceParamText)
-        val ikev2Log = advanceParams.containsKey(AdvanceParamKeys.SHOW_IKEV2_LOG)
-        if (ikev2Log && advanceParams[AdvanceParamKeys.SHOW_IKEV2_LOG] == "true"){
-            return "${appContext.filesDir}/charon.log"
+        return if (advanceParameterRepository.showStrongSwanLog()) {
+            "${appContext.filesDir}/charon.log"
+        } else {
+            appContext.cacheDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
         }
-        return appContext.cacheDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
     }
 
     @Throws(Exception::class)

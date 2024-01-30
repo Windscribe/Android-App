@@ -7,7 +7,6 @@ import androidx.core.app.NotificationCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.ServiceInteractorImpl
 import com.windscribe.vpn.Windscribe
@@ -51,6 +50,8 @@ import com.windscribe.vpn.localdatabase.UserStatusDao
 import com.windscribe.vpn.localdatabase.WindNotificationDao
 import com.windscribe.vpn.localdatabase.WindscribeDatabase
 import com.windscribe.vpn.mocklocation.MockLocationManager
+import com.windscribe.vpn.repository.AdvanceParameterRepository
+import com.windscribe.vpn.repository.AdvanceParameterRepositoryImpl
 import com.windscribe.vpn.repository.ConnectionDataRepository
 import com.windscribe.vpn.repository.EmergencyConnectRepository
 import com.windscribe.vpn.repository.EmergencyConnectRepositoryImpl
@@ -72,7 +73,6 @@ import com.windscribe.vpn.serverlist.dao.PingTimeDao
 import com.windscribe.vpn.serverlist.dao.RegionAndCitiesDao
 import com.windscribe.vpn.serverlist.dao.RegionDao
 import com.windscribe.vpn.serverlist.dao.StaticRegionDao
-import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.NetworkInfoManager
@@ -100,6 +100,7 @@ open class BaseApplicationModule {
     private val logger = LoggerFactory.getLogger("di_")
 
     open lateinit var windscribeApp: Windscribe
+
     @Provides
     @Singleton
     @Named("accessIpList")
@@ -246,11 +247,10 @@ open class BaseApplicationModule {
             coroutineScope: CoroutineScope,
             networkInfoManager: NetworkInfoManager,
             vpnConnectionStateManager: VPNConnectionStateManager,
-            serviceInteractor: ServiceInteractor
+            serviceInteractor: ServiceInteractor,
+            advanceParameterRepository: AdvanceParameterRepository
     ): IKev2VpnBackend {
-        return IKev2VpnBackend(
-                coroutineScope, networkInfoManager, vpnConnectionStateManager, serviceInteractor
-        )
+        return IKev2VpnBackend(coroutineScope, networkInfoManager, vpnConnectionStateManager, serviceInteractor, advanceParameterRepository)
     }
 
     @Provides
@@ -328,15 +328,16 @@ open class BaseApplicationModule {
             coroutineScope: CoroutineScope,
             networkInfoManager: NetworkInfoManager,
             vpnConnectionStateManager: VPNConnectionStateManager,
-            serviceInteractor: ServiceInteractor
+            serviceInteractor: ServiceInteractor,
+            advanceParameterRepository: AdvanceParameterRepository
     ): OpenVPNBackend {
         return OpenVPNBackend(
                 goBackend,
                 coroutineScope,
                 networkInfoManager,
                 vpnConnectionStateManager,
-                serviceInteractor
-        )
+                serviceInteractor,
+                advanceParameterRepository)
     }
 
     @Provides
@@ -397,7 +398,7 @@ open class BaseApplicationModule {
             preferenceChangeObserver: PreferenceChangeObserver,
             userRepository: UserRepository,
             appLifeCycleObserver: AppLifeCycleObserver,
-            workManager: WindScribeWorkManager
+            advanceParameterRepository: AdvanceParameterRepository
     ): ServerListRepository {
         return ServerListRepository(
                 scope,
@@ -406,7 +407,7 @@ open class BaseApplicationModule {
                 preferenceChangeObserver,
                 userRepository,
                 appLifeCycleObserver,
-                workManager
+                advanceParameterRepository
         )
     }
 
@@ -534,7 +535,8 @@ open class BaseApplicationModule {
             vpnProfileCreator: VPNProfileCreator,
             userRepository: Lazy<UserRepository>,
             deviceStateManager: DeviceStateManager,
-            preferencesHelper: PreferencesHelper
+            preferencesHelper: PreferencesHelper,
+            advanceParameterRepository: AdvanceParameterRepository
     ): WireguardBackend {
         return WireguardBackend(
                 goBackend,
@@ -545,8 +547,8 @@ open class BaseApplicationModule {
                 vpnProfileCreator,
                 userRepository,
                 deviceStateManager,
-                preferencesHelper
-        )
+                preferencesHelper,
+                advanceParameterRepository)
     }
 
     @Provides
@@ -663,30 +665,29 @@ open class BaseApplicationModule {
     }
 
     @Provides
-    fun providesOkHttpBuilder(windscribeDnsResolver: WindscribeDnsResolver): OkHttpClient.Builder {
+    fun providesOkHttpBuilder(windscribeDnsResolver: WindscribeDnsResolver, advanceParameterRepository: AdvanceParameterRepository): OkHttpClient.Builder {
         val connectionPool = ConnectionPool(0, 5, TimeUnit.MINUTES)
-        httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BASIC
+        val httpLoggingInterceptor = getHttpLoggingInterceptor()
+        httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
         val builder = OkHttpClient.Builder()
         builder.connectTimeout(NetworkKeyConstants.NETWORK_REQUEST_CONNECTION_TIMEOUT, TimeUnit.SECONDS)
         builder.readTimeout(5, TimeUnit.SECONDS)
         builder.writeTimeout(5, TimeUnit.SECONDS)
         builder.callTimeout(15, TimeUnit.SECONDS)
         builder.retryOnConnectionFailure(false)
-        builder.connectionPool(connectionPool).addInterceptor(httpLoggingInterceptor)
+        builder.connectionPool(connectionPool)
+        //.addInterceptor()
         builder.dns(windscribeDnsResolver)
         return builder
     }
 
-    private var httpLoggingInterceptor =
-            HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
-                override fun log(message: String) {
-                    // Log each api call when testing locally.
-//                    if (BuildConfig.DEV) {
-//                        logger.debug(message)
-//                    }
-                }
-            })
-
+    private fun getHttpLoggingInterceptor(): HttpLoggingInterceptor {
+        return HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
+            override fun log(message: String) {
+                logger.info(message)
+            }
+        })
+    }
 
     @Provides
     fun providesRetrofitBuilder(): Retrofit.Builder {
@@ -834,5 +835,11 @@ open class BaseApplicationModule {
     @Singleton
     fun providesEmergencyConnectRepository(): EmergencyConnectRepository {
         return EmergencyConnectRepositoryImpl()
+    }
+
+    @Provides
+    @Singleton
+    fun providesAdvanceParameterRepository(scope: CoroutineScope, preferencesHelper: PreferencesHelper): AdvanceParameterRepository {
+        return AdvanceParameterRepositoryImpl(scope, preferencesHelper)
     }
 }
