@@ -7,6 +7,7 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.EmergencyConnectRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.UserRepository
@@ -18,16 +19,16 @@ import kotlinx.coroutines.delay
 import java.util.*
 
 class TestWindVpnController(
-    scope: CoroutineScope,
-    interactor: ServiceInteractor,
-    vpnProfileCreator: VPNProfileCreator,
-    private val vpnConnectionStateManager: VPNConnectionStateManager,
-    vpnBackendHolder: VpnBackendHolder,
-    locationRepository: LocationRepository,
-    autoConnectionManager: AutoConnectionManager,
-    wgConfigRepository: WgConfigRepository,
-    userRepository: Lazy<UserRepository>,
-    emergencyConnectRepository: EmergencyConnectRepository
+        scope: CoroutineScope,
+        interactor: ServiceInteractor,
+        vpnProfileCreator: VPNProfileCreator,
+        private val vpnConnectionStateManager: VPNConnectionStateManager,
+        vpnBackendHolder: VpnBackendHolder,
+        locationRepository: LocationRepository,
+        autoConnectionManager: AutoConnectionManager,
+        wgConfigRepository: WgConfigRepository,
+        advanceParameterRepository: Lazy<AdvanceParameterRepository>,
+        emergencyConnectRepository: EmergencyConnectRepository
 ) : WindVpnController(
     scope,
     interactor,
@@ -36,7 +37,7 @@ class TestWindVpnController(
     vpnBackendHolder,
     locationRepository,
     wgConfigRepository,
-    userRepository,
+    advanceParameterRepository,
     autoConnectionManager,
     emergencyConnectRepository
 ) {
