@@ -6,6 +6,7 @@ import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.mocks.TestWindVpnController
+import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.EmergencyConnectRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.UserRepository
@@ -26,23 +27,23 @@ class TestVPNModule {
         serviceInteractor: ServiceInteractor,
         vpnProfileCreator: VPNProfileCreator,
         autoConnectionManager: AutoConnectionManager,
-        VPNConnectionStateManager: VPNConnectionStateManager,
+        vpnConnectionStateManager: VPNConnectionStateManager,
         vpnBackendHolder: VpnBackendHolder,
         locationRepository: LocationRepository,
         wgConfigRepository: WgConfigRepository,
-        userRepository: Lazy<UserRepository>,
+        advanceParameterRepository: Lazy<AdvanceParameterRepository>,
         emergencyConnectRepository: EmergencyConnectRepository
     ): WindVpnController {
         return TestWindVpnController(
             coroutineScope,
             serviceInteractor,
             vpnProfileCreator,
-            VPNConnectionStateManager,
+            vpnConnectionStateManager,
             vpnBackendHolder,
             locationRepository,
             autoConnectionManager,
             wgConfigRepository,
-            userRepository,
+            advanceParameterRepository,
             emergencyConnectRepository
         )
     }

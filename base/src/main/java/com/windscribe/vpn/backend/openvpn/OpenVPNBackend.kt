@@ -11,6 +11,7 @@ import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VpnBackend
+import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.wireguard.android.backend.GoBackend
@@ -30,7 +31,8 @@ class OpenVPNBackend(
     var networkInfoManager: NetworkInfoManager,
     vpnStateManager: VPNConnectionStateManager,
     var serviceInteractor: ServiceInteractor,
-) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager),
+    advanceParameterRepository: AdvanceParameterRepository
+) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager, advanceParameterRepository),
     VpnStatus.StateListener, VpnStatus.ByteCountListener {
 
     override var active = false

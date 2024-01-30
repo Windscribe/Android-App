@@ -79,6 +79,7 @@ import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
+import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.ConnectionDataRepository
 import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.LocationRepository
@@ -245,8 +246,8 @@ open class BaseActivityModule {
     }
 
     @Provides
-    fun provideAdvanceParamsPresenter(preferencesHelper: PreferencesHelper): AdvanceParamPresenter {
-        return AdvanceParamsPresenterImpl(advanceParamView, preferencesHelper)
+    fun provideAdvanceParamsPresenter(preferencesHelper: PreferencesHelper, advanceParameterRepository: AdvanceParameterRepository): AdvanceParamPresenter {
+        return AdvanceParamsPresenterImpl(advanceParamView, preferencesHelper, advanceParameterRepository)
     }
 
     @Provides
@@ -379,7 +380,8 @@ open class BaseActivityModule {
             autoConnectionManager: AutoConnectionManager,
             latencyRepository: LatencyRepository,
             receiptValidator: ReceiptValidator,
-            firebaseManager: FirebaseManager
+            firebaseManager: FirebaseManager,
+            advanceParameterRepository: AdvanceParameterRepository
     ): ActivityInteractor {
         return ActivityInteractorImpl(
                 activityScope,
@@ -401,7 +403,8 @@ open class BaseActivityModule {
                 decoyTrafficController,
                 trafficCounter,
                 autoConnectionManager, latencyRepository, receiptValidator,
-                firebaseManager
+                firebaseManager,
+                advanceParameterRepository
         )
     }
 
