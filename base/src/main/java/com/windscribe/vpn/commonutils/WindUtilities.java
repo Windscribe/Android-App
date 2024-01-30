@@ -216,19 +216,5 @@ public class WindUtilities {
             return true;
         }
     }
-
-    public static HashMap<String, String> toKeyValuePairs(String text){
-        HashMap<String, String> map = new HashMap<String,String>();
-        if (!text.isEmpty() && text.split("\n").length > 0){
-         String[] lines = text.split("\n");
-            for (String line: lines) {
-                String[] kv = line.split("=");
-                if (kv.length == 2) {
-                  map.put(kv[0], kv[1]);
-                }
-            }
-        }
-        return map;
-    }
 }
 

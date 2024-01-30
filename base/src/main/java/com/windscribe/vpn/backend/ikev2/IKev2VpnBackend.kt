@@ -17,6 +17,7 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
+import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -34,11 +35,12 @@ import javax.inject.Singleton
 
 @Singleton
 class IKev2VpnBackend(
-    var scope: CoroutineScope,
-    var networkInfoManager: NetworkInfoManager,
-    var vpnStateManager: VPNConnectionStateManager,
-    var serviceInteractor: ServiceInteractor
-) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager), VpnStateListener,
+        var scope: CoroutineScope,
+        var networkInfoManager: NetworkInfoManager,
+        vpnStateManager: VPNConnectionStateManager,
+        var serviceInteractor: ServiceInteractor,
+        advanceParameterRepository: AdvanceParameterRepository
+) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager, advanceParameterRepository), VpnStateListener,
     NetworkInfoListener {
 
     private var vpnService: VpnStateService? = null

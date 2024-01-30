@@ -44,6 +44,7 @@ import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
+import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.ConnectionDataRepository
 import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.LocationRepository
@@ -52,10 +53,10 @@ import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.services.FirebaseManager
+import com.windscribe.vpn.services.ReceiptValidator
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import com.windscribe.vpn.services.ReceiptValidator
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import dagger.Module
 import dagger.Provides
@@ -237,7 +238,8 @@ open class BaseActivityModule {
             autoConnectionManager: AutoConnectionManager,
             latencyRepository: LatencyRepository,
             receiptValidator: ReceiptValidator,
-            firebaseManager: FirebaseManager
+            firebaseManager: FirebaseManager,
+            advanceParameterRepository: AdvanceParameterRepository
     ): ActivityInteractor {
         return ActivityInteractorImpl(
                 activityScope,
@@ -259,7 +261,10 @@ open class BaseActivityModule {
                 decoyTrafficController,
                 trafficCounter,
                 autoConnectionManager,
-                latencyRepository, receiptValidator,firebaseManager
+                latencyRepository,
+                receiptValidator,
+                firebaseManager,
+                advanceParameterRepository
         )
     }
 }

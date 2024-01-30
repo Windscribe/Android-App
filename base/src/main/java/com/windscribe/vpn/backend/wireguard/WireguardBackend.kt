@@ -27,6 +27,7 @@ import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes.EXPIRED_OR_BANNED_ACCOUNT
+import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.DeviceStateManager
@@ -68,8 +69,9 @@ class WireguardBackend(
         val vpnProfileCreator: VPNProfileCreator,
         val userRepository: Lazy<UserRepository>,
         val deviceStateManager: DeviceStateManager,
-        val preferencesHelper: PreferencesHelper
-) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager) {
+        val preferencesHelper: PreferencesHelper,
+        advanceParameterRepository: AdvanceParameterRepository
+) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager, advanceParameterRepository) {
 
     var service: WireGuardWrapperService? = null
     var connectionStateJob: Job? = null

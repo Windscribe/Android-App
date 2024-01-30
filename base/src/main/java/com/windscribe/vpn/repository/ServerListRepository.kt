@@ -9,6 +9,7 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.AdvanceParamKeys
+import com.windscribe.vpn.constants.AdvanceParamsValues.IGNORE
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.serverlist.entity.City
@@ -37,7 +38,7 @@ class ServerListRepository @Inject constructor(
     private val preferenceChangeObserver: PreferenceChangeObserver,
     private val userRepository: UserRepository,
     private val appLifeCycleObserver: AppLifeCycleObserver,
-    private val workManager: WindScribeWorkManager
+    private val advanceParameterRepository: AdvanceParameterRepository
 ) {
     private val logger = LoggerFactory.getLogger("server_list_repository")
     private var _events = MutableSharedFlow<List<RegionAndCities>>(replay = 1)
@@ -55,10 +56,9 @@ class ServerListRepository @Inject constructor(
     }
 
     private fun getCountryOverride(): String? {
-        val extraKeys = WindUtilities.toKeyValuePairs(appContext.preference.advanceParamText)
-        return if (extraKeys.containsKey(AdvanceParamKeys.WS_SERVER_LIST_COUNTRY_OVERRIDE)) {
-            val countryCode = extraKeys[AdvanceParamKeys.WS_SERVER_LIST_COUNTRY_OVERRIDE]
-            if (countryCode == "ignore") {
+        val countryCode = advanceParameterRepository.getCountryOverride()
+        return if (countryCode != null) {
+            if (countryCode == IGNORE) {
                 "ZZ"
             } else {
                 countryCode
