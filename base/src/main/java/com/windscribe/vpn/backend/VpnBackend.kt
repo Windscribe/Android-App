@@ -6,7 +6,6 @@ package com.windscribe.vpn.backend
 
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.autoconnection.ProtocolInformation
-import com.windscribe.vpn.backend.wireguard.WireguardBackend
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.NetworkInfoManager
@@ -29,11 +28,11 @@ import javax.inject.Singleton
  * */
 @Singleton
 abstract class VpnBackend(
-    private val mainScope: CoroutineScope,
-    val stateManager: VPNConnectionStateManager,
-    private val vpnServiceInteractor: ServiceInteractor,
-    private val networkInfoManager: NetworkInfoManager,
-    private val advanceParameterRepository: AdvanceParameterRepository
+        private val mainScope: CoroutineScope,
+        val stateManager: VPNConnectionStateManager,
+        private val vpnServiceInteractor: ServiceInteractor,
+        private val networkInfoManager: NetworkInfoManager,
+        private val advanceParameterRepository: AdvanceParameterRepository
 ) {
 
     val vpnLogger: Logger = LoggerFactory.getLogger("vpn_backend")
@@ -59,8 +58,8 @@ abstract class VpnBackend(
     fun startConnectionJob() {
         val preferredProtocolOn = networkInfoManager.networkInfo?.isPreferredOn ?: false
         if (preferredProtocolOn.not() && vpnServiceInteractor.preferenceHelper.getResponseString(
-                PreferencesKeyConstants.CONNECTION_MODE_KEY
-            ) != PreferencesKeyConstants.CONNECTION_MODE_AUTO) {
+                        PreferencesKeyConstants.CONNECTION_MODE_KEY
+                ) != PreferencesKeyConstants.CONNECTION_MODE_AUTO) {
             vpnLogger.debug("Manual connection mode selected without preferred protocol.")
             return
         }
@@ -74,10 +73,10 @@ abstract class VpnBackend(
     private suspend fun connectionTimeout() {
         vpnLogger.debug("Connection timeout.")
         disconnect(
-            error = VPNState.Error(
-                error = VPNState.ErrorType.TimeoutError,
-                "connection timeout"
-            )
+                error = VPNState.Error(
+                        error = VPNState.ErrorType.TimeoutError,
+                        "connection timeout"
+                )
         )
     }
 
@@ -91,11 +90,15 @@ abstract class VpnBackend(
         connectivityTestJob.clear()
         vpnLogger.debug("Testing internet connectivity.")
         connectivityTestJob.add(
-            vpnServiceInteractor.apiManager
-                .getConnectedIp().delay(advanceParameterRepository.getTunnelTestTimeout() ?: 500, TimeUnit.MILLISECONDS)
-                        .retry(advanceParameterRepository.getTunnelTestAttempts() ?: 3)
-                        .timeout(20, TimeUnit.SECONDS)
-                        .delaySubscription(advanceParameterRepository.getTunnelStartDelay() ?: 500, TimeUnit.MILLISECONDS)
+                vpnServiceInteractor.apiManager
+                        .getConnectedIp()
+                        .retryWhen {
+                            it.take(advanceParameterRepository.getTunnelTestAttempts()
+                                    ?: 3).delay(advanceParameterRepository.getTunnelTestTimeout()
+                                    ?: 500, TimeUnit.MILLISECONDS)
+                        }.timeout(20, TimeUnit.SECONDS)
+                        .delaySubscription(advanceParameterRepository.getTunnelStartDelay()
+                                ?: 500, TimeUnit.MILLISECONDS)
                         .observeOn(Schedulers.io())
                         .subscribeOn(Schedulers.io())
                         .subscribe(
@@ -156,10 +159,10 @@ abstract class VpnBackend(
             mainScope.launch {
                 vpnLogger.debug("Connectivity test failed.")
                 disconnect(
-                    error = VPNState.Error(
-                        VPNState.ErrorType.ConnectivityTestFailed,
-                        "Connectivity test failed."
-                    )
+                        error = VPNState.Error(
+                                VPNState.ErrorType.ConnectivityTestFailed,
+                                "Connectivity test failed."
+                        )
                 )
             }
         } else {
