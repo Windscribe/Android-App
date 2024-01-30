@@ -8,6 +8,7 @@ import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.wireguard.WireguardBackend
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import io.reactivex.disposables.CompositeDisposable
@@ -31,7 +32,8 @@ abstract class VpnBackend(
     private val mainScope: CoroutineScope,
     val stateManager: VPNConnectionStateManager,
     private val vpnServiceInteractor: ServiceInteractor,
-    private val networkInfoManager: NetworkInfoManager
+    private val networkInfoManager: NetworkInfoManager,
+    private val advanceParameterRepository: AdvanceParameterRepository
 ) {
 
     val vpnLogger: Logger = LoggerFactory.getLogger("vpn_backend")
@@ -90,10 +92,10 @@ abstract class VpnBackend(
         vpnLogger.debug("Testing internet connectivity.")
         connectivityTestJob.add(
             vpnServiceInteractor.apiManager
-                .getConnectedIp().delay(500, TimeUnit.MILLISECONDS)
-                        .retry(3)
+                .getConnectedIp().delay(advanceParameterRepository.getTunnelTestTimeout() ?: 500, TimeUnit.MILLISECONDS)
+                        .retry(advanceParameterRepository.getTunnelTestAttempts() ?: 3)
                         .timeout(20, TimeUnit.SECONDS)
-                        .delaySubscription(500, TimeUnit.MILLISECONDS)
+                        .delaySubscription(advanceParameterRepository.getTunnelStartDelay() ?: 500, TimeUnit.MILLISECONDS)
                         .observeOn(Schedulers.io())
                         .subscribeOn(Schedulers.io())
                         .subscribe(

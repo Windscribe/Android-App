@@ -1,9 +1,10 @@
 package com.windscribe.mobile.advance
 
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.repository.AdvanceParameterRepository
 import javax.inject.Inject
 
-class AdvanceParamsPresenterImpl @Inject constructor(private var advanceParamsView: AdvanceParamView, private val preferencesHelper: PreferencesHelper) : AdvanceParamPresenter {
+class AdvanceParamsPresenterImpl @Inject constructor(private var advanceParamsView: AdvanceParamView, private val preferencesHelper: PreferencesHelper, private val advanceParameterRepository: AdvanceParameterRepository) : AdvanceParamPresenter {
     override fun setup() {
         advanceParamsView.setupActivityTitle()
         advanceParamsView.setAdvanceParamsText(preferencesHelper.advanceParamText)
@@ -27,10 +28,12 @@ class AdvanceParamsPresenterImpl @Inject constructor(private var advanceParamsVi
         }
         preferencesHelper.advanceParamText = text
         advanceParamsView.showToast("Saved successfully.")
+        advanceParameterRepository.reload()
     }
 
     override fun clearAdvanceParams() {
         preferencesHelper.advanceParamText = ""
         advanceParamsView.setAdvanceParamsText("")
+        advanceParameterRepository.reload()
     }
 }
