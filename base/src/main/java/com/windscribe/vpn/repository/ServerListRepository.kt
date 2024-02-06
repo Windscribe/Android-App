@@ -5,8 +5,10 @@ package com.windscribe.vpn.repository
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.UserSessionResponse
+import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.AdvanceParamsValues.IGNORE
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
@@ -52,9 +54,9 @@ class ServerListRepository @Inject constructor(
         }
     }
 
-    private fun getCountryOverride(userSession: UserSessionResponse): String? {
+    private fun getCountryOverride(): String? {
         val countryCode = advanceParameterRepository.getCountryOverride()
-        val isConnectedVPN = userSession.ourIp != null && userSession.ourIp == 1
+        val isConnectedVPN = appContext.vpnConnectionStateManager.isVPNConnected()
         return if (countryCode != null) {
             if (countryCode == IGNORE) {
                 "ZZ"
@@ -75,7 +77,7 @@ class ServerListRepository @Inject constructor(
             it.dataClass?.let { userSession ->
                 userRepository.reload(userSession)
                 val user = User(userSession)
-                val countryOverride = getCountryOverride(userSession)
+                val countryOverride = getCountryOverride()
                 if (countryOverride != "ZZ") {
                     globalServerList = false
                 }
