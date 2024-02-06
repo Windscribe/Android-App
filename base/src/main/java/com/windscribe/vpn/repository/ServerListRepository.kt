@@ -63,7 +63,7 @@ class ServerListRepository @Inject constructor(
             } else {
                 countryCode
             }
-        } else if (isConnectedVPN) {
+        } else if (appLifeCycleObserver.overriddenCountryCode == null && isConnectedVPN) {
             "ZZ"
         } else {
             logger.debug("Existing server override: ${appLifeCycleObserver.overriddenCountryCode ?: "Global"}")
