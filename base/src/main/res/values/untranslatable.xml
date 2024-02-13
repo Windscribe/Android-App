@@ -21,6 +21,7 @@
     <string name="reason_to_try_backup_endpoint" translatable="false">&#032;&#8212;Reason to try backup end point:&#032;</string>
     <!-- Strings arrays  -->
     <string name="OFF" translatable="false">OFF</string>
+    <string name="ON" translatable="false">ON</string>
     <string name="empty_dash" translatable="false">--</string>
     <string name="image_description" translatable="false">Image</string>
     <string name="empty_ip_address" translatable="false">000.000.000.000</string>
