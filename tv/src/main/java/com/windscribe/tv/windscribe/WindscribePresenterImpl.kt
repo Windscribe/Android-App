@@ -92,7 +92,7 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getAutoConnectionManager().nextInLineProtocol.collectLatest { protocol ->
             if (interactor.getVpnConnectionStateManager().isVPNActive().not()) {
                 protocol?.let {
-                    windscribeView.setBadgeIcon("${Util.getProtocolLabel(it.protocol)} ${protocol.port}", true)
+                    windscribeView.setProtocolAndPortInfo(Util.getProtocolLabel(it.protocol), it.port, true)
                 }
             }
         }
@@ -102,7 +102,7 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getAutoConnectionManager().connectedProtocol.collectLatest { protocol ->
             if (interactor.getVpnConnectionStateManager().isVPNActive()) {
                 protocol?.let {
-                    windscribeView.setBadgeIcon("${Util.getProtocolLabel(it.protocol)} ${protocol.port}", false)
+                    windscribeView.setProtocolAndPortInfo(Util.getProtocolLabel(it.protocol), it.port, false)
                 }
             }
         }
@@ -259,14 +259,11 @@ class WindscribePresenterImpl @Inject constructor(
     override fun onConnectedAnimationCompleted() {
         interactor.getAppPreferenceInterface()
         logger.info("Vpn connected animation completed. Setting IP Address")
-        val isSplitRoutingOn = interactor.getAppPreferenceInterface().lastConnectedUsingSplit
-        if (isSplitRoutingOn) {
-            windscribeView.showSplitViewIcon()
-        }
+        windscribeView.showSplitViewIcon(interactor.getAppPreferenceInterface().lastConnectedUsingSplit)
     }
 
     override fun onConnectingAnimationCompleted() {
-        windscribeView.setupLayoutConnecting(interactor.getResourceString(string.connecting))
+        windscribeView.setupLayoutConnecting()
     }
 
     override fun onDisconnectIntentReceived() {
@@ -301,13 +298,10 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.setState(1)
         windscribeView.setGlowVisibility(View.GONE)
         windscribeView.setVpnButtonState()
-        windscribeView.setBadgeIcon(
-            "${Util.getProtocolLabel(interactor.getAppPreferenceInterface().selectedProtocol)} ${interactor.getAppPreferenceInterface().selectedPort}",
-            false
-        )
+        windscribeView.setProtocolAndPortInfo(Util.getProtocolLabel(interactor.getAppPreferenceInterface().selectedProtocol), interactor.getAppPreferenceInterface().selectedPort,false)
         selectedLocation?.let {
             windscribeView.startVpnConnectingAnimation(
-                interactor.getResourceString(string.connecting),
+                interactor.getResourceString(string.ON),
                 FlagIconResource.getFlag(it.countryCode),
                 interactor.getColorResource(color.colorDeepBlue),
                 interactor.getColorResource(color.colorNavyBlue),
@@ -328,7 +322,7 @@ class WindscribePresenterImpl @Inject constructor(
                         override fun onSuccess(location: LastSelectedLocation) {
                             selectedLocation = location
                             windscribeView.startVpnConnectingAnimation(
-                                interactor.getResourceString(string.connecting),
+                                interactor.getResourceString(string.on),
                                 FlagIconResource.getFlag(location.countryCode),
                                 interactor.getColorResource(color.colorDeepBlue),
                                 interactor.getColorResource(color.colorNavyBlue),
@@ -346,7 +340,7 @@ class WindscribePresenterImpl @Inject constructor(
         if (interactor.getAppPreferenceInterface().isReconnecting) {
             return
         }
-        windscribeView.setupLayoutDisconnected(interactor.getColorResource(color.colorWhite50))
+        windscribeView.setupLayoutDisconnected()
         windscribeView.networkInfo?.let {
             if (it.isConnected) {
                 setIPAddress()
@@ -361,18 +355,14 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.setState(0)
         windscribeView.setGlowVisibility(View.GONE)
         windscribeView.setVpnButtonState()
-        windscribeView.setupLayoutDisconnecting(
-            interactor.getResourceString(string.disconnecting),
-            interactor.getColorResource(color.colorLightBlue)
-        )
+        windscribeView.setupLayoutDisconnecting()
     }
 
     private fun vpnConnected(ip: String) {
-        windscribeView.flashProtocolBadge(false)
         windscribeView.setIpAddress(ip.trim())
         logger.info("Connection with the server is established.")
         windscribeView.startVpnConnectedAnimation(
-            interactor.getResourceString(string.connected),
+            interactor.getResourceString(string.ON),
             interactor.getColorResource(color.colorNavyBlue),
             interactor.getColorResource(color.colorPrimary),
             interactor.getColorResource(color.colorLightBlue),
