@@ -13,8 +13,6 @@ interface WindscribeView {
         fun onConnectedAnimationCompleted()
         fun onConnectingAnimationCompleted()
     }
-
-    fun flashProtocolBadge(flash: Boolean)
     val networkInfo: NetworkInfo?
     fun gotoLoginRegistrationActivity()
     fun handleRateView()
@@ -23,9 +21,7 @@ interface WindscribeView {
     fun openNewsFeedActivity(showPopUp: Boolean, popUp: Int)
     fun openUpgradeActivity()
     fun quitApplication()
-    fun setBadgeIcon(protocolText: String, disconnected: Boolean)
-    fun setConnectionStateColor(connectionStateColor: Int)
-    fun setConnectionStateText(connectionStateText: String)
+    fun setProtocolAndPortInfo(protocol: String, port: String, disconnected: Boolean)
     fun setCountryFlag(flagIconResource: Int)
     fun setGlowVisibility(visibility: Int)
     fun setIpAddress(ipAddress: String)
@@ -35,21 +31,14 @@ interface WindscribeView {
     fun setupAccountStatusBanned()
     fun setupAccountStatusDowngraded()
     fun setupAccountStatusExpired()
-    fun setupLayoutConnected(
-        finalColor: Int,
-        connectionStateTextColor: Int,
-        showSplitTunnelAView: Boolean
-    )
-
-    fun setupLayoutConnecting(connectionState: String)
-    fun setupLayoutDisconnected(connectionStateTextColor: Int)
-    fun setupLayoutDisconnecting(connectionState: String, connectionStateTextColor: Int)
+    fun setupLayoutConnecting()
+    fun setupLayoutDisconnected()
+    fun setupLayoutDisconnecting()
     fun setupLayoutForFreeUser(dataLeft: String, color: Int)
     fun setupLayoutForProUser()
     fun showErrorDialog(error: String)
-    fun showNoNetworkDetected(connectionStatus: String, connectionStatusColor: Int)
     fun showPartialViewProgress(inProgress: Boolean)
-    fun showSplitViewIcon()
+    fun showSplitViewIcon(show: Boolean)
     fun showToast(toastMessage: String)
     fun startSessionServiceScheduler()
     fun startVpnConnectedAnimation(
@@ -60,7 +49,6 @@ interface WindscribeView {
         textColorFinal: Int,
         listenerState: ConnectionStateAnimationListener
     )
-
     fun startVpnConnectingAnimation(
         connectionStateString: String,
         flagIcon: Int,
