@@ -49,6 +49,8 @@ import com.windscribe.tv.welcome.WelcomeActivity
 import com.windscribe.tv.windscribe.WindscribeView.ConnectionStateAnimationListener
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
+import com.windscribe.vpn.backend.VPNState
+import com.windscribe.vpn.backend.VPNState.Status.*
 import com.windscribe.vpn.constants.AnimConstants
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.DeviceStateManager
@@ -126,12 +128,16 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     var rgbEvaluator: ArgbEvaluator? = null
 
     @JvmField
-    @BindView(id.protocol_badge_view)
-    var protocolBadgeBackground: ImageView? = null
+    @BindView(id.protocol_divider_view)
+    var protocolDividerView: ImageView? = null
 
     @JvmField
-    @BindView(id.protocol_badge_text)
-    var protocolBadgeText: TextView? = null
+    @BindView(id.protocol_text)
+    var protocolText: TextView? = null
+
+    @JvmField
+    @BindView(id.port_text)
+    var portText: TextView? = null
 
     @JvmField
     @BindView(id.img_flag_gradient_top)
@@ -144,10 +150,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     @JvmField
     @BindView(id.lockIcon)
     var lockIcon: ImageView? = null
-
-    @JvmField
-    @BindView(id.split_routing_view)
-    var splitRoutingView: ImageView? = null
 
     @JvmField
     @BindView(id.cl_windscribe_main)
@@ -236,48 +238,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         super.onDestroy()
     }
 
-    override fun flashProtocolBadge(flash: Boolean) {
-        runOnUiThread {
-            if (flash) {
-                protocolBadgeBackground?.clearAnimation()
-                val alphaAnimation = AlphaAnimation(0.0f, 0.3f)
-                alphaAnimation.repeatCount = 50
-                alphaAnimation.duration = 500
-                alphaAnimation.isFillEnabled = false
-                alphaAnimation.setAnimationListener(object : AnimationListener {
-                    override fun onAnimationEnd(animation: Animation) {
-                        protocolBadgeBackground?.alpha = 1.0f
-                    }
-
-                    override fun onAnimationRepeat(animation: Animation) {}
-                    override fun onAnimationStart(animation: Animation) {}
-                })
-                protocolBadgeBackground?.startAnimation(alphaAnimation)
-            } else {
-                protocolBadgeBackground?.clearAnimation()
-            }
-            if (flash) {
-                protocolBadgeText?.clearAnimation()
-                val alphaAnimation = AlphaAnimation(0.0f, 0.3f)
-                alphaAnimation.repeatCount = 50
-                alphaAnimation.duration = 500
-                alphaAnimation.isFillEnabled = false
-                alphaAnimation.setAnimationListener(object : AnimationListener {
-                    override fun onAnimationEnd(animation: Animation) {
-                        protocolBadgeText?.alpha = 1.0f
-                    }
-
-                    override fun onAnimationRepeat(animation: Animation) {}
-                    override fun onAnimationStart(animation: Animation) {}
-                })
-                protocolBadgeText?.startAnimation(alphaAnimation)
-            } else {
-                protocolBadgeText?.clearAnimation()
-            }
-        }
-    }
-
-    // Network
     override val networkInfo: NetworkInfo?
         get() {
             val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -334,25 +294,43 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         super.onBackPressed()
     }
 
-    override fun setBadgeIcon(protocolText: String, disconnected: Boolean) {
+    override fun setProtocolAndPortInfo(protocol: String, port: String, disconnected: Boolean) {
+       runOnUiThread {
+           protocolText?.text = protocol
+           portText?.text = port
+       }
+    }
+
+    private fun setConnectionStateText(status: VPNState.Status) {
         runOnUiThread {
-            if (disconnected) {
-                protocolBadgeBackground?.alpha = 0.3f
-                protocolBadgeText?.alpha = 0.3f
-            } else {
-                protocolBadgeBackground?.alpha = 1.0f
-                protocolBadgeText?.alpha = 1.0f
+            when(status) {
+                Connecting -> {
+                    connectionStateLabel?.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_connecting_status_bg, theme)
+                    connectionStateLabel?.text = getString(R.string.ON)
+                    connectionStateLabel?.setTextColor(resources.getColor(R.color.colorLightBlue))
+                    protocolDividerView?.setBackgroundColor(resources.getColor(R.color.colorWhite20))
+                    protocolText?.setTextColor(resources.getColor(R.color.colorLightBlue))
+                    portText?.setTextColor(resources.getColor(R.color.colorLightBlue))
+                }
+                Connected -> {
+                    connectionStateLabel?.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_connected_status_bg, theme)
+                    connectionStateLabel?.text = getString(R.string.ON)
+                    connectionStateLabel?.setTextColor(resources.getColor(R.color.sea_green))
+                    protocolDividerView?.setBackgroundColor(resources.getColor(R.color.colorWhite20))
+                    protocolText?.setTextColor(resources.getColor(R.color.sea_green))
+                    portText?.setTextColor(resources.getColor(R.color.sea_green))
+                }
+                Disconnecting, Disconnected -> {
+                    connectionStateLabel?.background = ResourcesCompat.getDrawable(resources,R.drawable.ic_disconnected_status_bg, theme)
+                    connectionStateLabel?.text = getString(R.string.OFF)
+                    connectionStateLabel?.setTextColor(resources.getColor(R.color.colorWhite))
+                    protocolDividerView?.setBackgroundColor(resources.getColor(R.color.colorWhite20))
+                    protocolText?.setTextColor(resources.getColor(R.color.colorWhite50))
+                    portText?.setTextColor(resources.getColor(R.color.colorWhite50))
+                }
+                else -> {}
             }
-            protocolBadgeText?.text = protocolText
         }
-    }
-
-    override fun setConnectionStateColor(connectionStateColor: Int) {
-        connectionStateLabel?.setTextColor(connectionStateColor)
-    }
-
-    override fun setConnectionStateText(connectionStateText: String) {
-        runOnUiThread { connectionStateLabel?.text = connectionStateText }
     }
 
     override fun setCountryFlag(flagIconResource: Int) {
@@ -411,40 +389,11 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         openUpgradeActivity()
     }
 
-    // Animation
-    override fun setupLayoutConnected(
-        finalColor: Int,
-        connectionStateTextColor: Int,
-        showSplitTunnelAView: Boolean
-    ) {
+    override fun setupLayoutConnecting() {
         runOnUiThread {
-            if (showSplitTunnelAView) {
-                splitRoutingView?.visibility = View.VISIBLE
-            } else {
-                splitRoutingView?.visibility = View.GONE
-            }
-            protocolBadgeBackground?.visibility = View.VISIBLE
-            flashProtocolBadge(false)
-            mainLogger.info("Setting layout for connected state.")
-            setGlowVisibility(View.GONE)
-            setConnectionStateText(resources.getString(string.connected))
-            connectionStateLabel?.setTextColor(connectionStateTextColor)
-            imgConnected?.visibility = View.VISIBLE
-            lockIcon?.setImageResource(drawable.ic_ip_secure_icon)
-            flagGradientTop?.setColorFilter(finalColor)
-            state = 1
-            setVpnButtonState()
-        }
-    }
-
-    override fun setupLayoutConnecting(connectionState: String) {
-        runOnUiThread {
-            splitRoutingView?.visibility = View.GONE
-            protocolBadgeBackground?.visibility = View.VISIBLE
-            flashProtocolBadge(true)
             mainLogger.info("Setting layout for connecting state.")
             setGlowVisibility(View.GONE)
-            setConnectionStateText(connectionState)
+            setConnectionStateText(VPNState.Status.Connecting)
             imgConnected?.visibility = View.GONE
             connectionProgressBar?.visibility = View.VISIBLE
             state = 1
@@ -452,7 +401,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         }
     }
 
-    override fun setupLayoutDisconnected(connectionStateTextColor: Int) {
+    override fun setupLayoutDisconnected() {
         runOnUiThread {
             connectingAnimator?.let {
                 if (it.isRunning) {
@@ -464,11 +413,8 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
                     it.cancel()
                 }
             }
-            splitRoutingView?.visibility = View.GONE
-            flashProtocolBadge(false)
             mainLogger.info("Setting layout for disconnected state.")
-            setConnectionStateText(resources.getString(string.disconnected))
-            connectionStateLabel?.setTextColor(connectionStateTextColor)
+            setConnectionStateText(VPNState.Status.Disconnected)
             btnVpn?.clearAnimation()
             state = 0
             setVpnButtonState()
@@ -481,16 +427,11 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         }
     }
 
-    override fun setupLayoutDisconnecting(
-        connectionState: String,
-        connectionStateTextColor: Int
-    ) {
+    override fun setupLayoutDisconnecting() {
         setGlowVisibility(View.GONE)
         runOnUiThread {
-            splitRoutingView?.visibility = View.GONE
             mainLogger.info("Setting layout for disconnecting state.")
-            setConnectionStateText(connectionState)
-            connectionStateLabel?.setTextColor(connectionStateTextColor)
+            setConnectionStateText(VPNState.Status.Disconnecting)
             state = 0
         }
     }
@@ -511,12 +452,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         ErrorPrimaryFragment.instance.add(error, this, id.cl_windscribe_main, true)
     }
 
-    override fun showNoNetworkDetected(connectionStatus: String, connectionStatusColor: Int) {
-        connectionStateLabel?.text = connectionStatus
-        connectionStateLabel?.setTextColor(connectionStatusColor)
-        mainLogger.info("Setting connecting status to no internet found.")
-    }
-
     override fun showPartialViewProgress(inProgress: Boolean) {
         if (inProgress) {
             progressView?.visibility = View.VISIBLE
@@ -525,8 +460,12 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         }
     }
 
-    override fun showSplitViewIcon() {
-        splitRoutingView?.visibility = View.VISIBLE
+    override fun showSplitViewIcon(show: Boolean) {
+        if (show) {
+            imgConnected?.setImageDrawable(ResourcesCompat.getDrawable(resources, drawable.ic_connected_split_ring, theme))
+        } else {
+            imgConnected?.setImageDrawable(ResourcesCompat.getDrawable(resources, drawable.ic_connected_ring, theme))
+        }
     }
 
     override fun showToast(toastMessage: String) {
@@ -552,7 +491,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         runOnUiThread {
             state = 1
             setVpnButtonState()
-            setConnectionStateText(connectionStateString)
+            setConnectionStateText(VPNState.Status.Connected)
             lockIcon?.setImageResource(drawable.ic_ip_secure_icon)
             connectedAnimator = ValueAnimator.ofFloat(0f, 1f)
             connectedAnimator?.let { animator ->
@@ -569,7 +508,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
                         rgbEvaluator,
                         textColorStart,
                         textColorFinal,
-                        connectionStateLabel
+                        arrayOf(connectionStateLabel, portText, protocolText)
                     )
                 }
                 animator.addListener(object : AnimatorListener {
@@ -606,9 +545,8 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         mainLogger.debug("Starting vpn connecting state animation.")
         runOnUiThread {
             state = 1
-            setConnectionStateText(connectionStateString)
+            setConnectionStateText(VPNState.Status.Connecting)
             connectionProgressBar?.visibility = View.VISIBLE
-            flashProtocolBadge(false)
             flagView?.alpha = 0.5f
             connectingAnimator = ValueAnimator.ofFloat(0f, 1f)
             connectingAnimator?.let { it ->
@@ -625,7 +563,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
                         rgbEvaluator,
                         textColorStart,
                         textColorFinal,
-                        connectionStateLabel
+                        arrayOf(connectionStateLabel, portText, protocolText)
                     )
                 }
                 it.addListener(object : AnimatorListener {
@@ -655,14 +593,16 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         argbEvaluator: ArgbEvaluator?,
         textColorStart: Int,
         textColorFinal: Int,
-        textView: TextView?
+        textViews: Array<TextView?>
     ) {
         val color = argbEvaluator?.evaluate(
             valueAnimator.animatedFraction,
             textColorStart,
             textColorFinal
         ) as Int
-        textView?.setTextColor(color)
+        textViews.forEach {
+            it?.setTextColor(color)
+        }
     }
 
     private fun setColorFilter(
@@ -759,16 +699,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         mainParentLayout?.setListener(this)
     }
 
-    private fun setRingDrawable(drawable: Drawable) {
-        connectionProgressBar?.let {
-            val bounds = it.indeterminateDrawable
-                .bounds // re-use bounds from current drawable
-            it.indeterminateDrawable = drawable // set new drawable
-            it.indeterminateDrawable.bounds = bounds
-        }
-    }
-
-    // Setup
     private fun setViews() {
         setFocusListener()
         windscribePresenter.init()
