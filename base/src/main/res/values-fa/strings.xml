@@ -12,6 +12,7 @@
     <string name="login_with_username">هیچ نویسه یا ایمیل خاصی در کادر نام کاربری مجاز نیست.</string>
     <string name="weak_password">گذرواژه شما باید حداقل شامل یک بزرگ و کوچک باشد.</string>
     <string name="small_password">رمز عبور شما باید حداقل 8 کاراکتر باشد.</string>
+    <string name="common_password">رمز عبوری که وارد کرده‌اید به طور معمول استفاده می‌شود و امن نیست.</string>
     <string name="password_requirement">8 کاراکتر یا بیشتر با حداقل یک حرف بزرگ و کوچک</string>
     <string name="failed_network_alert">خوب ما ان را به بهترین شات ما، ما فقط نمی تواند شما را در این شبکه به دلایلی متصل. اتصال اینترنت خود را بررسی کنید.</string>
     <string name="fa_required_error">کد 2FA مورد نیاز است</string>
@@ -127,7 +128,7 @@
     <string name="state_get_config">گرفتن پیکربندی کارخواه</string>
     <string name="state_assign_ip">اختصاص ادرس های IP</string>
     <string name="state_add_routes">اضافه کردن مسیرها</string>
-    <string name="state_connected">Connected</string>
+    <string name="state_connected">متصل</string>
     <string name="state_disconnected">قطع</string>
     <string name="state_reconnecting">در حال اتصال مجدد</string>
     <string name="state_exiting">خروج</string>
@@ -161,13 +162,13 @@
     <string name="optional">(اختیاری)</string>
     <string name="get_10_gb">دریافت 10 گیگابایت / ماه</string>
     <string name="plans">برنامه</string>
-    <string name="pro">Pro</string>
+    <string name="pro">پرمیوم</string>
     <string name="benefits">مزایای</string>
     <string name="pricing">قیمت</string>
     <string name="all_locations">همه مکان ها</string>
     <string name="robert">R.O.B.E.R.T.</string>
     <string name="terms"><![CDATA[اشتراک ها ممکن است ماهانه، سالانه یا با رفتن به تنظیمات حساب فروشگاه Play Google پس از خرید خاموش شوند. تمام قیمت ها شامل مالیات های قابل اجرا است.]]></string>
-    <string name="terms_policy_en"><b>Terms of Use </b> &amp; <b>Privacy Policy.</b></string>
+    <string name="terms_policy_en">&lt;b&gt;مقررات استفاده&lt;/b&gt; &amp; &lt;b&gt;حریم خصوصی&lt;/b.</string>
     <string name="account_set_up">راه اندازی حساب</string>
     <string name="account_set_up_description">از حساب خود محافظت کنید و از هر دستگاهی به ان دسترسی پیدا کنید.</string>
     <string name="continue_free_10gb_mo">دریافت رایگان 10GB / ماه</string>
@@ -205,7 +206,7 @@
     <string name="debug">اشکال زدایی</string>
     <string name="help_me">کمکم کنید!</string>
     <string name="logout">خروج</string>
-    <string name="preference">Preferences</string>
+    <string name="preference">ترجیحات</string>
     <string name="logout_alert_description">ایا مطمئن هستید که می خواهید از Windscribe خارج شوید؟</string>
     <string name="sort_by">محل سفارش</string>
     <string name="display_latency">نمایش تاخیر</string>
@@ -251,8 +252,8 @@
     <string name="knowledge_base_description">همه چیزهایی که باید در مورد Windscribe بدانید</string>
     <string name="talk_to_garry">با گری صحبت کنید</string>
     <string name="talk_to_garry_description">سیری هوشمند نیست اما هنوز هم می تواند به سوالات پاسخ دهد.</string>
-    <string name="send_ticket">ارسال بلیط</string>
-    <string name="send_ticket_description">گیر? یه بلیط برامون بفرست</string>
+    <string name="contact_humans">تماس با انسان‌ها</string>
+    <string name="contact_humans_description">مشکلی دارید که گری نمی‌تواند حل کند؟ با پشتیبانی انسانی تماس بگیرید.</string>
     <string name="community_support">پشتیبانی جامعه</string>
     <string name="community_support_description">بهترین مکان ها برای کمک و دریافت کمک از کاربران دیگر.</string>
     <string name="how_to_send_ticket">فیلدهای زیر را پر کنید و یکی از نمایندگان پشتیبانی ما به زودی™ به شما باز خواهد گشت</string>
@@ -267,7 +268,7 @@
     <string name="update">روز رسانی</string>
     <string name="enter_credentials">اعتبارنامه ها را وارد کنید</string>
     <string name="connect">اتصال</string>
-    <string name="send_debug_log">Send Debug Log</string>
+    <string name="send_debug_log">ارسال گزارش اشکال‌زدایی</string>
     <string name="send_ikev2_log">ارسال IKEv2 Log</string>
     <string name="failed">ناموفق بود</string>
     <string name="next_in_up">"نفر بعدی در ٪D"</string>
@@ -280,6 +281,7 @@
     <string name="connected_lower_case">متصل </string>
     <string name="other">دیگر</string>
     <string name="about">مورد</string>
+    <string name="advance">پارامترهای پیشرفته</string>
     <string name="about_us">در باره ما</string>
     <string name="status">وضعیت</string>
     <string name="privacy_policy">سیاست حفظ حریم خصوصی</string>
@@ -287,12 +289,12 @@
     <string name="blog">وبلاگ</string>
     <string name="jobs">مشاغل</string>
     <string name="software_licenses">مجوزهای نرم افزار</string>
-    <string name="benefit_unlimited_data">Unlimited Data</string>
+    <string name="benefit_unlimited_data">داده‌های نامحدود</string>
     <string name="choose_plan">انتخاب طرح</string>
     <string name="monthly">ماهانه</string>
     <string name="yearly">سالانه - صرفه جویی 55٪</string>
     <string name="upgrade_title">شما سزاوار چیزی بیش از حریم خصوصی محدود هستید.</string>
-    <string name="text_login">Login</string>
+    <string name="text_login">ورود</string>
     <string name="text_sign_up">ثبت نام</string>
     <string name="sending_debug_log">در حال ارسال ثبت اشکالزدایی\n لطفا صبر کنید...</string>
     <string name="app_log_submitted">ممنون! ورود به سیستم برنامه ارسال شده است.</string>
@@ -302,7 +304,7 @@
     <string name="notifications">اطلاعیه ها</string>
     <string name="support">پشتیبانی</string>
     <string name="support_content">برای تمام سوالات مربوط به پشتیبانی به ادرس بالا در تلفن یا رایانه خود بروید.</string>
-    <string name="add_email_title">Add Email</string>
+    <string name="add_email_title">افزودن ایمیل</string>
     <string name="upgradeNoData">به نظر میاد از حریم خصوصی با ارزشت خارج شدی</string>
     <string name="upgradeToUnlock">شما سزاوار بیش از حریم خصوصی محدود هستید</string>
     <string name="restore_purchase">بازگرداندن خرید</string>
@@ -314,12 +316,12 @@
     <string name="sort_type">مکان های سفارش توسط</string>
     <string name="split_routing">تقسیم مسیریابی</string>
     <string name="exclusive_mode">انحصاری</string>
-    <string name="disabled">Off</string>
+    <string name="disabled">خاموش</string>
     <string name="apps_to_exclude">برنامه های کاربردی برای حذف</string>
     <string name="apps_to_include">برنامه هایی که شامل می شوند</string>
     <string name="lan_traffic">ترافیک شبکه</string>
-    <string name="allow">اجازه</string>
-    <string name="block">بلوک</string>
+    <string name="allow">فعال</string>
+    <string name="block">معلول</string>
     <string name="start_on_boot">شروع در راهاندازی</string>
     <string name="split_routing_content">انتخاب کنید که چه برنامه هایی برای حذف یا شامل شدن از Windscribe هنگام اتصال</string>
     <string name="show_system_apps">نمایش برنامه های سیستم</string>
@@ -330,12 +332,12 @@
     <string name="reason_to_get_more_data">"یا ثبت نام کنید تا ان را به 10 گیگابایت در ماه افزایش دهید یا ان را ارتقا دهید و به طور کامل از محدودیت ها خلاص شوید."</string>
     <string name="sign_up_to_get_10">ثبت نام - 10 گیگابایت / ماه</string>
     <string name="get_pro">دریافت نرم افزار - نامحدود</string>
-    <string name="add_email_pro">Add Email</string>
+    <string name="add_email_pro">افزودن ایمیل</string>
     <string name="text_two_fa">2FA نیاز به ادامه دارد. از یک برنامه احراز هویت برای تولید کد استفاده کنید.</string>
     <string name="free_reason_to_add_email">لطفا ایمیل خود را برای دریافت 10 گیگابایت در ماه اضافه کنید</string>
     <string name="pro_reason_to_add_email">لطفا ایمیل خود را برای محافظت از حساب خود اضافه کنید</string>
-    <string name="confirm_email_title">Confirm Email</string>
-    <string name="back_uppercase">Back</string>
+    <string name="confirm_email_title">تایید ایمیل</string>
+    <string name="back_uppercase">پشت</string>
     <string name="Error">خطا</string>
     <string name="text_account_set_up">ثبت نام</string>
     <string name="xpress_login">ورود به سیستم Lazy</string>
@@ -346,14 +348,12 @@
     <string name="manual_login">ورود دستی</string>
     <string name="keep_your_secrets">نگه داشتن Your\nSecrets.</string>
     <string name="reset_password_description">لطفا برای بازنشانی گذرواژه خود به windscribe.com مراجعه فرمایید</string>
-    <string name="support_url">windscribe.com/support</string>
     <string name="enter_code">کد را وارد کنید</string>
     <string name="enter">وارد</string>
     <string name="ping_time">٪D میلیثانیه</string>
     <string name="trying_next_protocol">"در حال تلاش برای پروتکل بعدی در ٪d"</string>
     <string name="all">همه</string>
     <string name="favourite">مورد علاقه</string>
-    <string name="windflix">ویندفلیکس</string>
     <string name="static_ip">استاتیک IP</string>
     <string name="disconnect_alert_no_network">تونل Windscribe VPN به دلیل عدم اتصال به شبکه متوقف شده است - لطفا تنظیمات شبکه خود را بررسی کنید</string>
     <string name="node_under_construction_text">این مکان تحت تعمیر و نگهداری است. بعدا دوباره امتحان کنید یا برای اطلاعات بیشتر به صفحه وضعیت ما بروید. https://windscribe.com/status</string>
@@ -361,7 +361,7 @@
     <string name="load_nothing_found">اینجا چیزی برای دیدن نیست</string>
     <string name="load_error">خطا در بارگیری.</string>
     <string name="select_location">لطفا ابتدا یک مکان را انتخاب کنید!</string>
-    <string name="text_ok">OK</string>
+    <string name="text_ok">باشه</string>
     <string name="robert_description">R.O.B.E.R.T. یک دامنه سرور قابل تنظیم و ابزار مسدود کردن IP است. لیست های بلوکی را که می خواهید در تمام دستگاه های خود اعمال کنید با استفاده از سوئیچ انتخاب کنید.</string>
     <string name="learn_more">بیشتر بدانید</string>
     <string name="manage_custom_rules">مدیریت قوانین سفارشی</string>
@@ -370,7 +370,7 @@
     <string name="as_much_as_bandwidth_you_like">کاملا خود توضیحی است. از پهنای باندی که دوست دارید استفاده کنید.</string>
     <string name="access_to_multiple_servers">دسترسی به سرورها در بیش از 60 کشور و 110 مرکز داده.</string>
     <string name="ad_malware_blocker">بهترین نرم افزارهای مخرب و مسدود کننده اگهی شما همیشه استفاده کنید. جدی.</string>
-    <string name="exclusive">Exclusive</string>
+    <string name="exclusive">اختصاصی</string>
     <string name="inclusive">شامل</string>
     <string name="network_options_description">Windscribe هنگام پیوستن به یک شبکه وای فای ناامن به طور خودکار قطع می شود.</string>
     <string name="auto_secure_new_networks">امنیت خودکار شبکه های جدید</string>
@@ -420,7 +420,7 @@
     <string name="referee_must_provide_your_username_at_sign_up_and_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">داور باید نام کاربری شما را در زمان ثبت نام ارائه دهد و ایمیل خود را تایید کند تا مزایای فوق برای حساب شما اعمال شود.</string>
     <string name="if_you_go_pro_they_ll_go_pro_too">اگر شما حرفه ای بروید، انها نیز حرفه ای خواهند شد!</string>
     <string name="protocol_change_is_not_available_for_custom_config">تغییر پروتکل برای Custom Configs در دسترس نیست.</string>
-    <string name="disconnect">Disconnect</string>
+    <string name="disconnect">دیسکوننکت</string>
     <string name="emergency_connect">اتصال اضطراری</string>
     <string name="emergency_connect_description">نمی توانید به Windscribe دسترسی داشته باشد؟ برای رفع انسداد شبکه محدود کننده خود به سرورهای ما متصل شوید.</string>
     <string name="emergency_connected_description">شما اکنون به سرور Windscribe متصل شده اید. سعی کنید دوباره Login کنید.</string>
@@ -445,8 +445,8 @@
     <string name="discord">اختلاف</string>
     <string name="app_requires_background_location_permission">برنامه نیاز به اجازه محل پس زمینه برای دسترسی به WIFI SSID در اندروید 11+. اگر می خواهید از این ویژگی استفاده کنید، Okay را فشار دهید و \"Allow all the time\" را از کادر گفتگوی مجوز انتخاب کنید.</string>
     <string name="error">"خطا"</string>
-    <string name="auto">Auto</string>
-    <string name="manual">Manual</string>
+    <string name="auto">اتوماتیک</string>
+    <string name="manual">دستی</string>
     <string name="technical">فنی</string>
     <string name="sales">فروش</string>
     <string name="feedback">بازخورد</string>
@@ -474,6 +474,11 @@
     <string name="foreground_location_permission_reason">Windscribe نیاز به مجوز مکان دارد تا ویژگی \"Network Whitelist\" کار کند.  این مجوز برای دسترسی به نام شبکه WiFi مورد نیاز است. این مجوز صرفا برای این ویژگی و همچنین قابلیت جعل GPS استفاده می شود. داده های مکان شما دستگاه شما را ترک نمی کند و برای هیچ چیز دیگری استفاده نمی شود.</string>
     <string name="missing_location_permission">مجوز مکان از دست رفته</string>
     <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[برای استفاده از این ویژگی به مجوز مکان نیاز است. به تنظیمات برنامه &gt; Permissions &gt; Location بروید و Allow all the time را انتخاب کنید.]]></string>
-    <string name="anti_censorship">Circumvent Censorship</string>
-    <string name="anti_censorship_explainer">Connect to the VPN even in hostile environment</string>
+    <string name="anti_censorship">دور زدن سانسور</string>
+    <string name="anti_censorship_explainer">به VPN حتی در محیط‌های خصمانه متصل شوید</string>
+    <string name="auto_connect">اتصال خودکار</string>
+    <string name="auto_connect_explainer">زمانی که برنامه راه‌اندازی می‌شود یا به شبکه‌ای متصل می‌گردد، به مکان آخر استفاده شده متصل می‌شود.</string>
+    <string name="save">سو</string>
+    <string name="clear">پاک</string>
+    <string name="enter_1_key_value_per_line">در هر خط یک کلید=مقدار وارد کنید.</string>
 </resources>

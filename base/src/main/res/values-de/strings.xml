@@ -12,6 +12,7 @@
     <string name="login_with_username">Im Feld \"Benutzername\" sind keine Sonderzeichen oder E-Mails zulässig.</string>
     <string name="weak_password">Dein Passwort muss mindestens einen Groß- und Kleinbuchstaben enthalten.</string>
     <string name="small_password">Dein Passwort muss mindestens 8 Zeichen lang sein.</string>
+    <string name="common_password">Das von Ihnen eingegebene Passwort ist häufig verwendet und nicht sicher.</string>
     <string name="password_requirement">8 oder mehr Zeichen mit mindestens einem Groß- und Kleinbuchstaben</string>
     <string name="failed_network_alert">Wir haben wirklich alles versucht, aber wir konnten dich aus irgendeinem Grund einfach nicht mit diesem Netzwerk verbinden. Überprüfen deine Internetverbindung.</string>
     <string name="fa_required_error">2FA-Code ist erforderlich</string>
@@ -253,8 +254,8 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="knowledge_base_description">Alles was du über Windscribe wissen musst.</string>
     <string name="talk_to_garry">Unterhalte dich mit Garry</string>
     <string name="talk_to_garry_description">Nicht so smart wie Siri, kann aber trotzdem deine Fragen beantworten.</string>
-    <string name="send_ticket">Ticket senden</string>
-    <string name="send_ticket_description">Kommst du nicht weiter? Sende uns ein Ticket.</string>
+    <string name="contact_humans">Kontaktieren Sie den Support</string>
+    <string name="contact_humans_description">Haben Sie ein Problem, das Garry nicht lösen kann? Kontaktieren Sie den menschlichen Support.</string>
     <string name="community_support">Community Unterstützung</string>
     <string name="community_support_description">Die besten Orte, um zu helfen und Hilfe von anderen Benutzern zu erhalten.</string>
     <string name="how_to_send_ticket">Fülle die folgenden Felder aus und einer unserer Support-Mitarbeiter wird sich in Kürze™ persönlich bei dir melden</string>
@@ -282,6 +283,7 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="connected_lower_case">Verbunden </string>
     <string name="other">WEITERE EINSTELLUNGEN</string>
     <string name="about">Über</string>
+    <string name="advance">Erweiterte Parameter</string>
     <string name="about_us">Über uns</string>
     <string name="status">Status</string>
     <string name="privacy_policy">Datenschutzrichtlinie</string>
@@ -320,8 +322,8 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="apps_to_exclude">Apps, die ausgeschlossen werden sollen</string>
     <string name="apps_to_include">Apps, die mit einbezogen werden sollen</string>
     <string name="lan_traffic">Lan-Verkehr</string>
-    <string name="allow">Erlauben</string>
-    <string name="block">Blockieren</string>
+    <string name="allow">Aktiviert</string>
+    <string name="block">Behindert</string>
     <string name="start_on_boot">Beim Booten starten</string>
     <string name="split_routing_content">Wähle aus, welche Apps von Windscribe ausgeschlossen oder in Windscribe mit einbezogen werden sollen, wenn eine Verbindung besteht</string>
     <string name="show_system_apps">System-Apps anzeigen</string>
@@ -348,14 +350,12 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="manual_login">Manuelle Anmeldung</string>
     <string name="keep_your_secrets">Behalte deine\nGeheimnisse.</string>
     <string name="reset_password_description">Bitte besuche windscribe.com, um dein Passwort zurückzusetzen</string>
-    <string name="support_url">windscribe.com/support</string>
     <string name="enter_code">Code eingeben</string>
     <string name="enter">Eingeben</string>
     <string name="ping_time">%d ms</string>
     <string name="trying_next_protocol">"Nächstes Protokoll in %d ausprobieren"</string>
     <string name="all">Alle</string>
     <string name="favourite">Favorit</string>
-    <string name="windflix">Windflix</string>
     <string name="static_ip">Statische IP-Adresse</string>
     <string name="disconnect_alert_no_network">Der Windscribe VPN-Tunnel ist pausiert, da keine Netzwerkverbindung besteht - bitte überprüfe deine Netzwerkeinstellungen</string>
     <string name="node_under_construction_text">Dieser Standort wird derzeit gewartet. Versuche es später noch einmal oder besuche unsere Statusseite, um weitere Informationen zu erhalten. https://windscribe.com/status</string>
@@ -477,4 +477,9 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Für die Verwendung dieser Funktion ist eine Standortberechtigung erforderlich. Gehe zu den App-Einstellungen &gt; Berechtigungen &gt; Standort und wähle Ständig zulassen aus.]]></string>
     <string name="anti_censorship">Zensur umgehen</string>
     <string name="anti_censorship_explainer">Verbindung zum VPN auch in kritischer Umgebung</string>
+    <string name="auto_connect">Automatische Verbindung</string>
+    <string name="auto_connect_explainer">Stellt eine Verbindung mit dem zuletzt verwendeten Standort her, wenn die App gestartet wird oder einem Netzwerk beitritt.</string>
+    <string name="save">Speichern</string>
+    <string name="clear">Klar</string>
+    <string name="enter_1_key_value_per_line">Geben Sie pro Zeile 1 Schlüssel=Wert ein.</string>
 </resources>

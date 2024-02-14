@@ -12,6 +12,7 @@
     <string name="login_with_username">사용자 이름 필드에는 특수 문자나 이메일이 허용되지 않습니다.</string>
     <string name="weak_password">비밀번호는 하나 이상의 대문자와 소문자를 포함해야 합니다.</string>
     <string name="small_password">비밀번호는 8자 이상이어야 합니다.</string>
+    <string name="common_password">당신이 입력한 비밀번호는 흔히 사용되어 안전하지 않습니다.</string>
     <string name="password_requirement">8개 이상의 문자(하나 이상의 대문자와 소문자)</string>
     <string name="failed_network_alert">우리는 최선을 다했지만 어떤 이유로이 네트워크에서 당신을 연결할 수 없었습니다. 인터넷 연결을 확인하십시오.</string>
     <string name="fa_required_error">2FA 코드가 필요합니다</string>
@@ -127,7 +128,7 @@
     <string name="state_get_config">클라이언트 구성 가져오기</string>
     <string name="state_assign_ip">IP 주소 할당</string>
     <string name="state_add_routes">경로 추가</string>
-    <string name="state_connected">Connected</string>
+    <string name="state_connected">연결</string>
     <string name="state_disconnected">분리하다</string>
     <string name="state_reconnecting">다시</string>
     <string name="state_exiting">종료</string>
@@ -161,13 +162,13 @@
     <string name="optional">(선택 사항)</string>
     <string name="get_10_gb">10GB/월 받기</string>
     <string name="plans">계획</string>
-    <string name="pro">Pro</string>
+    <string name="pro">프로</string>
     <string name="benefits">혜택</string>
     <string name="pricing">가격</string>
     <string name="all_locations">모든 위치</string>
     <string name="robert">R.O.B.E.R.T. (영어)</string>
     <string name="terms"><![CDATA[구독은 월간, 연간 또는 구매 후 Google Play 스토어 계정 설정으로 이동하여 끌 수 있습니다. 모든 가격에는 관련 세금이 포함되어 있습니다.]]></string>
-    <string name="terms_policy_en"><b>Terms of Use </b> &amp; <b>Privacy Policy.</b></string>
+    <string name="terms_policy_en"><b>이용 약관</b> &amp; <b>개인정보 처리방침.</b></string>
     <string name="account_set_up">계정 설정</string>
     <string name="account_set_up_description">계정을 보호하고 모든 장치에서 액세스할 수 있습니다.</string>
     <string name="continue_free_10gb_mo">무료 10GB/월 받기</string>
@@ -205,7 +206,7 @@
     <string name="debug">디버그</string>
     <string name="help_me">도와주세요!</string>
     <string name="logout">로그아웃</string>
-    <string name="preference">Preferences</string>
+    <string name="preference">선호</string>
     <string name="logout_alert_description">Windscribe에서 로그아웃하시겠습니까?</string>
     <string name="sort_by">위치 순서</string>
     <string name="display_latency">디스플레이 지연 시간</string>
@@ -251,8 +252,8 @@
     <string name="knowledge_base_description">Windscribe에 대해 알아야 할 모든 것.</string>
     <string name="talk_to_garry">게리와 대화하기</string>
     <string name="talk_to_garry_description">Siri는 똑똑하지 않지만 여전히 질문에 답할 수 있습니다.</string>
-    <string name="send_ticket">티켓 보내기</string>
-    <string name="send_ticket_description">붙어? 티켓을 보내주세요.</string>
+    <string name="contact_humans">인간에게 문의하세요</string>
+    <string name="contact_humans_description">개리가 해결 못 하는 문제가 있으신가요? 인간 지원팀에 연락하세요.</string>
     <string name="community_support">커뮤니티 지원</string>
     <string name="community_support_description">다른 사용자를 돕고 도움을 받을 수 있는 최고의 장소입니다.</string>
     <string name="how_to_send_ticket">아래 필드를 작성하면 지원 담당자 중 한 명이 곧™ 직접 연락을 드릴 것입니다</string>
@@ -267,7 +268,7 @@
     <string name="update">업데이트</string>
     <string name="enter_credentials">자격 증명 입력</string>
     <string name="connect">연결하다</string>
-    <string name="send_debug_log">Send Debug Log</string>
+    <string name="send_debug_log">디버그 로그 보내기</string>
     <string name="send_ikev2_log">IKEv2 로그 보내기</string>
     <string name="failed">실패</string>
     <string name="next_in_up">"%d의 다음 단계"</string>
@@ -280,6 +281,7 @@
     <string name="connected_lower_case">연결 </string>
     <string name="other">다른</string>
     <string name="about">약</string>
+    <string name="advance">고급 매개 변수</string>
     <string name="about_us">우리에 관해서</string>
     <string name="status">상태</string>
     <string name="privacy_policy">개인 정보 보호 정책</string>
@@ -287,12 +289,12 @@
     <string name="blog">블로그</string>
     <string name="jobs">작업</string>
     <string name="software_licenses">소프트웨어 라이선스</string>
-    <string name="benefit_unlimited_data">Unlimited Data</string>
+    <string name="benefit_unlimited_data">무제한 데이터</string>
     <string name="choose_plan">요금제 선택</string>
     <string name="monthly">매달의</string>
     <string name="yearly">매년 - 55% 할인</string>
     <string name="upgrade_title">당신은 제한된 프라이버시 이상의 것을 가질 자격이 있습니다.</string>
-    <string name="text_login">Login</string>
+    <string name="text_login">로그인</string>
     <string name="text_sign_up">등록하세요</string>
     <string name="sending_debug_log">디버그 로그 보내기\n잠시만 기다려 주십시오...</string>
     <string name="app_log_submitted">감사! 앱 로그가 제출되었습니다.</string>
@@ -302,7 +304,7 @@
     <string name="notifications">알림을</string>
     <string name="support">지원</string>
     <string name="support_content">모든 지원 관련 문의는 휴대폰이나 컴퓨터에서 위의 주소로 이동하십시오.</string>
-    <string name="add_email_title">Add Email</string>
+    <string name="add_email_title">이메일 추가</string>
     <string name="upgradeNoData">소중한 사생활에서 벗어난 것 같습니다.</string>
     <string name="upgradeToUnlock">당신은 제한된 프라이버시 이상의 것을 가질 자격이 있습니다</string>
     <string name="restore_purchase">구매 복원</string>
@@ -314,12 +316,12 @@
     <string name="sort_type">위치 정렬 기준</string>
     <string name="split_routing">분할 라우팅</string>
     <string name="exclusive_mode">독점적인</string>
-    <string name="disabled">Off</string>
+    <string name="disabled">끄기</string>
     <string name="apps_to_exclude">제외할 앱</string>
     <string name="apps_to_include">포함할 앱</string>
     <string name="lan_traffic">LAN 트래픽</string>
-    <string name="allow">허용하다</string>
-    <string name="block">차단</string>
+    <string name="allow">켜짐</string>
+    <string name="block">비활성화됨</string>
     <string name="start_on_boot">부팅 시 시작</string>
     <string name="split_routing_content">연결 시 Windscribe에서 제외하거나 포함할 앱 선택</string>
     <string name="show_system_apps">시스템 앱 표시</string>
@@ -330,12 +332,12 @@
     <string name="reason_to_get_more_data">"가입하여 월 10GB로 늘리거나 업그레이드하고 제한을 완전히 없애십시오. "</string>
     <string name="sign_up_to_get_10">가입 - 10GB/월</string>
     <string name="get_pro">프로 받기 - 무제한</string>
-    <string name="add_email_pro">Add Email</string>
+    <string name="add_email_pro">이메일 추가</string>
     <string name="text_two_fa">2FA는 계속 진행해야 합니다. 인증 앱을 사용하여 코드를 생성합니다.</string>
     <string name="free_reason_to_add_email">10GB/월을 받으려면 이메일을 추가하세요.</string>
     <string name="pro_reason_to_add_email">계정 보호를 위해 이메일을 추가하세요.</string>
-    <string name="confirm_email_title">Confirm Email</string>
-    <string name="back_uppercase">Back</string>
+    <string name="confirm_email_title">이메일 확인</string>
+    <string name="back_uppercase">뒤로</string>
     <string name="Error">오류</string>
     <string name="text_account_set_up">등록하세요</string>
     <string name="xpress_login">지연 로그인</string>
@@ -346,14 +348,12 @@
     <string name="manual_login">수동 로그인</string>
     <string name="keep_your_secrets">당신의\n비밀을 지키십시오.</string>
     <string name="reset_password_description">windscribe.com 방문하여 비밀번호를 재설정하세요.</string>
-    <string name="support_url">windscribe.com/support</string>
     <string name="enter_code">코드 입력</string>
     <string name="enter">들어가다</string>
     <string name="ping_time">%dMS</string>
     <string name="trying_next_protocol">"%d에서 다음 프로토콜 시도 중"</string>
     <string name="all">모두</string>
     <string name="favourite">좋아하는</string>
-    <string name="windflix">윈드플릭스</string>
     <string name="static_ip">고정 IP</string>
     <string name="disconnect_alert_no_network">네트워크 연결이 없어 Windscribe VPN 터널이 일시 중지되었습니다 - 네트워크 설정을 확인하세요.</string>
     <string name="node_under_construction_text">이 위치는 유지 보수 중입니다. 나중에 다시 시도하거나 상태 페이지로 이동하여 자세한 내용을 확인하세요. https://windscribe.com/status</string>
@@ -361,7 +361,7 @@
     <string name="load_nothing_found">여기서 볼 것이 없다.</string>
     <string name="load_error">로드하는 동안 오류가 발생했습니다.</string>
     <string name="select_location">먼저 장소를 선택하세요!</string>
-    <string name="text_ok">OK</string>
+    <string name="text_ok">그래</string>
     <string name="robert_description">R.O.B.E.R.T.는 사용자 정의 가능한 서버 측 도메인 및 IP 차단 도구입니다. 스위치를 전환하여 모든 장치에 적용할 차단 목록을 선택합니다.</string>
     <string name="learn_more">더 알아보세요</string>
     <string name="manage_custom_rules">사용자 지정 규칙 관리</string>
@@ -370,7 +370,7 @@
     <string name="as_much_as_bandwidth_you_like">꽤 자명합니다. 원하는만큼 대역폭을 사용하십시오.</string>
     <string name="access_to_multiple_servers">60개 이상의 국가와 110개 데이터 센터에 있는 서버에 액세스할 수 있습니다.</string>
     <string name="ad_malware_blocker">최고의 맬웨어 및 광고 차단기를 사용할 수 있습니다. 심각.</string>
-    <string name="exclusive">Exclusive</string>
+    <string name="exclusive">독점적인</string>
     <string name="inclusive">포함</string>
     <string name="network_options_description">Windscribe는 보안되지 않은 Wi-Fi 네트워크에 연결할 때 자동으로 연결을 끊습니다.</string>
     <string name="auto_secure_new_networks">새 네트워크 자동 보안</string>
@@ -420,7 +420,7 @@
     <string name="referee_must_provide_your_username_at_sign_up_and_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account">심판은 가입 시 사용자 이름을 제공하고 위의 혜택이 귀하의 계정에 적용되도록 이메일을 확인해야 합니다.</string>
     <string name="if_you_go_pro_they_ll_go_pro_too">프로가 되면 그들도 프로가 될 것입니다!</string>
     <string name="protocol_change_is_not_available_for_custom_config">사용자 지정 구성에는 프로토콜 변경을 사용할 수 없습니다.</string>
-    <string name="disconnect">Disconnect</string>
+    <string name="disconnect">분리하다</string>
     <string name="emergency_connect">비상 연결</string>
     <string name="emergency_connect_description">Windscribe에 액세스할 수 없습니까? 당사 서버에 연결하여 제한적인 네트워크의 차단을 해제하세요.</string>
     <string name="emergency_connected_description">이제 Windscribe 서버에 연결되었습니다. 다시 로그인해 보십시오.</string>
@@ -445,8 +445,8 @@
     <string name="discord">갈등</string>
     <string name="app_requires_background_location_permission">Android 11+에서 WIFI SSID에 액세스하려면 앱에 백그라운드 위치 권한이 필요합니다. 이 기능을 사용하려면 확인을 누르고 권한 대화 상자에서 \"항상 허용\"을 선택합니다.</string>
     <string name="error">"오류"</string>
-    <string name="auto">Auto</string>
-    <string name="manual">Manual</string>
+    <string name="auto">자동 번역</string>
+    <string name="manual">수동</string>
     <string name="technical">기술</string>
     <string name="sales">영업</string>
     <string name="feedback">피드백</string>
@@ -474,6 +474,11 @@
     <string name="foreground_location_permission_reason">Windscribe는 \"네트워크 화이트리스트\" 기능이 작동하도록 위치 권한이 필요합니다.  이 권한은 Wi-Fi 네트워크 이름에 액세스하는 데 필요합니다. 이 권한은 이 기능과 GPS 스푸핑 기능에만 사용됩니다. 위치 데이터는 기기 외부로 유출되지 않으며 다른 용도로 사용되지 않습니다.</string>
     <string name="missing_location_permission">위치 정보 액세스 권한 누락</string>
     <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[이 기능을 사용하려면 위치 권한이 필요합니다. 앱 설정으로 이동하여 권한 &gt; 위치를 &gt; 항상 허용을 선택합니다.]]></string>
-    <string name="anti_censorship">Circumvent Censorship</string>
-    <string name="anti_censorship_explainer">Connect to the VPN even in hostile environment</string>
+    <string name="anti_censorship">검열 우회</string>
+    <string name="anti_censorship_explainer">적대적인 환경에서도 VPN에 연결하십시오</string>
+    <string name="auto_connect">자동 연결</string>
+    <string name="auto_connect_explainer">앱이 시작되거나 네트워크에 연결될 때 마지막으로 사용한 위치에 연결합니다.</string>
+    <string name="save">저장</string>
+    <string name="clear">맑다</string>
+    <string name="enter_1_key_value_per_line">라인마다 키=값을 입력하세요.</string>
 </resources>
