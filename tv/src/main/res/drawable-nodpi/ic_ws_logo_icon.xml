@@ -1,14 +1,19 @@
-<!--
-  ~ Copyright (c) 2021 Windscribe Limited.
-  -->
-
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="32dp"
-    android:height="32dp"
-    android:viewportWidth="32"
-    android:viewportHeight="32">
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillType="evenOdd"
-        android:pathData="M16,0c-0.3,0 -0.58,0.06 -0.86,0.17L5.42,4.21c-0.55,0.22 -0.98,0.66 -1.2,1.2L0.16,15.13a2.23,2.23 0,0 0,0 1.7l4.04,9.78c0.23,0.55 0.66,0.98 1.21,1.2l9.7,4.02a2.24,2.24 0,0 0,1.7 0l9.75,-4.01c0.55,-0.23 1,-0.66 1.22,-1.21l4.04,-9.77a2.2,2.2 0,0 0,0 -1.71L27.79,5.4a2.23,2.23 0,0 0,-1.2 -1.2L16.85,0.17A2.23,2.23 0,0 0,16 0m0,2c0.03,0 0.06,0 0.09,0.02l9.73,4.03c0.05,0.03 0.1,0.07 0.12,0.13l4.04,9.71a0.2,0.2 0,0 1,0 0.18l-4.04,9.77a0.23,0.23 0,0 1,-0.13 0.13l-9.75,4.01a0.22,0.22 0,0 1,-0.18 0l-9.7,-4.01a0.23,0.23 0,0 1,-0.12 -0.13l-4.04,-9.77a0.23,0.23 0,0 1,0 -0.18l4.04,-9.71c0.02,-0.06 0.07,-0.1 0.13,-0.13l9.72,-4.03A0.23,0.23 0,0 1,16 2m4.96,17.92L16,14.55l-4.96,5.37V9.6H8.56v12.8h2.28c0.66,0 1.29,-0.26 1.75,-0.73L16,17.86l3.4,3.81c0.47,0.47 1.1,0.73 1.76,0.73h2.28V9.6h-2.48v10.32z" />
+    android:width="56dp"
+    android:height="56dp"
+    android:viewportWidth="56"
+    android:viewportHeight="56">
+  <path
+      android:pathData="M7.08,28L13.316,13.285L28.14,7.08L42.963,13.285L49.241,28H42.174V16.399H36.749L33.626,19.504V28H22.696V19.504L19.573,16.399H14.066V28H7.08Z"
+      android:fillColor="#ffffff"
+      android:fillAlpha="0.5"
+      android:fillType="evenOdd"/>
+  <path
+      android:pathData="M14.161,16.414V40.23H18.418C19.973,40.23 21.575,39.803 22.74,38.613L28.161,33.043L33.621,38.613C34.787,39.803 36.349,40.23 37.904,40.23H42.161V16.414L36.757,16.414V33.837L28.161,25.105L19.646,33.837V16.414H14.161Z"
+      android:fillColor="#ffffff"
+      android:fillType="evenOdd"/>
+  <path
+      android:pathData="M45.111,10.889L28,3.889L10.889,10.889L3.889,28L10.889,45.111L28,52.111L45.111,45.111L52.111,28L45.111,10.889ZM47.833,47.833L28,56L8.167,47.833L0,28L8.167,8.167L28,0L47.833,8.167L56,28L47.833,47.833Z"
+      android:fillColor="#ffffff"
+      android:fillType="evenOdd"/>
 </vector>
