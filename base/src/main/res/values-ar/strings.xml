@@ -12,6 +12,7 @@
     <string name="login_with_username">لا يسمح بأحرف خاصة أو رسائل بريد إلكتروني في حقل اسم المستخدم.</string>
     <string name="weak_password">يجب أن تحتوي كلمة المرور الخاصة بك على أحرف كبيرة وصغيرة واحدة على الأقل.</string>
     <string name="small_password">يجب أن تتكون كلمة المرور الخاصة بك من 8 أحرف على الأقل.</string>
+    <string name="common_password">كلمة المرور التي أدخلتها مستخدمة بشكل شائع وغير آمنة.</string>
     <string name="password_requirement">8 أحرف أو أكثر بأحرف كبيرة وصغيرة واحدة على الأقل</string>
     <string name="failed_network_alert">حسنا ، لقد فعلنا ما بوسعنا ، لكننا لم نتمكن من توصيلك بهذه الشبكة لسبب ما. الرجاء التحقق من اتصالك بالإنترنت.</string>
     <string name="fa_required_error">مطلوب رمز 2FA</string>
@@ -86,7 +87,7 @@
     <string name="packet_size">حجم الحزمة</string>
     <string name="lan_by_pass">السماح بحركة مرور الشبكة المحلية</string>
     <string name="gps_spoofing">انتحال نظام تحديد المواقع العالمي (GPS)</string>
-    <string name="natKeepAlive">IKE keepalive</string>
+    <string name="natKeepAlive"></string>
     <string name="keep_alive">ابق على قيد الحياة</string>
     <string name="auto_detecting">الكشف التلقائي ...</string>
     <string name="decoy_traffic">شرك المرور</string>
@@ -161,7 +162,7 @@
     <string name="optional">(اختياري)</string>
     <string name="get_10_gb">احصل على 10 جيجابايت / شهر</string>
     <string name="plans">الخطط</string>
-    <string name="pro">Pro</string>
+    <string name="pro">برو</string>
     <string name="benefits">فوائد</string>
     <string name="pricing">التسعير</string>
     <string name="all_locations">جميع المواقع</string>
@@ -251,8 +252,8 @@
     <string name="knowledge_base_description">كل ما تحتاج لمعرفته حول Windscribe.</string>
     <string name="talk_to_garry">تحدث إلى غاري</string>
     <string name="talk_to_garry_description">ليس Siri ذكيا ولكن لا يزال بإمكانه الإجابة على الأسئلة.</string>
-    <string name="send_ticket">إرسال تذكرة</string>
-    <string name="send_ticket_description">عالقه؟ أرسل لنا تذكرة.</string>
+    <string name="contact_humans">اتصل بالبشر</string>
+    <string name="contact_humans_description">لديك مشكلة لا يمكن لغاري حلها؟ اتصل بالدعم البشري.</string>
     <string name="community_support">دعم المجتمع</string>
     <string name="community_support_description">أفضل الأماكن للمساعدة والحصول على المساعدة من المستخدمين الآخرين.</string>
     <string name="how_to_send_ticket">املأ الحقول أدناه وسيقوم أحد وكلاء الدعم لدينا بالرد عليك شخصيا قريبا™ جدا</string>
@@ -267,7 +268,7 @@
     <string name="update">تحديث</string>
     <string name="enter_credentials">أدخل بيانات الاعتماد</string>
     <string name="connect">عشق</string>
-    <string name="send_debug_log">Send Debug Log</string>
+    <string name="send_debug_log">إرسال سجل التصحيح</string>
     <string name="send_ikev2_log">إرسال سجل IKEv2</string>
     <string name="failed">فشل</string>
     <string name="next_in_up">"التالي في ٪d"</string>
@@ -280,6 +281,7 @@
     <string name="connected_lower_case">متصل </string>
     <string name="other">آخر</string>
     <string name="about">عن</string>
+    <string name="advance">المعلمات المتقدمة</string>
     <string name="about_us">من نحن</string>
     <string name="status">حالة</string>
     <string name="privacy_policy">سياسة الخصوصية</string>
@@ -314,12 +316,12 @@
     <string name="sort_type">ترتيب المواقع حسب</string>
     <string name="split_routing">تقسيم التوجيه</string>
     <string name="exclusive_mode">خاص</string>
-    <string name="disabled">Off</string>
+    <string name="disabled">قباله</string>
     <string name="apps_to_exclude">تطبيقات لاستبعادها</string>
     <string name="apps_to_include">التطبيقات المراد تضمينها</string>
     <string name="lan_traffic">حركة مرور الشبكة المحلية</string>
-    <string name="allow">جوز</string>
-    <string name="block">حجز</string>
+    <string name="allow">مُفعَّل</string>
+    <string name="block">معطل</string>
     <string name="start_on_boot">ابدأ في التمهيد</string>
     <string name="split_routing_content">اختر التطبيقات التي تريد استبعادها أو تضمينها من Windscribe عند الاتصال</string>
     <string name="show_system_apps">إظهار تطبيقات النظام</string>
@@ -346,14 +348,12 @@
     <string name="manual_login">تسجيل الدخول اليدوي</string>
     <string name="keep_your_secrets">حافظ على أسرارك.</string>
     <string name="reset_password_description">يرجى زيارة windscribe.com لإعادة تعيين كلمة المرور الخاصة بك</string>
-    <string name="support_url">windscribe.com/support</string>
     <string name="enter_code">أدخل الرمز</string>
     <string name="enter">دخل</string>
     <string name="ping_time">MS %d</string>
     <string name="trying_next_protocol">"تجربة البروتوكول التالي في ٪d"</string>
     <string name="all">كل</string>
     <string name="favourite">المفضله</string>
-    <string name="windflix">ويندفليكس</string>
     <string name="static_ip">IP ثابت</string>
     <string name="disconnect_alert_no_network">تم إيقاف نفق Windscribe VPN مؤقتا بسبب عدم وجود اتصال بالشبكة - يرجى التحقق من إعدادات الشبكة</string>
     <string name="node_under_construction_text">هذا الموقع تحت الصيانة. حاول مرة أخرى لاحقا أو انتقل إلى صفحة الحالة للحصول على مزيد من المعلومات. https://windscribe.com/status</string>
@@ -361,7 +361,7 @@
     <string name="load_nothing_found">لا شيء يمكن رؤيته هنا</string>
     <string name="load_error">جار تحميل خطأ.</string>
     <string name="select_location">يرجى تحديد الموقع أولا!</string>
-    <string name="text_ok">OK</string>
+    <string name="text_ok">موافق</string>
     <string name="robert_description">R.O.B.E.R.T. هو مجال قابل للتخصيص من جانب الخادم وأداة حظر IP. حدد قوائم الحظر التي ترغب في تطبيقها على جميع أجهزتك عن طريق تبديل المفتاح.</string>
     <string name="learn_more">التعرف على المزيد</string>
     <string name="manage_custom_rules">إدارة القواعد المخصصة</string>
@@ -370,7 +370,7 @@
     <string name="as_much_as_bandwidth_you_like">جميلة النفس تشرح. استخدم بقدر النطاق الترددي الذي تريده.</string>
     <string name="access_to_multiple_servers">الوصول إلى الخوادم في أكثر من 60 دولة و 110 مركز بيانات.</string>
     <string name="ad_malware_blocker">أفضل البرامج الضارة ومانع الإعلانات الذي ستستخدمه على الإطلاق. جديه.</string>
-    <string name="exclusive">Exclusive</string>
+    <string name="exclusive">خاص</string>
     <string name="inclusive">شامله</string>
     <string name="network_options_description">سيتم قطع اتصال Windscribe تلقائيا عند الانضمام إلى شبكة wifi غير آمنة.</string>
     <string name="auto_secure_new_networks">تأمين تلقائي للشبكات الجديدة</string>
@@ -445,8 +445,8 @@
     <string name="discord">ديسكورد</string>
     <string name="app_requires_background_location_permission">يتطلب التطبيق إذن موقع الخلفية للوصول إلى WIFI SSID على Android 11+. إذا كنت ترغب في استخدام هذه الميزة ، فاضغط على موافق وحدد \ \"السماح طوال الوقت \" من مربع حوار الإذن.</string>
     <string name="error">"خطأ "</string>
-    <string name="auto">Auto</string>
-    <string name="manual">Manual</string>
+    <string name="auto">تلقائي</string>
+    <string name="manual">يدوي</string>
     <string name="technical">تقني</string>
     <string name="sales">مبيعات</string>
     <string name="feedback">تعليقات</string>
@@ -474,6 +474,11 @@
     <string name="foreground_location_permission_reason">يحتاج Windscribe إلى إذن الموقع من أجل جعل ميزة \"القائمة البيضاء للشبكة\" تعمل.  هذا الإذن مطلوب للوصول إلى أسماء شبكات Wifi. يتم استخدام هذا الإذن فقط لهذه الميزة بالإضافة إلى وظيفة انتحال GPS. لا تغادر بيانات موقعك جهازك ، ولا يتم استخدامها لأي شيء آخر.</string>
     <string name="missing_location_permission">إذن الموقع مفقود</string>
     <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[مطلوب إذن الموقع لاستخدام هذه الميزة. انتقل إلى إعدادات التطبيق &gt; أذونات &gt; الموقع وحدد السماح طوال الوقت.]]></string>
-    <string name="anti_censorship">Circumvent Censorship</string>
-    <string name="anti_censorship_explainer">Connect to the VPN even in hostile environment</string>
+    <string name="anti_censorship">التحايل على الرقابة</string>
+    <string name="anti_censorship_explainer">اتصل بشبكة VPN حتى في بيئة معادية</string>
+    <string name="auto_connect">الاتصال التلقائي</string>
+    <string name="auto_connect_explainer">يتصل بآخر موقع مستخدم عند تشغيل التطبيق أو الانضمام إلى شبكة.</string>
+    <string name="save">حفظ</string>
+    <string name="clear">واضح</string>
+    <string name="enter_1_key_value_per_line">أدخل مفتاح=قيمة في كل سطر.</string>
 </resources>
