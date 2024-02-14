@@ -12,6 +12,7 @@
     <string name="login_with_username">В поле имени пользователя не допускаются специальные символы или электронные письма.</string>
     <string name="weak_password">Ваш пароль должен содержать хотя бы один символ верхнего и нижнего регистра.</string>
     <string name="small_password">Ваш пароль должен содержать не менее 8 символов.</string>
+    <string name="common_password">Введенный вами пароль часто используется и не является безопасным.</string>
     <string name="password_requirement">8 или более символов, с прописным и строчным регистром</string>
     <string name="failed_network_alert">Что ж, мы сделали все возможное, мы просто не смогли подключить вас к этой сети по какой-то причине. Проверьте подключение к Интернету.</string>
     <string name="fa_required_error">Требуется код 2FA</string>
@@ -251,8 +252,8 @@
     <string name="knowledge_base_description">Все, что вам нужно знать о Windscribe.</string>
     <string name="talk_to_garry">Поговорите с Гарри</string>
     <string name="talk_to_garry_description">Не такой умный, как человек, но все же может ответить на ваши вопросы.</string>
-    <string name="send_ticket">Сообщить о проблеме</string>
-    <string name="send_ticket_description">Возникли сложности? Пришлите сообщение о проблеме.</string>
+    <string name="contact_humans">Обратиться в службу поддержки</string>
+    <string name="contact_humans_description">У вас возникла проблема, с которой не может справиться Гарри? Обратитесь в поддержку к оператору.</string>
     <string name="community_support">Поддержка силами сообщества</string>
     <string name="community_support_description">Места, где можно помочь и получить помощь от других пользователей.</string>
     <string name="how_to_send_ticket">Заполните поля ниже, и один из наших агентов поддержки лично свяжется с вами очень скоро™</string>
@@ -280,6 +281,7 @@
     <string name="connected_lower_case">Связанный </string>
     <string name="other">ДРУГОЕ</string>
     <string name="about">О программе</string>
+    <string name="advance">Расширенные параметры</string>
     <string name="about_us">О нас</string>
     <string name="status">Статус</string>
     <string name="privacy_policy">Политика конфиденциальности</string>
@@ -318,8 +320,8 @@
     <string name="apps_to_exclude">Приложения, которые нужно исключить</string>
     <string name="apps_to_include">Приложения, которые нужно включить</string>
     <string name="lan_traffic">Трафик локальной сети</string>
-    <string name="allow">Разрешать</string>
-    <string name="block">Блокировать</string>
+    <string name="allow">Включено</string>
+    <string name="block">Отключено</string>
     <string name="start_on_boot">Запуск при загрузке</string>
     <string name="split_routing_content">Включение или исключение приложений из VPN-туннеля</string>
     <string name="show_system_apps">Показать системные приложения</string>
@@ -346,14 +348,12 @@
     <string name="manual_login">Ручной вход в систему</string>
     <string name="keep_your_secrets">Храните свои секреты.</string>
     <string name="reset_password_description">Пожалуйста, посетите windscribe.com, чтобы сбросить пароль</string>
-    <string name="support_url">windscribe.com/support</string>
     <string name="enter_code">Введите код</string>
     <string name="enter">Войти</string>
     <string name="ping_time">%d МС</string>
     <string name="trying_next_protocol">"Пробуем следующий протокол через %d"</string>
     <string name="all">Все</string>
     <string name="favourite">Любимый</string>
-    <string name="windflix">Windflix</string>
     <string name="static_ip">Статический IP-адрес</string>
     <string name="disconnect_alert_no_network">VPN-туннель Windscribe приостановлен из-за отсутствия подключения к сети - пожалуйста, проверьте настройки сети</string>
     <string name="node_under_construction_text">Это местоположение находится на техническом обслуживании. Повторите попытку позже или перейдите на страницу «Статус» для получения дополнительной информации. https://windscribe.com/status</string>
@@ -475,4 +475,9 @@
     <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Для использования этой функции требуется разрешение на определение местоположения. Перейдите в настройки приложения &gt; Разрешения &gt; Местоположение и выберите Разрешить всегда.]]></string>
     <string name="anti_censorship">Обход блокировок</string>
     <string name="anti_censorship_explainer">Подключаться к VPN даже во враждебно настроенной сети</string>
+    <string name="auto_connect">Автоматическое подключение</string>
+    <string name="auto_connect_explainer">Подключаться к последней используемой локации при запуске приложения или присоединении к сети.</string>
+    <string name="save">Сохранить</string>
+    <string name="clear">Очистить</string>
+    <string name="enter_1_key_value_per_line">Вводите по одному ключу=значению на строку.</string>
 </resources>

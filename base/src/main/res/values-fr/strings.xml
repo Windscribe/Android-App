@@ -12,6 +12,7 @@
     <string name="login_with_username">Aucun caractère spécial ou e-mail n’est autorisé dans le champ du nom d’utilisateur.</string>
     <string name="weak_password">Votre mot de passe doit contenir au moins une majuscule et une minuscule.</string>
     <string name="small_password">Votre mot de passe doit comporter au moins 8 caractères.</string>
+    <string name="common_password">Le mot de passe saisi est fréquemment utilisé et n\'est pas sécurisé.</string>
     <string name="password_requirement">8 caractères ou plus avec au moins une majuscule et une minuscule</string>
     <string name="failed_network_alert">Eh bien, nous ne pouvions pas vous connecter sur ce réseau pour une raison inconnue. Vérifiez votre connexion Internet.</string>
     <string name="fa_required_error">Code 2FA est nécessaire</string>
@@ -251,8 +252,8 @@
     <string name="knowledge_base_description">Tout ce que vous devez savoir sur Windscribe.</string>
     <string name="talk_to_garry">Parlez à Garry</string>
     <string name="talk_to_garry_description">Pas Siri intelligent mais peut toujours répondre aux questions.</string>
-    <string name="send_ticket">Envoyer un ticket</string>
-    <string name="send_ticket_description">Coincé? Envoyez-nous un billet.</string>
+    <string name="contact_humans">Contacter le support</string>
+    <string name="contact_humans_description">Un problème que Garry ne peut pas résoudre? Contactez le support client.</string>
     <string name="community_support">Soutien de la communauté</string>
     <string name="community_support_description">Les meilleurs endroits pour aider et obtenir de l’aide d’autres utilisateurs.</string>
     <string name="how_to_send_ticket">Remplissez les champs ci-dessous et l’un de nos agents de support vous répondra personnellement très rapidement™</string>
@@ -280,6 +281,7 @@
     <string name="connected_lower_case">Relié </string>
     <string name="other">AUTRE</string>
     <string name="about">Environ</string>
+    <string name="advance">Paramètres avancés</string>
     <string name="about_us">Qui sommes-nous</string>
     <string name="status">Statut</string>
     <string name="privacy_policy">Politique de confidentialité</string>
@@ -318,8 +320,8 @@
     <string name="apps_to_exclude">Applications à exclure</string>
     <string name="apps_to_include">Applications à inclure</string>
     <string name="lan_traffic">Trafic LAN</string>
-    <string name="allow">Permettre</string>
-    <string name="block">Bloquer</string>
+    <string name="allow">Activé</string>
+    <string name="block">Désactivé</string>
     <string name="start_on_boot">Démarrer au démarrage</string>
     <string name="split_routing_content">Choisir les applications à exclure ou à inclure de Windscribe lorsqu’elles sont connectées</string>
     <string name="show_system_apps">Afficher les applications système</string>
@@ -346,14 +348,12 @@
     <string name="manual_login">Connexion manuelle</string>
     <string name="keep_your_secrets">Gardez votre\nSecrets.</string>
     <string name="reset_password_description">Veuillez visiter windscribe.com pour réinitialiser votre mot de passe</string>
-    <string name="support_url">windscribe.com/support</string>
     <string name="enter_code">Entrez le code</string>
     <string name="enter">Entrer</string>
     <string name="ping_time">%d SM</string>
     <string name="trying_next_protocol">"« Essai du protocole suivant en %d »"</string>
     <string name="all">Tout</string>
     <string name="favourite">Favori</string>
-    <string name="windflix">Windflix</string>
     <string name="static_ip">IP statique</string>
     <string name="disconnect_alert_no_network">Le tunnel VPN Windscribe est suspendu en raison de l’absence de connectivité réseau - veuillez vérifier vos paramètres réseau</string>
     <string name="node_under_construction_text">Cet emplacement est en cours de maintenance. Réessayez plus tard ou rendez-vous sur notre page Statut pour plus d’informations. https://windscribe.com/status</string>
@@ -476,4 +476,9 @@ dernier emplacement choisi.</string>
     <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Une autorisation de localisation est requise pour utiliser cette fonctionnalité. Accédez aux paramètres de l’application &gt; Autorisations &gt; emplacement et sélectionnez Autoriser tout le temps.]]></string>
     <string name="anti_censorship">Contourner la censure</string>
     <string name="anti_censorship_explainer">Connectez-vous au VPN, même dans un environnement hostile</string>
+    <string name="auto_connect">Connexion automatique</string>
+    <string name="auto_connect_explainer">Se connecte au dernier emplacement utilisé lorsque l’application se lance ou rejoint un réseau.</string>
+    <string name="save">Enregistrer</string>
+    <string name="clear">Clair</string>
+    <string name="enter_1_key_value_per_line">Saisissez une clé=valeur par ligne.</string>
 </resources>
