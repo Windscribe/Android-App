@@ -12,6 +12,7 @@
     <string name="login_with_username">ব্যবহারকারীর নামে কোনো বিশেষ অক্ষর বা ইমেইল অনুমোদিত নয়।</string>
     <string name="weak_password">আপনার পাসওয়ার্ডে অন্তত একটি বড় এবং ছোট অক্ষর থাকতে হবে।</string>
     <string name="small_password">আপনার পাসওয়ার্ড অন্তত ৮ অক্ষরের হতে হবে।</string>
+    <string name="common_password">প্রবেশ করানো পাসওয়ার্ডটি সাধারণ এবং অনিরাপদ।.</string>
     <string name="password_requirement">৮ বা তার বেশি অক্ষরের সাথে অন্তত একটি বড় এবং ছোট অক্ষর প্রয়োজন</string>
     <string name="failed_network_alert">আমরা আমাদের সেরা চেষ্টা করেছি, কিন্তু কিছু কারণে এই নেটওয়ার্কে আপনাকে সংযুক্ত করা সম্ভব হয়নি। আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন।</string>
     <string name="fa_required_error">২FA কোড প্রয়োজন</string>
@@ -251,8 +252,8 @@
     <string name="knowledge_base_description">Windscribe সম্পর্কে আপনার যা জানা প্রয়োজন।</string>
     <string name="talk_to_garry">Garry-র সাথে কথা বলুন</string>
     <string name="talk_to_garry_description">Siri এর মতো স্মার্ট না হলেও প্রশ্নের উত্তর দিতে পারে।</string>
-    <string name="send_ticket">টিকেট পাঠান</string>
-    <string name="send_ticket_description">আটকে গেছেন? আমাদের একটি টিকেট পাঠান।</string>
+    <string name="contact_humans">মানুষের সাথে যোগাযোগ করুন</string>
+    <string name="contact_humans_description">গ্যারি সমাধান করতে পারছে না এমন কোনো সমস্যা আছে? মানব সাপোর্টে যোগাযোগ করুন।.</string>
     <string name="community_support">সাম্প্রদায়িক সাপোর্ট</string>
     <string name="community_support_description">অন্যান্য ব্যবহারকারীদের থেকে সাহায্য পাওয়া ও দেওয়ার সেরা স্থান।</string>
     <string name="how_to_send_ticket">নিচের ক্ষেত্রগুলি পূরণ করুন এবং আমাদের একজন সাপোর্ট এজেন্ট খুব শীঘ্রই আপনার সাথে যোগাযোগ করবেন ™</string>
@@ -280,6 +281,7 @@
     <string name="connected_lower_case">সংযুক্ত</string>
     <string name="other">অন্যান্য</string>
     <string name="about">সম্পর্কে</string>
+    <string name="advance">উন্নত পরামিতি</string>
     <string name="about_us">আমাদের সম্পর্কে</string>
     <string name="status">স্থিতি</string>
     <string name="privacy_policy">গোপনীয়তা নীতি</string>
@@ -318,8 +320,8 @@
     <string name="apps_to_exclude">বাদ দেওয়ার জন্য অ্যাপস</string>
     <string name="apps_to_include">অন্তর্ভুক্ত করার জন্য অ্যাপস</string>
     <string name="lan_traffic">LAN ট্রাফিক</string>
-    <string name="allow">অনুমোদন করুন</string>
-    <string name="block">প্রত্যাখ্যান করুন</string>
+    <string name="allow">চালু</string>
+    <string name="block">প্রতিবন্ধী</string>
     <string name="start_on_boot">বুট করার সময় শুরু করুন</string>
     <string name="split_routing_content">সংযুক্ত হলে কোন অ্যাপগুলি Windscribe থেকে বাদ দেবেন বা অন্তর্ভুক্ত করবেন তা নির্বাচন করুন</string>
     <string name="show_system_apps">সিস্টেম অ্যাপগুলি দেখান</string>
@@ -346,14 +348,12 @@
     <string name="manual_login">ম্যানুয়াল লগইন</string>
     <string name="keep_your_secrets">আপনার গোপনীয়তা রাখুন </string>
     <string name="reset_password_description">আপনার পাসওয়ার্ড রিসেট করতে windscribe.com যান </string>
-    <string name="support_url">windscribe.com/support</string>
     <string name="enter_code">কোড লিখুন</string>
     <string name="enter">জমা দিন </string>
     <string name="ping_time">%d মিলিসেকেন্ড</string>
     <string name="trying_next_protocol">"পরবর্তী প্রোটোকল চেষ্টা করা হচ্ছে %d এ"</string>
     <string name="all">সব</string>
     <string name="favourite">প্রিয়</string>
-    <string name="windflix">উইন্ডফ্লিক্স</string>
     <string name="static_ip">স্ট্যাটিক IP</string>
     <string name="disconnect_alert_no_network">Windscribe VPN টানেল নেটওয়ার্ক সংযোগের অভাবে স্থগিত আছে - দয়া করে আপনার নেটওয়ার্ক সেটিংস চেক করুন</string>
     <string name="node_under_construction_text">এই স্থানটি মেরামতের অধীনে। পরে আবার চেষ্টা করুন অথবা আরও তথ্যের জন্য আমাদের স্ট্যাটাস পৃষ্ঠা দেখুন https://windscribe.com/status</string>
@@ -475,4 +475,9 @@
     <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[এই ফিচার ব্যবহারের জন্য লোকেশন অনুমতি প্রয়োজন। অ্যাপ সেটিংসে যান > অনুমতি > লোকেশন এবং সব সময় অনুমতি দিন নির্বাচন করুন।]]></string>
     <string name="anti_censorship">সেন্সরশিপ এড়িয়ে চলুন</string>
     <string name="anti_censorship_explainer">শত্রুতাপূর্ণ পরিবেশেও VPN-এ সংযোগ করুন</string>
+    <string name="auto_connect">স্বয়ংক্রিয় সংযোগ </string>
+    <string name="auto_connect_explainer">অ্যাপটি চালু হলে বা নেটওয়ার্কে যোগ দিলে সর্বশেষ ব্যবহৃত স্থানের সাথে সংযোগ করে।</string>
+    <string name="save">সংরক্ষণ করুন</string>
+    <string name="clear">খালি করুন </string>
+    <string name="enter_1_key_value_per_line">প্রতি লাইনে 1 key=value লিখুন।.</string>
 </resources>
