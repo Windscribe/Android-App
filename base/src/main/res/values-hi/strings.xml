@@ -12,6 +12,7 @@
     <string name="login_with_username">उपयोगकर्ता नाम फ़ील्ड में कोई विशेष वर्ण या ईमेल की अनुमति नहीं है.</string>
     <string name="weak_password">आपके पासवर्ड में कम से कम एक अपरकेस और लोअरकेस होना चाहिए.</string>
     <string name="small_password">आपका पासवर्ड कम से कम 8 वर्णों का होना चाहिए.</string>
+    <string name="common_password">आपके द्वारा दर्ज किया गया पासवर्ड आमतौर पर इस्तेमाल किया जाता है और सुरक्षित नहीं है।</string>
     <string name="password_requirement">कम से कम एक अपरकेस और लोअरकेस के साथ 8 या अधिक वर्ण</string>
     <string name="failed_network_alert">खैर हमने इसे अपना सर्वश्रेष्ठ शॉट दिया, हम बस आपको किसी कारण से इस नेटवर्क पर कनेक्ट नहीं कर सके। अपने इंटरनेट कनेक्शन की जाँच करें।</string>
     <string name="fa_required_error">2FA कोड आवश्यक है</string>
@@ -251,8 +252,8 @@
     <string name="knowledge_base_description">विंडस्क्राइब के बारे में आपको जो कुछ भी जानने की जरूरत है।</string>
     <string name="talk_to_garry">गैरी से बात करें</string>
     <string name="talk_to_garry_description">सिरी स्मार्ट नहीं है, लेकिन अभी भी सवालों के जवाब दे सकता है।</string>
-    <string name="send_ticket">टिकट भेजें</string>
-    <string name="send_ticket_description">अटकना? हमें एक टिकट भेजें।</string>
+    <string name="contact_humans">मानव से संपर्क करें</string>
+    <string name="contact_humans_description">क्या आपकी कोई समस्या है जो गैरी हल नहीं कर सकता? मानव सहायता से संपर्क करें।</string>
     <string name="community_support">सामुदायिक समर्थन</string>
     <string name="community_support_description">अन्य उपयोगकर्ताओं की मदद करने और उनसे मदद प्राप्त करने के लिए सर्वोत्तम स्थान।</string>
     <string name="how_to_send_ticket">खेतों को भरें और हमारे सहायता एजेंटों में से एक व्यक्तिगत रूप से बहुत जल्द™ आपके पास वापस आ जाएगा</string>
@@ -280,6 +281,7 @@
     <string name="connected_lower_case">जुड़ा </string>
     <string name="other">दूसरा</string>
     <string name="about">करीबन</string>
+    <string name="advance">एडवांस पैरामीटर</string>
     <string name="about_us">हमारे बारे में</string>
     <string name="status">ओहदा</string>
     <string name="privacy_policy">गोपनीयता नीति</string>
@@ -318,8 +320,8 @@
     <string name="apps_to_exclude">ऐप्स को बाहर करने के लिए</string>
     <string name="apps_to_include">शामिल करने के लिए ऐप्स</string>
     <string name="lan_traffic">लैन ट्रैफिक</string>
-    <string name="allow">अनुमति देना</string>
-    <string name="block">रोक</string>
+    <string name="allow">सक्षम</string>
+    <string name="block">अक्षम</string>
     <string name="start_on_boot">बूट पर प्रारंभ करें</string>
     <string name="split_routing_content">कनेक्ट होने पर विंडस्क्राइब से किन ऐप्स को बाहर करना या शामिल करना है, चुनें</string>
     <string name="show_system_apps">सिस्टम ऐप्स दिखाएँ</string>
@@ -346,14 +348,12 @@
     <string name="manual_login">मैन्युअल लॉगिन</string>
     <string name="keep_your_secrets">अपने रहस्यों को बनाए रखें।</string>
     <string name="reset_password_description">अपना पासवर्ड रीसेट करने के लिए कृपया windscribe.com पर जाएँ</string>
-    <string name="support_url">windscribe.com/support</string>
     <string name="enter_code">कोड दर्ज करें</string>
     <string name="enter">घुसना</string>
     <string name="ping_time">%d एमएस</string>
     <string name="trying_next_protocol">"%d में अगले प्रोटोकॉल की कोशिश करना"</string>
     <string name="all">सब</string>
     <string name="favourite">पसंदीदा</string>
-    <string name="windflix">विंडफ्लिक्स</string>
     <string name="static_ip">स्थैतिक IP</string>
     <string name="disconnect_alert_no_network">विंडस्क्राइब वीपीएन सुरंग नेटवर्क कनेक्टिविटी के कारण रुक गई है - कृपया अपनी नेटवर्क सेटिंग्स की जांच करें</string>
     <string name="node_under_construction_text">यह स्थान रखरखाव के अधीन है। बाद में पुन: प्रयास करें या अधिक जानकारी के लिए हमारे स्थिति पृष्ठ पर जाएँ. https://windscribe.com/status</string>
@@ -476,4 +476,9 @@
     <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[इस सुविधा का उपयोग करने के लिए स्थान अनुमति आवश्यक है. स्थान &gt; अनुमतियों &gt; ऐप सेटिंग्स पर जाएं और हर समय अनुमति दें का चयन करें।]]></string>
     <string name="anti_censorship">सेंसरशिप को दरकिनार करें</string>
     <string name="anti_censorship_explainer">शत्रुतापूर्ण वातावरण में भी वीपीएन से कनेक्ट करें.</string>
+    <string name="auto_connect">ऑटो-कनेक्ट</string>
+    <string name="auto_connect_explainer">ऐप लॉन्च होने या नेटवर्क में शामिल होने पर अंतिम उपयोग किए गए स्थान से कनेक्ट होता है।</string>
+    <string name="save">सेव</string>
+    <string name="clear">स्पष्ट</string>
+    <string name="enter_1_key_value_per_line">प्रति पंक्ति 1 key=value दर्ज करें।</string>
 </resources>
