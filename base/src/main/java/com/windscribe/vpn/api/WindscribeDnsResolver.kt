@@ -4,6 +4,7 @@ import android.os.Build
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -15,11 +16,6 @@ import java.net.UnknownHostException
 
 class WindscribeDnsResolver(private val mainScope: CoroutineScope, private val preferenceHelper: PreferencesHelper) : Dns {
     private var memoryCache = mutableMapOf<String, String>()
-    private val locale: String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        Windscribe.appContext.resources.configuration.locales.get(0).language
-    } else {
-        Windscribe.appContext.resources.configuration.locale.language
-    }
 
     fun addToCache(host: String, ip: String) {
         memoryCache[host] = ip
@@ -50,15 +46,15 @@ class WindscribeDnsResolver(private val mainScope: CoroutineScope, private val p
         }
     }
 
-    private fun preferIpv4(forLocales: Array<String>, hostname: String): Boolean {
+    private fun preferIpv4(hostname: String): Boolean {
         val regex = Regex("(assets|api|checkip).[0-9a-f]{40}.com")
-        return forLocales.contains(locale) && regex.matches(hostname)
+        return appContext.isRegionRestricted && regex.matches(hostname)
     }
 
     private fun sortIpAddresses(hostname: String, address1: InetAddress, address2: InetAddress): Int {
         val isIpv4Address1 = address1 is Inet4Address
         val isIpv4Address2 = address2 is Inet4Address
-        val preferIpv4 = preferIpv4(arrayOf("ru"), hostname)
+        val preferIpv4 = preferIpv4(hostname)
         return when {
             preferIpv4 && isIpv4Address1 && !isIpv4Address2 -> -1
             preferIpv4 && !isIpv4Address1 && isIpv4Address2 -> 1
