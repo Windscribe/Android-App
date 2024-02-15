@@ -600,7 +600,7 @@ class AppPreferenceHelper(
             preference.put(DECOY_TRAFFIC, value)
         }
     override var isAntiCensorshipOn: Boolean
-        get() = preference.getBoolean(ANTI_CENSORSHIP, appContext.isRegionRestricted)
+        get() = preference.getBoolean(ANTI_CENSORSHIP, false)
         set(value) {
             preference.put(ANTI_CENSORSHIP, value)
         }
