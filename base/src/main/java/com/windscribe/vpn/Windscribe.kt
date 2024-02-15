@@ -174,16 +174,6 @@ open class Windscribe : MultiDexApplication() {
         } ?: PreferencesKeyConstants.DEFAULT_LANGUAGE
     }
 
-    val isRegionRestricted: Boolean
-        get() {
-            val systemLanguageCode = if (VERSION.SDK_INT >= VERSION_CODES.N) {
-                resources.configuration.locales.get(0).language
-            } else {
-                resources.configuration.locale.language
-            }
-            return systemLanguageCode == "ru"
-        }
-
     fun getSavedLocale(): Locale {
         val selectedLanguage = appContext.preference.savedLanguage
         val language = getLanguageCode(selectedLanguage)
