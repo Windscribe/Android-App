@@ -266,7 +266,7 @@ open class ApiCallManager @Inject constructor(private val apiFactory: WindApiFac
     }
 
     private fun callOrSkip(apiCallType: ApiCallType, service: (ApiService, Map<String, String>, Boolean) -> Single<ResponseBody>, domainType: DomainType, domain: String, protect: Boolean, params: Map<String, String>): Single<ResponseBody> {
-        return if (domainFailOverManager.isAccessible(domainType, apiCallType) && !ignoreDomainForRestrictedRegion(domainType, arrayOf(DomainType.Primary, DomainType.Secondary))) {
+        return if (domainFailOverManager.isAccessible(domainType, apiCallType) && !ignoreDomainForLocale(domainType, arrayOf(DomainType.Primary, DomainType.Secondary), arrayOf("ru", "rus"))) {
             service.invoke(apiFactory.createApi(domain, protect), params, false)
         } else {
             return Single.error(Throwable())
@@ -571,9 +571,14 @@ open class ApiCallManager @Inject constructor(private val apiFactory: WindApiFac
         }
     }
     /**
-     * returns true if given domain matchesTheIngore list
+     * returns true if given domain matchesTheIgnore list for locales.
     */
-    private fun ignoreDomainForRestrictedRegion(domainToTry: DomainType, domainTypeToIgnore: Array<DomainType>): Boolean {
-        return appContext.isRegionRestricted && domainTypeToIgnore.contains(domainToTry)
+    private fun ignoreDomainForLocale(domainToTry: DomainType, domainTypeToIgnore: Array<DomainType>, forLanguageCodes: Array<String>): Boolean {
+        val systemLanguageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            appContext.resources.configuration.locales.get(0).language
+        } else {
+            appContext.resources.configuration.locale.language
+        }
+        return domainTypeToIgnore.contains(domainToTry) && systemLanguageCode.isNotEmpty() && (forLanguageCodes.contains(systemLanguageCode))
     }
 }
