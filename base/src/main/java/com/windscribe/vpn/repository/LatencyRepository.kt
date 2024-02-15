@@ -1,6 +1,5 @@
 package com.windscribe.vpn.repository
 
-import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.Util
@@ -59,11 +58,7 @@ class LatencyRepository @Inject constructor(
         val context = currentCoroutineContext()
         return CoroutineScope(context).async {
             val pingTime = getPingTime(city.getId(), city.regionID, false, city.pro == 1)
-            if (appContext.isRegionRestricted) {
-                return@async getLatencyFromSocketConnection(city.pingIp, pingTime)
-            } else {
-                return@async getLatencyFromApi(city.pingHost, city.pingIp, pingTime)
-            }
+            return@async getLatencyFromApi(city.pingHost, city.pingIp, pingTime)
         }
     }
 
@@ -71,11 +66,7 @@ class LatencyRepository @Inject constructor(
         val context = currentCoroutineContext()
         return CoroutineScope(context).async {
             val pingTime = getPingTime(region.id, region.ipId, isStatic = true, isPro = true)
-            if (appContext.isRegionRestricted) {
-                return@async getLatencyFromSocketConnection(region.staticIpNode.ip, pingTime)
-            } else {
-                return@async getLatencyFromApi(region.pingHost, region.staticIpNode.ip, pingTime)
-            }
+            return@async getLatencyFromApi(region.pingHost, region.staticIpNode.ip, pingTime)
         }
     }
 
