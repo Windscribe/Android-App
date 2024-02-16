@@ -132,7 +132,10 @@ class ServerListRepository @Inject constructor(
         }
         return localDbInterface.addToRegions(regions)
                 .andThen(localDbInterface.addToCities(cities))
-                .andThen(Completable.fromAction { preferenceChangeObserver.postCityServerChange() })
+                .andThen(Completable.fromAction {
+                    preferenceChangeObserver.postCityServerChange()
+                    load()
+                })
                 .doOnError { logger.debug("Error saving server list to database") }
     }
 
