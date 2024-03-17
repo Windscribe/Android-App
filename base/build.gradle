@@ -7,8 +7,8 @@ apply from: "$rootDir/depedencycheck.gradle"
 android {
     ndkVersion "23.0.7599858"
     compileOptions {
-        sourceCompatibility 1.8
-        targetCompatibility 1.8
+        sourceCompatibility rootProject.java
+        targetCompatibility rootProject.java
     }
     buildFeatures {
         dataBinding true
