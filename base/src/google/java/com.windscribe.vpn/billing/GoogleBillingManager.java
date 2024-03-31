@@ -33,6 +33,7 @@ import com.windscribe.vpn.constants.BillingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -137,7 +138,11 @@ public class GoogleBillingManager implements PurchasesUpdatedListener, Lifecycle
 
     @Override
     public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<Purchase> purchases) {
-        purchaseUpdateEvent.postValue(new CustomPurchases(billingResult.getResponseCode(), purchases));
+        if (purchases == null){
+            purchaseUpdateEvent.postValue(new CustomPurchases(billingResult.getResponseCode(), new ArrayList<>()));
+        } else {
+            purchaseUpdateEvent.postValue(new CustomPurchases(billingResult.getResponseCode(), purchases));
+        }
     }
 
     public void querySkuDetailsAsync(final List<QueryProductDetailsParams.Product> subs) {
