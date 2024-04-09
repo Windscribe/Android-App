@@ -57,6 +57,9 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
     @BindView(R.id.cl_connection_mode)
     lateinit var connectionModeDropDownView: ExpandableDropDownView
 
+    @BindView(R.id.cl_dns_mode)
+    lateinit var dnsModeDropDownView: ExpandableDropDownView
+
     @BindView(R.id.cl_packet_size)
     lateinit var packetSizeModeDropDownView: ExpandableDropDownView
 
@@ -178,6 +181,19 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
                 openURLInBrowser(FeatureExplainer.CONNECTION_MODE)
             }
         }
+        dnsModeDropDownView.delegate = object : ExpandableDropDownView.Delegate {
+            override fun onItemSelect(position: Int) {
+                if (position == 0) {
+                    presenter.onRobertDnsModeSelected()
+                } else {
+                    presenter.onCustomDnsModeSelected()
+                }
+            }
+
+            override fun onExplainClick() {
+                openURLInBrowser(FeatureExplainer.CUSTOM_DNS_MODE)
+            }
+        }
         val connectionModeView = connectionModeDropDownView.childView as ConnectionModeView?
         connectionModeView?.delegate = object : ConnectionModeView.Delegate {
             override fun onProtocolSelected(protocol: String) {
@@ -186,6 +202,12 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
 
             override fun onPortSelected(protocol: String, port: String) {
                 presenter.onPortSelected(protocol, port)
+            }
+        }
+        val dnsModeView = dnsModeDropDownView.childView as DnsModeView?
+        dnsModeView?.delegate = object : DnsModeView.Delegate {
+            override fun onCustomDnsChanged(dns: String) {
+                presenter.onCustomDnsChanged(dns)
             }
         }
         packetSizeModeDropDownView.delegate = object : ExpandableDropDownView.Delegate {
@@ -346,7 +368,9 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
     }
 
     override fun showToast(toastString: String) {
-        Toast.makeText(this, toastString, Toast.LENGTH_SHORT).show()
+        runOnUiThread {
+            Toast.makeText(this, toastString, Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun showExtraDataUseWarning() {
@@ -368,6 +392,9 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
 
     override fun setupConnectionModeAdapter(savedValue: String, connectionModes: Array<String>) {
         connectionModeDropDownView.setAdapter(savedValue, connectionModes)
+    }
+    override fun setupDNSModeAdapter(savedValue: String, dnsModes: Array<String>) {
+        dnsModeDropDownView.setAdapter(savedValue, dnsModes)
     }
 
     override fun setupFakeTrafficVolumeAdapter(selectedValue: String, values: Array<String>) {
@@ -395,6 +422,11 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
 
     override fun goToNetworkSecurity() {
         startActivity(NetworkSecurityActivity.getStartIntent(this))
+    }
+
+    override fun setCustomDnsAddress(dnsAddress: String) {
+        val dnsModeView = dnsModeDropDownView.childView as DnsModeView
+        dnsModeView.setCustomDns(dnsAddress)
     }
 
     companion object {

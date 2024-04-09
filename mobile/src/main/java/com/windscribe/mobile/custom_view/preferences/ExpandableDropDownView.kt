@@ -24,7 +24,7 @@ class ExpandableDropDownView @JvmOverloads constructor(
         fun onExplainClick()
     }
     enum class ChildType {
-        ConnectionMode, PacketSize, KeepAliveMode
+        ConnectionMode, PacketSize, KeepAliveMode, DnsMode
     }
     var delegate: Delegate? = null
     private var spinner: Spinner? = null
@@ -82,8 +82,6 @@ class ExpandableDropDownView @JvmOverloads constructor(
         current?.text = savedSelection
     }
 
-
-
     private fun attachChildView(){
         val childType = attributes.getString(R.styleable.ExpandableDropDownView_ExpandableDropDownChildType)?.let { ChildType.valueOf(it) }
                 ?:ChildType. ConnectionMode
@@ -94,6 +92,9 @@ class ExpandableDropDownView @JvmOverloads constructor(
             }
             ChildType.ConnectionMode -> {
                 ConnectionModeView(inflate(context, R.layout.auto_manual_mode_view, placeHolder))
+            }
+            ChildType.DnsMode -> {
+                DnsModeView(inflate(context, R.layout.dns_mode_view, placeHolder))
             }
             else -> {
                 KeepAliveView(inflate(context, R.layout.connection_keep_alive_tab, placeHolder))

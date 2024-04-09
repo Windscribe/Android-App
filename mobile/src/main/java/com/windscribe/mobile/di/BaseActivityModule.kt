@@ -75,6 +75,7 @@ import com.windscribe.vpn.ActivityInteractorImpl
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
+import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
@@ -176,9 +177,10 @@ open class BaseActivityModule {
     @Provides
     fun provideConnectionPresenter(
             activityInteractor: ActivityInteractor,
-            permissionManager: PermissionManager
+            permissionManager: PermissionManager,
+            proxyDNSManager: ProxyDNSManager
     ): ConnectionSettingsPresenter {
-        return ConnectionSettingsPresenterImpl(connectionSettingsView, activityInteractor, permissionManager)
+        return ConnectionSettingsPresenterImpl(connectionSettingsView, activityInteractor, permissionManager, proxyDNSManager)
     }
 
     @Provides

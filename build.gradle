@@ -8,7 +8,7 @@ project.ext {
     appBuildTool = "33.0.2"
     appVersionCode = 1281
     appVersionName = "3.76"
-    java = "11"
+    java = "17"
 }
 
 buildscript {

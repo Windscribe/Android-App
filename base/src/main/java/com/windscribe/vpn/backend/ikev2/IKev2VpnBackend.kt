@@ -13,6 +13,7 @@ import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.autoconnection.ProtocolInformation
+import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
@@ -39,7 +40,8 @@ class IKev2VpnBackend(
         var networkInfoManager: NetworkInfoManager,
         vpnStateManager: VPNConnectionStateManager,
         var serviceInteractor: ServiceInteractor,
-        advanceParameterRepository: AdvanceParameterRepository
+        advanceParameterRepository: AdvanceParameterRepository,
+        val proxyDNSManager: ProxyDNSManager
 ) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager, advanceParameterRepository), VpnStateListener,
     NetworkInfoListener {
 
@@ -105,12 +107,16 @@ class IKev2VpnBackend(
         vpnLogger.debug("Connecting to Ikev2 Service.")
         startConnectionJob()
         scope.launch {
+            proxyDNSManager.startControlDIfRequired()
             getVpnService().connect(null, true)
         }
     }
 
     override suspend fun disconnect(error: VPNState.Error?) {
         this.error = error
+        if (proxyDNSManager.invalidConfig){
+            proxyDNSManager.stopControlD()
+        }
         connectionJob?.cancel()
         vpnLogger.debug("Disconnecting ikev2 service.")
         vpnService?.state?.let {

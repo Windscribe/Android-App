@@ -1,0 +1,18 @@
+[listener]
+
+[listener.0]
+ip = "127.0.0.1"
+port = 5354
+restricted = false
+
+[network]
+
+[network.0]
+cidrs = ["0.0.0.0/0"]
+name = "Network 0"
+
+[service]
+log_level = "info"
+log_path = ""
+
+[upstream]

@@ -1,0 +1,81 @@
+# Process this file with autom4te to create testsuite. -*- Autotest -*-
+
+# Test suite for termux-elf-cleaner.
+# Copyright 2022 Termux
+
+# This file is part of termux-elf-cleaner.
+
+# termux-elf-cleaner is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 3 of the
+# License, or (at your option) any later version.
+
+# termux-elf-cleaner is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+
+# Ensure that patching of under-aligned TLS segment in program header
+# works
+
+AT_BANNER([TLS segment alignment])
+
+AT_SETUP([aarch64])
+AT_KEYWORDS([program-header TLS aarch64])
+AT_CHECK([cp ${top_srcdir}/tests/valgrind-3.19.0-aarch64-original .
+${abs_top_builddir}/termux-elf-cleaner valgrind-3.19.0-aarch64-original],
+[0],
+[AT_PACKAGE_NAME: Changing TLS alignment for 'valgrind-3.19.0-aarch64-original' to 64, instead of 8
+])
+AT_CHECK([
+cmp --silent valgrind-3.19.0-aarch64-original ${top_srcdir}/tests/valgrind-3.19.0-aarch64-tls-aligned
+],
+[0],
+[])
+AT_CLEANUP
+
+AT_SETUP([arm])
+AT_KEYWORDS([program-header TLS arm])
+AT_CHECK([cp ${top_srcdir}/tests/valgrind-3.19.0-arm-original .
+${abs_top_builddir}/termux-elf-cleaner valgrind-3.19.0-arm-original],
+[0],
+[AT_PACKAGE_NAME: Changing TLS alignment for 'valgrind-3.19.0-arm-original' to 32, instead of 8
+])
+AT_CHECK([
+cmp --silent valgrind-3.19.0-arm-original ${top_srcdir}/tests/valgrind-3.19.0-arm-tls-aligned
+],
+[0],
+[])
+AT_CLEANUP
+
+AT_SETUP([i686])
+AT_KEYWORDS([program-header TLS i686])
+AT_CHECK([cp ${top_srcdir}/tests/valgrind-3.19.0-i686-original .
+${abs_top_builddir}/termux-elf-cleaner valgrind-3.19.0-i686-original],
+[0],
+[AT_PACKAGE_NAME: Changing TLS alignment for 'valgrind-3.19.0-i686-original' to 32, instead of 8
+])
+AT_CHECK([
+cmp --silent valgrind-3.19.0-i686-original ${top_srcdir}/tests/valgrind-3.19.0-i686-tls-aligned
+],
+[0],
+[])
+AT_CLEANUP
+
+AT_SETUP([x86_64])
+AT_KEYWORDS([program-header TLS x86_64])
+AT_CHECK([cp ${top_srcdir}/tests/valgrind-3.19.0-x86_64-original .
+${abs_top_builddir}/termux-elf-cleaner valgrind-3.19.0-x86_64-original],
+[0],
+[AT_PACKAGE_NAME: Changing TLS alignment for 'valgrind-3.19.0-x86_64-original' to 64, instead of 8
+])
+AT_CHECK([
+cmp --silent valgrind-3.19.0-x86_64-original ${top_srcdir}/tests/valgrind-3.19.0-x86_64-tls-aligned
+],
+[0],
+[])
+AT_CLEANUP

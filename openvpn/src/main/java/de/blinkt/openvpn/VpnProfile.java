@@ -24,6 +24,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.windscribe.common.DNSDetails;
+
 import de.blinkt.openvpn.core.*;
 
 import org.spongycastle.util.io.pem.PemObject;
@@ -173,6 +175,8 @@ public class VpnProfile implements Serializable, Cloneable {
     public boolean mUseLegacyProvider = false;
     public String mTlSCertProfile = "";
 
+    private DNSDetails dnsDetails;
+
     private transient PrivateKey mPrivateKey;
     // Public attributes, since I got mad with getter/setter
     // set members to default values
@@ -298,6 +302,14 @@ public class VpnProfile implements Serializable, Cloneable {
         if (TextUtils.isEmpty(mName))
             return "No profile name";
         return mName;
+    }
+
+    public void setDnsDetails(DNSDetails dnsDetails) {
+        this.dnsDetails = dnsDetails;
+    }
+
+    public DNSDetails getDnsDetails(){
+        return dnsDetails;
     }
 
     public void upgradeProfile() {
@@ -1255,7 +1267,12 @@ public class VpnProfile implements Serializable, Cloneable {
         // Users are confused by warnings that are misleading...
         cfg.append("ifconfig-nowarn\n");
         cfg.append("resolv-retry infinite\n");
-
+        if (mExcludedRoutes != null) {
+            String[] excludesRoutes = mExcludedRoutes.split(",");
+            for (String exclude: excludesRoutes){
+                cfg.append("route "+ exclude +" 255.255.255.255 net_gateway\n");
+            }
+        }
         for (String serverConfigLine : serverConfigLines) {
             if (serverConfigLine.contains("dev tun")) {
                 cfg.append(serverConfigLine).append("\n");

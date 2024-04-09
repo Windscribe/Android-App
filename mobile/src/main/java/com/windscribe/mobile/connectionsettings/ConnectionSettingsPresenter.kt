@@ -35,4 +35,7 @@ interface ConnectionSettingsPresenter {
     fun onNetworkOptionsClick()
     fun onAntiCensorshipClick()
     fun onAutoConnectClick()
+    fun onRobertDnsModeSelected()
+    fun onCustomDnsModeSelected()
+    fun onCustomDnsChanged(dns: String)
 }

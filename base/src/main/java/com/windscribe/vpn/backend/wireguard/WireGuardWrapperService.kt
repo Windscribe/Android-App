@@ -6,8 +6,11 @@ package com.windscribe.vpn.backend.wireguard
 
 import android.content.Intent
 import android.net.VpnService
+import com.windscribe.common.DNSDetails
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
@@ -35,11 +38,17 @@ class WireGuardWrapperService : GoBackend.VpnService() {
     @Inject
     lateinit var shortcutStateManager: ShortcutStateManager
 
+    @Inject
+    lateinit var proxyDNSManager: ProxyDNSManager
+
+    @Inject
+    lateinit var preferencesHelper: PreferencesHelper
+
     private var logger = LoggerFactory.getLogger("vpn_backend")
 
     override fun onCreate() {
-        super.onCreate()
         Windscribe.appContext.serviceComponent.inject(this)
+        super.onCreate()
         wireguardBackend.serviceCreated(this)
     }
 
@@ -74,5 +83,9 @@ class WireGuardWrapperService : GoBackend.VpnService() {
 
     override fun onRevoke() {
         wireguardBackend.scope.launch { vpnController.disconnectAsync() }
+    }
+
+    override fun getDnsDetails(): DNSDetails? {
+        return proxyDNSManager.dnsDetails
     }
 }

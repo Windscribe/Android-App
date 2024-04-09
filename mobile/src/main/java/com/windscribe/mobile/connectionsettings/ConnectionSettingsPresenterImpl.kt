@@ -17,10 +17,13 @@ import com.windscribe.vpn.ActivityInteractorImpl.PortMapLoadCallback
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PortMapResponse
 import com.windscribe.vpn.api.response.PortMapResponse.PortMap
+import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.commonutils.Ext.getFakeTrafficVolumeOptions
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_AUTO
 import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_MANUAL
+import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_CUSTOM
+import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_ROBERT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_IKev2
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_STEALTH
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_TCP
@@ -50,7 +53,8 @@ import javax.inject.Inject
 class ConnectionSettingsPresenterImpl @Inject constructor(
         private var connSettingsView: ConnectionSettingsView,
         private var interactor: ActivityInteractor,
-        private val permissionManager: PermissionManager
+        private val permissionManager: PermissionManager,
+        private val proxyDNSManager: ProxyDNSManager
 ) : ConnectionSettingsPresenter {
     private val logger = LoggerFactory.getLogger("con_settings_p")
     private var currentPoint = 1500
@@ -107,6 +111,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
         setUpAutoModePorts()
         setupPacketSizeMode()
         setUpKeepAlive()
+        setupLayoutBasedOnDnsMode()
     }
 
     override fun onAllowLanClicked() {
@@ -445,6 +450,19 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
         setProtocolAdapter()
     }
 
+    private fun setupLayoutBasedOnDnsMode() {
+        val dnsMode = interactor.getAppPreferenceInterface().dnsMode
+        if (dnsMode == DNS_MODE_ROBERT) {
+            connSettingsView.setupDNSModeAdapter(interactor.getResourceString(R.string.robert), arrayOf(interactor.getResourceString(R.string.robert), interactor.getResourceString(R.string.custom)))
+        } else {
+            connSettingsView.setupDNSModeAdapter(interactor.getResourceString(R.string.custom), arrayOf(interactor.getResourceString(R.string.robert), interactor.getResourceString(R.string.custom)))
+        }
+        val dnsAddress = interactor.getAppPreferenceInterface().dnsAddress
+        if(dnsAddress != null) {
+            connSettingsView.setCustomDnsAddress(dnsAddress)
+        }
+    }
+
     private fun setupPacketSizeMode() {
         val packetSizeModeAuto =
                 interactor.getAppPreferenceInterface().isPackageSizeModeAuto
@@ -755,5 +773,24 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
                 }
             }
         }
+    }
+
+    override fun onRobertDnsModeSelected() {
+        if (DNS_MODE_ROBERT != interactor.getAppPreferenceInterface().dnsMode) {
+            interactor.getAppPreferenceInterface().dnsMode = DNS_MODE_ROBERT
+            proxyDNSManager.invalidConfig = true
+        }
+    }
+
+    override fun onCustomDnsModeSelected() {
+        if (DNS_MODE_CUSTOM != interactor.getAppPreferenceInterface().dnsMode) {
+            interactor.getAppPreferenceInterface().dnsMode = DNS_MODE_CUSTOM
+            proxyDNSManager.invalidConfig = true
+        }
+    }
+
+    override fun onCustomDnsChanged(dns: String) {
+        interactor.getAppPreferenceInterface().dnsAddress = dns
+        proxyDNSManager.invalidConfig = true
     }
 }
