@@ -166,4 +166,8 @@ object PreferencesKeyConstants {
     const val ANTI_CENSORSHIP = "anti_censorship"
     const val AUTO_CONNECT = "auto_connect"
     const val ADVANCE_PARAM_TEXT = "advance_params_text"
+    const val DNS_MODE = "dns_mode"
+    const val DNS_MODE_ROBERT = "dns_mode_robert"
+    const val DNS_MODE_CUSTOM = "dns_mode_custom"
+    const val CUSTOM_DNS_ADDRESS = "custom_dns_address"
 }

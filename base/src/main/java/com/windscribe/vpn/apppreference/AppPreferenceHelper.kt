@@ -15,9 +15,12 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.ALREADY_SHOWN_SHARE_
 import com.windscribe.vpn.constants.PreferencesKeyConstants.ANTI_CENSORSHIP
 import com.windscribe.vpn.constants.PreferencesKeyConstants.AUTO_CONNECT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.AUTO_SECURE_NEW_NETWORKS
+import com.windscribe.vpn.constants.PreferencesKeyConstants.CUSTOM_DNS_ADDRESS
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DECOY_TRAFFIC
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_IKEV2_PORT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT
+import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE
+import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_ROBERT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.FAKE_TRAFFIC_VOLUME
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_CONNECT_API_FAIL_OVER_STATE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_LOCAL_PARAMS
@@ -647,5 +650,15 @@ class AppPreferenceHelper(
         get() = preference.getString(ADVANCE_PARAM_TEXT, "") ?: ""
         set(value) {
             preference.put(ADVANCE_PARAM_TEXT, value)
+        }
+    override var dnsMode: String
+        get() = preference.getString(DNS_MODE, DNS_MODE_ROBERT) ?: DNS_MODE_ROBERT
+        set(value) {
+            preference.put(DNS_MODE, value)
+        }
+    override var dnsAddress: String?
+        get() = preference.getString(CUSTOM_DNS_ADDRESS, null)
+        set(value) {
+            preference.put(CUSTOM_DNS_ADDRESS, value)
         }
 }

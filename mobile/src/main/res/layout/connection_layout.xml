@@ -65,6 +65,18 @@
                 android:layout_marginTop="@dimen/reg_16dp"
                 app:layout_constraintTop_toBottomOf="@id/cl_connection_mode" />
 
+            <com.windscribe.mobile.custom_view.preferences.ExpandableDropDownView
+                android:id="@+id/cl_dns_mode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:ExpandableDropDownTitle="@string/connected_dns"
+                app:ExpandableDropDownDescription="@string/custom_dns_explainer"
+                app:ExpandableDropDownLeftIcon="@drawable/custom_dns_icon"
+                app:ExpandableDropDownChildType="DnsMode"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="@dimen/reg_16dp"
+                app:layout_constraintTop_toBottomOf="@id/cl_packet_size" />
+
 
             <com.windscribe.mobile.custom_view.preferences.ExpandableDropDownView
                 android:id="@+id/cl_keep_alive"
@@ -77,7 +89,7 @@
                 app:ExpandableDropDownShowRightIcon="false"
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginTop="@dimen/reg_16dp"
-                app:layout_constraintTop_toBottomOf="@id/cl_packet_size" />
+                app:layout_constraintTop_toBottomOf="@id/cl_dns_mode" />
 
             <com.windscribe.mobile.custom_view.preferences.ToggleView
                 android:id="@+id/cl_lan_settings"

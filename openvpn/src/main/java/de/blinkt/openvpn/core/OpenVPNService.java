@@ -36,6 +36,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import com.windscribe.common.DNSDetails;
+import com.windscribe.common.DnsType;
+import com.windscribe.common.VPNTunnelWrapper;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -91,6 +95,8 @@ public abstract class OpenVPNService extends VpnService implements StateListener
     private long mConnecttime;
     private OpenVPNManagement mManagement;
     private volatile boolean shouldRollbackConnection = false;
+
+    private VPNTunnelWrapper tunnelWrapper;
     private final IBinder mBinder = new IOpenVPNServiceInternal.Stub() {
 
         @Override
@@ -480,6 +486,9 @@ public abstract class OpenVPNService extends VpnService implements StateListener
 
     @Override
     public boolean stopVPN(boolean replaceConnection) throws RemoteException {
+        if (tunnelWrapper != null){
+            tunnelWrapper.stop();
+        }
         if (getManagement() != null)
             return getManagement().stopVPN(replaceConnection);
         else
@@ -853,16 +862,21 @@ public abstract class OpenVPNService extends VpnService implements StateListener
             }
 
         }*/
-
-
-        for (String dns : mDnslist) {
+        if (mProfile.mOverrideDNS){
             try {
-                builder.addDnsServer(dns);
+                builder.addDnsServer(mProfile.mDNS1);
             } catch (IllegalArgumentException iae) {
-                VpnStatus.logError(R.string.dns_add_error, dns, iae.getLocalizedMessage());
+                VpnStatus.logError(R.string.dns_add_error, mProfile.mDNS2, iae.getLocalizedMessage());
+            }
+        } else {
+            for (String dns : mDnslist) {
+                try {
+                    builder.addDnsServer(dns);
+                } catch (IllegalArgumentException iae) {
+                    VpnStatus.logError(R.string.dns_add_error, dns, iae.getLocalizedMessage());
+                }
             }
         }
-
         String release = Build.VERSION.RELEASE;
         if ((Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT && !release.startsWith("4.4.3")
                 && !release.startsWith("4.4.4") && !release.startsWith("4.4.5") && !release.startsWith("4.4.6"))
@@ -999,7 +1013,17 @@ public abstract class OpenVPNService extends VpnService implements StateListener
 
         try {
             //Debug.stopMethodTracing();
-            ParcelFileDescriptor tun = builder.establish();
+            ParcelFileDescriptor tun;
+            DNSDetails dnsDetails = mProfile.getDnsDetails();
+            if (dnsDetails != null && (dnsDetails.getType() == DnsType.Proxy)){
+                builder.setBlocking(true);
+                tun = builder.establish();
+                tunnelWrapper = new VPNTunnelWrapper(tun, this);
+                tunnelWrapper.start();
+                tun = tunnelWrapper.getParcelDescriptor();
+            } else {
+                tun = builder.establish();
+            }
             if (tun == null)
                 throw new NullPointerException("Android establish() method returned null (Really broken network configuration?)");
             return tun;
