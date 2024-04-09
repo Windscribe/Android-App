@@ -40,6 +40,10 @@ import android.security.KeyChainException;
 import android.system.OsConstants;
 import android.util.Log;
 
+import com.windscribe.common.DNSDetails;
+import com.windscribe.common.DnsType;
+import com.windscribe.common.VPNTunnelWrapper;
+
 import org.strongswan.android.data.VpnProfile;
 import org.strongswan.android.data.VpnProfile.SelectedAppsHandling;
 import org.strongswan.android.data.VpnProfileDataSource;
@@ -105,6 +109,8 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 	private VpnStateService mService;
 	private static final String ISRGX1Sha256Hash = "22B557A27055B33606B6559F37703928D3E4AD79F110B407D04986E1843543D1";
 	private final Object mServiceLock = new Object();
+
+	private VPNTunnelWrapper tunnelWrapper;
 	private final ServiceConnection mServiceConnection = new ServiceConnection() {
 		@Override
 		public void onServiceDisconnected(ComponentName name)
@@ -350,7 +356,9 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 	{
 		synchronized (this)
 		{
-
+		   if(tunnelWrapper != null){
+			   tunnelWrapper.stop();
+		   }
 			/*
 			if (mNextProfile != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
 			{
@@ -960,7 +968,17 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 			try
 			{
 				mCache.applyData(mBuilder);
-				fd = mBuilder.establish();
+				DNSDetails dnsDetails = mProfile.getDnsDetails();
+				if (dnsDetails != null && (dnsDetails.getType() == DnsType.Proxy)){
+					mBuilder.setBlocking(true);
+					fd = mBuilder.establish();
+					tunnelWrapper = new VPNTunnelWrapper(fd, CharonVpnService.this);
+					tunnelWrapper.start();
+					fd = tunnelWrapper.getParcelDescriptor();
+				} else {
+					mBuilder.setBlocking(false);
+					fd = mBuilder.establish();
+				}
 				if (fd != null)
 				{
 					closeBlocking();

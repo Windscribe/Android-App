@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/custom_dns_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/dns_mode_divider"
+        style="@style/PreferenceDivider"
+        android:contentDescription="@string/image_description"
+        android:layout_marginStart="@dimen/margin_16"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <!--PACKET SIZE OPTIONS -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_custom_dns"
+        style="@style/MenuItemContainer"
+        android:layout_marginStart="16dp"
+        android:paddingStart="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dns_mode_divider">
+
+
+        <EditText
+            android:id="@+id/custom_dns"
+            style="@style/transparentEditableText"
+            android:enabled="false"
+            android:layout_width="0dp"
+            android:gravity="start|center_vertical"
+            android:hint="@string/custom_dns_address_hint"
+            android:importantForAutofill="no"
+            android:ellipsize="start"
+            android:paddingStart="0dp"
+            android:textSize="@dimen/text_size_12"
+            android:inputType="textVisiblePassword"
+            android:textColorHint="?attr/wdSecondaryColor"
+            android:textColor="?attr/wdSecondaryColor"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/barrier"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:singleLine="true" />
+
+        <ImageView
+            android:id="@+id/custom_dns_edit"
+            style="@style/IconStyle"
+            android:layout_marginEnd="@dimen/margin_8"
+            android:contentDescription="@string/image_description"
+            android:src="@drawable/ic_edit_icon"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+        <ImageView
+            android:id="@+id/custom_dns_cancel"
+            style="@style/IconStyle"
+            android:layout_marginEnd="@dimen/margin_8"
+            android:contentDescription="@string/image_description"
+            android:src="@drawable/ic_close_white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:visibility="gone"
+            app:layout_constraintEnd_toStartOf="@id/custom_dns_check"
+            app:layout_constraintTop_toTopOf="parent" />
+        <ImageView
+            android:id="@+id/custom_dns_check"
+            style="@style/IconStyle"
+            android:layout_marginEnd="@dimen/margin_8"
+            android:contentDescription="@string/image_description"
+            android:src="@drawable/ic_check"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier"
+            app:barrierDirection="left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="custom_dns_edit,custom_dns_cancel"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

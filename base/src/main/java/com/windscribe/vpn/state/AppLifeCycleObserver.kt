@@ -12,6 +12,7 @@ import com.windscribe.vpn.Windscribe.Companion.applicationScope
 import com.windscribe.vpn.api.ApiCallType
 import com.windscribe.vpn.api.DomainFailOverManager
 import com.windscribe.vpn.api.response.PushNotificationAction
+import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +29,9 @@ Tracks App life cycle
 class AppLifeCycleObserver @Inject constructor(
     private val workManager: WindScribeWorkManager,
     private val networkInfoManager: NetworkInfoManager,
-    private val domainFailOverManager: DomainFailOverManager
+    private val domainFailOverManager: DomainFailOverManager,
+    private val vpnConnectionStateManager: VPNConnectionStateManager,
+    private val proxyDNSManager: ProxyDNSManager
 ) :
     LifecycleObserver {
 
@@ -54,6 +57,11 @@ class AppLifeCycleObserver @Inject constructor(
     fun pausingApp() {
         isInForeground = false
         workManager.onAppMovedToBackground()
+        if (!vpnConnectionStateManager.isVPNActive()) {
+            applicationScope.launch {
+               proxyDNSManager.stopControlD()
+            }
+        }
         logger.debug("----------App going to background.--------\n")
     }
 
