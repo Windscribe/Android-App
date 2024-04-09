@@ -1,0 +1,109 @@
+# Process this file with autom4te to create testsuite. -*- Autotest -*-
+
+# Test suite for termux-elf-cleaner.
+# Copyright 2022 Termux
+
+# This file is part of termux-elf-cleaner.
+
+# termux-elf-cleaner is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 3 of the
+# License, or (at your option) any later version.
+
+# termux-elf-cleaner is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+
+# Ensure that programs cleaned for api level 21 have the DT_FLAGS we
+# expect
+
+AT_BANNER([API level 21])
+
+AT_SETUP([aarch64])
+AT_KEYWORDS([dynamic-section api-21 aarch64])
+AT_CHECK([cp ${top_srcdir}/tests/curl-7.83.1-aarch64-original .
+${abs_top_builddir}/termux-elf-cleaner --api-level 21 curl-7.83.1-aarch64-original],
+[0],
+[AT_PACKAGE_NAME: Removing version section from 'curl-7.83.1-aarch64-original'
+AT_PACKAGE_NAME: Removing version section from 'curl-7.83.1-aarch64-original'
+AT_PACKAGE_NAME: Removing the DT_RUNPATH dynamic section entry from 'curl-7.83.1-aarch64-original'
+AT_PACKAGE_NAME: Removing the DT_VERNEEDNUM dynamic section entry from 'curl-7.83.1-aarch64-original'
+AT_PACKAGE_NAME: Removing the DT_VERNEEDED dynamic section entry from 'curl-7.83.1-aarch64-original'
+AT_PACKAGE_NAME: Removing the DT_VERSYM dynamic section entry from 'curl-7.83.1-aarch64-original'
+AT_PACKAGE_NAME: Replacing unsupported DF_1_* flags 134217737 with 1 in 'curl-7.83.1-aarch64-original'
+AT_PACKAGE_NAME: Removing the DT_GNU_HASH dynamic section entry from 'curl-7.83.1-aarch64-original'
+])
+AT_CHECK([
+cmp --silent curl-7.83.1-aarch64-original ${top_srcdir}/tests/curl-7.83.1-aarch64-api21-cleaned
+],
+[0],
+[])
+AT_CLEANUP
+
+AT_SETUP([arm])
+AT_KEYWORDS([dynamic-section api-21 arm])
+AT_CHECK([cp ${top_srcdir}/tests/curl-7.83.1-arm-original .
+${abs_top_builddir}/termux-elf-cleaner --api-level 21 curl-7.83.1-arm-original],
+[0],
+[AT_PACKAGE_NAME: Removing version section from 'curl-7.83.1-arm-original'
+AT_PACKAGE_NAME: Removing version section from 'curl-7.83.1-arm-original'
+AT_PACKAGE_NAME: Removing the DT_RUNPATH dynamic section entry from 'curl-7.83.1-arm-original'
+AT_PACKAGE_NAME: Removing the DT_VERNEEDNUM dynamic section entry from 'curl-7.83.1-arm-original'
+AT_PACKAGE_NAME: Removing the DT_VERNEEDED dynamic section entry from 'curl-7.83.1-arm-original'
+AT_PACKAGE_NAME: Removing the DT_VERSYM dynamic section entry from 'curl-7.83.1-arm-original'
+AT_PACKAGE_NAME: Replacing unsupported DF_1_* flags 134217737 with 1 in 'curl-7.83.1-arm-original'
+AT_PACKAGE_NAME: Removing the DT_GNU_HASH dynamic section entry from 'curl-7.83.1-arm-original'
+])
+AT_CHECK([
+cmp --silent curl-7.83.1-arm-original ${top_srcdir}/tests/curl-7.83.1-arm-api21-cleaned
+],
+[0],
+[])
+AT_CLEANUP
+
+AT_SETUP([i686])
+AT_KEYWORDS([dynamic-section api-21 i686])
+AT_CHECK([cp ${top_srcdir}/tests/curl-7.83.1-i686-original .
+${abs_top_builddir}/termux-elf-cleaner --api-level 21 curl-7.83.1-i686-original],
+[0],
+[AT_PACKAGE_NAME: Removing version section from 'curl-7.83.1-i686-original'
+AT_PACKAGE_NAME: Removing version section from 'curl-7.83.1-i686-original'
+AT_PACKAGE_NAME: Removing the DT_RUNPATH dynamic section entry from 'curl-7.83.1-i686-original'
+AT_PACKAGE_NAME: Removing the DT_VERNEEDNUM dynamic section entry from 'curl-7.83.1-i686-original'
+AT_PACKAGE_NAME: Removing the DT_VERNEEDED dynamic section entry from 'curl-7.83.1-i686-original'
+AT_PACKAGE_NAME: Removing the DT_VERSYM dynamic section entry from 'curl-7.83.1-i686-original'
+AT_PACKAGE_NAME: Replacing unsupported DF_1_* flags 134217737 with 1 in 'curl-7.83.1-i686-original'
+AT_PACKAGE_NAME: Removing the DT_GNU_HASH dynamic section entry from 'curl-7.83.1-i686-original'
+])
+AT_CHECK([
+cmp --silent curl-7.83.1-i686-original ${top_srcdir}/tests/curl-7.83.1-i686-api21-cleaned
+],
+[0],
+[])
+AT_CLEANUP
+
+AT_SETUP([x86_64])
+AT_KEYWORDS([dynamic-section api-21 x86_64])
+AT_CHECK([cp ${top_srcdir}/tests/curl-7.83.1-x86_64-original .
+${abs_top_builddir}/termux-elf-cleaner --api-level 21 curl-7.83.1-x86_64-original],
+[0],
+[AT_PACKAGE_NAME: Removing version section from 'curl-7.83.1-x86_64-original'
+AT_PACKAGE_NAME: Removing version section from 'curl-7.83.1-x86_64-original'
+AT_PACKAGE_NAME: Removing the DT_RUNPATH dynamic section entry from 'curl-7.83.1-x86_64-original'
+AT_PACKAGE_NAME: Removing the DT_VERNEEDNUM dynamic section entry from 'curl-7.83.1-x86_64-original'
+AT_PACKAGE_NAME: Removing the DT_VERNEEDED dynamic section entry from 'curl-7.83.1-x86_64-original'
+AT_PACKAGE_NAME: Removing the DT_VERSYM dynamic section entry from 'curl-7.83.1-x86_64-original'
+AT_PACKAGE_NAME: Replacing unsupported DF_1_* flags 134217737 with 1 in 'curl-7.83.1-x86_64-original'
+AT_PACKAGE_NAME: Removing the DT_GNU_HASH dynamic section entry from 'curl-7.83.1-x86_64-original'
+])
+AT_CHECK([
+cmp --silent curl-7.83.1-x86_64-original ${top_srcdir}/tests/curl-7.83.1-x86_64-api21-cleaned
+],
+[0],
+[])
+AT_CLEANUP

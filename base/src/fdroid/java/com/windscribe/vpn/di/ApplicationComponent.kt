@@ -8,6 +8,7 @@ import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.api.*
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
+import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.ikev2.IKev2VpnBackend
@@ -80,6 +81,7 @@ interface ApplicationComponent {
     val shortcutStateManager: ShortcutStateManager
     val receiptValidator: ReceiptValidator
     val firebaseManager: FirebaseManager
+    val proxyDNSManager: ProxyDNSManager
 
     //Repository
     val staticIpRepository: StaticIpRepository

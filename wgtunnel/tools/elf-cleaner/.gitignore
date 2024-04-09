@@ -1,0 +1,15 @@
+# In case of in-src build:
+elf-cleaner
+# In case of out-of-src build in a directory build/:
+build/
+
+*~
+
+Makefile.in
+aclocal.m4
+autom4te.cache/
+compile
+configure
+depcomp
+install-sh
+missing

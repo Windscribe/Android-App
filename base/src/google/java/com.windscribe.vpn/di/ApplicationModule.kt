@@ -4,6 +4,8 @@
 package com.windscribe.vpn.di
 
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.backend.AndroidDeviceIdentity
+import com.windscribe.vpn.backend.AndroidDeviceIdentityImpl
 import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.services.ReceiptValidator
 import com.windscribe.vpn.services.firebasecloud.FireBaseManagerImpl
@@ -30,5 +32,11 @@ class ApplicationModule(override var windscribeApp: Windscribe) : BaseApplicatio
     @Singleton
     fun providesFirebaseManager(): FirebaseManager {
         return FireBaseManagerImpl(windscribeApp)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAndroidIdentity(): AndroidDeviceIdentity {
+        return AndroidDeviceIdentityImpl(windscribeApp)
     }
 }

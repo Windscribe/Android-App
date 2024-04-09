@@ -21,6 +21,8 @@ package org.strongswan.android.data;
 
 import android.text.TextUtils;
 
+import com.windscribe.common.DNSDetails;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.SortedSet;
@@ -48,6 +50,7 @@ public class VpnProfile implements Cloneable, Serializable
 	private VpnType mVpnType;
 	private UUID mUUID;
 	private long mId = -1;
+	private DNSDetails dnsDetails;
 
 	public enum SelectedAppsHandling
 	{
@@ -329,6 +332,14 @@ public class VpnProfile implements Cloneable, Serializable
 	public void setFlags(Integer flags)
 	{
 		this.mFlags = flags;
+	}
+
+	public void setDnsDetails(DNSDetails dnsDetails) {
+		this.dnsDetails = dnsDetails;
+	}
+
+	public DNSDetails getDnsDetails() {
+		return dnsDetails;
 	}
 
 	@Override

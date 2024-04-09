@@ -13,6 +13,7 @@ android {
     buildFeatures {
         dataBinding true
         viewBinding true
+        buildConfig true
     }
     compileSdkVersion rootProject.appCompiledSdk
     defaultConfig {
@@ -94,8 +95,9 @@ dependencies {
     //VPN
     implementation project(path: ':openvpn')
     implementation project(path: ':strongswan')
-    api 'com.wireguard.android:tunnel:1.0.20230427'
-    implementation 'com.github.Windscribe:wstunnel:1.0.3'
+    implementation project(path: ':wstunnel')
+    implementation project(path: ':common')
+    api project(path: ':wgtunnel')
     //Rxjava
     api 'io.reactivex.rxjava2:rxandroid:2.1.1'
     api 'io.reactivex.rxjava2:rxjava:2.2.13'
@@ -151,5 +153,7 @@ dependencies {
     // Google only dependencies
     googleApi "com.google.firebase:firebase-messaging:$fireBase"
     googleApi files("$projectDir/src/google/libs/in-app-purchasing-2.0.76.jar")
+    implementation files("$projectDir/src/main/libs/ctrld.aar")
     googleApi 'com.android.billingclient:billing:5.0.0'
+    googleApi "com.google.android.gms:play-services-appset:16.0.2"
 }

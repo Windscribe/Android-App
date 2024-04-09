@@ -57,3 +57,6 @@
 
 #Lifecycle
 -keep class androidx.lifecycle.** {*;}
+#Common module dependecies.
+-keep class org.pcap4j.** { *; }
+-keep class org.minidns.** { *; }

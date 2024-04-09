@@ -9,6 +9,7 @@ import android.os.Build
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.autoconnection.ProtocolInformation
+import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VpnBackend
 import com.windscribe.vpn.repository.AdvanceParameterRepository
@@ -31,7 +32,8 @@ class OpenVPNBackend(
     var networkInfoManager: NetworkInfoManager,
     vpnStateManager: VPNConnectionStateManager,
     var serviceInteractor: ServiceInteractor,
-    advanceParameterRepository: AdvanceParameterRepository
+    advanceParameterRepository: AdvanceParameterRepository,
+    val proxyDNSManager: ProxyDNSManager
 ) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager, advanceParameterRepository),
     VpnStatus.StateListener, VpnStatus.ByteCountListener {
 
@@ -63,11 +65,17 @@ class OpenVPNBackend(
         this.connectionId = connectionId
         vpnLogger.debug("Starting Open VPN Service.")
         startConnectionJob()
-        startOpenVPN(null)
+        scope.launch {
+            proxyDNSManager.startControlDIfRequired()
+            startOpenVPN(null)
+        }
     }
 
     override suspend fun disconnect(error: VPNState.Error?) {
         this.error = error
+        if (proxyDNSManager.invalidConfig){
+            proxyDNSManager.stopControlD()
+        }
         if (active) {
             stickyDisconnectEvent = false
             vpnLogger.debug("Stopping Open VPN Service.")

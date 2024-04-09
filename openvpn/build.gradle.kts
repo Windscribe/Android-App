@@ -29,6 +29,10 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+        aidl = true
+    }
     testOptions.unitTests.isIncludeAndroidResources = true
 
     externalNativeBuild {
@@ -105,8 +109,8 @@ android {
     }
 
     compileOptions {
-        targetCompatibility = JavaVersion.VERSION_1_8
-        sourceCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.current()
+        targetCompatibility = JavaVersion.current()
     }
 
     splits {
@@ -189,4 +193,5 @@ dependencies {
     testImplementation("org.mockito:mockito-core:3.3.3")
     testImplementation("org.robolectric:robolectric:4.3.1")
     testImplementation("androidx.test:core:1.2.0")
+    implementation(project(":common"))
 }
