@@ -25,6 +25,8 @@ import com.windscribe.vpn.apppreference.AppPreferenceHelper
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.SecurePreferences
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
+import com.windscribe.vpn.backend.AndroidDeviceIdentity
+import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.ikev2.IKev2VpnBackend
@@ -248,9 +250,16 @@ open class BaseApplicationModule {
             networkInfoManager: NetworkInfoManager,
             vpnConnectionStateManager: VPNConnectionStateManager,
             serviceInteractor: ServiceInteractor,
-            advanceParameterRepository: AdvanceParameterRepository
+            advanceParameterRepository: AdvanceParameterRepository,
+            proxyDNSManager: ProxyDNSManager
     ): IKev2VpnBackend {
-        return IKev2VpnBackend(coroutineScope, networkInfoManager, vpnConnectionStateManager, serviceInteractor, advanceParameterRepository)
+        return IKev2VpnBackend(coroutineScope, networkInfoManager, vpnConnectionStateManager, serviceInteractor, advanceParameterRepository, proxyDNSManager)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCtrldManager(coroutineScope: CoroutineScope, preferencesHelper: PreferencesHelper, androidDeviceIdentity: AndroidDeviceIdentity): ProxyDNSManager {
+        return ProxyDNSManager(coroutineScope, preferencesHelper, androidDeviceIdentity)
     }
 
     @Provides
@@ -329,7 +338,8 @@ open class BaseApplicationModule {
             networkInfoManager: NetworkInfoManager,
             vpnConnectionStateManager: VPNConnectionStateManager,
             serviceInteractor: ServiceInteractor,
-            advanceParameterRepository: AdvanceParameterRepository
+            advanceParameterRepository: AdvanceParameterRepository,
+            proxyDNSManager: ProxyDNSManager
     ): OpenVPNBackend {
         return OpenVPNBackend(
                 goBackend,
@@ -337,7 +347,8 @@ open class BaseApplicationModule {
                 networkInfoManager,
                 vpnConnectionStateManager,
                 serviceInteractor,
-                advanceParameterRepository)
+                advanceParameterRepository,
+                proxyDNSManager)
     }
 
     @Provides
@@ -479,9 +490,10 @@ open class BaseApplicationModule {
     fun provideVPNProfileCreator(
             preferencesHelper: PreferencesHelper,
             wgConfigRepository: WgConfigRepository,
-            proxyTunnelManager: ProxyTunnelManager
+            proxyTunnelManager: ProxyTunnelManager,
+            proxyDNSManager: ProxyDNSManager
     ): VPNProfileCreator {
-        return VPNProfileCreator(preferencesHelper, wgConfigRepository, proxyTunnelManager)
+        return VPNProfileCreator(preferencesHelper, wgConfigRepository, proxyTunnelManager, proxyDNSManager)
     }
 
     @Provides
@@ -536,7 +548,8 @@ open class BaseApplicationModule {
             userRepository: Lazy<UserRepository>,
             deviceStateManager: DeviceStateManager,
             preferencesHelper: PreferencesHelper,
-            advanceParameterRepository: AdvanceParameterRepository
+            advanceParameterRepository: AdvanceParameterRepository,
+            proxyDNSManager: ProxyDNSManager
     ): WireguardBackend {
         return WireguardBackend(
                 goBackend,
@@ -548,7 +561,7 @@ open class BaseApplicationModule {
                 userRepository,
                 deviceStateManager,
                 preferencesHelper,
-                advanceParameterRepository)
+                advanceParameterRepository, proxyDNSManager)
     }
 
     @Provides
@@ -591,9 +604,11 @@ open class BaseApplicationModule {
     fun providesAppLifeCycleObserver(
             workManager: WindScribeWorkManager,
             networkInfoManager: NetworkInfoManager,
-            domainFailOverManager: DomainFailOverManager
+            domainFailOverManager: DomainFailOverManager,
+            vpnConnectionStateManager: VPNConnectionStateManager,
+            proxyDNSManager: ProxyDNSManager
     ): AppLifeCycleObserver {
-        return AppLifeCycleObserver(workManager, networkInfoManager, domainFailOverManager)
+        return AppLifeCycleObserver(workManager, networkInfoManager, domainFailOverManager, vpnConnectionStateManager, proxyDNSManager)
     }
 
     @Provides

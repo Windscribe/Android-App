@@ -29,4 +29,6 @@ interface ConnectionSettingsView {
     fun setKeepAliveContainerVisibility(isAutoKeepAlive: Boolean)
     fun setAntiCensorshipToggle(toggleDrawable: Int)
     fun setAutoConnectToggle(toggleDrawable: Int)
+    fun setupDNSModeAdapter(savedValue: String, dnsModes: Array<String>)
+    fun setCustomDnsAddress(dnsAddress: String)
 }
