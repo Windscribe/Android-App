@@ -133,6 +133,7 @@ interface PreferencesHelper {
     fun setUserIntendedDisconnect(userIntendedDisconnect: Boolean)
     fun userIsInGhostMode(): Boolean
     var alreadyShownShareAppLink: Boolean
-
     var fakeTrafficVolume:FakeTrafficVolume
+    var dnsMode: String
+    var dnsAddress: String?
 }

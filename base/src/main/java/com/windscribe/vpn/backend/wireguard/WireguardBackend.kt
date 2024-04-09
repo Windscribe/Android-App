@@ -18,6 +18,7 @@ import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.ProtocolInformation
+import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
@@ -70,11 +71,12 @@ class WireguardBackend(
         val userRepository: Lazy<UserRepository>,
         val deviceStateManager: DeviceStateManager,
         val preferencesHelper: PreferencesHelper,
-        advanceParameterRepository: AdvanceParameterRepository
+        advanceParameterRepository: AdvanceParameterRepository,
+        val proxyDNSManager: ProxyDNSManager
 ) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager, advanceParameterRepository) {
 
     var service: WireGuardWrapperService? = null
-    var connectionStateJob: Job? = null
+    private var connectionStateJob: Job? = null
     private var connectionHealthJob: Job? = null
     private var deviceIdleJob: Job? = null
     private var appActivationJob: Job? = null
@@ -186,6 +188,7 @@ class WireguardBackend(
         this.connectionId = connectionId
         startConnectionJob()
         scope.launch {
+            proxyDNSManager.startControlDIfRequired()
             vpnLogger.debug("Getting WireGuard profile.")
             Util.getProfile<WireGuardVpnProfile>()?.let {
                 withContext(Dispatchers.IO) {
@@ -210,6 +213,9 @@ class WireguardBackend(
 
     override suspend fun disconnect(error: VPNState.Error?) {
         this.error = error
+        if (proxyDNSManager.invalidConfig){
+            proxyDNSManager.stopControlD()
+        }
         deviceIdleJob?.cancel()
         appActivationJob?.cancel()
         healthJob?.cancel()

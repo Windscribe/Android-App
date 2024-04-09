@@ -8,11 +8,15 @@ import android.content.Context
 import android.net.DhcpInfo
 import android.net.wifi.WifiManager
 import android.util.Base64
+import android.util.Log
 import com.google.gson.Gson
+import com.windscribe.common.DnsType
+import com.windscribe.common.getDNSDetails
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.ProtocolInformation
+import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.Util.saveProfile
 import com.windscribe.vpn.backend.Util.saveSelectedLocation
@@ -25,6 +29,7 @@ import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.commonutils.WindUtilities.ConfigType.WIRE_GUARD
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_VALID_CONFIG_NOT_FOUND
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_CUSTOM
 import com.windscribe.vpn.exceptions.InvalidVPNConfigException
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.model.OpenVPNConnectionInfo
@@ -62,7 +67,8 @@ import javax.inject.Singleton
 class VPNProfileCreator @Inject constructor(
         private val preferencesHelper: PreferencesHelper,
         private val wgConfigRepository: WgConfigRepository,
-        private val proxyTunnelManager: ProxyTunnelManager
+        private val proxyTunnelManager: ProxyTunnelManager,
+        private val proxyDNSManager: ProxyDNSManager
 ) {
 
     private val logger = LoggerFactory.getLogger("profile_creator")
@@ -109,6 +115,18 @@ class VPNProfileCreator @Inject constructor(
             profile.mtu = preferencesHelper.packetSize
         } else {
             profile.mtu = 1300
+        }
+        val dnsDetails = getDNSDetails(appContext,preferencesHelper.dnsMode == DNS_MODE_CUSTOM, preferencesHelper.dnsAddress)
+        dnsDetails.exceptionOrNull()?.let { throwable ->
+            throw throwable
+        }
+        dnsDetails.getOrNull()?.let {
+            proxyDNSManager.dnsDetails = it
+            if (it.type == DnsType.Plain){
+                profile.dnsServers = it.ip
+            } else {
+                profile.dnsDetails = it
+            }
         }
         // Split tunnel
         setSplitMode(profile)
@@ -175,6 +193,19 @@ class VPNProfileCreator @Inject constructor(
                 profile.mAllowedAppsVpn.clear()
             }
             profile.mAllowedAppsVpnAreDisallowed = true
+        }
+        val dnsDetails = getDNSDetails(appContext,preferencesHelper.dnsMode == DNS_MODE_CUSTOM, preferencesHelper.dnsAddress)
+        dnsDetails.exceptionOrNull()?.let { throwable ->
+            throw throwable
+        }
+        dnsDetails.getOrNull()?.let {
+            proxyDNSManager.dnsDetails = it
+            if (it.type == DnsType.Plain){
+                profile.mOverrideDNS = true
+                profile.mDNS1 = it.ip
+            } else {
+                profile.dnsDetails = it
+            }
         }
 
         // MTU
@@ -470,7 +501,18 @@ class VPNProfileCreator @Inject constructor(
         val builder = Builder()
         builder.parsePrivateKey(wgRemoteParams.privateKey)
         builder.parseAddresses(wgRemoteParams.address)
-        builder.parseDnsServers(wgRemoteParams.dns)
+        val dnsDetails = getDNSDetails(appContext,preferencesHelper.dnsMode == DNS_MODE_CUSTOM, preferencesHelper.dnsAddress)
+        dnsDetails.exceptionOrNull()?.let { throwable ->
+            throw throwable
+        }
+        dnsDetails.getOrNull()?.let {
+            proxyDNSManager.dnsDetails = it
+            if (it.type == DnsType.Plain){
+                builder.parseDnsServers(it.ip)
+            } else {
+                builder.parseDnsServers(wgRemoteParams.dns)
+            }
+        }
         if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
             builder.setMtu(preferencesHelper.packetSize)
         }

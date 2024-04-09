@@ -7,6 +7,7 @@ package com.windscribe.vpn.backend.ikev2
 import android.app.Notification
 import android.content.Intent
 import android.net.VpnService
+import android.util.Log
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.Util
@@ -45,6 +46,7 @@ class CharonVpnServiceWrapper : CharonVpnService() {
 
     override fun onCreate() {
         appContext.serviceComponent.inject(this)
+        Log.i("GoLog", "Setting service")
         super.onCreate()
     }
 

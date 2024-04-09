@@ -4,8 +4,8 @@ apply plugin: 'kotlin-kapt'
 
 android {
     compileOptions {
-        sourceCompatibility 1.8
-        targetCompatibility 1.8
+        sourceCompatibility rootProject.java
+        targetCompatibility rootProject.java
     }
     compileSdkVersion rootProject.appCompiledSdk
     defaultConfig {

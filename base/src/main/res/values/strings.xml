@@ -484,4 +484,8 @@ last chosen location.</string>
     <string name="save">Save</string>
     <string name="clear">Clear</string>
     <string name="enter_1_key_value_per_line">Enter 1 key=value per line.</string>
+    <string name="connected_dns">Connected DNS</string>
+    <string name="custom_dns_address_hint">IP/Doh/Dot</string>
+    <string name="enter_valid_ip_or_url">Enter valid IP or Url</string>
+    <string name="custom_dns_explainer">Select the DNS server while connected to Windscribe. Turn off dnssec/edns when using doh.</string>
 </resources>
