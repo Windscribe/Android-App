@@ -790,7 +790,14 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
     }
 
     override fun onCustomDnsChanged(dns: String) {
-        interactor.getAppPreferenceInterface().dnsAddress = dns
-        proxyDNSManager.invalidConfig = true
+        if (dns != interactor.getAppPreferenceInterface().dnsAddress){
+            interactor.getAppPreferenceInterface().dnsAddress = dns
+            proxyDNSManager.invalidConfig = true
+            interactor.getMainScope().launch {
+                if (!interactor.getVpnConnectionStateManager().isVPNConnected()){
+                    proxyDNSManager.stopControlD()
+                }
+            }
+        }
     }
 }
