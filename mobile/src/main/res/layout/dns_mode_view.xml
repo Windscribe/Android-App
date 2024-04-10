@@ -36,7 +36,7 @@
             android:ellipsize="start"
             android:paddingStart="0dp"
             android:textSize="@dimen/text_size_12"
-            android:inputType="textVisiblePassword"
+            android:inputType="textNoSuggestions"
             android:textColorHint="?attr/wdSecondaryColor"
             android:textColor="?attr/wdSecondaryColor"
             app:layout_constraintStart_toStartOf="parent"
