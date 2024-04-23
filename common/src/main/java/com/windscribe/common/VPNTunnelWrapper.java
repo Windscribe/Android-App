@@ -46,7 +46,7 @@ public class VPNTunnelWrapper {
     private final ByteBuffer socketBuffer = ByteBuffer.allocateDirect(6400);
     private final ParcelFileDescriptor parcelFileDescriptor;
     private final BlockingQueue<Packet> dnsPackets = new LinkedBlockingQueue<>(300);
-    InetSocketAddress controlDAddress = new InetSocketAddress("127.0.0.1", 5354);
+    InetSocketAddress controlDAddress = new InetSocketAddress("127.0.0.1", 5355);
     private ParcelFileDescriptor socketFileDescriptor;
     private ParcelFileDescriptor detachFileDescriptor;
     private DatagramChannel controlDChannel;
