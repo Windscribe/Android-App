@@ -8,8 +8,8 @@ import io.reactivex.Single
 
 interface IApiCallManager {
 
-    fun addUserEmailAddress(extraParams: Map<String, String>? = null): Single<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>>
-    fun checkConnectivityAndIpAddress(extraParams: Map<String, String>? = null): Single<GenericResponseClass<String?, ApiErrorResponse?>>
+    fun addUserEmailAddress(email: String): Single<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>>
+    fun checkConnectivityAndIpAddress(): Single<GenericResponseClass<GetMyIpResponse?, ApiErrorResponse?>>
     fun getConnectedIp(): Single<GenericResponseClass<String?, ApiErrorResponse?>>
     fun claimAccount(extraParams: Map<String, String>? = null): Single<GenericResponseClass<ClaimAccountResponse?, ApiErrorResponse?>>
 
@@ -36,7 +36,7 @@ interface IApiCallManager {
     fun getSessionGenericInConnectedState(extraParams: Map<String, String>? = null): Single<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>>
     fun getStaticIpList(extraParams: Map<String, String>? = null): Single<GenericResponseClass<StaticIPResponse?, ApiErrorResponse?>>
     fun logUserIn(extraParams: Map<String, String>? = null): Single<GenericResponseClass<UserLoginResponse?, ApiErrorResponse?>>
-    fun getWebSession(extraParams: Map<String, String>? = null): Single<GenericResponseClass<WebSession?, ApiErrorResponse?>>
+    fun getWebSession(): Single<GenericResponseClass<WebSession?, ApiErrorResponse?>>
     fun recordAppInstall(extraParams: Map<String, String>? = null): Single<GenericResponseClass<String?, ApiErrorResponse?>>
     fun resendUserEmailAddress(extraParams: Map<String, String>? = null): Single<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>>
     fun sendTicket(map: Map<String, String>? = null): Single<GenericResponseClass<TicketResponse?, ApiErrorResponse?>>

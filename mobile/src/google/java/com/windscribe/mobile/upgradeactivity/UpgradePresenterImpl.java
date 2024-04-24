@@ -831,9 +831,8 @@ public class UpgradePresenterImpl implements UpgradePresenter {
     public void onRegionalPlanSelected(String url) {
         mUpgradeView.showProgressBar("Getting Web Session");
         presenterLog.info("Requesting web session...");
-        Map<String, String> webSessionMap = CreateHashMap.INSTANCE.createWebSessionMap();
         mUpgradeInteractor.getCompositeDisposable()
-                .add(mUpgradeInteractor.getApiCallManager().getWebSession(webSessionMap)
+                .add(mUpgradeInteractor.getApiCallManager().getWebSession()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeWith(

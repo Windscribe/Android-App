@@ -14,6 +14,7 @@ import com.windscribe.vpn.backend.VPNState.Status.Connected
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.repository.UserRepository
+import com.wsnet.lib.WSNet
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,6 +57,7 @@ class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionMan
         val start = AtomicBoolean(false)
         scope.launch {
             state.collectLatest {
+                WSNet.instance().setIsConnectedToVpnState(isVPNConnected())
                 if (start.getAndSet(true)) {
                     logger.debug("VPN state changed to ${it.status}")
                 } else {

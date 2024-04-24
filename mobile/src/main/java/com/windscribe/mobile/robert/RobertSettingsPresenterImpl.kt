@@ -54,9 +54,8 @@ class RobertSettingsPresenterImpl(
     override fun onCustomRulesClick() {
         robertSettingsView.setWebSessionLoading(true)
         mPresenterLog.info("Opening robert rules page in browser...")
-        val webSessionMap = createWebSessionMap()
         interactor.getCompositeDisposable()
-            .add(interactor.getApiCallManager().getWebSession(webSessionMap)
+            .add(interactor.getApiCallManager().getWebSession()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response: GenericResponseClass<WebSession?, ApiErrorResponse?> ->
