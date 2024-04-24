@@ -1745,8 +1745,8 @@ class WindscribePresenterImpl @Inject constructor(
                             .subscribe({ response ->
                                 response.dataClass?.let {
                                     logger.info("Setting up user ip address...")
-                                    if (validIpAddress(it.trim())) {
-                                        windscribeView.setIpAddress(getModifiedIpAddress(it))
+                                    if (validIpAddress(it.userIp)) {
+                                        windscribeView.setIpAddress(getModifiedIpAddress(it.userIp))
                                     }
                                 }
                                 response.errorClass?.let {
@@ -2281,8 +2281,8 @@ class WindscribePresenterImpl @Inject constructor(
                             .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                             .subscribe { response, _ ->
                                 response?.dataClass?.let { ip ->
-                                    if (validIpAddress(ip.trim())) {
-                                        val updatedIpAddress = getModifiedIpAddress(ip.trim())
+                                    if (validIpAddress(ip.userIp)) {
+                                        val updatedIpAddress = getModifiedIpAddress(ip.userIp)
                                         interactor.getAppPreferenceInterface().saveResponseStringData(
                                                 PreferencesKeyConstants.USER_IP, updatedIpAddress
                                         )
