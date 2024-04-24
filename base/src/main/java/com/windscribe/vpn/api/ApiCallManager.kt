@@ -37,6 +37,7 @@ import com.windscribe.vpn.api.response.WgConnectResponse
 import com.windscribe.vpn.api.response.WgInitResponse
 import com.windscribe.vpn.api.response.XPressLoginCodeResponse
 import com.windscribe.vpn.api.response.XPressLoginVerifyResponse
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.ApiConstants.APP_VERSION
 import com.windscribe.vpn.constants.ApiConstants.PLATFORM
@@ -48,7 +49,9 @@ import com.windscribe.vpn.constants.NetworkKeyConstants.API_HOST_GENERIC
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.exceptions.WindScribeException
+import com.wsnet.lib.WSNetServerAPI
 import io.reactivex.Single
+import io.reactivex.SingleEmitter
 import okhttp3.ResponseBody
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
@@ -59,7 +62,7 @@ import javax.inject.Singleton
 
 
 @Singleton
-open class ApiCallManager @Inject constructor(private val apiFactory: WindApiFactory, private val customApiFactory: WindCustomApiFactory, private val hashedDomain: String, private val authorizationGenerator: AuthorizationGenerator, private var accessIps: List<String>?, private var primaryApiEndpoints: Map<HostType, String>, private var secondaryApiEndpoints: Map<HostType, String>, private val domainFailOverManager: DomainFailOverManager) : IApiCallManager {
+open class ApiCallManager @Inject constructor(private val apiFactory: WindApiFactory, private val customApiFactory: WindCustomApiFactory, private val hashedDomain: String, private val authorizationGenerator: AuthorizationGenerator, private var accessIps: List<String>?, private var primaryApiEndpoints: Map<HostType, String>, private var secondaryApiEndpoints: Map<HostType, String>, private val domainFailOverManager: DomainFailOverManager, val wsNetServerAPI: WSNetServerAPI, val preferencesHelper: PreferencesHelper) : IApiCallManager {
 
     private val logger = LoggerFactory.getLogger("api_call")
 
@@ -301,25 +304,41 @@ open class ApiCallManager @Inject constructor(private val apiFactory: WindApiFac
         }
     }
 
-    override fun getWebSession(extraParams: Map<String, String>?): Single<GenericResponseClass<WebSession?, ApiErrorResponse?>> {
-        return call(extraParams, modelType = WebSession::class.java) { apiService, params, _ ->
-            apiService.getWebSession(params)
+    private fun<T> checkSession(sub: SingleEmitter<GenericResponseClass<T?, ApiErrorResponse?>>): Boolean {
+        return if (preferencesHelper.sessionHash == null) {
+            sub.onError(WindScribeException("User is not logged In."))
+            true
+        }  else {
+            false
         }
     }
 
-    override fun addUserEmailAddress(extraParams: Map<String, String>?): Single<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>> {
-        return call(extraParams, modelType = AddEmailResponse::class.java) { apiService, params, _ ->
-            apiService.postUserEmailAddress(params)
-        }
-    }
-
-    override fun checkConnectivityAndIpAddress(extraParams: Map<String, String>?): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
-        return call(authRequired = true, hostType = HostType.CHECK_IP, modelType = String::class.java) { apiService, _, directIp ->
-            if (directIp) {
-                apiService.connectivityTestAndIpDirectIp()
-            } else {
-                apiService.connectivityTestAndIp()
+    override fun getWebSession(): Single<GenericResponseClass<WebSession?, ApiErrorResponse?>> {
+        return Single.create { sub ->
+            if (checkSession(sub)) return@create
+            val callback = wsNetServerAPI.webSession(preferencesHelper.sessionHash) { code, json ->
+                buildResponse(sub, code, json, WebSession::class.java)
             }
+            sub.setCancellable { callback.cancel() }
+        }
+    }
+
+    override fun addUserEmailAddress(email: String): Single<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>> {
+        return Single.create { sub ->
+            if (checkSession(sub)) return@create
+            val callback = wsNetServerAPI.addEmail(preferencesHelper.sessionHash, email) { code, json ->
+                buildResponse(sub, code, json, AddEmailResponse::class.java)
+            }
+            sub.setCancellable { callback.cancel() }
+        }
+    }
+
+    override fun checkConnectivityAndIpAddress(): Single<GenericResponseClass<GetMyIpResponse?, ApiErrorResponse?>> {
+        return Single.create { sub ->
+            val callback = wsNetServerAPI.myIP { code, json ->
+                buildResponse(sub, code, json, GetMyIpResponse::class.java)
+            }
+            sub.setCancellable { callback.cancel() }
         }
     }
 
@@ -604,5 +623,31 @@ open class ApiCallManager @Inject constructor(private val apiFactory: WindApiFac
      */
     private fun ignoreDomainForRestrictedRegion(domainToTry: DomainType, domainTypeToIgnore: Array<DomainType>): Boolean {
         return appContext.isRegionRestricted && domainTypeToIgnore.contains(domainToTry)
+    }
+
+    private fun <T> buildResponse(sub: SingleEmitter<GenericResponseClass<T?, ApiErrorResponse?>>, code: Int, responseDataString: String, modelType: Class<T>) {
+        when (code) {
+            1 -> sub.onError(WindScribeException("Unknown network error."))
+            2 -> sub.onError(WindScribeException("No network available."))
+            3 -> sub.onError(WindScribeException("Server returned incorrect response."))
+            4 -> sub.onError(WindScribeException("Unable to reach server."))
+            else -> {
+                try {
+                    if (modelType.simpleName.equals("String")) {
+                        sub.onSuccess(GenericResponseClass(responseDataString as T, null))
+                    } else {
+                        val dataObject = JsonResponseConverter.getResponseClass(JSONObject(responseDataString), modelType)
+                        sub.onSuccess(GenericResponseClass(dataObject, null))
+                    }
+                } catch (e: Exception) {
+                    try {
+                        val errorObject = JsonResponseConverter.getErrorClass(JSONObject(responseDataString))
+                        sub.onSuccess(GenericResponseClass(null, errorObject))
+                    } catch (e: Exception) {
+                        sub.onError(WindScribeException("Server returned incorrect response."))
+                    }
+                }
+            }
+        }
     }
 }

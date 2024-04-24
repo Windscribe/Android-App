@@ -7,6 +7,7 @@ import androidx.core.app.NotificationCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.ServiceInteractorImpl
 import com.windscribe.vpn.Windscribe
@@ -37,6 +38,7 @@ import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.backend.wireguard.WireguardBackend
 import com.windscribe.vpn.backend.wireguard.WireguardContextWrapper
+import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants
@@ -83,10 +85,13 @@ import com.windscribe.vpn.state.ShortcutStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import com.wireguard.android.backend.GoBackend
+import com.wsnet.lib.WSNet
+import com.wsnet.lib.WSNetServerAPI
 import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import net.grandcentrix.tray.AppPreferences
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
@@ -574,7 +579,9 @@ open class BaseApplicationModule {
             @Named("accessIpList") accessIpList: List<String>,
             @Named("PrimaryApiEndpointMap") primaryApiEndpointMap: Map<HostType, String>,
             @Named("SecondaryApiEndpointMap") secondaryApiEndpointMap: Map<HostType, String>,
-            domainFailOverManager: DomainFailOverManager
+            domainFailOverManager: DomainFailOverManager,
+            wsNetServerAPI: WSNetServerAPI,
+            preferencesHelper: PreferencesHelper,
     ): IApiCallManager {
         return ApiCallManager(
                 windApiFactory,
@@ -584,7 +591,9 @@ open class BaseApplicationModule {
                 accessIpList,
                 primaryApiEndpointMap,
                 secondaryApiEndpointMap,
-                domainFailOverManager
+                domainFailOverManager,
+                wsNetServerAPI,
+                preferencesHelper
         )
     }
 
@@ -856,5 +865,26 @@ open class BaseApplicationModule {
     @Singleton
     fun providesAdvanceParameterRepository(scope: CoroutineScope, preferencesHelper: PreferencesHelper): AdvanceParameterRepository {
         return AdvanceParameterRepositoryImpl(scope, preferencesHelper)
+    }
+
+    @Provides
+    @Singleton
+    fun providesWsNetServerApi(wsNet: WSNet): WSNetServerAPI {
+        return wsNet.serverAPI()
+    }
+
+    @Provides
+    @Singleton
+    fun providesWsNet(preferencesHelper: PreferencesHelper, deviceStateManager: DeviceStateManager): WSNet {
+        WSNet.initialize("android", WindUtilities.getVersionName(), BuildConfig.DEV, preferencesHelper.wsNetSettings)
+        val networkListener = object: DeviceStateManager.DeviceStateListener {
+            override fun onNetworkStateChanged() {
+                super.onNetworkStateChanged()
+                WSNet.instance().setConnectivityState(WindUtilities.isOnline())
+            }
+        }
+        WSNet.instance().setConnectivityState(WindUtilities.isOnline())
+        deviceStateManager.addListener(networkListener)
+        return WSNet.instance()
     }
 }
