@@ -223,12 +223,13 @@ public class UpgradePresenterImpl implements UpgradePresenter {
         presenterLog.info("Getting billing plans...");
         if (mUpgradeInteractor != null && mUpgradeView != null) {
             final Map<String, String> billingPlanMap = new HashMap<>();
+            String promoCode = "";
             if (mPushNotificationAction != null) {
-                billingPlanMap.put(PROMO_CODE, mPushNotificationAction.getPromoCode());
+                promoCode = mPushNotificationAction.getPromoCode();
             }
             mUpgradeInteractor.getCompositeDisposable().add(
                     mUpgradeInteractor.getApiCallManager()
-                            .getBillingPlans(billingPlanMap)
+                            .getBillingPlans(promoCode)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(this::onBillingResponse, this::onBillingResponseError));
