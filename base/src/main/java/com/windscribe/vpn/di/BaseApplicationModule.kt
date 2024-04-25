@@ -573,25 +573,11 @@ open class BaseApplicationModule {
     @Singleton
     fun providesApiCallManagerInterface(
             windApiFactory: WindApiFactory,
-            windCustomApiFactory: WindCustomApiFactory,
-            @Named("backupEndPoint") backupEndpoint: String,
-            authorizationGenerator: AuthorizationGenerator,
-            @Named("accessIpList") accessIpList: List<String>,
-            @Named("PrimaryApiEndpointMap") primaryApiEndpointMap: Map<HostType, String>,
-            @Named("SecondaryApiEndpointMap") secondaryApiEndpointMap: Map<HostType, String>,
-            domainFailOverManager: DomainFailOverManager,
             wsNetServerAPI: WSNetServerAPI,
             preferencesHelper: PreferencesHelper,
     ): IApiCallManager {
         return ApiCallManager(
                 windApiFactory,
-                windCustomApiFactory,
-                backupEndpoint,
-                authorizationGenerator,
-                accessIpList,
-                primaryApiEndpointMap,
-                secondaryApiEndpointMap,
-                domainFailOverManager,
                 wsNetServerAPI,
                 preferencesHelper
         )

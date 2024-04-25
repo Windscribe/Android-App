@@ -102,7 +102,7 @@ abstract class VpnBackend(
         connectivityTestJob.add(
                 Single.just(true).delay(startDelay, TimeUnit.MILLISECONDS).flatMap {
                     vpnServiceInteractor.apiManager
-                            .getConnectedIp()
+                            .checkConnectivityAndIpAddress()
                             .doOnError {
                                 failedAttemptIndex++
                                 vpnLogger.debug("Failed Attempt: $failedAttemptIndex")
@@ -114,7 +114,7 @@ abstract class VpnBackend(
                         .subscribeOn(Schedulers.io())
                         .subscribe(
                                 { ip ->
-                                    ip.dataClass?.let { it ->
+                                    ip.dataClass?.userIp?.let { it ->
                                         if (Util.validIpAddress(it)) {
                                             val ipAddress: String = Util.getModifiedIpAddress(it.trim { it <= ' ' })
                                             vpnServiceInteractor.preferenceHelper.saveResponseStringData(
