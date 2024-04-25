@@ -23,6 +23,7 @@ import com.windscribe.vpn.billing.GoogleProducts
 import com.windscribe.vpn.billing.PurchaseState
 import com.windscribe.vpn.constants.ApiConstants.PAY_ID
 import com.windscribe.vpn.constants.ApiConstants.PROMO_CODE
+import com.windscribe.vpn.constants.BillingConstants
 import com.windscribe.vpn.constants.BillingConstants.AMAZON_PURCHASED_ITEM
 import com.windscribe.vpn.constants.BillingConstants.AMAZON_PURCHASE_TYPE
 import com.windscribe.vpn.constants.BillingConstants.AMAZON_USER_ID
@@ -253,15 +254,9 @@ class UpgradePresenterImpl @Inject constructor(
         upgradeView.showProgressBar("#Verifying purchase...")
         interactor.getAppPreferenceInterface().saveResponseStringData(PURCHASED_ITEM, purchase.originalJson)
         logger.info("Verifying payment for purchased item: " + purchase.originalJson)
-        val purchaseMap: MutableMap<String, String> = HashMap()
-        // Add purchase maps
-        purchaseMap[GP_PACKAGE_NAME] = purchase.packageName
-        purchaseMap[GP_PRODUCT_ID] = purchase.products[0]
-        purchaseMap[PURCHASE_TOKEN] = purchase.purchaseToken
-        logger.info(purchaseMap.toString())
         interactor.getCompositeDisposable().add(
             interactor.getApiCallManager()
-                .verifyPurchaseReceipt(purchaseMap)
+                .verifyPurchaseReceipt(purchase.purchaseToken, purchase.packageName, purchase.products[0], "", "")
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(
@@ -650,12 +645,8 @@ class UpgradePresenterImpl @Inject constructor(
     }
 
     private fun postPromoPaymentConfirmation(): Completable {
-        val paymentPromoConfirmationMap: MutableMap<String, String> = HashMap()
-        notificationAction?.let {
-            paymentPromoConfirmationMap[PAY_ID] = it.pcpID
-        }
         return interactor.getApiCallManager()
-            .postPromoPaymentConfirmation(paymentPromoConfirmationMap)
+            .postPromoPaymentConfirmation(notificationAction?.pcpID ?: "")
             .onErrorReturn { GenericResponseClass(null, null) }
             .flatMapCompletable { response: GenericResponseClass<GenericSuccess?, ApiErrorResponse?> ->
                 Completable.fromAction {
@@ -757,14 +748,9 @@ class UpgradePresenterImpl @Inject constructor(
     private fun verifyAmazonReceipt(amazonPurchase: AmazonPurchase) {
         logger.debug("Verifying amazon receipt.")
         upgradeView.showProgressBar("#Verifying purchase...")
-        val purchaseMap: MutableMap<String, String> = HashMap()
-        purchaseMap[PURCHASE_TOKEN] = amazonPurchase.receiptId
-        purchaseMap[PURCHASE_TYPE] = AMAZON_PURCHASE_TYPE
-        purchaseMap[AMAZON_USER_ID] = amazonPurchase.userId
-        logger.info(purchaseMap.toString())
         interactor.getCompositeDisposable().add(
             interactor.getApiCallManager()
-                .verifyPurchaseReceipt(purchaseMap)
+                .verifyPurchaseReceipt(amazonPurchase.receiptId, "", "", BillingConstants.AMAZON_PURCHASE_TYPE, amazonPurchase.userId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(

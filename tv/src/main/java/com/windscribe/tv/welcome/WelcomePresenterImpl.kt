@@ -7,9 +7,6 @@ import android.text.TextUtils
 import android.util.Patterns
 import com.windscribe.tv.R
 import com.windscribe.vpn.ActivityInteractor
-import com.windscribe.vpn.api.CreateHashMap.createClaimAccountMap
-import com.windscribe.vpn.api.CreateHashMap.createGhostModeMap
-import com.windscribe.vpn.api.CreateHashMap.createLoginMap
 import com.windscribe.vpn.api.CreateHashMap.createRegistrationMap
 import com.windscribe.vpn.api.CreateHashMap.createVerifyXPressCodeMap
 import com.windscribe.vpn.api.response.*
@@ -63,10 +60,9 @@ class WelcomePresenterImpl @Inject constructor(
     override fun onGenerateCodeClick() {
         logger.debug("user clicked on generate code button.")
         welcomeView.prepareUiForApiCallStart()
-        val xPressLoginMap: Map<String, String> = HashMap()
         interactor.getCompositeDisposable()
             .add(
-                interactor.getApiCallManager().generateXPressLoginCode(xPressLoginMap)
+                interactor.getApiCallManager().generateXPressLoginCode()
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(
@@ -115,16 +111,9 @@ class WelcomePresenterImpl @Inject constructor(
             }
             logger.info("Trying to claim account with provided credentials...")
             welcomeView.prepareUiForApiCallStart()
-            val loginMap: MutableMap<String, String> = createClaimAccountMap(username, password)
-            logger.debug(loginMap.toString())
-            email?.let {
-                if (email.isNotEmpty()) {
-                    loginMap[NetworkKeyConstants.ADD_EMAIL_KEY] = email
-                }
-            }
             interactor.getCompositeDisposable().add(
                 interactor.getApiCallManager()
-                    .claimAccount(loginMap)
+                    .claimAccount(username, password, email ?: "")
                     .doOnSubscribe { welcomeView.updateCurrentProcess("Signing up") }
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -159,11 +148,10 @@ class WelcomePresenterImpl @Inject constructor(
     override fun startGhostAccountSetup() {
         welcomeView.prepareUiForApiCallStart()
         welcomeView.updateCurrentProcess("Signing In")
-        interactor.getCompositeDisposable().add(interactor.getApiCallManager().getReg(null)
+        interactor.getCompositeDisposable().add(interactor.getApiCallManager().getReg()
             .flatMap(Function<GenericResponseClass<RegToken?, ApiErrorResponse?>, SingleSource<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>> label@{ regToken: GenericResponseClass<RegToken?, ApiErrorResponse?> ->
                 regToken.dataClass?.let {
-                    val ghostModeMap = createGhostModeMap(it.token)
-                    return@label interactor.getApiCallManager().signUserIn(ghostModeMap)
+                    return@label interactor.getApiCallManager().signUpUsingToken(it.token)
                 } ?: regToken.errorClass?.let {
                     throw Exception(it.errorMessage)
                 } ?: kotlin.run {
@@ -208,10 +196,9 @@ class WelcomePresenterImpl @Inject constructor(
         if (validateLoginInputs(username, password, "", true)) {
             logger.info("Trying to login with provided credentials...")
             welcomeView.prepareUiForApiCallStart()
-            val loginMap = createLoginMap(username, password, twoFa)
             interactor.getCompositeDisposable().add(
                 interactor.getApiCallManager()
-                    .logUserIn(loginMap)
+                    .logUserIn(username, password, twoFa)
                     .doOnSubscribe { welcomeView.updateCurrentProcess("Signing in...") }
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -266,7 +253,7 @@ class WelcomePresenterImpl @Inject constructor(
             }
             interactor.getCompositeDisposable().add(
                 interactor.getApiCallManager()
-                    .signUserIn(loginMap)
+                    .signUserIn(username, password, null, email)
                     .doOnSubscribe { welcomeView.updateCurrentProcess("Signing up") }
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -303,11 +290,8 @@ class WelcomePresenterImpl @Inject constructor(
 
     fun startXPressLoginCodeVerifier(xPressLoginCodeResponse: XPressLoginCodeResponse) {
         val startTime = System.currentTimeMillis()
-        val xPressLoginMap = createVerifyXPressCodeMap(
-            xPressLoginCodeResponse.xPressLoginCode, xPressLoginCodeResponse.signature
-        )
         compositeDisposable.add(
-            interactor.getApiCallManager().verifyXPressLoginCode(xPressLoginMap)
+            interactor.getApiCallManager().verifyXPressLoginCode(xPressLoginCodeResponse.xPressLoginCode, xPressLoginCodeResponse.signature)
                 .timeout(20, TimeUnit.SECONDS).onErrorReturnItem(GenericResponseClass(null, null))
                 .repeatWhen { completed: Flowable<Any?> -> completed.delay(3, TimeUnit.SECONDS) }
                 .subscribeOn(Schedulers.io())

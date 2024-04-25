@@ -1,5 +1,6 @@
 package com.windscribe.vpn.repository
 
+import android.util.Log
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -14,6 +15,8 @@ import com.windscribe.vpn.serverlist.entity.PingTime
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.services.ping.Ping
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.wsnet.lib.WSNet
+import com.wsnet.lib.WSNetPingManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -24,13 +27,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.rx2.await
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
+import okhttp3.CertificatePinner
 import org.slf4j.LoggerFactory
 import java.net.Inet4Address
 import java.net.InetSocketAddress
 import java.net.Socket
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.resume
 import kotlin.math.roundToInt
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -39,7 +45,7 @@ import kotlin.time.toDuration
 class LatencyRepository @Inject constructor(
         private val preferencesHelper: PreferencesHelper,
         private val localDbInterface: LocalDbInterface,
-        private val iApiCallManager: IApiCallManager,
+        private val pingManager: WSNetPingManager,
         private val vpnConnectionStateManager: dagger.Lazy<VPNConnectionStateManager>
 ) {
     enum class LatencyType {
@@ -236,7 +242,7 @@ class LatencyRepository @Inject constructor(
     private suspend fun getLatencyFromApi(
             host: String?, ip: String,
             ping: PingTime,
-    ): PingTime {
+    ):  PingTime {
         if (skipPing) {
             throw WindScribeException("Latency check not allowed once vpn is connected.")
         }
@@ -244,11 +250,14 @@ class LatencyRepository @Inject constructor(
             return ping.apply { pingTime = -1 }
         }
         val updatedPing = withTimeoutOrNull(3000) {
-            iApiCallManager.getLatency(host, ip).mapCatching {
-                return@mapCatching ping.apply {
-                    pingTime = it.dataClass?.rtt?.toInt()?.div(1000) ?: -1
+            suspendCancellableCoroutine {
+                pingManager.ping(ip, host, 0) { _, _, latency, _ ->
+                    ping.apply {
+                        pingTime = latency
+                    }
+                    it.resume(ping);
                 }
-            }.getOrElse { ping.apply { pingTime = -1 } }
+            }
         }
         return ping.apply {
             if (updatedPing == null) {
