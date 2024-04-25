@@ -373,8 +373,12 @@ open class ApiCallManager @Inject constructor(private val apiFactory: WindApiFac
     }
 
     override fun resendUserEmailAddress(extraParams: Map<String, String>?): Single<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>> {
-        return call(extraParams, modelType = AddEmailResponse::class.java) { apiService, params, _ ->
-            apiService.resendUserEmailAddress(params)
+        return Single.create { sub ->
+            if (checkSession(sub)) return@create
+            val callback = wsNetServerAPI.confirmEmail(preferencesHelper.sessionHash) { code, json ->
+                buildResponse(sub, code, json, AddEmailResponse::class.java)
+            }
+            sub.setCancellable { callback.cancel() }
         }
     }
 
