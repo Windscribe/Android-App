@@ -121,13 +121,8 @@ class GooglePendingReceiptValidator(appContext: Context, params: WorkerParameter
 
     private suspend fun verifyPayment(itemPurchased: PurchaseHistoryRecord): Boolean {
         logger.info("Verifying payment for purchased item: " + itemPurchased.originalJson)
-        val purchaseMap = HashMap<String, String>()
-        purchaseMap[BillingConstants.GP_PACKAGE_NAME] = "com.windscribe.vpn"
-        purchaseMap[BillingConstants.GP_PRODUCT_ID] = itemPurchased.products[0]
-
-        purchaseMap[BillingConstants.PURCHASE_TOKEN] = itemPurchased.purchaseToken
         return when (val result =
-            interactor.apiManager.verifyPurchaseReceipt(purchaseMap).result<GenericSuccess>()) {
+            interactor.apiManager.verifyPurchaseReceipt(itemPurchased.purchaseToken, "com.windscribe.vpn", itemPurchased.products[0], "", "").result<GenericSuccess>()) {
             is CallResult.Error -> {
                 logger.debug("Payment verification failed: ${result.errorMessage}")
                 false

@@ -77,17 +77,19 @@ class ServerListRepository @Inject constructor(
             it.dataClass?.let { userSession ->
                 userRepository.reload(userSession)
                 val user = User(userSession)
+                userRepository.reload(userSession)
+                val alc = if (userSession.alcList.isNullOrEmpty()) {
+                    arrayOf()
+                } else {
+                    userSession.alcList.toTypedArray()
+                }
+
                 val countryOverride = getCountryOverride()
                 if (countryOverride != "ZZ") {
                     globalServerList = false
                 }
                 logger.debug("Country override: $countryOverride")
-                apiCallManager.getServerList(
-                        null,
-                        user.userStatusInt.toString(),
-                        user.locationHash,
-                        user.alcList, countryOverride
-                )
+                apiCallManager.getServerList(user.userStatusInt == 1, user.locationHash, alc, countryOverride)
             } ?: it.errorClass?.let { error ->
                 logger.debug("Error updating session $error")
                 throw Exception()

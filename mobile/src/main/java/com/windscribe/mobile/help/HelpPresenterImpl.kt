@@ -62,17 +62,12 @@ class HelpPresenterImpl @Inject constructor(
         }
         helpView.showProgress(inProgress = true, success = false)
         logger.info("Preparing debug file...")
-        val logMap: MutableMap<String, String> = HashMap()
-        logMap[UserStatusConstants.CURRENT_USER_NAME] = interactor.getAppPreferenceInterface()
-                .userName
         interactor.getCompositeDisposable().add(
                 Single.fromCallable { interactor.getEncodedLog() }
                         .flatMap { encodedLog: String ->
                             logger.info("Reading log file successful, submitting app log...")
-                            //Add log file and user name
-                            logMap[NetworkKeyConstants.POST_LOG_FILE_KEY] = encodedLog
                             interactor.getApiCallManager()
-                                    .postDebugLog(logMap)
+                                    .postDebugLog(interactor.getAppPreferenceInterface().userName, encodedLog)
                         }.subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeWith(

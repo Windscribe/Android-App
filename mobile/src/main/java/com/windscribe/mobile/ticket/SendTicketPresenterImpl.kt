@@ -49,10 +49,8 @@ class SendTicketPresenterImpl @Inject constructor(
     override fun onSendTicketClicked(email: String, subject: String, message: String) {
         sendTicketView.setProgressView(true)
         val username = interactor.getAppPreferenceInterface().userName
-        val queryMap = buildTicketMap(email, subject, message, username, queryType)
         interactor.getCompositeDisposable()
-            .add(
-                interactor.getApiCallManager().sendTicket(queryMap)
+            .add(interactor.getApiCallManager().sendTicket(email, username, subject, message, queryType.value.toString(), queryType.name, "app_android")
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(

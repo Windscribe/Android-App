@@ -190,13 +190,13 @@ open class BaseApplicationModule {
     fun provideLatencyRepository(
             preferencesHelper: PreferencesHelper,
             localDbInterface: LocalDbInterface,
-            apiCallManager: IApiCallManager,
+            wsNet: WSNet,
             vpnConnectionStateManager: Lazy<VPNConnectionStateManager>,
     ): LatencyRepository {
         return LatencyRepository(
                 preferencesHelper,
                 localDbInterface,
-                apiCallManager,
+                wsNet.pingManager(),
                 vpnConnectionStateManager
         )
     }
