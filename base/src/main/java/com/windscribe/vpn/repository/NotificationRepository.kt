@@ -23,10 +23,7 @@ class NotificationRepository @Inject constructor(
     private val logger = LoggerFactory.getLogger("notification_updater")
     fun update(): Completable {
         logger.debug("Starting notification data update.")
-        val params = appContext.appLifeCycleObserver.pushNotificationAction?.pcpID?.let {
-            hashMapOf(Pair(PCP_ID, it))
-        }
-        return apiCallManager.getNotifications(params)
+        return apiCallManager.getNotifications(appContext.appLifeCycleObserver.pushNotificationAction?.pcpID)
             .flatMapCompletable { response ->
                 response.dataClass?.let { newsfeed ->
                     newsfeed.notifications?.let {

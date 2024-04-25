@@ -85,17 +85,8 @@ class RobertSettingsPresenterImpl(
     ) {
         robertSettingsAdapter?.settingUpdateInProgress = true
         robertSettingsView.showProgress()
-        val paramMap: MutableMap<String, String> = HashMap()
-        paramMap["filter"] = filter.id
-        paramMap["status"] = filter.status.toString()
-        mPresenterLog.debug(
-            String.format(
-                "Changing robert setting list to %S",
-                paramMap.toString()
-            )
-        )
         interactor.getCompositeDisposable()
-            .add(interactor.getApiCallManager().updateRobertSettings(paramMap)
+            .add(interactor.getApiCallManager().updateRobertSettings(filter.id, filter.status)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -210,7 +201,7 @@ class RobertSettingsPresenterImpl(
     private fun loadSettings() {
         robertSettingsView.showProgress()
         interactor.getCompositeDisposable().add(
-            interactor.getApiCallManager().getRobertFilters(null)
+            interactor.getApiCallManager().getRobertFilters()
                 .flatMap { response: GenericResponseClass<RobertFilterResponse?, ApiErrorResponse?> ->
                     saveToDatabase(
                         response

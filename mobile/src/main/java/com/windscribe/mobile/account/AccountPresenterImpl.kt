@@ -61,9 +61,8 @@ class AccountPresenterImpl @Inject constructor(
     override fun onCodeEntered(code: String) {
         accountView.showProgress("Verifying code...")
         logger.debug("verifying express login code.")
-        val verifyLoginMap = createVerifyExpressLoginMap(code)
         interactor.getCompositeDisposable().add(
-            interactor.getApiCallManager().verifyExpressLoginCode(verifyLoginMap)
+            interactor.getApiCallManager().verifyExpressLoginCode(code)
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object :
                     DisposableSingleObserver<GenericResponseClass<VerifyExpressLoginResponse?, ApiErrorResponse?>>() {

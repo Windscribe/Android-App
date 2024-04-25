@@ -144,10 +144,7 @@ class ServiceInteractorImpl @Inject constructor(
 
     override suspend fun sendLog(): CallResult<GenericSuccess> {
         return try {
-            val logMap: MutableMap<String, String> = HashMap()
-            logMap[UserStatusConstants.CURRENT_USER_NAME] = preferenceHelper.userName
-            logMap[NetworkKeyConstants.POST_LOG_FILE_KEY] = getEncodedLog()
-            apiManager.postDebugLog(logMap).await().callResult()
+            apiManager.postDebugLog(preferenceHelper.userName, getEncodedLog()).await().callResult()
         } catch (e: Exception) {
             CallResult.Error(errorMessage = "Unable to load debug logs from disk.")
         }

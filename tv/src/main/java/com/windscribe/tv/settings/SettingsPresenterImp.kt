@@ -301,15 +301,11 @@ class SettingsPresenterImp @Inject constructor(
     override fun onSendDebugClicked() {
         logger.info("Preparing debug file...")
         settingView.showProgress(settingView.getResourceString(R.string.sending_debug_log))
-        val logMap: MutableMap<String, String> = HashMap()
-        logMap[UserStatusConstants.CURRENT_USER_NAME] =
-                interactor.getAppPreferenceInterface().userName
         interactor.getCompositeDisposable().add(
                 Single.fromCallable { interactor.getEncodedLog() }
                         .flatMap { encodedLog: String ->
                             logger.info("Reading log file successful, submitting app log...")
-                            logMap[NetworkKeyConstants.POST_LOG_FILE_KEY] = encodedLog
-                            interactor.getApiCallManager().postDebugLog(logMap)
+                            interactor.getApiCallManager().postDebugLog(interactor.getAppPreferenceInterface().userName, encodedLog)
                         }.subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeWith(
