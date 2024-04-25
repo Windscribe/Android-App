@@ -382,9 +382,13 @@ open class ApiCallManager @Inject constructor(private val apiFactory: WindApiFac
         }
     }
 
-    override fun getBillingPlans(extraParams: Map<String, String>?): Single<GenericResponseClass<BillingPlanResponse?, ApiErrorResponse?>> {
-        return call(extraParams, modelType = BillingPlanResponse::class.java) { apiService, params, _ ->
-            apiService.getBillingPlans(params)
+    override fun getBillingPlans(promo: String?): Single<GenericResponseClass<BillingPlanResponse?, ApiErrorResponse?>> {
+        return Single.create { sub ->
+            if (checkSession(sub)) return@create
+            val callback = wsNetServerAPI.mobileBillingPlans(preferencesHelper.sessionHash, "google", promo ?: "", 3) { code, json ->
+                buildResponse(sub, code, json, BillingPlanResponse::class.java)
+            }
+            sub.setCancellable { callback.cancel() }
         }
     }
 
