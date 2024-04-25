@@ -12,7 +12,7 @@ interface IApiCallManager {
     fun checkConnectivityAndIpAddress(): Single<GenericResponseClass<GetMyIpResponse?, ApiErrorResponse?>>
     fun getConnectedIp(): Single<GenericResponseClass<String?, ApiErrorResponse?>>
     fun claimAccount(username: String, password: String, email: String): Single<GenericResponseClass<ClaimAccountResponse?, ApiErrorResponse?>>
-    fun getBillingPlans(extraParams: Map<String, String>? = null): Single<GenericResponseClass<BillingPlanResponse?, ApiErrorResponse?>>
+    fun getBillingPlans(promo: String?): Single<GenericResponseClass<BillingPlanResponse?, ApiErrorResponse?>>
     fun getNotifications(pcpID: String?): Single<GenericResponseClass<NewsFeedNotification?, ApiErrorResponse?>>
     fun getPortMap(): Single<GenericResponseClass<PortMapResponse?, ApiErrorResponse?>>
     fun getReg(): Single<GenericResponseClass<RegToken?, ApiErrorResponse?>>

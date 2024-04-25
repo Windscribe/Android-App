@@ -153,11 +153,9 @@ class UpgradePresenterImpl @Inject constructor(
     override fun onBillingSetupSuccessful() {
         // Get Billing Plans
         logger.info("Getting billing plans...")
-        val billingPlanMap: MutableMap<String, String> = HashMap()
-        notificationAction?.let { billingPlanMap[PROMO_CODE] = it.promoCode }
         interactor.getCompositeDisposable().add(
             interactor.getApiCallManager()
-                .getBillingPlans(billingPlanMap)
+                .getBillingPlans(notificationAction?.promoCode)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ billingPlanResponse: GenericResponseClass<BillingPlanResponse?, ApiErrorResponse?> ->
