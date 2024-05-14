@@ -7,8 +7,6 @@ import android.text.TextUtils
 import android.util.Patterns
 import com.windscribe.tv.R
 import com.windscribe.vpn.ActivityInteractor
-import com.windscribe.vpn.api.CreateHashMap.createRegistrationMap
-import com.windscribe.vpn.api.CreateHashMap.createVerifyXPressCodeMap
 import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.commonutils.CommonPasswordChecker
 import com.windscribe.vpn.constants.NetworkErrorCodes
@@ -245,12 +243,6 @@ class WelcomePresenterImpl @Inject constructor(
             }
             logger.info("Trying to sign up with provided credentials...")
             welcomeView.prepareUiForApiCallStart()
-            val loginMap: MutableMap<String, String> = createRegistrationMap(username, password).toMutableMap()
-            email?.let {
-                if (it.isNotEmpty()) {
-                    loginMap[NetworkKeyConstants.ADD_EMAIL_KEY] = email
-                }
-            }
             interactor.getCompositeDisposable().add(
                 interactor.getApiCallManager()
                     .signUserIn(username, password, null, email)

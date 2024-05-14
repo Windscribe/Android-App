@@ -13,6 +13,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
 import android.os.PowerManager
+import android.util.Log
 import com.windscribe.vpn.R
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -39,6 +40,7 @@ import com.wireguard.android.backend.Tunnel.State.DOWN
 import com.wireguard.android.backend.Tunnel.State.TOGGLE
 import com.wireguard.android.backend.Tunnel.State.UP
 import com.wireguard.config.Config
+import com.wsnet.lib.WSNet
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,6 +56,7 @@ import java.net.DatagramSocket
 import java.net.InetAddress
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Singleton
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.toSet
@@ -83,6 +86,7 @@ class WireguardBackend(
     private var healthJob: Job? = null
     override var active = false
     private val maxHandshakeTimeInSeconds = 180L
+    private var protectByVPN = AtomicBoolean(false)
     private val connectivityManager =
             appContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
     private val powerManager = appContext.getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -96,6 +100,15 @@ class WireguardBackend(
             healthJob?.cancel()
             healthJob = scope.launch {
                 vpnLogger.debug(checkTunnelHealth().getOrElse { it.message })
+            }
+        }
+    }
+    init {
+        WSNet.instance().httpNetworkManager().setWhitelistSocketsCallback { fds ->
+            for (fd in fds) {
+                if (active && protectByVPN.get()) {
+                   service?.protect(fd)
+                }
             }
         }
     }
@@ -297,20 +310,24 @@ class WireguardBackend(
             }
             try {
                 val config = WireGuardVpnProfile.createConfigFromString(it)
+                protectByVPN.set(true)
                 when (val response = vpnProfileCreator.updateWireGuardConfig(config)) {
                     is CallResult.Success -> {
                         if (config.`interface`.addresses.first() != response.data.`interface`.addresses.first()) {
                             vpnLogger.debug("${config.`interface`.addresses.first()} > ${response.data.`interface`.addresses.first()}")
                             reconnecting = true
                             try {
+                                protectByVPN.set(false)
                                 backend.setState(testTunnel, UP, response.data)
                                 return Result.success("updated wg state with new interface address.")
                             } catch (e: Exception) {
+                                protectByVPN.set(false)
                                 reconnecting = false
                                 appContext.vpnController.connectAsync()
                                 return Result.failure(e)
                             }
                         } else {
+                            protectByVPN.set(false)
                             return Result.success("interface address unchanged.")
                         }
                     }
