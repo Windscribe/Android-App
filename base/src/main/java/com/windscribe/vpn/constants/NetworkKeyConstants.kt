@@ -29,8 +29,6 @@ object NetworkKeyConstants {
     const val PING_TEST_3_BAR_UPPER_LIMIT = 150
     const val PING_TEST_2_BAR_UPPER_LIMIT = 500
     const val PING_TEST_1_BAR_UPPER_LIMIT = 1000
-    var API_ENDPOINT: String
-    var API_ENDPOINT_FOR_SERVER_LIST: String
     const val SESSION_TYPE_ANDROID = "4"
     const val NODE_STATUS_URL = "/status"
     const val PORT_MAP_VERSION = 5
@@ -60,13 +58,9 @@ object NetworkKeyConstants {
     init {
         if (BuildConfig.DEV) {
             // Staging Environment
-            API_ENDPOINT = BuildConfig.STAGING_API_URL
-            API_ENDPOINT_FOR_SERVER_LIST = BuildConfig.STAGING_SERVER_URL
             WEB_URL = BuildConfig.STAGING_WEB_URL
         } else {
             // Production Environment
-            API_ENDPOINT = BuildConfig.PRODUCTION_API_URL
-            API_ENDPOINT_FOR_SERVER_LIST = BuildConfig.PRODUCTION_SERVER_URL
             WEB_URL = BuildConfig.PRODUCTION_WEB_URL
         }
     }

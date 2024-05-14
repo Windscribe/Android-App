@@ -9,8 +9,6 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.Windscribe.Companion.applicationScope
-import com.windscribe.vpn.api.ApiCallType
-import com.windscribe.vpn.api.DomainFailOverManager
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
@@ -29,7 +27,6 @@ Tracks App life cycle
 class AppLifeCycleObserver @Inject constructor(
     private val workManager: WindScribeWorkManager,
     private val networkInfoManager: NetworkInfoManager,
-    private val domainFailOverManager: DomainFailOverManager,
     private val vpnConnectionStateManager: VPNConnectionStateManager,
     private val proxyDNSManager: ProxyDNSManager
 ) :
@@ -74,7 +71,6 @@ class AppLifeCycleObserver @Inject constructor(
             logger.debug("Resetting server list country code.")
             overriddenCountryCode = null
         }
-        domainFailOverManager.reset(ApiCallType.Other)
         networkInfoManager.reload()
         if (startingFresh.getAndSet(false)) {
             isInForeground = false

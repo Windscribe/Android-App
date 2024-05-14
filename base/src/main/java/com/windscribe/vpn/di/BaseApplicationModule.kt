@@ -12,16 +12,8 @@ import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.ServiceInteractorImpl
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.api.ApiCallManager
-import com.windscribe.vpn.api.AuthorizationGenerator
-import com.windscribe.vpn.api.DomainFailOverManager
-import com.windscribe.vpn.api.EchApiFactory
-import com.windscribe.vpn.api.HashDomainGenerator
-import com.windscribe.vpn.api.HostType
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.ProtectedApiFactory
-import com.windscribe.vpn.api.WindApiFactory
-import com.windscribe.vpn.api.WindCustomApiFactory
-import com.windscribe.vpn.api.WindscribeDnsResolver
 import com.windscribe.vpn.apppreference.AppPreferenceHelper
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.SecurePreferences
@@ -91,7 +83,6 @@ import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import net.grandcentrix.tray.AppPreferences
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
@@ -133,25 +124,6 @@ open class BaseApplicationModule {
     fun provideApp(): Windscribe {
         return windscribeApp
     }
-
-    @Provides
-    @Singleton
-    fun provideAuthGenerator(preferencesHelper: PreferencesHelper): AuthorizationGenerator {
-        return AuthorizationGenerator(preferencesHelper)
-    }
-
-    @Provides
-    @Named("backupEndPoint")
-    fun provideBackupEndpoint(): String {
-        return HashDomainGenerator.create(NetworkKeyConstants.API_HOST_GENERIC).random()
-    }
-
-    @Provides
-    @Named("backupEndPointListForIp")
-    fun provideBackupEndpointForIp(): List<String> {
-        return HashDomainGenerator.create(NetworkKeyConstants.API_HOST_CHECK_IP)
-    }
-
 
     @Provides
     @Singleton
@@ -572,7 +544,7 @@ open class BaseApplicationModule {
     @Provides
     @Singleton
     fun providesApiCallManagerInterface(
-            windApiFactory: WindApiFactory,
+            windApiFactory: ProtectedApiFactory,
             wsNetServerAPI: WSNetServerAPI,
             preferencesHelper: PreferencesHelper,
     ): IApiCallManager {
@@ -599,11 +571,10 @@ open class BaseApplicationModule {
     fun providesAppLifeCycleObserver(
             workManager: WindScribeWorkManager,
             networkInfoManager: NetworkInfoManager,
-            domainFailOverManager: DomainFailOverManager,
             vpnConnectionStateManager: VPNConnectionStateManager,
             proxyDNSManager: ProxyDNSManager
     ): AppLifeCycleObserver {
-        return AppLifeCycleObserver(workManager, networkInfoManager, domainFailOverManager, vpnConnectionStateManager, proxyDNSManager)
+        return AppLifeCycleObserver(workManager, networkInfoManager, vpnConnectionStateManager, proxyDNSManager)
     }
 
     @Provides
@@ -667,15 +638,7 @@ open class BaseApplicationModule {
     }
 
     @Provides
-    @Singleton
-    fun providesDomainFailOverManager(
-            preferencesHelper: PreferencesHelper
-    ): DomainFailOverManager {
-        return DomainFailOverManager(preferencesHelper)
-    }
-
-    @Provides
-    fun providesOkHttpBuilder(windscribeDnsResolver: WindscribeDnsResolver, advanceParameterRepository: AdvanceParameterRepository): OkHttpClient.Builder {
+    fun providesOkHttpBuilder(): OkHttpClient.Builder {
         val connectionPool = ConnectionPool(0, 5, TimeUnit.MINUTES)
         val httpLoggingInterceptor = getHttpLoggingInterceptor()
         httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
@@ -686,8 +649,6 @@ open class BaseApplicationModule {
         builder.callTimeout(15, TimeUnit.SECONDS)
         builder.retryOnConnectionFailure(false)
         builder.connectionPool(connectionPool)
-        //.addInterceptor()
-        builder.dns(windscribeDnsResolver)
         return builder
     }
 
@@ -737,55 +698,6 @@ open class BaseApplicationModule {
             localDbInterface: LocalDbInterface
     ): ServiceInteractor {
         return ServiceInteractorImpl(mPrefHelper, apiCallManager, localDbInterface)
-    }
-
-    @Provides
-    @Singleton
-    fun providesCustomDnsResolver(
-            mainScope: CoroutineScope, preferencesHelper: PreferencesHelper
-    ): WindscribeDnsResolver {
-        return WindscribeDnsResolver(mainScope, preferencesHelper)
-    }
-
-    @Provides
-    @Singleton
-    fun providesWindApiFactory(
-            retrofitBuilder: Retrofit.Builder,
-            httpBuilder: OkHttpClient.Builder,
-            protectedApiFactory: ProtectedApiFactory,
-            dnsResolver: WindscribeDnsResolver
-    ): WindApiFactory {
-        return WindApiFactory(
-                retrofitBuilder, httpBuilder, dnsResolver, protectedApiFactory,
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun providesEchFactory(
-            retrofitBuilder: Retrofit.Builder,
-            httpBuilder: OkHttpClient.Builder,
-            protectedApiFactory: ProtectedApiFactory
-    ): EchApiFactory {
-        return EchApiFactory(
-                retrofitBuilder, httpBuilder, protectedApiFactory
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun providesProtectedFactory(
-            retrofitBuilder: Retrofit.Builder, okHttpClient: OkHttpClient.Builder
-    ): ProtectedApiFactory {
-        return ProtectedApiFactory(retrofitBuilder, okHttpClient)
-    }
-
-    @Provides
-    @Singleton
-    fun providesWindCustomApiFactory(
-            retrofitBuilder: Retrofit.Builder, okHttpClient: OkHttpClient.Builder
-    ): WindCustomApiFactory {
-        return WindCustomApiFactory(retrofitBuilder, okHttpClient)
     }
 
     @Provides
@@ -843,8 +755,8 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun providesEmergencyConnectRepository(): EmergencyConnectRepository {
-        return EmergencyConnectRepositoryImpl()
+    fun providesEmergencyConnectRepository(wsNet: WSNet): EmergencyConnectRepository {
+        return EmergencyConnectRepositoryImpl(wsNet.emergencyConnect())
     }
 
     @Provides
@@ -861,9 +773,13 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun providesWsNet(preferencesHelper: PreferencesHelper, deviceStateManager: DeviceStateManager): WSNet {
+    fun providesWsNet(preferencesHelper: PreferencesHelper, deviceStateManager: DeviceStateManager, vpnBackendHolder: Lazy<VpnBackendHolder>): WSNet {
+        WSNet.setLogger({
+            val msg = it.split(Regex("\\]\\s*")).lastOrNull()?.trim() ?: ""
+            logger.debug(msg)
+        }, BuildConfig.DEV)
         WSNet.initialize("android", WindUtilities.getVersionName(), BuildConfig.DEV, preferencesHelper.wsNetSettings)
-        val networkListener = object: DeviceStateManager.DeviceStateListener {
+        val networkListener = object : DeviceStateManager.DeviceStateListener {
             override fun onNetworkStateChanged() {
                 super.onNetworkStateChanged()
                 WSNet.instance().setConnectivityState(WindUtilities.isOnline())

@@ -7,7 +7,6 @@ import android.content.Context
 import android.util.Patterns
 import com.windscribe.mobile.R
 import com.windscribe.vpn.ActivityInteractor
-import com.windscribe.vpn.api.CreateHashMap.buildTicketMap
 import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.api.response.QueryType

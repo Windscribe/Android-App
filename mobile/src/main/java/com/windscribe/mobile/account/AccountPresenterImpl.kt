@@ -7,8 +7,6 @@ import android.content.Context
 import com.windscribe.mobile.R
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.api.CreateHashMap.createVerifyExpressLoginMap
-import com.windscribe.vpn.api.CreateHashMap.createWebSessionMap
 import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkKeyConstants

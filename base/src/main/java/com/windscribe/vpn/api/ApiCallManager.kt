@@ -3,6 +3,7 @@
  */
 package com.windscribe.vpn.api
 
+import android.util.Log
 import com.windscribe.vpn.api.response.AddEmailResponse
 import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.api.response.BillingPlanResponse
@@ -30,6 +31,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.exceptions.WindScribeException
+import com.wsnet.lib.WSNet
 import com.wsnet.lib.WSNetServerAPI
 import io.reactivex.Single
 import io.reactivex.SingleEmitter
@@ -41,7 +43,7 @@ import javax.inject.Singleton
 
 
 @Singleton
-open class ApiCallManager @Inject constructor(private val apiFactory: WindApiFactory, val wsNetServerAPI: WSNetServerAPI, val preferencesHelper: PreferencesHelper) : IApiCallManager {
+open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedApiFactory, val wsNetServerAPI: WSNetServerAPI, val preferencesHelper: PreferencesHelper) : IApiCallManager {
 
     private val logger = LoggerFactory.getLogger("api_call")
     override fun getWebSession(): Single<GenericResponseClass<WebSession?, ApiErrorResponse?>> {
@@ -324,7 +326,7 @@ open class ApiCallManager @Inject constructor(private val apiFactory: WindApiFac
     override fun wgConnect(clientPublicKey: String, hostname: String, deviceId: String): Single<GenericResponseClass<WgConnectResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.wgConfigsConnect(preferencesHelper.sessionHash, clientPublicKey, hostname, deviceId) { code, json ->
+            val callback = wsNetServerAPI.wgConfigsConnect(preferencesHelper.sessionHash, clientPublicKey, hostname, deviceId, "3600") { code, json ->
                 buildResponse(sub, code, json, WgConnectResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }

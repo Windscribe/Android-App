@@ -12,7 +12,6 @@ import com.windscribe.mobile.adapter.RobertAdapterListener
 import com.windscribe.mobile.adapter.RobertSettingsAdapter
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.api.CreateHashMap.createWebSessionMap
 import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.constants.FeatureExplainer
 import com.windscribe.vpn.constants.NetworkErrorCodes

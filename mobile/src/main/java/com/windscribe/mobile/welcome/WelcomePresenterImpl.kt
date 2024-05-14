@@ -9,13 +9,8 @@ import android.view.View
 import com.windscribe.mobile.R
 import com.windscribe.vpn.commonutils.CommonPasswordChecker
 import com.windscribe.vpn.ActivityInteractor
-import com.windscribe.vpn.api.CreateHashMap.createClaimAccountMap
-import com.windscribe.vpn.api.CreateHashMap.createGhostModeMap
-import com.windscribe.vpn.api.CreateHashMap.createLoginMap
-import com.windscribe.vpn.api.CreateHashMap.createRegistrationMap
 import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.constants.NetworkErrorCodes
-import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.UserStatusConstants.USER_STATUS_PREMIUM
 import com.windscribe.vpn.errormodel.SessionErrorHandler
 import com.windscribe.vpn.errormodel.WindError

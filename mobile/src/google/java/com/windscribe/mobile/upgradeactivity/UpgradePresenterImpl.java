@@ -47,7 +47,6 @@ import com.google.gson.Gson;
 import com.windscribe.mobile.R;
 import com.windscribe.vpn.ActivityInteractor;
 import com.windscribe.vpn.Windscribe;
-import com.windscribe.vpn.api.CreateHashMap;
 import com.windscribe.vpn.api.response.ApiErrorResponse;
 import com.windscribe.vpn.api.response.BillingPlanResponse;
 import com.windscribe.vpn.api.response.GenericResponseClass;
