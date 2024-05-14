@@ -60,3 +60,5 @@
 #Common module dependecies.
 -keep class org.pcap4j.** { *; }
 -keep class org.minidns.** { *; }
+-keep class com.scapix.** { *; }
+-keep class com.wsnet.** { *; }

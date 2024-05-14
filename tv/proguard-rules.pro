@@ -57,3 +57,5 @@
 
 #Lifecycle
 -keep class androidx.lifecycle.** {*;}
+-keep class com.scapix.** { *; }
+-keep class com.wsnet.** { *; }
