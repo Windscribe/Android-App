@@ -1,6 +1,5 @@
 package com.windscribe.vpn.decoytraffic
 
-import android.util.Log
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.VPNState
@@ -27,7 +26,7 @@ class DecoyTrafficController(val scope: CoroutineScope, val apiCallManager: IApi
     private val logger = LoggerFactory.getLogger("decoy_traffic_controller")
     private var _events = MutableStateFlow(preferencesHelper.isDecoyTrafficOn)
     val state: StateFlow<Boolean> = _events
-    var fakeTraffic = preferencesHelper.fakeTrafficVolume
+    private var fakeTraffic = preferencesHelper.fakeTrafficVolume
     private val trafficTrend = TrafficTrend()
 
     init {

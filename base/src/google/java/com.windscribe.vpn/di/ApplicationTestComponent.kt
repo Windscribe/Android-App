@@ -9,7 +9,7 @@ import dagger.Component
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [ApplicationModule::class, TestNetworkModule::class, TestVPNModule::class, TestPersistentModule::class, BillingModule::class])
+@Component(modules = [ApplicationModule::class, TestVPNModule::class, TestPersistentModule::class, BillingModule::class])
 interface ApplicationTestComponent : ApplicationComponent {
     override fun inject(app: Windscribe)
 }

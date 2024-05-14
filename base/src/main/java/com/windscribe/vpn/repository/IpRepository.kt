@@ -1,6 +1,7 @@
 package com.windscribe.vpn.repository
 
 import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.api.response.GetMyIpResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.commonutils.Ext.toResult
@@ -41,11 +42,11 @@ class IpRepository(
         scope.launch {
             _state.emit(RepositoryState.Loading())
             if (WindUtilities.isOnline()) {
-                apiCallManagerV2.getConnectedIp().toResult().onSuccess {
-                    when (val result = it.callResult<String>()) {
+                apiCallManagerV2.checkConnectivityAndIpAddress().toResult().onSuccess {
+                    when (val result = it.callResult<GetMyIpResponse>()) {
                         is CallResult.Error -> loadIpFromStorage()
                         is CallResult.Success -> {
-                            val ipAddress = getModifiedIpAddress(result.data.trim())
+                            val ipAddress = getModifiedIpAddress(result.data.userIp.trim())
                             preferenceHelper.saveResponseStringData(
                                 PreferencesKeyConstants.USER_IP, ipAddress
                             )

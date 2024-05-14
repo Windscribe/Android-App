@@ -48,12 +48,12 @@ class WgConfigRepository(val scope: CoroutineScope, val interactor: ServiceInter
                 logger.debug("Generating wg params with force_init=1")
                 paramsMap["force_init"] = "1"
             }
-            val callResult = interactor.apiManager.wgInit(paramsMap,protect)
+            val callResult = interactor.apiManager.wgInit(publicKey, forceInit)
                     .flatMap {
                         when (it.errorClass?.errorCode) {
                             ERROR_WG_UNABLE_TO_GENERATE_PSK -> {
                                 logger.debug("Retrying wg init Error: wg utility failure.")
-                                interactor.apiManager.wgInit(mapOf(Pair(WG_PUBLIC_KEY, publicKey)),protect)
+                                interactor.apiManager.wgInit(publicKey, forceInit)
                             }
                             else -> {
                                 Single.just(it)
@@ -75,7 +75,7 @@ class WgConfigRepository(val scope: CoroutineScope, val interactor: ServiceInter
     suspend fun getWgParams(hostname: String, serverPublicKey: String, forceInit: Boolean = false, checkUserAccountStatus: Boolean = false): CallResult<WgRemoteParams> {
        if(checkUserAccountStatus){
            logger.debug("Checking user status.")
-           val userSessionResponse = interactor.apiManager.getSessionGeneric(protect = true).result<UserSessionResponse>()
+           val userSessionResponse = interactor.apiManager.getSessionGeneric().result<UserSessionResponse>()
            if(userSessionResponse is CallResult.Success && userSessionResponse.data.userAccountStatus!=1){
                logger.debug("User status is expired/banned. ${userSessionResponse.data.userAccountStatus}")
                return CallResult.Error(NetworkErrorCodes.EXPIRED_OR_BANNED_ACCOUNT, "User account banned or expired.")
@@ -142,26 +142,21 @@ class WgConfigRepository(val scope: CoroutineScope, val interactor: ServiceInter
             Pair(WG_PUBLIC_KEY, userPublicKey),
             Pair(WG_TTL, VpnPreferenceConstants.WG_CONNECT_DEFAULT_TTL)
         )
+        var deviceId = ""
         if (interactor.preferenceHelper.isConnectingToStaticIp) {
             runCatching {
                 return@runCatching interactor.preferenceHelper.getDeviceUUID(interactor.preferenceHelper.userName)
                     ?: throw Exception("Failed to get username.")
             }.onSuccess {
                 logger.debug("Adding device id to wg connect $it")
-                params[DEVICE_ID] = it
+                deviceId = it
             }
         }
-        val callResult = interactor.apiManager.wgConnect(params, protect)
+        val callResult = interactor.apiManager.wgConnect(userPublicKey, hostname, deviceId)
             .flatMap {
                 if (it.errorClass?.errorCode == ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP) {
                     logger.debug("Retrying wg connect Error: Unable to selected wg ip.")
-                    interactor.apiManager.wgConnect(
-                        mapOf(
-                            Pair(HOSTNAME, hostname),
-                            Pair(WG_PUBLIC_KEY, userPublicKey),
-                            Pair(WG_TTL, VpnPreferenceConstants.WG_CONNECT_DEFAULT_TTL)
-                        ), protect
-                    )
+                    interactor.apiManager.wgConnect(userPublicKey, hostname, deviceId)
                 } else {
                     Single.just(it)
                 }

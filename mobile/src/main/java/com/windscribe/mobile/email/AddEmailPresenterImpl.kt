@@ -45,12 +45,9 @@ class AddEmailPresenterImpl @Inject constructor(
             emailView.hideSoftKeyboard()
             emailView.prepareUiForApiCallStart()
             logger.info("Posting users email address...")
-            val emailMap: MutableMap<String, String> = HashMap()
-            emailMap[NetworkKeyConstants.ADD_EMAIL_KEY] = emailAddress
-            emailMap[NetworkKeyConstants.ADD_EMAIL_FORCED_KEY] = 1.toString()
             interactor.getCompositeDisposable().add(
                 interactor.getApiCallManager()
-                    .addUserEmailAddress(emailMap)
+                    .addUserEmailAddress(emailAddress)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(
