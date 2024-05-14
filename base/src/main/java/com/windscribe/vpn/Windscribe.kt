@@ -252,10 +252,6 @@ open class Windscribe : MultiDexApplication() {
             return Executors.newSingleThreadExecutor()
         }
 
-        init {
-            System.loadLibrary("wsnet")
-        }
-
         /**
          * Provides access to global context.
          */
