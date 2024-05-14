@@ -107,7 +107,11 @@ public class Scheduler extends BroadcastReceiver
             if (job == mJobs.peek())
             {	/* update the alarm if the job has to be executed before all others */
                 PendingIntent pending = createIntent();
-                mManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, job.Time, pending);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !mManager.canScheduleExactAlarms()) {
+                    mManager.set(AlarmManager.RTC_WAKEUP, job.Time, pending);
+                } else {
+                    mManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, job.Time, pending);
+                }
             }
         }
     }
@@ -134,7 +138,11 @@ public class Scheduler extends BroadcastReceiver
             if (job != null)
             {
                 PendingIntent pending = createIntent();
-                mManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, job.Time, pending);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !mManager.canScheduleExactAlarms()) {
+                    mManager.set(AlarmManager.RTC_WAKEUP, job.Time, pending);
+                } else {
+                    mManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, job.Time, pending);
+                }
             }
         }
 

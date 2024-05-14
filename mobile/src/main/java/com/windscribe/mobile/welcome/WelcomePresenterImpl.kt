@@ -9,13 +9,8 @@ import android.view.View
 import com.windscribe.mobile.R
 import com.windscribe.vpn.commonutils.CommonPasswordChecker
 import com.windscribe.vpn.ActivityInteractor
-import com.windscribe.vpn.api.CreateHashMap.createClaimAccountMap
-import com.windscribe.vpn.api.CreateHashMap.createGhostModeMap
-import com.windscribe.vpn.api.CreateHashMap.createLoginMap
-import com.windscribe.vpn.api.CreateHashMap.createRegistrationMap
 import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.constants.NetworkErrorCodes
-import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.UserStatusConstants.USER_STATUS_PREMIUM
 import com.windscribe.vpn.errormodel.SessionErrorHandler
 import com.windscribe.vpn.errormodel.WindError
@@ -75,12 +70,8 @@ class WelcomePresenterImpl @Inject constructor(
             logger.info("Trying to claim account with provided credentials...")
             welcomeView.prepareUiForApiCallFinished()
             welcomeView.prepareUiForApiCallStart()
-            val loginMap = createClaimAccountMap(username, password)
-            if (email.isNotEmpty()) {
-                loginMap[NetworkKeyConstants.ADD_EMAIL_KEY] = email
-            }
             interactor.getCompositeDisposable().add(interactor.getApiCallManager()
-                .claimAccount(loginMap)
+                .claimAccount(username, password, email)
                 .doOnSubscribe { welcomeView.updateCurrentProcess("Signing up") }
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object :
@@ -116,7 +107,7 @@ class WelcomePresenterImpl @Inject constructor(
     override fun startGhostAccountSetup() {
         welcomeView.prepareUiForApiCallStart()
         welcomeView.updateCurrentProcess("Signing In")
-        interactor.getCompositeDisposable().add(interactor.getApiCallManager().getReg(null)
+        interactor.getCompositeDisposable().add(interactor.getApiCallManager().getReg()
             .flatMap(Function<GenericResponseClass<RegToken?, ApiErrorResponse?>, SingleSource<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>> label@{ regToken: GenericResponseClass<RegToken?, ApiErrorResponse?> ->
                 when (val result = regToken.callResult<RegToken>()) {
                     is CallResult.Error -> {
@@ -127,8 +118,7 @@ class WelcomePresenterImpl @Inject constructor(
                         }
                     }
                     is CallResult.Success -> {
-                        val ghostModeMap = createGhostModeMap(result.data.token)
-                        return@label interactor.getApiCallManager().signUserIn(ghostModeMap)
+                        return@label interactor.getApiCallManager().signUpUsingToken(result.data.token)
                     }
                 }
             }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
@@ -173,9 +163,8 @@ class WelcomePresenterImpl @Inject constructor(
         if (validateLoginInputs(username, password, "", true)) {
             logger.info("Trying to login with provided credentials...")
             welcomeView.prepareUiForApiCallStart()
-            val loginMap = createLoginMap(username, password, twoFa)
             interactor.getCompositeDisposable().add(
-                interactor.getApiCallManager().logUserIn(loginMap)
+                interactor.getApiCallManager().logUserIn(username, password, twoFa)
                     .doOnSubscribe { welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.signing_in)) }
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -239,15 +228,8 @@ class WelcomePresenterImpl @Inject constructor(
             }
             logger.info("Trying to sign up with provided credentials...")
             welcomeView.prepareUiForApiCallStart()
-            val registrationMap = createRegistrationMap(username, password).toMutableMap()
-            if (email.isNotEmpty()) {
-                registrationMap[NetworkKeyConstants.ADD_EMAIL_KEY] = email
-            }
-            if (referralUsername.isNotEmpty()) {
-                registrationMap[NetworkKeyConstants.REFERRING_USERNAME] = referralUsername
-            }
             interactor.getCompositeDisposable().add(interactor.getApiCallManager()
-                .signUserIn(registrationMap)
+                .signUserIn(username, password, referralUsername, email)
                 .doOnSubscribe { welcomeView.updateCurrentProcess("Signing up") }
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object :

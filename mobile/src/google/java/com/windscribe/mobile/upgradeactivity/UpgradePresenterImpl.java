@@ -47,7 +47,6 @@ import com.google.gson.Gson;
 import com.windscribe.mobile.R;
 import com.windscribe.vpn.ActivityInteractor;
 import com.windscribe.vpn.Windscribe;
-import com.windscribe.vpn.api.CreateHashMap;
 import com.windscribe.vpn.api.response.ApiErrorResponse;
 import com.windscribe.vpn.api.response.BillingPlanResponse;
 import com.windscribe.vpn.api.response.GenericResponseClass;
@@ -60,6 +59,7 @@ import com.windscribe.vpn.billing.AmazonPurchase;
 import com.windscribe.vpn.billing.GoogleProducts;
 import com.windscribe.vpn.billing.PurchaseState;
 import com.windscribe.vpn.commonutils.RegionLocator;
+import com.windscribe.vpn.constants.BillingConstants;
 import com.windscribe.vpn.constants.NetworkErrorCodes;
 import com.windscribe.vpn.constants.PreferencesKeyConstants;
 import com.windscribe.vpn.constants.UserStatusConstants;
@@ -222,12 +222,13 @@ public class UpgradePresenterImpl implements UpgradePresenter {
         presenterLog.info("Getting billing plans...");
         if (mUpgradeInteractor != null && mUpgradeView != null) {
             final Map<String, String> billingPlanMap = new HashMap<>();
+            String promoCode = "";
             if (mPushNotificationAction != null) {
-                billingPlanMap.put(PROMO_CODE, mPushNotificationAction.getPromoCode());
+                promoCode = mPushNotificationAction.getPromoCode();
             }
             mUpgradeInteractor.getCompositeDisposable().add(
                     mUpgradeInteractor.getApiCallManager()
-                            .getBillingPlans(billingPlanMap)
+                            .getBillingPlans(promoCode)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(this::onBillingResponse, this::onBillingResponseError));
@@ -337,7 +338,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
             presenterLog.info(purchaseMap.toString());
             mUpgradeInteractor.getCompositeDisposable().add(
                     mUpgradeInteractor.getApiCallManager()
-                            .verifyPurchaseReceipt(purchaseMap)
+                            .verifyPurchaseReceipt(itemPurchased.getPurchaseToken(), itemPurchased.getPackageName(), itemPurchased.getProducts().get(0), "", "")
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribeWith(
@@ -680,9 +681,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
     }
 
     private Completable postPromoPaymentConfirmation() {
-        Map<String, String> paymentPromoConfirmationMap = new HashMap<>();
-        paymentPromoConfirmationMap.put(PAY_ID, mPushNotificationAction.getPcpID());
-        return mUpgradeInteractor.getApiCallManager().postPromoPaymentConfirmation(paymentPromoConfirmationMap)
+        return mUpgradeInteractor.getApiCallManager().postPromoPaymentConfirmation(mPushNotificationAction.getPcpID())
                 .onErrorReturn(throwable -> new GenericResponseClass<>(null, null))
                 .flatMapCompletable(response -> Completable.fromAction(() -> {
                     if (response.getErrorClass() != null) {
@@ -764,16 +763,9 @@ public class UpgradePresenterImpl implements UpgradePresenter {
         presenterLog.debug("Verifying amazon receipt.");
         mUpgradeView.showProgressBar("#Verifying purchase...");
         if (mUpgradeInteractor != null) {
-            Map<String, String> purchaseMap = new HashMap<>();
-            purchaseMap.put(PURCHASE_TOKEN, amazonPurchase.getReceiptId());
-            purchaseMap.put(PURCHASE_TYPE, AMAZON_PURCHASE_TYPE);
-            purchaseMap.put(AMAZON_USER_ID, amazonPurchase.getUserId());
-
-            presenterLog.info(purchaseMap.toString());
-
             mUpgradeInteractor.getCompositeDisposable().add(
                     mUpgradeInteractor.getApiCallManager()
-                            .verifyPurchaseReceipt(purchaseMap)
+                            .verifyPurchaseReceipt(amazonPurchase.getReceiptId(), "", "", BillingConstants.AMAZON_PURCHASE_TYPE, amazonPurchase.getUserId())
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribeWith(
@@ -831,9 +823,8 @@ public class UpgradePresenterImpl implements UpgradePresenter {
     public void onRegionalPlanSelected(String url) {
         mUpgradeView.showProgressBar("Getting Web Session");
         presenterLog.info("Requesting web session...");
-        Map<String, String> webSessionMap = CreateHashMap.INSTANCE.createWebSessionMap();
         mUpgradeInteractor.getCompositeDisposable()
-                .add(mUpgradeInteractor.getApiCallManager().getWebSession(webSessionMap)
+                .add(mUpgradeInteractor.getApiCallManager().getWebSession()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeWith(
