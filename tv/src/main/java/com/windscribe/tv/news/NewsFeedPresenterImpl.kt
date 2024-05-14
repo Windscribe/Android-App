@@ -40,7 +40,7 @@ class NewsFeedPresenterImpl @Inject constructor(
         interactor.getCompositeDisposable().add(
             interactor.getAppPreferenceInterface().notifications
                 .onErrorResumeNext {
-                    interactor.getApiCallManager().getNotifications()
+                    interactor.getApiCallManager().getNotifications(null)
                         .flatMap {
                             Single
                                 .fromCallable {

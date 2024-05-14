@@ -8,8 +8,8 @@ import java.net.Proxy
 import javax.inject.Inject
 
 class ProtectedApiFactory @Inject constructor(
-    var retrofitBuilder: Retrofit.Builder,
-    okHttpClientBuilder: OkHttpClient.Builder
+        private var retrofitBuilder: Retrofit.Builder,
+        okHttpClientBuilder: OkHttpClient.Builder
 ) {
     private var protectedHttpClient: OkHttpClient? = null
 

@@ -24,6 +24,7 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_ROBERT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.FAKE_TRAFFIC_VOLUME
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_CONNECT_API_FAIL_OVER_STATE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_LOCAL_PARAMS
+import com.windscribe.vpn.constants.PreferencesKeyConstants.WS_NET_SETTINGS
 import com.windscribe.vpn.constants.VpnPreferenceConstants
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.exceptions.PreferenceException
@@ -661,4 +662,7 @@ class AppPreferenceHelper(
         set(value) {
             preference.put(CUSTOM_DNS_ADDRESS, value)
         }
+    override var wsNetSettings: String
+        get() = preference.getString(WS_NET_SETTINGS, "") ?: ""
+        set(value) {preference.put(WS_NET_SETTINGS, value)}
 }

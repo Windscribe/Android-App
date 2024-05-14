@@ -59,7 +59,7 @@ class SplashPresenterImpl @Inject constructor(
                     )
                 interactor.getCompositeDisposable().add(
                     interactor.getApiCallManager()
-                        .recordAppInstall(null)
+                        .recordAppInstall()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeWith(

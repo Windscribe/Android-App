@@ -591,10 +591,10 @@ class WindscribePresenterImpl @Inject constructor(
                     .checkConnectivityAndIpAddress()
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({
-                        it.dataClass?.let { ip ->
-                            if (validIpAddress(ip.trim())) {
-                                windscribeView.setIpAddress(getModifiedIpAddress(ip.trim { it <= ' ' }))
+                    .subscribe({ genericResponseClass ->
+                        genericResponseClass.dataClass?.let { ip ->
+                            if (validIpAddress(ip.userIp)) {
+                                windscribeView.setIpAddress(getModifiedIpAddress(ip.userIp.trim { it <= ' ' }))
                             } else {
                                 logger.info("Server returned error response when getting user ip")
                                 windscribeView.setIpAddress("---.---.---.---")

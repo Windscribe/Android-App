@@ -7,7 +7,6 @@ import android.content.Context
 import android.util.Patterns
 import com.windscribe.mobile.R
 import com.windscribe.vpn.ActivityInteractor
-import com.windscribe.vpn.api.CreateHashMap.buildTicketMap
 import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.api.response.QueryType
@@ -49,10 +48,8 @@ class SendTicketPresenterImpl @Inject constructor(
     override fun onSendTicketClicked(email: String, subject: String, message: String) {
         sendTicketView.setProgressView(true)
         val username = interactor.getAppPreferenceInterface().userName
-        val queryMap = buildTicketMap(email, subject, message, username, queryType)
         interactor.getCompositeDisposable()
-            .add(
-                interactor.getApiCallManager().sendTicket(queryMap)
+            .add(interactor.getApiCallManager().sendTicket(email, username, subject, message, queryType.value.toString(), queryType.name, "app_android")
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(

@@ -46,11 +46,7 @@ class StaticIpRepository @Inject constructor(
     }
 
     private suspend fun updateFromApi() {
-        val sessionMap: MutableMap<String, String> = HashMap()
-        preferencesHelper.getDeviceUUID(preferencesHelper.userName)?.let {
-            sessionMap[NetworkKeyConstants.UUID_KEY] = it
-        }
-        val response = apiCallManager.getStaticIpList(sessionMap).await()
+        val response = apiCallManager.getStaticIpList(preferencesHelper.getDeviceUUID(preferencesHelper.userName)).await()
         val regions = response.dataClass?.let {
             val jsonObject = JSONObject(Gson().toJson(it))
             Gson().fromJson<List<StaticRegion>>(

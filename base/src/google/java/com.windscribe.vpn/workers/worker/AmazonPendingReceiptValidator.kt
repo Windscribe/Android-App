@@ -60,12 +60,7 @@ class AmazonPendingReceiptValidator(appContext: Context, params: WorkerParameter
 
     private suspend fun verifyPayment(amazonPurchase: AmazonPurchase): Boolean {
         logger.debug("Verifying amazon receipt.")
-        val purchaseMap = HashMap<String, String>()
-        purchaseMap[BillingConstants.PURCHASE_TOKEN] = amazonPurchase.receiptId
-        purchaseMap[BillingConstants.PURCHASE_TYPE] = BillingConstants.AMAZON_PURCHASE_TYPE
-        purchaseMap[BillingConstants.AMAZON_USER_ID] = amazonPurchase.userId
-        logger.info(purchaseMap.toString())
-        return when (val result = interactor.apiManager.verifyPurchaseReceipt(purchaseMap).result<GenericSuccess>()) {
+        return when (val result = interactor.apiManager.verifyPurchaseReceipt(amazonPurchase.receiptId, "", "", BillingConstants.AMAZON_PURCHASE_TYPE, amazonPurchase.userId).result<GenericSuccess>()) {
             is CallResult.Error -> {
                 logger.debug("Payment verification failed: ${result.errorMessage}")
                 false

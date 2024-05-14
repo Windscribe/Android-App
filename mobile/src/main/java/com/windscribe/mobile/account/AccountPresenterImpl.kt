@@ -7,8 +7,6 @@ import android.content.Context
 import com.windscribe.mobile.R
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.api.CreateHashMap.createVerifyExpressLoginMap
-import com.windscribe.vpn.api.CreateHashMap.createWebSessionMap
 import com.windscribe.vpn.api.response.*
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkKeyConstants
@@ -61,9 +59,8 @@ class AccountPresenterImpl @Inject constructor(
     override fun onCodeEntered(code: String) {
         accountView.showProgress("Verifying code...")
         logger.debug("verifying express login code.")
-        val verifyLoginMap = createVerifyExpressLoginMap(code)
         interactor.getCompositeDisposable().add(
-            interactor.getApiCallManager().verifyExpressLoginCode(verifyLoginMap)
+            interactor.getApiCallManager().verifyExpressLoginCode(code)
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object :
                     DisposableSingleObserver<GenericResponseClass<VerifyExpressLoginResponse?, ApiErrorResponse?>>() {
@@ -105,9 +102,8 @@ class AccountPresenterImpl @Inject constructor(
     override fun onEditAccountClicked() {
         accountView.setWebSessionLoading(true)
         logger.info("Opening My Account page in browser...")
-        val webSessionMap = createWebSessionMap()
         interactor.getCompositeDisposable().add(
-            interactor.getApiCallManager().getWebSession(webSessionMap).subscribeOn(Schedulers.io())
+            interactor.getApiCallManager().getWebSession().subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread()).subscribeWith(object :
                     DisposableSingleObserver<GenericResponseClass<WebSession?, ApiErrorResponse?>?>() {
                     override fun onError(e: Throwable) {

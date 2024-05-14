@@ -93,6 +93,7 @@ interface PreferencesHelper {
     var wgLocalParams: WgLocalParams?
     var autoConnect: Boolean
     var advanceParamText: String
+    var wsNetSettings: String
     fun nextProtocol(protocol: String?)
     fun removeResponseData(key: String?)
     fun requiredReconnect(): Boolean

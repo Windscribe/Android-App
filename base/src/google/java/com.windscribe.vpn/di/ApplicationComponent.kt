@@ -34,7 +34,7 @@ import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [ApplicationModule::class, NetworkModule::class, VPNModule::class, PersistentModule::class, BillingModule::class])
+@Component(modules = [ApplicationModule::class, VPNModule::class, PersistentModule::class, BillingModule::class])
 interface ApplicationComponent {
     //Main
     val coroutineScope: CoroutineScope
@@ -44,19 +44,6 @@ interface ApplicationComponent {
 
     //Api
     val apiCallManager: IApiCallManager
-    val windApiFactory: WindApiFactory
-    val windCustomFactory: WindCustomApiFactory
-    val authorizationGenerator: AuthorizationGenerator
-
-    //Backup
-    @get:Named("backupEndPoint")
-    val backupEndpoint: String
-
-    @get:Named("backupEndPointListForIp")
-    val backupEndpointListForIp: List<String>
-
-    @get:Named("accessIpList")
-    val accessIpList: List<String>
 
     //Data
     val localDbInterface: LocalDbInterface
