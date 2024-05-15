@@ -95,6 +95,9 @@ class DeviceStateService : JobIntentWorkAroundService() {
             logger.debug("${networkInfo.networkName} is unsecured. Starting network whitelist service.")
             vpnController.disconnectAsync(true)
         }
+        if(vpnConnectionStateManager.state.value.status == VPNState.Status.Connected){
+            preferencesHelper.whitelistOverride = false
+        }
         compositeDisposable.clear()
     }
 
