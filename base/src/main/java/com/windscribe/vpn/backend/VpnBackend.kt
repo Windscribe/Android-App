@@ -153,7 +153,6 @@ abstract class VpnBackend(
     }
 
     open fun connectivityTestPassed(ip: String) {
-        vpnServiceInteractor.preferenceHelper.whitelistOverride = false
         vpnLogger.debug("Connectivity test successful: $ip")
         updateState(VPNState(VPNState.Status.Connected, ip = ip))
         mainScope.launch {
