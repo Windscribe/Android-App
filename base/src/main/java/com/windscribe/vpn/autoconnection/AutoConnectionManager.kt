@@ -464,6 +464,11 @@ class AutoConnectionManager(
             FragmentType.ConnectionFailure,
             autoConnectionModeCallback = object : AutoConnectionModeCallback {
                 override fun onCancel() {
+                    listOfProtocols.firstOrNull { it.protocol == interactor.preferenceHelper.selectedProtocol }?.type =
+                            ProtocolConnectionStatus.NextUp
+                    listOfProtocols.firstOrNull { it.protocol == interactor.preferenceHelper.selectedProtocol }?.let {
+                        moveProtocolToTop(it, listOfProtocols)
+                    }
                     logger.debug("Cancel clicked existing auto connect.")
                     isEnabled = false
                 }
