@@ -287,6 +287,7 @@ class ServerListFragment : Fragment() {
 
     fun setRefreshingLayout(refreshing: Boolean) {
         swipeRefreshLayout?.setRefreshing(refreshing)
+        swipeRefreshLayout?.isEnabled = refreshing
     }
 
     fun setSwipeRefreshLayoutEnabled(enabled: Boolean) {
