@@ -338,6 +338,7 @@ class ServerListFragment : Fragment() {
         swipeRefreshLayout?.setRefreshInitialOffset(
             -resources.getDimension(R.dimen.reg_68dp).roundToInt().toFloat()
         )
+        swipeRefreshLayout?.isNestedScrollingEnabled = false
         swipeRefreshLayout?.setOnRefreshListener {
             if (fragmentClickListener != null) {
                 if (activity is WindscribeActivity) {
