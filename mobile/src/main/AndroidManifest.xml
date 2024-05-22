@@ -60,6 +60,11 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <layout android:defaultHeight="800dp"
+                android:defaultWidth="600dp"
+                android:gravity="top|end"
+                android:minHeight="450dp"
+                android:minWidth="300dp" />
         </activity>
         <activity
             android:name=".email.AddEmailActivity"
