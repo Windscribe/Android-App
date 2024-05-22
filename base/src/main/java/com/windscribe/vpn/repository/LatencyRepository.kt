@@ -68,7 +68,11 @@ class LatencyRepository @Inject constructor(
             if (appContext.isRegionRestricted) {
                 return@async getLatency(city.pingIp, pingTime)
             } else {
-                return@async getLatencyFromApi(city.pingHost, city.pingIp, pingTime)
+                try {
+                    return@async getLatencyFromApi(city.pingHost, city.pingIp, pingTime)
+                } catch (e: Exception){
+                    return@async PingTime()
+                }
             }
         }
     }
@@ -80,7 +84,11 @@ class LatencyRepository @Inject constructor(
             if (appContext.isRegionRestricted) {
                 return@async getLatency(region.staticIpNode.ip, pingTime)
             } else {
-                return@async getLatencyFromApi(region.pingHost, region.staticIpNode.ip, pingTime)
+                try {
+                    return@async getLatencyFromApi(region.pingHost, region.staticIpNode.ip, pingTime)
+                } catch (e: Exception){
+                    return@async PingTime()
+                }
             }
         }
     }
@@ -102,6 +110,7 @@ class LatencyRepository @Inject constructor(
         logger.debug("Requesting latency for ${pingJobs.count()} cities.")
         val cityPings = runCatching {
             pingJobs.awaitAll().map { pingTime ->
+                logger.debug("$pingTime")
                 localDbInterface.addPing(pingTime).await()
                 pingTime
             }.run {
