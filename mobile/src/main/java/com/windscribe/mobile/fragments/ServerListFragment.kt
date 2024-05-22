@@ -18,6 +18,7 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -35,6 +36,8 @@ import com.windscribe.mobile.holder.RemoveConfigHolder
 import com.windscribe.mobile.windscribe.FragmentClickListener
 import com.windscribe.mobile.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 class ServerListFragment : Fragment() {
@@ -114,8 +117,12 @@ class ServerListFragment : Fragment() {
         linearLayoutManager?.orientation = RecyclerView.VERTICAL
         recyclerView?.layoutManager = linearLayoutManager
         linearLayoutManager?.isItemPrefetchEnabled = false
-        setSwipeRefreshLayout(fragmentView)
-        setScrollHapticFeedback()
+        swipeRefreshLayout?.isEnabled = false
+        activity?.lifecycleScope?.launch {
+            delay(1500)
+            setSwipeRefreshLayout(fragmentView)
+            setScrollHapticFeedback()
+        }
         return fragmentView
     }
 
