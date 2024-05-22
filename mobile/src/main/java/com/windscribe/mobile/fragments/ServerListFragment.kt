@@ -344,7 +344,9 @@ class ServerListFragment : Fragment() {
                 if (activity is WindscribeActivity) {
                     (activity as WindscribeActivity?)?.performButtonClickHapticFeedback()
                 }
-                onRefreshForPing()
+                if ((linearLayoutManager?.childCount ?: 0) > 0) {
+                    onRefreshForPing()
+                }
             }
         }
     }
