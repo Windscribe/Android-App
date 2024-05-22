@@ -80,7 +80,11 @@ class LatencyRepository @Inject constructor(
             if (appContext.isRegionRestricted) {
                 return@async getLatency(region.staticIpNode.ip, pingTime)
             } else {
-                return@async getLatencyFromApi(region.pingHost, region.staticIpNode.ip, pingTime)
+                try {
+                    return@async getLatencyFromApi(region.pingHost, region.staticIpNode.ip, pingTime)
+                } catch (e: Exception){
+                    return@async PingTime()
+                }
             }
         }
     }
