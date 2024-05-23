@@ -612,6 +612,7 @@ class WindscribePresenterImpl @Inject constructor(
             logger.info(String.format("New Connection State: %s", lastVPNState.name))
             when (vpnState.status) {
                 VPNState.Status.Connected -> {
+                    windscribeView.setRefreshLayout(false)
                     vpnState.ip?.let {
                         onVpnIpReceived(it)
                     } ?: kotlin.run {
