@@ -1134,6 +1134,7 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     private fun onVPNConnecting() {
+        windscribeView.setRefreshLayout(false)
         selectedLocation?.let {
             if (windscribeView.uiConnectionState !is ConnectingAnimationState) {
                 logger.debug("Changing UI state to connecting.")
