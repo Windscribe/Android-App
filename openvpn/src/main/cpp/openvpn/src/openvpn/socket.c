@@ -3353,7 +3353,51 @@ link_socket_write_tcp(struct link_socket *sock,
     dmsg(D_STREAM_DEBUG, "STREAM: WRITE %d offset=%d", (int)len, buf->offset);
     ASSERT(len <= sock->stream_buf.maxlen);
     len = htonps(len);
+
+    uint8_t opcode = *BPTR(buf) >> P_OPCODE_SHIFT;
+
     ASSERT(buf_write_prepend(buf, &len, sizeof(len)));
+
+    if (sock->sockflags & SF_TCP_SPLITRESET)
+    {
+        if (opcode == P_CONTROL_HARD_RESET_CLIENT_V2
+            || opcode == P_CONTROL_HARD_RESET_CLIENT_V3)
+        {
+            int size = 0;
+            uint8_t split_piece_len, split_piece_len_cur;
+            int left;
+
+            rand_bytes((uint8_t*)&split_piece_len, sizeof(split_piece_len));
+            split_piece_len = (split_piece_len % 8) + 2;
+            left = buf->len;
+
+            socket_set_tcp_nodelay(sock->sd, 1);
+            while (left) {
+                split_piece_len_cur = (split_piece_len > left) ? left : split_piece_len;
+                buf->len = split_piece_len_cur;
+#ifdef _WIN32
+                size += link_socket_write_win32(sock, buf, to);
+#else
+                size += link_socket_write_tcp_posix(sock, buf, to);
+#endif
+                buf->len = left;
+                left -= split_piece_len_cur;
+                buf_advance(buf, split_piece_len_cur);
+#ifdef _WIN32
+                Sleep(5);
+#else
+                usleep(5000);
+#endif
+            }
+
+            if (!(sock->sockflags & SF_TCP_NODELAY)) {
+                socket_set_tcp_nodelay(sock->sd, 0);
+            }
+
+            return size;
+        }
+    }
+
 #ifdef _WIN32
     return link_socket_write_win32(sock, buf, to);
 #else
