@@ -281,7 +281,7 @@
     <string name="connected_lower_case">Connected </string>
     <string name="other">OTHER</string>
     <string name="about">About</string>
-    <string name="advance">Advance Parameters</string>
+    <string name="advance">Advanced Parameters</string>
     <string name="about_us">About Us</string>
     <string name="status">Status</string>
     <string name="privacy_policy">Privacy Policy</string>
@@ -485,7 +485,7 @@ last chosen location.</string>
     <string name="clear">Clear</string>
     <string name="enter_1_key_value_per_line">Enter 1 key=value per line.</string>
     <string name="connected_dns">Connected DNS</string>
-    <string name="custom_dns_address_hint">IP/Doh/Dot</string>
-    <string name="enter_valid_ip_or_url">Enter valid IP or Url</string>
-    <string name="custom_dns_explainer">Select the DNS server while connected to Windscribe. Turn off dnssec/edns when using doh.</string>
+    <string name="custom_dns_address_hint">IP/DoH/DoT</string>
+    <string name="enter_valid_ip_or_url">Enter valid IP or URL</string>
+    <string name="custom_dns_explainer">Select the DNS server while connected to Windscribe. Turn off DNSSEC/EDNS when using DoH.</string>
 </resources>
