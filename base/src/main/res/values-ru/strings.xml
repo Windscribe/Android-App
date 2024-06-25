@@ -481,7 +481,7 @@
     <string name="clear">Очистить</string>
     <string name="enter_1_key_value_per_line">Вводите по одному ключу=значению на строку.</string>
     <string name="connected_dns">DNS туннеля</string>
-    <string name="custom_dns_address_hint">IP/DoH/DoT</string>
+    <string name="custom_dns_address_hint">IP/DNS-over-HTTPS/TLS</string>
     <string name="enter_valid_ip_or_url">Введите верный IP или URL</string>
-    <string name="custom_dns_explainer">Выберите DNS-сервер, который будет использоваться при подключении к Windscribe. Отключите DNSSEC/EDNS при использовании DoH.</string>
+    <string name="custom_dns_explainer">Выберите DNS-сервер, который будет использоваться при подключении к Windscribe.</string>
 </resources>
