@@ -751,6 +751,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
             connSettingsView.setAntiCensorshipToggle(R.drawable.ic_toggle_button_on)
             interactor.getAppPreferenceInterface().isAntiCensorshipOn = true
         }
+        interactor.setAntiCensorship(interactor.getAppPreferenceInterface().isAntiCensorshipOn)
         interactor.getPreferenceChangeObserver().postAntiCensorShipStatusChange()
     }
 
