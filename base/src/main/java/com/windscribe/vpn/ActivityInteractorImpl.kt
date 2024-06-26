@@ -39,6 +39,7 @@ import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.services.ReceiptValidator
 import com.windscribe.vpn.workers.WindScribeWorkManager
+import com.wsnet.lib.WSNet
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Single
@@ -698,5 +699,9 @@ class ActivityInteractorImpl(
 
     override fun getReceiptValidator(): ReceiptValidator {
         return receiptValidator
+    }
+
+    override fun setAntiCensorship(status: Boolean) {
+        WSNet.instance().advancedParameters().setAPIExtraTLSPadding(status)
     }
 }
