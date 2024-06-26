@@ -3059,6 +3059,8 @@ do_init_crypto_tls(struct context *c, const unsigned int flags)
         }
     }
 
+    to.tcp_split_reset = !!(options->sockflags & SF_TCP_SPLITRESET && options->ce.proto != PROTO_UDP);
+
     /* If we are running over TCP, allow for
      * length prefix */
     socket_adjust_frame_parameters(&to.frame, options->ce.proto);

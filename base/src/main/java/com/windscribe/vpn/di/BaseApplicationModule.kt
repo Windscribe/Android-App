@@ -786,6 +786,7 @@ open class BaseApplicationModule {
             }
         }
         WSNet.instance().setConnectivityState(WindUtilities.isOnline())
+        WSNet.instance().advancedParameters().setAPIExtraTLSPadding(preferencesHelper.isAntiCensorshipOn)
         deviceStateManager.addListener(networkListener)
         return WSNet.instance()
     }
