@@ -2728,9 +2728,16 @@ tls_process(struct tls_multi *multi,
         /* Initial handshake */
         if (ks->state == S_INITIAL)
         {
-            buf = reliable_get_buf_output_sequenced(ks->send_reliable);
-            if (buf)
-            {
+            uint8_t count = 1;
+            if (session->opt->tcp_split_reset) {
+                rand_bytes(&count, sizeof(count));
+                count = 2 + (count % 2);
+            }
+            for (uint8_t i=0; i<count; i++) {
+                buf = reliable_get_buf_output_sequenced(ks->send_reliable);
+                if (!buf)
+                    return false;
+
                 ks->initial = now;
                 ks->must_negotiate = now + session->opt->handshake_window;
                 ks->auth_deferred_expire = now + auth_deferred_expire_window(session->opt);
@@ -2738,25 +2745,25 @@ tls_process(struct tls_multi *multi,
                 /* null buffer */
                 reliable_mark_active_outgoing(ks->send_reliable, buf, ks->initial_opcode);
                 INCR_GENERATED;
+            }
 
-                ks->state = S_PRE_START;
-                state_change = true;
-                dmsg(D_TLS_DEBUG, "TLS: Initial Handshake, sid=%s",
-                     session_id_print(&session->session_id, &gc));
+            ks->state = S_PRE_START;
+            state_change = true;
+            dmsg(D_TLS_DEBUG, "TLS: Initial Handshake, sid=%s",
+                 session_id_print(&session->session_id, &gc));
 
 #ifdef ENABLE_MANAGEMENT
-                if (management && ks->initial_opcode != P_CONTROL_SOFT_RESET_V1)
-                {
-                    management_set_state(management,
-                                         OPENVPN_STATE_WAIT,
-                                         NULL,
-                                         NULL,
-                                         NULL,
-                                         NULL,
-                                         NULL);
-                }
-#endif
+            if (management && ks->initial_opcode != P_CONTROL_SOFT_RESET_V1)
+            {
+                management_set_state(management,
+                                     OPENVPN_STATE_WAIT,
+                                     NULL,
+                                     NULL,
+                                     NULL,
+                                     NULL,
+                                     NULL);
             }
+#endif
         }
 
         /* Are we timed out on receive? */

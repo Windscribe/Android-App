@@ -35,6 +35,7 @@ public final class Peer {
     private final Optional<Integer> persistentKeepalive;
     private final Optional<Key> preSharedKey;
     private final Key publicKey;
+    private final boolean udpStuffing;
 
     private Peer(final Builder builder) {
         // Defensively copy to ensure immutability even if the Builder is reused.
@@ -43,6 +44,7 @@ public final class Peer {
         persistentKeepalive = builder.persistentKeepalive;
         preSharedKey = builder.preSharedKey;
         publicKey = Objects.requireNonNull(builder.publicKey, "Peers must have a public key");
+        udpStuffing = builder.udpStuffing;
     }
 
     /**
@@ -75,6 +77,9 @@ public final class Peer {
                 case "publickey":
                     builder.parsePublicKey(attribute.getValue());
                     break;
+                case "udpstuffing":
+                    builder.parseUDPStuffing(attribute.getValue());
+                    break;
                 default:
                     throw new BadConfigException(Section.PEER, Location.TOP_LEVEL,
                             Reason.UNKNOWN_ATTRIBUTE, attribute.getKey());
@@ -92,7 +97,8 @@ public final class Peer {
                 && endpoint.equals(other.endpoint)
                 && persistentKeepalive.equals(other.persistentKeepalive)
                 && preSharedKey.equals(other.preSharedKey)
-                && publicKey.equals(other.publicKey);
+                && publicKey.equals(other.publicKey)
+                && udpStuffing == other.udpStuffing;
     }
 
     /**
@@ -179,6 +185,7 @@ public final class Peer {
             sb.append("AllowedIPs = ").append(Attribute.join(allowedIps)).append('\n');
         endpoint.ifPresent(ep -> sb.append("Endpoint = ").append(ep).append('\n'));
         persistentKeepalive.ifPresent(pk -> sb.append("PersistentKeepalive = ").append(pk).append('\n'));
+        sb.append("UDPStuffing = ").append(udpStuffing).append('\n');
         preSharedKey.ifPresent(psk -> sb.append("PreSharedKey = ").append(psk.toBase64()).append('\n'));
         sb.append("PublicKey = ").append(publicKey.toBase64()).append('\n');
         return sb.toString();
@@ -198,6 +205,7 @@ public final class Peer {
             sb.append("allowed_ip=").append(allowedIp).append('\n');
         endpoint.flatMap(InetEndpoint::getResolved).ifPresent(ep -> sb.append("endpoint=").append(ep).append('\n'));
         persistentKeepalive.ifPresent(pk -> sb.append("persistent_keepalive_interval=").append(pk).append('\n'));
+        sb.append("udp_stuffing=").append(Boolean.toString(udpStuffing)).append('\n');
         preSharedKey.ifPresent(psk -> sb.append("preshared_key=").append(psk.toHex()).append('\n'));
         return sb.toString();
     }
@@ -216,6 +224,7 @@ public final class Peer {
         // Defaults to not present.
         private Optional<Key> preSharedKey = Optional.empty();
         // No default; must be provided before building.
+        private boolean udpStuffing = false;
         @Nullable private Key publicKey;
 
         public Builder addAllowedIp(final InetNetwork allowedIp) {
@@ -263,6 +272,10 @@ public final class Peer {
             }
         }
 
+        public Builder parseUDPStuffing(final String value) {
+            return setUDPStuffing(Boolean.parseBoolean(value));
+        }
+
         public Builder parsePreSharedKey(final String preSharedKey) throws BadConfigException {
             try {
                 return setPreSharedKey(Key.fromBase64(preSharedKey));
@@ -291,6 +304,11 @@ public final class Peer {
                         Reason.INVALID_VALUE, String.valueOf(persistentKeepalive));
             this.persistentKeepalive = persistentKeepalive == 0 ?
                     Optional.empty() : Optional.of(persistentKeepalive);
+            return this;
+        }
+
+        public Builder setUDPStuffing(final boolean value) {
+            this.udpStuffing = value;
             return this;
         }
 

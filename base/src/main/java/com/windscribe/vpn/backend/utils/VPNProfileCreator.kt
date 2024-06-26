@@ -559,6 +559,7 @@ class VPNProfileCreator @Inject constructor(
         builder.parseEndpoint(sb)
         builder.setPersistentKeepalive(25)
         builder.parsePreSharedKey(wgRemoteParams.preSharedKey)
+        builder.setUDPStuffing(appContext.preference.isAntiCensorshipOn)
         return builder.build()
     }
 
