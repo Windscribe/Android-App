@@ -59,7 +59,7 @@ class ProxyDNSManager(val scope: CoroutineScope, val preferenceHelper: Preferenc
     }
 
     private fun shouldRunControlD(): Boolean {
-        return preferenceHelper.dnsMode == PreferencesKeyConstants.DNS_MODE_CUSTOM && preferenceHelper.dnsAddress != null
+        return dnsDetails?.type == DnsType.Proxy && preferenceHelper.dnsMode == PreferencesKeyConstants.DNS_MODE_CUSTOM && preferenceHelper.dnsAddress != null
     }
 
     suspend fun startControlDIfRequired() {
