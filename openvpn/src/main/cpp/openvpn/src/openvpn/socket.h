@@ -1146,38 +1146,50 @@ link_socket_write_udp(struct link_socket *sock,
 #ifndef P_CONTROL_HARD_RESET_CLIENT_V3
 #define P_CONTROL_HARD_RESET_CLIENT_V3 10
 #endif
+#ifndef P_CONTROL_HARD_RESET_SERVER_V2
+#define P_CONTROL_HARD_RESET_SERVER_V2 8     /* initial key from server, forget previous state */
+#endif
 #ifndef P_OPCODE_SHIFT
 #define P_OPCODE_SHIFT 3
 #endif
+#ifndef P_ACK_V1
+#define P_ACK_V1                       5     /* acknowledgement for packets received */
+#endif
     int rand_bytes(uint8_t *output, int len);
 
-#define STUFFING_LEN_MAX 1200
+#define STUFFING_LEN_MAX 900
+#define STUFFING_NUM_MAX 100
 
     uint8_t opcode = *BPTR(buf) >> P_OPCODE_SHIFT;
-    if (
-        sock->sockflags & SF_UDP_STUFFING
+
+
+    if (sock->sockflags & SF_UDP_STUFFING
         && (opcode == P_CONTROL_HARD_RESET_CLIENT_V2
-            || opcode == P_CONTROL_HARD_RESET_CLIENT_V3)
-       )
+            || opcode == P_CONTROL_HARD_RESET_CLIENT_V3
+            || opcode == P_CONTROL_HARD_RESET_SERVER_V2))
     {
-        uint16_t stuffing_len;
+        uint16_t stuffing_len, stuffing_num;
         rand_bytes((uint8_t*)&stuffing_len, sizeof(stuffing_len));
-        stuffing_len = (stuffing_len % (STUFFING_LEN_MAX - 10)) + 10;
+        rand_bytes((uint8_t*)&stuffing_num, sizeof(stuffing_num));
+        stuffing_num = (stuffing_num % (STUFFING_NUM_MAX - 10)) + 10;
 
         uint8_t stuffing_data[STUFFING_LEN_MAX] = {0};
-        rand_bytes(stuffing_data, sizeof(stuffing_data));
-        struct buffer stuffing_buf = alloc_buf(STUFFING_LEN_MAX);
-        buf_write(&stuffing_buf, stuffing_data, stuffing_len);
 
+        for (int i=0; i<stuffing_num; i++) {
+            stuffing_len = (stuffing_len % (STUFFING_LEN_MAX - 200)) + 200;
+            rand_bytes(stuffing_data, sizeof(stuffing_data));
+            struct buffer stuffing_buf = alloc_buf(STUFFING_LEN_MAX);
+            buf_write(&stuffing_buf, stuffing_data, stuffing_len);
 #ifdef _WIN32
-        link_socket_write_win32(sock, &stuffing_buf, to);
+            link_socket_write_win32(sock, &stuffing_buf, to);
 #else
-        link_socket_write_udp_posix(sock, &stuffing_buf, to);
+            link_socket_write_udp_posix(sock, &stuffing_buf, to);
 #endif
+            free_buf(&stuffing_buf);
+        }
 
-        free_buf(&stuffing_buf);
+
     }
-
 
 #ifdef _WIN32
     return link_socket_write_win32(sock, buf, to);

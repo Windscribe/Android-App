@@ -1,5 +1,7 @@
 github.com/Windscribe/wireguard v1.0.2 h1:qQ1895kBFcmKeNvk9TY6b5Ewp9xZ2TXQN7rmgCc7F3M=
 github.com/Windscribe/wireguard v1.0.2/go.mod h1:whfbyDBt09xhCYQWtO2+3UVjlaq6/9hDZrjg2ZE6SyA=
+github.com/Windscribe/wireguard v1.0.3 h1:8CKOCJZW8R5f+UcdIyz6U0yVMIRXLDJ6F8xinsCbzoo=
+github.com/Windscribe/wireguard v1.0.3/go.mod h1:whfbyDBt09xhCYQWtO2+3UVjlaq6/9hDZrjg2ZE6SyA=
 golang.org/x/crypto v0.14.0 h1:wBqGXzWJW6m1XrIKlAH0Hs1JJ7+9KBwnIO8v66Q9cHc=
 golang.org/x/crypto v0.14.0/go.mod h1:MVFd36DqK4CsrnJYDkBA3VC4m2GkXAM0PvzMCn4JQf4=
 golang.org/x/net v0.17.0 h1:pVaXccu2ozPjCXewfr1S7xza/zcXTity9cCdXQYSjIM=

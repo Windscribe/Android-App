@@ -403,6 +403,8 @@ struct tls_options
     const char *ekm_label;
     size_t ekm_label_size;
     size_t ekm_size;
+
+    bool tcp_split_reset;
 };
 
 /** @addtogroup control_processor
