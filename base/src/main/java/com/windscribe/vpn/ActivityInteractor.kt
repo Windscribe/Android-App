@@ -139,4 +139,5 @@ interface ActivityInteractor {
     fun getStringArray(resourceId: Int): Array<String>
     fun getReceiptValidator(): ReceiptValidator
     fun getFireBaseManager(): FirebaseManager
+    fun setAntiCensorship(status: Boolean)
 }
