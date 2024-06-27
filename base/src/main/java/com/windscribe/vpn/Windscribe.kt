@@ -38,6 +38,7 @@ import com.windscribe.vpn.services.canAccessNetworkName
 import com.windscribe.vpn.services.startAutoConnectService
 import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.DeviceStateManager
+import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import de.blinkt.openvpn.core.PRNGFixes
@@ -101,6 +102,9 @@ open class Windscribe : MultiDexApplication() {
 
     @Inject
     lateinit var mockLocationManager: MockLocationManager
+
+    @Inject
+    lateinit var shortcutManager: DynamicShortcutManager
 
     @Inject
     lateinit var vpnController: WindVpnController
