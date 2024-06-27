@@ -71,6 +71,7 @@ import com.windscribe.vpn.serverlist.dao.RegionDao
 import com.windscribe.vpn.serverlist.dao.StaticRegionDao
 import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.DeviceStateManager
+import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.ShortcutStateManager
@@ -789,5 +790,11 @@ open class BaseApplicationModule {
         WSNet.instance().advancedParameters().setAPIExtraTLSPadding(preferencesHelper.isAntiCensorshipOn)
         deviceStateManager.addListener(networkListener)
         return WSNet.instance()
+    }
+
+    @Provides
+    @Singleton
+    fun providesDynamicShortcutManager(app: Windscribe,scope: CoroutineScope, vpnConnectionStateManager: VPNConnectionStateManager): DynamicShortcutManager {
+        return DynamicShortcutManager(app, scope, vpnConnectionStateManager)
     }
 }
