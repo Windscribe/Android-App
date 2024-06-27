@@ -74,6 +74,7 @@ interface ApplicationComponent {
     val receiptValidator: ReceiptValidator
     val firebaseManager: FirebaseManager
     val proxyDNSManager: ProxyDNSManager
+    val dynamicShortCutManager: DynamicShortcutManager
 
     //Repository
     val staticIpRepository: StaticIpRepository
