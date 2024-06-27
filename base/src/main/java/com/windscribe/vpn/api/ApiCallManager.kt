@@ -236,7 +236,7 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun verifyExpressLoginCode(loginCode: String): Single<GenericResponseClass<VerifyExpressLoginResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.verifyXpressLoginCode(loginCode, "") { code, json ->
+            val callback = wsNetServerAPI.verifyTvLoginCode(preferencesHelper.sessionHash, loginCode) { code, json ->
                 buildResponse(sub, code, json, VerifyExpressLoginResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -245,7 +245,6 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
 
     override fun generateXPressLoginCode(): Single<GenericResponseClass<XPressLoginCodeResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
-            if (checkSession(sub)) return@create
             val callback = wsNetServerAPI.getXpressLoginCode { code, json ->
                 buildResponse(sub, code, json, XPressLoginCodeResponse::class.java)
             }
@@ -255,7 +254,6 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
 
     override fun verifyXPressLoginCode(loginCode: String, signature: String): Single<GenericResponseClass<XPressLoginVerifyResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
-            if (checkSession(sub)) return@create
             val callback = wsNetServerAPI.verifyXpressLoginCode(loginCode, signature) { code, json ->
                 buildResponse(sub, code, json, XPressLoginVerifyResponse::class.java)
             }
