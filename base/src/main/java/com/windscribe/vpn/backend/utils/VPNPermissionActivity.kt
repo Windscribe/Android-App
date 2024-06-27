@@ -16,6 +16,7 @@ import com.windscribe.vpn.R.layout
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.VpnBackendHolder
+import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import de.blinkt.openvpn.core.Preferences
 import kotlinx.coroutines.CoroutineScope
@@ -50,10 +51,20 @@ class VPNPermissionActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_launch)
         Windscribe.appContext.activityComponent.inject(this)
-        protocolInformation =
-            intent.getSerializableExtra("protocolInformation") as ProtocolInformation
-        connectionId = intent.getSerializableExtra("connectionId") as UUID
-        askForPermission()
+        if (intent.hasExtra("protocolInformation")) {
+            protocolInformation =
+                    intent.getSerializableExtra("protocolInformation") as ProtocolInformation
+            connectionId = intent.getSerializableExtra("connectionId") as UUID
+            askForPermission()
+        }  else {
+            finish()
+            val action = intent.getStringExtra("action")
+            if (action == DynamicShortcutManager.QUICK_CONNECT_ACTION){
+                vpnController.connectAsync()
+            } else {
+                vpnController.disconnectAsync()
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -68,7 +79,7 @@ class VPNPermissionActivity : Activity() {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         logger.debug("requesting notification permission.")
                         requestPermissions(
-                            arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION
+                                arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION
                         )
                     } else {
                         vpnBackendHolder.connect(protocolInformation, connectionId)
@@ -87,7 +98,7 @@ class VPNPermissionActivity : Activity() {
 
 
     override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+            requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == NOTIFICATION) {
