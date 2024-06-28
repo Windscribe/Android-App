@@ -4,15 +4,17 @@
 package com.windscribe.vpn.commonutils
 
 import com.windscribe.vpn.R
-import com.windscribe.vpn.commonutils.FlagIconResource
-import java.util.HashMap
 
 /**
  * Created by Mustafizur on 2018-03-05.
  */
 object FlagIconResource {
     fun getFlag(countryCode: String?): Int {
-        return flagIcons[countryCode]?:R.drawable.dummy_flag
+        return flagIcons[countryCode] ?: R.drawable.dummy_flag
+    }
+
+    fun getSmallFlag(countryCode: String?): Int {
+        return smallIcons[countryCode] ?: R.drawable.dummy_flag
     }
 
     val flagIcons: Map<String, Int>
@@ -85,7 +87,6 @@ object FlagIconResource {
             flagIcon["MK"] = R.drawable.mk
             flagIcon["HR"] = R.drawable.hr
             flagIcon["BR"] = R.drawable.br
-            flagIcon["SL"] = R.drawable.sl
             flagIcon["PA"] = R.drawable.pa
             flagIcon["VE"] = R.drawable.ve
             flagIcon["BS"] = R.drawable.bs
@@ -104,6 +105,97 @@ object FlagIconResource {
             flagIcon["MT"] = R.drawable.mt
             flagIcon["PE"] = R.drawable.pe
             flagIcon["GH"] = R.drawable.gh
+            return flagIcon
+        }
+
+    private val smallIcons: Map<String, Int>
+        get() {
+            val flagIcon: MutableMap<String, Int> = HashMap()
+            flagIcon["AQ"] = R.drawable.aq
+            flagIcon["CA"] = R.drawable.ca_small
+            flagIcon["US"] = R.drawable.us_small
+            flagIcon["FR"] = R.drawable.fr_small
+            flagIcon["UK"] = R.drawable.uk_small
+            flagIcon["AT"] = R.drawable.at_small
+            flagIcon["DE"] = R.drawable.de_small
+            flagIcon["BG"] = R.drawable.bg_small
+            flagIcon["HU"] = R.drawable.hu_small
+            flagIcon["AR"] = R.drawable.ar_small
+            flagIcon["VN"] = R.drawable.vn_small
+            flagIcon["CZ"] = R.drawable.cz_small
+            flagIcon["BE"] = R.drawable.be_small
+            flagIcon["AE"] = R.drawable.ae_small
+            flagIcon["TH"] = R.drawable.ly_small
+            flagIcon["TW"] = R.drawable.ly_small
+            flagIcon["KR"] = R.drawable.ly_small
+            flagIcon["SG"] = R.drawable.ly_small
+            flagIcon["MY"] = R.drawable.ly_small
+            flagIcon["JP"] = R.drawable.ly_small
+            flagIcon["ID"] = R.drawable.ly_small
+            flagIcon["HK"] = R.drawable.ly_small
+            flagIcon["NZ"] = R.drawable.ly_small
+            flagIcon["AU"] = R.drawable.ly_small
+            flagIcon["UA"] = R.drawable.ly_small
+            flagIcon["TR"] = R.drawable.ly_small
+            flagIcon["ZA"] = R.drawable.ly_small
+            flagIcon["RU"] = R.drawable.ly_small
+            flagIcon["LY"] = R.drawable.ly_small
+            flagIcon["IN"] = R.drawable.in_small
+            flagIcon["AZ"] = R.drawable.az_small
+            flagIcon["GB"] = R.drawable.uk_small
+            flagIcon["CH"] = R.drawable.ch_small
+            flagIcon["SE"] = R.drawable.se_small
+            flagIcon["ES"] = R.drawable.es_small
+            flagIcon["GR"] = R.drawable.gr_small
+            flagIcon["IS"] = R.drawable.is_small
+            flagIcon["IE"] = R.drawable.ie_small
+            flagIcon["IL"] = R.drawable.il_small
+            flagIcon["IT"] = R.drawable.it_small
+            flagIcon["LV"] = R.drawable.lv_small
+            flagIcon["LT"] = R.drawable.lt_small
+            flagIcon["LU"] = R.drawable.lu_small
+            flagIcon["MD"] = R.drawable.md_small
+            flagIcon["NL"] = R.drawable.nl_small
+            flagIcon["NO"] = R.drawable.no_small
+            flagIcon["PL"] = R.drawable.pl_small
+            flagIcon["PT"] = R.drawable.pt_small
+            flagIcon["RO"] = R.drawable.ro_small
+            flagIcon["DK"] = R.drawable.dk_small
+            flagIcon["FI"] = R.drawable.fi_small
+            flagIcon["AL"] = R.drawable.al_small
+            flagIcon["SK"] = R.drawable.sk_small
+            flagIcon["SI"] = R.drawable.si_small
+            flagIcon["EE"] = R.drawable.ee_small
+            flagIcon["TN"] = R.drawable.tn_small
+            flagIcon["PH"] = R.drawable.ph_small
+            flagIcon["CO"] = R.drawable.co_small
+            flagIcon["MX"] = R.drawable.mx_small
+            flagIcon["RS"] = R.drawable.rs_small
+            flagIcon["GE"] = R.drawable.ge_small
+            flagIcon["CL"] = R.drawable.cl_small
+            flagIcon["CR"] = R.drawable.cr_small
+            flagIcon["CY"] = R.drawable.cy_small
+            flagIcon["KE"] = R.drawable.ke_small
+            flagIcon["MK"] = R.drawable.mk_small
+            flagIcon["HR"] = R.drawable.hr_small
+            flagIcon["BR"] = R.drawable.br_small
+            flagIcon["PA"] = R.drawable.pa_small
+            flagIcon["VE"] = R.drawable.ve_small
+            flagIcon["BS"] = R.drawable.bs_small
+            flagIcon["ET"] = R.drawable.et_small
+            flagIcon["DZ"] = R.drawable.dz_small
+            flagIcon["MA"] = R.drawable.ma_small
+            flagIcon["AM"] = R.drawable.am_small
+            flagIcon["MC"] = R.drawable.mc_small
+            flagIcon["PK"] = R.drawable.pk_small
+            flagIcon["CN"] = R.drawable.cn_small
+            flagIcon["BA"] = R.drawable.ba_small
+            flagIcon["KH"] = R.drawable.kh_small
+            flagIcon["EC"] = R.drawable.ec_small
+            flagIcon["KZ"] = R.drawable.kz_small
+            flagIcon["MT"] = R.drawable.mt_small
+            flagIcon["PE"] = R.drawable.pe_small
+            flagIcon["GH"] = R.drawable.gh_small
             return flagIcon
         }
 }
