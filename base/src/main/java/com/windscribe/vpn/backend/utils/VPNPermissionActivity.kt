@@ -12,10 +12,15 @@ import android.content.pm.PackageManager
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import com.windscribe.vpn.R.layout
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.VpnBackendHolder
+import com.windscribe.vpn.repository.LocationRepository
+import com.windscribe.vpn.state.DynamicShortcutManager
+import com.windscribe.vpn.state.DynamicShortcutManager.Companion.QUICK_CONNECT_ACTION_KEY
+import com.windscribe.vpn.state.DynamicShortcutManager.Companion.RECENT_COUNTRY_CODE_KEY
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import de.blinkt.openvpn.core.Preferences
 import kotlinx.coroutines.CoroutineScope
@@ -42,6 +47,9 @@ class VPNPermissionActivity : Activity() {
     @Inject
     lateinit var vpnBackendHolder: VpnBackendHolder
 
+    @Inject
+    lateinit var locationRepository: LocationRepository
+
     lateinit var protocolInformation: ProtocolInformation
 
     lateinit var connectionId: UUID
@@ -50,10 +58,28 @@ class VPNPermissionActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_launch)
         Windscribe.appContext.activityComponent.inject(this)
-        protocolInformation =
-            intent.getSerializableExtra("protocolInformation") as ProtocolInformation
-        connectionId = intent.getSerializableExtra("connectionId") as UUID
-        askForPermission()
+        if (intent.hasExtra("protocolInformation")) {
+            protocolInformation =
+                    intent.getSerializableExtra("protocolInformation") as ProtocolInformation
+            connectionId = intent.getSerializableExtra("connectionId") as UUID
+            askForPermission()
+        }  else {
+            finish()
+            val action = intent.getStringExtra(QUICK_CONNECT_ACTION_KEY)
+            when (action) {
+                DynamicShortcutManager.QUICK_CONNECT_ACTION -> {
+                    vpnController.connectAsync()
+                }
+                DynamicShortcutManager.RECENT_CONNECT_ACTION -> {
+                    val connectId = intent.getIntExtra(DynamicShortcutManager.RECENT_CONNECT_ID, -1)
+                    locationRepository.setSelectedCity(connectId)
+                    vpnController.connectAsync()
+                }
+                else -> {
+                    vpnController.disconnectAsync()
+                }
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -68,7 +94,7 @@ class VPNPermissionActivity : Activity() {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         logger.debug("requesting notification permission.")
                         requestPermissions(
-                            arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION
+                                arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION
                         )
                     } else {
                         vpnBackendHolder.connect(protocolInformation, connectionId)
@@ -87,7 +113,7 @@ class VPNPermissionActivity : Activity() {
 
 
     override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+            requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == NOTIFICATION) {
