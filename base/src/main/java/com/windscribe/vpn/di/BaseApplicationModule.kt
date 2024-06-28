@@ -794,7 +794,7 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun providesDynamicShortcutManager(app: Windscribe,scope: CoroutineScope, vpnConnectionStateManager: VPNConnectionStateManager): DynamicShortcutManager {
-        return DynamicShortcutManager(app, scope, vpnConnectionStateManager)
+    fun providesDynamicShortcutManager(app: Windscribe,scope: CoroutineScope, vpnConnectionStateManager: VPNConnectionStateManager, locationRepository: LocationRepository): DynamicShortcutManager {
+        return DynamicShortcutManager(app, scope, vpnConnectionStateManager, locationRepository)
     }
 }
