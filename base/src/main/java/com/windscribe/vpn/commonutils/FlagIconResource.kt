@@ -111,7 +111,7 @@ object FlagIconResource {
     private val smallIcons: Map<String, Int>
         get() {
             val flagIcon: MutableMap<String, Int> = HashMap()
-            flagIcon["AQ"] = R.drawable.aq
+            flagIcon["AQ"] = R.drawable.aq_small
             flagIcon["CA"] = R.drawable.ca_small
             flagIcon["US"] = R.drawable.us_small
             flagIcon["FR"] = R.drawable.fr_small
@@ -125,20 +125,20 @@ object FlagIconResource {
             flagIcon["CZ"] = R.drawable.cz_small
             flagIcon["BE"] = R.drawable.be_small
             flagIcon["AE"] = R.drawable.ae_small
-            flagIcon["TH"] = R.drawable.ly_small
-            flagIcon["TW"] = R.drawable.ly_small
-            flagIcon["KR"] = R.drawable.ly_small
-            flagIcon["SG"] = R.drawable.ly_small
-            flagIcon["MY"] = R.drawable.ly_small
-            flagIcon["JP"] = R.drawable.ly_small
-            flagIcon["ID"] = R.drawable.ly_small
-            flagIcon["HK"] = R.drawable.ly_small
-            flagIcon["NZ"] = R.drawable.ly_small
-            flagIcon["AU"] = R.drawable.ly_small
-            flagIcon["UA"] = R.drawable.ly_small
-            flagIcon["TR"] = R.drawable.ly_small
-            flagIcon["ZA"] = R.drawable.ly_small
-            flagIcon["RU"] = R.drawable.ly_small
+            flagIcon["TH"] = R.drawable.th_small
+            flagIcon["TW"] = R.drawable.tw_small
+            flagIcon["KR"] = R.drawable.kr_small
+            flagIcon["SG"] = R.drawable.sg_small
+            flagIcon["MY"] = R.drawable.my_small
+            flagIcon["JP"] = R.drawable.jp_small
+            flagIcon["ID"] = R.drawable.id_small
+            flagIcon["HK"] = R.drawable.hk_small
+            flagIcon["NZ"] = R.drawable.nz_small
+            flagIcon["AU"] = R.drawable.au_small
+            flagIcon["UA"] = R.drawable.ua_small
+            flagIcon["TR"] = R.drawable.tr_small
+            flagIcon["ZA"] = R.drawable.za_small
+            flagIcon["RU"] = R.drawable.ru_small
             flagIcon["LY"] = R.drawable.ly_small
             flagIcon["IN"] = R.drawable.in_small
             flagIcon["AZ"] = R.drawable.az_small

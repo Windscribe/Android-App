@@ -56,31 +56,28 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
                 when (it.status) {
                     VPNState.Status.Connecting -> {
                         intent.putExtra(QUICK_CONNECT_ACTION_KEY, QUICK_DISCONNECT_ACTION)
-                        addShortcut(QUICK_CONNECT_ID, context.getString(R.string.quick_connect), R.drawable.quick_connect_connecting, intent, rank = 1)
-                        addShortcut(QUICK_DISCONNECT_ID, context.getString(R.string.disconnect), R.drawable.quick_disconnect, intent, rank = 1)
+                        addShortcut(QUICK_CONNECT_ID, context.getString(R.string.disconnect), R.drawable.quick_disconnect, intent)
                     }
 
                     VPNState.Status.Connected -> {
                         intent.putExtra(QUICK_CONNECT_ACTION_KEY, QUICK_DISCONNECT_ACTION)
-                        addShortcut(QUICK_CONNECT_ID, context.getString(R.string.quick_connect), R.drawable.quick_connect_connected, intent, rank = 1)
-                        addShortcut(QUICK_DISCONNECT_ID, context.getString(R.string.disconnect), R.drawable.quick_disconnect, intent)
+                        addShortcut(QUICK_CONNECT_ID, context.getString(R.string.disconnect), R.drawable.quick_disconnect, intent)
                     }
 
                     else -> {
                         intent.putExtra(QUICK_CONNECT_ACTION_KEY, QUICK_CONNECT_ACTION)
-                        addShortcut(QUICK_CONNECT_ID, context.getString(R.string.quick_connect), R.drawable.quick_connect_disconnected, intent, rank = 1)
-                        removeShortCut(QUICK_DISCONNECT_ID)
+                        addShortcut(QUICK_CONNECT_ID, context.getString(R.string.quick_connect), R.drawable.quick_connect_disconnected, intent)
                     }
                 }
             }
         }
     }
 
-    private fun addShortcut(id: String, text: String, icon: Int, intent: Intent?, rank: Int = 2) {
+    private fun addShortcut(id: String, text: String, icon: Int, intent: Intent?) {
         val shortcutBuilder = ShortcutInfoCompat.Builder(context, id)
                 .setShortLabel(text)
                 .setIcon(IconCompat.createWithResource(context, icon))
-                .setRank(rank)
+                .setRank(1)
         if (intent != null) {
             shortcutBuilder.setIntent(intent)
         }
@@ -90,7 +87,7 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun listenForSelectedLocationChange() {
         scope.launch {
-            locationRepository.selectedCity.onEach { delay(500) }.mapLatest {
+            locationRepository.selectedCity.onEach { delay(1000) }.mapLatest {
                 Util.getSavedLocation().toResult()
             }.mapNotNull { it }.collectLatest {
                 if (it.isSuccess) {
@@ -121,17 +118,19 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
         val shortcutsToAdd = recentShortcuts.toMutableList()
         shortcutsToAdd.add(0, latestShortcut)
         shortcutsToAdd.forEachIndexed { index, v ->
-            if (index > 3) {
-              removeShortCut(v.id)
-              return
-            }
             val countryCode = v.extras?.getString(RECENT_COUNTRY_CODE_KEY)
+            if (index > 2) {
+                Log.i("stu", "reMOVING $countryCode")
+                removeShortCut(v.id)
+                return
+            }
+            Log.i("stu", "$countryCode ${index + 2}")
             val updated = ShortcutInfoCompat.Builder(context, v.id)
                     .setShortLabel("${v.shortLabel}")
                     .setIcon(IconCompat.createWithResource(context, FlagIconResource.getSmallFlag(countryCode)))
                     .setIntent(v.intent)
                     .setExtras(v.extras ?: PersistableBundle.EMPTY)
-                    .setRank(index + 3)
+                    .setRank(index + 2)
                     .build()
             ShortcutManagerCompat.pushDynamicShortcut(context, updated)
         }
