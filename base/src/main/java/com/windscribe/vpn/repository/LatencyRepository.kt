@@ -65,7 +65,7 @@ class LatencyRepository @Inject constructor(
         val context = currentCoroutineContext()
         return CoroutineScope(context).async {
             val pingTime = getPingTime(city.getId(), city.regionID, false, city.pro == 1)
-            if (appContext.isRegionRestricted) {
+            if (appContext.isRegionRestricted || appContext.applicationInterface.isTV) {
                 return@async getLatency(city.pingIp, pingTime)
             } else {
                 try {
