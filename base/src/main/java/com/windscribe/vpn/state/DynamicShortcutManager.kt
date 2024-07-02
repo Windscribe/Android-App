@@ -34,6 +34,7 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
         const val RECENT_CONNECT_ACTION = "ws_recent_connect_action"
         const val RECENT_CONNECT_ID = "ws_recent_connect_id"
         const val RECENT_COUNTRY_CODE_KEY = "ws_country_code"
+        const val RECENT_DATE_KEY = "ws_recent_date_key"
     }
 
     private val logger = LoggerFactory.getLogger("shortcut_m")
@@ -136,12 +137,17 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
         val latestShortcut = ShortcutInfoCompat.Builder(context, shortcutID)
                 .setShortLabel("${selectedLocation.nodeName} ${selectedLocation.nickName}")
                 .setIcon(IconCompat.createWithResource(context, FlagIconResource.getSmallFlag(selectedLocation.countryCode)))
-                .setExtras(PersistableBundle().apply { this.putString(RECENT_COUNTRY_CODE_KEY, selectedLocation.countryCode) })
+                .setExtras(PersistableBundle().apply {
+                    this.putString(RECENT_COUNTRY_CODE_KEY, selectedLocation.countryCode)
+                    this.putLong(RECENT_DATE_KEY, System.currentTimeMillis())
+                })
                 .setIntent(intent)
                 .build()
         val shortcutsToAdd = recentShortcuts.toMutableList()
         shortcutsToAdd.add(0, latestShortcut)
-        shortcutsToAdd.distinctBy { it.shortLabel }.forEachIndexed { index, v ->
+        shortcutsToAdd.distinctBy { it.shortLabel }.sortedByDescending {
+            it.extras?.getLong(RECENT_DATE_KEY) ?: System.currentTimeMillis()
+        }.forEachIndexed { index, v ->
             val countryCode = v.extras?.getString(RECENT_COUNTRY_CODE_KEY)
             if (index > 2) {
                 logger.debug("Removing shortcut - ${v.shortLabel} at index $index")
