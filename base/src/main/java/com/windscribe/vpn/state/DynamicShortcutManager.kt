@@ -3,34 +3,31 @@ package com.windscribe.vpn.state
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import android.os.PersistableBundle
-import android.util.Log
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import com.windscribe.vpn.R
-import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
+import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.backend.utils.VPNPermissionActivity
 import com.windscribe.vpn.commonutils.Ext.toResult
 import com.windscribe.vpn.commonutils.FlagIconResource
+import com.windscribe.vpn.commonutils.WindUtilities
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.LocationRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 
-class DynamicShortcutManager(private val context: Context, private val scope: CoroutineScope, private val vpnStateManager: VPNConnectionStateManager, private val locationRepository: LocationRepository) {
+class DynamicShortcutManager(private val context: Context, private val scope: CoroutineScope, private val vpnStateManager: VPNConnectionStateManager, private val locationRepository: LocationRepository, private val db: LocalDbInterface) {
     companion object {
         const val QUICK_CONNECT_ID = "ws_quick_connect"
-        const val QUICK_DISCONNECT_ID = "ws_quick_disconnect"
         const val QUICK_CONNECT_ACTION = "ws_quick_connect_action"
         const val QUICK_DISCONNECT_ACTION = "ws_quick_disconnect_action"
         const val QUICK_CONNECT_ACTION_KEY = "ws_quick_connect_action_key"
@@ -56,25 +53,25 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
                 when (it.status) {
                     VPNState.Status.Connecting -> {
                         intent.putExtra(QUICK_CONNECT_ACTION_KEY, QUICK_DISCONNECT_ACTION)
-                        addShortcut(QUICK_CONNECT_ID, context.getString(R.string.disconnect), R.drawable.quick_disconnect, intent)
+                        addShortcut(context.getString(R.string.disconnect), R.drawable.quick_disconnect, intent)
                     }
 
                     VPNState.Status.Connected -> {
                         intent.putExtra(QUICK_CONNECT_ACTION_KEY, QUICK_DISCONNECT_ACTION)
-                        addShortcut(QUICK_CONNECT_ID, context.getString(R.string.disconnect), R.drawable.quick_disconnect, intent)
+                        addShortcut(context.getString(R.string.disconnect), R.drawable.quick_disconnect, intent)
                     }
 
                     else -> {
                         intent.putExtra(QUICK_CONNECT_ACTION_KEY, QUICK_CONNECT_ACTION)
-                        addShortcut(QUICK_CONNECT_ID, context.getString(R.string.quick_connect), R.drawable.quick_connect_disconnected, intent)
+                        addShortcut(context.getString(R.string.quick_connect), R.drawable.quick_connect_disconnected, intent)
                     }
                 }
             }
         }
     }
 
-    private fun addShortcut(id: String, text: String, icon: Int, intent: Intent?) {
-        val shortcutBuilder = ShortcutInfoCompat.Builder(context, id)
+    private fun addShortcut(text: String, icon: Int, intent: Intent?) {
+        val shortcutBuilder = ShortcutInfoCompat.Builder(context, QUICK_CONNECT_ID)
                 .setShortLabel(text)
                 .setIcon(IconCompat.createWithResource(context, icon))
                 .setRank(1)
@@ -87,12 +84,39 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun listenForSelectedLocationChange() {
         scope.launch {
-            locationRepository.selectedCity.onEach { delay(1000) }.mapLatest {
-                Util.getSavedLocation().toResult()
+            locationRepository.selectedCity.mapLatest { id ->
+                return@mapLatest getLastSelectedLocation(id)
             }.mapNotNull { it }.collectLatest {
                 if (it.isSuccess) {
                     addRecentShortcut(it.getOrThrow())
                 }
+            }
+        }
+    }
+
+    private suspend fun getLastSelectedLocation(id: Int): Result<LastSelectedLocation> {
+        when (WindUtilities.getSourceTypeBlocking()) {
+            SelectedLocationType.CityLocation -> {
+                return db.getCityAndRegionByID(id).map { cityAndRegion ->
+                    LastSelectedLocation(
+                            cityAndRegion.city.id,
+                            cityAndRegion.city.nodeName,
+                            cityAndRegion.city.nickName,
+                            cityAndRegion.region.countryCode,
+                    )
+                }.toResult()
+            }
+
+            SelectedLocationType.StaticIp -> {
+                return db.getStaticRegionByID(id).map { staticRegion ->
+                    LastSelectedLocation(staticRegion.id, staticRegion.cityName, staticRegion.staticIp, staticRegion.countryCode)
+                }.toResult()
+            }
+
+            SelectedLocationType.CustomConfiguredProfile -> {
+                return db.getConfigFile(id).map {
+                    LastSelectedLocation(id, nickName = "")
+                }.toResult()
             }
         }
     }
@@ -117,14 +141,13 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
                 .build()
         val shortcutsToAdd = recentShortcuts.toMutableList()
         shortcutsToAdd.add(0, latestShortcut)
-        shortcutsToAdd.forEachIndexed { index, v ->
+        shortcutsToAdd.distinctBy { it.shortLabel }.forEachIndexed { index, v ->
             val countryCode = v.extras?.getString(RECENT_COUNTRY_CODE_KEY)
             if (index > 2) {
-                Log.i("stu", "reMOVING $countryCode")
+                logger.debug("Removing shortcut - ${v.shortLabel} at index $index")
                 removeShortCut(v.id)
                 return
             }
-            Log.i("stu", "$countryCode ${index + 2}")
             val updated = ShortcutInfoCompat.Builder(context, v.id)
                     .setShortLabel("${v.shortLabel}")
                     .setIcon(IconCompat.createWithResource(context, FlagIconResource.getSmallFlag(countryCode)))
@@ -132,7 +155,8 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
                     .setExtras(v.extras ?: PersistableBundle.EMPTY)
                     .setRank(index + 2)
                     .build()
-            ShortcutManagerCompat.pushDynamicShortcut(context, updated)
+            val added = ShortcutManagerCompat.pushDynamicShortcut(context, updated)
+            logger.debug("Pushing shortcut - ${updated.shortLabel} at index ${index + 2} Result: $added")
         }
     }
 
