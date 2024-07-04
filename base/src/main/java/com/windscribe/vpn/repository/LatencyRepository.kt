@@ -110,7 +110,6 @@ class LatencyRepository @Inject constructor(
         logger.debug("Requesting latency for ${pingJobs.count()} cities.")
         val cityPings = runCatching {
             pingJobs.awaitAll().map { pingTime ->
-                logger.debug("$pingTime")
                 localDbInterface.addPing(pingTime).await()
                 pingTime
             }.run {
