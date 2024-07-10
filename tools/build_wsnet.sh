@@ -17,6 +17,7 @@ cd Desktop-App/libs/wsnet/tools || exit
 SCRIPT_TO_MODIFY="build_android.sh"
 sed -i '/^[[:space:]]*export JAVA_HOME="/d' "$SCRIPT_TO_MODIFY"
 sed -i '/^[[:space:]]*if \[ ! -d "\$JAVA_HOME" \]; then/,/^[[:space:]]*fi/d' "$SCRIPT_TO_MODIFY"
+sed -i '/if [ ! -d "$VCPKG_ROOT" ]; then/,/fi/d' "$SCRIPT_TO_MODIFY"
 ./build_android.sh
 cp wsnet.aar "$DST_DIR"
 cd "$ROOT_DIR" && rm -rf tools/bin
