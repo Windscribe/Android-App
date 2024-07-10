@@ -82,7 +82,7 @@ UploadToNexusPublic:
     - apk --no-cache add curl
     - apk add patch
     - apk add flock
-    - apk --no-cache add git make musl-dev
+    - apk --no-cache add git make musl-dev build-base cmake ninja zip unzip git perl
     - apk --no-cache add go=1.21.10-r0
     - apk add jq
     - authToken=$(curl -X POST https://pki.int.windscribe.com:8200/v1/auth/approle/login -d "role_id=$role_id&secret_id=$secret_id" | jq       --raw-output '.auth.client_token')
@@ -110,6 +110,7 @@ UploadToNexusPublic:
     - touch ${CHANGE_LOG_PATH}${VERSION_CODE}.txt
     - export ANDROID_NDK=$(ls -d $ANDROID_SDK_ROOT/ndk/*/ | head -n 1)
     - tools/build_wstunnel.sh
+    - tools/build_wsnet.sh
 
 # update build version to same as play store.
 ".signKeepBuildNumber":
