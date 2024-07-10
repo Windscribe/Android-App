@@ -15,11 +15,7 @@ echo "$VCPKG_ROOT"
 cd ..
 git clone https://github.com/Windscribe/Desktop-App.git
 cd Desktop-App/libs/wsnet/tools || exit
-SCRIPT_TO_MODIFY="build_android.sh"
-sed -i '/^[[:space:]]*export JAVA_HOME="/d' "$SCRIPT_TO_MODIFY"
-sed -i '/^[[:space:]]*if \[ ! -d "\$JAVA_HOME" \]; then/,/^[[:space:]]*fi/d' "$SCRIPT_TO_MODIFY"
-sed -i '/if[[:space:]]*\[.*!.*-d.*"\$VCPKG_ROOT".*\][[:space:]]*;[[:space:]]*then/,/fi[[:space:]]*$/d' "$SCRIPT_TO_MODIFY"
-cat ./build_android.sh
+git checkout a6a4faf6b7b8e15680ac24f61ed6af715c54044b
 ./build_android.sh
 cp wsnet.aar "$DST_DIR"
 cd "$ROOT_DIR" && rm -rf tools/bin
