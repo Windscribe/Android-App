@@ -14,8 +14,9 @@ echo "$ANDROID_NDK_HOME"
 echo "$VCPKG_ROOT"
 cd ..
 git clone https://github.com/Windscribe/Desktop-App.git
-cd Desktop-App/libs/wsnet/tools || exit
+cd Desktop-App || exit
 git checkout a6a4faf6b7b8e15680ac24f61ed6af715c54044b
+cd libs/wsnet/tools || exit
 ./build_android.sh
 cp wsnet.aar "$DST_DIR"
 cd "$ROOT_DIR" && rm -rf tools/bin
