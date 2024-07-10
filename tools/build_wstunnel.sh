@@ -12,5 +12,4 @@ cp -R build/android/arm64-v8a "$DST_DIR"
 cp -R build/android/armeabi-v7a "$DST_DIR"
 cp -R build/android/x86 "$DST_DIR"
 cp -R build/android/x86_64 "$DST_DIR"
-ls "$DST_DIR"
 cd ../../ && rm -rf bin
