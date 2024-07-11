@@ -98,6 +98,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/country_flag" />
 
+    <ImageView
+        android:id="@+id/img_p2p"
+        android:layout_width="24dp"
+        android:layout_height="0dp"
+        android:contentDescription="@string/image_description"
+        android:scaleType="center"
+        android:src="@drawable/p2p"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/img_drop_down"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/img_drop_down"

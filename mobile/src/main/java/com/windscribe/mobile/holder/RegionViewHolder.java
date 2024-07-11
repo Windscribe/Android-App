@@ -37,6 +37,8 @@ public class RegionViewHolder extends GroupViewHolder {
 
     public final ImageView imgProBadge;
 
+    public final ImageView imgP2pBadge;
+
     public final LinearProgressIndicator serverLoadBar;
 
     public final TextView tvCountryName;
@@ -54,6 +56,7 @@ public class RegionViewHolder extends GroupViewHolder {
         imgAnimationLine = itemView.findViewById(R.id.field_line_location);
         imgProBadge = itemView.findViewById(R.id.img_pro_badge);
         serverLoadBar = itemView.findViewById(R.id.server_health);
+        imgP2pBadge = itemView.findViewById(R.id.img_p2p);
     }
 
     @Override
