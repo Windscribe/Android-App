@@ -109,6 +109,7 @@ UploadToNexusPublic:
     - export VERSION_NAME=${MAJOR}.${MINOR}.${VERSION_CODE}
     - touch ${CHANGE_LOG_PATH}${VERSION_CODE}.txt
     - export ANDROID_NDK=$(ls -d $ANDROID_SDK_ROOT/ndk/*/ | head -n 1)
+    - tools/build_wstunnel.sh
 
 # update build version to same as play store.
 ".signKeepBuildNumber":
@@ -141,6 +142,7 @@ UploadToNexusPublic:
     - export VERSION_NAME=${MAJOR}.${MINOR}.${VERSION_CODE}
     - touch ${CHANGE_LOG_PATH}${VERSION_CODE}.txt
     - export ANDROID_NDK=$(ls -d $ANDROID_SDK_ROOT/ndk/*/ | head -n 1)
+    - tools/build_wstunnel.sh
 
 
 Slack:
