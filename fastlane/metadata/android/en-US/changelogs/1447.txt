@@ -1,0 +1,9 @@
+v3.77(Mobile)
+Added quick connect shortcuts.
+Added encrypted DNS support.
+Added anti-censorship patches to OpenVPN and Wireguard.
+Fixed unable to scroll in Location permission disclosure.
+Fixed ChromeOS window unable to click on login button.
+Fixed Auto connect changing protocol after popup click.
+Fixed crash due to exact alarm permission in Strongswan.
+upgraded Strongswan to 5.9.13.
