@@ -1,0 +1,37 @@
+Subject: [PATCH] hide release block.
+---
+Index: config/config.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/config/config.gradle b/config/config.gradle
+--- a/config/config.gradle	(revision a55adf7db749b58c54763810f621c43ac0251a7c)
++++ b/config/config.gradle	(date 1720670615258)
+@@ -5,16 +5,16 @@
+ Properties signProperties = readPropertiesFile("sign.properties")
+ 
+ android {
+-    signingConfigs {
+-        release {
+-            if(signProperties.containsKey("SIGN_KEY_FILE")){
+-                storeFile file(signProperties.getProperty("SIGN_KEY_FILE"))
+-                storePassword signProperties.getProperty("SIGN_STORE_PASSWORD")
+-                keyAlias signProperties.getProperty("SIGN_KEY_ALIAS")
+-                keyPassword signProperties.getProperty("SIGN_KEY_PASSWORD")
+-            }
+-        }
+-    }
++//    signingConfigs {
++//        release {
++//            if(signProperties.containsKey("SIGN_KEY_FILE")){
++//                storeFile file(signProperties.getProperty("SIGN_KEY_FILE"))
++//                storePassword signProperties.getProperty("SIGN_STORE_PASSWORD")
++//                keyAlias signProperties.getProperty("SIGN_KEY_ALIAS")
++//                keyPassword signProperties.getProperty("SIGN_KEY_PASSWORD")
++//            }
++//        }
++//    }
+     defaultConfig{
+         buildProperties.entrySet().forEach {
+             if(it.value == "true" || it.value == "false"){
