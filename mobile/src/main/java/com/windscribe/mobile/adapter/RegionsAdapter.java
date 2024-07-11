@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.core.content.res.ResourcesCompat;
 
@@ -232,6 +233,8 @@ public class RegionsAdapter extends ExpandableRecyclerViewAdapter<RegionViewHold
             }
         });
         setGroupHealth(averageHealth, holder);
+        holder.imgP2pBadge.setVisibility(region.getP2p() == 0 ? View.VISIBLE : View.INVISIBLE);
+        holder.imgP2pBadge.setOnClickListener(v -> Toast.makeText(v.getContext(), v.getContext().getString(R.string.file_sharing_frowned_upon), Toast.LENGTH_SHORT).show());
     }
 
     private boolean enabledNode(City city) {

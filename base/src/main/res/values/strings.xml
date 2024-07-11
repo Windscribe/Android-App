@@ -489,4 +489,5 @@ last chosen location.</string>
     <string name="enter_valid_ip_or_url">Enter valid IP or Url</string>
     <string name="custom_dns_explainer">Select the DNS server while connected to Windscribe.</string>
     <string name="quick_connect">Quick Connect</string>
+    <string name="file_sharing_frowned_upon">File Sharing Frowned Upon</string>
 </resources>
