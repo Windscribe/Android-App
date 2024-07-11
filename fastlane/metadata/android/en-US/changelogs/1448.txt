@@ -1,0 +1,6 @@
+v3.77(TV)
+Added anti-censorship patches to OpenVPN and Wireguard.
+Fixed Android TV app unable to get latency value for many locations.
+Fixed ChromeOS window unable to click on login button.
+Fixed crash due to exact alarm permission in Strongswan.
+upgraded Strongswan to 5.9.13.
