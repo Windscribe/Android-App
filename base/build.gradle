@@ -155,6 +155,6 @@ dependencies {
     googleApi "com.google.firebase:firebase-messaging:$fireBase"
     googleApi files("$projectDir/src/google/libs/in-app-purchasing-2.0.76.jar")
     implementation files("$projectDir/src/main/libs/wsnet.aar")
-    googleApi 'com.android.billingclient:billing:5.0.0'
+    googleApi 'com.android.billingclient:billing:7.0.0'
     googleApi "com.google.android.gms:play-services-appset:16.0.2"
 }
