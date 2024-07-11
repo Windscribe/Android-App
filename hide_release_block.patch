@@ -6,8 +6,8 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
 diff --git a/config/config.gradle b/config/config.gradle
---- a/config/config.gradle	(revision a55adf7db749b58c54763810f621c43ac0251a7c)
-+++ b/config/config.gradle	(date 1720670615258)
+--- a/config/config.gradle	(revision ae84abfb655490c8fdff1b875817e6c48dd3045e)
++++ b/config/config.gradle	(date 1720672586941)
 @@ -5,16 +5,16 @@
  Properties signProperties = readPropertiesFile("sign.properties")
  
@@ -35,3 +35,12 @@ diff --git a/config/config.gradle b/config/config.gradle
      defaultConfig{
          buildProperties.entrySet().forEach {
              if(it.value == "true" || it.value == "false"){
+@@ -29,7 +29,7 @@
+     }
+     buildTypes {
+         release {
+-            signingConfig signingConfigs.release
++           // signingConfig signingConfigs.release
+             manifestPlaceholders = [usesCleartextTraffic:"false"]
+         }
+         debug {
