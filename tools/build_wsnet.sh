@@ -15,7 +15,7 @@ echo "$VCPKG_ROOT"
 cd ..
 git clone https://github.com/Windscribe/Desktop-App.git
 cd Desktop-App || exit
-git checkout fb88aab1964717301e9a482e4cb9c592bed1369b
+git checkout 97bfe1dd1b401cd7294f0679b30cede543961b78
 cd libs/wsnet/tools || exit
 ./build_android.sh
 cp wsnet.aar "$DST_DIR"
