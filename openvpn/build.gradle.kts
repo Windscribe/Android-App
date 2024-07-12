@@ -12,12 +12,12 @@ plugins {
 }
 
 android {
-    compileSdkVersion(33)
+    compileSdkVersion(34)
     ndkVersion = "23.0.7599858"
 
     defaultConfig {
         minSdkVersion(21)
-        targetSdkVersion(33) // 'Q'.toInt()
+        targetSdkVersion(34) // 'Q'.toInt()
 //        versionCode = 175
 //        versionName = "0.7.21"
 

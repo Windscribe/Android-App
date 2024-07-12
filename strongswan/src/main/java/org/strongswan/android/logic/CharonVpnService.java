@@ -17,6 +17,8 @@
 
 package org.strongswan.android.logic;
 
+import static com.windscribe.common.CommonUtilKt.startSafeForeground;
+
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -396,7 +398,7 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 			public void run()
 			{
 				mShowNotification = true;
-				startForeground(getNotificationID(), buildNotification(false));
+				startSafeForeground(CharonVpnService.this, getNotificationID(), buildNotification(false));
 			}
 		});
 	}

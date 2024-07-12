@@ -6,8 +6,10 @@ package com.windscribe.vpn.backend.ikev2
 
 import android.app.Notification
 import android.content.Intent
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED
 import android.net.VpnService
 import android.util.Log
+import com.windscribe.common.startSafeForeground
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.Util
@@ -76,7 +78,7 @@ class CharonVpnServiceWrapper : CharonVpnService() {
         }
         return when (intent.action) {
             DISCONNECT_ACTION -> {
-                startForeground(
+                startSafeForeground(
                     NotificationConstants.SERVICE_NOTIFICATION_ID,
                     windNotificationBuilder.buildNotification(Connecting)
                 )
@@ -86,7 +88,7 @@ class CharonVpnServiceWrapper : CharonVpnService() {
             }
 
             else -> {
-                startForeground(
+                startSafeForeground(
                     NotificationConstants.SERVICE_NOTIFICATION_ID,
                     windNotificationBuilder.buildNotification(Connecting)
                 )
