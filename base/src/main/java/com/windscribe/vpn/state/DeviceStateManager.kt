@@ -11,6 +11,7 @@ import android.content.Intent.ACTION_SCREEN_OFF
 import android.content.Intent.ACTION_SCREEN_ON
 import android.content.IntentFilter
 import android.net.ConnectivityManager
+import android.os.Build
 import com.windscribe.vpn.services.DeviceStateService.Companion.enqueueWork
 import java.util.concurrent.ConcurrentLinkedQueue
 import javax.inject.Inject
@@ -34,9 +35,15 @@ class DeviceStateManager @Inject constructor(val scope: CoroutineScope) : Broadc
     }
 
     fun init(context: Context) {
-        context.registerReceiver(this, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
-        context.registerReceiver(this, IntentFilter(ACTION_SCREEN_OFF))
-        context.registerReceiver(this, IntentFilter(ACTION_SCREEN_ON))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.registerReceiver(this, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION), Context.RECEIVER_NOT_EXPORTED)
+            context.registerReceiver(this, IntentFilter(ACTION_SCREEN_OFF), Context.RECEIVER_NOT_EXPORTED)
+            context.registerReceiver(this, IntentFilter(ACTION_SCREEN_ON), Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            context.registerReceiver(this, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
+            context.registerReceiver(this, IntentFilter(ACTION_SCREEN_OFF))
+            context.registerReceiver(this, IntentFilter(ACTION_SCREEN_ON))
+        }
     }
 
     override fun onReceive(context: Context, intent: Intent) {

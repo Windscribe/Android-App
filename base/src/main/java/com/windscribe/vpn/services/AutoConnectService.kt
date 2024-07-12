@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import com.windscribe.common.startSafeForeground
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
@@ -92,7 +93,7 @@ class AutoConnectService : Service(), NetworkInfoListener {
         val notification = windNotificationBuilder.buildNotification(VPNState.Status.UnsecuredNetwork)
         notification.contentIntent = null
         notification.actions = null
-        startForeground(NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID, notification)
+        startSafeForeground(NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID, notification)
         return if (canAccessNetworkName()) {
             logger.debug("Auto connect service started and waiting for network changes.")
             START_STICKY
