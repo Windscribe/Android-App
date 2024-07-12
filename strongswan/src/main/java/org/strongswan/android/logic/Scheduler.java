@@ -46,7 +46,11 @@ public class Scheduler extends BroadcastReceiver
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(EXECUTE_JOB);
-        mContext.registerReceiver(this, filter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mContext.registerReceiver(this, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            mContext.registerReceiver(this, filter);
+        }
     }
 
     /**
