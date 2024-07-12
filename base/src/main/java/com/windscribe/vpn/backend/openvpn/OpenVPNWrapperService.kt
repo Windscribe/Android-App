@@ -6,6 +6,7 @@ package com.windscribe.vpn.backend.openvpn
 
 import android.content.Intent
 import android.net.VpnService
+import com.windscribe.common.startSafeForeground
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.backend.Util
@@ -56,7 +57,7 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
             stopSelf()
             return START_NOT_STICKY
         }
-        startForeground(
+        startSafeForeground(
             NotificationConstants.SERVICE_NOTIFICATION_ID,
             windNotificationBuilder.buildNotification(Connecting)
         )
