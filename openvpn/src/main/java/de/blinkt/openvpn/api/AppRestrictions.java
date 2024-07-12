@@ -55,7 +55,11 @@ public class AppRestrictions {
                 applyRestrictions(context);
             }
         };
-        c.registerReceiver(mRestrictionsReceiver, restrictionsFilter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            c.registerReceiver(mRestrictionsReceiver, restrictionsFilter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            c.registerReceiver(mRestrictionsReceiver, restrictionsFilter);
+        }
     }
 
     private void removeChangesListener(Context c) {
