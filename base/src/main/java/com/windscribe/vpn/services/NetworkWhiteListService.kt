@@ -11,6 +11,7 @@ import android.os.Binder
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.IBinder
+import com.windscribe.common.startSafeForeground
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.VPNState.Status.UnsecuredNetwork
@@ -86,13 +87,13 @@ class NetworkWhiteListService : Service(), NetworkInfoListener {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        startForeground(NotificationConstants.SERVICE_NOTIFICATION_ID, notificationBuilder.buildNotification(UnsecuredNetwork))
+        startSafeForeground(NotificationConstants.SERVICE_NOTIFICATION_ID, notificationBuilder.buildNotification(UnsecuredNetwork))
         if (intent.action != null && intent.action == DISCONNECT_ACTION) {
             stopService()
             return START_NOT_STICKY
         }
         if (intent.action != null && intent.action == UNSECURED_NETWORK_ACTION) {
-            startForeground(NotificationConstants.SERVICE_NOTIFICATION_ID, notificationBuilder.buildNotification(UnsecuredNetwork))
+            startSafeForeground(NotificationConstants.SERVICE_NOTIFICATION_ID, notificationBuilder.buildNotification(UnsecuredNetwork))
             networkInfoManager.addNetworkInfoListener(this)
             return START_NOT_STICKY
         }

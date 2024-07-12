@@ -15,6 +15,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED"
+        tools:ignore="SystemPermissionTypo" />
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
@@ -57,17 +59,21 @@
         </receiver>
 
         <service
+            android:foregroundServiceType="systemExempted"
             android:name=".backend.wireguard.WireGuardWrapperService"
             android:exported="true"
-            android:permission="android.permission.BIND_VPN_SERVICE">
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            tools:ignore="ForegroundServicePermission">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
         <service
+            android:foregroundServiceType="systemExempted"
             android:name=".services.NetworkWhiteListService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true"
+            tools:ignore="ForegroundServicePermission" />
         <service
             android:name=".services.DisconnectService"
             android:exported="true" />
@@ -91,20 +97,26 @@
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <service
+            android:foregroundServiceType="systemExempted"
             android:name="com.windscribe.vpn.backend.openvpn.OpenVPNWrapperService"
             android:exported="true"
-            android:permission="android.permission.BIND_VPN_SERVICE">
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            tools:ignore="ForegroundServicePermission">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
 
         <service
+            android:foregroundServiceType="systemExempted"
             android:name="com.windscribe.vpn.backend.ikev2.CharonVpnServiceWrapper"
-            android:permission="android.permission.BIND_VPN_SERVICE" />
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            tools:ignore="ForegroundServicePermission" />
         <service
+            android:foregroundServiceType="systemExempted"
             android:name=".services.AutoConnectService"
-            android:enabled="true" />
+            android:enabled="true"
+            tools:ignore="ForegroundServicePermission" />
     </application>
 
 </manifest>
