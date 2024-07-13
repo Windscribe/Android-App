@@ -16,3 +16,7 @@
 /dga/build
 /dga/.cxx
 
+/wstunnel/.cxx/
+/wstunnel/build/
+/wgtunnel/.cxx/
+/wgtunnel/build/

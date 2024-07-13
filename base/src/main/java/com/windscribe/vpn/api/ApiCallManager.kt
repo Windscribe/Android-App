@@ -118,7 +118,7 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun getServerConfig(): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.serverConfigs(preferencesHelper.sessionHash, "") { code, json ->
+            val callback = wsNetServerAPI.serverConfigs(preferencesHelper.sessionHash) { code, json ->
                 buildResponse(sub, code, json, String::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -168,8 +168,7 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun getStaticIpList(deviceID: String?): Single<GenericResponseClass<StaticIPResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.staticIps(preferencesHelper.sessionHash, "android", deviceID
-                    ?: "") { code, json ->
+            val callback = wsNetServerAPI.staticIps(preferencesHelper.sessionHash) { code, json ->
                 buildResponse(sub, code, json, StaticIPResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -187,7 +186,7 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
 
     override fun recordAppInstall(): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
         return Single.create { sub ->
-            val callback = wsNetServerAPI.recordInstall("android") { code, json ->
+            val callback = wsNetServerAPI.recordInstall() { code, json ->
                 buildResponse(sub, code, json, String::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -197,7 +196,7 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun sendTicket(supportEmail: String, supportName: String, supportSubject: String, supportMessage: String, supportCategory: String, type: String, channel: String): Single<GenericResponseClass<TicketResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.sendSupportTicket(supportEmail, supportName, supportSubject, supportMessage, supportCategory, type, channel, "android") { code, json ->
+            val callback = wsNetServerAPI.sendSupportTicket(supportEmail, supportName, supportSubject, supportMessage, supportCategory, type, channel) { code, json ->
                 buildResponse(sub, code, json, TicketResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
