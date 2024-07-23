@@ -1,0 +1,5 @@
+/Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/.cxx/Debug/423925u4/armeabi-v7a/CMakeFiles/libwg.so.dir
+/Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/.cxx/Debug/423925u4/armeabi-v7a/CMakeFiles/libwg-go.so.dir
+/Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/.cxx/Debug/423925u4/armeabi-v7a/CMakeFiles/elf-cleaner.dir
+/Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/.cxx/Debug/423925u4/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/.cxx/Debug/423925u4/armeabi-v7a/CMakeFiles/rebuild_cache.dir
