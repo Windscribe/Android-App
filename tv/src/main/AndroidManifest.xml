@@ -30,7 +30,7 @@
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ws_launcher"
         android:label="@string/app_name"
-        android:largeHeap="true"
+        android:largeHeap="false"
         android:supportsRtl="false"
         android:roundIcon="@mipmap/ws_launcher"
         android:theme="@style/AppTheme.NoActionBar"
