@@ -1,0 +1,37 @@
+{
+  "buildFiles": [
+    "/Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/tools/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/gindersingh/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/.cxx/Debug/423925u4/armeabi-v7a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/gindersingh/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/.cxx/Debug/423925u4/armeabi-v7a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "libwg-go.so::@6890427a1f51a3e7e1df": {
+      "artifactName": "libwg-go.so",
+      "abi": "armeabi-v7a",
+      "runtimeFiles": []
+    },
+    "libwg.so::@6890427a1f51a3e7e1df": {
+      "artifactName": "libwg.so",
+      "abi": "armeabi-v7a",
+      "output": "/Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/build/intermediates/cxx/Debug/423925u4/obj/armeabi-v7a/libwg.so",
+      "runtimeFiles": []
+    },
+    "elf-cleaner::@6890427a1f51a3e7e1df": {
+      "artifactName": "elf-cleaner",
+      "abi": "armeabi-v7a",
+      "runtimeFiles": []
+    }
+  }
+}

@@ -91,9 +91,6 @@ UploadToNexusPublic:
     - signProperties=$(echo "$secretData" | jq '.data."sign.properties"')
     - echo $signProperties
     - echo "$signProperties" | base64 -d -i > $SIGN_PROPERTIES_PATH
-    - buildProperties=$(echo "$secretData" | jq '.data."build.properties"')
-    - echo $buildProperties
-    - echo "$buildProperties" | base64 -d -i > $BUILD_PROPERTIES_PATH
     - uploadKey=$(echo "$secretData" | jq '.data.android_play_store_upload_key')
     - echo "$uploadKey" | base64 -d -i > $GCM_KEY_PATH
     - signKey=$(echo "$secretData" | jq '.data.android_play_store_sign_key')

@@ -1,0 +1,78 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.6.0"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "WireGuard",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "elf-cleaner::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-elf-cleaner-Debug-547c7b8beb238875c399.json",
+					"name" : "elf-cleaner",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "libwg-go.so::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-libwg-go.so-Debug-c570ceb90a8812ce4de3.json",
+					"name" : "libwg-go.so",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "libwg.so::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-libwg.so-Debug-471ac949077056bb819a.json",
+					"name" : "libwg.so",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/.cxx/Debug/423925u4/armeabi-v7a",
+		"source" : "/Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/tools"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}
