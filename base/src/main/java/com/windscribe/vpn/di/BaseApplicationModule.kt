@@ -774,7 +774,7 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun providesWsNet(preferencesHelper: PreferencesHelper, deviceStateManager: DeviceStateManager, vpnBackendHolder: Lazy<VpnBackendHolder>): WSNet {
+    fun providesWsNet(preferencesHelper: PreferencesHelper, deviceStateManager: DeviceStateManager, vpnBackendHolder: Lazy<VpnBackendHolder>, advanceParameterRepository: AdvanceParameterRepository): WSNet {
         WSNet.setLogger({
             val msg = it.split(Regex("\\]\\s*")).lastOrNull()?.trim() ?: ""
             logger.debug(msg)
@@ -786,6 +786,9 @@ open class BaseApplicationModule {
                 super.onNetworkStateChanged()
                 WSNet.instance().setConnectivityState(WindUtilities.isOnline())
             }
+        }
+        advanceParameterRepository.getCountryOverride()?.let { override ->
+            WSNet.instance().advancedParameters().setCountryOverrideValue(override)
         }
         WSNet.instance().setConnectivityState(WindUtilities.isOnline())
         WSNet.instance().advancedParameters().setAPIExtraTLSPadding(preferencesHelper.isAntiCensorshipOn)
