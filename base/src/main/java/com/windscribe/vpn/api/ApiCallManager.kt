@@ -186,7 +186,7 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
 
     override fun recordAppInstall(): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
         return Single.create { sub ->
-            val callback = wsNetServerAPI.recordInstall() { code, json ->
+            val callback = wsNetServerAPI.recordInstall(false) { code, json ->
                 buildResponse(sub, code, json, String::class.java)
             }
             sub.setCancellable { callback.cancel() }
