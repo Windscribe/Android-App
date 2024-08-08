@@ -780,7 +780,7 @@ open class BaseApplicationModule {
             logger.debug(msg)
         }, BuildConfig.DEV)
         WSNet.initialize("android", "android", WindUtilities.getVersionName(),
-            preferencesHelper.sessionHash?.let { preferencesHelper.getDeviceUUID(it) } ?: "", "2.5.0",  BuildConfig.DEV, preferencesHelper.wsNetSettings)
+            preferencesHelper.sessionHash?.let { preferencesHelper.getDeviceUUID(it) } ?: "", "2.6.0",  BuildConfig.DEV, preferencesHelper.wsNetSettings)
         val networkListener = object : DeviceStateManager.DeviceStateListener {
             override fun onNetworkStateChanged() {
                 super.onNetworkStateChanged()
