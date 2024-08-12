@@ -25,6 +25,9 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 
+enum class LocationTypeInt() {
+    City, Static, Custom
+}
 class DynamicShortcutManager(private val context: Context, private val scope: CoroutineScope, private val vpnStateManager: VPNConnectionStateManager, private val locationRepository: LocationRepository, private val db: LocalDbInterface) {
     companion object {
         const val QUICK_CONNECT_ID = "ws_quick_connect"
@@ -34,6 +37,7 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
         const val RECENT_CONNECT_ACTION = "ws_recent_connect_action"
         const val RECENT_CONNECT_ID = "ws_recent_connect_id"
         const val RECENT_COUNTRY_CODE_KEY = "ws_country_code"
+        const val RECENT_LOCATION_TYPE_INT = "ws_location_type_int"
         const val RECENT_DATE_KEY = "ws_recent_date_key"
     }
 
@@ -89,41 +93,41 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
                 return@mapLatest getLastSelectedLocation(id)
             }.mapNotNull { it }.collectLatest {
                 if (it.isSuccess) {
-                    addRecentShortcut(it.getOrThrow())
+                    addRecentShortcut(it.getOrThrow().first, it.getOrThrow().second)
                 }
             }
         }
     }
 
-    private suspend fun getLastSelectedLocation(id: Int): Result<LastSelectedLocation> {
+    private suspend fun getLastSelectedLocation(id: Int): Result<Pair<LastSelectedLocation, LocationTypeInt>> {
         when (WindUtilities.getSourceTypeBlocking()) {
             SelectedLocationType.CityLocation -> {
                 return db.getCityAndRegionByID(id).map { cityAndRegion ->
-                    LastSelectedLocation(
+                    Pair(LastSelectedLocation(
                             cityAndRegion.city.id,
                             cityAndRegion.city.nodeName,
                             cityAndRegion.city.nickName,
                             cityAndRegion.region.countryCode,
-                    )
+                    ), LocationTypeInt.City)
                 }.toResult()
             }
 
             SelectedLocationType.StaticIp -> {
                 return db.getStaticRegionByID(id).map { staticRegion ->
-                    LastSelectedLocation(staticRegion.id, staticRegion.cityName, staticRegion.staticIp, staticRegion.countryCode)
+                    Pair(LastSelectedLocation(id, staticRegion.cityName, staticRegion.staticIp, staticRegion.countryCode), LocationTypeInt.Static)
                 }.toResult()
             }
 
             SelectedLocationType.CustomConfiguredProfile -> {
                 return db.getConfigFile(id).map {
-                    LastSelectedLocation(id, nickName = "")
+                    Pair(LastSelectedLocation(id, nickName = ""), LocationTypeInt.Custom)
                 }.toResult()
             }
         }
     }
 
     @SuppressLint("RestrictedApi")
-    private fun addRecentShortcut(selectedLocation: LastSelectedLocation) {
+    private fun addRecentShortcut(selectedLocation: LastSelectedLocation, locationTypeInt: LocationTypeInt) {
         val recentShortcuts = ShortcutManagerCompat.getDynamicShortcuts(context)
                 .filter { it.id.startsWith("ws_recent") }
         val shortcutID = "ws_recent_${selectedLocation.cityId}"
@@ -133,13 +137,16 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
             putExtra(QUICK_CONNECT_ACTION_KEY, RECENT_CONNECT_ACTION)
             putExtra(RECENT_CONNECT_ID, selectedLocation.cityId)
+            putExtra(RECENT_LOCATION_TYPE_INT, locationTypeInt.ordinal)
         }
+        logger.debug("****Ordinal ${locationTypeInt.ordinal}")
         val latestShortcut = ShortcutInfoCompat.Builder(context, shortcutID)
                 .setShortLabel("${selectedLocation.nodeName} ${selectedLocation.nickName}")
                 .setIcon(IconCompat.createWithResource(context, FlagIconResource.getSmallFlag(selectedLocation.countryCode)))
                 .setExtras(PersistableBundle().apply {
                     this.putString(RECENT_COUNTRY_CODE_KEY, selectedLocation.countryCode)
                     this.putLong(RECENT_DATE_KEY, System.currentTimeMillis())
+                    this.putInt(RECENT_LOCATION_TYPE_INT, locationTypeInt.ordinal)
                 })
                 .setIntent(intent)
                 .build()
