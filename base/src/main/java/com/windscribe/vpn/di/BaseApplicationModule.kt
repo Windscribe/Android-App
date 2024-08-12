@@ -90,6 +90,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.slf4j.LoggerFactory
 import retrofit2.Retrofit
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
@@ -779,7 +780,8 @@ open class BaseApplicationModule {
             val msg = it.split(Regex("\\]\\s*")).lastOrNull()?.trim() ?: ""
             logger.debug(msg)
         }, BuildConfig.DEV)
-        WSNet.initialize("android", "android", WindUtilities.getVersionName(), preferencesHelper.getDeviceUUID(preferencesHelper.userName), "2.6.0",  BuildConfig.DEV, preferencesHelper.wsNetSettings)
+        preferencesHelper.setDeviceUUID(preferencesHelper.userName, UUID.randomUUID().toString())
+        WSNet.initialize("android", "android", WindUtilities.getVersionName(), preferencesHelper.getDeviceUUID(preferencesHelper.userName) ?: "", "2.6.0",  BuildConfig.DEV, preferencesHelper.wsNetSettings)
         val networkListener = object : DeviceStateManager.DeviceStateListener {
             override fun onNetworkStateChanged() {
                 super.onNetworkStateChanged()
