@@ -3,7 +3,7 @@
  */
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 configurations {
