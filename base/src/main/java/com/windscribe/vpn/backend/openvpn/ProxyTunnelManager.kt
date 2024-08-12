@@ -25,6 +25,7 @@ class ProxyTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBacke
             } else {
                 appContext.preference.packetSize.toLong()
             }
+            delay(500)
             val logFile = File(appContext.filesDir, PROXY_LOG).path
             tunnelLib.initialise(BuildConfig.DEV, logFile)
             if (isWSTunnel) {
