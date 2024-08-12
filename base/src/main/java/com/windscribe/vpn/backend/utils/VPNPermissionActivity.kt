@@ -12,15 +12,14 @@ import android.content.pm.PackageManager
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import com.windscribe.vpn.R.layout
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.DynamicShortcutManager.Companion.QUICK_CONNECT_ACTION_KEY
-import com.windscribe.vpn.state.DynamicShortcutManager.Companion.RECENT_COUNTRY_CODE_KEY
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import de.blinkt.openvpn.core.Preferences
 import kotlinx.coroutines.CoroutineScope
@@ -57,7 +56,7 @@ class VPNPermissionActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_launch)
-        Windscribe.appContext.activityComponent.inject(this)
+        appContext.activityComponent.inject(this)
         if (intent.hasExtra("protocolInformation")) {
             protocolInformation =
                     intent.getSerializableExtra("protocolInformation") as ProtocolInformation
@@ -73,11 +72,30 @@ class VPNPermissionActivity : Activity() {
                 DynamicShortcutManager.RECENT_CONNECT_ACTION -> {
                     val connectId = intent.getIntExtra(DynamicShortcutManager.RECENT_CONNECT_ID, -1)
                     locationRepository.setSelectedCity(connectId)
+                    setupLocationTypeInt()
                     vpnController.connectAsync()
                 }
                 else -> {
                     vpnController.disconnectAsync()
                 }
+            }
+        }
+    }
+
+    private fun setupLocationTypeInt(){
+        val locationTypeInt = intent.getIntExtra(DynamicShortcutManager.RECENT_LOCATION_TYPE_INT, 0)
+        when(locationTypeInt) {
+            1 -> {
+                appContext.preference.setConnectingToStaticIP(true)
+                appContext.preference.setConnectingToConfiguredLocation(false)
+            }
+            2 -> {
+                appContext.preference.setConnectingToStaticIP(false)
+                appContext.preference.setConnectingToConfiguredLocation(true)
+            }
+            else -> {
+                appContext.preference.setConnectingToStaticIP(false)
+                appContext.preference.setConnectingToConfiguredLocation(false)
             }
         }
     }
