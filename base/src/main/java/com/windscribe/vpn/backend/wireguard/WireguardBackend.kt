@@ -318,6 +318,7 @@ class WireguardBackend(
                             reconnecting = true
                             try {
                                 protectByVPN.set(false)
+                                connectionId = UUID.randomUUID()
                                 backend.setState(testTunnel, UP, response.data)
                                 return Result.success("updated wg state with new interface address.")
                             } catch (e: Exception) {
