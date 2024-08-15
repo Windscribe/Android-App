@@ -19,35 +19,41 @@ class ProxyTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBacke
     private var protectJob: Job? = null
 
     fun startProxyTunnel(ip: String, port: String, isWSTunnel: Boolean = true) {
-        proxyJob = scope.launch {
-            val mtu = if (appContext.preference.isPackageSizeModeAuto) {
-                1500
-            } else {
-                appContext.preference.packetSize.toLong()
-            }
-            delay(500)
-            val logFile = File(appContext.filesDir, PROXY_LOG).path
-            tunnelLib.initialise(BuildConfig.DEV, logFile)
-            if (isWSTunnel) {
-                val remote =
-                    "wss://$ip:$port/$PROXY_TUNNEL_PROTOCOL/$PROXY_TUNNEL_ADDRESS/$WS_TUNNEL_PORT"
-                tunnelLib.startProxy(":$PROXY_TUNNEL_PORT", remote, 1, mtu, false)
-            } else {
-                val remote = "https://$ip:$port"
-                val antiCensorship = appContext.preference.isAntiCensorshipOn
-                tunnelLib.startProxy(":$PROXY_TUNNEL_PORT", remote, 2, mtu, antiCensorship)
-            }
-            logger.debug("Exiting tunnel proxy.")
-        }
-        protectJob = scope.launch {
-            delay(1500)
-            while (tunnelLib.socketFd() != -1) {
-                Thread.sleep(100)
-            }
-            val socketFd = tunnelLib.socketFd()
-            logger.debug("Protecting WSTunnel Socket Fd: $socketFd")
-            vpnBackend.protect(socketFd)
-        }
+       scope.launch {
+           if (proxyJob?.isActive == true) {
+               logger.debug("Previous Stunnel job is still running. Waiting for it to finish.")
+               proxyJob?.join()
+           }
+           proxyJob = scope.launch {
+               val mtu = if (appContext.preference.isPackageSizeModeAuto) {
+                   1500
+               } else {
+                   appContext.preference.packetSize.toLong()
+               }
+               delay(500)
+               val logFile = File(appContext.filesDir, PROXY_LOG).path
+               tunnelLib.initialise(BuildConfig.DEV, logFile)
+               if (isWSTunnel) {
+                   val remote =
+                       "wss://$ip:$port/$PROXY_TUNNEL_PROTOCOL/$PROXY_TUNNEL_ADDRESS/$WS_TUNNEL_PORT"
+                   tunnelLib.startProxy(":$PROXY_TUNNEL_PORT", remote, 1, mtu, false)
+               } else {
+                   val remote = "https://$ip:$port"
+                   val antiCensorship = appContext.preference.isAntiCensorshipOn
+                   tunnelLib.startProxy(":$PROXY_TUNNEL_PORT", remote, 2, mtu, antiCensorship)
+               }
+               logger.debug("Exiting tunnel proxy.")
+           }
+           protectJob = scope.launch {
+               delay(1500)
+               while (tunnelLib.socketFd() != -1) {
+                   Thread.sleep(100)
+               }
+               val socketFd = tunnelLib.socketFd()
+               logger.debug("Protecting WSTunnel Socket Fd: $socketFd")
+               vpnBackend.protect(socketFd)
+           }
+       }
     }
 
     fun stopProxyTunnel() {
