@@ -30,9 +30,9 @@ class ProxyTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBacke
                } else {
                    appContext.preference.packetSize.toLong()
                }
-               delay(500)
                val logFile = File(appContext.filesDir, PROXY_LOG).path
                tunnelLib.initialise(BuildConfig.DEV, logFile)
+               logger.debug("Running proxy.")
                if (isWSTunnel) {
                    val remote =
                        "wss://$ip:$port/$PROXY_TUNNEL_PROTOCOL/$PROXY_TUNNEL_ADDRESS/$WS_TUNNEL_PORT"
@@ -45,13 +45,15 @@ class ProxyTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBacke
                logger.debug("Exiting tunnel proxy.")
            }
            protectJob = scope.launch {
+               logger.debug("Running protect.")
                delay(1500)
-               while (tunnelLib.socketFd() != -1) {
+               while (tunnelLib.socketFd() == -1) {
                    Thread.sleep(100)
                }
                val socketFd = tunnelLib.socketFd()
                logger.debug("Protecting WSTunnel Socket Fd: $socketFd")
                vpnBackend.protect(socketFd)
+               logger.debug("Exiting protect.")
            }
        }
     }
@@ -59,7 +61,6 @@ class ProxyTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBacke
     fun stopProxyTunnel() {
         logger.debug("Stopping proxy.")
         protectJob?.cancel()
-        proxyJob?.cancel()
         tunnelLib.stop()
     }
 
