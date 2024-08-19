@@ -16,6 +16,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import butterknife.BindView
 import butterknife.OnClick
 import com.windscribe.mobile.R
+import com.windscribe.mobile.advance.AdvanceParamsActivity
 import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.custom_view.preferences.MultipleLinkExplainView
 import com.windscribe.mobile.custom_view.preferences.SingleLinkExplainView
@@ -53,6 +54,9 @@ class HelpActivity : BaseActivity(), HelpView {
     @BindView(R.id.sendTicket)
     lateinit var sendTicketView: SingleLinkExplainView
 
+    @BindView(R.id.cl_advance)
+    lateinit var advanceView: SingleLinkExplainView
+
     private var logSent = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,6 +81,7 @@ class HelpActivity : BaseActivity(), HelpView {
         val communityBtn = findViewById<MultipleLinkExplainView>(R.id.community)
         communityBtn.onFirstItemClick { presenter.onRedditClick() }
         communityBtn.onSecondItemClick { presenter.onDiscordClick() }
+        advanceView.onClick { presenter.advanceViewClick() }
         UiUtil.setupOnTouchListener(container = debugView, textView = debugViewLabel)
         UiUtil.setupOnTouchListener(container = sendDebugView, textView = sendDebugLogLabel)
     }
@@ -138,6 +143,11 @@ class HelpActivity : BaseActivity(), HelpView {
 
     override fun showToast(message: String) {
         runOnUiThread { Toast.makeText(this@HelpActivity, message, Toast.LENGTH_SHORT).show() }
+    }
+
+    override fun showAdvanceParamsActivity() {
+        val startIntent = Intent(this, AdvanceParamsActivity::class.java)
+        startActivity(startIntent)
     }
 
     companion object {
