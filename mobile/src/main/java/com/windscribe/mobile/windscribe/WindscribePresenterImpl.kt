@@ -221,14 +221,6 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
-    private fun handleRateDialog() {
-        interactor.getCompositeDisposable().add(interactor.getUserSessionData()
-                .filter { elapsedOneDayAfterLogin() && interactor.isUserEligibleForRatingApp(it) }
-                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe({
-                    onUserSessionResponse()
-                }) { e: Throwable -> onUserSessionError(e) })
-    }
-
     override fun init() {
         interactor.getAppPreferenceInterface().isReconnecting = false
         // User data
@@ -775,8 +767,6 @@ class WindscribePresenterImpl @Inject constructor(
         // Update Notification count
         updateNotificationCount()
 
-        // Open rate dialog
-        handleRateDialog()
         interactor.getPreferenceChangeObserver().postConfigListChange()
     }
 
@@ -1876,29 +1866,6 @@ class WindscribePresenterImpl @Inject constructor(
         logger.debug(
                 "Error retrieving user session data from storage" + instance.convertThrowableToString(e)
         )
-    }
-
-    private fun onUserSessionResponse() {
-        when (interactor.getRateAppPreference()) {
-            RateDialogConstants.STATUS_DEFAULT -> {
-                interactor.setRateDialogUpdateTime()
-                windscribeView.handleRateView()
-                logger.debug("Rate dialog is being shown for first time.")
-            }
-
-            RateDialogConstants.STATUS_ASK_LATER -> {
-                val time = interactor.getLastTimeUpdated()
-                val difference = Date().time - time.toLong()
-                val days = TimeUnit.DAYS.convert(difference, TimeUnit.MILLISECONDS)
-                if (days >= RateDialogConstants.MINIMUM_DAYS_TO_SHOW_AGAIN) {
-                    interactor.saveRateAppPreference(RateDialogConstants.STATUS_ALREADY_ASKED)
-                    windscribeView.handleRateView()
-                    logger.debug("Rate dialog is being shown and user's last choice was ask me later 90+ days ago.")
-                }
-            }
-
-            else -> {}
-        }
     }
 
     /*
