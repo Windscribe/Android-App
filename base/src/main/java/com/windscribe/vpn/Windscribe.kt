@@ -40,6 +40,7 @@ import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.windscribe.vpn.state.WindscribeReviewManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import de.blinkt.openvpn.core.PRNGFixes
 import io.reactivex.plugins.RxJavaPlugins
@@ -107,6 +108,9 @@ open class Windscribe : MultiDexApplication() {
     lateinit var shortcutManager: DynamicShortcutManager
 
     @Inject
+    lateinit var reviewManager: WindscribeReviewManager
+
+    @Inject
     lateinit var vpnController: WindVpnController
     lateinit var applicationComponent: ApplicationComponent
     lateinit var activityComponent: ActivityComponent
@@ -148,6 +152,7 @@ open class Windscribe : MultiDexApplication() {
         if (preference.sessionHash != null && preference.autoConnect && canAccessNetworkName()) {
             startAutoConnectService()
         }
+        reviewManager.handleAppReview()
     }
 
     private fun initStrongswan() {

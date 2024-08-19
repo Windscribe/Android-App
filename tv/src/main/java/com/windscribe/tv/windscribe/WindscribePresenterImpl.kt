@@ -158,39 +158,37 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     private fun handleRateDialog() {
-        if (elapsedOneDayAfterLogin()) {
-            interactor.getCompositeDisposable().add(
-                interactor.getUserSessionData()
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({
-                        if (!interactor.isUserEligibleForRatingApp(it)) {
-                            return@subscribe
+        interactor.getCompositeDisposable().add(
+            interactor.getUserSessionData()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    if (!interactor.isUserEligibleForRatingApp(it)) {
+                        return@subscribe
+                    }
+                    when (interactor.getRateAppPreference()) {
+                        RateDialogConstants.STATUS_DEFAULT -> {
+                            interactor.setRateDialogUpdateTime()
+                            windscribeView.handleRateView()
+                            logger.debug("Rate dialog is being shown for first time.")
                         }
-                        when (interactor.getRateAppPreference()) {
-                            RateDialogConstants.STATUS_DEFAULT -> {
-                                interactor.setRateDialogUpdateTime()
+                        RateDialogConstants.STATUS_ASK_LATER -> {
+                            val time = interactor.getLastTimeUpdated()
+                            val difference = Date().time - time.toLong()
+                            val days = TimeUnit.DAYS.convert(difference, MILLISECONDS)
+                            if (days >= RateDialogConstants.MINIMUM_DAYS_TO_SHOW_AGAIN) {
+                                interactor.saveRateAppPreference(
+                                    RateDialogConstants.STATUS_ALREADY_ASKED
+                                )
                                 windscribeView.handleRateView()
-                                logger.debug("Rate dialog is being shown for first time.")
+                                logger
+                                    .debug("Rate dialog is being shown and user's last choice was ask me later 90+ days ago.")
                             }
-                            RateDialogConstants.STATUS_ASK_LATER -> {
-                                val time = interactor.getLastTimeUpdated()
-                                val difference = Date().time - time.toLong()
-                                val days = TimeUnit.DAYS.convert(difference, MILLISECONDS)
-                                if (days >= RateDialogConstants.MINIMUM_DAYS_TO_SHOW_AGAIN) {
-                                    interactor.saveRateAppPreference(
-                                        RateDialogConstants.STATUS_ALREADY_ASKED
-                                    )
-                                    windscribeView.handleRateView()
-                                    logger
-                                        .debug("Rate dialog is being shown and user's last choice was ask me later 90+ days ago.")
-                                }
-                            }
-                            else -> {}
                         }
-                    }, {})
-            )
-        }
+                        else -> {}
+                    }
+                }, {})
+        )
     }
 
     override fun init() {
@@ -573,14 +571,6 @@ class WindscribePresenterImpl @Inject constructor(
                 break
             }
         }
-    }
-
-    private fun elapsedOneDayAfterLogin(): Boolean {
-        val milliSeconds1 = interactor.getAppPreferenceInterface().loginTime.time
-        val milliSeconds2 = Date().time
-        val periodSeconds = (milliSeconds2 - milliSeconds1) / 1000
-        val elapsedDays = periodSeconds / 60 / 60 / 24
-        return elapsedDays > 0
     }
 
     private fun setIPAddress() {

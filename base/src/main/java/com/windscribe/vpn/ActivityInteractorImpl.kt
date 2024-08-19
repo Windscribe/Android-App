@@ -386,27 +386,16 @@ class ActivityInteractorImpl(
 
     override fun isUserEligibleForRatingApp(userSessionResponse: UserSessionResponse): Boolean {
         val user = User(userSessionResponse)
-        val days = user.daysRegisteredSince
-        val experiencedUser = days >= RateDialogConstants.MINIMUM_DAYS_TO_START
-        val dataUsed = user.dataUsed?.toFloat() ?: 0F
-        val enoughDataUsed = dataUsed >= RateDialogConstants.MINIMUM_DATA_LIMIT
-        val logDate: String = try {
-            Date(getLastTimeUpdated().toLong()).toString()
-        } catch (nm: NumberFormatException) {
-            "No date available."
-        }
-        if (isPremiumUser() && enoughDataUsed && experiencedUser && lastShownDays(getLastTimeUpdated())) {
-            logger
-                .debug(
-                    "Rate dialog check: IsPremiumUser:" + isPremiumUser() + ", Data Used:" + dataUsed + "GB" +
-                        " Dialog data limit:" + RateDialogConstants.MINIMUM_DATA_LIMIT + "GB," +
-                        " Registration(days):" + days + " Dialog days limit:" +
-                        RateDialogConstants.MINIMUM_DAYS_TO_START + ", Last choice:" + getLastChoiceLog() +
-                        " Last shown:" + logDate
-                )
-            return true
-        }
-        return false
+        val dataUsed = user.dataUsed.toDouble() / (1024 * 1024 * 1024)
+        return dataUsed >= 2.0 && elapsedTwoDayAfterLogin() && lastShownDays()
+    }
+
+    private fun elapsedTwoDayAfterLogin(): Boolean {
+        val milliSeconds1 = preferenceHelper.loginTime.time
+        val milliSeconds2 = Date().time
+        val periodSeconds = (milliSeconds2 - milliSeconds1) / 1000
+        val elapsedDays = periodSeconds / 60 / 60 / 24
+        return elapsedDays.toInt() >= 2
     }
 
     override fun loadPortMap(callback: PortMapLoadCallback) {
@@ -443,16 +432,8 @@ class ActivityInteractorImpl(
         return this.localDbInterface.getCityAndRegionByID(cityId)
     }
 
-    private fun getLastChoiceLog(): String {
-        return when (getRateAppPreference()) {
-            RateDialogConstants.STATUS_ALREADY_ASKED -> "Already asked"
-            RateDialogConstants.STATUS_ASK_LATER -> "Ask later"
-            RateDialogConstants.STATUS_NEVER_ASK -> "Never Ask"
-            else -> "Default"
-        }
-    }
-
-    private fun lastShownDays(time: String): Boolean {
+    private fun lastShownDays(): Boolean {
+        val time = preferenceHelper.getResponseString(RateDialogConstants.LAST_UPDATE_TIME) ?: return true
         return try {
             val difference = Date().time - time.toLong()
             val days = DAYS.convert(difference, MILLISECONDS)
