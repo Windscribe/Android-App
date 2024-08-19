@@ -207,10 +207,6 @@ class MainMenuPresenterImpl @Inject constructor(
         setupActionButton(user)
     }
 
-    override fun advanceViewClick() {
-        mainMenuView.showAdvanceParamsActivity()
-    }
-
     companion object {
         private const val TAG = "main_menu_p"
     }

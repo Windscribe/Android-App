@@ -27,5 +27,4 @@ interface MainMenuPresenter {
     fun observeUserChange(mainMenuActivity: MainMenuActivity)
     fun setTheme(context: Context)
     fun onReferForDataClick()
-    fun advanceViewClick()
 }

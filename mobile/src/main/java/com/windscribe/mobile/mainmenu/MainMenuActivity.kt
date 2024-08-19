@@ -108,12 +108,6 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
     @BindView(R.id.cl_refer_for_data)
     lateinit var referForDataView: IconLinkView
 
-    @BindView(R.id.cl_advance)
-    lateinit var advanceView: IconLinkView
-
-    @BindView(R.id.divider_advance)
-    lateinit var advanceParamDivider: ImageView
-
     @BindView(R.id.divider_refer_for_data)
     lateinit var referForDataDivider: ImageView
 
@@ -159,9 +153,6 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
         referForDataView.onClick {
             performHapticFeedback(it)
             presenter.onReferForDataClick()
-        }
-        advanceView.onClick {
-            presenter.advanceViewClick()
         }
         UiUtil.setupOnTouchListener(textViewContainer = tvDataUpgrade, textView = tvDataUpgrade)
     }
@@ -364,11 +355,6 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
     override fun showShareLinkOption() {
         referForDataView.visibility = View.VISIBLE
         referForDataDivider.visibility = View.VISIBLE
-    }
-
-    override fun showAdvanceParamsActivity() {
-        val startIntent = Intent(this, AdvanceParamsActivity::class.java)
-        startActivity(startIntent)
     }
 
     companion object {
