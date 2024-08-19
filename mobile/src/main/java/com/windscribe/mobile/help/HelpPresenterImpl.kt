@@ -106,4 +106,8 @@ class HelpPresenterImpl @Inject constructor(
             context.setTheme(R.style.LightTheme)
         }
     }
+
+    override fun advanceViewClick() {
+        helpView.showAdvanceParamsActivity()
+    }
 }
