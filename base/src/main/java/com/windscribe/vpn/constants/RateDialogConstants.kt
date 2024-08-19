@@ -12,7 +12,6 @@ object RateDialogConstants {
     const val LAST_UPDATE_TIME = "last_time"
     const val MINIMUM_DAYS_TO_SHOW_AGAIN = 30
     const val MINIMUM_DAYS_TO_START = 90
-    const val MINIMUM_DATA_LIMIT = 10.0f
     const val PLAY_STORE_URL = "http://play.google.com/store/apps/details?id=com.windscribe.vpn"
     const val PLAY_STORE_PACKAGE = "com.android.vending"
 }

@@ -71,6 +71,7 @@ import com.windscribe.vpn.serverlist.dao.PingTimeDao
 import com.windscribe.vpn.serverlist.dao.RegionAndCitiesDao
 import com.windscribe.vpn.serverlist.dao.RegionDao
 import com.windscribe.vpn.serverlist.dao.StaticRegionDao
+import com.windscribe.vpn.services.review.WindscribeReviewManagerImpl
 import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.DynamicShortcutManager
@@ -78,6 +79,7 @@ import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.ShortcutStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.windscribe.vpn.state.WindscribeReviewManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import com.wireguard.android.backend.GoBackend
 import com.wsnet.lib.WSNet
@@ -808,5 +810,11 @@ open class BaseApplicationModule {
     @Singleton
     fun providesDynamicShortcutManager(app: Windscribe,scope: CoroutineScope, vpnConnectionStateManager: VPNConnectionStateManager, locationRepository: LocationRepository, localDbInterface: LocalDbInterface): DynamicShortcutManager {
         return DynamicShortcutManager(app, scope, vpnConnectionStateManager, locationRepository, localDbInterface)
+    }
+
+    @Provides
+    @Singleton
+    fun providesReviewManager(app: Windscribe,scope: CoroutineScope, preferencesHelper: PreferencesHelper, userRepository: UserRepository): WindscribeReviewManager {
+        return WindscribeReviewManagerImpl(scope, app, preferencesHelper, userRepository)
     }
 }
