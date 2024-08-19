@@ -3,6 +3,7 @@ package com.windscribe.vpn.di
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.content.Context
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -11,6 +12,7 @@ import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.ServiceInteractorImpl
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.ApiCallManager
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.ProtectedApiFactory
@@ -781,7 +783,12 @@ open class BaseApplicationModule {
             logger.debug(msg)
         }, BuildConfig.DEV)
         preferencesHelper.setDeviceUUID(preferencesHelper.userName, UUID.randomUUID().toString())
-        WSNet.initialize("android", "android", WindUtilities.getVersionName(), preferencesHelper.getDeviceUUID(preferencesHelper.userName) ?: "", "2.6.0",  BuildConfig.DEV, preferencesHelper.wsNetSettings)
+        val systemLanguageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            appContext.resources.configuration.locales.get(0).language.substring(0..1)
+        } else {
+            appContext.resources.configuration.locale.language.substring(0..1)
+        }
+        WSNet.initialize("android", "android", WindUtilities.getVersionName(), preferencesHelper.getDeviceUUID(preferencesHelper.userName) ?: "", "2.6.0",  BuildConfig.DEV, systemLanguageCode, preferencesHelper.wsNetSettings)
         val networkListener = object : DeviceStateManager.DeviceStateListener {
             override fun onNetworkStateChanged() {
                 super.onNetworkStateChanged()
