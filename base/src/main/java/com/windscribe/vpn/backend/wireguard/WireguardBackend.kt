@@ -287,12 +287,17 @@ class WireguardBackend(
 
     private fun checkLastHandshake() {
         runCatching { connectivityManager.unregisterNetworkCallback(callback) }
-        backend.handshakeNSecAgo()?.let { lastHandshakeTimeInSeconds ->
-            if (active && lastHandshakeTimeInSeconds > maxHandshakeTimeInSeconds) {
-                vpnLogger.debug("Last Wg handshake $lastHandshakeTimeInSeconds seconds ago Waiting for network.")
-                connectivityManager.requestNetwork(networkRequest, callback)
-            }
-        } ?: vpnLogger.debug("Unable to get handshake time from wg binary..")
+        try {
+            vpnLogger.debug("Checking handshake time")
+            backend.handshakeNSecAgo()?.let { lastHandshakeTimeInSeconds ->
+                if (active && lastHandshakeTimeInSeconds > maxHandshakeTimeInSeconds) {
+                    vpnLogger.debug("Last Wg handshake $lastHandshakeTimeInSeconds seconds ago Waiting for network.")
+                    connectivityManager.requestNetwork(networkRequest, callback)
+                }
+            } ?: vpnLogger.debug("Unable to get handshake time from wg binary..")
+        } catch (e: Exception){
+           vpnLogger.debug("Error Getting handshake time {}", e.message ?: "no error msg")
+        }
     }
 
     private suspend fun checkTunnelHealth(): Result<String> {
