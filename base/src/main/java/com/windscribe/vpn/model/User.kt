@@ -43,12 +43,9 @@ class User(private val sessionResponse: UserSessionResponse) {
                 0
             }
         }
-    val dataUsed: Long?
+    val dataUsed: Long
         get() {
-            if (!isPro) {
-                return sessionResponse.trafficUsed.toLong()
-            }
-            return null
+            return sessionResponse.trafficUsed.toLong()
         }
     val maxData: Long
         get() = sessionResponse.trafficMax.toLong()
@@ -56,14 +53,12 @@ class User(private val sessionResponse: UserSessionResponse) {
         get() = sessionResponse.isPremium == 1
     val userStatusInt: Int
         get() = sessionResponse.isPremium
-    val dataLeft: Float?
+    val dataLeft: Float
         get() {
-            return dataUsed?.let {
-                if (it > maxData) {
-                    return@let 0F
-                }
-                return@let (maxData - it) / UserStatusConstants.GB_DATA.toFloat()
+            if (dataUsed > maxData) {
+                return 0F
             }
+            return (maxData - dataUsed) / UserStatusConstants.GB_DATA.toFloat()
         }
 
     enum class AccountStatus {
