@@ -3,6 +3,8 @@
  */
 package com.windscribe.mobile.welcome
 
+import java.io.File
+
 interface WelcomePresenter {
     fun exportLog()
     val isUserPro: Boolean
@@ -24,4 +26,6 @@ interface WelcomePresenter {
         referralUsername: String,
         ignoreEmptyEmail: Boolean
     )
+
+    fun getLogUri(): File?
 }

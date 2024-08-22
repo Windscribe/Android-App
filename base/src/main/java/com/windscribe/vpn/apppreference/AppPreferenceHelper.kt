@@ -22,12 +22,15 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_WIRE_GUARD_P
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_ROBERT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.FAKE_TRAFFIC_VOLUME
+import com.windscribe.vpn.constants.PreferencesKeyConstants.SUGGESTED_PORT
+import com.windscribe.vpn.constants.PreferencesKeyConstants.SUGGESTED_PROTOCOL
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_CONNECT_API_FAIL_OVER_STATE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_LOCAL_PARAMS
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WS_NET_SETTINGS
 import com.windscribe.vpn.constants.VpnPreferenceConstants
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.exceptions.PreferenceException
+import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.WgLocalParams
 import io.reactivex.Single
 import net.grandcentrix.tray.AppPreferences
@@ -245,11 +248,7 @@ class AppPreferenceHelper(
         )
                 ?: appContext.getAppSupportedSystemLanguage()
     override val savedProtocol: String
-        get() = preference.getString(
-                PreferencesKeyConstants.PROTOCOL_KEY,
-                PreferencesKeyConstants.PROTO_IKev2
-        )
-                ?: PreferencesKeyConstants.PROTO_IKev2
+        get() = preference.getString(PreferencesKeyConstants.PROTOCOL_KEY, getDefaultProtoInfo().first)?: getDefaultProtoInfo().first
     override val savedSTEALTHPort: String
         get() = preference.getString(
                 PreferencesKeyConstants.SAVED_STEALTH_PORT,
@@ -293,9 +292,8 @@ class AppPreferenceHelper(
     override var selectedProtocol: String
         get() = preference.getString(
                 VpnPreferenceConstants.SELECTED_PROTOCOL,
-                PreferencesKeyConstants.PROTO_IKev2
-        )
-                ?: PreferencesKeyConstants.PROTO_IKev2
+                getDefaultProtoInfo().first
+        )?: getDefaultProtoInfo().first
         set(selectedProtocol) {
             preference.put(VpnPreferenceConstants.SELECTED_PROTOCOL, selectedProtocol)
         }
@@ -665,4 +663,26 @@ class AppPreferenceHelper(
     override var wsNetSettings: String
         get() = preference.getString(WS_NET_SETTINGS, "") ?: ""
         set(value) {preference.put(WS_NET_SETTINGS, value)}
+
+    override fun isSuggested(): Boolean {
+        return suggestedProtocol != null && suggestedPort != null
+    }
+    override var suggestedProtocol: String?
+        get() = preference.getString(SUGGESTED_PROTOCOL, null)
+        set(value) { preference.put(SUGGESTED_PROTOCOL, value) }
+    override var suggestedPort: String?
+        get() = preference.getString(SUGGESTED_PORT, null)
+        set(value) { preference.put(SUGGESTED_PORT, value) }
+
+    override fun getDefaultProtoInfo(): Pair<String, String> {
+        if(isSuggested()){
+            return Pair(suggestedProtocol!!, suggestedPort!!)
+        }
+        return Pair(PreferencesKeyConstants.PROTO_IKev2, DEFAULT_IKEV2_PORT)
+    }
+
+    override fun getDefaultNetworkInfo(networkName: String): NetworkInfo {
+        val proto = getDefaultProtoInfo()
+        return NetworkInfo(networkName, true, false, proto.first, proto.second)
+    }
 }

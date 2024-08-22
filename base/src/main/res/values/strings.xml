@@ -13,7 +13,8 @@
     <string name="small_password">Your password must be at least 8 characters.</string>
     <string name="common_password">The password you entered is commonly used and not secure.</string>
     <string name="password_requirement">8 or more characters with at least one uppercase and lowercase</string>
-    <string name="failed_network_alert">Well we gave it our best shot, we just couldn’t connect you on this network for some reason. Check your internet connection.</string>
+    <string name="failed_network_alert">You appear to be on a highly restrictive network which is blocking Windscribe. Please use the \"Emergency Connect\" feature on the main screen and then try to signup or login again. If you\'re unsuccessful, please contact us.</string>
+    <string name="failed_network_title">Restrictive Network Detected</string>
     <string name="fa_required_error">2FA code is required</string>
     <string name="fa_invalid_error">Invalid 2FA code</string>
     <string name="login">Login</string>

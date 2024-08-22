@@ -14,7 +14,8 @@
     <string name="small_password">رمز عبور شما باید حداقل 8 کاراکتر باشد.</string>
     <string name="common_password">رمز عبوری که وارد کرده‌اید به طور معمول استفاده می‌شود و امن نیست.</string>
     <string name="password_requirement">8 کاراکتر یا بیشتر با حداقل یک حرف بزرگ و کوچک</string>
-    <string name="failed_network_alert">خوب ما ان را به بهترین شات ما، ما فقط نمی تواند شما را در این شبکه به دلایلی متصل. اتصال اینترنت خود را بررسی کنید.</string>
+    <string name="failed_network_alert">به نظر می‌رسد شما در یک شبکه بسیار محدود هستید که Windscribe را مسدود کرده است. لطفاً از قابلیت "اتصال اضطراری" در صفحه اصلی استفاده کرده و سپس دوباره سعی کنید ثبت‌نام یا ورود کنید. اگر موفق نشدید، لطفاً با ما تماس بگیرید.</string>
+    <string name="failed_network_title">شبکه محدود شناسایی شد</string>
     <string name="fa_required_error">کد 2FA مورد نیاز است</string>
     <string name="fa_invalid_error">کد 2FA نامعتبر است</string>
     <string name="login">ورود</string>

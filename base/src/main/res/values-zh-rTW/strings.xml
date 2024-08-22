@@ -14,7 +14,8 @@
     <string name="small_password">您的密码必须至少为 8 个字符。</string>
     <string name="common_password">您輸入的密碼常見且不安全。</string>
     <string name="password_requirement">8 个或更多字符，至少包含一个大写和小写</string>
-    <string name="failed_network_alert">好吧，我们尽了最大的努力，由于某种原因，我们无法在这个网络上连接您。检查您的互联网连接。</string>
+    <string name="failed_network_alert">您似乎處於一個限制性極高的網絡中，該網絡正在阻止Windscribe。請使用主屏幕上的“緊急連接”功能，然後再次嘗試註冊或登錄。如果仍不成功，請聯繫我們。</string>
+    <string name="failed_network_title">檢測到限制性網絡</string>
     <string name="fa_required_error">需要 2FA 代码</string>
     <string name="fa_invalid_error">无效的 2FA 代码</string>
     <string name="login">登錄</string>

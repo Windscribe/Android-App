@@ -31,10 +31,7 @@ class NetworkInfoManager(private val preferencesHelper: PreferencesHelper, priva
     }
 
     private fun addNetworkToKnown(networkName: String): Single<Long> {
-        val networkInfo = NetworkInfo(
-                networkName, preferencesHelper.isAutoSecureOn, false, PreferencesKeyConstants.PROTO_IKev2, PreferencesKeyConstants.DEFAULT_IKEV2_PORT
-        )
-        return localDbInterface.addNetwork(networkInfo)
+        return localDbInterface.addNetwork(preferencesHelper.getDefaultNetworkInfo(networkName))
     }
 
     override fun onNetworkStateChanged() {

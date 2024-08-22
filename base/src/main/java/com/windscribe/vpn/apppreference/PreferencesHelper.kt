@@ -7,6 +7,7 @@ import com.windscribe.vpn.api.response.NewsFeedNotification
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
+import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.WgLocalParams
 import io.reactivex.Single
 import java.util.*
@@ -137,4 +138,9 @@ interface PreferencesHelper {
     var fakeTrafficVolume:FakeTrafficVolume
     var dnsMode: String
     var dnsAddress: String?
+    var suggestedProtocol: String?
+    var suggestedPort: String?
+    fun getDefaultProtoInfo(): Pair<String, String>
+    fun getDefaultNetworkInfo(networkName: String): NetworkInfo
+    fun isSuggested(): Boolean
 }

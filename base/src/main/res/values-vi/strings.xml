@@ -14,7 +14,8 @@
     <string name="small_password">Mật khẩu của bạn phải có ít nhất 8 ký tự.</string>
     <string name="common_password">Mật khẩu bạn đã nhập là mật khẩu thường được sử dụng và không an toàn.</string>
     <string name="password_requirement">8 ký tự trở lên với ít nhất một chữ hoa và chữ thường</string>
-    <string name="failed_network_alert">Vâng, chúng tôi đã cố gắng hết sức, chúng tôi không thể kết nối bạn trên mạng này vì một số lý do. Kiểm tra kết nối internet của bạn.</string>
+    <string name="failed_network_alert">Có vẻ như bạn đang ở trong một mạng rất hạn chế đang chặn Windscribe. Vui lòng sử dụng tính năng "Kết nối khẩn cấp" trên màn hình chính và sau đó thử đăng ký hoặc đăng nhập lại. Nếu không thành công, vui lòng liên hệ với chúng tôi.</string>
+    <string name="failed_network_title">Phát hiện mạng hạn chế</string>
     <string name="fa_required_error">Mã 2FA là bắt buộc</string>
     <string name="fa_invalid_error">Mã 2FA không hợp lệ</string>
     <string name="login">Đăng nhập</string>
