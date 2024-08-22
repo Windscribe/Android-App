@@ -14,7 +14,8 @@
     <string name="small_password">आपका पासवर्ड कम से कम 8 वर्णों का होना चाहिए.</string>
     <string name="common_password">आपके द्वारा दर्ज किया गया पासवर्ड आमतौर पर इस्तेमाल किया जाता है और सुरक्षित नहीं है।</string>
     <string name="password_requirement">कम से कम एक अपरकेस और लोअरकेस के साथ 8 या अधिक वर्ण</string>
-    <string name="failed_network_alert">खैर हमने इसे अपना सर्वश्रेष्ठ शॉट दिया, हम बस आपको किसी कारण से इस नेटवर्क पर कनेक्ट नहीं कर सके। अपने इंटरनेट कनेक्शन की जाँच करें।</string>
+    <string name="failed_network_alert">ऐसा लगता है कि आप एक अत्यधिक प्रतिबंधात्मक नेटवर्क पर हैं जो Windscribe को ब्लॉक कर रहा है। कृपया मुख्य स्क्रीन पर "आपातकालीन कनेक्ट" फीचर का उपयोग करें और फिर से साइनअप या लॉगिन करने का प्रयास करें। यदि आप सफल नहीं होते हैं, तो कृपया हमसे संपर्क करें।</string>
+    <string name="failed_network_title">प्रतिबंधात्मक नेटवर्क का पता चला</string>
     <string name="fa_required_error">2FA कोड आवश्यक है</string>
     <string name="fa_invalid_error">अमान्य 2FA कोड</string>
     <string name="login">लॉगिन</string>

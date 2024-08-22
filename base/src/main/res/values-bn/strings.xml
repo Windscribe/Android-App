@@ -14,7 +14,8 @@
     <string name="small_password">আপনার পাসওয়ার্ড অন্তত ৮ অক্ষরের হতে হবে।</string>
     <string name="common_password">প্রবেশ করানো পাসওয়ার্ডটি সাধারণ এবং অনিরাপদ।.</string>
     <string name="password_requirement">৮ বা তার বেশি অক্ষরের সাথে অন্তত একটি বড় এবং ছোট অক্ষর প্রয়োজন</string>
-    <string name="failed_network_alert">আমরা আমাদের সেরা চেষ্টা করেছি, কিন্তু কিছু কারণে এই নেটওয়ার্কে আপনাকে সংযুক্ত করা সম্ভব হয়নি। আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন।</string>
+    <string name="failed_network_alert">আপনার মনে হচ্ছে আপনি একটি অত্যন্ত সীমাবদ্ধ নেটওয়ার্কে আছেন যা Windscribe কে ব্লক করছে। দয়া করে প্রধান স্ক্রিনে "এমার্জেন্সি কানেক্ট" ফিচারটি ব্যবহার করুন এবং তারপর আবার সাইন আপ বা লগইন করার চেষ্টা করুন। আপনি সফল না হলে, আমাদের সাথে যোগাযোগ করুন।</string>
+    <string name="failed_network_title">সীমাবদ্ধ নেটওয়ার্ক সনাক্ত করা হয়েছে</string>
     <string name="fa_required_error">২FA কোড প্রয়োজন</string>
     <string name="fa_invalid_error">২FA কোড অবৈধ</string>
     <string name="login">লগইন</string>

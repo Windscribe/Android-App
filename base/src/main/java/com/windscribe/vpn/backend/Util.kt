@@ -187,7 +187,7 @@ object Util {
         return null
     }
 
-    fun getAppSupportedProtocolList(): ThreadSafeList<ProtocolInformation> {
+    fun getAppSupportedProtocolList(suggestedProtocol: Pair<String, String>? = null): ThreadSafeList<ProtocolInformation> {
         val protocol1 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_IKev2,
             PreferencesKeyConstants.DEFAULT_IKEV2_PORT,
@@ -224,7 +224,7 @@ object Util {
             appContext.getString(R.string.WSTunnel_description),
             ProtocolConnectionStatus.Disconnected
         )
-        return ThreadSafeList<ProtocolInformation>().apply {
+        val supportedProtocoList =  ThreadSafeList<ProtocolInformation>().apply {
             add(protocol1)
             add(protocol2)
             add(protocol3)
@@ -232,6 +232,14 @@ object Util {
             add(protocol5)
             add(protocol6)
         }
+        val suggestedProtocolFromApp = supportedProtocoList.firstOrNull { it.protocol == suggestedProtocol?.first }
+        if(suggestedProtocolFromApp != null && suggestedProtocol != null){
+            val index = supportedProtocoList.indexOfFirst { it.protocol == suggestedProtocol.first }
+            supportedProtocoList.removeAt(index)
+            suggestedProtocolFromApp.port = suggestedProtocol.second
+            supportedProtocoList.add(0, suggestedProtocolFromApp)
+        }
+        return supportedProtocoList
     }
 
     fun buildProtocolInformation(

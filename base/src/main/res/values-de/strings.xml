@@ -14,7 +14,8 @@
     <string name="small_password">Dein Passwort muss mindestens 8 Zeichen lang sein.</string>
     <string name="common_password">Das von Ihnen eingegebene Passwort ist häufig verwendet und nicht sicher.</string>
     <string name="password_requirement">8 oder mehr Zeichen mit mindestens einem Groß- und Kleinbuchstaben</string>
-    <string name="failed_network_alert">Wir haben wirklich alles versucht, aber wir konnten dich aus irgendeinem Grund einfach nicht mit diesem Netzwerk verbinden. Überprüfen deine Internetverbindung.</string>
+    <string name="failed_network_alert">Es scheint, dass Sie sich in einem stark eingeschränkten Netzwerk befinden, das Windscribe blockiert. Bitte verwenden Sie die Funktion „Notfallverbindung“ auf dem Hauptbildschirm und versuchen Sie dann erneut, sich anzumelden oder einzuloggen. Wenn Sie nicht erfolgreich sind, kontaktieren Sie uns bitte.</string>
+    <string name="failed_network_title">Eingeschränktes Netzwerk erkannt</string>
     <string name="fa_required_error">2FA-Code ist erforderlich</string>
     <string name="fa_invalid_error">Ungültiger 2FA-Code</string>
     <string name="login">Anmelden</string>

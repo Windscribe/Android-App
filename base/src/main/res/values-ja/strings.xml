@@ -14,7 +14,8 @@
     <string name="small_password">パスワードは 8 文字以上にする必要があります。</string>
     <string name="common_password">入力したパスワードは一般的に使用されており、安全ではありません。</string>
     <string name="password_requirement">8 文字以上、少なくとも 1 つの大文字と小文字を含む</string>
-    <string name="failed_network_alert">さて、私たちはそれにベストショットを与えました、私たちは何らかの理由でこのネットワーク上であなたを接続できませんでした。インターネット接続を確認してください。</string>
+    <string name="failed_network_alert">Windscribeがブロックされている非常に制限されたネットワークにいるようです。メイン画面の「緊急接続」機能を使用して、再度サインアップまたはログインを試みてください。それでもうまくいかない場合は、私たちに連絡してください。</string>
+    <string name="failed_network_title">制限されたネットワーク検出</string>
     <string name="fa_required_error">2FAコードが必要です</string>
     <string name="fa_invalid_error">無効な2FAコード</string>
     <string name="login">ログイン</string>

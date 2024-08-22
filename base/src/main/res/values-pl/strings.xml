@@ -14,7 +14,8 @@
     <string name="small_password">Hasło musi mieć co najmniej 8 znaków.</string>
     <string name="common_password">Hasło, które wprowadziłeś, jest powszechnie używane i nie jest bezpieczne.</string>
     <string name="password_requirement">8 lub więcej znaków z co najmniej jedną wielką i małą literą</string>
-    <string name="failed_network_alert">Cóż, daliśmy z siebie wszystko, po prostu z jakiegoś powodu nie mogliśmy połączyć cię z tą siecią. Sprawdź połączenie internetowe.</string>
+    <string name="failed_network_alert">Wygląda na to, że jesteś w bardzo restrykcyjnej sieci, która blokuje Windscribe. Użyj funkcji „Awaryjne połączenie” na ekranie głównym, a następnie spróbuj ponownie się zarejestrować lub zalogować. Jeśli się nie uda, skontaktuj się z nami.</string>
+    <string name="failed_network_title">Wykryto restrykcyjną sieć</string>
     <string name="fa_required_error">Wymagany jest kod 2FA</string>
     <string name="fa_invalid_error">Nieprawidłowy kod 2FA</string>
     <string name="login">Logowanie</string>

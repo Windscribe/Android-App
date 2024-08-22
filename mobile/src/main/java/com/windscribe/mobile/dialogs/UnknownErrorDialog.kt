@@ -36,10 +36,6 @@ class UnknownErrorDialog : FullScreenDialog() {
         super.onViewCreated(view, savedInstanceState)
         val error = arguments?.getString(errorKey)
         binding?.unknownErrorDescription?.text = error
-        binding?.unknownErrorSendLogButton?.setOnClickListener {
-            callback?.exportLog()
-            dismiss()
-        }
         binding?.unknownErrorContactSupportButton?.setOnClickListener {
             callback?.contactSupport()
             dismiss()
