@@ -6,7 +6,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/unknownErrorSendLogButton"
+        app:layout_constraintBottom_toTopOf="@id/unknownErrorContactSupportButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -21,26 +21,28 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <TextView
+            android:id="@+id/unknownErrorTitle"
+            style="@style/DialogTitle"
+            android:layout_marginTop="@dimen/reg_16dp"
+            android:text="@string/failed_network_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/unknownErrorIcon" />
 
         <TextView
             android:id="@+id/unknownErrorDescription"
             style="@style/DialogDescription"
             android:layout_marginTop="@dimen/reg_16dp"
+            android:layout_marginStart="@dimen/margin_32"
+            android:layout_marginEnd="@dimen/margin_32"
             android:text="@string/failed_network_alert"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/unknownErrorIcon" />
+            app:layout_constraintTop_toBottomOf="@+id/unknownErrorTitle" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-    <Button
-        android:id="@+id/unknownErrorSendLogButton"
-        style="@style/WarningActionButton"
-        android:text="@string/export_log"
-        app:layout_constraintBottom_toTopOf="@id/unknownErrorContactSupportButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/unknownErrorContactSupportButton"

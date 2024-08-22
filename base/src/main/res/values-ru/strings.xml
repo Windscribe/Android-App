@@ -14,7 +14,8 @@
     <string name="small_password">Ваш пароль должен содержать не менее 8 символов.</string>
     <string name="common_password">Введенный вами пароль часто используется и не является безопасным.</string>
     <string name="password_requirement">8 или более символов, с прописным и строчным регистром</string>
-    <string name="failed_network_alert">Что ж, мы сделали все возможное, мы просто не смогли подключить вас к этой сети по какой-то причине. Проверьте подключение к Интернету.</string>
+    <string name="failed_network_alert">Похоже, вы находитесь в сети с высокими ограничениями, которая блокирует Windscribe. Пожалуйста, используйте функцию «Аварийное подключение» на главном экране, а затем попробуйте снова зарегистрироваться или войти в систему. Если это не удастся, свяжитесь с нами.</string>
+    <string name="failed_network_title">Ограниченная сеть обнаружена</string>
     <string name="fa_required_error">Требуется код 2FA</string>
     <string name="fa_invalid_error">Неверный код 2FA</string>
     <string name="login">Логин</string>
