@@ -14,7 +14,8 @@
     <string name="small_password">Kata sandi Anda harus minimal 8 karakter.</string>
     <string name="common_password">Kata sandi yang Anda masukkan sering digunakan dan tidak aman.</string>
     <string name="password_requirement">8 karakter atau lebih dengan setidaknya satu huruf besar dan huruf kecil</string>
-    <string name="failed_network_alert">Yah kami memberikan yang terbaik, kami tidak bisa menghubungkan Anda di jaringan ini karena suatu alasan. Periksa koneksi internet Anda.</string>
+    <string name="failed_network_alert">Anda tampaknya berada di jaringan yang sangat terbatas yang memblokir Windscribe. Silakan gunakan fitur "Emergency Connect" di layar utama lalu coba daftar atau masuk lagi. Jika tidak berhasil, silakan hubungi kami.</string>
+    <string name="failed_network_title">Jaringan Restriktif Terdeteksi</string>
     <string name="fa_required_error">Kode 2FA diperlukan</string>
     <string name="fa_invalid_error">Kode 2FA tidak valid</string>
     <string name="login">Masuk</string>

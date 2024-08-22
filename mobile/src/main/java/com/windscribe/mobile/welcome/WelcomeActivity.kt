@@ -25,7 +25,13 @@ import com.windscribe.mobile.dialogs.ErrorDialog
 import com.windscribe.mobile.dialogs.ProgressDialog
 import com.windscribe.mobile.dialogs.UnknownErrorDialog
 import com.windscribe.mobile.dialogs.UnknownErrorDialogCallback
-import com.windscribe.mobile.welcome.fragment.*
+import com.windscribe.mobile.welcome.fragment.EmergencyConnectFragment
+import com.windscribe.mobile.welcome.fragment.FragmentCallback
+import com.windscribe.mobile.welcome.fragment.LoginFragment
+import com.windscribe.mobile.welcome.fragment.NoEmailAttentionFragment
+import com.windscribe.mobile.welcome.fragment.SignUpFragment
+import com.windscribe.mobile.welcome.fragment.WelcomeActivityCallback
+import com.windscribe.mobile.welcome.fragment.WelcomeFragment
 import com.windscribe.mobile.welcome.state.EmergencyConnectUIState
 import com.windscribe.mobile.welcome.viewmodal.EmergencyConnectViewModal
 import com.windscribe.mobile.windscribe.WindscribeActivity
@@ -94,7 +100,18 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView, UnknownEr
     }
 
     override fun contactSupport() {
-        openURLInBrowser(getWebsiteLink(NetworkKeyConstants.URL_HELP_ME))
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.setType("plain/text")
+        intent.putExtra(Intent.EXTRA_EMAIL, arrayOf("helpdesk@windscribe.com"))
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Restrictive Network Detected")
+        intent.putExtra(Intent.EXTRA_TEXT, "")
+        presenter.getLogUri()?.let {
+            val fileUri = FileProvider.getUriForFile(this, "com.windscribe.vpn.provider", it)
+            intent.putExtra(Intent.EXTRA_STREAM, fileUri)
+        }
+       if(intent.resolveActivity(packageManager) != null){
+           startActivity(Intent.createChooser(intent, "Select Email Provider"))
+       }
     }
 
     override fun exportLog() {

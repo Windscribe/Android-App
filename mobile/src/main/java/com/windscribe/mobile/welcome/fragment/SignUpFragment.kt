@@ -31,8 +31,17 @@ class SignUpFragment : Fragment(), TextWatcher,
     @BindView(R.id.nav_button)
     lateinit var backButton: ImageButton
 
+    @BindView(R.id.username_error_description)
+    lateinit var usernameErrorDescription: TextView
+
     @BindView(R.id.email_description)
     lateinit var emailDescriptionView: TextView
+
+    @BindView(R.id.password_error_description)
+    lateinit var passwordErrorDescription: TextView
+
+    @BindView(R.id.password_description)
+    lateinit var passwordDescription: TextView
 
     @BindView(R.id.email)
     lateinit var emailEditText: EditText
@@ -187,6 +196,11 @@ class SignUpFragment : Fragment(), TextWatcher,
         usernameEditText.setTextColor(resources.getColor(R.color.colorWhite))
         passwordEditText.setTextColor(resources.getColor(R.color.colorWhite))
         referralTitle.setTextColor(resources.getColor(R.color.colorWhite50))
+        usernameErrorDescription.visibility = View.GONE
+        usernameErrorDescription.text = ""
+        passwordErrorDescription.visibility = View.GONE
+        passwordErrorDescription.text = ""
+        passwordDescription.visibility = View.VISIBLE
     }
 
     @OnClick(R.id.nav_button, R.id.set_up_later_button)
@@ -277,6 +291,7 @@ class SignUpFragment : Fragment(), TextWatcher,
     override fun setLoginError(error: String) {
         emailDescriptionView.setTextColor(resources.getColor(R.color.colorRed))
         emailDescriptionView.text = error
+        usernameEditText.error = error
         usernameErrorView.visibility = View.VISIBLE
         passwordErrorView.visibility = View.VISIBLE
         emailErrorView.visibility = View.VISIBLE
@@ -285,15 +300,18 @@ class SignUpFragment : Fragment(), TextWatcher,
     }
 
     override fun setPasswordError(error: String) {
-        emailDescriptionView.setTextColor(resources.getColor(R.color.colorRed))
-        emailDescriptionView.text = error
+        passwordErrorDescription.visibility = View.VISIBLE
+        passwordErrorDescription.setTextColor(resources.getColor(R.color.colorRed))
+        passwordErrorDescription.text = error
         passwordErrorView.visibility = View.VISIBLE
         passwordEditText.setTextColor(resources.getColor(R.color.colorRed))
+        passwordDescription.visibility = View.GONE
     }
 
     override fun setUsernameError(error: String) {
-        emailDescriptionView.setTextColor(resources.getColor(R.color.colorRed))
-        emailDescriptionView.text = error
+        usernameErrorDescription.visibility = View.VISIBLE
+        usernameErrorDescription.setTextColor(resources.getColor(R.color.colorRed))
+        usernameErrorDescription.text = error
         usernameErrorView.visibility = View.VISIBLE
         usernameEditText.setTextColor(resources.getColor(R.color.colorRed))
     }
@@ -312,8 +330,7 @@ class SignUpFragment : Fragment(), TextWatcher,
     }
 
     private fun resetNextButtonView() {
-        val enable = usernameEditText.text.length > 2 && passwordEditText.text.length > 7
-        signUpButton.isEnabled = enable
+
     }
 
     companion object {
