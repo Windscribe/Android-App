@@ -38,7 +38,7 @@ class WindscribeReviewManagerImpl(
                     daysSinceLogin(),
                     notAlreadyShown()
                 )
-                if (dataUsed > 2.0 && daysSinceLogin() >= 2 && notAlreadyShown()) {
+                if (dataUsed > 1.0 && daysSinceLogin() >= 2 && notAlreadyShown()) {
                     reviewManager.requestReviewFlow().addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             val reviewInfo = task.result
