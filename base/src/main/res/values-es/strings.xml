@@ -14,7 +14,8 @@
     <string name="small_password">Su contraseña debe tener al menos 8 caracteres.</string>
     <string name="common_password">La contraseña que ingresaste es de uso común y no es segura.</string>
     <string name="password_requirement">8 o más caracteres con al menos una mayúscula y minúscula</string>
-    <string name="failed_network_alert">Bueno, dimos lo mejor de nosotros, simplemente no pudimos conectarte en esta red por alguna razón. Comprueba tu conexión a Internet.</string>
+    <string name="failed_network_alert">Parece que estás en una red altamente restrictiva que está bloqueando Windscribe. Utiliza la función "Conexión de emergencia" en la pantalla principal y luego intenta registrarte o iniciar sesión nuevamente. Si no tienes éxito, contáctanos.</string>
+    <string name="failed_network_title">Red restrictiva detectada</string>
     <string name="fa_required_error">Se requiere un código 2FA</string>
     <string name="fa_invalid_error">Código 2FA no válido</string>
     <string name="login">Iniciar sesión</string>

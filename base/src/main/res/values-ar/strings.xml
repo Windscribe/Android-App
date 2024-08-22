@@ -14,7 +14,8 @@
     <string name="small_password">يجب أن تتكون كلمة المرور الخاصة بك من 8 أحرف على الأقل.</string>
     <string name="common_password">كلمة المرور التي أدخلتها مستخدمة بشكل شائع وغير آمنة.</string>
     <string name="password_requirement">8 أحرف أو أكثر بأحرف كبيرة وصغيرة واحدة على الأقل</string>
-    <string name="failed_network_alert">حسنا ، لقد فعلنا ما بوسعنا ، لكننا لم نتمكن من توصيلك بهذه الشبكة لسبب ما. الرجاء التحقق من اتصالك بالإنترنت.</string>
+    <string name="failed_network_alert">يبدو أنك على شبكة مقيدة بشدة تمنع Windscribe. يرجى استخدام ميزة "الاتصال الطارئ" على الشاشة الرئيسية ثم حاول التسجيل أو تسجيل الدخول مرة أخرى. إذا لم تنجح، يرجى الاتصال بنا.</string>
+    <string name="failed_network_title">تم اكتشاف شبكة مقيدة</string>
     <string name="fa_required_error">مطلوب رمز 2FA</string>
     <string name="fa_invalid_error">رمز 2FA غير صالح</string>
     <string name="login">تسجيل الدخول</string>

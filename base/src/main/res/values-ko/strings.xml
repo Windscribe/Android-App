@@ -14,7 +14,8 @@
     <string name="small_password">비밀번호는 8자 이상이어야 합니다.</string>
     <string name="common_password">당신이 입력한 비밀번호는 흔히 사용되어 안전하지 않습니다.</string>
     <string name="password_requirement">8개 이상의 문자(하나 이상의 대문자와 소문자)</string>
-    <string name="failed_network_alert">우리는 최선을 다했지만 어떤 이유로이 네트워크에서 당신을 연결할 수 없었습니다. 인터넷 연결을 확인하십시오.</string>
+    <string name="failed_network_alert">Windscribe가 차단된 매우 제한적인 네트워크에 있는 것 같습니다. 메인 화면에서 "긴급 연결" 기능을 사용한 후 다시 가입하거나 로그인해보세요. 성공하지 못하면 저희에게 연락하세요.</string>
+    <string name="failed_network_title">제한된 네트워크 감지됨</string>
     <string name="fa_required_error">2FA 코드가 필요합니다</string>
     <string name="fa_invalid_error">잘못된 2FA 코드</string>
     <string name="login">로그인</string>

@@ -173,10 +173,7 @@ class ActivityInteractorImpl(
     }
 
     override fun addNetworkToKnown(networkName: String): Single<Long> {
-        val networkInfo = NetworkInfo(
-            networkName, true, false, PreferencesKeyConstants.PROTO_IKev2, "500"
-        )
-        return this.localDbInterface.addNetwork(networkInfo)
+        return this.localDbInterface.addNetwork(preferenceHelper.getDefaultNetworkInfo(networkName))
     }
 
     override fun addPing(pingTime: PingTime): Completable {
@@ -414,7 +411,16 @@ class ActivityInteractorImpl(
 
                     override fun onSuccess(portMapResponse: PortMapResponse) {
                         mapResponse = portMapResponse
-                        callback.onFinished(portMapResponse)
+                        val suggestedProtocolFromApp = portMapResponse.portmap.firstOrNull { it.protocol == portMapResponse.suggested?.protocol }
+                        if(suggestedProtocolFromApp != null){
+                            val index = portMapResponse.portmap.indexOfFirst { it.protocol == portMapResponse.suggested?.protocol }
+                            mapResponse?.portmap?.removeAt(index)
+                            suggestedProtocolFromApp.ports[0] = portMapResponse.suggested?.port.toString()
+                            mapResponse?.portmap?.add(0, suggestedProtocolFromApp)
+                        }
+                        mapResponse?.let { response ->
+                            callback.onFinished(response)
+                        }
                     }
                 })
         )
