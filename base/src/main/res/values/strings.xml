@@ -9,10 +9,10 @@
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="login_with_username">No special characters or emails allowed in the username field.</string>
-    <string name="weak_password">Your Password must contain at least one uppercase and lowercase.</string>
-    <string name="small_password">Your password must be at least 8 characters.</string>
+    <string name="weak_password">Your Password must contain at least one uppercase and lowercase(ie. \"Hello1234\", \"Solyanka\").</string>
+    <string name="small_password">Your password must be at least 8 characters(ie. \"Hello1234\", \"Solyanka\").</string>
     <string name="common_password">The password you entered is commonly used and not secure.</string>
-    <string name="password_requirement">8 or more characters with at least one uppercase and lowercase</string>
+    <string name="password_requirement">8 or more characters with at least one uppercase and lowercase(ie. \"Hello1234\", \"Solyanka\").</string>
     <string name="failed_network_alert">You appear to be on a highly restrictive network which is blocking Windscribe. Please use the \"Emergency Connect\" feature on the main screen and then try to signup or login again. If you\'re unsuccessful, please contact us.</string>
     <string name="failed_network_title">Restrictive Network Detected</string>
     <string name="fa_required_error">2FA code is required</string>
