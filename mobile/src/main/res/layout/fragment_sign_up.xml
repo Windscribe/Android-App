@@ -64,6 +64,14 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/username_hint" />
 
+            <TextView
+                android:id="@+id/username_error_description"
+                style="@style/InputDescription"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/username" />
+
 
             <TextView
                 android:id="@+id/password_hint"
@@ -71,7 +79,7 @@
                 android:labelFor="@id/password"
                 android:text="@string/choose_password"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/username" />
+                app:layout_constraintTop_toBottomOf="@+id/username_error_description" />
 
             <ImageView
                 android:id="@+id/password_error"
@@ -93,6 +101,14 @@
                 tools:ignore="RtlSymmetry" />
 
             <TextView
+                android:id="@+id/password_error_description"
+                style="@style/InputDescription"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/password" />
+
+            <TextView
                 android:id="@+id/password_description"
                 style="@style/InputDescription"
                 android:layout_width="0dp"
@@ -102,7 +118,7 @@
                 android:text="@string/password_requirement"
                 app:layout_constraintEnd_toEndOf="@id/password"
                 app:layout_constraintStart_toStartOf="@id/password"
-                app:layout_constraintTop_toBottomOf="@+id/password" />
+                app:layout_constraintTop_toBottomOf="@+id/password_error_description" />
 
             <androidx.appcompat.widget.AppCompatCheckBox
                 android:id="@+id/password_visibility_toggle"
@@ -299,6 +315,7 @@
         android:layout_marginBottom="@dimen/margin_8"
         app:layout_constraintBottom_toTopOf="@id/set_up_later_button"
         app:layout_constraintEnd_toEndOf="parent"
+        android:enabled="true"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button

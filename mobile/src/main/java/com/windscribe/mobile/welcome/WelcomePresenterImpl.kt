@@ -10,6 +10,7 @@ import com.windscribe.mobile.R
 import com.windscribe.vpn.commonutils.CommonPasswordChecker
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.api.response.*
+import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.UserStatusConstants.USER_STATUS_PREMIUM
 import com.windscribe.vpn.errormodel.SessionErrorHandler
@@ -23,6 +24,7 @@ import io.reactivex.functions.Function
 import io.reactivex.observers.DisposableCompletableObserver
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
@@ -45,6 +47,14 @@ class WelcomePresenterImpl @Inject constructor(
             welcomeView.launchShareIntent(file)
         } catch (e: Exception) {
             welcomeView.showToast(WindError.instance.rxErrorToString(e))
+        }
+    }
+
+    override fun getLogUri(): File? {
+        return try {
+            File(interactor.getDebugFilePath())
+        } catch (e: Exception) {
+            null
         }
     }
 
@@ -328,7 +338,7 @@ class WelcomePresenterImpl @Inject constructor(
 
     private fun onSignUpFailedWithNoError() {
         welcomeView.prepareUiForApiCallFinished()
-        welcomeView.showFailedAlert(interactor.getResourceString(R.string.sign_up_failed_network_alert))
+        welcomeView.showFailedAlert(interactor.getResourceString(R.string.failed_network_alert))
     }
 
     private fun prepareLoginRegistrationDashboard(sessionMap: Map<String, String>) {
@@ -453,6 +463,11 @@ class WelcomePresenterImpl @Inject constructor(
             logger.info("[Password] matches worst password list, displaying toast to the user...")
             welcomeView.setPasswordError(interactor.getResourceString(R.string.common_password))
             welcomeView.showToast(interactor.getResourceString(R.string.common_password))
+            return false
+        }
+        if (!WindUtilities.isOnline()) {
+            logger.info("User is not connected to internet.")
+            welcomeView.setLoginRegistrationError(interactor.getResourceString(R.string.no_internet))
             return false
         }
         return true

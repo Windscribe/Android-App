@@ -171,4 +171,6 @@ object PreferencesKeyConstants {
     const val DNS_MODE_CUSTOM = "dns_mode_custom"
     const val CUSTOM_DNS_ADDRESS = "custom_dns_address"
     const val WS_NET_SETTINGS = "ws_net_settings"
+    const val SUGGESTED_PROTOCOL = "suggested_protocol"
+    const val SUGGESTED_PORT = "suggested_port"
 }

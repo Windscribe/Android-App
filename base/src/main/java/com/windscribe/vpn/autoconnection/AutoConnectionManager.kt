@@ -201,7 +201,11 @@ class AutoConnectionManager(
         var appSupportedProtocolOrder = if (listOfProtocols.size > 0) {
             listOfProtocols
         } else {
-            Util.getAppSupportedProtocolList()
+            if (interactor.preferenceHelper.isSuggested()){
+                Util.getAppSupportedProtocolList(interactor.preferenceHelper.getDefaultProtoInfo())
+            } else {
+                Util.getAppSupportedProtocolList()
+            }
         }
         if (interactor.preferenceHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY) != PreferencesKeyConstants.CONNECTION_MODE_AUTO) {
             setupManualProtocol(

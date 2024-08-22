@@ -158,9 +158,9 @@ open class BaseApplicationModule {
     @Provides
     @Singleton
     fun provideConnectionDataUpdater(
-            preferencesHelper: PreferencesHelper, apiCallManager: IApiCallManager
+            preferencesHelper: PreferencesHelper, apiCallManager: IApiCallManager, autoConnectionManager: Lazy<AutoConnectionManager>
     ): ConnectionDataRepository {
-        return ConnectionDataRepository(preferencesHelper, apiCallManager)
+        return ConnectionDataRepository(preferencesHelper, apiCallManager, autoConnectionManager)
     }
 
     @Provides
