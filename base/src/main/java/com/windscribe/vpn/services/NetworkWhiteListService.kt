@@ -77,7 +77,7 @@ class NetworkWhiteListService : Service(), NetworkInfoListener {
             return
         }
         networkInfo?.let {
-            logger.debug("Network white list service > SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelist override: ${interactor.preferenceHelper.whitelistOverride}")
+            logger.debug("Network white list service > SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelisted network: ${interactor.preferenceHelper.whiteListedNetwork}")
             if (!it.isAutoSecureOn) {
                 onTrustedNetworkFound()
             } else {

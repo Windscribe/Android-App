@@ -26,6 +26,7 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.SUGGESTED_PORT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.SUGGESTED_PROTOCOL
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_CONNECT_API_FAIL_OVER_STATE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_LOCAL_PARAMS
+import com.windscribe.vpn.constants.PreferencesKeyConstants.WHITELISTED_NETWORK
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WS_NET_SETTINGS
 import com.windscribe.vpn.constants.VpnPreferenceConstants
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
@@ -34,13 +35,13 @@ import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.WgLocalParams
 import io.reactivex.Single
 import net.grandcentrix.tray.AppPreferences
-import java.util.*
+import java.util.Date
 import javax.inject.Singleton
 
 @Singleton
 class AppPreferenceHelper(
-        private val preference: AppPreferences,
-        private val securePreferences: SecurePreferences
+    private val preference: AppPreferences,
+    private val securePreferences: SecurePreferences
 ) : PreferencesHelper {
     override fun clearAllData() {
         preference.clear()
@@ -84,8 +85,8 @@ class AppPreferenceHelper(
         }
     override var connectionStatus: String?
         get() = preference.getString(
-                PreferencesKeyConstants.CONNECTION_STATUS,
-                PreferencesKeyConstants.VPN_DISCONNECTED
+            PreferencesKeyConstants.CONNECTION_STATUS,
+            PreferencesKeyConstants.VPN_DISCONNECTED
         )
         set(connectionStatus) {
             preference.put(PreferencesKeyConstants.CONNECTION_STATUS, connectionStatus)
@@ -112,28 +113,28 @@ class AppPreferenceHelper(
         }
     override var globalUserConnectionPreference: Boolean
         get() = preference.getBoolean(
-                PreferencesKeyConstants.GLOBAL_CONNECTION_PREFERENCE,
-                false
+            PreferencesKeyConstants.GLOBAL_CONNECTION_PREFERENCE,
+            false
         )
         set(connectionPreference) {
             preference.put(
-                    PreferencesKeyConstants.GLOBAL_CONNECTION_PREFERENCE,
-                    connectionPreference
+                PreferencesKeyConstants.GLOBAL_CONNECTION_PREFERENCE,
+                connectionPreference
             )
         }
     override val iKEv2Port: String
         get() = preference.getString(PreferencesKeyConstants.SAVED_IKev2_PORT, DEFAULT_IKEV2_PORT)
-                ?: DEFAULT_IKEV2_PORT
+            ?: DEFAULT_IKEV2_PORT
     override val installedApps: Single<List<String>>
         get() {
             val jsonString =
-                    preference.getString(PreferencesKeyConstants.INSTALLED_APPS_DATA, null)
+                preference.getString(PreferencesKeyConstants.INSTALLED_APPS_DATA, null)
             return if (jsonString != null) {
                 Single.fromCallable {
                     Gson().fromJson(
-                            jsonString,
-                            object :
-                                    TypeToken<List<String?>?>() {}.type
+                        jsonString,
+                        object :
+                            TypeToken<List<String?>?>() {}.type
                     )
                 }
             } else {
@@ -152,8 +153,8 @@ class AppPreferenceHelper(
         }
     override var lastConnectedUsingSplit: Boolean
         get() = preference.getBoolean(
-                PreferencesKeyConstants.LAST_CONNECTION_USING_SPLIT,
-                false
+            PreferencesKeyConstants.LAST_CONNECTION_USING_SPLIT,
+            false
         )
         set(isSplit) {
             preference.put(PreferencesKeyConstants.LAST_CONNECTION_USING_SPLIT, isSplit)
@@ -190,11 +191,11 @@ class AppPreferenceHelper(
     override val notifications: Single<NewsFeedNotification>
         get() = Single.fromCallable {
             val jsonResponseString = preference
-                    .getString(PreferencesKeyConstants.NEWS_FEED_RESPONSE, null)
+                .getString(PreferencesKeyConstants.NEWS_FEED_RESPONSE, null)
             if (jsonResponseString != null) {
                 return@fromCallable Gson().fromJson(
-                        jsonResponseString,
-                        NewsFeedNotification::class.java
+                    jsonResponseString,
+                    NewsFeedNotification::class.java
                 )
             } else {
                 throw PreferenceException()
@@ -217,8 +218,8 @@ class AppPreferenceHelper(
 
     override fun getPreviousAccountStatus(userNameKey: String): Int {
         return preference.getInt(
-                userNameKey + PreferencesKeyConstants.PREVIOUS_ACCOUNT_STATUS,
-                -1
+            userNameKey + PreferencesKeyConstants.PREVIOUS_ACCOUNT_STATUS,
+            -1
         )
     }
 
@@ -228,7 +229,7 @@ class AppPreferenceHelper(
 
     override val purchaseFlowState: String
         get() = preference.getString(
-                PreferencesKeyConstants.PURCHASE_FLOW_STATE_KEY, "FINISHED"
+            PreferencesKeyConstants.PURCHASE_FLOW_STATE_KEY, "FINISHED"
         ) ?: "FINISHED"
 
     override fun getResponseInt(key: String, defaultValue: Int): Int {
@@ -243,36 +244,39 @@ class AppPreferenceHelper(
 
     override val savedLanguage: String
         get() = preference.getString(
-                PreferencesKeyConstants.USER_LANGUAGE,
-                appContext.getAppSupportedSystemLanguage()
+            PreferencesKeyConstants.USER_LANGUAGE,
+            appContext.getAppSupportedSystemLanguage()
         )
-                ?: appContext.getAppSupportedSystemLanguage()
+            ?: appContext.getAppSupportedSystemLanguage()
     override val savedProtocol: String
-        get() = preference.getString(PreferencesKeyConstants.PROTOCOL_KEY, getDefaultProtoInfo().first)?: getDefaultProtoInfo().first
+        get() = preference.getString(
+            PreferencesKeyConstants.PROTOCOL_KEY,
+            getDefaultProtoInfo().first
+        ) ?: getDefaultProtoInfo().first
     override val savedSTEALTHPort: String
         get() = preference.getString(
-                PreferencesKeyConstants.SAVED_STEALTH_PORT,
-                PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT
+            PreferencesKeyConstants.SAVED_STEALTH_PORT,
+            PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT
         )
-                ?: PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT
+            ?: PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT
     override val savedWSTunnelPort: String
         get() = preference.getString(
-                PreferencesKeyConstants.SAVED_WS_TUNNEL_PORT,
-                PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT
+            PreferencesKeyConstants.SAVED_WS_TUNNEL_PORT,
+            PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT
         )
-                ?: PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT
+            ?: PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT
     override val savedTCPPort: String
         get() = preference.getString(
-                PreferencesKeyConstants.SAVED_TCP_PORT,
-                PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT
+            PreferencesKeyConstants.SAVED_TCP_PORT,
+            PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT
         )
-                ?: PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT
+            ?: PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT
     override val savedUDPPort: String
         get() = preference.getString(
-                PreferencesKeyConstants.SAVED_UDP_PORT,
-                PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT
+            PreferencesKeyConstants.SAVED_UDP_PORT,
+            PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT
         )
-                ?: PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT
+            ?: PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT
     override var selectedCity: Int
         get() = preference.getInt(PreferencesKeyConstants.SELECTED_CITY_ID, -1)
         set(cityId) {
@@ -285,39 +289,45 @@ class AppPreferenceHelper(
         }
     override var selectedPort: String
         get() = preference.getString(VpnPreferenceConstants.SELECTED_PORT, DEFAULT_IKEV2_PORT)
-                ?: DEFAULT_IKEV2_PORT
+            ?: DEFAULT_IKEV2_PORT
         set(selectedPort) {
             preference.put(VpnPreferenceConstants.SELECTED_PORT, selectedPort)
         }
     override var selectedProtocol: String
         get() = preference.getString(
-                VpnPreferenceConstants.SELECTED_PROTOCOL,
-                getDefaultProtoInfo().first
-        )?: getDefaultProtoInfo().first
+            VpnPreferenceConstants.SELECTED_PROTOCOL,
+            getDefaultProtoInfo().first
+        ) ?: getDefaultProtoInfo().first
         set(selectedProtocol) {
             preference.put(VpnPreferenceConstants.SELECTED_PROTOCOL, selectedProtocol)
         }
     override var selectedProtocolType: ProtocolConnectionStatus
         get() = preference.getString(
-                VpnPreferenceConstants.SELECTED_PROTOCOL_TYPE,
-                ProtocolConnectionStatus.Disconnected.name
+            VpnPreferenceConstants.SELECTED_PROTOCOL_TYPE,
+            ProtocolConnectionStatus.Disconnected.name
         )?.let {
             ProtocolConnectionStatus.valueOf(
-                    it
+                it
             )
         } ?: ProtocolConnectionStatus.Disconnected
         set(type) {
             preference.put(VpnPreferenceConstants.SELECTED_PROTOCOL_TYPE, type.name)
         }
     override var selectedTheme: String
-        get() = preference.getString(PreferencesKeyConstants.SELECTED_THEME, PreferencesKeyConstants.DARK_THEME)
-                ?: PreferencesKeyConstants.DARK_THEME
+        get() = preference.getString(
+            PreferencesKeyConstants.SELECTED_THEME,
+            PreferencesKeyConstants.DARK_THEME
+        )
+            ?: PreferencesKeyConstants.DARK_THEME
         set(theme) {
             preference.put(PreferencesKeyConstants.SELECTED_THEME, theme)
         }
     override val selection: String
-        get() = preference.getString(PreferencesKeyConstants.SELECTION_KEY, PreferencesKeyConstants.DEFAULT_LIST_SELECTION_MODE)
-                ?: PreferencesKeyConstants.DEFAULT_LIST_SELECTION_MODE
+        get() = preference.getString(
+            PreferencesKeyConstants.SELECTION_KEY,
+            PreferencesKeyConstants.DEFAULT_LIST_SELECTION_MODE
+        )
+            ?: PreferencesKeyConstants.DEFAULT_LIST_SELECTION_MODE
     override var sessionHash: String?
         get() = securePreferences.getString(PreferencesKeyConstants.SESSION_HASH, null)
         set(sessionHash) {
@@ -330,8 +340,11 @@ class AppPreferenceHelper(
         }
 
     override val splitRoutingMode: String
-        get() = preference.getString(PreferencesKeyConstants.SPLIT_ROUTING_MODE, PreferencesKeyConstants.EXCLUSIVE_MODE)
-                ?: PreferencesKeyConstants.EXCLUSIVE_MODE
+        get() = preference.getString(
+            PreferencesKeyConstants.SPLIT_ROUTING_MODE,
+            PreferencesKeyConstants.EXCLUSIVE_MODE
+        )
+            ?: PreferencesKeyConstants.EXCLUSIVE_MODE
     override var splitTunnelToggle: Boolean
         get() = preference.getBoolean(PreferencesKeyConstants.SPLIT_TUNNEL_TOGGLE, false)
         set(toggle) {
@@ -356,13 +369,16 @@ class AppPreferenceHelper(
             preference.put(PreferencesKeyConstants.WHITELIST_OVERRIDE, whitelistOverride)
         }
     override val wireGuardPort: String
-        get() = preference.getString(PreferencesKeyConstants.SAVED_WIRE_GUARD_PORT, DEFAULT_WIRE_GUARD_PORT)
-                ?: DEFAULT_WIRE_GUARD_PORT
+        get() = preference.getString(
+            PreferencesKeyConstants.SAVED_WIRE_GUARD_PORT,
+            DEFAULT_WIRE_GUARD_PORT
+        )
+            ?: DEFAULT_WIRE_GUARD_PORT
 
     override fun isConnectingToConfiguredLocation(): Boolean {
         return preference.getBoolean(
-                PreferencesKeyConstants.IS_CONNECTING_TO_CONFIGURED_IP,
-                false
+            PreferencesKeyConstants.IS_CONNECTING_TO_CONFIGURED_IP,
+            false
         )
     }
 
@@ -429,7 +445,10 @@ class AppPreferenceHelper(
     }
 
     override fun saveInstalledApps(installedAppsSaved: List<String>) {
-        preference.put(PreferencesKeyConstants.INSTALLED_APPS_DATA, Gson().toJson(installedAppsSaved))
+        preference.put(
+            PreferencesKeyConstants.INSTALLED_APPS_DATA,
+            Gson().toJson(installedAppsSaved)
+        )
     }
 
     override fun saveLastSelectedServerTabIndex(index: Int) {
@@ -491,8 +510,8 @@ class AppPreferenceHelper(
 
     override fun setAuthFailedConnectionAttemptCount(numberOfAttempts: Int?) {
         preference.put(
-                PreferencesKeyConstants.AUTH_RECONNECT_ATTEMPT_COUNT_KEY,
-                numberOfAttempts!!
+            PreferencesKeyConstants.AUTH_RECONNECT_ATTEMPT_COUNT_KEY,
+            numberOfAttempts!!
         )
     }
 
@@ -502,8 +521,8 @@ class AppPreferenceHelper(
 
     override fun setConnectingToConfiguredLocation(connectingToConfiguredLocation: Boolean) {
         preference.put(
-                PreferencesKeyConstants.IS_CONNECTING_TO_CONFIGURED_IP,
-                connectingToConfiguredLocation
+            PreferencesKeyConstants.IS_CONNECTING_TO_CONFIGURED_IP,
+            connectingToConfiguredLocation
         )
     }
 
@@ -513,8 +532,8 @@ class AppPreferenceHelper(
 
     override fun setConnectionAttemptTag() {
         preference.put(
-                PreferencesKeyConstants.CONNECTION_ATTEMPT,
-                System.currentTimeMillis().toString()
+            PreferencesKeyConstants.CONNECTION_ATTEMPT,
+            System.currentTimeMillis().toString()
         )
     }
 
@@ -548,8 +567,8 @@ class AppPreferenceHelper(
 
     override fun setPreviousAccountStatus(userNameKey: String, userAccountStatus: Int) {
         preference.put(
-                userNameKey + PreferencesKeyConstants.PREVIOUS_ACCOUNT_STATUS,
-                userAccountStatus
+            userNameKey + PreferencesKeyConstants.PREVIOUS_ACCOUNT_STATUS,
+            userAccountStatus
         )
     }
 
@@ -583,7 +602,7 @@ class AppPreferenceHelper(
 
     override fun installedApps(): List<String> {
         val jsonString = preference.getString(PreferencesKeyConstants.INSTALLED_APPS_DATA, null)
-                ?: return emptyList()
+            ?: return emptyList()
         return Gson().fromJson(jsonString, object : TypeToken<List<String>>() {}.type)
     }
 
@@ -616,7 +635,7 @@ class AppPreferenceHelper(
     override var fakeTrafficVolume: FakeTrafficVolume
         get() {
             val value = preference.getString(FAKE_TRAFFIC_VOLUME, FakeTrafficVolume.High.name)
-                    ?: FakeTrafficVolume.High.name
+                ?: FakeTrafficVolume.High.name
             return FakeTrafficVolume.valueOf(value)
         }
         set(value) {
@@ -662,20 +681,27 @@ class AppPreferenceHelper(
         }
     override var wsNetSettings: String
         get() = preference.getString(WS_NET_SETTINGS, "") ?: ""
-        set(value) {preference.put(WS_NET_SETTINGS, value)}
+        set(value) {
+            preference.put(WS_NET_SETTINGS, value)
+        }
 
     override fun isSuggested(): Boolean {
         return suggestedProtocol != null && suggestedPort != null
     }
+
     override var suggestedProtocol: String?
         get() = preference.getString(SUGGESTED_PROTOCOL, null)
-        set(value) { preference.put(SUGGESTED_PROTOCOL, value) }
+        set(value) {
+            preference.put(SUGGESTED_PROTOCOL, value)
+        }
     override var suggestedPort: String?
         get() = preference.getString(SUGGESTED_PORT, null)
-        set(value) { preference.put(SUGGESTED_PORT, value) }
+        set(value) {
+            preference.put(SUGGESTED_PORT, value)
+        }
 
     override fun getDefaultProtoInfo(): Pair<String, String> {
-        if(isSuggested()){
+        if (isSuggested()) {
             return Pair(suggestedProtocol!!, suggestedPort!!)
         }
         return Pair(PreferencesKeyConstants.PROTO_IKev2, DEFAULT_IKEV2_PORT)
@@ -685,4 +711,10 @@ class AppPreferenceHelper(
         val proto = getDefaultProtoInfo()
         return NetworkInfo(networkName, true, false, proto.first, proto.second)
     }
+
+    override var whiteListedNetwork: String?
+        get() = preference.getString(WHITELISTED_NETWORK, null)
+        set(value) {
+            preference.put(WHITELISTED_NETWORK, value)
+        }
 }

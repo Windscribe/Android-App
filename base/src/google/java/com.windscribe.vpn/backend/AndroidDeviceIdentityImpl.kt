@@ -6,6 +6,7 @@ import android.provider.Settings
 import com.google.android.gms.appset.AppSet
 import com.google.android.gms.appset.AppSetIdInfo
 import com.google.android.gms.tasks.Task
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
@@ -14,7 +15,7 @@ import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.SECONDS
 
-class AndroidDeviceIdentityImpl(private val context: Context): AndroidDeviceIdentity {
+class AndroidDeviceIdentityImpl(): AndroidDeviceIdentity {
 
     override var deviceHostName: String? = null
     override var deviceMacAddress: String? = null
@@ -33,9 +34,9 @@ class AndroidDeviceIdentityImpl(private val context: Context): AndroidDeviceIden
      */
     private fun loadHostname(): String? {
         val systemBluetoothName =
-                Settings.System.getString(context.contentResolver, "bluetooth_name")
-        val blueToothName = kotlin.runCatching { Settings.Secure.getString(context.contentResolver, "bluetooth_name") }.getOrNull()
-        val deviceName = kotlin.runCatching { Settings.Secure.getString(context.contentResolver, "device_name") }.getOrNull()
+                Settings.System.getString(appContext.contentResolver, "bluetooth_name")
+        val blueToothName = kotlin.runCatching { Settings.Secure.getString(appContext.contentResolver, "bluetooth_name") }.getOrNull()
+        val deviceName = kotlin.runCatching { Settings.Secure.getString(appContext.contentResolver, "device_name") }.getOrNull()
         val hostName = if (!systemBluetoothName.isNullOrEmpty()) {
             systemBluetoothName
         } else if (!blueToothName.isNullOrEmpty()) {
@@ -73,7 +74,7 @@ class AndroidDeviceIdentityImpl(private val context: Context): AndroidDeviceIden
      * Never call from Main Thread
      */
     private fun setMacAddress() {
-        val client = AppSet.getClient(context)
+        val client = AppSet.getClient(appContext)
         val task: Task<AppSetIdInfo> = client.appSetIdInfo
         lock.await(1, SECONDS)
         task.addOnSuccessListener {

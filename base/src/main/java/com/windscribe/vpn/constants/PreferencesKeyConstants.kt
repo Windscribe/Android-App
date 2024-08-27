@@ -173,4 +173,5 @@ object PreferencesKeyConstants {
     const val WS_NET_SETTINGS = "ws_net_settings"
     const val SUGGESTED_PROTOCOL = "suggested_protocol"
     const val SUGGESTED_PORT = "suggested_port"
+    const val WHITELISTED_NETWORK = "whitelisted_network"
 }
