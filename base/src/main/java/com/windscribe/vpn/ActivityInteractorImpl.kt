@@ -691,4 +691,15 @@ class ActivityInteractorImpl(
     override fun setAntiCensorship(status: Boolean) {
         WSNet.instance().advancedParameters().setAPIExtraTLSPadding(status)
     }
+    override fun saveWhiteListedNetwork(reset: Boolean){
+        if (reset){
+            preferenceHelper.whiteListedNetwork = null
+        } else {
+            try {
+                preferenceHelper.whiteListedNetwork =  WindUtilities.getNetworkName()
+            } catch (e: Exception){
+                preferenceHelper.whiteListedNetwork = null
+            }
+        }
+    }
 }
