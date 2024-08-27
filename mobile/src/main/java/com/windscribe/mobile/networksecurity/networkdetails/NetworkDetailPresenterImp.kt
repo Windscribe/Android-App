@@ -187,7 +187,7 @@ class NetworkDetailPresenterImp @Inject constructor(
     }
 
     override fun toggleAutoSecure() {
-        interactor.getAppPreferenceInterface().whitelistOverride = false
+        interactor.saveWhiteListedNetwork(true)
         val networkInfo = networkView.networkInfo
         if (networkInfo == null) {
             networkView.showToast("Make sure location permission is set Allow all the time")

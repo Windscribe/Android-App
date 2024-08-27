@@ -149,6 +149,18 @@ class ServiceInteractorImpl @Inject constructor(
         }
     }
 
+    override fun saveWhiteListedNetwork(reset: Boolean){
+        if (reset){
+            preferenceHelper.whiteListedNetwork = null
+        } else {
+            try {
+                preferenceHelper.whiteListedNetwork =  WindUtilities.getNetworkName()
+            } catch (e: Exception){
+                preferenceHelper.whiteListedNetwork = null
+            }
+        }
+    }
+
     @Throws(Exception::class)
     fun getEncodedLog(): String {
         var logLine: String?
