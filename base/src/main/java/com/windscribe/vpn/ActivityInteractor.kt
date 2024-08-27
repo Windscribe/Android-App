@@ -140,4 +140,5 @@ interface ActivityInteractor {
     fun getReceiptValidator(): ReceiptValidator
     fun getFireBaseManager(): FirebaseManager
     fun setAntiCensorship(status: Boolean)
+    fun saveWhiteListedNetwork(reset: Boolean)
 }

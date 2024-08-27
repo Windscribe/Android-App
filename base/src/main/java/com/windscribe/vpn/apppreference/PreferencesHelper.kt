@@ -75,6 +75,7 @@ interface PreferencesHelper {
     var userName: String
     var userStatus: Int
     var whitelistOverride: Boolean
+    var whiteListedNetwork: String?
     val wireGuardPort: String
     var isAutoSecureOn : Boolean
     fun isConnectingToConfiguredLocation(): Boolean

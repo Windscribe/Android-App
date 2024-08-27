@@ -62,3 +62,4 @@
 -keep class org.minidns.** { *; }
 -keep class com.scapix.** { *; }
 -keep class com.wsnet.** { *; }
+-keep class com.windscribe.vpn.backend.CdLib { *; }
