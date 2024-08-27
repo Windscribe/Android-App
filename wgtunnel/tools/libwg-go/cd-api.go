@@ -68,6 +68,7 @@ func StopCd(restart bool, pin int64) int {
 		close(controller.stopCh)
 		controller.stopCh = nil
 	}
+	controller = nil
 	return errorCode
 }
 
