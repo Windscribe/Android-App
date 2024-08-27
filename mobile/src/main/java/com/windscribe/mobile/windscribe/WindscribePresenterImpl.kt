@@ -274,7 +274,6 @@ class WindscribePresenterImpl @Inject constructor(
                 ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                         .subscribeWith(object : DisposableSingleObserver<List<ConfigFile>>() {
                             override fun onError(e: Throwable) {
-                                checkSelectedLocationForChange()
                                 windscribeView.hideRecyclerViewProgressBar()
                                 windscribeView.setConfigLocListAdapter(null)
                                 logger.debug("Error getting config locations..")
@@ -322,42 +321,9 @@ class WindscribePresenterImpl @Inject constructor(
                                     )
                                 }
                                 windscribeView.hideRecyclerViewProgressBar()
-                                checkSelectedLocationForChange()
                             }
                         })
         )
-    }
-
-    private fun checkSelectedLocationForChange() {
-        interactor.getMainScope().launch {
-            val lastSelected = Util.getLastSelectedLocation(appContext)?.cityId ?: -1
-            val nextLocation = interactor.getLocationProvider().updateLocation()
-            if (lastSelected != nextLocation) {
-                if (interactor.getVpnConnectionStateManager().state.value.status != VPNState.Status.Disconnected) {
-                    interactor.getVPNController().disconnectAsync()
-                }
-                interactor.getLocationProvider().setSelectedCity(nextLocation)
-                interactor.getCompositeDisposable().add(
-                        interactor.getCityAndRegionByID(nextLocation).subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe { cityAndRegion, _ ->
-                                    if (cityAndRegion != null) {
-                                        val coordinatesArray =
-                                                cityAndRegion.city.coordinates.split(",".toRegex())
-                                                        .toTypedArray()
-                                        selectedLocation = LastSelectedLocation(
-                                                cityAndRegion.city.getId(),
-                                                cityAndRegion.city.nodeName,
-                                                cityAndRegion.city.nickName,
-                                                cityAndRegion.region.countryCode,
-                                                coordinatesArray[0],
-                                                coordinatesArray[1]
-                                        )
-                                        updateLocationUI(selectedLocation, true)
-                                    }
-                                })
-            }
-        }
     }
 
     override suspend fun observeAllLocations() {
@@ -518,7 +484,6 @@ class WindscribePresenterImpl @Inject constructor(
                                             ""
                                     )
                                 }
-                                checkSelectedLocationForChange()
                             }
                         })
                 )
