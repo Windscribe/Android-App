@@ -49,4 +49,5 @@ interface ServiceInteractor {
     suspend fun clearData()
     fun saveNetwork(networkInfo: NetworkInfo): Single<Int>
     suspend fun getAllConfigs(): List<ConfigFile>
+    fun saveWhiteListedNetwork(reset: Boolean = false)
 }

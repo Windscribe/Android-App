@@ -4,9 +4,4 @@ class WSTunnelLib {
     external fun startProxy(listenAddress: String, remoteAddress: String, tunnelType: Int, mtu: Long, extraPadding: Boolean)
     external fun socketFd(): Int
     external fun stop()
-    companion object {
-        init {
-            System.loadLibrary("wstunnel")
-        }
-    }
 }
