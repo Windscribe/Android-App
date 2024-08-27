@@ -637,7 +637,7 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun onAutoSecureToggleClick() {
-        interactor.getAppPreferenceInterface().whitelistOverride = false
+        interactor.saveWhiteListedNetwork(true)
         networkInformation?.let {
             it.isAutoSecureOn = !it.isAutoSecureOn
             interactor.getNetworkInfoManager().updateNetworkInfo(it)
@@ -1569,10 +1569,10 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getAppPreferenceInterface().setConnectingToConfiguredLocation(false)
 
         // Check Network security
-        val whiteListOverride = interactor.getAppPreferenceInterface().whitelistOverride
+        val whiteListOverride = interactor.getAppPreferenceInterface().whiteListedNetwork
         networkInformation?.let {
-            if (!it.isAutoSecureOn && !whiteListOverride) {
-                interactor.getAppPreferenceInterface().whitelistOverride = true
+            if (!it.isAutoSecureOn && whiteListOverride != null) {
+                interactor.saveWhiteListedNetwork(true)
             }
         }
         if (serverStatus == NetworkKeyConstants.SERVER_STATUS_TEMPORARILY_UNAVAILABLE) {
@@ -2027,7 +2027,7 @@ class WindscribePresenterImpl @Inject constructor(
     private fun stopVpnFromUI() {
         logger.debug("Disconnecting using connect button.")
         disconnectJob = interactor.getMainScope().launch {
-            interactor.getAppPreferenceInterface().whitelistOverride = false
+            interactor.saveWhiteListedNetwork(true)
             interactor.getAppPreferenceInterface().globalUserConnectionPreference = false
             interactor.getAppPreferenceInterface().isReconnecting = false
             interactor.getVPNController().disconnectAsync()

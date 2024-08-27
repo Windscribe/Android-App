@@ -287,7 +287,7 @@ open class WindVpnController @Inject constructor(
             logger.debug("Connecting to VPN with connectionId: $connectionId")
             setLocationToConnect()
             vpnConnectionStateManager.setState(VPNState(Connecting, connectionId = connectionId))
-            interactor.preferenceHelper.whitelistOverride = true
+            interactor.saveWhiteListedNetwork(false)
             val protocolInformation = selectedProtocol?.let {
                 autoConnectionManager.setSelectedProtocol(it)
                 return@let it
@@ -358,7 +358,7 @@ open class WindVpnController @Inject constructor(
         }
         vpnBackendHolder.disconnect(error)
         if (reconnecting.not()) {
-            interactor.preferenceHelper.whitelistOverride = false
+            interactor.saveWhiteListedNetwork(true)
         }
         if (vpnConnectionStateManager.state.value.status != Disconnected) {
             // Force disconnect if state did not change to disconnect

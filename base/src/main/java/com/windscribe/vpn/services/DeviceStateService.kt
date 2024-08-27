@@ -90,13 +90,13 @@ class DeviceStateService : JobIntentWorkAroundService() {
     }
 
     private fun resetConnectState(networkInfo: NetworkInfo) {
-        logger.debug("SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelist override: ${preferencesHelper.whitelistOverride} | Connect Intent: ${preferencesHelper.globalUserConnectionPreference}")
-        if (networkInfo.isAutoSecureOn.not() && preferencesHelper.whitelistOverride.not() && vpnConnectionStateManager.state.value.status == VPNState.Status.Connected) {
+        logger.debug("SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelisted network: ${preferencesHelper.whiteListedNetwork} | Connect Intent: ${preferencesHelper.globalUserConnectionPreference}")
+        if (networkInfo.isAutoSecureOn.not() && preferencesHelper.whiteListedNetwork != networkInfo.networkName && vpnConnectionStateManager.state.value.status == VPNState.Status.Connected) {
             logger.debug("${networkInfo.networkName} is unsecured. Starting network whitelist service.")
             vpnController.disconnectAsync(true)
         }
-        if(vpnConnectionStateManager.state.value.status == VPNState.Status.Connected){
-            preferencesHelper.whitelistOverride = false
+        if(vpnConnectionStateManager.state.value.status == VPNState.Status.Connected && preferencesHelper.whiteListedNetwork != networkInfo.networkName){
+            preferencesHelper.whiteListedNetwork = null
         }
         compositeDisposable.clear()
     }
