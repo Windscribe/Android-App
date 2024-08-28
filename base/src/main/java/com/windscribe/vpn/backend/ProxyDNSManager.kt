@@ -70,7 +70,7 @@ class ProxyDNSManager(val scope: CoroutineScope, val preferenceHelper: Preferenc
         }
     }
 
-    private fun startControlD() {
+    private suspend fun startControlD() {
         updateControlDConfig()
         val logPath = createLogFile()
         val homeDir = appContext.filesDir.absolutePath
@@ -90,6 +90,10 @@ class ProxyDNSManager(val scope: CoroutineScope, val preferenceHelper: Preferenc
             override fun macAddress(): String {
                 return androidDeviceIdentity.deviceMacAddress ?: ""
             }
+        }
+        if (controlDJob?.isActive == true) {
+            logger.debug("Previous ControlD job is still running. Waiting for it to finish.")
+            controlDJob?.join()
         }
         controlDJob = scope.launch {
             isRunning.set(true)
