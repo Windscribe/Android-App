@@ -10,10 +10,10 @@
     <string name="username">Имя пользователя</string>
     <string name="password">Пароль</string>
     <string name="login_with_username">В поле имени пользователя не допускаются специальные символы или электронные письма.</string>
-    <string name="weak_password">Ваш пароль должен содержать хотя бы один символ верхнего и нижнего регистра.</string>
-    <string name="small_password">Ваш пароль должен содержать не менее 8 символов.</string>
+    <string name="weak_password">Ваш пароль должен содержать хотя бы один символ верхнего и нижнего регистра (например, "Hello1234", "Solyanka").</string>
+    <string name="small_password">Ваш пароль должен содержать не менее 8 символов (например, "Hello1234", "Solyanka").</string>
     <string name="common_password">Введенный вами пароль часто используется и не является безопасным.</string>
-    <string name="password_requirement">8 или более символов, с прописным и строчным регистром</string>
+    <string name="password_requirement">8 или более символов, с прописным и строчным регистром(например, "Hello1234", "Solyanka").</string>
     <string name="failed_network_alert">Похоже, вы находитесь в сети с высокими ограничениями, которая блокирует Windscribe. Пожалуйста, используйте функцию «Аварийное подключение» на главном экране, а затем попробуйте снова зарегистрироваться или войти в систему. Если это не удастся, свяжитесь с нами.</string>
     <string name="failed_network_title">Ограниченная сеть обнаружена</string>
     <string name="fa_required_error">Требуется код 2FA</string>
