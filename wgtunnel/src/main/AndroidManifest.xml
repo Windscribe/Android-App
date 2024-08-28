@@ -3,12 +3,15 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application>
         <service
+            android:foregroundServiceType="systemExempted"
             android:name="com.wireguard.android.backend.GoBackend$VpnService"
             android:permission="android.permission.BIND_VPN_SERVICE"
+            tools:ignore="ForegroundServicePermission"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
