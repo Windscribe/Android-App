@@ -1,0 +1,4 @@
+/Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/.cxx/Debug/423925u4/armeabi-v7a/CMakeFiles/elf-cleaner
+/Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/.cxx/Debug/423925u4/armeabi-v7a/CMakeFiles/elf-cleaner.rule
+/Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/.cxx/Debug/423925u4/armeabi-v7a/CMakeFiles/libwg-go.so
+/Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/.cxx/Debug/423925u4/armeabi-v7a/CMakeFiles/libwg-go.so.rule
