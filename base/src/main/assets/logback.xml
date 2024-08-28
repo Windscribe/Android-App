@@ -33,4 +33,5 @@
         <appender-ref ref="LOGCAT" />
         <appender-ref ref="ASYNC" />
     </root>
+    <logger name="org.pcap4j.util.PropertiesLoader" level="OFF"/>
 </configuration>
