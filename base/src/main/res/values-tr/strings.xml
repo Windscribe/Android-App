@@ -14,7 +14,8 @@
     <string name="small_password">Şifreniz en az 8 karakterden oluşmalıdır.</string>
     <string name="common_password">Girdiğiniz şifre yaygın olarak kullanılmakta ve güvenli değil.</string>
     <string name="password_requirement">En az bir büyük ve küçük harf içeren 8 veya daha fazla karakter</string>
-    <string name="failed_network_alert">Elimizden gelenin en iyisini yaptık, nedense sizi bu ağa bağlayamadık. İnternet bağlantınızı kontrol edin.</string>
+    <string name="failed_network_alert">Windscribe\'ı engelleyen son derece kısıtlayıcı bir ağda görünüyorsunuz. Lütfen ana ekrandaki "Acil Bağlantı" özelliğini kullanın ve ardından tekrar kayıt olmayı veya giriş yapmayı deneyin. Başarısız olursanız, lütfen bizimle iletişime geçin.</string>
+    <string name="failed_network_title">Kısıtlayıcı Ağ Algılandı</string>
     <string name="fa_required_error">2FA kodu gereklidir</string>
     <string name="fa_invalid_error">Geçersiz 2FA kodu</string>
     <string name="login">Oturum açma</string>
