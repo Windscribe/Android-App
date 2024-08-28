@@ -1,15 +1,15 @@
 package com.windscribe.vpn.backend
 
-import android.content.Context
 import android.os.Build
 import android.provider.Settings
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.SocketException
 import java.util.*
 
-class AndroidDeviceIdentityImpl(private val context: Context): AndroidDeviceIdentity {
+class AndroidDeviceIdentityImpl(): AndroidDeviceIdentity {
 
     override var deviceHostName: String? = null
     override var deviceMacAddress: String? = null
@@ -27,9 +27,9 @@ class AndroidDeviceIdentityImpl(private val context: Context): AndroidDeviceIden
      */
     private fun loadHostname(): String? {
         val systemBluetoothName =
-                Settings.System.getString(context.contentResolver, "bluetooth_name")
-        val blueToothName = kotlin.runCatching { Settings.Secure.getString(context.contentResolver, "bluetooth_name") }.getOrNull()
-        val deviceName = kotlin.runCatching { Settings.Secure.getString(context.contentResolver, "device_name") }.getOrNull()
+                Settings.System.getString(appContext.contentResolver, "bluetooth_name")
+        val blueToothName = kotlin.runCatching { Settings.Secure.getString(appContext.contentResolver, "bluetooth_name") }.getOrNull()
+        val deviceName = kotlin.runCatching { Settings.Secure.getString(appContext.contentResolver, "device_name") }.getOrNull()
         val hostName = if (!systemBluetoothName.isNullOrEmpty()) {
             systemBluetoothName
         } else if (!blueToothName.isNullOrEmpty()) {

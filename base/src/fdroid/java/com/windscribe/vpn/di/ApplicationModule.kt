@@ -35,6 +35,6 @@ class ApplicationModule(override var windscribeApp: Windscribe) : BaseApplicatio
     @Provides
     @Singleton
     fun provideAndroidIdentity(): AndroidDeviceIdentity {
-        return AndroidDeviceIdentityImpl(windscribeApp)
+        return AndroidDeviceIdentityImpl()
     }
 }
