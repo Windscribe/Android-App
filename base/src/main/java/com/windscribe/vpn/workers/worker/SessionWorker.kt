@@ -109,7 +109,6 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
                 preferenceChangeObserver.postEmailStatusChange()
             }
             handleAccountStatusChange(it)
-            handleLocationUpdate()
         }
     }
 
@@ -133,23 +132,6 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
             }
             wgConfigRepository.deleteKeys()
             preferencesHelper.globalUserConnectionPreference = false
-        }
-    }
-
-    private suspend fun handleLocationUpdate() {
-        try {
-            val previousLocation = locationRepository.selectedCity.value
-            val updatedLocation = locationRepository.updateLocation()
-            if (updatedLocation != previousLocation && preferencesHelper.globalUserConnectionPreference) {
-                logger.debug("Last selected location is changed Now Reconnecting")
-                locationRepository.setSelectedCity(updatedLocation)
-                vpnController.connectAsync()
-            } else if (preferencesHelper.globalUserConnectionPreference && !locationRepository.isNodeAvailable()) {
-                logger.debug("Missing currently connected node Now Reconnecting to same location.")
-                vpnController.connectAsync()
-            }
-        } catch (e: Exception) {
-            logger.debug("Failed to update last selected location.")
         }
     }
 }
