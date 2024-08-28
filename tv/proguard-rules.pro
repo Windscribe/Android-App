@@ -60,3 +60,9 @@
 -keep class com.scapix.** { *; }
 -keep class com.wsnet.** { *; }
 -keep class com.windscribe.vpn.backend.CdLib { *; }
+# Keep classes from pcap4j-core
+-keep class org.pcap4j.** { *; }
+# Keep classes from pcap4j-packetfactory-static
+-keep class org.pcap4j.packet.factory.** { *; }
+# Keep classes from minidns-client
+-keep class org.minidns.** { *; }
