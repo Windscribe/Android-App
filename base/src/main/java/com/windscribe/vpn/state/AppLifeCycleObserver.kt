@@ -12,6 +12,7 @@ import com.windscribe.vpn.Windscribe.Companion.applicationScope
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
+import com.wsnet.lib.WSNet
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -59,6 +60,7 @@ class AppLifeCycleObserver @Inject constructor(
                proxyDNSManager.stopControlD()
             }
         }
+        appContext.preference.wsNetSettings = WSNet.instance().currentPersistentSettings()
         logger.debug("----------App going to background.--------\n")
     }
 
