@@ -83,6 +83,7 @@ UploadToNexusPublic:
     - apk add patch
     - apk add flock
     - apk --no-cache add git make musl-dev build-base cmake ninja zip unzip git perl
+    - apk --no-cache add go=1.21.10
     - apk add jq
     - authToken=$(curl -X POST https://pki.int.windscribe.com:8200/v1/auth/approle/login -d "role_id=$role_id&secret_id=$secret_id" | jq       --raw-output '.auth.client_token')
     - secretData=$(curl -H "X-Vault-Token:$authToken" -X GET https://pki.int.windscribe.com:8200/v1/kv/cicd/client-android)
