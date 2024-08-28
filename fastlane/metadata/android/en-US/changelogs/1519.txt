@@ -1,0 +1,6 @@
+v3.79(Mobile)
+* Fixed disconnect on unsecured network on app relaunch.
+* Added Signup improvements.
+* Random WireGuard crashes fix.
+* Android SDK upgrade to v34.
+* Billing library upgrade v7.0.
