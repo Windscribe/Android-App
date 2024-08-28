@@ -36,8 +36,8 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    implementation ("org.pcap4j:pcap4j-core:1.7.1")
-    implementation ("org.pcap4j:pcap4j-packetfactory-static:1.7.1")
-    implementation ("org.minidns:minidns-client:1.0.4")
+    implementation ("org.pcap4j:pcap4j-core:1.7.7")
+    implementation ("org.pcap4j:pcap4j-packetfactory-static:1.7.7")
+    implementation ("org.minidns:minidns-client:1.0.5")
 
 }
