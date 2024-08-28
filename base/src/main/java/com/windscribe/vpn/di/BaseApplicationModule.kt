@@ -241,8 +241,8 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun provideCtrldManager(coroutineScope: CoroutineScope, preferencesHelper: PreferencesHelper, androidDeviceIdentity: AndroidDeviceIdentity): ProxyDNSManager {
-        return ProxyDNSManager(coroutineScope, preferencesHelper, androidDeviceIdentity)
+    fun provideCtrldManager(coroutineScope: CoroutineScope, preferencesHelper: PreferencesHelper): ProxyDNSManager {
+        return ProxyDNSManager(coroutineScope, preferencesHelper)
     }
 
     @Provides

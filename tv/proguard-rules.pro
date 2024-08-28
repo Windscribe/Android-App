@@ -59,3 +59,4 @@
 -keep class androidx.lifecycle.** {*;}
 -keep class com.scapix.** { *; }
 -keep class com.wsnet.** { *; }
+-keep class com.windscribe.vpn.backend.CdLib { *; }
