@@ -6,6 +6,7 @@ package com.windscribe.mobile.windscribe
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Pair
@@ -14,8 +15,20 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.recyclerview.widget.RecyclerView
 import com.google.common.io.CharStreams
 import com.windscribe.mobile.R
-import com.windscribe.mobile.adapter.*
-import com.windscribe.mobile.connectionui.*
+import com.windscribe.mobile.adapter.ConfigAdapter
+import com.windscribe.mobile.adapter.FavouriteAdapter
+import com.windscribe.mobile.adapter.RegionsAdapter
+import com.windscribe.mobile.adapter.StaticRegionAdapter
+import com.windscribe.mobile.adapter.StreamingNodeAdapter
+import com.windscribe.mobile.connectionui.ConnectedAnimationState
+import com.windscribe.mobile.connectionui.ConnectedState
+import com.windscribe.mobile.connectionui.ConnectingAnimationState
+import com.windscribe.mobile.connectionui.ConnectingState
+import com.windscribe.mobile.connectionui.ConnectionOptions
+import com.windscribe.mobile.connectionui.ConnectionOptionsBuilder
+import com.windscribe.mobile.connectionui.DisconnectedState
+import com.windscribe.mobile.connectionui.FailedProtocol
+import com.windscribe.mobile.connectionui.UnsecuredProtocol
 import com.windscribe.mobile.listeners.ProtocolClickListener
 import com.windscribe.mobile.utils.PermissionManager
 import com.windscribe.mobile.utils.UiUtil.getDataRemainingColor
@@ -23,7 +36,8 @@ import com.windscribe.mobile.windscribe.WindscribeActivity.NetworkLayoutState
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.ActivityInteractorImpl.PortMapLoadCallback
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.api.response.*
+import com.windscribe.vpn.api.response.PortMapResponse
+import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.Util.getSavedLocation
@@ -41,7 +55,6 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.AZ_LIST_SELECTION_MODE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.LATENCY_LIST_SELECTION_MODE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
-import com.windscribe.vpn.constants.RateDialogConstants
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.constants.UserStatusConstants.ACCOUNT_STATUS_OK
 import com.windscribe.vpn.errormodel.WindError.Companion.instance
@@ -54,9 +67,21 @@ import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import com.windscribe.vpn.localdatabase.tables.WindNotification
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.LatencyRepository
-import com.windscribe.vpn.serverlist.entity.*
+import com.windscribe.vpn.serverlist.entity.City
+import com.windscribe.vpn.serverlist.entity.CityAndRegion
+import com.windscribe.vpn.serverlist.entity.ConfigFile
+import com.windscribe.vpn.serverlist.entity.Favourite
+import com.windscribe.vpn.serverlist.entity.Group
+import com.windscribe.vpn.serverlist.entity.PingTime
+import com.windscribe.vpn.serverlist.entity.RegionAndCities
+import com.windscribe.vpn.serverlist.entity.ServerListData
+import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.serverlist.interfaces.ListViewClickListener
-import com.windscribe.vpn.serverlist.sort.*
+import com.windscribe.vpn.serverlist.sort.ByCityName
+import com.windscribe.vpn.serverlist.sort.ByConfigName
+import com.windscribe.vpn.serverlist.sort.ByLatency
+import com.windscribe.vpn.serverlist.sort.ByRegionName
+import com.windscribe.vpn.serverlist.sort.ByStaticRegionName
 import com.windscribe.vpn.services.DeviceStateService.Companion.enqueueWork
 import com.windscribe.vpn.state.NetworkInfoListener
 import inet.ipaddr.AddressStringException
@@ -77,11 +102,12 @@ import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.io.InputStreamReader
-import java.util.*
-import java.util.concurrent.TimeUnit
+import java.util.Collections
+import java.util.Date
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 import javax.inject.Inject
+
 
 class WindscribePresenterImpl @Inject constructor(
         private var windscribeView: WindscribeView,
@@ -1326,6 +1352,9 @@ class WindscribePresenterImpl @Inject constructor(
                     windscribeView.showToast("No Network")
                 }
                 is BackgroundLocationPermissionNotAvailable , is NoLocationPermissionException-> {
+                    if (!isGPSEnabled(appContext)) {
+                        windscribeView.showToast("Location service is disabled. Enable it to use preferred protocols.")
+                    }
                     windscribeView.setNetworkLayout(null, NetworkLayoutState.CLOSED, false)
                     permissionManager.withForegroundLocationPermission { error ->
                         if (error != null){
@@ -1342,6 +1371,11 @@ class WindscribePresenterImpl @Inject constructor(
         } catch (e: Exception) {
             logger.info(e.toString())
         }
+    }
+
+    private fun isGPSEnabled(context: Context): Boolean {
+        val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
     }
 
     override fun updateConfigFile(configFile: ConfigFile) {
