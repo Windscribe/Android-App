@@ -87,7 +87,7 @@ class WelcomePresenterImpl @Inject constructor(
                 .subscribeWith(object :
                     DisposableSingleObserver<GenericResponseClass<ClaimAccountResponse?, ApiErrorResponse?>>() {
                     override fun onError(e: Throwable) {
-                        logger.debug("User SignUp error..." + e.message)
+                        logger.error("Account claim: {}", e.message)
                         onSignUpFailedWithNoError()
                     }
 
@@ -95,10 +95,10 @@ class WelcomePresenterImpl @Inject constructor(
                         when (val result =
                             genericLoginResponse.callResult<ClaimAccountResponse>()) {
                             is CallResult.Error -> {
+                                logger.error("Account claim: {}", result)
                                 if (result.code == NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA) {
                                     onSignUpFailedWithNoError()
                                 } else {
-                                    logger.info("Account claim Error ${result.errorMessage}")
                                     onLoginResponseError(result.code, result.errorMessage)
                                 }
                             }
@@ -136,10 +136,10 @@ class WelcomePresenterImpl @Inject constructor(
                 DisposableSingleObserver<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>() {
                 override fun onError(e: Throwable) {
                     welcomeView.prepareUiForApiCallFinished()
+                    logger.error("Ghost account setup: {}", e.message)
                     if (e is IOException) {
                         welcomeView.showError("Unable to reach server. Check your network connection.")
                     } else {
-                        logger.debug(e.message)
                         welcomeView.goToSignUp()
                     }
                 }
@@ -149,9 +149,9 @@ class WelcomePresenterImpl @Inject constructor(
                 ) {
                     when (val result = regResponse.callResult<UserRegistrationResponse>()) {
                         is CallResult.Error -> {
+                            logger.error("Ghost account setup: {}", result)
                             welcomeView.prepareUiForApiCallFinished()
                             if (result.code != NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA) {
-                                logger.debug(result.errorMessage)
                                 welcomeView.goToSignUp()
                             }
                         }
@@ -182,13 +182,7 @@ class WelcomePresenterImpl @Inject constructor(
                         object :
                             DisposableSingleObserver<GenericResponseClass<UserLoginResponse?, ApiErrorResponse?>>() {
                             override fun onError(e: Throwable) {
-                                if (e is Exception) {
-                                    logger.debug(
-                                        "Login Error: " + WindError.instance.rxErrorToString(
-                                            e,
-                                        )
-                                    )
-                                }
+                                logger.error("Login: {}", e.message)
                                 onLoginFailedWithNoError()
                             }
 
@@ -198,10 +192,10 @@ class WelcomePresenterImpl @Inject constructor(
                                 when (val result =
                                     genericLoginResponse.callResult<UserLoginResponse>()) {
                                     is CallResult.Error -> {
+                                        logger.error("Login: {}", result)
                                         if (result.code == NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA) {
                                             onLoginFailedWithNoError()
                                         } else {
-                                            logger.info("Login error..." + genericLoginResponse.errorClass)
                                             onLoginResponseError(result.code, result.errorMessage)
                                         }
                                     }
@@ -245,7 +239,7 @@ class WelcomePresenterImpl @Inject constructor(
                 .subscribeWith(object :
                     DisposableSingleObserver<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>() {
                     override fun onError(e: Throwable) {
-                        logger.debug("User SignUp error..." + e.message)
+                        logger.error("Signup: {}", e.message)
                         onSignUpFailedWithNoError()
                     }
 
@@ -255,7 +249,7 @@ class WelcomePresenterImpl @Inject constructor(
                         when (val result =
                             genericLoginResponse.callResult<UserRegistrationResponse>()) {
                             is CallResult.Error -> {
-                                logger.info("SignUp...$result")
+                                logger.error("Signup: {}", result)
                                 if (result.code == NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA) {
                                     onSignUpFailedWithNoError()
                                 } else {
@@ -301,10 +295,7 @@ class WelcomePresenterImpl @Inject constructor(
                     override fun onError(e: Throwable) {
                         welcomeView.prepareUiForApiCallFinished()
                         welcomeView.showError("Unable to auto login. Log in using new credentials.")
-                        logger.debug(
-                            "Error getting session"
-                                    + WindError.instance.convertThrowableToString(e)
-                        )
+                        logger.error("Account claim session: {}", e.message)
                     }
                 })
         )
@@ -370,13 +361,7 @@ class WelcomePresenterImpl @Inject constructor(
                 .andThen(Completable.fromAction {
                     interactor.getPreferenceChangeObserver().postCityServerChange()
                 }).andThen(interactor.updateUserData()).onErrorResumeNext { throwable: Throwable ->
-                    logger.info(
-                        "*****Preparing dashboard failed: ${
-                            WindError.instance.rxErrorToString(
-                                throwable as Exception
-                            )
-                        } Use reload button in server list in home activity."
-                    )
+                    logger.error("Prepare dashboard: {}", throwable.message)
                     Completable.fromAction {
                         interactor.getPreferenceChangeObserver().postCityServerChange()
                     }.andThen(interactor.updateUserData())
@@ -391,11 +376,7 @@ class WelcomePresenterImpl @Inject constructor(
 
                     override fun onError(e: Throwable) {
                         welcomeView.prepareUiForApiCallFinished()
-                        logger.debug(
-                            "Error while updating server status to local db. StackTrace: " + WindError.instance.convertThrowableToString(
-                                e
-                            )
-                        )
+                        logger.error("Prepare dashboard: {}", e.message)
                     }
                 })
             )
