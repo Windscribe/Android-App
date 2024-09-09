@@ -372,10 +372,10 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
 
     private fun <T> buildResponse(sub: SingleEmitter<GenericResponseClass<T?, ApiErrorResponse?>>, code: Int, responseDataString: String, modelType: Class<T>) {
         when (code) {
-            1 -> sub.onError(WindScribeException("Unknown network error."))
-            2 -> sub.onError(WindScribeException("No network available."))
-            3 -> sub.onError(WindScribeException("Server returned incorrect response."))
-            4 -> sub.onError(WindScribeException("Unable to reach server."))
+            1 -> sub.onError(WindScribeException("WSNet: Network failed to connect to server."))
+            2 -> sub.onError(WindScribeException("WSNet: No network available to reach API."))
+            3 -> sub.onError(WindScribeException("WSNet: Server returned incorrect json response. Unable to parse it. Response: $responseDataString"))
+            4 -> sub.onError(WindScribeException("WSNet: All fallback domains have failed."))
             else -> {
                 try {
                     if (modelType.simpleName.equals("String")) {
@@ -389,7 +389,7 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
                         val errorObject = JsonResponseConverter.getErrorClass(JSONObject(responseDataString))
                         sub.onSuccess(GenericResponseClass(null, errorObject))
                     } catch (e: Exception) {
-                        sub.onError(WindScribeException("Server returned incorrect response."))
+                        sub.onError(WindScribeException("App: Unable to parse [ $responseDataString ] to ${modelType.simpleName}. ) "))
                     }
                 }
             }
