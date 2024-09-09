@@ -145,7 +145,7 @@ class WgConfigRepository(val scope: CoroutineScope, val interactor: ServiceInter
         var deviceId = ""
         if (interactor.preferenceHelper.isConnectingToStaticIp) {
             runCatching {
-                return@runCatching interactor.preferenceHelper.getDeviceUUID(interactor.preferenceHelper.userName)
+                return@runCatching interactor.preferenceHelper.getDeviceUUID()
                     ?: throw Exception("Failed to get username.")
             }.onSuccess {
                 logger.debug("Adding device id to wg connect $it")

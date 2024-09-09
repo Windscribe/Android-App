@@ -342,11 +342,9 @@ class WelcomePresenterImpl @Inject constructor(
                             is CallResult.Error -> {}
                             is CallResult.Success -> {
                                 if (interactor.getAppPreferenceInterface()
-                                        .getDeviceUUID(result.data.userName) == null) {
+                                        .getDeviceUUID() == null) {
                                     logger.debug("No device id is found for the current user, generating and saving UUID")
-                                    interactor.getAppPreferenceInterface().setDeviceUUID(
-                                        result.data.userName, UUID.randomUUID().toString()
-                                    )
+                                    interactor.getAppPreferenceInterface().setDeviceUUID(UUID.randomUUID().toString())
                                 }
                             }
                         }

@@ -94,8 +94,8 @@ class AppPreferenceHelper(
     override val currentConnectionAttemptTag: String?
         get() = preference.getString(PreferencesKeyConstants.CONNECTION_ATTEMPT, null)
 
-    override fun getDeviceUUID(username: String): String? {
-        return preference.getString(username, null)
+    override fun getDeviceUUID(): String? {
+        return preference.getString(PreferencesKeyConstants.DEVICE_ID, null)
     }
 
     override val disConnectedFlagPath: String?
@@ -537,8 +537,8 @@ class AppPreferenceHelper(
         )
     }
 
-    override fun setDeviceUUID(userName: String, deviceUUID: String?) {
-        preference.put(userName, deviceUUID)
+    override fun setDeviceUUID(deviceUUID: String?) {
+        preference.put(PreferencesKeyConstants.DEVICE_ID, deviceUUID)
     }
 
     override fun setDisconnectedFlagPath(path: String?) {

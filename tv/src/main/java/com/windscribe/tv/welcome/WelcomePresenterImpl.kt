@@ -392,10 +392,10 @@ class WelcomePresenterImpl @Inject constructor(
                     Completable.fromSingle(Single.fromCallable {
                         sessionResponse.dataClass?.let {
                             if (interactor.getAppPreferenceInterface()
-                                    .getDeviceUUID(it.userName) == null) {
+                                    .getDeviceUUID() == null) {
                                 logger.debug("No device id is found for the current user, generating and saving UUID")
                                 interactor.getAppPreferenceInterface()
-                                    .setDeviceUUID(it.userName, UUID.randomUUID().toString())
+                                    .setDeviceUUID(UUID.randomUUID().toString())
                             }
                             interactor.getUserRepository().reload(sessionResponse.dataClass)
                         }

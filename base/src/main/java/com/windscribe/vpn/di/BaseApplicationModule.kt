@@ -784,13 +784,15 @@ open class BaseApplicationModule {
             val msg = it.split(Regex("\\]\\s*")).lastOrNull()?.trim() ?: ""
             logger.debug(msg)
         }, BuildConfig.DEV)
-        preferencesHelper.setDeviceUUID(preferencesHelper.userName, UUID.randomUUID().toString())
+        if (preferencesHelper.getDeviceUUID() == null) {
+            preferencesHelper.setDeviceUUID(UUID.randomUUID().toString())
+        }
         val systemLanguageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             appContext.resources.configuration.locales.get(0).language.substring(0..1)
         } else {
             appContext.resources.configuration.locale.language.substring(0..1)
         }
-        WSNet.initialize("android", "android", WindUtilities.getVersionName(), preferencesHelper.getDeviceUUID(preferencesHelper.userName) ?: "", "2.6.0",  BuildConfig.DEV, systemLanguageCode, preferencesHelper.wsNetSettings)
+        WSNet.initialize("android", "android", WindUtilities.getVersionName(), preferencesHelper.getDeviceUUID() ?: "", "2.6.0",  BuildConfig.DEV, systemLanguageCode, preferencesHelper.wsNetSettings)
         val networkListener = object : DeviceStateManager.DeviceStateListener {
             override fun onNetworkStateChanged() {
                 super.onNetworkStateChanged()
