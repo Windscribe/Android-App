@@ -26,7 +26,7 @@ interface PreferencesHelper {
     var connectedFlagPath: String?
     var connectionStatus: String?
     val currentConnectionAttemptTag: String?
-    fun getDeviceUUID(username: String): String?
+    fun getDeviceUUID(): String?
     val disConnectedFlagPath: String?
     var flagViewHeight: Int
     var flagViewWidth: Int
@@ -120,7 +120,7 @@ interface PreferencesHelper {
     fun setConnectingToConfiguredLocation(connectingToConfiguredLocation: Boolean)
     fun setConnectingToStaticIP(connectingToStaticIP: Boolean)
     fun setConnectionAttemptTag()
-    fun setDeviceUUID(userName: String, deviceUUID: String?)
+    fun setDeviceUUID(deviceUUID: String?)
     fun setDisconnectedFlagPath(path: String?)
     fun setFutureSelectCity(cityId: Int)
     fun setGpsSpoofing(spoof: Boolean)
