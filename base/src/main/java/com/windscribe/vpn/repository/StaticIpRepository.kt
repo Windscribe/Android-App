@@ -46,7 +46,7 @@ class StaticIpRepository @Inject constructor(
     }
 
     private suspend fun updateFromApi() {
-        val response = apiCallManager.getStaticIpList(preferencesHelper.getDeviceUUID(preferencesHelper.userName)).await()
+        val response = apiCallManager.getStaticIpList(preferencesHelper.getDeviceUUID()).await()
         val regions = response.dataClass?.let {
             val jsonObject = JSONObject(Gson().toJson(it))
             Gson().fromJson<List<StaticRegion>>(
