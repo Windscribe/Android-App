@@ -87,6 +87,7 @@ class WireguardBackend(
     override var active = false
     private val maxHandshakeTimeInSeconds = 180L
     private var protectByVPN = AtomicBoolean(false)
+    private val wgLogger = WgLogger()
     private val connectivityManager =
             appContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
     private val powerManager = appContext.getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -156,10 +157,14 @@ class WireguardBackend(
         }
         vpnLogger.debug("WireGuard backend activated.")
         active = true
+        scope.launch {
+            wgLogger.captureLogs(appContext)
+        }
     }
 
     override fun deactivate() {
         connectionStateJob?.cancel()
+        wgLogger.stopCapture()
         active = false
         vpnLogger.debug("WireGuard backend deactivated.")
     }
