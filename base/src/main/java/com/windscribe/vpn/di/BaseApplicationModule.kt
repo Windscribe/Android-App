@@ -792,7 +792,7 @@ open class BaseApplicationModule {
         } else {
             appContext.resources.configuration.locale.language.substring(0..1)
         }
-        WSNet.initialize("android", "android", WindUtilities.getVersionName(), preferencesHelper.getDeviceUUID() ?: "", "2.6.0",  BuildConfig.DEV, systemLanguageCode, preferencesHelper.wsNetSettings)
+        WSNet.initialize("android", "android", WindUtilities.getVersionName(), preferencesHelper.getDeviceUUID() ?: "", "2.6.0", "4",  BuildConfig.DEV, systemLanguageCode, preferencesHelper.wsNetSettings)
         val networkListener = object : DeviceStateManager.DeviceStateListener {
             override fun onNetworkStateChanged() {
                 super.onNetworkStateChanged()

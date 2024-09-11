@@ -395,10 +395,9 @@ class UpgradePresenterImpl @Inject constructor(
     }
 
     override fun setLayoutFromApiSession() {
-        val sessionMap: Map<String, String> = HashMap()
         interactor.getCompositeDisposable().add(
             interactor.getApiCallManager()
-                .getSessionGeneric(sessionMap)
+                .getSessionGeneric(null)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(

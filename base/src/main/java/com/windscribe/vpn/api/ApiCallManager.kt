@@ -155,10 +155,10 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
         }
     }
 
-    override fun getSessionGeneric(extraParams: Map<String, String>?): Single<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>> {
+    override fun getSessionGeneric(firebaseToken: String?): Single<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.session(preferencesHelper.sessionHash) { code, json ->
+            val callback = wsNetServerAPI.session(preferencesHelper.sessionHash, "", firebaseToken ?: "") { code, json ->
                 buildResponse(sub, code, json, UserSessionResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
