@@ -227,6 +227,8 @@ class ActivityInteractorImpl(
     override fun getDebugFilePath(): String {
         return if (advanceParameterRepository.showStrongSwanLog()) {
             "${appContext.filesDir}/charon.log"
+        } else if(advanceParameterRepository.showWgLog()) {
+            "${appContext.filesDir}/wireguard_log.txt"
         } else {
             appContext.cacheDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
         }
