@@ -113,7 +113,7 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
     }
 
     private suspend fun getSession(): UserSessionResponse {
-        val response = apiCallManager.getSessionGeneric().await()
+        val response = apiCallManager.getSessionGeneric(null).await()
         return response.dataClass ?: response.errorClass?.let {
             if (it.errorCode == NetworkErrorCodes.ERROR_RESPONSE_SESSION_INVALID) {
                 throw InvalidSessionException("Session request Success: Invalid session.")

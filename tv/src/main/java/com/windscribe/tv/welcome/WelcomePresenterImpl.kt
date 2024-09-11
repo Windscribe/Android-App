@@ -171,8 +171,8 @@ class WelcomePresenterImpl @Inject constructor(
                         ) {
                             response.dataClass?.let {
                                 interactor.getAppPreferenceInterface().sessionHash = it.sessionAuthHash
-                                interactor.getFireBaseManager().getFirebaseToken { session ->
-                                    prepareLoginRegistrationDashboard(session)
+                                interactor.getFireBaseManager().getFirebaseToken { token ->
+                                    prepareLoginRegistrationDashboard(token)
                                 }
                             } ?: response.errorClass?.let {
                                 logger.error("Ghost account: {}", it)
@@ -211,8 +211,8 @@ class WelcomePresenterImpl @Inject constructor(
                                     logger.info("Logged user in successfully...")
                                     welcomeView.updateCurrentProcess("Login successful...")
                                     interactor.getAppPreferenceInterface().sessionHash = it.sessionAuthHash
-                                    interactor.getFireBaseManager().getFirebaseToken { session ->
-                                        prepareLoginRegistrationDashboard(session)
+                                    interactor.getFireBaseManager().getFirebaseToken { token ->
+                                        prepareLoginRegistrationDashboard(token)
                                     }
                                 } ?: response.errorClass?.let {
                                     logger.error("Login: {}", it)
@@ -260,8 +260,8 @@ class WelcomePresenterImpl @Inject constructor(
                                     logger.info("Sign up user successfully...")
                                     welcomeView.updateCurrentProcess("SignUp successful...")
                                     interactor.getAppPreferenceInterface().sessionHash = it.sessionAuthHash
-                                    interactor.getFireBaseManager().getFirebaseToken { session ->
-                                        prepareLoginRegistrationDashboard(session)
+                                    interactor.getFireBaseManager().getFirebaseToken { token ->
+                                        prepareLoginRegistrationDashboard(token)
                                     }
                                 } ?: response.errorClass?.let {
                                     logger.error("Signup: {}", it)
@@ -298,8 +298,8 @@ class WelcomePresenterImpl @Inject constructor(
                                 logger.debug("Successfully verified XPress login code.")
                                 val sessionAuth = it.sessionAuth
                                 interactor.getAppPreferenceInterface().sessionHash = sessionAuth
-                                interactor.getFireBaseManager().getFirebaseToken { session ->
-                                    prepareLoginRegistrationDashboard(session)
+                                interactor.getFireBaseManager().getFirebaseToken { token ->
+                                    prepareLoginRegistrationDashboard(token)
                                 }
                             }
                             invalidateLoginCode(startTime, xPressLoginCodeResponse)
@@ -328,7 +328,7 @@ class WelcomePresenterImpl @Inject constructor(
     private fun onAccountClaimSuccess() {
         welcomeView.updateCurrentProcess("Getting session")
         interactor.getCompositeDisposable().add(
-            interactor.getApiCallManager().getSessionGeneric()
+            interactor.getApiCallManager().getSessionGeneric(null)
                 .flatMap { apiResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> ->
                     Single.fromCallable {
                         apiResponse.dataClass?.let {
@@ -384,10 +384,10 @@ class WelcomePresenterImpl @Inject constructor(
         }
     }
 
-    private fun prepareLoginRegistrationDashboard(sessionMap: Map<String, String>) {
+    private fun prepareLoginRegistrationDashboard(firebaseToken: String?) {
         welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_session))
         interactor.getCompositeDisposable()
-            .add(interactor.getApiCallManager().getSessionGeneric(sessionMap)
+            .add(interactor.getApiCallManager().getSessionGeneric(firebaseToken)
                 .flatMapCompletable { sessionResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> ->
                     Completable.fromSingle(Single.fromCallable {
                         sessionResponse.dataClass?.let {
