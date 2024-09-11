@@ -8,7 +8,7 @@ class FirebaseManagerImpl(private val context: Windscribe) : FirebaseManager {
 
     }
 
-    override fun getFirebaseToken(callback: (MutableMap<String, String>) -> Unit) {
+    override fun getFirebaseToken(callback: (String?) -> Unit) {
         callback(mutableMapOf())
     }
 
