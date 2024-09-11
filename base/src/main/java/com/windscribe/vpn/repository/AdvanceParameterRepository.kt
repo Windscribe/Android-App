@@ -4,6 +4,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.AdvanceParamKeys.FORCE_NODE
 import com.windscribe.vpn.constants.AdvanceParamKeys.SERVER_LIST_COUNTRY_OVERRIDE
 import com.windscribe.vpn.constants.AdvanceParamKeys.SHOW_STRONG_SWAN_LOG
+import com.windscribe.vpn.constants.AdvanceParamKeys.SHOW_WG_LOG
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_START_DELAY
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_TEST_ATTEMPTS
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_TEST_RETRY_DELAY
@@ -17,6 +18,7 @@ interface AdvanceParameterRepository {
     fun getCountryOverride(): String?
     fun getForceNode(): String?
     fun showStrongSwanLog(): Boolean
+    fun showWgLog(): Boolean
     fun getTunnelStartDelay(): Long?
     fun getTunnelTestRetryDelay(): Long?
     fun getTunnelTestAttempts(): Long?
@@ -46,6 +48,10 @@ class AdvanceParameterRepositoryImpl(val scope: CoroutineScope, val preferencesH
 
     override fun showStrongSwanLog(): Boolean {
         return params.value[SHOW_STRONG_SWAN_LOG].toBoolean()
+    }
+
+    override fun showWgLog(): Boolean {
+        return params.value[SHOW_WG_LOG].toBoolean()
     }
 
     override fun getTunnelStartDelay(): Long? {
