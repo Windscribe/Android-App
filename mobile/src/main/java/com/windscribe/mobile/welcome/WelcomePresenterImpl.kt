@@ -204,8 +204,8 @@ class WelcomePresenterImpl @Inject constructor(
                                         welcomeView.updateCurrentProcess("Login successful...")
                                         interactor.getAppPreferenceInterface().sessionHash =
                                             result.data.sessionAuthHash
-                                        interactor.getFireBaseManager().getFirebaseToken { session ->
-                                            prepareLoginRegistrationDashboard(session)
+                                        interactor.getFireBaseManager().getFirebaseToken { token ->
+                                            prepareLoginRegistrationDashboard(token)
                                         }
                                     }
                                 }
@@ -341,6 +341,7 @@ class WelcomePresenterImpl @Inject constructor(
                         when (val result = sessionResponse.callResult<UserSessionResponse>()) {
                             is CallResult.Error -> {}
                             is CallResult.Success -> {
+                                logger.debug("Successfully added token $firebaseToken to ${result.data.userName}.")
                                 if (interactor.getAppPreferenceInterface()
                                         .getDeviceUUID() == null) {
                                     logger.debug("No device id is found for the current user, generating and saving UUID")
