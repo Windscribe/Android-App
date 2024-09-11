@@ -158,8 +158,8 @@ class WelcomePresenterImpl @Inject constructor(
                         is CallResult.Success -> {
                             interactor.getAppPreferenceInterface().sessionHash =
                                 result.data.sessionAuthHash
-                            interactor.getFireBaseManager().getFirebaseToken { session ->
-                                prepareLoginRegistrationDashboard(session)
+                            interactor.getFireBaseManager().getFirebaseToken { token ->
+                                prepareLoginRegistrationDashboard(token)
                             }
                         }
                     }
@@ -332,10 +332,10 @@ class WelcomePresenterImpl @Inject constructor(
         welcomeView.showFailedAlert(interactor.getResourceString(R.string.failed_network_alert))
     }
 
-    private fun prepareLoginRegistrationDashboard(sessionMap: Map<String, String>) {
+    private fun prepareLoginRegistrationDashboard(firebaseToken: String?) {
         welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_session))
         interactor.getCompositeDisposable()
-            .add(interactor.getApiCallManager().getSessionGeneric(sessionMap)
+            .add(interactor.getApiCallManager().getSessionGeneric(firebaseToken)
                 .flatMapCompletable { sessionResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> ->
                     Completable.fromSingle(Single.fromCallable {
                         when (val result = sessionResponse.callResult<UserSessionResponse>()) {

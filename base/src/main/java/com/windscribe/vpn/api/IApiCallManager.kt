@@ -19,7 +19,7 @@ interface IApiCallManager {
     fun getServerCredentials(extraParams: Map<String, String>? = null): Single<GenericResponseClass<ServerCredentialsResponse?, ApiErrorResponse?>>
     fun getServerCredentialsForIKev2(extraParams: Map<String, String>? = null): Single<GenericResponseClass<ServerCredentialsResponse?, ApiErrorResponse?>>
     fun getServerList(isPro: Boolean, locHash: String, alcList: Array<String>, overriddenCountryCode: String?): Single<GenericResponseClass<String?, ApiErrorResponse?>>
-    fun getSessionGeneric(extraParams: Map<String, String>? = null): Single<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>>
+    fun getSessionGeneric(firebaseToken: String?): Single<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>>
     fun getStaticIpList(deviceID: String?): Single<GenericResponseClass<StaticIPResponse?, ApiErrorResponse?>>
     fun logUserIn(username: String, password: String, twoFa: String?): Single<GenericResponseClass<UserLoginResponse?, ApiErrorResponse?>>
     fun getWebSession(): Single<GenericResponseClass<WebSession?, ApiErrorResponse?>>
