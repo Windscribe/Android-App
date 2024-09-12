@@ -10,6 +10,7 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.WindError
 import io.reactivex.Completable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.observers.DisposableCompletableObserver
 import io.reactivex.observers.DisposableSingleObserver
@@ -105,6 +106,17 @@ class SplashPresenterImpl @Inject constructor(
         if (userLoggedIn) {
             interactor.getCompositeDisposable().add(
                 interactor.serverDataAvailable()
+                    .flatMap { serverListAvailable ->
+                        return@flatMap Single.create { sub ->
+                            interactor.getFireBaseManager().getFirebaseToken { token ->
+                                sub.onSuccess(token ?: "")
+                            }
+                        }.flatMap {
+                            interactor.getApiCallManager().getSessionGeneric(it)
+                        }.flatMap {
+                            return@flatMap Single.just(serverListAvailable)
+                        }
+                    }
                     .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(object : DisposableSingleObserver<Boolean?>() {
                         override fun onError(ignored: Throwable) {
