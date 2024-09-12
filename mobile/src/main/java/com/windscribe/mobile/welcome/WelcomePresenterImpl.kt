@@ -200,7 +200,7 @@ class WelcomePresenterImpl @Inject constructor(
                                         }
                                     }
                                     is CallResult.Success -> {
-                                        logger.info("Logged user in successfully... ${result.data.sessionAuthHash}")
+                                        logger.info("Logged user in successfully...")
                                         welcomeView.updateCurrentProcess("Login successful...")
                                         interactor.getAppPreferenceInterface().sessionHash =
                                             result.data.sessionAuthHash
