@@ -333,6 +333,7 @@ class WelcomePresenterImpl @Inject constructor(
     }
 
     private fun prepareLoginRegistrationDashboard(firebaseToken: String?) {
+        interactor.getAppPreferenceInterface().loginTime = Date()
         welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_session))
         interactor.getCompositeDisposable()
             .add(interactor.getApiCallManager().getSessionGeneric(firebaseToken)
