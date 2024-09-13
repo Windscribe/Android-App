@@ -64,7 +64,7 @@ class WindscribeReviewManagerImpl(
     }
 
     private fun daysSinceLogin(): Long {
-        val milliSeconds1 = preferencesHelper.loginTime.time
+        val milliSeconds1 = preferencesHelper.loginTime?.time ?: Date().time
         val milliSeconds2 = Date().time
         val periodSeconds = (milliSeconds2 - milliSeconds1) / 1000
         return periodSeconds / 60 / 60 / 24

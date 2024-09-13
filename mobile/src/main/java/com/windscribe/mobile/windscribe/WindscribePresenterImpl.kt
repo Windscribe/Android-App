@@ -1720,7 +1720,7 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     private fun elapsedOneDayAfterLogin(): Boolean {
-        val milliSeconds1 = interactor.getAppPreferenceInterface().loginTime.time
+        val milliSeconds1 = interactor.getAppPreferenceInterface().loginTime?.time ?: Date().time
         val milliSeconds2 = Date().time
         val periodSeconds = (milliSeconds2 - milliSeconds1) / 1000
         val elapsedDays = periodSeconds / 60 / 60 / 24

@@ -15,6 +15,7 @@ import io.reactivex.observers.DisposableCompletableObserver
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
 import org.slf4j.LoggerFactory
+import java.util.Date
 import javax.inject.Inject
 
 class SplashPresenterImpl @Inject constructor(
@@ -94,6 +95,9 @@ class SplashPresenterImpl @Inject constructor(
         migrateSessionAuthIfRequired()
         val userLoggedIn = interactor.getAppPreferenceInterface().sessionHash != null
         if (userLoggedIn) {
+            if (interactor.getAppPreferenceInterface().loginTime == null){
+                interactor.getAppPreferenceInterface().loginTime = Date()
+            }
             interactor.getCompositeDisposable().add(
                 interactor.serverDataAvailable()
                     .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())

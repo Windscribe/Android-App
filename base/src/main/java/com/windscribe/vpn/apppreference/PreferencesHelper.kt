@@ -40,7 +40,7 @@ interface PreferencesHelper {
     var lastConnectedUsingSplit: Boolean
     val lastSelectedTabIndex: Int
     var latencyType: String
-    var loginTime: Date
+    var loginTime: Date?
     var lowestPingId: Int
     var migrationRequired: Boolean
     val multipleTunnel: Boolean
