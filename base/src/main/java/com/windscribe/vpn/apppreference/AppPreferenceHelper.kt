@@ -168,8 +168,11 @@ class AppPreferenceHelper(
             showLatencyInMS = showInMs
         }
 
-    override val loginTime: Date
+    override var loginTime: Date
         get() = Date(preference.getLong(PreferencesKeyConstants.LOGIN_TIME, Date().time))
+        set(value) {
+            preference.put(PreferencesKeyConstants.LOGIN_TIME, value.time)
+        }
     override var lowestPingId: Int
         get() = preference.getInt(PreferencesKeyConstants.LOWEST_PING_ID, -1)
         set(lowestPingId) {
