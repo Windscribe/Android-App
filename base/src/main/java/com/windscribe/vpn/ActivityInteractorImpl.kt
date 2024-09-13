@@ -390,7 +390,7 @@ class ActivityInteractorImpl(
     }
 
     private fun elapsedTwoDayAfterLogin(): Boolean {
-        val milliSeconds1 = preferenceHelper.loginTime.time
+        val milliSeconds1 = preferenceHelper.loginTime?.time ?: Date().time
         val milliSeconds2 = Date().time
         val periodSeconds = (milliSeconds2 - milliSeconds1) / 1000
         val elapsedDays = periodSeconds / 60 / 60 / 24
