@@ -377,7 +377,9 @@ class VPNProfileCreator @Inject constructor(
                 LastSelectedLocation(configFile.getPrimaryKey(), nickName = configFile.name)
         saveSelectedLocation(lastSelectedLocation)
         profile.writeConfigFile(appContext)
-        profile.mAllowedAppsVpn = HashSet(preferencesHelper.installedApps())
+        if (preferencesHelper.splitTunnelToggle){
+            profile.mAllowedAppsVpn = HashSet(preferencesHelper.installedApps())
+        }
         saveProfile(profile)
         return "Custom Config: ${profile.mServerName} ${profile.mServerPort}"
     }
