@@ -354,8 +354,11 @@ class WindscribePresenterImpl @Inject constructor(
 
     override suspend fun observeAllLocations() {
         interactor.getServerListUpdater().regions.collectLatest {
-            if (it.isNotEmpty()) {
-                loadServerList(it.toMutableList())
+            val updatedServerListHash = interactor.getServerListUpdater().serverListHash
+            if (adapter?.serverListData?.serverListHash != updatedServerListHash)  {
+                if (it.isNotEmpty()) {
+                    loadServerList(it.toMutableList(), updatedServerListHash)
+                }
             }
         }
     }
@@ -380,7 +383,7 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
-    private fun loadServerList(regions: MutableList<RegionAndCities>) {
+    private fun loadServerList(regions: MutableList<RegionAndCities>, serverListHash: String?) {
         logger.info("Loading server list from disk.")
         windscribeView.showRecyclerViewProgressBar()
         val serverListData = ServerListData()
@@ -426,6 +429,7 @@ class WindscribePresenterImpl @Inject constructor(
                                 serverListData.setShowLocationHealth(
                                         interactor.getAppPreferenceInterface().isShowLocationHealthEnabled
                                 )
+                                serverListData.serverListHash = serverListHash
                                 serverListData.flags = flagIcons
                                 serverListData.bestLocation = cityAndRegion
                                 serverListData.isProUser =

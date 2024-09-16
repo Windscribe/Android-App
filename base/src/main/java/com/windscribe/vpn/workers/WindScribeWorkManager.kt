@@ -57,7 +57,7 @@ class WindScribeWorkManager(private val context: Context, private val scope: Cor
             while (true) {
                 delay(1000 * 60)
                 logger.debug("Starting foreground session update")
-                WorkManager.getInstance(context).enqueueUniqueWork(SERVER_LIST_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(SessionWorker::class.java))
+                WorkManager.getInstance(context).enqueueUniqueWork(SESSION_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(SessionWorker::class.java))
             }
         }
     }
