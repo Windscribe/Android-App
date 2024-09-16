@@ -46,7 +46,7 @@ class ServerListWorker(context: Context, workerParams: WorkerParameters) : Corou
         if(!userRepository.loggedIn())return Result.failure()
         return serverListRepository.update()
                 .repeatWhen {
-                    val reloadServerList = serverListRepository.globalServerList && appContext.appLifeCycleObserver.overriddenCountryCode!=null
+                    val reloadServerList = serverListRepository.globalServerList && appContext.appLifeCycleObserver.overriddenCountryCode!=null && appContext.appLifeCycleObserver.overriddenCountryCode!="ZZ"
                     return@repeatWhen Flowable.just(reloadServerList)
                 }.result{ success, error ->
             if(success){
