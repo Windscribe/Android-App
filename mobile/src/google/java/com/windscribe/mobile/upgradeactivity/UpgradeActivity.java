@@ -41,6 +41,7 @@ import com.windscribe.vpn.billing.BillingFragmentCallback;
 import com.windscribe.vpn.billing.GoogleBillingManager;
 import com.windscribe.vpn.billing.PurchaseState;
 import com.windscribe.vpn.billing.WindscribeInAppProduct;
+import com.windscribe.vpn.commonutils.ThemeUtils;
 import com.windscribe.vpn.constants.NetworkKeyConstants;
 
 import org.slf4j.Logger;
@@ -301,7 +302,7 @@ public class UpgradeActivity extends BaseActivity
     @Override
     public void showBillingErrorDialog(String errorMessage) {
         hideProgressBar();
-        ErrorDialog.show(this, errorMessage, null, true);
+        ErrorDialog.show(this, errorMessage, ThemeUtils.getColor(this, R.attr.overlayDialogBackgroundColor, R.color.colorDeepBlue90), true);
     }
 
     @Override
