@@ -5,6 +5,7 @@ package com.windscribe.vpn.serverlist.entity
 
 class ServerListData {
     var bestLocation: CityAndRegion? = null
+    var serverListHash: String? = null
     var favourites: List<Favourite> = ArrayList()
     var flags: Map<String, Int>? = null
         get() = if (field == null) {
