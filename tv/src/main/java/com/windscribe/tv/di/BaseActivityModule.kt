@@ -40,6 +40,7 @@ import com.windscribe.vpn.ActivityInteractorImpl
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
+import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
@@ -160,8 +161,8 @@ open class BaseActivityModule {
 
     @Provides
     @PerActivity
-    fun provideSettingsPresenter(activityInteractor: ActivityInteractor): SettingsPresenter {
-        return SettingsPresenterImp(settingView, activityInteractor)
+    fun provideSettingsPresenter(activityInteractor: ActivityInteractor, proxyDNSManager: ProxyDNSManager): SettingsPresenter {
+        return SettingsPresenterImp(settingView, activityInteractor, proxyDNSManager)
     }
 
     @Provides
