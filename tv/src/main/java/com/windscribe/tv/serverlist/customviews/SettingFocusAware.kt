@@ -4,11 +4,13 @@
 package com.windscribe.tv.serverlist.customviews
 
 import android.content.Context
+import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.View
-import androidx.annotation.Nullable
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.windscribe.tv.R
+
 
 class SettingFocusAware : ConstraintLayout {
     private val contentIds = intArrayOf(

@@ -163,6 +163,18 @@ class SettingActivity :
         finish()
     }
 
+    override fun setCustomDNS(isCustom: Boolean) {
+        if (fragment is ConnectionFragment) {
+            (fragment as ConnectionFragment).setCustomDNS(isCustom)
+        }
+    }
+
+    override fun setCustomDNSAddress(url: String) {
+        if (fragment is ConnectionFragment) {
+            (fragment as ConnectionFragment).setCustomDNSAddress(url)
+        }
+    }
+
     override fun hideProgress() {
         runOnUiThread { sendDebugDialog?.dismiss() }
     }
@@ -193,6 +205,24 @@ class SettingActivity :
 
     override fun onBlockAntiCensorshipClicked() {
         presenter.onBlockAntiCensorshipClicked()
+    }
+
+    override fun onRobertDNSClicked() {
+        presenter.onRobertDNSClicked()
+    }
+
+    override fun onCustomDNSClicked() {
+        presenter.onCustomDNSClicked()
+    }
+
+    override fun saveCustomDNSAddress(url: String) {
+        presenter.saveCustomDNSAddress(url)
+    }
+
+    override fun setCustomDNSAddressVisibility(show: Boolean) {
+        if (fragment is ConnectionFragment) {
+            (fragment as ConnectionFragment).setCustomDNSAddressVisibility(show)
+        }
     }
 
     override fun onContainerHidden(hidden: Boolean) {
