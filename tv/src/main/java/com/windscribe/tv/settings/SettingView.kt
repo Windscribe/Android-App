@@ -42,4 +42,7 @@ interface SettingView {
     fun showToast(toastString: String)
     fun updateLocale()
     fun setAntiCensorshipMode(enabled: Boolean)
+    fun setCustomDNS(isCustom: Boolean)
+    fun setCustomDNSAddress(url: String)
+    fun setCustomDNSAddressVisibility(show: Boolean)
 }

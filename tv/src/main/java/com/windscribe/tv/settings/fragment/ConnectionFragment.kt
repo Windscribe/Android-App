@@ -4,6 +4,7 @@
 package com.windscribe.tv.settings.fragment
 
 import android.content.Context
+import android.graphics.Rect
 import android.os.Bundle
 import android.transition.TransitionManager
 import android.view.LayoutInflater
@@ -12,7 +13,9 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.widget.TextView
+import androidx.appcompat.widget.AppCompatEditText
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.leanback.widget.HorizontalGridView
 import butterknife.BindView
@@ -94,6 +97,18 @@ class ConnectionFragment : Fragment() {
     var inclusiveModeView: PreferenceItem? = null
 
     @JvmField
+    @BindView(R.id.connected_dns_robert)
+    var connectedDNSRobert: PreferenceItem? = null
+
+    @JvmField
+    @BindView(R.id.connected_dns_custom)
+    var connectedDNSCustom: PreferenceItem? = null
+
+    @JvmField
+    @BindView(R.id.connect_dns_custom_address)
+    var connectedDNSAddress: AppCompatEditText? = null
+
+    @JvmField
     @BindView(R.id.connectionParent)
     var mainLayout: ConstraintLayout? = null
 
@@ -154,6 +169,35 @@ class ConnectionFragment : Fragment() {
                 appsAdapter?.setFilterType(isChecked)
             }
         }
+        makeSpaceForKeyboard()
+    }
+
+    override fun onDestroyView() {
+        val scrollView = activity?.findViewById<NestedScrollView>(R.id.scrollView)
+        val viewTreeObserver = scrollView?.viewTreeObserver
+        viewTreeObserver?.removeOnGlobalLayoutListener {  }
+        listener?.saveCustomDNSAddress(connectedDNSAddress?.text.toString())
+        super.onDestroyView()
+    }
+
+    private fun makeSpaceForKeyboard() {
+        val scrollView = activity?.findViewById<NestedScrollView>(R.id.scrollView)
+        val viewTreeObserver = scrollView?.viewTreeObserver
+        viewTreeObserver?.addOnGlobalLayoutListener {
+            val rect = Rect()
+            scrollView.getWindowVisibleDisplayFrame(rect)
+            val screenHeight = scrollView.rootView.height
+            val keypadHeight = screenHeight - rect.bottom
+            if (keypadHeight > screenHeight * 0.15) {
+                connectionModeTextView?.visibility = View.GONE
+                btnAuto?.visibility = View.GONE
+                btnManual?.visibility = View.GONE
+            } else {
+                connectionModeTextView?.visibility = View.VISIBLE
+                btnAuto?.visibility = View.VISIBLE
+                btnManual?.visibility = View.VISIBLE
+            }
+        }
     }
 
     fun setBootOnStart(mode: String) {
@@ -186,6 +230,28 @@ class ConnectionFragment : Fragment() {
         } else {
             blockLanView?.setState(State.MenuButtonState.Selected)
             allowLanView?.setState(State.MenuButtonState.NotSelected)
+        }
+    }
+
+    fun setCustomDNS(isCustom: Boolean) {
+        if (isCustom) {
+            connectedDNSCustom?.setState(State.MenuButtonState.Selected)
+            connectedDNSRobert?.setState(State.MenuButtonState.NotSelected)
+        } else {
+            connectedDNSRobert?.setState(State.MenuButtonState.Selected)
+            connectedDNSCustom?.setState(State.MenuButtonState.NotSelected)
+        }
+    }
+
+    fun setCustomDNSAddress(url: String) {
+        connectedDNSAddress?.setText(url)
+    }
+
+    fun setCustomDNSAddressVisibility(show: Boolean) {
+        if (show) {
+            connectedDNSAddress?.visibility = View.VISIBLE
+        } else {
+            connectedDNSAddress?.visibility = View.GONE
         }
     }
 
@@ -316,6 +382,16 @@ class ConnectionFragment : Fragment() {
     @OnClick(R.id.block_anti_censorship)
     fun onBlockAntiCensorshipClicked() {
         listener?.onBlockAntiCensorshipClicked()
+    }
+
+    @OnClick(R.id.connected_dns_robert)
+    fun onRobertClicked() {
+        listener?.onRobertDNSClicked()
+    }
+
+    @OnClick(R.id.connected_dns_custom)
+    fun onCustomDNSClicked() {
+        listener?.onCustomDNSClicked()
     }
 
     private fun showAppsView(show: Boolean) {
