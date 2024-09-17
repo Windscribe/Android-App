@@ -29,4 +29,7 @@ interface SettingsFragmentListener {
     fun startSplitTunnelingHelpActivity()
     fun onAllowAntiCensorshipClicked()
     fun onBlockAntiCensorshipClicked()
+    fun onCustomDNSClicked()
+    fun onRobertDNSClicked()
+    fun saveCustomDNSAddress(url: String)
 }
