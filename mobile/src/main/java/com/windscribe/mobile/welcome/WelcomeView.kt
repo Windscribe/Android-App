@@ -25,7 +25,8 @@ interface WelcomeView {
         username: String,
         password: String,
         accountClaim: Boolean,
-        pro: Boolean
+        pro: Boolean,
+        voucherCode: String
     )
 
     fun showToast(message: String)

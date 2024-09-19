@@ -26,7 +26,8 @@ interface IApiCallManager {
     fun recordAppInstall(): Single<GenericResponseClass<String?, ApiErrorResponse?>>
     fun resendUserEmailAddress(extraParams: Map<String, String>? = null): Single<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>>
     fun sendTicket(supportEmail: String, supportName: String, supportSubject: String, supportMessage: String, supportCategory: String, type: String, channel: String): Single<GenericResponseClass<TicketResponse?, ApiErrorResponse?>>
-    fun signUserIn(username: String, password: String, referringUsername: String?, email: String?): Single<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>
+    fun signUserIn(username: String, password: String, referringUsername: String?, email: String?, voucherCode: String?): Single<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>
+    fun claimVoucherCode(voucherCode: String): Single<GenericResponseClass<ClaimVoucherCodeResponse?, ApiErrorResponse?>>
     fun signUpUsingToken(token: String): Single<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>
     fun verifyPurchaseReceipt(purchaseToken: String, gpPackageName: String, gpProductId: String, type: String, amazonUserId: String): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>
     fun verifyExpressLoginCode(loginCode: String): Single<GenericResponseClass<VerifyExpressLoginResponse?, ApiErrorResponse?>>
