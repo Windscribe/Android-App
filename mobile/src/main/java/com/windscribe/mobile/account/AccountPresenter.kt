@@ -16,4 +16,6 @@ interface AccountPresenter {
     fun onLazyLoginClicked()
     fun setLayoutFromApiSession()
     fun setTheme(context: Context)
+    fun onVoucherCodeClicked()
+    fun onVoucherCodeSubmitted(voucherCode: String)
 }

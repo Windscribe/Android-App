@@ -7,7 +7,12 @@ import android.content.Context
 import com.windscribe.mobile.R
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.api.response.*
+import com.windscribe.vpn.api.response.ApiErrorResponse
+import com.windscribe.vpn.api.response.ClaimVoucherCodeResponse
+import com.windscribe.vpn.api.response.GenericResponseClass
+import com.windscribe.vpn.api.response.UserSessionResponse
+import com.windscribe.vpn.api.response.VerifyExpressLoginResponse
+import com.windscribe.vpn.api.response.WebSession
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.NetworkKeyConstants.getWebsiteLink
@@ -24,7 +29,9 @@ import org.slf4j.LoggerFactory
 import java.text.DecimalFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
+import java.util.Objects
 import javax.inject.Inject
 
 class AccountPresenterImpl @Inject constructor(
@@ -32,6 +39,12 @@ class AccountPresenterImpl @Inject constructor(
     private val interactor: ActivityInteractor
 ) : AccountPresenter {
     private val logger = LoggerFactory.getLogger("account_p")
+    private val successMessage =
+        """
+    Sweet, you should be
+    all good to go now.
+    """
+
     override fun onDestroy() {
         if (interactor.getCompositeDisposable().isDisposed.not()) {
             logger.info("Disposing observer on destroy...")
@@ -53,6 +66,59 @@ class AccountPresenterImpl @Inject constructor(
             setUserInfo(
                 user
             )
+        }
+    }
+
+    override fun onVoucherCodeClicked() {
+        accountView.showEnterVoucherCodeDialog()
+    }
+
+    override fun onVoucherCodeSubmitted(voucherCode: String) {
+        accountView.showProgress("Claiming voucher code...")
+        logger.debug("Claiming voucher code.")
+        interactor.getCompositeDisposable()
+            .add(interactor.getApiCallManager().claimVoucherCode(voucherCode)
+                    .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(object :
+                        DisposableSingleObserver<GenericResponseClass<ClaimVoucherCodeResponse?, ApiErrorResponse?>>() {
+                        override fun onSuccess(response: GenericResponseClass<ClaimVoucherCodeResponse?, ApiErrorResponse?>) {
+                            accountView.hideProgress()
+                            handleClaimVoucherResponse(response)
+                        }
+
+                        override fun onError(e: Throwable) {
+                            logger.error("Error claiming voucher code: ${e.localizedMessage}")
+                            accountView.hideProgress()
+                            accountView.showErrorDialog("Error applying voucher code. ${e.localizedMessage}")
+                        }
+                    })
+            )
+    }
+
+    private fun handleClaimVoucherResponse(response: GenericResponseClass<ClaimVoucherCodeResponse?, ApiErrorResponse?>) {
+        when (val result = response.callResult<ClaimVoucherCodeResponse>()) {
+            is CallResult.Error -> {
+                logger.debug("Error applying Voucher Code: ${result.errorMessage}")
+                accountView.showErrorDialog(result.errorMessage)
+            }
+
+            is CallResult.Success -> {
+                logger.debug("Claimed voucher code: {}", result.data)
+                if (result.data.isClaimed) {
+                    accountView.showSuccessDialog(
+                        interactor.getResourceString(
+                            R.string.voucher_code_is_applied
+                        )
+                    )
+                    interactor.getWorkManager().updateSession()
+                } else if (result.data.emailRequired == true) {
+                    accountView.showErrorDialog(interactor.getResourceString(R.string.confirmed_email_required))
+                } else if (result.data.isUsed) {
+                    accountView.showErrorDialog(interactor.getResourceString(R.string.voucher_code_used_already))
+                } else {
+                    accountView.showErrorDialog(interactor.getResourceString(R.string.voucher_code_is_invalid))
+                }
+            }
         }
     }
 
@@ -84,14 +150,10 @@ class AccountPresenterImpl @Inject constructor(
                                     accountView.showErrorDialog("Failed to verify lazy login code.")
                                 }
                             }
+
                             is CallResult.Success -> {
                                 logger.debug("Successfully verified login code")
-                                accountView.showSuccessDialog(
-                                    """
-    Sweet, you should be
-    all good to go now.
-    """.trimIndent()
-                                )
+                                accountView.showSuccessDialog(successMessage.trimIndent())
                             }
                         }
                     }
@@ -127,6 +189,7 @@ class AccountPresenterImpl @Inject constructor(
                                     accountView.showErrorDialog(result.errorMessage)
                                 }
                             }
+
                             is CallResult.Success -> {
                                 accountView.openEditAccountInBrowser(
                                     getWebsiteLink(NetworkKeyConstants.URL_MY_ACCOUNT) + result.data.tempSession
@@ -135,7 +198,7 @@ class AccountPresenterImpl @Inject constructor(
                         }
                     }
                 })
-            )
+        )
     }
 
     override fun onResendEmail() {
@@ -232,6 +295,7 @@ class AccountPresenterImpl @Inject constructor(
                 R.drawable.ic_email_attention,
                 R.drawable.confirmed_email_container_background
             )
+
             EmailStatus.EmailProvided -> user.email?.let {
                 accountView.setEmailConfirm(
                     it, interactor.getResourceString(
@@ -243,6 +307,7 @@ class AccountPresenterImpl @Inject constructor(
                     ), R.drawable.ic_warning_icon, R.drawable.attention_container_background
                 )
             }
+
             EmailStatus.Confirmed -> user.email?.let {
                 accountView.setEmailConfirmed(
                     it,
