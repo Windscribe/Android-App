@@ -198,13 +198,14 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView, UnknownEr
         password: String,
         email: String,
         referralUsername: String,
-        ignoreEmptyEmail: Boolean
+        ignoreEmptyEmail: Boolean,
+        voucherCode: String
     ) {
         if (ignoreEmptyEmail) {
             supportFragmentManager.popBackStack()
         }
         presenter.startSignUpProcess(
-            username, password, email, referralUsername, ignoreEmptyEmail
+            username, password, email, referralUsername, ignoreEmptyEmail, voucherCode
         )
     }
 
@@ -297,10 +298,10 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView, UnknownEr
     }
 
     override fun showNoEmailAttentionFragment(
-        username: String, password: String, accountClaim: Boolean, pro: Boolean
+        username: String, password: String, accountClaim: Boolean, pro: Boolean, voucherCode: String
     ) {
         val noEmailAttentionFragment =
-            NoEmailAttentionFragment(accountClaim, username, password, pro)
+            NoEmailAttentionFragment(accountClaim, username, password, pro, voucherCode)
         noEmailAttentionFragment.enterTransition =
             Slide(Gravity.BOTTOM).addTarget(R.id.email_fragment_container)
         supportFragmentManager.beginTransaction()

@@ -22,7 +22,8 @@ interface FragmentCallback {
         password: String,
         email: String,
         referralUsername: String,
-        ignoreEmptyEmail: Boolean
+        ignoreEmptyEmail: Boolean,
+        voucherCode: String
     )
 
     fun onSkipToHomeClick()
