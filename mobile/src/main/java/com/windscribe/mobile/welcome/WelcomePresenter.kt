@@ -24,7 +24,8 @@ interface WelcomePresenter {
         password: String,
         email: String,
         referralUsername: String,
-        ignoreEmptyEmail: Boolean
+        ignoreEmptyEmail: Boolean,
+        voucherCode: String
     )
 
     fun getLogUri(): File?

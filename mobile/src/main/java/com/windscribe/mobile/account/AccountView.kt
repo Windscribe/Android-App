@@ -51,4 +51,5 @@ interface AccountView {
     fun showErrorMessage(errorMessage: String)
     fun showProgress(progressText: String)
     fun showSuccessDialog(message: String)
+    fun showEnterVoucherCodeDialog()
 }
