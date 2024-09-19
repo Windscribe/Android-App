@@ -179,9 +179,57 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/referral_title"
+                android:id="@+id/voucher_title"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/email_description"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintVertical_bias="0.0"
+                android:text="@string/have_a_voucher"
+                android:textSize="@dimen/text_size_16"
+                android:includeFontPadding="false"
+                android:textColor="?attr/wdSecondaryColor"
+                android:fontFamily="@font/ibm_plex_sans_bold"
+                android:layout_marginStart="@dimen/margin_32"
+                android:layout_marginTop="@dimen/margin_32"
+                android:layout_marginBottom="@dimen/margin_16" />
+
+            <ImageView
+                android:layout_width="@dimen/reg_32dp"
+                android:layout_height="@dimen/reg_32dp"
+                android:id="@+id/voucher_collapse_icon"
+                app:layout_constraintStart_toEndOf="@id/voucher_title"
+                app:layout_constraintTop_toTopOf="@id/voucher_title"
+                app:layout_constraintBottom_toBottomOf="@id/voucher_title"
+                android:src="@drawable/ic_expand"
+                app:tint="?attr/wdSecondaryColor" />
+
+
+            <TextView
+                android:id="@+id/voucher_hint"
+                style="@style/InputHintText"
+                android:layout_marginTop="@dimen/reg_16dp"
+                android:labelFor="@id/voucher"
+                android:text="@string/voucher_code_optional"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/voucher_title" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/voucher"
+                style="@style/InputBox"
+                android:maxLength="10"
+                android:visibility="gone"
+                android:inputType="textNoSuggestions|textCapCharacters"
+                android:contentDescription="@string/configuration_changed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/voucher_hint" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/referral_title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/voucher"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintVertical_bias="0.0"
                 android:text="@string/referred_by_someone"
@@ -190,7 +238,7 @@
                 android:textColor="?attr/wdSecondaryColor"
                 android:fontFamily="@font/ibm_plex_sans_bold"
                 android:layout_marginStart="@dimen/margin_32"
-                android:layout_marginTop="@dimen/margin_32"
+                android:layout_marginTop="@dimen/margin_24"
                 android:layout_marginBottom="@dimen/margin_16" />
 
             <ImageView

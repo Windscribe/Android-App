@@ -74,7 +74,7 @@ class WelcomePresenterImpl @Inject constructor(
             if (ignoreEmptyEmail.not() && email.isEmpty()) {
                 val proUser =
                     (interactor.getAppPreferenceInterface().userStatus == USER_STATUS_PREMIUM)
-                welcomeView.showNoEmailAttentionFragment(username, password, true, proUser)
+                welcomeView.showNoEmailAttentionFragment(username, password, true, proUser, "")
                 return
             }
             logger.info("Trying to claim account with provided credentials...")
@@ -220,20 +220,19 @@ class WelcomePresenterImpl @Inject constructor(
         password: String,
         email: String,
         referralUsername: String,
-        ignoreEmptyEmail: Boolean
+        ignoreEmptyEmail: Boolean,
+        voucherCode: String
     ) {
         welcomeView.hideSoftKeyboard()
         if (validateLoginInputs(username, password, email, false)) {
             if (!ignoreEmptyEmail && email.isEmpty()) {
-                welcomeView.showNoEmailAttentionFragment(
-                    username, password, accountClaim = false, pro = false
-                )
+                welcomeView.showNoEmailAttentionFragment(username, password, accountClaim = false, pro = false, voucherCode)
                 return
             }
             logger.info("Trying to sign up with provided credentials...")
             welcomeView.prepareUiForApiCallStart()
             interactor.getCompositeDisposable().add(interactor.getApiCallManager()
-                .signUserIn(username, password, referralUsername, email)
+                .signUserIn(username, password, referralUsername, email, voucherCode)
                 .doOnSubscribe { welcomeView.updateCurrentProcess("Signing up") }
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object :

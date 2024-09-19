@@ -62,6 +62,9 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
     @BindView(R.id.cl_account_lazy_login)
     lateinit var lazyLoginButton: SingleLinkExplainView
 
+    @BindView(R.id.cl_voucher_code)
+    lateinit var voucherCodeButton: SingleLinkExplainView
+
     @BindView(R.id.nav_title)
     lateinit var mActivityTitleView: TextView
 
@@ -156,6 +159,7 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
     private fun setupCustomLayoutDelegates() {
         logger.info("User clicked Lazy login button.")
         lazyLoginButton.onClick { presenter.onLazyLoginClicked() }
+        voucherCodeButton.onClick { presenter.onVoucherCodeClicked() }
         tvEditAccountArrow.tag = R.drawable.ic_forward_arrow_settings
         UiUtil.setupOnTouchListener(
             clEditAccount,
@@ -376,6 +380,25 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
         alert.setPositiveButton(R.string.enter) { _: DialogInterface, _: Int ->
             val code = Objects.requireNonNull(editText.text).toString()
             presenter.onCodeEntered(code)
+        }
+        alert.setNegativeButton(R.string.cancel) { dialog: DialogInterface, _: Int -> dialog.dismiss() }
+        alertDialog = alert.create()
+        editText.requestFocus()
+        alertDialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+        alertDialog?.show()
+    }
+
+    override fun showEnterVoucherCodeDialog() {
+        val alert = AlertDialog.Builder(this, R.style.OverlayAlert)
+        val view = LayoutInflater.from(this).inflate(R.layout.alert_input_layout, null)
+        val editText = view.findViewById<AppCompatEditText>(R.id.alert_edit_view)
+        editText.filters = arrayOf(InputFilter.AllCaps())
+        editText.inputType = InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+        alert.setTitle(R.string.voucher_code)
+        alert.setView(view)
+        alert.setPositiveButton(R.string.enter) { _: DialogInterface, _: Int ->
+            val code = Objects.requireNonNull(editText.text).toString()
+            presenter.onVoucherCodeSubmitted(code)
         }
         alert.setNegativeButton(R.string.cancel) { dialog: DialogInterface, _: Int -> dialog.dismiss() }
         alertDialog = alert.create()

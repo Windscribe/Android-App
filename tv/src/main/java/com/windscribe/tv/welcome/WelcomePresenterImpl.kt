@@ -241,7 +241,7 @@ class WelcomePresenterImpl @Inject constructor(
             welcomeView.prepareUiForApiCallStart()
             interactor.getCompositeDisposable().add(
                 interactor.getApiCallManager()
-                    .signUserIn(username, password, null, email)
+                    .signUserIn(username, password, null, email, "")
                     .doOnSubscribe { welcomeView.updateCurrentProcess("Signing up") }
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())

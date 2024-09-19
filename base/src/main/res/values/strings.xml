@@ -492,4 +492,12 @@ last chosen location.</string>
     <string name="custom_dns_explainer">Select the DNS server while connected to Windscribe.</string>
     <string name="quick_connect">Quick Connect</string>
     <string name="file_sharing_frowned_upon">File Sharing Frowned Upon</string>
+    <string name="voucher_code_optional">Voucher Code (Optional)</string>
+    <string name="voucher_code">Voucher Code</string>
+    <string name="have_a_voucher">Have a Voucher?</string>
+    <string name="apply_voucher_code">Apply voucher code to your account.</string>
+    <string name="voucher_code_is_applied">Voucher code is applied successfully.</string>
+    <string name="voucher_code_is_invalid">Voucher provided is invalid or expired.</string>
+    <string name="confirmed_email_required">Confirmed email is required.</string>
+    <string name="voucher_code_used_already">Voucher code is used already.</string>
 </resources>

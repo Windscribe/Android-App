@@ -8,6 +8,7 @@ import com.windscribe.vpn.api.response.AddEmailResponse
 import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.api.response.BillingPlanResponse
 import com.windscribe.vpn.api.response.ClaimAccountResponse
+import com.windscribe.vpn.api.response.ClaimVoucherCodeResponse
 import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.api.response.GetMyIpResponse
@@ -203,11 +204,21 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
         }
     }
 
-    override fun signUserIn(username: String, password: String, referringUsername: String?, email: String?): Single<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>> {
+    override fun signUserIn(username: String, password: String, referringUsername: String?, email: String?, voucherCode: String?): Single<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             val callback = wsNetServerAPI.signup(username, password, referringUsername ?: "", email
-                    ?: "") { code, json ->
+                    ?: "", voucherCode ?: "") { code, json ->
                 buildResponse(sub, code, json, UserRegistrationResponse::class.java)
+            }
+            sub.setCancellable { callback.cancel() }
+        }
+    }
+
+    override fun claimVoucherCode(voucherCode: String): Single<GenericResponseClass<ClaimVoucherCodeResponse?, ApiErrorResponse?>> {
+        return Single.create { sub ->
+            if (checkSession(sub)) return@create
+            val callback = wsNetServerAPI.claimVoucherCode(preferencesHelper.sessionHash, voucherCode) { code, json ->
+                buildResponse(sub, code, json, ClaimVoucherCodeResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
         }
