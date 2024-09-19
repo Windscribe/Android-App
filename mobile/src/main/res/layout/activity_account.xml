@@ -54,6 +54,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/x_press_login_title"
+                android:id="@+id/cl_voucher_code"
+                app:Title="@string/voucher_code"
+                app:RightMargin="18"
+                android:layout_marginTop="@dimen/reg_16dp"
+                app:Description="@string/apply_voucher_code" />
+
+            <com.windscribe.mobile.custom_view.preferences.SingleLinkExplainView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/cl_voucher_code"
                 android:id="@+id/cl_account_lazy_login"
                 app:Title="@string/xpress_login"
                 app:RightMargin="18"
