@@ -14,7 +14,8 @@ interface WelcomePresenter {
         username: String,
         password: String,
         email: String,
-        ignoreEmptyEmail: Boolean
+        ignoreEmptyEmail: Boolean,
+        voucherCode: String
     )
 
     fun startGhostAccountSetup()

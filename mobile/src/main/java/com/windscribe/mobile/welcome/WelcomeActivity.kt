@@ -154,9 +154,9 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView, UnknownEr
     }
 
     override fun onAccountClaimButtonClick(
-        username: String, password: String, email: String, ignoreEmptyEmail: Boolean
+        username: String, password: String, email: String, ignoreEmptyEmail: Boolean, voucherCode: String
     ) {
-        presenter.startAccountClaim(username, password, email, ignoreEmptyEmail)
+        presenter.startAccountClaim(username, password, email, ignoreEmptyEmail, voucherCode)
     }
 
     override fun onBackButtonPressed() {

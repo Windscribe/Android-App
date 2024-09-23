@@ -64,7 +64,7 @@ class NoEmailAttentionFragment : Fragment {
     @OnClick(R.id.continue_without_email)
     fun onContinueWithoutEmailButtonClicked() {
         if (accountClaim) {
-            fragmentCallBack?.onAccountClaimButtonClick(username, password, "", true)
+            fragmentCallBack?.onAccountClaimButtonClick(username, password, "", true, voucherCode)
         } else {
             fragmentCallBack?.onSignUpButtonClick(username, password, "", "", true, voucherCode)
         }
