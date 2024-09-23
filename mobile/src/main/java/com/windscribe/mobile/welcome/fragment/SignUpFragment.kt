@@ -240,7 +240,8 @@ class SignUpFragment : Fragment(), TextWatcher,
                 usernameEditText.text.toString().trim { it <= ' ' },
                 passwordEditText.text.toString().trim { it <= ' ' },
                 emailEditText.text.toString().trim { it <= ' ' },
-                false
+                false,
+                voucher.text.toString().trim {it <= ' '},
             )
         } else {
             val referral = referralUsernameEditText.text.toString().trim { it <= ' ' }
