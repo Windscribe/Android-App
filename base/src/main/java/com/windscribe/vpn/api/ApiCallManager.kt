@@ -76,10 +76,10 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
         }
     }
 
-    override fun claimAccount(username: String, password: String, email: String): Single<GenericResponseClass<ClaimAccountResponse?, ApiErrorResponse?>> {
+    override fun claimAccount(username: String, password: String, email: String, voucherCode: String?): Single<GenericResponseClass<ClaimAccountResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.claimAccount(preferencesHelper.sessionHash, username, password, email, "1") { code, json ->
+            val callback = wsNetServerAPI.claimAccount(preferencesHelper.sessionHash, username, password, email, voucherCode ?: "", "1") { code, json ->
                 buildResponse(sub, code, json, ClaimAccountResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }

@@ -67,21 +67,21 @@ class WelcomePresenterImpl @Inject constructor(
     }
 
     override fun startAccountClaim(
-        username: String, password: String, email: String, ignoreEmptyEmail: Boolean
+        username: String, password: String, email: String, ignoreEmptyEmail: Boolean, voucherCode: String
     ) {
         welcomeView.hideSoftKeyboard()
         if (validateLoginInputs(username, password, email, false)) {
             if (ignoreEmptyEmail.not() && email.isEmpty()) {
                 val proUser =
                     (interactor.getAppPreferenceInterface().userStatus == USER_STATUS_PREMIUM)
-                welcomeView.showNoEmailAttentionFragment(username, password, true, proUser, "")
+                welcomeView.showNoEmailAttentionFragment(username, password, true, proUser, voucherCode)
                 return
             }
             logger.info("Trying to claim account with provided credentials...")
             welcomeView.prepareUiForApiCallFinished()
             welcomeView.prepareUiForApiCallStart()
             interactor.getCompositeDisposable().add(interactor.getApiCallManager()
-                .claimAccount(username, password, email)
+                .claimAccount(username, password, email, voucherCode)
                 .doOnSubscribe { welcomeView.updateCurrentProcess("Signing up") }
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object :
