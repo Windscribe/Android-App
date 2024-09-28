@@ -308,7 +308,9 @@ public final class GoBackend implements Backend {
                 for (final InetNetwork addr : peer.getAllowedIps()) {
                     if (addr.getMask() == 0)
                         sawDefaultRoute = true;
-                    builder.addRoute(addr.getAddress(), addr.getMask());
+                    if (!addr.toString().equals("::/0")){
+                        builder.addRoute(addr.getAddress(), addr.getMask());
+                    }
                 }
             }
 
