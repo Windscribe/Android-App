@@ -10,8 +10,10 @@ replace github.com/rs/zerolog => github.com/Windscribe/zerolog v0.0.0-2023050317
 
 replace github.com/gorilla/websocket => github.com/Windscribe/wstunnel/websocket v0.0.0-20240826061744-234a5b466a28
 
+replace github.com/Control-D-Inc/ctrld => github.com/Windscribe/ctrld v1.3.9-android
+
 require (
-	github.com/Control-D-Inc/ctrld v1.3.7
+	github.com/Control-D-Inc/ctrld v1.3.9
 	github.com/Windscribe/wstunnel v0.0.0-20240826061744-234a5b466a28
 	github.com/spf13/cobra v1.7.0
 	golang.org/x/sys v0.24.0
