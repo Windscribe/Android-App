@@ -228,10 +228,7 @@ class AccountPresenterImpl @Inject constructor(
                     object :
                         DisposableSingleObserver<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>?>() {
                         override fun onError(e: Throwable) {
-                            logger.debug(
-                                "Error while making get session call:" +
-                                        instance.convertThrowableToString(e)
-                            )
+                            logger.debug("Error while making get session call:" + e.message)
                         }
 
                         override fun onSuccess(

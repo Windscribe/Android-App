@@ -131,10 +131,7 @@ class MainMenuPresenterImpl @Inject constructor(
                     object :
                         DisposableSingleObserver<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>?>() {
                         override fun onError(e: Throwable) {
-                            mPresenterLog.debug(
-                                "Error while making get session call:" +
-                                        instance.convertThrowableToString(e)
-                            )
+                            mPresenterLog.debug("Error while making get session call:" + e.message)
                         }
 
                         override fun onSuccess(response: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>) {

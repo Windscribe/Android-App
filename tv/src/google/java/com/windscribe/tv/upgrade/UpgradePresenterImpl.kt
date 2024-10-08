@@ -405,10 +405,7 @@ class UpgradePresenterImpl @Inject constructor(
                         DisposableSingleObserver<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>?>() {
                         override fun onError(e: Throwable) {
                             // Error in API Call
-                            logger.debug(
-                                "Error while making get session call:" +
-                                    instance.convertThrowableToString(e)
-                            )
+                            logger.debug("Error while making get session call:" + e.message)
                         }
 
                         override fun onSuccess(
