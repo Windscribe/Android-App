@@ -46,6 +46,7 @@ class DetailsPresenterImp(
                     logger.info("Regions and cities...")
                     cities.clear()
                     cities.addAll(updatedCities)
+                    cities.sortBy { it.nodeName }
                     interactor.getAllPings()
                 }.onErrorReturnItem(ArrayList())
                 .flatMap { pingTimes: List<PingTime> ->
