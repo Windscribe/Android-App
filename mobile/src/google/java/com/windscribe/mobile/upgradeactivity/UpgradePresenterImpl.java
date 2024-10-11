@@ -482,7 +482,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
                             @Override
                             public void onError(@NotNull Throwable e) {
                                 //Error in API Call
-                                presenterLog.debug("Error while making get session call:" + e.message);
+                                presenterLog.debug("Error while making get session call:" + e.getMessage());
                             }
 
                             @Override
