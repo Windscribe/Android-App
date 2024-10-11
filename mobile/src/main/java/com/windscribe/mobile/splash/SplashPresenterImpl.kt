@@ -17,6 +17,7 @@ import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
 import org.slf4j.LoggerFactory
 import java.util.Date
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class SplashPresenterImpl @Inject constructor(
@@ -117,7 +118,7 @@ class SplashPresenterImpl @Inject constructor(
                         }.flatMap {
                             return@flatMap Single.just(serverListAvailable)
                         }
-                    }
+                    }.timeout(500, TimeUnit.MILLISECONDS)
                     .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(object : DisposableSingleObserver<Boolean?>() {
                         override fun onError(ignored: Throwable) {
