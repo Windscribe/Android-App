@@ -10,6 +10,7 @@ import android.net.wifi.WifiManager
 import android.util.Base64
 import android.util.Log
 import com.google.gson.Gson
+import com.windscribe.common.DNSDetails
 import com.windscribe.common.DnsType
 import com.windscribe.common.getDNSDetails
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -116,17 +117,11 @@ class VPNProfileCreator @Inject constructor(
         } else {
             profile.mtu = 1300
         }
-        val dnsDetails = getDNSDetails(appContext,preferencesHelper.dnsMode == DNS_MODE_CUSTOM, preferencesHelper.dnsAddress)
-        dnsDetails.exceptionOrNull()?.let { throwable ->
-            throw throwable
-        }
-        dnsDetails.getOrNull()?.let {
-            proxyDNSManager.dnsDetails = it
-            if (it.type == DnsType.Plain){
-                profile.dnsServers = it.ip
-            } else {
-                profile.dnsDetails = it
-            }
+        val dnsDetails = setCustomDNS()
+        if (dnsDetails?.type == DnsType.Plain){
+            profile.dnsServers = dnsDetails.ip
+        } else {
+            profile.dnsDetails = dnsDetails
         }
         // Split tunnel
         setSplitMode(profile)
@@ -194,18 +189,12 @@ class VPNProfileCreator @Inject constructor(
             }
             profile.mAllowedAppsVpnAreDisallowed = true
         }
-        val dnsDetails = getDNSDetails(appContext,preferencesHelper.dnsMode == DNS_MODE_CUSTOM, preferencesHelper.dnsAddress)
-        dnsDetails.exceptionOrNull()?.let { throwable ->
-            throw throwable
-        }
-        dnsDetails.getOrNull()?.let {
-            proxyDNSManager.dnsDetails = it
-            if (it.type == DnsType.Plain){
-                profile.mOverrideDNS = true
-                profile.mDNS1 = it.ip
-            } else {
-                profile.dnsDetails = it
-            }
+        val dnsDetails = setCustomDNS()
+        if (dnsDetails?.type == DnsType.Plain){
+            profile.mOverrideDNS = true
+            profile.mDNS1 = dnsDetails.ip
+        } else {
+            profile.dnsDetails = dnsDetails
         }
 
         // MTU
@@ -368,6 +357,14 @@ class VPNProfileCreator @Inject constructor(
             profile.mAllowedAppsVpnAreDisallowed = true
         }
 
+        val dnsDetails = setCustomDNS()
+        if (dnsDetails?.type == DnsType.Plain){
+            profile.mOverrideDNS = true
+            profile.mDNS1 = dnsDetails.ip
+        } else {
+            profile.dnsDetails = dnsDetails
+        }
+
         // MTU
         if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
             profile.mTunMtu = preferencesHelper.packetSize
@@ -382,6 +379,17 @@ class VPNProfileCreator @Inject constructor(
         }
         saveProfile(profile)
         return "Custom Config: ${profile.mServerName} ${profile.mServerPort}"
+    }
+
+    private fun setCustomDNS(): DNSDetails? {
+        val dnsDetails = getDNSDetails(appContext,preferencesHelper.dnsMode == DNS_MODE_CUSTOM, preferencesHelper.dnsAddress)
+        dnsDetails.exceptionOrNull()?.let { throwable ->
+            throw throwable
+        }
+        return dnsDetails.getOrNull()?.let { details ->
+            proxyDNSManager.dnsDetails = details
+            return details
+        }
     }
 
     private fun createVpnProfileFromWireGuardConfig(configFile: ConfigFile): String {
@@ -405,9 +413,14 @@ class VPNProfileCreator @Inject constructor(
         }
         interFaceBuilder.parsePrivateKey(config.getInterface().keyPair.privateKey.toBase64())
         interFaceBuilder.addAddresses(config.getInterface().addresses)
-        interFaceBuilder.addDnsServers(config.getInterface().dnsServers)
         if (!mPreferencesHelper.isPackageSizeModeAuto) {
             interFaceBuilder.setMtu(mPreferencesHelper.packetSize)
+        }
+        val dnsDetails = setCustomDNS()
+        if (dnsDetails?.type == DnsType.Plain) {
+            interFaceBuilder.parseDnsServers(dnsDetails.ip)
+        } else {
+            interFaceBuilder.addDnsServers(config.getInterface().dnsServers)
         }
         val configWithSettings = Config.Builder()
                 .addPeers(config.peers)
@@ -503,17 +516,11 @@ class VPNProfileCreator @Inject constructor(
         val builder = Builder()
         builder.parsePrivateKey(wgRemoteParams.privateKey)
         builder.parseAddresses(wgRemoteParams.address)
-        val dnsDetails = getDNSDetails(appContext,preferencesHelper.dnsMode == DNS_MODE_CUSTOM, preferencesHelper.dnsAddress)
-        dnsDetails.exceptionOrNull()?.let { throwable ->
-            throw throwable
-        }
-        dnsDetails.getOrNull()?.let {
-            proxyDNSManager.dnsDetails = it
-            if (it.type == DnsType.Plain){
-                builder.parseDnsServers(it.ip)
-            } else {
-                builder.parseDnsServers(wgRemoteParams.dns)
-            }
+        val dnsDetails = setCustomDNS()
+        if (dnsDetails?.type == DnsType.Plain) {
+            builder.parseDnsServers(dnsDetails.ip)
+        } else {
+            builder.parseDnsServers(wgRemoteParams.dns)
         }
         if (!preferencesHelper.isPackageSizeModeAuto && preferencesHelper.packetSize != -1) {
             builder.setMtu(preferencesHelper.packetSize)
