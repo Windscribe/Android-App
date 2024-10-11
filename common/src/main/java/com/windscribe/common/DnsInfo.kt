@@ -20,8 +20,10 @@ data class DNSDetails(val address: String? = null, val ip: String? = null, val t
                 return "legacy"
             }
             val dohPattern = "^https?://.*$".toRegex()
+            val doh3Pattern = "^h3?://.*$".toRegex()
             return when {
                 dohPattern.matches(address) -> "doh"
+                doh3Pattern.matches(address) -> "doh3"
                 else -> "dot"
             }
         }
@@ -38,7 +40,7 @@ fun getDNSDetails(context: Context, customDNSEnabled: Boolean, address: String?)
     return try {
         var endpoint = address
         if (!address.startsWith("https://")) {
-           endpoint = "https://$address"
+           endpoint = "https://$address".replace("h3://", "")
         }
         val url = URL(endpoint)
         val inetAddresses = InetAddress.getAllByName(url.host)

@@ -36,8 +36,12 @@ class ProxyDNSManager(
             if (!configFile.exists() || invalidConfig) {
                 configFile.createNewFile()
             }
+            var address = dnsDetails?.address ?: ""
+            if (address.startsWith("h3://")) {
+                address = address.replace("h3://", "https://")
+            }
             val upStreamInfo =
-                "[upstream.0]\n" + "bootstrap_ip = \"${dnsDetails?.ip ?: ""}\"\n" + "endpoint = \"${dnsDetails?.address}\"\n" + "name = \"Custom DNS\"\n" + "timeout = 5000\n" + "type = \"${dnsDetails?.getTypeValue}\"\n" + "ip_stack = \"v4\""
+                "[upstream.0]\n" + "bootstrap_ip = \"${dnsDetails?.ip ?: ""}\"\n" + "endpoint = \"$address\"\n" + "name = \"Custom DNS\"\n" + "timeout = 5000\n" + "type = \"${dnsDetails?.getTypeValue}\"\n" + "ip_stack = \"v4\""
             val listenerInfo = appContext.assets.open("config.toml").bufferedReader().readText()
             val configData = "$listenerInfo\n$upStreamInfo".encodeToByteArray()
             logger.debug("Configuring controlD with: $upStreamInfo")
