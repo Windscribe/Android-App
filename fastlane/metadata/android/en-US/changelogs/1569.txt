@@ -1,0 +1,12 @@
+v3.80(Mobile)
+* Added option to claim in app voucher codes.
+* Added relax password policy for Russian users.
+* Fixed app taking too long to fresh on bad networks.
+* Fixed app unable to fail-over to backup domains in some cases.
+* Fixed location permission popup text cutoff on smaller devices.
+* Fixed server list jump on fresh launch.
+* Fixed background color for upgrade error popup.
+* Extended custom DNS support to Custom Configs.
+* Updated Italian language translations.
+* Updated WSNet to 1.12.1
+* Updated CD library to 1.3.9+
