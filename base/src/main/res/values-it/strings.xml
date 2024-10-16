@@ -115,7 +115,7 @@
     <string name="billing_unavailable">La fatturazione Play non è disponibile per questo dispositivo</string>
     <string name="item_unavailable">L\'articolo richiesto non è disponibile. \nContattare il supporto all\indirizzo https://windscribe.com/support!</string>
     <string name="billing_service_unavailable">Servizio di fatturazione non disponibile. Controlla la tua connessione di rete e riprova!</string>
-    <string name="unknown_billing_error">Errore sconosciuto. Si prega di contattare l\'assistenza all'indirizzo https://windscribe.com/support!</string>
+    <string name="unknown_billing_error">Errore sconosciuto. Si prega di contattare l\'assistenza all\'indirizzo https://windscribe.com/support!</string>
     <string name="fatal_error">Impossibile connettersi al servizio di fatturazione... Controlla la tua connessione di rete!</string>
     <string name="play_store_generic_api_error">Risposta inaspettata ricevuta dal Play Store. Ciò può accadere a causa di acquisti annullati di recente. Riprovare più tardi.</string>
     <string name="unable_to_process_request">Non siamo stati in grado di elaborare la tua richiesta. Riprova!</string>
@@ -227,7 +227,7 @@
     <string name="apps">APPLICAZIONI</string>
     <string name="always_on">VPN sempre attiva</string>
     <string name="always_on_warning">\"Always On\" VPN consente ad Android di controllare la connessione VPN e garantire che nessun dato possa lasciare il dispositivo a meno che il tunnel VPN non sia attivo.</string>
-    <string name="always_on_setting">I dispositivi Android 10+ richiedono la configurazione di Always-On VPN per l\'avvio di Windscribe all'avvio del dispositivo.</string>
+    <string name="always_on_setting">I dispositivi Android 10+ richiedono la configurazione di Always-On VPN per l\'avvio di Windscribe all\'avvio del dispositivo.</string>
     <string name="forget_network">Dimentica la rete</string>
     <string name="network_secured">Protetto</string>
     <string name="network_unsecured">Non protetto</string>
@@ -353,7 +353,7 @@
     <string name="enter_code">Inserisci il codice</string>
     <string name="enter">Invia</string>
     <string name="ping_time">%d MS</string>
-    <string name="trying_next_protocol">"Riprovo con un'altro protocollo in %d"</string>
+    <string name="trying_next_protocol">"Riprovo con un\'altro protocollo in %d"</string>
     <string name="all">Tutto</string>
     <string name="favourite">Favorito</string>
     <string name="static_ip">IP statico</string>
