@@ -33,4 +33,13 @@ object RegionLocator {
         logger.debug("Country code from locale: $countryCode")
         return countryCode == code
     }
+
+    fun isCountry(code: String): Boolean {
+        val countryCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            appContext.resources.configuration.locales.get(0).language
+        } else {
+            appContext.resources.configuration.locale.language
+        }
+        return countryCode == code
+    }
 }
