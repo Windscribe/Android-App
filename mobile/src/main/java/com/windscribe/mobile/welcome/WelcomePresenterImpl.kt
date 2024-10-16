@@ -10,6 +10,7 @@ import com.windscribe.mobile.R
 import com.windscribe.vpn.commonutils.CommonPasswordChecker
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.api.response.*
+import com.windscribe.vpn.commonutils.RegionLocator
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.UserStatusConstants.USER_STATUS_PREMIUM
@@ -426,24 +427,26 @@ class WelcomePresenterImpl @Inject constructor(
             welcomeView.showToast(interactor.getResourceString(R.string.invalid_email_format))
             return false
         }
-        if (!isLogin && password.length < 8) {
-            logger.info("[Password] is small, displaying toast to the user...")
-            welcomeView.setPasswordError(interactor.getResourceString(R.string.small_password))
-            welcomeView.showToast(interactor.getResourceString(R.string.small_password))
-            return false
-        }
-        // Sign up and claim account password minimum strength enforce.
-        if (!isLogin && !evaluatePassword(password)) {
-            logger.info("[Password] is weak, displaying toast to the user...")
-            welcomeView.setPasswordError(interactor.getResourceString(R.string.weak_password))
-            welcomeView.showToast(interactor.getResourceString(R.string.weak_password))
-            return false
-        }
-        if (!isLogin && CommonPasswordChecker.isAMatch(password)) {
-            logger.info("[Password] matches worst password list, displaying toast to the user...")
-            welcomeView.setPasswordError(interactor.getResourceString(R.string.common_password))
-            welcomeView.showToast(interactor.getResourceString(R.string.common_password))
-            return false
+        if (!isRussian()) {
+            if (!isLogin && password.length < 8) {
+                logger.info("[Password] is small, displaying toast to the user...")
+                welcomeView.setPasswordError(interactor.getResourceString(R.string.small_password))
+                welcomeView.showToast(interactor.getResourceString(R.string.small_password))
+                return false
+            }
+            // Sign up and claim account password minimum strength enforce.
+            if (!isLogin && !evaluatePassword(password)) {
+                logger.info("[Password] is weak, displaying toast to the user...")
+                welcomeView.setPasswordError(interactor.getResourceString(R.string.weak_password))
+                welcomeView.showToast(interactor.getResourceString(R.string.weak_password))
+                return false
+            }
+            if (!isLogin && CommonPasswordChecker.isAMatch(password)) {
+                logger.info("[Password] matches worst password list, displaying toast to the user...")
+                welcomeView.setPasswordError(interactor.getResourceString(R.string.common_password))
+                welcomeView.showToast(interactor.getResourceString(R.string.common_password))
+                return false
+            }
         }
         if (!WindUtilities.isOnline()) {
             logger.info("User is not connected to internet.")
@@ -455,5 +458,9 @@ class WelcomePresenterImpl @Inject constructor(
 
     private fun validateUsernameCharacters(username: String): Boolean {
         return username.matches(Regex("[a-zA-Z0-9_-]*"))
+    }
+
+    private fun isRussian(): Boolean {
+        return RegionLocator.isCountry("ru")
     }
 }
