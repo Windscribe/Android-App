@@ -15,6 +15,8 @@ import android.os.Bundle
 import com.windscribe.vpn.R.layout
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.alert.showAlertDialog
+import com.windscribe.vpn.alert.showErrorDialog
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.repository.LocationRepository
@@ -121,9 +123,19 @@ class VPNPermissionActivity : Activity() {
                 }
             } else if (resultCode == RESULT_CANCELED) {
                 logger.debug("User denied VPN permission.")
-                scope.launch {
-                    vpnController.disconnectAsync()
-                    finish()
+                showErrorDialog(this,
+                    "Windscribe requires VPN permission to configure VPN. " +
+                            "Sometimes you may see this error if another VPN app is configured as 'Always on VPN'. " +
+                            "Please turn off 'Always on' in all profiles.") {
+                    scope.launch {
+                        try {
+                            vpnController.disconnectAsync()
+                        } catch (e: Exception) {
+                            logger.error("Failed to disconnect VPN: ${e.message}")
+                        } finally {
+                            finish()
+                        }
+                    }
                 }
             }
         }
