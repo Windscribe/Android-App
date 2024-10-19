@@ -785,7 +785,7 @@ open class BaseApplicationModule {
         WSNet.setLogger({
             val msg = it.split(Regex("\\]\\s*")).lastOrNull()?.trim() ?: ""
             logger.debug(msg)
-        }, true)
+        }, BuildConfig.DEV)
         if (preferencesHelper.getDeviceUUID() == null) {
             preferencesHelper.setDeviceUUID(UUID.randomUUID().toString())
         }
@@ -805,7 +805,7 @@ open class BaseApplicationModule {
             WSNet.instance().advancedParameters().setCountryOverrideValue(override)
         }
         WSNet.instance().setConnectivityState(WindUtilities.isOnline())
-      //  WSNet.instance().advancedParameters().setAPIExtraTLSPadding(preferencesHelper.isAntiCensorshipOn)
+        WSNet.instance().advancedParameters().isAPIExtraTLSPadding = preferencesHelper.isAntiCensorshipOn
         deviceStateManager.addListener(networkListener)
         return WSNet.instance()
     }
