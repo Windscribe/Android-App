@@ -22,6 +22,7 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_WIRE_GUARD_P
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_ROBERT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.FAKE_TRAFFIC_VOLUME
+import com.windscribe.vpn.constants.PreferencesKeyConstants.LOCATION_HASH
 import com.windscribe.vpn.constants.PreferencesKeyConstants.SUGGESTED_PORT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.SUGGESTED_PROTOCOL
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_CONNECT_API_FAIL_OVER_STATE
@@ -728,5 +729,11 @@ class AppPreferenceHelper(
         get() = preference.getString(WHITELISTED_NETWORK, null)
         set(value) {
             preference.put(WHITELISTED_NETWORK, value)
+        }
+
+    override var locationHash: String?
+        get() = preference.getString(LOCATION_HASH, null)
+        set(value) {
+            preference.put(LOCATION_HASH, value)
         }
 }
