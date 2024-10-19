@@ -7,6 +7,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.AdvanceParamsValues.IGNORE
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
@@ -36,12 +37,12 @@ class ServerListRepository @Inject constructor(
         private val preferenceChangeObserver: PreferenceChangeObserver,
         private val userRepository: UserRepository,
         private val appLifeCycleObserver: AppLifeCycleObserver,
-        private val advanceParameterRepository: AdvanceParameterRepository
+        private val advanceParameterRepository: AdvanceParameterRepository,
+        private val preferenceHelper: PreferencesHelper
 ) {
     private val logger = LoggerFactory.getLogger("server_list_repository")
     private var _events = MutableSharedFlow<List<RegionAndCities>>(replay = 1)
     val regions: SharedFlow<List<RegionAndCities>> = _events
-    var serverListHash: String? = null
     var globalServerList = true
 
     init {
@@ -109,7 +110,7 @@ class ServerListRepository @Inject constructor(
                     } else {
                         null
                     }
-                    serverListHash = hash(it)
+                    preferenceHelper.locationHash = hash(it)
                     val dataArray = jsonObject.getJSONArray("data")
                     Gson().fromJson<List<Region>>(
                             dataArray.toString(),
