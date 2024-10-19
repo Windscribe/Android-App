@@ -144,4 +144,5 @@ interface PreferencesHelper {
     fun getDefaultProtoInfo(): Pair<String, String>
     fun getDefaultNetworkInfo(networkName: String): NetworkInfo
     fun isSuggested(): Boolean
+    var locationHash: String?
 }

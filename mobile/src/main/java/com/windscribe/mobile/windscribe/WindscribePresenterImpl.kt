@@ -354,7 +354,7 @@ class WindscribePresenterImpl @Inject constructor(
 
     override suspend fun observeAllLocations() {
         interactor.getServerListUpdater().regions.collectLatest {
-            val updatedServerListHash = interactor.getServerListUpdater().serverListHash
+            val updatedServerListHash = interactor.getAppPreferenceInterface().locationHash
             if (adapter?.serverListData?.serverListHash != updatedServerListHash)  {
                 if (it.isNotEmpty()) {
                     loadServerList(it.toMutableList(), updatedServerListHash)

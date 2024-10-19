@@ -392,7 +392,8 @@ open class BaseApplicationModule {
             preferenceChangeObserver: PreferenceChangeObserver,
             userRepository: UserRepository,
             appLifeCycleObserver: AppLifeCycleObserver,
-            advanceParameterRepository: AdvanceParameterRepository
+            advanceParameterRepository: AdvanceParameterRepository,
+            preferencesHelper: PreferencesHelper
     ): ServerListRepository {
         return ServerListRepository(
                 scope,
@@ -401,7 +402,8 @@ open class BaseApplicationModule {
                 preferenceChangeObserver,
                 userRepository,
                 appLifeCycleObserver,
-                advanceParameterRepository
+                advanceParameterRepository,
+            preferencesHelper
         )
     }
 
@@ -803,7 +805,7 @@ open class BaseApplicationModule {
             WSNet.instance().advancedParameters().setCountryOverrideValue(override)
         }
         WSNet.instance().setConnectivityState(WindUtilities.isOnline())
-        WSNet.instance().advancedParameters().setAPIExtraTLSPadding(preferencesHelper.isAntiCensorshipOn)
+        WSNet.instance().advancedParameters().isAPIExtraTLSPadding = preferencesHelper.isAntiCensorshipOn
         deviceStateManager.addListener(networkListener)
         return WSNet.instance()
     }
