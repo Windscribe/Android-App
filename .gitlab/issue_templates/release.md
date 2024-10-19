@@ -1,4 +1,4 @@
-# Release Process for iOS App
+# Release Process for Android App
 
 This document outlines the steps to follow when releasing the Android app, including creating a release branch, internal and Open Beta distribution, QA testing, and final Play store submission.
 
@@ -38,7 +38,7 @@ This document outlines the steps to follow when releasing the Android app, inclu
 ```bash
 git checkout -b hotfix-IssueId-X.X.X tags/vX.X.X
 ```
-### Note: Users following naming convention for branches and tags.
+### Note: use following naming convention for branches and tags.
 1. For Tags vMajor.Minor.BuildNumber
 2. For Release branch release-branch-Major.Minor.BuildNumber
 3. For Hotfix branch hotfix-IssueId-Major.Minor.BuildNumber
