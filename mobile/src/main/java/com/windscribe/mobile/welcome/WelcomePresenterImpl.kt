@@ -10,6 +10,7 @@ import com.windscribe.mobile.R
 import com.windscribe.vpn.commonutils.CommonPasswordChecker
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.api.response.*
+import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.commonutils.RegionLocator
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes
@@ -368,6 +369,7 @@ class WelcomePresenterImpl @Inject constructor(
                 }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableCompletableObserver() {
                     override fun onComplete() {
+                        Util.removeLastSelectedLocation()
                         interactor.getWorkManager().onAppStart()
                         interactor.getWorkManager().onAppMovedToForeground()
                         interactor.getWorkManager().updateNodeLatencies()
