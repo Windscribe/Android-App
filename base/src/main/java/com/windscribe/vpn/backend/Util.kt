@@ -23,6 +23,7 @@ import inet.ipaddr.AddressStringException
 import inet.ipaddr.IPAddressString
 import io.reactivex.Single
 import java.io.BufferedReader
+import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.ObjectInputStream
@@ -91,6 +92,11 @@ object Util {
         vpnFile.writeObject(selectedLocation)
         vpnFile.flush()
         vpnFile.close()
+    }
+
+    fun removeLastSelectedLocation() {
+        val file = File(appContext.filesDir, LAST_SELECTED_LOCATION)
+        file.delete()
     }
 
     fun saveProfile(profile: Any): String {
