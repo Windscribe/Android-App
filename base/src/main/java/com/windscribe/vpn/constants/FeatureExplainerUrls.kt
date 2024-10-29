@@ -9,4 +9,5 @@ object FeatureExplainer {
     const val GPS_SPOOFING = "https://windscribe.com/features/gps-spoofing"
     const val DECOY_TRAFFIC = "https://windscribe.com/features/decoy-traffic"
     const val CUSTOM_DNS_MODE = "https://windscribe.com/features/flexible-dns"
+    const val CIRCUMVENT_CENSORSHIP = "https://windscribe.com/features/circumvent-censorship"
 }

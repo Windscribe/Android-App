@@ -267,7 +267,9 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
             override fun onToggleClick() {
                 presenter.onAntiCensorshipClick()
             }
-            override fun onExplainClick() {}
+            override fun onExplainClick() {
+                openURLInBrowser(FeatureExplainer.CIRCUMVENT_CENSORSHIP)
+            }
         }
         clAutoConnectToggleView.delegate = object : ToggleView.Delegate {
             override fun onToggleClick() {
