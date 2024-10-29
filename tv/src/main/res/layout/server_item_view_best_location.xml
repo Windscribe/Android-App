@@ -16,21 +16,25 @@
         android:id="@+id/imageBackground"
         android:layout_width="@dimen/reg_200"
         android:layout_height="@dimen/reg_100"
-        android:background="@drawable/best_location_background"
+        android:layout_marginStart="7dp"
+        android:layout_marginTop="7dp"
+        android:alpha="0.0"
         android:contentDescription="@null"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="@id/image"
+        app:layout_constraintTop_toTopOf="@id/image" />
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/image"
+        android:layout_width="@dimen/reg_200"
+        android:layout_height="@dimen/reg_100"
         android:contentDescription="@null"
-        app:layout_constraintBottom_toBottomOf="@id/imageBackground"
-        app:layout_constraintEnd_toEndOf="@id/imageBackground"
-        app:layout_constraintStart_toStartOf="@id/imageBackground"
-        app:layout_constraintTop_toTopOf="@id/imageBackground"
-        app:srcCompat="@drawable/ic_best_location_icon" />
+        android:background="@drawable/best_location_background"
+        app:layout_constraintStart_toStartOf="parent"
+        android:scaleType="center"
+        app:srcCompat="@drawable/ic_best_location_icon"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
     <TextView
@@ -39,16 +43,16 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="@dimen/reg_16dp"
+        android:ellipsize="end"
         android:fontFamily="@font/ibm_plex_sans_bold"
         android:gravity="center"
-        android:letterSpacing="0.1"
-        android:text="@string/best_location"
+        android:letterSpacing="0.05"
+        android:maxLines="1"
         android:textAllCaps="true"
         android:textColor="@color/colorWhite"
-        android:textSize="16sp"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/imageBackground" />
+        app:layout_constraintTop_toBottomOf="@id/image" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
