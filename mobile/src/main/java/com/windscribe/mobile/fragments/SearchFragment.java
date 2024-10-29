@@ -19,6 +19,7 @@ import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -48,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -137,6 +139,15 @@ public class SearchFragment extends Fragment {
         setSearchView(true);
         setScrollHapticFeedback();
 
+        // Force show keyboard once search view has focus.
+        searchView.setOnQueryTextFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                v.postDelayed(() -> {
+                    InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(v.findFocus(), 0);
+                }, 200);
+            }
+        });
     }
 
     public void scrollTo(int scrollTo) {
@@ -156,7 +167,6 @@ public class SearchFragment extends Fragment {
                 searchView.requestFocus();
             } else {
                 if (getActivity() != null) {
-                    searchView.clearFocus();
                     searchView.setQuery("", false);
                     getActivity().onBackPressed();
                 }
