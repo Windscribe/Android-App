@@ -148,7 +148,7 @@
                 app:ToggleTitle="@string/anti_censorship"
                 app:ToggleDescription="@string/anti_censorship_explainer"
                 android:layout_marginTop="@dimen/margin_16"
-                app:ToggleShowRightIcon="false"
+                app:ToggleShowRightIcon="true"
                 app:ToggleLeftIcon="@drawable/ic_anti_censorship_icon"
                 />
         </androidx.constraintlayout.widget.ConstraintLayout>
