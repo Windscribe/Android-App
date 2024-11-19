@@ -387,6 +387,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         activityScope { presenter.observeDecoyTrafficState() }
         activityScope { presenter.showShareLinkDialog() }
         activityScope { presenter.observeLatency() }
+        activityScope { presenter.observeLocationUIInvalidation() }
         presenter.registerNetworkInfoListener()
         presenter.handlePushNotification(intent.extras)
         presenter.observeUserData(this)
@@ -1767,9 +1768,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         preferenceChangeObserver.addLanguageChangeObserver(
                 this
         ) { presenter.onLanguageChanged() }
-        preferenceChangeObserver.addShowLocationHealthChangeObserver(
-                this
-        ) { presenter.onShowLocationHealthChanged() }
         preferenceChangeObserver.addLocationSettingsChangeObserver(this) {
             presenter.onLocationSettingsChanged()
         }

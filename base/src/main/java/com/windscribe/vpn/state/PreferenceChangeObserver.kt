@@ -14,7 +14,6 @@ class PreferenceChangeObserver {
 
     private val emailStatusChange = MutableLiveData<Boolean>()
     private val languageChange = MutableLiveData<String>()
-    private val showLocationHealthChange = MutableLiveData<Boolean>()
     private val cityServerListChange = MutableLiveData<Boolean>()
     private val configListChange = MutableLiveData<Boolean>()
     private val locationSettingsChange = MutableLiveData<Boolean>()
@@ -26,10 +25,6 @@ class PreferenceChangeObserver {
 
     fun addLanguageChangeObserver(owner: LifecycleOwner, observer: Observer<String>) {
         languageChange.observe(owner, observer)
-    }
-
-    fun addShowLocationHealthChangeObserver(owner: LifecycleOwner?, observer: Observer<Boolean>?) {
-        showLocationHealthChange.observe(owner!!, observer!!)
     }
 
     fun addLocationSettingsChangeObserver(owner: LifecycleOwner, observer: Observer<Boolean>) {
@@ -60,9 +55,6 @@ class PreferenceChangeObserver {
         languageChange.postValue(language)
     }
 
-    fun postShowLocationHealthChange() {
-        showLocationHealthChange.postValue(true)
-    }
     fun postAntiCensorShipStatusChange() {
         antiCenterShipStatus.postValue(true)
     }
