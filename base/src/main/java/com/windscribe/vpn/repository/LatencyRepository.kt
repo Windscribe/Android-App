@@ -259,7 +259,7 @@ class LatencyRepository @Inject constructor(
         }
         val updatedPing = withTimeoutOrNull(3000) {
             suspendCancellableCoroutine {
-                pingManager.ping(ip, host, 0) { _, _, latency, _ ->
+                pingManager.ping(ip, host, 1) { _, _, latency, _ ->
                     ping.apply {
                         pingTime = latency
                     }
