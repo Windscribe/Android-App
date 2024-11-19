@@ -127,7 +127,7 @@ class GeneralSettingsPresenterImpl @Inject constructor(
         } else {
             logger.info("Saving selected latency type")
             interactor.getAppPreferenceInterface().latencyType = latencyType
-            updateServerList()
+            interactor.getServerListUpdater().invalidateServerListUI()
         }
     }
 
@@ -151,7 +151,7 @@ class GeneralSettingsPresenterImpl @Inject constructor(
             logger.info("List selection selected is same as saved. No action taken...")
         } else {
             interactor.saveSelection(selection)
-            updateServerList()
+            interactor.getServerListUpdater().invalidateServerListUI()
         }
     }
 
@@ -165,7 +165,7 @@ class GeneralSettingsPresenterImpl @Inject constructor(
             interactor.getAppPreferenceInterface().isShowLocationHealthEnabled = true
             settingsView.setupLocationHealthToggleImage(R.drawable.ic_toggle_button_on)
         }
-        interactor.getPreferenceChangeObserver().postShowLocationHealthChange()
+        interactor.getServerListUpdater().invalidateServerListUI()
     }
 
     override fun onThemeSelected(theme: String) {
@@ -297,10 +297,5 @@ class GeneralSettingsPresenterImpl @Inject constructor(
                         connectedFlagPath
                 ).path else "")!!
         )
-    }
-
-    private fun updateServerList() {
-        interactor.getServerListUpdater().load()
-        interactor.getStaticListUpdater().load()
     }
 }

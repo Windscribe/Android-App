@@ -43,10 +43,18 @@ class ServerListRepository @Inject constructor(
     private val logger = LoggerFactory.getLogger("server_list_repository")
     private var _events = MutableSharedFlow<List<RegionAndCities>>(replay = 1)
     val regions: SharedFlow<List<RegionAndCities>> = _events
+    private var _locationUIInvalidation = MutableSharedFlow<Boolean>(replay = 1)
+    val locationUIInvalidation = _locationUIInvalidation
     var globalServerList = true
 
     init {
         load()
+    }
+
+    fun invalidateServerListUI() {
+        scope.launch {
+            _locationUIInvalidation.emit(true)
+        }
     }
 
     fun load() {

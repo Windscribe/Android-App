@@ -369,7 +369,7 @@ class WindscribePresenterImpl @Inject constructor(
             if (latencyAtomic.getAndSet(false)) return@collectLatest
             when (it.second) {
                 LatencyRepository.LatencyType.Servers -> {
-                    interactor.getServerListUpdater().load()
+                    interactor.getServerListUpdater().invalidateServerListUI()
                 }
 
                 LatencyRepository.LatencyType.StaticIp -> {
@@ -1084,14 +1084,6 @@ class WindscribePresenterImpl @Inject constructor(
         }
         if (itemsBeingEdited > 0) {
             configAdapter?.notifyDataSetChanged()
-        }
-    }
-
-    override fun onShowLocationHealthChanged() {
-        adapter?.let {
-            val dataDetails = it.serverListData
-            dataDetails.setShowLocationHealth(interactor.getAppPreferenceInterface().isShowLocationHealthEnabled)
-            updateServerListData(dataDetails)
         }
     }
 
@@ -2279,6 +2271,15 @@ class WindscribePresenterImpl @Inject constructor(
             windscribeView.setCensorShipIconVisibility(View.VISIBLE)
         } else {
             windscribeView.setCensorShipIconVisibility(View.GONE)
+        }
+    }
+
+    override suspend fun observeLocationUIInvalidation() {
+        interactor.getServerListUpdater().locationUIInvalidation.collectLatest {
+            if (adapter?.serverListData != null) {
+                adapter?.serverListData?.serverListHash = ""
+                interactor.getServerListUpdater().load()
+            }
         }
     }
 }
