@@ -11,6 +11,7 @@ import android.net.LinkProperties
 import android.os.Build
 import androidx.core.content.ContextCompat
 import com.windscribe.mobile.R
+import com.windscribe.mobile.fragments.PowerWhitelistDialog
 import com.windscribe.mobile.utils.PermissionManager
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.ActivityInteractorImpl.PortMapLoadCallback
@@ -95,6 +96,11 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
             connSettingsView.setAutoConnectToggle(R.drawable.ic_toggle_button_on)
         } else {
             connSettingsView.setAutoConnectToggle(R.drawable.ic_toggle_button_off)
+        }
+        if (PowerWhitelistDialog.isIgnoringBatteryOptimizations(appContext)) {
+            connSettingsView.setPowerWhitelistToggle(R.drawable.ic_toggle_button_on)
+        } else {
+            connSettingsView.setPowerWhitelistToggle(R.drawable.ic_toggle_button_off)
         }
     }
 
@@ -799,6 +805,20 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
                     proxyDNSManager.stopControlD()
                 }
             }
+        }
+    }
+
+    override fun onPowerWhiteListClick() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            connSettingsView.launchBatteryOptimizationActivity()
+        }
+    }
+
+    override fun powerWhiteListPermissionResultReceived(granted: Boolean) {
+        if (granted) {
+            connSettingsView.setPowerWhitelistToggle(R.drawable.ic_toggle_button_on)
+        } else {
+            connSettingsView.setPowerWhitelistToggle(R.drawable.ic_toggle_button_off)
         }
     }
 }

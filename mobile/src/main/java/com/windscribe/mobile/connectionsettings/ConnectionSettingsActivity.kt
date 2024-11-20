@@ -6,12 +6,14 @@ package com.windscribe.mobile.connectionsettings
 import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import butterknife.BindView
 import butterknife.OnClick
@@ -20,6 +22,7 @@ import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.custom_view.preferences.*
 import com.windscribe.mobile.di.ActivityModule
 import com.windscribe.mobile.dialogs.*
+import com.windscribe.mobile.fragments.PowerWhitelistDialog
 import com.windscribe.mobile.gpsspoofing.GpsSpoofingSettingsActivity
 import com.windscribe.mobile.networksecurity.NetworkSecurityActivity
 import com.windscribe.mobile.splittunneling.SplitTunnelingActivity
@@ -71,6 +74,9 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
 
     @BindView(R.id.cl_anti_censorship)
     lateinit var clAntiCensorshipToggleView: ToggleView
+
+    @BindView(R.id.cl_power_whitelist)
+    lateinit var clPowerWhitelistToggleView: ToggleView
 
     @BindView(R.id.cl_auto_connect)
     lateinit var clAutoConnectToggleView: ToggleView
@@ -271,6 +277,12 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
                 openURLInBrowser(FeatureExplainer.CIRCUMVENT_CENSORSHIP)
             }
         }
+        clPowerWhitelistToggleView.delegate = object : ToggleView.Delegate {
+            override fun onToggleClick() {
+                presenter.onPowerWhiteListClick()
+            }
+            override fun onExplainClick() {}
+        }
         clAutoConnectToggleView.delegate = object : ToggleView.Delegate {
             override fun onToggleClick() {
                 presenter.onAutoConnectClick()
@@ -429,6 +441,18 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
     override fun setCustomDnsAddress(dnsAddress: String) {
         val dnsModeView = dnsModeDropDownView.childView as DnsModeView
         dnsModeView.setCustomDns(dnsAddress)
+    }
+
+    override fun setPowerWhitelistToggle(toggleDrawable: Int) {
+        clPowerWhitelistToggleView.setToggleImage(toggleDrawable)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    override fun launchBatteryOptimizationActivity() {
+        val powerWhitelistDialog = PowerWhitelistDialog(this) {
+            presenter.powerWhiteListPermissionResultReceived(it)
+        }
+        powerWhitelistDialog.show(supportFragmentManager.beginTransaction(), "powerWhitelistDialog")
     }
 
     companion object {

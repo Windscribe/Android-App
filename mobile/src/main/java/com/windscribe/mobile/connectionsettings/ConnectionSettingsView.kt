@@ -3,6 +3,9 @@
  */
 package com.windscribe.mobile.connectionsettings
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+
 interface ConnectionSettingsView {
     fun gotoSplitTunnelingSettings()
     fun goToNetworkSecurity()
@@ -31,4 +34,7 @@ interface ConnectionSettingsView {
     fun setAutoConnectToggle(toggleDrawable: Int)
     fun setupDNSModeAdapter(savedValue: String, dnsModes: Array<String>)
     fun setCustomDnsAddress(dnsAddress: String)
+    fun setPowerWhitelistToggle(toggleDrawable: Int)
+    @RequiresApi(Build.VERSION_CODES.M)
+    fun launchBatteryOptimizationActivity()
 }
