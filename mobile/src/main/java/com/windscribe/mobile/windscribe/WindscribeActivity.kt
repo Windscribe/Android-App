@@ -1935,7 +1935,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun launchBatteryOptimizationActivity() {
-        val powerWhitelistDialog = PowerWhitelistDialog(this)
+        val powerWhitelistDialog = PowerWhitelistDialog(this) {}
         powerWhitelistDialog.show(supportFragmentManager.beginTransaction(), "powerWhitelistDialog")
     }
 

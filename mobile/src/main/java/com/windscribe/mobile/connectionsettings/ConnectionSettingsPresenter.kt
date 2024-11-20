@@ -38,4 +38,6 @@ interface ConnectionSettingsPresenter {
     fun onRobertDnsModeSelected()
     fun onCustomDnsModeSelected()
     fun onCustomDnsChanged(dns: String)
+    fun onPowerWhiteListClick()
+    fun powerWhiteListPermissionResultReceived(granted: Boolean)
 }

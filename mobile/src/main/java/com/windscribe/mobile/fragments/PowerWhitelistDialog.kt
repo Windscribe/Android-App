@@ -17,7 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDialogFragment
 import com.windscribe.mobile.R
 
-class PowerWhitelistDialog(private val activity: AppCompatActivity) : AppCompatDialogFragment() {
+class PowerWhitelistDialog(private val activity: AppCompatActivity, val callback: (Boolean) -> Unit) : AppCompatDialogFragment() {
 
     @SuppressLint("BatteryLife")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -37,14 +37,17 @@ class PowerWhitelistDialog(private val activity: AppCompatActivity) : AppCompatD
 
     private val addToPowerWhitelist = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { _: ActivityResult? -> }
+    ) { _: ActivityResult? ->
+        callback(isIgnoringBatteryOptimizations(activity))
+    }
 
-    override fun onCancel(dialog: DialogInterface) {}
+    override fun onCancel(dialog: DialogInterface) {
+        callback(isIgnoringBatteryOptimizations(activity))
+    }
 
     companion object {
         fun isIgnoringBatteryOptimizations(context: Context): Boolean {
-            val manager =
-                context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
+            val manager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
             val name = context.applicationContext.packageName
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 return manager.isIgnoringBatteryOptimizations(name)
