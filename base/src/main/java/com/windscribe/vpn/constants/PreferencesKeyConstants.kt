@@ -175,4 +175,5 @@ object PreferencesKeyConstants {
     const val SUGGESTED_PORT = "suggested_port"
     const val WHITELISTED_NETWORK = "whitelisted_network"
     const val DEVICE_ID = "device_id"
+    const val CONNECTION_COUNT = "connection_count"
 }

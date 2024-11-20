@@ -135,6 +135,8 @@ interface PreferencesHelper {
     fun setUserAccountUpdateRequired(required: Boolean)
     fun setUserIntendedDisconnect(userIntendedDisconnect: Boolean)
     fun userIsInGhostMode(): Boolean
+    fun increaseConnectionCount()
+    fun getConnectionCount(): Int
     var alreadyShownShareAppLink: Boolean
     var fakeTrafficVolume:FakeTrafficVolume
     var dnsMode: String
