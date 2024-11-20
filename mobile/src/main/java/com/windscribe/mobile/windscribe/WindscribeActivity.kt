@@ -18,6 +18,7 @@ import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -26,6 +27,7 @@ import android.transition.Slide
 import android.view.*
 import android.view.animation.AccelerateInterpolator
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
@@ -52,6 +54,7 @@ import com.windscribe.mobile.custom_view.CustomDialog
 import com.windscribe.mobile.custom_view.CustomDrawableCrossFadeFactory
 import com.windscribe.mobile.di.ActivityModule
 import com.windscribe.mobile.dialogs.*
+import com.windscribe.mobile.fragments.PowerWhitelistDialog
 import com.windscribe.mobile.fragments.SearchFragment
 import com.windscribe.mobile.fragments.ServerListFragment
 import com.windscribe.mobile.mainmenu.MainMenuActivity
@@ -80,6 +83,7 @@ import com.windscribe.vpn.state.PreferenceChangeObserver
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Named
+
 
 class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         RateAppDialogCallback, EditConfigFileDialogCallback, FragmentClickListener, DeviceStateListener, NodeStatusDialogCallback,
@@ -388,6 +392,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         activityScope { presenter.showShareLinkDialog() }
         activityScope { presenter.observeLatency() }
         activityScope { presenter.observeLocationUIInvalidation() }
+        activityScope { presenter.observeConnectionCount() }
         presenter.registerNetworkInfoListener()
         presenter.handlePushNotification(intent.extras)
         presenter.observeUserData(this)
@@ -1926,6 +1931,12 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     override fun setCensorShipIconVisibility(visible: Int) {
         antiCensorShipIcon?.visibility = visible
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    override fun launchBatteryOptimizationActivity() {
+        val powerWhitelistDialog = PowerWhitelistDialog(this)
+        powerWhitelistDialog.show(supportFragmentManager.beginTransaction(), "powerWhitelistDialog")
     }
 
     companion object {

@@ -17,7 +17,9 @@ import com.windscribe.vpn.repository.UserRepository
 import com.wsnet.lib.WSNet
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -32,6 +34,8 @@ class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionMan
     private val _events = MutableStateFlow(VPNState(Disconnected))
     val state: StateFlow<VPNState> = _events
 
+    private val _connectionCount = MutableSharedFlow<Int>(preferencesHelper.getConnectionCount())
+    val connectionCount: SharedFlow<Int> = _connectionCount
     fun isVPNActive(): Boolean {
         return state.value.status != Disconnected
     }
@@ -76,6 +80,10 @@ class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionMan
                     if (autoConnectionManager.listOfProtocols.isEmpty()){
                         autoConnectionManager.reset()
                     }
+                }
+                if (it.status == VPNState.Status.Connected) {
+                    preferencesHelper.increaseConnectionCount()
+                    _connectionCount.emit(preferencesHelper.getConnectionCount())
                 }
             }
         }

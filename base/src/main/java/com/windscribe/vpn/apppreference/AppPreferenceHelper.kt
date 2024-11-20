@@ -736,4 +736,13 @@ class AppPreferenceHelper(
         set(value) {
             preference.put(LOCATION_HASH, value)
         }
+
+    override fun increaseConnectionCount() {
+        val connectionCount = preference.getInt(PreferencesKeyConstants.CONNECTION_COUNT, 0)
+        preference.put(PreferencesKeyConstants.CONNECTION_COUNT, connectionCount + 1)
+    }
+
+    override fun getConnectionCount(): Int {
+        return preference.getInt(PreferencesKeyConstants.CONNECTION_COUNT, 0)
+    }
 }

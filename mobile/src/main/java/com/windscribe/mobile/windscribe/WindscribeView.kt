@@ -105,4 +105,5 @@ interface WindscribeView {
     fun showShareLinkDialog()
     fun setupAccountStatusOkay()
     fun setCensorShipIconVisibility(visible: Int)
+    fun launchBatteryOptimizationActivity()
 }

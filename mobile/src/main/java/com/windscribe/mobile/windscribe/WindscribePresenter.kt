@@ -94,4 +94,5 @@ interface WindscribePresenter {
     fun checkPendingAccountUpgrades()
     fun onAntiCensorShipStatusChanged()
     fun onConnectingAnimationCancelled()
+    suspend fun observeConnectionCount()
 }
