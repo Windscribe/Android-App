@@ -151,18 +151,6 @@
                 app:ToggleShowRightIcon="true"
                 app:ToggleLeftIcon="@drawable/ic_anti_censorship_icon"
                 />
-            <com.windscribe.mobile.custom_view.preferences.ToggleView
-                android:id="@+id/cl_power_whitelist"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/cl_anti_censorship"
-                app:ToggleTitle="@string/power_whitelist_title"
-                app:ToggleDescription="@string/power_whitelist_summary"
-                android:layout_marginTop="@dimen/margin_16"
-                app:ToggleShowRightIcon="false"
-                app:ToggleLeftIcon="@drawable/ic_anti_censorship_icon"
-                />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

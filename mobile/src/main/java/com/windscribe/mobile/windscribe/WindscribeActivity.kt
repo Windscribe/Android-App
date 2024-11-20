@@ -22,11 +22,14 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.transition.AutoTransition
 import android.transition.Slide
 import android.view.*
 import android.view.animation.AccelerateInterpolator
 import android.widget.*
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -54,7 +57,6 @@ import com.windscribe.mobile.custom_view.CustomDialog
 import com.windscribe.mobile.custom_view.CustomDrawableCrossFadeFactory
 import com.windscribe.mobile.di.ActivityModule
 import com.windscribe.mobile.dialogs.*
-import com.windscribe.mobile.fragments.PowerWhitelistDialog
 import com.windscribe.mobile.fragments.SearchFragment
 import com.windscribe.mobile.fragments.ServerListFragment
 import com.windscribe.mobile.mainmenu.MainMenuActivity
@@ -87,7 +89,7 @@ import javax.inject.Named
 
 class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         RateAppDialogCallback, EditConfigFileDialogCallback, FragmentClickListener, DeviceStateListener, NodeStatusDialogCallback,
-        AccountStatusDialogCallback {
+        AccountStatusDialogCallback, PowerWhitelistDialogCallback {
     enum class NetworkLayoutState {
         CLOSED, OPEN_1, OPEN_2, OPEN_3
     }
@@ -1935,8 +1937,27 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun launchBatteryOptimizationActivity() {
-        val powerWhitelistDialog = PowerWhitelistDialog(this) {}
-        powerWhitelistDialog.show(supportFragmentManager.beginTransaction(), "powerWhitelistDialog")
+        PowerWhitelistDialog.show(this)
+    }
+
+    private val addToPowerWhitelist = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { _: ActivityResult? -> }
+
+    override fun neverAskPowerWhiteListPermissionAgain() {
+        presenter.neverAskPowerWhiteListPermissionAgain()
+    }
+
+    override fun askPowerWhiteListPermissionLater() {
+       presenter.askPowerWhiteListPermissionLater()
+    }
+
+    override fun askForPowerWhiteListPermission() {
+        val intent = Intent(
+            Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+            Uri.parse("package:" + packageName)
+        )
+        addToPowerWhitelist.launch(intent)
     }
 
     companion object {
@@ -1945,4 +1966,5 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
             return Intent(context, WindscribeActivity::class.java)
         }
     }
+
 }
