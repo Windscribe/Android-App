@@ -9,6 +9,7 @@ import android.content.Intent
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.util.Pair
 import android.view.View
 import androidx.documentfile.provider.DocumentFile
@@ -29,7 +30,6 @@ import com.windscribe.mobile.connectionui.ConnectionOptionsBuilder
 import com.windscribe.mobile.connectionui.DisconnectedState
 import com.windscribe.mobile.connectionui.FailedProtocol
 import com.windscribe.mobile.connectionui.UnsecuredProtocol
-import com.windscribe.mobile.fragments.PowerWhitelistDialog
 import com.windscribe.mobile.listeners.ProtocolClickListener
 import com.windscribe.mobile.utils.PermissionManager
 import com.windscribe.mobile.utils.UiUtil.getDataRemainingColor
@@ -2300,12 +2300,32 @@ class WindscribePresenterImpl @Inject constructor(
     override suspend fun observeConnectionCount() {
         interactor.getVpnConnectionStateManager().connectionCount
             .filter { count ->
-                count == 2 && !PowerWhitelistDialog.isIgnoringBatteryOptimizations(appContext)
+                val showCount = interactor.getAppPreferenceInterface().getPowerWhiteListDialogCount()
+                count > 1 && !isIgnoringBatteryOptimizations(appContext) && showCount < 3
             }.collectLatest { connectionCount ->
                 logger.debug("Connection count: $connectionCount")
-                if (!PowerWhitelistDialog.isIgnoringBatteryOptimizations(appContext) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (!isIgnoringBatteryOptimizations(appContext) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     windscribeView.launchBatteryOptimizationActivity()
                 }
             }
+    }
+
+    private fun isIgnoringBatteryOptimizations(context: Context): Boolean {
+        val manager =
+            context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
+        val name = context.applicationContext.packageName
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return manager.isIgnoringBatteryOptimizations(name)
+        }
+        return true
+    }
+
+    override fun neverAskPowerWhiteListPermissionAgain() {
+        interactor.getAppPreferenceInterface().setPowerWhiteListDialogCount(3)
+    }
+
+    override fun askPowerWhiteListPermissionLater() {
+        val count = interactor.getAppPreferenceInterface().getPowerWhiteListDialogCount()
+        interactor.getAppPreferenceInterface().setPowerWhiteListDialogCount( count + 1)
     }
 }

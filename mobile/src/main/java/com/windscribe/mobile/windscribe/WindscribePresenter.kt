@@ -95,4 +95,6 @@ interface WindscribePresenter {
     fun onAntiCensorShipStatusChanged()
     fun onConnectingAnimationCancelled()
     suspend fun observeConnectionCount()
+    fun neverAskPowerWhiteListPermissionAgain()
+    fun askPowerWhiteListPermissionLater()
 }

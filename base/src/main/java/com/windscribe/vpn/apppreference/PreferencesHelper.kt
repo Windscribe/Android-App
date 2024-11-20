@@ -137,6 +137,9 @@ interface PreferencesHelper {
     fun userIsInGhostMode(): Boolean
     fun increaseConnectionCount()
     fun getConnectionCount(): Int
+    fun getPowerWhiteListDialogCount(): Int
+    fun setPowerWhiteListDialogCount(count: Int)
+
     var alreadyShownShareAppLink: Boolean
     var fakeTrafficVolume:FakeTrafficVolume
     var dnsMode: String

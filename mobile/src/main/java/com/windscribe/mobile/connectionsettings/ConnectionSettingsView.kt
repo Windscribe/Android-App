@@ -34,7 +34,4 @@ interface ConnectionSettingsView {
     fun setAutoConnectToggle(toggleDrawable: Int)
     fun setupDNSModeAdapter(savedValue: String, dnsModes: Array<String>)
     fun setCustomDnsAddress(dnsAddress: String)
-    fun setPowerWhitelistToggle(toggleDrawable: Int)
-    @RequiresApi(Build.VERSION_CODES.M)
-    fun launchBatteryOptimizationActivity()
 }

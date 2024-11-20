@@ -745,4 +745,12 @@ class AppPreferenceHelper(
     override fun getConnectionCount(): Int {
         return preference.getInt(PreferencesKeyConstants.CONNECTION_COUNT, 0)
     }
+
+    override fun getPowerWhiteListDialogCount(): Int {
+        return preference.getInt(PreferencesKeyConstants.POWER_WHITE_LIST_POPUP_SHOW_COUNT, 0)
+    }
+
+    override fun setPowerWhiteListDialogCount(count: Int) {
+        preference.put(PreferencesKeyConstants.POWER_WHITE_LIST_POPUP_SHOW_COUNT, count)
+    }
 }
