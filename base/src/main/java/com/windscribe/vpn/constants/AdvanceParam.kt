@@ -8,6 +8,7 @@ object AdvanceParamKeys {
     const val TUNNEL_START_DELAY = "ws-tunnel-test-start-delay"
     const val TUNNEL_TEST_RETRY_DELAY = "ws-tunnel-test-retry_delay"
     const val TUNNEL_TEST_ATTEMPTS = "ws-tunnel-test-attempts"
+    const val USE_ICMP_PINGS = "ws-use-icmp-pings"
 }
 
 object AdvanceParamsValues {
