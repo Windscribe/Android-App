@@ -501,5 +501,5 @@ last chosen location.</string>
     <string name="confirmed_email_required">Confirmed email is required.</string>
     <string name="voucher_code_used_already">Voucher code is used already.</string>
     <string name="power_whitelist_title">Disable battery optimizations</string>
-    <string name="power_whitelist_summary">Please confirm the next dialog to add the app to the device\'s power whitelist so it can ignore battery optimizations and schedule NAT keep-alives and rekeyings accurately in order to constantly keep reachable while the VPN is established.</string>
+    <string name="power_whitelist_summary">Add the app to the device power whitelist to bypass battery optimizations and ensure reliable VPN connectivity.</string>
 </resources>

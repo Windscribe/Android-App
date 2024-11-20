@@ -219,6 +219,7 @@
     <style name="ButtonStyle" parent="BaseButtonStyle">
         <item name="android:background">@color/colorBlue</item>
         <item name="android:textColor">@android:color/white</item>
+        <item name="android:textStyle">bold</item>
         <item name="android:layout_gravity">bottom|end</item>
     </style>
 
