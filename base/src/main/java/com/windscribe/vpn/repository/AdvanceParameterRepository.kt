@@ -8,6 +8,7 @@ import com.windscribe.vpn.constants.AdvanceParamKeys.SHOW_WG_LOG
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_START_DELAY
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_TEST_ATTEMPTS
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_TEST_RETRY_DELAY
+import com.windscribe.vpn.constants.AdvanceParamKeys.USE_ICMP_PINGS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +23,7 @@ interface AdvanceParameterRepository {
     fun getTunnelStartDelay(): Long?
     fun getTunnelTestRetryDelay(): Long?
     fun getTunnelTestAttempts(): Long?
+    fun pingType(): Int
 }
 
 class AdvanceParameterRepositoryImpl(val scope: CoroutineScope, val preferencesHelper: PreferencesHelper) : AdvanceParameterRepository {
@@ -64,6 +66,15 @@ class AdvanceParameterRepositoryImpl(val scope: CoroutineScope, val preferencesH
 
     override fun getTunnelTestAttempts(): Long? {
         return params.value[TUNNEL_TEST_ATTEMPTS]?.toLongOrNull()
+    }
+
+    override fun pingType(): Int {
+        val useIcmp =  params.value[USE_ICMP_PINGS]?.toBoolean()
+        return if (useIcmp == true) {
+            1
+        } else {
+            0
+        }
     }
 
     private fun mapTextToAdvanceParams(text: String): HashMap<String, String> {

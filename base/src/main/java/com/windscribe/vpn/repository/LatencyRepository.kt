@@ -46,7 +46,8 @@ class LatencyRepository @Inject constructor(
         private val preferencesHelper: PreferencesHelper,
         private val localDbInterface: LocalDbInterface,
         private val pingManager: WSNetPingManager,
-        private val vpnConnectionStateManager: dagger.Lazy<VPNConnectionStateManager>
+        private val vpnConnectionStateManager: dagger.Lazy<VPNConnectionStateManager>,
+        private val advanceParameterRepository: AdvanceParameterRepository
 ) {
     enum class LatencyType {
         Servers, StaticIp, Config
@@ -259,7 +260,8 @@ class LatencyRepository @Inject constructor(
         }
         val updatedPing = withTimeoutOrNull(3000) {
             suspendCancellableCoroutine {
-                pingManager.ping(ip, host, 1) { _, _, latency, _ ->
+                val pingType = advanceParameterRepository.pingType()
+                pingManager.ping(ip, host, pingType) { _, _, latency, _ ->
                     ping.apply {
                         pingTime = latency
                     }

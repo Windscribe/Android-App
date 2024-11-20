@@ -170,12 +170,14 @@ open class BaseApplicationModule {
             localDbInterface: LocalDbInterface,
             wsNet: WSNet,
             vpnConnectionStateManager: Lazy<VPNConnectionStateManager>,
+            advanceParameterRepository: AdvanceParameterRepository
     ): LatencyRepository {
         return LatencyRepository(
                 preferencesHelper,
                 localDbInterface,
                 wsNet.pingManager(),
-                vpnConnectionStateManager
+                vpnConnectionStateManager,
+                advanceParameterRepository
         )
     }
 
