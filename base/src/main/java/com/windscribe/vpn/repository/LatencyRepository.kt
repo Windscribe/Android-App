@@ -114,6 +114,7 @@ class LatencyRepository @Inject constructor(
                 localDbInterface.addPing(pingTime).await()
                 pingTime
             }.run {
+                logger.debug("Latency completed for ${this.count { it.pingTime > 0 && !it.isStatic }} cities.")
                 return@run updateLatencyEvent(this, LatencyType.Servers)
             }
         }
@@ -258,7 +259,7 @@ class LatencyRepository @Inject constructor(
         if (host == null) {
             return ping.apply { pingTime = -1 }
         }
-        val updatedPing = withTimeoutOrNull(3000) {
+        val updatedPing = withTimeoutOrNull(500) {
             suspendCancellableCoroutine {
                 val pingType = advanceParameterRepository.pingType()
                 pingManager.ping(ip, host, pingType) { _, _, latency, _ ->

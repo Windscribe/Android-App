@@ -23,9 +23,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.await
 import org.slf4j.LoggerFactory
+import java.time.ZonedDateTime
 import java.util.TimeZone
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 @Singleton
 class LocationRepository @Inject constructor(
@@ -133,23 +140,53 @@ class LocationRepository @Inject constructor(
         get() = localDbInterface.lowestPingId
             .flatMap { localDbInterface.getCityByID(it) }
             .flatMap { city: City -> Single.fromCallable { city.getId() } }
-            .doOnError { logger.debug("No Lowest ping city found") }
-            .doOnSuccess { city: Int -> logger.debug("Found lowest ping city$city") }
+            .doOnError { logger.debug("Still waiting for latency to complete.") }
+            .doOnSuccess { city: Int -> logger.debug("Found lowest ping city: $city") }
 
     private val randomLocation: Single<Int>
         get() {
-            val timezone = TimeZone.getDefault().id
             val isUserPro = userRepository.get().user.value?.isPro ?: false
             return localDbInterface.cities.map { cities ->
                 val filteredLocations = cities.filter { city ->
                     val isLocationPro = city.pro == 1
                     (!isLocationPro || isUserPro) && city.nodesAvailable()
                 }
-                val timezoneMatchingLocations = filteredLocations.filter { it.tz == timezone }
-                timezoneMatchingLocations.randomOrNull()?.id
-                    ?: throw IllegalStateException("No matching locations available")
+                return@map pickBestCityId(filteredLocations)
+            }.onErrorReturnItem(-1)
+        }
+
+    private fun pickBestCityId(cities: List<City>): Int {
+        fun haversine(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+            val earthRadius = 6371.0 // Earth's radius in kilometers
+            val dLat = Math.toRadians(lat2 - lat1)
+            val dLon = Math.toRadians(lon2 - lon1)
+            val a = sin(dLat / 2).pow(2.0) +
+                    cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(dLon / 2).pow(2.0)
+            val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+            return earthRadius * c
+        }
+        val userTimeZone = TimeZone.getDefault()
+        val userOffsetMinutes = userTimeZone.getOffset(System.currentTimeMillis()) / (1000 * 60)
+        var bestCity: City? = null
+        var smallestTimeDifference = Int.MAX_VALUE
+        var smallestDistance = Double.MAX_VALUE
+        for (city in cities) {
+            val cityTimeZone = TimeZone.getTimeZone(city.tz)
+            val cityOffsetMinutes = cityTimeZone.getOffset(System.currentTimeMillis()) / (1000 * 60)
+            val coordinates = city.coordinates.split(",")
+            val cityLatitude = coordinates[0].toDouble()
+            val cityLongitude = coordinates[1].toDouble()
+            val timeDifference = abs(userOffsetMinutes - cityOffsetMinutes)
+            val distance = haversine(cityLatitude, cityLongitude, 43.7, -79.42)
+            if (timeDifference < smallestTimeDifference ||
+                (timeDifference == smallestTimeDifference && distance < smallestDistance)) {
+                bestCity = city
+                smallestTimeDifference = timeDifference
+                smallestDistance = distance
             }
         }
+        return bestCity?.id ?: -1
+    }
 
     private fun ipAvailable(ip: String?, nodes: List<Node>): Boolean {
         nodes.firstOrNull {
