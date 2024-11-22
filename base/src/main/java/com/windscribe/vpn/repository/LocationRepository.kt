@@ -173,11 +173,11 @@ class LocationRepository @Inject constructor(
         for (city in cities) {
             val cityTimeZone = TimeZone.getTimeZone(city.tz)
             val cityOffsetMinutes = cityTimeZone.getOffset(System.currentTimeMillis()) / (1000 * 60)
+            val timeDifference = abs(userOffsetMinutes - cityOffsetMinutes)
             val coordinates = city.coordinates.split(",")
             val cityLatitude = coordinates[0].toDouble()
             val cityLongitude = coordinates[1].toDouble()
-            val timeDifference = abs(userOffsetMinutes - cityOffsetMinutes)
-            val distance = haversine(cityLatitude, cityLongitude, 43.7, -79.42)
+            val distance = haversine(cityLatitude, cityLongitude, cityLatitude, cityLongitude)
             if (timeDifference < smallestTimeDifference ||
                 (timeDifference == smallestTimeDifference && distance < smallestDistance)) {
                 bestCity = city
