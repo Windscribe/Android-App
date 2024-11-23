@@ -1,12 +1,15 @@
 package com.windscribe.mobile.dialogs
 
-
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.windscribe.mobile.databinding.PowerWhiteListDialogBinding
 
 interface PowerWhitelistDialogCallback {
@@ -15,12 +18,13 @@ interface PowerWhitelistDialogCallback {
     fun askForPowerWhiteListPermission()
 }
 
-class PowerWhitelistDialog : FullScreenDialog() {
+class PowerWhitelistDialog : Fragment() {
     private var callback: PowerWhitelistDialogCallback? = null
     private var binding: PowerWhiteListDialogBinding? = null
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        callback = activity as PowerWhitelistDialogCallback?
+        callback = activity as? PowerWhitelistDialogCallback
     }
 
     override fun onCreateView(
@@ -34,24 +38,41 @@ class PowerWhitelistDialog : FullScreenDialog() {
         super.onViewCreated(view, savedInstanceState)
         binding?.ok?.setOnClickListener {
             callback?.askForPowerWhiteListPermission()
-            dismiss()
+            closeDialog()
         }
         binding?.later?.setOnClickListener {
             callback?.askPowerWhiteListPermissionLater()
-            dismiss()
+            closeDialog()
         }
         binding?.neverAskAgain?.setOnClickListener {
             callback?.neverAskPowerWhiteListPermissionAgain()
-            dismiss()
+            closeDialog()
+        }
+    }
+
+    private fun closeDialog() {
+        activity?.supportFragmentManager?.beginTransaction()?.remove(this)?.commit()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        activity?.window?.apply {
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
         }
     }
 
     companion object {
-        const val tag = "PowerWhitelistDialog"
+        private const val TAG = "PowerWhitelistDialog"
+
         fun show(activity: AppCompatActivity) {
             activity.runOnUiThread {
-                kotlin.runCatching {
-                    PowerWhitelistDialog().showNow(activity.supportFragmentManager, tag)
+                val fragmentManager = activity.supportFragmentManager
+                if (fragmentManager.findFragmentByTag(TAG) == null) {
+                    val transaction = fragmentManager.beginTransaction()
+                    transaction.add(android.R.id.content, PowerWhitelistDialog(), TAG)
+                    transaction.commitAllowingStateLoss()
                 }
             }
         }

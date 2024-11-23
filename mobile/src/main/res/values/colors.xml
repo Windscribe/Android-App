@@ -63,6 +63,7 @@
     <color name="connectedHeaderColor">#012E6E</color>
     <color name="disconnectedHeaderColor">#28323c</color>
     <color name="darkGray">#343434</color>
+    <color name="deepBlue89">#E318222F</color>
     <!--Dead code Requires more refactor-->
     <color name="colorBackgroundDark">#0e1927</color>
 
