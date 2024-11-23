@@ -1,5 +1,6 @@
 package com.windscribe.mobile.dialogs
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -34,8 +35,10 @@ class PowerWhitelistDialog : Fragment() {
         return binding?.root
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding?.root?.setOnTouchListener { _, _ -> true }
         binding?.ok?.setOnClickListener {
             callback?.askForPowerWhiteListPermission()
             closeDialog()
