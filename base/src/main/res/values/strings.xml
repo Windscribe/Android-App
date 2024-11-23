@@ -500,6 +500,7 @@ last chosen location.</string>
     <string name="voucher_code_is_invalid">Voucher provided is invalid or expired.</string>
     <string name="confirmed_email_required">Confirmed email is required.</string>
     <string name="voucher_code_used_already">Voucher code is used already.</string>
-    <string name="power_whitelist_title">Disable battery optimizations</string>
-    <string name="power_whitelist_summary">Add the app to the device power whitelist to bypass battery optimizations and ensure reliable VPN connectivity.</string>
+    <string name="power_whitelist_title">Disable Battery Optimization</string>
+    <string name="power_whitelist_summary">To maintain a stable connection, please remove Windscribe from battery optimization settings. This ensures uninterrupted service for IKEv2 connections.</string>
+    <string name="never_aks_again_for_permission">Don’t ask again</string>
 </resources>
