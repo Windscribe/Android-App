@@ -17,28 +17,28 @@
         <activity
             android:name=".advance.AdvanceParamsActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
+            android:screenOrientation="unspecified"
             />
         <activity
             android:name=".robert.RobertSettingsActivity"
             android:exported="false"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
         <activity
             android:name=".about.AboutActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
         <activity
             android:name=".ticket.SendTicketActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
         <activity
             android:name=".help.HelpActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
         <activity android:name=".confirmemail.ConfirmActivity" />
         <activity
             android:name=".welcome.WelcomeActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
         <activity
             android:name=".gpsspoofing.GpsSpoofingSettingsActivity"
-            android:screenOrientation="portrait"
+            android:screenOrientation="unspecified"
             android:theme="@style/Theme.Transparent" />
         <activity
             android:name="com.windscribe.vpn.backend.utils.VPNPermissionActivity"
@@ -47,10 +47,10 @@
             android:theme="@style/blinkt.dialog" />
         <activity
             android:name=".networksecurity.networkdetails.NetworkDetailsActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
         <activity
             android:name=".debug.DebugViewActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
         <activity
             android:name=".splash.SplashActivity"
             android:exported="true"
@@ -68,11 +68,11 @@
         </activity>
         <activity
             android:name=".email.AddEmailActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
         <activity
             android:name=".windscribe.WindscribeActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
+            android:screenOrientation="unspecified"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
@@ -80,28 +80,28 @@
         </activity>
         <activity
             android:name=".mainmenu.MainMenuActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
         <activity
             android:name=".newsfeedactivity.NewsFeedActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
         <activity
             android:name=".upgradeactivity.UpgradeActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
         <activity
             android:name=".account.AccountActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
         <activity
             android:name=".generalsettings.GeneralSettingsActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
         <activity
             android:name=".connectionsettings.ConnectionSettingsActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
         <activity
             android:name=".splittunneling.SplitTunnelingActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
         <activity
             android:name=".networksecurity.NetworkSecurityActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="unspecified" />
     </application>
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
