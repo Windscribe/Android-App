@@ -13,4 +13,5 @@ interface AboutPresenter {
     fun onStatusClick()
     fun onTermsClick()
     fun onViewLicenceClick()
+    fun onChangelogClick()
 }
