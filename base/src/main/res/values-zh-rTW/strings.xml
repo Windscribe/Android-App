@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">您的数据不足</string>
     <string name="you_ve_been_banned">您已被封禁</string>
     <string name="upgrade_later">我稍后会升级</string>
-    <string name="upgrade_to_stay_protected">升级以保持受保护或等到下个月的重置</string>
     <string name="get_more_data">获取更多数据</string>
     <string name="data_left">%1$.2f 剩余 GB</string>
     <string name="gb_month">- 国标/月</string>

@@ -1221,11 +1221,11 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         }
     }
 
-    override fun setupAccountStatusExpired() {
+    override fun setupAccountStatusExpired(resetDate: String) {
         AccountStatusDialogData(
                 title = resources.getString(R.string.you_re_out_of_data),
                 icon = R.drawable.garry_nodata,
-                description = resources.getString(R.string.upgrade_to_stay_protected),
+                description = resources.getString(R.string.upgrade_to_stay_protected, resetDate),
                 showSkipButton = true,
                 skipText = resources.getString(R.string.upgrade_later),
                 showUpgradeButton = true,

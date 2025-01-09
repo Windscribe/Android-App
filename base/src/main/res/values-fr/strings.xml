@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">Vous êtes à court de données</string>
     <string name="you_ve_been_banned">Vous avez été banni</string>
     <string name="upgrade_later">Je mettrai à niveau plus tard</string>
-    <string name="upgrade_to_stay_protected">Effectuez une mise à niveau pour rester protégé ou attendez la réinitialisation du mois prochain</string>
     <string name="get_more_data">OBTENEZ PLUS DE DONNÉES</string>
     <string name="data_left">%1$.2f Go restant</string>
     <string name="gb_month">- Go/Mois</string>

@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">Du hast keine Daten mehr</string>
     <string name="you_ve_been_banned">Du wurdest gebannt</string>
     <string name="upgrade_later">Ich werde später upgraden</string>
-    <string name="upgrade_to_stay_protected">Aktualisieren Sie, um geschützt zu bleiben, oder warten Sie bis zum Zurücksetzen im nächsten Monat</string>
     <string name="get_more_data">HOL DIR MEHR DATEN</string>
     <string name="data_left">%1$.2f GB übrig</string>
     <string name="gb_month">- GB/Monat</string>

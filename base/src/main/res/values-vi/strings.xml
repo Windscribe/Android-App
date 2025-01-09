@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">Bạn đã hết dữ liệu</string>
     <string name="you_ve_been_banned">Bạn đã bị cấm</string>
     <string name="upgrade_later">Tôi sẽ nâng cấp sau</string>
-    <string name="upgrade_to_stay_protected">Nâng cấp để luôn được bảo vệ hoặc đợi cho đến khi đặt lại tháng sau</string>
     <string name="get_more_data">NHẬN THÊM DỮ LIỆU</string>
     <string name="data_left">%1$.2f GB còn lại</string>
     <string name="gb_month">- GB / tháng</string>

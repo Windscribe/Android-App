@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">У вас закончились данные</string>
     <string name="you_ve_been_banned">Вы были заблокированы</string>
     <string name="upgrade_later">Я обновлю позже</string>
-    <string name="upgrade_to_stay_protected">Обновите, чтобы оставаться защищенным, или подождите до сброса трафика в следующем месяце</string>
     <string name="get_more_data">ПОЛУЧИТЬ БОЛЬШЕ ТРАФИКА</string>
     <string name="data_left">%1$.2f ГБ осталось</string>
     <string name="gb_month">- ГБ/месяц</string>

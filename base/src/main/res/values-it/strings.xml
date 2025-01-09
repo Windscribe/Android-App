@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">Hai esaurito i dati</string>
     <string name="you_ve_been_banned">Sei stato bannato</string>
     <string name="upgrade_later">Aggiornerò più tardi</string>
-    <string name="upgrade_to_stay_protected">Esegui l\'upgrade per rimanere protetto o attendi fino al rinnovo del mese successivo</string>
     <string name="get_more_data">OTTIENI PIÙ DATI</string>
     <string name="data_left">%1$.2f GB rimanenti</string>
     <string name="gb_month">- GB/mese</string>
