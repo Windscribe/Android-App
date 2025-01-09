@@ -5,12 +5,14 @@ import com.windscribe.common.DnsType
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.exceptions.WindScribeException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileOutputStream
+import java.net.ServerSocket
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ProxyDNSManager(
@@ -39,14 +41,31 @@ class ProxyDNSManager(
             val address = dnsDetails?.address ?: ""
             val upStreamInfo =
                 "[upstream.0]\n" + "bootstrap_ip = \"${dnsDetails?.ip ?: ""}\"\n" + "endpoint = \"$address\"\n" + "name = \"Custom DNS\"\n" + "timeout = 5000\n" + "type = \"${dnsDetails?.getTypeValue}\"\n" + "ip_stack = \"v4\""
-            val listenerInfo = appContext.assets.open("config.toml").bufferedReader().readText()
+            val staticConfig = appContext.assets.open("config.toml").bufferedReader().readText()
+            val listenPort = findAvailablePort()
+                ?: throw WindScribeException("Unable to find port to start ControlD cli.")
+            val listenerInfo = staticConfig.replace("5355", listenPort)
             val configData = "$listenerInfo\n$upStreamInfo".encodeToByteArray()
-            logger.debug("Configuring controlD with: $upStreamInfo")
+            logger.debug("Configuring controlD with: $upStreamInfo \nListenPort: $listenPort")
             FileOutputStream(configFile).use {
                 it.write(configData)
             }
         }
         invalidConfig = false
+    }
+
+    private fun findAvailablePort(): String? {
+        var port = 5355
+        repeat(20) {
+            try {
+                ServerSocket(port).use {
+                    return "$port"
+                }
+            } catch (e: Exception) {
+                port++
+            }
+        }
+        return null
     }
 
     private fun createLogFile(): String {
