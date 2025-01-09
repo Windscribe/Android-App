@@ -68,7 +68,7 @@ interface WindscribeView {
     fun setStreamingNodeAdapter(streamingNodeAdapter: StreamingNodeAdapter)
     fun setUpLayoutForNodeUnderMaintenance()
     fun setupAccountStatusBanned()
-    fun setupAccountStatusExpired()
+    fun setupAccountStatusExpired(resetDate: String)
     fun setupLayoutConnected(state: ConnectedState)
     fun setupLayoutConnecting(state: ConnectingState)
     fun setupLayoutDisconnected(connectionState: DisconnectedState)

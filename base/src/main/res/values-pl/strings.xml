@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">Skończyły Ci się dane</string>
     <string name="you_ve_been_banned">Zostałeś zbanowany</string>
     <string name="upgrade_later">Uaktualnię później</string>
-    <string name="upgrade_to_stay_protected">Uaktualnij, aby zachować ochronę, lub poczekaj na reset w przyszłym miesiącu</string>
     <string name="get_more_data">UZYSKAJ WIĘCEJ DANYCH</string>
     <string name="data_left">%1$.2f Pozostała część GB</string>
     <string name="gb_month">- GB/Miesiąc</string>
@@ -482,4 +481,6 @@ ostatnio wybrana lokalizacja.</string>
     <string name="save">Zapisz</string>
     <string name="clear">Jasny</string>
     <string name="enter_1_key_value_per_line">Wprowadź 1 klucz=wartość w każdej linii.</string>
+    <string name="upgrade_to_stay_protected">Ulepsz teraz, aby pozostać chronionym, lub poczekaj, aż twoja przepustowość zostanie zresetowana %s</string>
+    <string name="changelog">Dziennik zmian</string>
 </resources>

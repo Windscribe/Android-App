@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">データが不足しています</string>
     <string name="you_ve_been_banned">あなたは禁止されました</string>
     <string name="upgrade_later">後でアップグレードします</string>
-    <string name="upgrade_to_stay_protected">アップグレードして保護された状態を維持するか、翌月のリセットまで待ちます</string>
     <string name="get_more_data">より多くのデータを取得する</string>
     <string name="data_left">%1$.2f GB 残り</string>
     <string name="gb_month">- ギガバイト/月</string>
@@ -482,4 +481,6 @@
     <string name="save">保存</string>
     <string name="clear">クリア</string>
     <string name="enter_1_key_value_per_line">1 行に 1 つの key=value を入力します。</string>
+    <string name="upgrade_to_stay_protected">今すぐアップグレードして保護を維持するか、帯域幅が%sにリセットされるまで待ってください</string>
+    <string name="changelog">変更履歴</string>
 </resources>

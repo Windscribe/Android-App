@@ -1561,7 +1561,8 @@ class WindscribePresenterImpl @Inject constructor(
         // User account status
         if (interactor.getUserAccountStatus() == UserStatusConstants.ACCOUNT_STATUS_EXPIRED && !isStaticIp) {
             logger.info("Error: account status is expired.")
-            windscribeView.setupAccountStatusExpired()
+            val resetDate = interactor.getUserRepository().user.value?.nextResetDate() ?: ""
+            windscribeView.setupAccountStatusExpired(resetDate)
             return false
         }
         if (interactor.getUserAccountStatus() == UserStatusConstants.ACCOUNT_STATUS_BANNED) {
@@ -2135,7 +2136,8 @@ class WindscribePresenterImpl @Inject constructor(
                             interactor.getMainScope()
                                 .launch { interactor.getVPNController().disconnectAsync() }
                         }
-                        windscribeView.setupAccountStatusExpired()
+                        val resetDate = interactor.getUserRepository().user.value?.nextResetDate() ?: ""
+                        windscribeView.setupAccountStatusExpired(resetDate)
                     }
                 }
             }
