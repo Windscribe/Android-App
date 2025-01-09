@@ -10,8 +10,8 @@ import com.windscribe.vpn.constants.NetworkKeyConstants.getWebsiteLink
 import javax.inject.Inject
 
 class AboutPresenterImpl @Inject constructor(
-    val aboutView: AboutView,
-    val interactor: ActivityInteractor
+    private val aboutView: AboutView,
+    private val interactor: ActivityInteractor
 ) : AboutPresenter {
     override fun init() {
         aboutView.setTitle(interactor.getResourceString(R.string.about))
@@ -46,5 +46,9 @@ class AboutPresenterImpl @Inject constructor(
 
     override fun onViewLicenceClick() {
         aboutView.openUrl(getWebsiteLink(NetworkKeyConstants.URL_VIEW_LICENCE))
+    }
+
+    override fun onChangelogClick() {
+        aboutView.openUrl(getWebsiteLink(NetworkKeyConstants.URL_CHANGELOG))
     }
 }

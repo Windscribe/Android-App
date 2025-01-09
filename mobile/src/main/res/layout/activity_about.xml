@@ -150,6 +150,26 @@
             app:ItemLinkViewTitle="@string/software_licenses"
             app:ItemLinkViewRightIcon="@drawable/link_arrow_icon" />
 
+        <ImageView
+            style="@style/divider"
+            android:id="@+id/licence_divider"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="0dp"
+            android:layout_marginStart="@dimen/margin_16"
+            app:layout_constraintTop_toBottomOf="@id/cl_licence" />
+
+        <com.windscribe.mobile.custom_view.preferences.IconLinkView
+            android:id="@+id/cl_changelog"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/reg_48dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/licence_divider"
+            app:ItemLinkViewTitle="@string/changelog"
+            app:ItemLinkViewRightIcon="@drawable/link_arrow_icon" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
