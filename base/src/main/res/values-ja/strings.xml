@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">データが不足しています</string>
     <string name="you_ve_been_banned">あなたは禁止されました</string>
     <string name="upgrade_later">後でアップグレードします</string>
-    <string name="upgrade_to_stay_protected">アップグレードして保護された状態を維持するか、翌月のリセットまで待ちます</string>
     <string name="get_more_data">より多くのデータを取得する</string>
     <string name="data_left">%1$.2f GB 残り</string>
     <string name="gb_month">- ギガバイト/月</string>

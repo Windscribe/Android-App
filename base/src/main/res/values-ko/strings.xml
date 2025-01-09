@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">데이터가 부족합니다.</string>
     <string name="you_ve_been_banned">차단되었습니다.</string>
     <string name="upgrade_later">나중에 업그레이드하겠습니다</string>
-    <string name="upgrade_to_stay_protected">보호를 유지하려면 업그레이드하거나 다음 달 재설정까지 기다리세요.</string>
     <string name="get_more_data">더 많은 데이터 가져오기</string>
     <string name="data_left">%1$.2f GB 남음</string>
     <string name="gb_month">- GB/월</string>

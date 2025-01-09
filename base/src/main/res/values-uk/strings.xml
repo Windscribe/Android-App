@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">У вас немає даних</string>
     <string name="you_ve_been_banned">Вас забанили</string>
     <string name="upgrade_later">Я оновлю пізніше</string>
-    <string name="upgrade_to_stay_protected">Оновіть, щоб залишатися захищеними, або дочекайтеся скидання наступного місяця</string>
     <string name="get_more_data">ОТРИМАЙТЕ БІЛЬШЕ ДАНИХ</string>
     <string name="data_left">%1$.2f ГБ ліворуч</string>
     <string name="gb_month">- ГБ/місяць</string>

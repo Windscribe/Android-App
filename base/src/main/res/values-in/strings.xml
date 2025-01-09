@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">Data Anda habis</string>
     <string name="you_ve_been_banned">Anda telah diblokir</string>
     <string name="upgrade_later">Saya akan meningkatkan nanti</string>
-    <string name="upgrade_to_stay_protected">Tingkatkan untuk tetap terlindungi atau tunggu hingga reset bulan depan</string>
     <string name="get_more_data">DAPATKAN LEBIH BANYAK DATA</string>
     <string name="data_left">%1$.2f GB tersisa</string>
     <string name="gb_month">- GB/Bulan</string>
