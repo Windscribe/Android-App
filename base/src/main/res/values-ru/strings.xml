@@ -484,4 +484,6 @@
     <string name="custom_dns_address_hint">IP/DNS-over-HTTPS/TLS</string>
     <string name="enter_valid_ip_or_url">Введите верный IP или URL</string>
     <string name="custom_dns_explainer">Выберите DNS-сервер, который будет использоваться при подключении к Windscribe.</string>
+    <string name="upgrade_to_stay_protected">Обновитесь сейчас, чтобы оставаться защищённым, или дождитесь, пока ваш трафик не будет сброшен %s</string>
+    <string name="changelog">Журнал изменений</string>
 </resources>

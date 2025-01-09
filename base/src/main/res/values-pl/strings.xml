@@ -481,4 +481,6 @@ ostatnio wybrana lokalizacja.</string>
     <string name="save">Zapisz</string>
     <string name="clear">Jasny</string>
     <string name="enter_1_key_value_per_line">Wprowadź 1 klucz=wartość w każdej linii.</string>
+    <string name="upgrade_to_stay_protected">Ulepsz teraz, aby pozostać chronionym, lub poczekaj, aż twoja przepustowość zostanie zresetowana %s</string>
+    <string name="changelog">Dziennik zmian</string>
 </resources>

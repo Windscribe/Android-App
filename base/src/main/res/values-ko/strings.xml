@@ -481,4 +481,6 @@
     <string name="save">저장</string>
     <string name="clear">맑다</string>
     <string name="enter_1_key_value_per_line">라인마다 키=값을 입력하세요.</string>
+    <string name="upgrade_to_stay_protected">지금 업그레이드하여 보호 상태를 유지하거나 %s에 대역폭이 재설정될 때까지 기다리세요</string>
+    <string name="changelog">변경 로그</string>
 </resources>

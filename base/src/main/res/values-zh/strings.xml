@@ -481,4 +481,6 @@
     <string name="save">保存</string>
     <string name="clear">清楚</string>
     <string name="enter_1_key_value_per_line">每行输入1个键=值。</string>
+    <string name="upgrade_to_stay_protected">立即升级以保持保护，或等待您的带宽在%s重置</string>
+    <string name="changelog">更新日志</string>
 </resources>

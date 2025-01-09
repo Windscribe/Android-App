@@ -480,4 +480,6 @@ last chosen location.</string>
     <string name="save">Save</string>
     <string name="clear">Clear</string>
     <string name="enter_1_key_value_per_line">Enter 1 key=value per line.</string>
+    <string name="upgrade_to_stay_protected">Upgrade now to stay protected or wait until your bandwidth is reset on %s</string>
+    <string name="changelog">Changelog</string>
 </resources>

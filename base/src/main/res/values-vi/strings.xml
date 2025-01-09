@@ -481,4 +481,6 @@ Vị trí được chọn cuối cùng.</string>
     <string name="save">Lưu</string>
     <string name="clear">Trong</string>
     <string name="enter_1_key_value_per_line">Nhập 1 key=value mỗi dòng.</string>
+    <string name="upgrade_to_stay_protected">Nâng cấp ngay để được bảo vệ hoặc chờ đến khi băng thông của bạn được đặt lại vào %s</string>
+    <string name="changelog">Nhật ký thay đổi</string>
 </resources>

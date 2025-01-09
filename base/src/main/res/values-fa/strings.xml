@@ -481,4 +481,6 @@
     <string name="save">سو</string>
     <string name="clear">پاک</string>
     <string name="enter_1_key_value_per_line">در هر خط یک کلید=مقدار وارد کنید.</string>
+    <string name="upgrade_to_stay_protected">هم‌اکنون ارتقا دهید تا محافظت شوید یا منتظر بمانید تا پهنای باند شما در %s بازنشانی شود</string>
+    <string name="changelog">لیست تغییرات</string>
 </resources>

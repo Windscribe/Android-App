@@ -481,4 +481,6 @@
     <string name="save">सेव</string>
     <string name="clear">स्पष्ट</string>
     <string name="enter_1_key_value_per_line">प्रति पंक्ति 1 key=value दर्ज करें।</string>
+    <string name="upgrade_to_stay_protected">सुरक्षित रहने के लिए अभी अपग्रेड करें या तब तक प्रतीक्षा करें जब तक आपका बैंडविड्थ %s को रीसेट नहीं हो जाता</string>
+    <string name="changelog">परिवर्तन सूची</string>
 </resources>
