@@ -290,7 +290,6 @@
     <string name="blog">Blog</string>
     <string name="jobs">Jobs</string>
     <string name="software_licenses">Software Licenses</string>
-    <string name="changelog">Changelog</string>
     <string name="benefit_unlimited_data">Unlimited Data</string>
     <string name="choose_plan">CHOOSE PLAN</string>
     <string name="monthly">MONTHLY</string>
@@ -504,4 +503,5 @@ last chosen location.</string>
     <string name="power_whitelist_summary">To maintain a stable connection, please remove Windscribe from battery optimization settings. This ensures uninterrupted service for IKEv2 connections.</string>
     <string name="never_aks_again_for_permission">Don’t ask again</string>
     <string name="upgrade_to_stay_protected">Upgrade now to stay protected or wait until your bandwidth is reset on %s</string>
+    <string name="changelog">Changelog</string>
 </resources>

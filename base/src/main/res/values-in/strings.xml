@@ -481,4 +481,6 @@ Lokasi terakhir yang dipilih.</string>
     <string name="save">Simpan</string>
     <string name="clear">Jelas</string>
     <string name="enter_1_key_value_per_line">Masukkan 1 kunci=nilai per baris.</string>
+    <string name="upgrade_to_stay_protected">Tingkatkan sekarang untuk tetap terlindungi atau tunggu hingga bandwidth Anda direset pada %s</string>
+    <string name="changelog">Catatan Perubahan</string>
 </resources>

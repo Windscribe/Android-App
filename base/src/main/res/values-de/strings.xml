@@ -482,4 +482,6 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="save">Speichern</string>
     <string name="clear">Klar</string>
     <string name="enter_1_key_value_per_line">Geben Sie pro Zeile 1 Schlüssel=Wert ein.</string>
+    <string name="upgrade_to_stay_protected">Jetzt upgraden, um geschützt zu bleiben, oder warten Sie, bis Ihr Datenvolumen am %s zurückgesetzt wird</string>
+    <string name="changelog">Änderungsprotokoll</string>
 </resources>

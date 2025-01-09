@@ -481,4 +481,6 @@
     <string name="save">Guardar</string>
     <string name="clear">Borrar</string>
     <string name="enter_1_key_value_per_line">Introduzca 1 clave=valor por línea.</string>
+    <string name="upgrade_to_stay_protected">Actualiza ahora para mantenerte protegido o espera hasta que tu ancho de banda se restablezca el %s</string>
+    <string name="changelog">Registro de cambios</string>
 </resources>

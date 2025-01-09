@@ -481,4 +481,6 @@ dernier emplacement choisi.</string>
     <string name="save">Enregistrer</string>
     <string name="clear">Clair</string>
     <string name="enter_1_key_value_per_line">Saisissez une clé=valeur par ligne.</string>
+    <string name="upgrade_to_stay_protected">Mettez à niveau maintenant pour rester protégé ou attendez que votre bande passante soit réinitialisée le %s</string>
+    <string name="changelog">Journal des modifications</string>
 </resources>

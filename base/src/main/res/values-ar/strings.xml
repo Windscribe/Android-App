@@ -481,4 +481,6 @@
     <string name="save">حفظ</string>
     <string name="clear">واضح</string>
     <string name="enter_1_key_value_per_line">أدخل مفتاح=قيمة في كل سطر.</string>
+    <string name="upgrade_to_stay_protected">قم بالترقية الآن للبقاء محميًا أو انتظر حتى تتم إعادة تعيين النطاق الترددي الخاص بك في %s</string>
+    <string name="changelog">سجل التغييرات</string>
 </resources>

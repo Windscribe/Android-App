@@ -481,4 +481,6 @@ son seçilen yer.</string>
     <string name="save">Kaydet</string>
     <string name="clear">Berrak</string>
     <string name="enter_1_key_value_per_line">Her satıra 1 anahtar=değer girin.</string>
+    <string name="upgrade_to_stay_protected">Korunmaya devam etmek için şimdi yükseltin veya bant genişliğiniz %s tarihinde sıfırlanana kadar bekleyin</string>
+    <string name="changelog">Değişiklik Günlüğü</string>
 </resources>
