@@ -466,7 +466,7 @@ class WelcomePresenterImpl @Inject constructor(
         }
 
         // Invalid username
-        if (!validateUsernameCharacters(username) && isLogin) {
+        if (!isLogin && !validateUsernameCharacters(username)) {
             logger.info("[username] has invalid characters in , displaying toast to the user...")
             welcomeView.setUsernameError(interactor.getResourceString(R.string.login_with_username))
             welcomeView.showToast(interactor.getResourceString(R.string.login_with_username))
