@@ -2217,7 +2217,7 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getUserRepository().user.value?.let {
             delay(4000)
             logger.debug("Share link criteria: Free user: ${it.isPro.not()} Days registered since:${it.daysRegisteredSince} Already shown: ${interactor.getAppPreferenceInterface().alreadyShownShareAppLink}")
-            if (it.isGhost.not() && it.isPro.not() && it.daysRegisteredSince > 30 && interactor.getAppPreferenceInterface().alreadyShownShareAppLink.not()) {
+            if (it.isGhost.not() && it.isPro.not() && it.daysRegisteredSince > 30 && interactor.getAppPreferenceInterface().getConnectionCount() >= 10 && interactor.getAppPreferenceInterface().alreadyShownShareAppLink.not()) {
                 windscribeView.showShareLinkDialog()
             }
         }
