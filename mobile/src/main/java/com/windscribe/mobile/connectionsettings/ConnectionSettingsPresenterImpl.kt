@@ -453,9 +453,9 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
     private fun setupLayoutBasedOnDnsMode() {
         val dnsMode = interactor.getAppPreferenceInterface().dnsMode
         if (dnsMode == DNS_MODE_ROBERT) {
-            connSettingsView.setupDNSModeAdapter(interactor.getResourceString(R.string.robert), arrayOf(interactor.getResourceString(R.string.robert), interactor.getResourceString(R.string.custom)))
+            connSettingsView.setupDNSModeAdapter(interactor.getResourceString(R.string.auto), arrayOf(interactor.getResourceString(R.string.auto), interactor.getResourceString(R.string.custom)))
         } else {
-            connSettingsView.setupDNSModeAdapter(interactor.getResourceString(R.string.custom), arrayOf(interactor.getResourceString(R.string.robert), interactor.getResourceString(R.string.custom)))
+            connSettingsView.setupDNSModeAdapter(interactor.getResourceString(R.string.custom), arrayOf(interactor.getResourceString(R.string.auto), interactor.getResourceString(R.string.custom)))
         }
         val dnsAddress = interactor.getAppPreferenceInterface().dnsAddress
         if(dnsAddress != null) {
