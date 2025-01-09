@@ -58,7 +58,6 @@
     <string name="you_re_out_of_data">You’re out of data</string>
     <string name="you_ve_been_banned">You’ve been banned</string>
     <string name="upgrade_later">I’ll upgrade later</string>
-    <string name="upgrade_to_stay_protected">Upgrade to stay protected or wait until next month’s reset</string>
     <string name="get_more_data">GET MORE DATA</string>
     <string name="data_left">%1$.2f GB Left</string>
     <string name="gb_month">- GB/Month</string>
@@ -481,4 +480,6 @@ last chosen location.</string>
     <string name="save">Save</string>
     <string name="clear">Clear</string>
     <string name="enter_1_key_value_per_line">Enter 1 key=value per line.</string>
+    <string name="upgrade_to_stay_protected">Upgrade now to stay protected or wait until your bandwidth is reset on %s</string>
+    <string name="changelog">Changelog</string>
 </resources>

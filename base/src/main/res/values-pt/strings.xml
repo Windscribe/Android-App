@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">Você está sem dados</string>
     <string name="you_ve_been_banned">Você foi banido</string>
     <string name="upgrade_later">Atualizarei mais tarde</string>
-    <string name="upgrade_to_stay_protected">Atualize para ficar protegido ou aguarde até a redefinição do próximo mês</string>
     <string name="get_more_data">OBTER MAIS DADOS</string>
     <string name="data_left">%1$.2f GB Restantes</string>
     <string name="gb_month">- GB/Mês</string>
@@ -482,4 +481,6 @@
     <string name="save">Guardar</string>
     <string name="clear">Limpar</string>
     <string name="enter_1_key_value_per_line">Insira 1 chave=valor por linha.</string>
+    <string name="upgrade_to_stay_protected">Atualize agora para continuar protegido ou aguarde até que sua largura de banda seja redefinida em %s</string>
+    <string name="changelog">Registro de alterações</string>
 </resources>

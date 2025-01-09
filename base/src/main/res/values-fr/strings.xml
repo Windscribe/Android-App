@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">Vous êtes à court de données</string>
     <string name="you_ve_been_banned">Vous avez été banni</string>
     <string name="upgrade_later">Je mettrai à niveau plus tard</string>
-    <string name="upgrade_to_stay_protected">Effectuez une mise à niveau pour rester protégé ou attendez la réinitialisation du mois prochain</string>
     <string name="get_more_data">OBTENEZ PLUS DE DONNÉES</string>
     <string name="data_left">%1$.2f Go restant</string>
     <string name="gb_month">- Go/Mois</string>
@@ -482,4 +481,6 @@ dernier emplacement choisi.</string>
     <string name="save">Enregistrer</string>
     <string name="clear">Clair</string>
     <string name="enter_1_key_value_per_line">Saisissez une clé=valeur par ligne.</string>
+    <string name="upgrade_to_stay_protected">Mettez à niveau maintenant pour rester protégé ou attendez que votre bande passante soit réinitialisée le %s</string>
+    <string name="changelog">Journal des modifications</string>
 </resources>

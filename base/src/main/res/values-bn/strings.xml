@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">আপনি ডেটা শেষ করে ফেলেছেন</string>
     <string name="you_ve_been_banned">আপনাকে নিষিদ্ধ করা হয়েছে</string>
     <string name="upgrade_later">পরে আপগ্রেড করব</string>
-    <string name="upgrade_to_stay_protected">সুরক্ষিত থাকতে আপগ্রেড করুন অথবা পরবর্তী মাসের রিসেট পর্যন্ত অপেক্ষা করুন</string>
     <string name="get_more_data">আরও ডেটা পান</string>
     <string name="data_left">%1$.2f GB বাকি</string>
     <string name="gb_month">- GB/মাস</string>

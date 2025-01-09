@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">У вас закончились данные</string>
     <string name="you_ve_been_banned">Вы были заблокированы</string>
     <string name="upgrade_later">Я обновлю позже</string>
-    <string name="upgrade_to_stay_protected">Обновите, чтобы оставаться защищенным, или подождите до сброса трафика в следующем месяце</string>
     <string name="get_more_data">ПОЛУЧИТЬ БОЛЬШЕ ТРАФИКА</string>
     <string name="data_left">%1$.2f ГБ осталось</string>
     <string name="gb_month">- ГБ/месяц</string>
@@ -485,4 +484,6 @@
     <string name="custom_dns_address_hint">IP/DNS-over-HTTPS/TLS</string>
     <string name="enter_valid_ip_or_url">Введите верный IP или URL</string>
     <string name="custom_dns_explainer">Выберите DNS-сервер, который будет использоваться при подключении к Windscribe.</string>
+    <string name="upgrade_to_stay_protected">Обновитесь сейчас, чтобы оставаться защищённым, или дождитесь, пока ваш трафик не будет сброшен %s</string>
+    <string name="changelog">Журнал изменений</string>
 </resources>
