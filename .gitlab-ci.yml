@@ -87,9 +87,7 @@ UploadToNexusPublic:
     - apk add jq
     - authToken=$(curl -X POST https://pki.int.windscribe.com:8200/v1/auth/approle/login -d "role_id=$role_id&secret_id=$secret_id" | jq       --raw-output '.auth.client_token')
     - secretData=$(curl -H "X-Vault-Token:$authToken" -X GET https://pki.int.windscribe.com:8200/v1/kv/cicd/client-android)
-    - echo $secretData
     - signProperties=$(echo "$secretData" | jq '.data."sign.properties"')
-    - echo $signProperties
     - echo "$signProperties" | base64 -d -i > $SIGN_PROPERTIES_PATH
     - buildProperties=$(echo "$secretData" | jq '.data."build.properties"')
     - echo "$buildProperties" | base64 -d -i > $BUILD_PROPERTIES_PATH
