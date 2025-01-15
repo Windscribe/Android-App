@@ -46,8 +46,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/Masterminds/semver v1.5.0 h1:H65muMkzWKEuNDnfl9d70GUjFniHKHRbFPGBuZ3QEww=
 github.com/Masterminds/semver v1.5.0/go.mod h1:MB6lktGJrhw8PrUyiEoblNEGEQ+RzHPF078ddwwvV3Y=
-github.com/Windscribe/ctrld v1.3.10-android h1:rw6BMKjyey2H1+tv0CRYGFqvpIU7KhbflRwY6u4Wthg=
-github.com/Windscribe/ctrld v1.3.10-android/go.mod h1:J0sqhWES9qU2RahnXnE+Reddtn71ekZ8eWT3BrYyiGo=
+github.com/Windscribe/ctrld v1.3.10-crash-fix h1:t510EjRl/Bo0QutV3lF+parttmYIbhoMtdN9/3/aLDY=
+github.com/Windscribe/ctrld v1.3.10-crash-fix/go.mod h1:J0sqhWES9qU2RahnXnE+Reddtn71ekZ8eWT3BrYyiGo=
 github.com/Windscribe/wireguard v1.0.3 h1:8CKOCJZW8R5f+UcdIyz6U0yVMIRXLDJ6F8xinsCbzoo=
 github.com/Windscribe/wireguard v1.0.3/go.mod h1:whfbyDBt09xhCYQWtO2+3UVjlaq6/9hDZrjg2ZE6SyA=
 github.com/Windscribe/wstunnel v0.0.0-20240826061744-234a5b466a28 h1:AH1kMjqJpQEglv7QIUgzhxen9FJ2WmEB4z64U9C6s+Q=

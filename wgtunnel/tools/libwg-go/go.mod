@@ -4,7 +4,7 @@ go 1.23
 
 toolchain go1.23.2
 
-replace github.com/Control-D-Inc/ctrld => github.com/Windscribe/ctrld v1.3.10-android
+replace github.com/Control-D-Inc/ctrld => github.com/Windscribe/ctrld v1.3.10-crash-fix
 
 replace golang.zx2c4.com/wireguard => github.com/Windscribe/wireguard v1.0.3
 
@@ -95,7 +95,7 @@ require (
 	github.com/quic-go/quic-go v0.42.0 // indirect
 	github.com/refraction-networking/utls v1.3.2 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
-	github.com/rs/zerolog v1.33.0 // indirect
+	github.com/rs/zerolog v1.28.0 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
