@@ -127,8 +127,13 @@ class LatencyRepository @Inject constructor(
     }
 
     suspend fun updateFavouriteCityLatencies(): Boolean {
-        val cities =
-                localDbInterface.favourites.await().map { localDbInterface.getCityByID(it.id).await() }
+        val cities = localDbInterface.favourites.await().map {
+            try {
+                localDbInterface.getCityByID(it.id).await()
+            } catch (e: Exception) {
+               return@map null
+            }
+        }.filterNotNull()
         val pingJobs = cities.map { pingJobAsync(it) }
         val cityPings = runCatching {
             pingJobs.awaitAll().map { pingTime ->
