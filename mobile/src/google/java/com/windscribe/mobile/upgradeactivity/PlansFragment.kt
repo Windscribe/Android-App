@@ -110,6 +110,9 @@ class PlansFragment : Fragment(), OnCheckedChangeListener {
     @SuppressLint("SetTextI18n")
     private fun showPlans() {
         windscribeInAppProduct?.let { plan ->
+            if(plan.getSkus().isEmpty()) {
+                return
+            }
             if (plan.isPromo()) {
                 planRadioGroup?.visibility = View.GONE
                 promoPlan?.visibility = View.VISIBLE
