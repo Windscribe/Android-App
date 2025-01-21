@@ -4,7 +4,7 @@ go 1.23
 
 toolchain go1.23.2
 
-replace github.com/Control-D-Inc/ctrld => github.com/Windscribe/ctrld v1.3.10-0.20250115191235-b49331e7737b
+replace github.com/Control-D-Inc/ctrld => github.com/Windscribe/ctrld v1.3.11-android
 
 replace golang.zx2c4.com/wireguard => github.com/Windscribe/wireguard v1.0.3
 
@@ -15,7 +15,7 @@ replace github.com/rs/zerolog => github.com/Windscribe/zerolog v0.0.0-2024120613
 replace github.com/gorilla/websocket => github.com/Windscribe/wstunnel/websocket v0.0.0-20240826061744-234a5b466a28
 
 require (
-	github.com/Control-D-Inc/ctrld v1.3.12
+	github.com/Control-D-Inc/ctrld v1.3.11
 	github.com/Windscribe/wstunnel v0.0.0-20240826061744-234a5b466a28
 	github.com/spf13/cobra v1.8.1
 	golang.org/x/sys v0.28.0
@@ -33,11 +33,9 @@ require (
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/cuonglm/osinfo v0.0.0-20230921071424-e0e1b1e0bbbf // indirect
 	github.com/dblohm7/wingoes v0.0.0-20240119213807-a09d6be7affa // indirect
-	github.com/docker/go-units v0.5.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gaukas/godicttls v0.0.3 // indirect
 	github.com/go-json-experiment/json v0.0.0-20231102232822-2e55bd4e08b0 // indirect
-	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
@@ -67,7 +65,6 @@ require (
 	github.com/mdlayher/netlink v1.7.2 // indirect
 	github.com/mdlayher/packet v1.1.2 // indirect
 	github.com/mdlayher/socket v0.5.0 // indirect
-	github.com/microsoft/wmi v0.24.5 // indirect
 	github.com/miekg/dns v1.1.58 // indirect
 	github.com/minio/selfupdate v0.6.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
@@ -75,14 +72,13 @@ require (
 	github.com/onsi/ginkgo/v2 v2.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.19.1 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.48.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/prometheus/prom2json v1.3.3 // indirect
-	github.com/quic-go/qpack v0.5.1 // indirect
-	github.com/quic-go/quic-go v0.48.2 // indirect
+	github.com/quic-go/qpack v0.4.0 // indirect
+	github.com/quic-go/quic-go v0.42.0 // indirect
 	github.com/refraction-networking/utls v1.3.2 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rs/zerolog v1.28.0 // indirect
@@ -100,12 +96,12 @@ require (
 	go.uber.org/zap v1.27.0 // indirect
 	go4.org/mem v0.0.0-20220726221520-4f986261bf13 // indirect
 	go4.org/netipx v0.0.0-20231129151722-fdeea329fbba // indirect
-	golang.org/x/crypto v0.31.0 // indirect
-	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
+	golang.org/x/crypto v0.25.0 // indirect
+	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a // indirect
 	golang.org/x/mod v0.19.0 // indirect
-	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/net v0.27.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/tools v0.23.0 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
 	golang.zx2c4.com/wireguard/windows v0.5.3 // indirect
