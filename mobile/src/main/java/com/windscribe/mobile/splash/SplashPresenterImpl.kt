@@ -10,11 +10,14 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.WindError
 import io.reactivex.Completable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.observers.DisposableCompletableObserver
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
 import org.slf4j.LoggerFactory
+import java.util.Date
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class SplashPresenterImpl @Inject constructor(
@@ -105,6 +108,17 @@ class SplashPresenterImpl @Inject constructor(
         if (userLoggedIn) {
             interactor.getCompositeDisposable().add(
                 interactor.serverDataAvailable()
+                    .flatMap { serverListAvailable ->
+                        return@flatMap Single.create { sub ->
+                            interactor.getFireBaseManager().getFirebaseToken { token ->
+                                sub.onSuccess(token ?: "")
+                            }
+                        }.flatMap {
+                            interactor.getApiCallManager().getSessionGeneric(it)
+                        }.flatMap {
+                            return@flatMap Single.just(serverListAvailable)
+                        }
+                    }.timeout(500, TimeUnit.MILLISECONDS)
                     .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(object : DisposableSingleObserver<Boolean?>() {
                         override fun onError(ignored: Throwable) {
@@ -131,6 +145,9 @@ class SplashPresenterImpl @Inject constructor(
         logger.info("Checking if user already logged in...")
         val sessionHash = interactor.getAppPreferenceInterface().sessionHash
         if (sessionHash != null) {
+            if (interactor.getAppPreferenceInterface().loginTime == null){
+                interactor.getAppPreferenceInterface().loginTime = Date()
+            }
             logger.info("Session auth hash present. User is already logged in...")
             if (view.isConnectedToNetwork.not()) {
                 logger.info("NO ACTIVE NETWORK FOUND! Starting home activity with stale data.")

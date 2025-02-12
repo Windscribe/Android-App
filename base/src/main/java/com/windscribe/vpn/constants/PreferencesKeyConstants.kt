@@ -174,4 +174,7 @@ object PreferencesKeyConstants {
     const val SUGGESTED_PROTOCOL = "suggested_protocol"
     const val SUGGESTED_PORT = "suggested_port"
     const val WHITELISTED_NETWORK = "whitelisted_network"
+    const val DEVICE_ID = "device_id"
+    const val CONNECTION_COUNT = "connection_count"
+    const val POWER_WHITE_LIST_POPUP_SHOW_COUNT = "power_white_list_popup_show_count"
 }

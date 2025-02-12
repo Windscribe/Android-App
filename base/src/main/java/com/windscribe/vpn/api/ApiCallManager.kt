@@ -8,6 +8,7 @@ import com.windscribe.vpn.api.response.AddEmailResponse
 import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.api.response.BillingPlanResponse
 import com.windscribe.vpn.api.response.ClaimAccountResponse
+import com.windscribe.vpn.api.response.ClaimVoucherCodeResponse
 import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.api.response.GetMyIpResponse
@@ -75,10 +76,10 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
         }
     }
 
-    override fun claimAccount(username: String, password: String, email: String): Single<GenericResponseClass<ClaimAccountResponse?, ApiErrorResponse?>> {
+    override fun claimAccount(username: String, password: String, email: String, voucherCode: String?): Single<GenericResponseClass<ClaimAccountResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.claimAccount(preferencesHelper.sessionHash, username, password, email, "1") { code, json ->
+            val callback = wsNetServerAPI.claimAccount(preferencesHelper.sessionHash, username, password, email, voucherCode ?: "", "1") { code, json ->
                 buildResponse(sub, code, json, ClaimAccountResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -155,10 +156,10 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
         }
     }
 
-    override fun getSessionGeneric(extraParams: Map<String, String>?): Single<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>> {
+    override fun getSessionGeneric(firebaseToken: String?): Single<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.session(preferencesHelper.sessionHash) { code, json ->
+            val callback = wsNetServerAPI.session(preferencesHelper.sessionHash, "", firebaseToken ?: "") { code, json ->
                 buildResponse(sub, code, json, UserSessionResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -203,11 +204,21 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
         }
     }
 
-    override fun signUserIn(username: String, password: String, referringUsername: String?, email: String?): Single<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>> {
+    override fun signUserIn(username: String, password: String, referringUsername: String?, email: String?, voucherCode: String?): Single<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             val callback = wsNetServerAPI.signup(username, password, referringUsername ?: "", email
-                    ?: "") { code, json ->
+                    ?: "", voucherCode ?: "") { code, json ->
                 buildResponse(sub, code, json, UserRegistrationResponse::class.java)
+            }
+            sub.setCancellable { callback.cancel() }
+        }
+    }
+
+    override fun claimVoucherCode(voucherCode: String): Single<GenericResponseClass<ClaimVoucherCodeResponse?, ApiErrorResponse?>> {
+        return Single.create { sub ->
+            if (checkSession(sub)) return@create
+            val callback = wsNetServerAPI.claimVoucherCode(preferencesHelper.sessionHash, voucherCode) { code, json ->
+                buildResponse(sub, code, json, ClaimVoucherCodeResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
         }
@@ -372,10 +383,10 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
 
     private fun <T> buildResponse(sub: SingleEmitter<GenericResponseClass<T?, ApiErrorResponse?>>, code: Int, responseDataString: String, modelType: Class<T>) {
         when (code) {
-            1 -> sub.onError(WindScribeException("Unknown network error."))
-            2 -> sub.onError(WindScribeException("No network available."))
-            3 -> sub.onError(WindScribeException("Server returned incorrect response."))
-            4 -> sub.onError(WindScribeException("Unable to reach server."))
+            1 -> sub.onError(WindScribeException("WSNet: Network failed to connect to server."))
+            2 -> sub.onError(WindScribeException("WSNet: No network available to reach API."))
+            3 -> sub.onError(WindScribeException("WSNet: Server returned incorrect json response. Unable to parse it. Response: $responseDataString"))
+            4 -> sub.onError(WindScribeException("WSNet: All fallback domains have failed."))
             else -> {
                 try {
                     if (modelType.simpleName.equals("String")) {
@@ -389,7 +400,7 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
                         val errorObject = JsonResponseConverter.getErrorClass(JSONObject(responseDataString))
                         sub.onSuccess(GenericResponseClass(null, errorObject))
                     } catch (e: Exception) {
-                        sub.onError(WindScribeException("Server returned incorrect response."))
+                        sub.onError(WindScribeException("App: Unable to parse [ $responseDataString ] to ${modelType.simpleName}. ) "))
                     }
                 }
             }

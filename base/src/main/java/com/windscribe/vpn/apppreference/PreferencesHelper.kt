@@ -26,7 +26,7 @@ interface PreferencesHelper {
     var connectedFlagPath: String?
     var connectionStatus: String?
     val currentConnectionAttemptTag: String?
-    fun getDeviceUUID(username: String): String?
+    fun getDeviceUUID(): String?
     val disConnectedFlagPath: String?
     var flagViewHeight: Int
     var flagViewWidth: Int
@@ -40,7 +40,7 @@ interface PreferencesHelper {
     var lastConnectedUsingSplit: Boolean
     val lastSelectedTabIndex: Int
     var latencyType: String
-    val loginTime: Date
+    var loginTime: Date?
     var lowestPingId: Int
     var migrationRequired: Boolean
     val multipleTunnel: Boolean
@@ -120,7 +120,7 @@ interface PreferencesHelper {
     fun setConnectingToConfiguredLocation(connectingToConfiguredLocation: Boolean)
     fun setConnectingToStaticIP(connectingToStaticIP: Boolean)
     fun setConnectionAttemptTag()
-    fun setDeviceUUID(userName: String, deviceUUID: String?)
+    fun setDeviceUUID(deviceUUID: String?)
     fun setDisconnectedFlagPath(path: String?)
     fun setFutureSelectCity(cityId: Int)
     fun setGpsSpoofing(spoof: Boolean)
@@ -135,6 +135,11 @@ interface PreferencesHelper {
     fun setUserAccountUpdateRequired(required: Boolean)
     fun setUserIntendedDisconnect(userIntendedDisconnect: Boolean)
     fun userIsInGhostMode(): Boolean
+    fun increaseConnectionCount()
+    fun getConnectionCount(): Int
+    fun getPowerWhiteListDialogCount(): Int
+    fun setPowerWhiteListDialogCount(count: Int)
+
     var alreadyShownShareAppLink: Boolean
     var fakeTrafficVolume:FakeTrafficVolume
     var dnsMode: String
@@ -144,4 +149,5 @@ interface PreferencesHelper {
     fun getDefaultProtoInfo(): Pair<String, String>
     fun getDefaultNetworkInfo(networkName: String): NetworkInfo
     fun isSuggested(): Boolean
+    var locationHash: String?
 }

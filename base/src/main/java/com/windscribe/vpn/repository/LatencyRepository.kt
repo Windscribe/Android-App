@@ -46,7 +46,8 @@ class LatencyRepository @Inject constructor(
         private val preferencesHelper: PreferencesHelper,
         private val localDbInterface: LocalDbInterface,
         private val pingManager: WSNetPingManager,
-        private val vpnConnectionStateManager: dagger.Lazy<VPNConnectionStateManager>
+        private val vpnConnectionStateManager: dagger.Lazy<VPNConnectionStateManager>,
+        private val advanceParameterRepository: AdvanceParameterRepository
 ) {
     enum class LatencyType {
         Servers, StaticIp, Config
@@ -113,6 +114,7 @@ class LatencyRepository @Inject constructor(
                 localDbInterface.addPing(pingTime).await()
                 pingTime
             }.run {
+                logger.debug("Latency completed for ${this.count { it.pingTime > 0 && !it.isStatic }} cities.")
                 return@run updateLatencyEvent(this, LatencyType.Servers)
             }
         }
@@ -125,8 +127,13 @@ class LatencyRepository @Inject constructor(
     }
 
     suspend fun updateFavouriteCityLatencies(): Boolean {
-        val cities =
-                localDbInterface.favourites.await().map { localDbInterface.getCityByID(it.id).await() }
+        val cities = localDbInterface.favourites.await().map {
+            try {
+                localDbInterface.getCityByID(it.id).await()
+            } catch (e: Exception) {
+               return@map null
+            }
+        }.filterNotNull()
         val pingJobs = cities.map { pingJobAsync(it) }
         val cityPings = runCatching {
             pingJobs.awaitAll().map { pingTime ->
@@ -257,9 +264,10 @@ class LatencyRepository @Inject constructor(
         if (host == null) {
             return ping.apply { pingTime = -1 }
         }
-        val updatedPing = withTimeoutOrNull(3000) {
+        val updatedPing = withTimeoutOrNull(500) {
             suspendCancellableCoroutine {
-                pingManager.ping(ip, host, 0) { _, _, latency, _ ->
+                val pingType = advanceParameterRepository.pingType()
+                pingManager.ping(ip, host, pingType) { _, _, latency, _ ->
                     ping.apply {
                         pingTime = latency
                     }

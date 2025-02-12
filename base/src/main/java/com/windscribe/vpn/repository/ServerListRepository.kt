@@ -7,8 +7,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
-import com.windscribe.vpn.api.response.UserSessionResponse
-import com.windscribe.vpn.commonutils.WindUtilities
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.AdvanceParamsValues.IGNORE
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
@@ -26,6 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.await
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
+import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -37,15 +37,24 @@ class ServerListRepository @Inject constructor(
         private val preferenceChangeObserver: PreferenceChangeObserver,
         private val userRepository: UserRepository,
         private val appLifeCycleObserver: AppLifeCycleObserver,
-        private val advanceParameterRepository: AdvanceParameterRepository
+        private val advanceParameterRepository: AdvanceParameterRepository,
+        private val preferenceHelper: PreferencesHelper
 ) {
     private val logger = LoggerFactory.getLogger("server_list_repository")
     private var _events = MutableSharedFlow<List<RegionAndCities>>(replay = 1)
     val regions: SharedFlow<List<RegionAndCities>> = _events
+    private var _locationUIInvalidation = MutableSharedFlow<Boolean>(replay = 1)
+    val locationUIInvalidation = _locationUIInvalidation
     var globalServerList = true
 
     init {
         load()
+    }
+
+    fun invalidateServerListUI() {
+        scope.launch {
+            _locationUIInvalidation.emit(true)
+        }
     }
 
     fun load() {
@@ -109,6 +118,7 @@ class ServerListRepository @Inject constructor(
                     } else {
                         null
                     }
+                    preferenceHelper.locationHash = hash(it)
                     val dataArray = jsonObject.getJSONArray("data")
                     Gson().fromJson<List<Region>>(
                             dataArray.toString(),
@@ -119,6 +129,12 @@ class ServerListRepository @Inject constructor(
                 }
             }
         }.flatMapCompletable { regions: List<Region> -> addToDatabase(regions) }
+    }
+    fun hash(jsonString: String): String {
+        val bytes = jsonString.toByteArray()
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashBytes = digest.digest(bytes)
+        return hashBytes.joinToString("") { "%02x".format(it) }
     }
 
     private fun addToDatabase(regions: List<Region>): Completable {

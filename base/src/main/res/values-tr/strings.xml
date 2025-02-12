@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">Verileriniz bitti</string>
     <string name="you_ve_been_banned">Yasaklandınız</string>
     <string name="upgrade_later">Daha sonra yükselteceğim</string>
-    <string name="upgrade_to_stay_protected">Korunmaya devam etmek için yükseltin veya gelecek ayın sıfırlamasına kadar bekleyin</string>
     <string name="get_more_data">DAHA FAZLA VERI EDININ</string>
     <string name="data_left">%1$.2f GB Kaldı</string>
     <string name="gb_month">- GB/Ay</string>
@@ -482,4 +481,6 @@ son seçilen yer.</string>
     <string name="save">Kaydet</string>
     <string name="clear">Berrak</string>
     <string name="enter_1_key_value_per_line">Her satıra 1 anahtar=değer girin.</string>
+    <string name="upgrade_to_stay_protected">Korunmaya devam etmek için şimdi yükseltin veya bant genişliğiniz %s tarihinde sıfırlanana kadar bekleyin</string>
+    <string name="changelog">Değişiklik Günlüğü</string>
 </resources>

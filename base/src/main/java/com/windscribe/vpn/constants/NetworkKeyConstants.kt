@@ -40,6 +40,7 @@ object NetworkKeyConstants {
     const val URL_ABOUT = "/about"
     const val URL_TERMS = "/terms"
     const val URL_VIEW_LICENCE = "/terms/oss"
+    const val URL_CHANGELOG = "/changelog/android"
     const val URL_PRIVACY = "/privacy"
     const val URL_BLOG = "https://blog.windscribe.com/"
     const val URL_JOB = "/jobs"

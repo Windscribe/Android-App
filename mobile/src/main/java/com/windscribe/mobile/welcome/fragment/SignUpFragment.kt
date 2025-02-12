@@ -91,6 +91,12 @@ class SignUpFragment : Fragment(), TextWatcher,
     @BindView(R.id.referral_username)
     lateinit var referralUsernameEditText: AppCompatEditText
 
+    @BindView(R.id.voucher_collapse_icon)
+    lateinit var voucherCollapseIcon: ImageView
+
+    @BindView(R.id.voucher_hint)
+    lateinit var voucherHint: TextView
+
     @BindView(R.id.confirm_email_explainer)
     lateinit var confirmEmailExplainer: TextView
 
@@ -103,11 +109,15 @@ class SignUpFragment : Fragment(), TextWatcher,
     @BindView(R.id.bottom_focus)
     lateinit var bottomFocusView: ImageView
 
+    @BindView(R.id.voucher)
+    lateinit var voucher: AppCompatEditText
+
     private var isUserPro = false
     private var isAccountSetUpLayout = false
     private var fragmentCallBack: FragmentCallback? = null
     private var skipToHome = false
     private var showReferralViews = false
+    private var showVoucherViews = false
     private val ignoreEditTextChange = AtomicBoolean(false)
 
     override fun onAttach(context: Context) {
@@ -230,7 +240,8 @@ class SignUpFragment : Fragment(), TextWatcher,
                 usernameEditText.text.toString().trim { it <= ' ' },
                 passwordEditText.text.toString().trim { it <= ' ' },
                 emailEditText.text.toString().trim { it <= ' ' },
-                false
+                false,
+                voucher.text.toString().trim {it <= ' '},
             )
         } else {
             val referral = referralUsernameEditText.text.toString().trim { it <= ' ' }
@@ -240,7 +251,8 @@ class SignUpFragment : Fragment(), TextWatcher,
                 passwordEditText.text.toString().trim { it <= ' ' },
                 email,
                 referral,
-                false
+                false,
+                voucher.text.toString().trim {it <= ' '},
             )
         }
     }
@@ -248,6 +260,29 @@ class SignUpFragment : Fragment(), TextWatcher,
     @OnClick(R.id.referral_collapse_icon)
     fun onReferralCollapseIconClick() {
         toggleReferralViewVisibility()
+    }
+
+    @OnClick(R.id.voucher_collapse_icon)
+    fun onVoucherCollapseIconClick() {
+        toggleVoucherViewVisibility()
+    }
+
+    private fun toggleVoucherViewVisibility() {
+        voucherCollapseIcon.rotation = if (showVoucherViews.not()) {
+            0F
+        } else {
+            180F
+        }
+        voucher.visibility =
+            if (!showVoucherViews) View.VISIBLE else View.GONE
+        voucherHint.visibility =
+            if (!showVoucherViews) View.VISIBLE else View.GONE
+        showVoucherViews = showVoucherViews.not()
+        if (showVoucherViews) {
+            bottomFocusView.requestFocus()
+        } else {
+            usernameEditText.requestFocus()
+        }
     }
 
     private fun toggleReferralViewVisibility() {

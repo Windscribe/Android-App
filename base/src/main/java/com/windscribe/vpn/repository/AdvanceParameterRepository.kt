@@ -4,9 +4,11 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.AdvanceParamKeys.FORCE_NODE
 import com.windscribe.vpn.constants.AdvanceParamKeys.SERVER_LIST_COUNTRY_OVERRIDE
 import com.windscribe.vpn.constants.AdvanceParamKeys.SHOW_STRONG_SWAN_LOG
+import com.windscribe.vpn.constants.AdvanceParamKeys.SHOW_WG_LOG
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_START_DELAY
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_TEST_ATTEMPTS
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_TEST_RETRY_DELAY
+import com.windscribe.vpn.constants.AdvanceParamKeys.USE_ICMP_PINGS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,9 +19,11 @@ interface AdvanceParameterRepository {
     fun getCountryOverride(): String?
     fun getForceNode(): String?
     fun showStrongSwanLog(): Boolean
+    fun showWgLog(): Boolean
     fun getTunnelStartDelay(): Long?
     fun getTunnelTestRetryDelay(): Long?
     fun getTunnelTestAttempts(): Long?
+    fun pingType(): Int
 }
 
 class AdvanceParameterRepositoryImpl(val scope: CoroutineScope, val preferencesHelper: PreferencesHelper) : AdvanceParameterRepository {
@@ -48,6 +52,10 @@ class AdvanceParameterRepositoryImpl(val scope: CoroutineScope, val preferencesH
         return params.value[SHOW_STRONG_SWAN_LOG].toBoolean()
     }
 
+    override fun showWgLog(): Boolean {
+        return params.value[SHOW_WG_LOG].toBoolean()
+    }
+
     override fun getTunnelStartDelay(): Long? {
         return params.value[TUNNEL_START_DELAY]?.toLongOrNull()
     }
@@ -58,6 +66,15 @@ class AdvanceParameterRepositoryImpl(val scope: CoroutineScope, val preferencesH
 
     override fun getTunnelTestAttempts(): Long? {
         return params.value[TUNNEL_TEST_ATTEMPTS]?.toLongOrNull()
+    }
+
+    override fun pingType(): Int {
+        val useIcmp =  params.value[USE_ICMP_PINGS]?.toBoolean()
+        return if (useIcmp == true) {
+            1
+        } else {
+            0
+        }
     }
 
     private fun mapTextToAdvanceParams(text: String): HashMap<String, String> {

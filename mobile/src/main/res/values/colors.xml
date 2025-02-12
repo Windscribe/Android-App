@@ -49,6 +49,7 @@
     <color name="colorLightBlue">#A0FEDA</color>
     <color name="colorBlue">#4285F4</color>
     <color name="colorBlueDark">#18222f</color>
+    <color name="colorBlueDark92">#EB18222F</color>
     <!-- Neon Green -->
     <color name="colorNeonGreen">#55ff8a</color>
     <color name="colorNeonGreen10">#1A54FF8A</color>

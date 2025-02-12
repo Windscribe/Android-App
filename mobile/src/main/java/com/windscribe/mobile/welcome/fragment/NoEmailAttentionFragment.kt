@@ -20,12 +20,14 @@ class NoEmailAttentionFragment : Fragment {
     private var fragmentCallBack: FragmentCallback? = null
     private var password = ""
     private var username = ""
+    private var voucherCode = ""
 
-    constructor(accountClaim: Boolean, username: String, password: String, isPro: Boolean) {
+    constructor(accountClaim: Boolean, username: String, password: String, isPro: Boolean, voucherCode: String) {
         this.accountClaim = accountClaim
         this.username = username
         this.password = password
         this.isPro = isPro
+        this.voucherCode = voucherCode
     }
 
     constructor()
@@ -62,9 +64,9 @@ class NoEmailAttentionFragment : Fragment {
     @OnClick(R.id.continue_without_email)
     fun onContinueWithoutEmailButtonClicked() {
         if (accountClaim) {
-            fragmentCallBack?.onAccountClaimButtonClick(username, password, "", true)
+            fragmentCallBack?.onAccountClaimButtonClick(username, password, "", true, voucherCode)
         } else {
-            fragmentCallBack?.onSignUpButtonClick(username, password, "", "", true)
+            fragmentCallBack?.onSignUpButtonClick(username, password, "", "", true, voucherCode)
         }
     }
 }

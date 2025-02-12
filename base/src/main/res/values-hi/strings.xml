@@ -59,7 +59,6 @@
     <string name="you_re_out_of_data">आपके पास डेटा नहीं है</string>
     <string name="you_ve_been_banned">आपको प्रतिबंधित कर दिया गया है</string>
     <string name="upgrade_later">मैं बाद में अपग्रेड करूंगा</string>
-    <string name="upgrade_to_stay_protected">सुरक्षित रहने के लिए अपग्रेड करें या अगले महीने के रीसेट तक प्रतीक्षा करें</string>
     <string name="get_more_data">अधिक जानकारी प्राप्त करें</string>
     <string name="data_left">%1$.2f GB बाएं</string>
     <string name="gb_month">- जीबी /</string>
@@ -482,4 +481,6 @@
     <string name="save">सेव</string>
     <string name="clear">स्पष्ट</string>
     <string name="enter_1_key_value_per_line">प्रति पंक्ति 1 key=value दर्ज करें।</string>
+    <string name="upgrade_to_stay_protected">सुरक्षित रहने के लिए अभी अपग्रेड करें या तब तक प्रतीक्षा करें जब तक आपका बैंडविड्थ %s को रीसेट नहीं हो जाता</string>
+    <string name="changelog">परिवर्तन सूची</string>
 </resources>

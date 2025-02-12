@@ -75,7 +75,7 @@ class WgConfigRepository(val scope: CoroutineScope, val interactor: ServiceInter
     suspend fun getWgParams(hostname: String, serverPublicKey: String, forceInit: Boolean = false, checkUserAccountStatus: Boolean = false): CallResult<WgRemoteParams> {
        if(checkUserAccountStatus){
            logger.debug("Checking user status.")
-           val userSessionResponse = interactor.apiManager.getSessionGeneric().result<UserSessionResponse>()
+           val userSessionResponse = interactor.apiManager.getSessionGeneric(null).result<UserSessionResponse>()
            if(userSessionResponse is CallResult.Success && userSessionResponse.data.userAccountStatus!=1){
                logger.debug("User status is expired/banned. ${userSessionResponse.data.userAccountStatus}")
                return CallResult.Error(NetworkErrorCodes.EXPIRED_OR_BANNED_ACCOUNT, "User account banned or expired.")
@@ -145,7 +145,7 @@ class WgConfigRepository(val scope: CoroutineScope, val interactor: ServiceInter
         var deviceId = ""
         if (interactor.preferenceHelper.isConnectingToStaticIp) {
             runCatching {
-                return@runCatching interactor.preferenceHelper.getDeviceUUID(interactor.preferenceHelper.userName)
+                return@runCatching interactor.preferenceHelper.getDeviceUUID()
                     ?: throw Exception("Failed to get username.")
             }.onSuccess {
                 logger.debug("Adding device id to wg connect $it")

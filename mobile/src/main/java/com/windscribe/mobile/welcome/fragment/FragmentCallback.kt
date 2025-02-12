@@ -8,7 +8,8 @@ interface FragmentCallback {
         username: String,
         password: String,
         email: String,
-        ignoreEmptyEmail: Boolean
+        ignoreEmptyEmail: Boolean,
+        voucherCode: String
     )
 
     fun onBackButtonPressed()
@@ -22,7 +23,8 @@ interface FragmentCallback {
         password: String,
         email: String,
         referralUsername: String,
-        ignoreEmptyEmail: Boolean
+        ignoreEmptyEmail: Boolean,
+        voucherCode: String
     )
 
     fun onSkipToHomeClick()

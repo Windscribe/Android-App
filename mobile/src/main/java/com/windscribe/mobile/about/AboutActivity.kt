@@ -45,6 +45,9 @@ class AboutActivity : BaseActivity(), AboutView {
     @BindView(R.id.cl_licence)
     lateinit var licenceView: IconLinkView
 
+    @BindView(R.id.cl_changelog)
+    lateinit var changelogView: IconLinkView
+
     @Inject
     lateinit var aboutPresenter: AboutPresenter
 
@@ -82,6 +85,9 @@ class AboutActivity : BaseActivity(), AboutView {
         }
         licenceView.onClick {
             aboutPresenter.onViewLicenceClick()
+        }
+        changelogView.onClick {
+            aboutPresenter.onChangelogClick()
         }
     }
 

@@ -58,7 +58,6 @@
     <string name="you_re_out_of_data">You’re out of data</string>
     <string name="you_ve_been_banned">You’ve been banned</string>
     <string name="upgrade_later">I’ll upgrade later</string>
-    <string name="upgrade_to_stay_protected">Upgrade to stay protected or wait until next month’s reset</string>
     <string name="get_more_data">GET MORE DATA</string>
     <string name="data_left">%1$.2f GB Left</string>
     <string name="gb_month">- GB/Month</string>
@@ -492,4 +491,17 @@ last chosen location.</string>
     <string name="custom_dns_explainer">Select the DNS server while connected to Windscribe.</string>
     <string name="quick_connect">Quick Connect</string>
     <string name="file_sharing_frowned_upon">File Sharing Frowned Upon</string>
+    <string name="voucher_code_optional">Voucher Code (Optional)</string>
+    <string name="voucher_code">Voucher Code</string>
+    <string name="have_a_voucher">Have a Voucher?</string>
+    <string name="apply_voucher_code">Apply voucher code to your account.</string>
+    <string name="voucher_code_is_applied">Voucher code is applied successfully.</string>
+    <string name="voucher_code_is_invalid">Voucher provided is invalid or expired.</string>
+    <string name="confirmed_email_required">Confirmed email is required.</string>
+    <string name="voucher_code_used_already">Voucher code is used already.</string>
+    <string name="power_whitelist_title">Disable Battery Optimization</string>
+    <string name="power_whitelist_summary">To maintain a stable connection, please remove Windscribe from battery optimization settings. This ensures uninterrupted service for IKEv2 connections.</string>
+    <string name="never_aks_again_for_permission">Don’t ask again</string>
+    <string name="upgrade_to_stay_protected">Upgrade now to stay protected or wait until your bandwidth is reset on %s</string>
+    <string name="changelog">Changelog</string>
 </resources>

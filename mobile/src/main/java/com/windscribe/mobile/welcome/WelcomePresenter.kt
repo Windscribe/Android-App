@@ -14,7 +14,8 @@ interface WelcomePresenter {
         username: String,
         password: String,
         email: String,
-        ignoreEmptyEmail: Boolean
+        ignoreEmptyEmail: Boolean,
+        voucherCode: String
     )
 
     fun startGhostAccountSetup()
@@ -24,7 +25,8 @@ interface WelcomePresenter {
         password: String,
         email: String,
         referralUsername: String,
-        ignoreEmptyEmail: Boolean
+        ignoreEmptyEmail: Boolean,
+        voucherCode: String
     )
 
     fun getLogUri(): File?

@@ -60,7 +60,6 @@ interface WindscribePresenter {
     fun onShowConfigLocListClicked()
     fun onShowFavoritesClicked()
     fun onShowFlixListClicked()
-    fun onShowLocationHealthChanged()
     fun onShowStaticIpListClicked()
     fun onStart()
     fun onUpgradeClicked()
@@ -82,6 +81,7 @@ interface WindscribePresenter {
     suspend fun observerSelectedLocation()
     suspend fun observeDecoyTrafficState()
     suspend fun observeLatency()
+    suspend fun observeLocationUIInvalidation()
     fun setAdapters()
     fun onNetworkNameClick()
     fun loadConfigFile(data: Intent)
@@ -94,4 +94,7 @@ interface WindscribePresenter {
     fun checkPendingAccountUpgrades()
     fun onAntiCensorShipStatusChanged()
     fun onConnectingAnimationCancelled()
+    suspend fun observeConnectionCount()
+    fun neverAskPowerWhiteListPermissionAgain()
+    fun askPowerWhiteListPermissionLater()
 }

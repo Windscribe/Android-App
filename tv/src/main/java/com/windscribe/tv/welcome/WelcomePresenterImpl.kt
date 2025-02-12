@@ -68,8 +68,7 @@ class WelcomePresenterImpl @Inject constructor(
                             DisposableSingleObserver<GenericResponseClass<XPressLoginCodeResponse?, ApiErrorResponse?>?>() {
                             override fun onError(e: Throwable) {
                                 welcomeView.prepareUiForApiCallFinished()
-                                logger
-                                    .debug("Unable to generate Login code. Check you network connection.")
+                                logger.error("Generate login code: {}", e.message)
                                 welcomeView.showError(
                                     "Unable to generate Login code. Check you network connection."
                                 )
@@ -84,7 +83,7 @@ class WelcomePresenterImpl @Inject constructor(
                                         welcomeView.setSecretCode(it.xPressLoginCode)
                                         startXPressLoginCodeVerifier(it)
                                     } ?: response.errorClass?.let {
-                                        logger.debug(it.errorMessage)
+                                        logger.error("Generate login code: {}", it)
                                         welcomeView.showError(it.errorMessage)
                                     } ?: kotlin.run {
                                         welcomeView.showError("Unable to generate Login code. Check you network connection.")
@@ -111,7 +110,7 @@ class WelcomePresenterImpl @Inject constructor(
             welcomeView.prepareUiForApiCallStart()
             interactor.getCompositeDisposable().add(
                 interactor.getApiCallManager()
-                    .claimAccount(username, password, email ?: "")
+                    .claimAccount(username, password, email ?: "", "")
                     .doOnSubscribe { welcomeView.updateCurrentProcess("Signing up") }
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -119,10 +118,7 @@ class WelcomePresenterImpl @Inject constructor(
                         object :
                             DisposableSingleObserver<GenericResponseClass<ClaimAccountResponse?, ApiErrorResponse?>?>() {
                             override fun onError(e: Throwable) {
-                                logger.debug(
-                                    "User SignUp error..." +
-                                        WindError.instance.convertThrowableToString(e)
-                                )
+                                logger.error("Claim account: {}", e.message)
                                 onLoginFailed()
                             }
 
@@ -134,7 +130,7 @@ class WelcomePresenterImpl @Inject constructor(
                                     welcomeView.updateCurrentProcess("SignUp successful...")
                                     onAccountClaimSuccess()
                                 } ?: response.errorClass?.let {
-                                    logger.debug("Account claim Failed...$it")
+                                    logger.error("Claim account: {}", it)
                                     onLoginResponseError(it, username, password)
                                 }
                             }
@@ -162,10 +158,10 @@ class WelcomePresenterImpl @Inject constructor(
                         DisposableSingleObserver<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>() {
                         override fun onError(e: Throwable) {
                             welcomeView.prepareUiForApiCallFinished()
+                            logger.error("Ghost account: {}", e.message)
                             if (e is IOException) {
                                 welcomeView.showError("Unable to reach server. Check your network connection.")
                             } else {
-                                logger.debug(e.message)
                                 welcomeView.goToSignUp()
                             }
                         }
@@ -175,11 +171,11 @@ class WelcomePresenterImpl @Inject constructor(
                         ) {
                             response.dataClass?.let {
                                 interactor.getAppPreferenceInterface().sessionHash = it.sessionAuthHash
-                                interactor.getFireBaseManager().getFirebaseToken { session ->
-                                    prepareLoginRegistrationDashboard(session)
+                                interactor.getFireBaseManager().getFirebaseToken { token ->
+                                    prepareLoginRegistrationDashboard(token)
                                 }
                             } ?: response.errorClass?.let {
-                                logger.debug(it.errorMessage)
+                                logger.error("Ghost account: {}", it)
                                 welcomeView.prepareUiForApiCallFinished()
                                 welcomeView.goToSignUp()
                             }
@@ -204,7 +200,7 @@ class WelcomePresenterImpl @Inject constructor(
                         object :
                             DisposableSingleObserver<GenericResponseClass<UserLoginResponse?, ApiErrorResponse?>?>() {
                             override fun onError(e: Throwable) {
-                                logger.debug("User login error...$e")
+                                logger.error("Login: {}", e.message)
                                 onLoginFailed()
                             }
 
@@ -215,11 +211,11 @@ class WelcomePresenterImpl @Inject constructor(
                                     logger.info("Logged user in successfully...")
                                     welcomeView.updateCurrentProcess("Login successful...")
                                     interactor.getAppPreferenceInterface().sessionHash = it.sessionAuthHash
-                                    interactor.getFireBaseManager().getFirebaseToken { session ->
-                                        prepareLoginRegistrationDashboard(session)
+                                    interactor.getFireBaseManager().getFirebaseToken { token ->
+                                        prepareLoginRegistrationDashboard(token)
                                     }
                                 } ?: response.errorClass?.let {
-                                    logger.info("Login error...$it")
+                                    logger.error("Login: {}", it)
                                     onLoginResponseError(it, username, password)
                                 }
                             }
@@ -245,7 +241,7 @@ class WelcomePresenterImpl @Inject constructor(
             welcomeView.prepareUiForApiCallStart()
             interactor.getCompositeDisposable().add(
                 interactor.getApiCallManager()
-                    .signUserIn(username, password, null, email)
+                    .signUserIn(username, password, null, email, "")
                     .doOnSubscribe { welcomeView.updateCurrentProcess("Signing up") }
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -253,10 +249,7 @@ class WelcomePresenterImpl @Inject constructor(
                         object :
                             DisposableSingleObserver<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>?>() {
                             override fun onError(e: Throwable) {
-                                logger.debug(
-                                    "User SignUp error..." +
-                                        WindError.instance.convertThrowableToString(e)
-                                )
+                                logger.error("Signup: {}", e.message)
                                 onLoginFailed()
                             }
 
@@ -267,11 +260,11 @@ class WelcomePresenterImpl @Inject constructor(
                                     logger.info("Sign up user successfully...")
                                     welcomeView.updateCurrentProcess("SignUp successful...")
                                     interactor.getAppPreferenceInterface().sessionHash = it.sessionAuthHash
-                                    interactor.getFireBaseManager().getFirebaseToken { session ->
-                                        prepareLoginRegistrationDashboard(session)
+                                    interactor.getFireBaseManager().getFirebaseToken { token ->
+                                        prepareLoginRegistrationDashboard(token)
                                     }
                                 } ?: response.errorClass?.let {
-                                    logger.info("SignUp Failed...$it")
+                                    logger.error("Signup: {}", it)
                                     onLoginResponseError(it, username, password)
                                 }
                             }
@@ -293,7 +286,7 @@ class WelcomePresenterImpl @Inject constructor(
                         DisposableSubscriber<GenericResponseClass<XPressLoginVerifyResponse?, ApiErrorResponse?>>() {
                         override fun onComplete() {}
                         override fun onError(t: Throwable) {
-                            logger.debug(t.message)
+                            logger.error("Login code verify: {}", t.message)
                             invalidateLoginCode(startTime, xPressLoginCodeResponse)
                         }
 
@@ -305,8 +298,8 @@ class WelcomePresenterImpl @Inject constructor(
                                 logger.debug("Successfully verified XPress login code.")
                                 val sessionAuth = it.sessionAuth
                                 interactor.getAppPreferenceInterface().sessionHash = sessionAuth
-                                interactor.getFireBaseManager().getFirebaseToken { session ->
-                                    prepareLoginRegistrationDashboard(session)
+                                interactor.getFireBaseManager().getFirebaseToken { token ->
+                                    prepareLoginRegistrationDashboard(token)
                                 }
                             }
                             invalidateLoginCode(startTime, xPressLoginCodeResponse)
@@ -327,7 +320,7 @@ class WelcomePresenterImpl @Inject constructor(
             TimeUnit.SECONDS.convert(System.currentTimeMillis() - startTime, TimeUnit.MILLISECONDS)
         if (secondsPassed > xPressLoginCodeResponse.ttl) {
             compositeDisposable.clear()
-            logger.debug("Failed to verify XPress login code in ttl .Giving up")
+            logger.error("Failed to verify XPress login code in ttl .Giving up")
             welcomeView.setSecretCode("")
         }
     }
@@ -335,7 +328,7 @@ class WelcomePresenterImpl @Inject constructor(
     private fun onAccountClaimSuccess() {
         welcomeView.updateCurrentProcess("Getting session")
         interactor.getCompositeDisposable().add(
-            interactor.getApiCallManager().getSessionGeneric()
+            interactor.getApiCallManager().getSessionGeneric(null)
                 .flatMap { apiResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> ->
                     Single.fromCallable {
                         apiResponse.dataClass?.let {
@@ -357,10 +350,7 @@ class WelcomePresenterImpl @Inject constructor(
                 }, {
                     welcomeView.prepareUiForApiCallFinished()
                     welcomeView.showError("Unable to auto login. Log in using new credentials.")
-                    logger.debug(
-                        "Error getting session" +
-                                WindError.instance.convertThrowableToString(it)
-                    )
+                    logger.error("Account claim: {}", it.message)
                 })
         )
     }
@@ -394,18 +384,19 @@ class WelcomePresenterImpl @Inject constructor(
         }
     }
 
-    private fun prepareLoginRegistrationDashboard(sessionMap: Map<String, String>) {
+    private fun prepareLoginRegistrationDashboard(firebaseToken: String?) {
+        interactor.getAppPreferenceInterface().loginTime = Date()
         welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_session))
         interactor.getCompositeDisposable()
-            .add(interactor.getApiCallManager().getSessionGeneric(sessionMap)
+            .add(interactor.getApiCallManager().getSessionGeneric(firebaseToken)
                 .flatMapCompletable { sessionResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> ->
                     Completable.fromSingle(Single.fromCallable {
                         sessionResponse.dataClass?.let {
                             if (interactor.getAppPreferenceInterface()
-                                    .getDeviceUUID(it.userName) == null) {
+                                    .getDeviceUUID() == null) {
                                 logger.debug("No device id is found for the current user, generating and saving UUID")
                                 interactor.getAppPreferenceInterface()
-                                    .setDeviceUUID(it.userName, UUID.randomUUID().toString())
+                                    .setDeviceUUID(UUID.randomUUID().toString())
                             }
                             interactor.getUserRepository().reload(sessionResponse.dataClass)
                         }
@@ -420,10 +411,7 @@ class WelcomePresenterImpl @Inject constructor(
                 .andThen(Completable.fromAction { interactor.getPreferenceChangeObserver().postCityServerChange() })
                 .andThen(interactor.updateUserData())
                 .onErrorResumeNext { throwable: Throwable ->
-                    logger.info(
-                        "*****Preparing dashboard failed: " + throwable.toString() +
-                            " Use reload button in server list in home activity."
-                    )
+                    logger.error("Prepare data: {}", throwable.message)
                     Completable.fromAction { interactor.getPreferenceChangeObserver().postCityServerChange() }
                         .andThen(interactor.updateUserData())
                 }.subscribeOn(Schedulers.io())
@@ -445,10 +433,7 @@ class WelcomePresenterImpl @Inject constructor(
 
                     override fun onError(e: Throwable) {
                         welcomeView.prepareUiForApiCallFinished()
-                        logger.debug(
-                            "Error while updating server status to local db. StackTrace: " +
-                                WindError.instance.convertThrowableToString(e)
-                        )
+                        logger.error("Prepare data: {}", e.message)
                     }
                 })
         )
@@ -481,7 +466,7 @@ class WelcomePresenterImpl @Inject constructor(
         }
 
         // Invalid username
-        if (!validateUsernameCharacters(username) && isLogin) {
+        if (!isLogin && !validateUsernameCharacters(username)) {
             logger.info("[username] has invalid characters in , displaying toast to the user...")
             welcomeView.setUsernameError(interactor.getResourceString(R.string.login_with_username))
             welcomeView.showToast(interactor.getResourceString(R.string.login_with_username))

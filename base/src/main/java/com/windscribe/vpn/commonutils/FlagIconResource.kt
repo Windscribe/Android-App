@@ -105,6 +105,12 @@ object FlagIconResource {
             flagIcon["MT"] = R.drawable.mt
             flagIcon["PE"] = R.drawable.pe
             flagIcon["GH"] = R.drawable.gh
+            flagIcon["BY"] = R.drawable.by
+            flagIcon["GT"] = R.drawable.gt
+            flagIcon["LA"] = R.drawable.la
+            flagIcon["NG"] = R.drawable.ng
+            flagIcon["PY"] = R.drawable.py
+            flagIcon["UY"] = R.drawable.uy
             return flagIcon
         }
 
@@ -196,6 +202,13 @@ object FlagIconResource {
             flagIcon["MT"] = R.drawable.mt_small
             flagIcon["PE"] = R.drawable.pe_small
             flagIcon["GH"] = R.drawable.gh_small
+            flagIcon["BY"] = R.drawable.by_small
+            flagIcon["GT"] = R.drawable.gt_small
+            flagIcon["LA"] = R.drawable.la_small
+            flagIcon["NG"] = R.drawable.ng_small
+            flagIcon["PY"] = R.drawable.py_small
+            flagIcon["UY"] = R.drawable.uy_small
+
             return flagIcon
         }
 }

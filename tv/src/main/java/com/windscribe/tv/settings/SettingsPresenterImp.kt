@@ -21,12 +21,15 @@ import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.api.response.PortMapResponse
 import com.windscribe.vpn.api.response.PortMapResponse.PortMap
 import com.windscribe.vpn.api.response.UserSessionResponse
+import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.BOOT_ALLOW
 import com.windscribe.vpn.constants.PreferencesKeyConstants.BOOT_BLOCK
 import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_AUTO
 import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_MANUAL
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DISABLED_MODE
+import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_CUSTOM
+import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_ROBERT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.EXCLUSIVE_MODE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.INCLUSIVE_MODE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.LAN_ALLOW
@@ -59,7 +62,8 @@ import javax.inject.Inject
 @PerActivity
 class SettingsPresenterImp @Inject constructor(
         private var settingView: SettingView,
-        private var interactor: ActivityInteractor
+        private var interactor: ActivityInteractor,
+        private var proxyDNSManager: ProxyDNSManager
 ) : SettingsPresenter, InstalledAppsAdapter.InstalledAppListener {
     private val installedAppList: MutableList<InstalledAppsData> = ArrayList()
     private var installedAppsAdapter: InstalledAppsAdapter? = null
@@ -116,6 +120,37 @@ class SettingsPresenterImp @Inject constructor(
         if (allowByPassLanTraffic) {
             interactor.getAppPreferenceInterface().lanByPass = false
             settingView.setLanTrafficMode(LAN_BLOCK)
+        }
+    }
+
+    override fun onCustomDNSClicked() {
+        val dnsMode = interactor.getAppPreferenceInterface().dnsMode
+        if (dnsMode != DNS_MODE_CUSTOM) {
+            interactor.getAppPreferenceInterface().dnsMode = DNS_MODE_CUSTOM
+            settingView.setCustomDNS(true)
+            settingView.setCustomDNSAddressVisibility(true)
+        }
+    }
+
+    override fun onRobertDNSClicked() {
+        val dnsMode = interactor.getAppPreferenceInterface().dnsMode
+        if (dnsMode != DNS_MODE_ROBERT) {
+            interactor.getAppPreferenceInterface().dnsMode = DNS_MODE_ROBERT
+            settingView.setCustomDNS(false)
+            settingView.setCustomDNSAddressVisibility(false)
+        }
+    }
+
+    override fun saveCustomDNSAddress(url: String) {
+        val dnsAddress = interactor.getAppPreferenceInterface().dnsAddress
+        if (dnsAddress != url && url.isNotEmpty()) {
+            interactor.getAppPreferenceInterface().dnsAddress = url
+            proxyDNSManager.invalidConfig = true
+            interactor.getMainScope().launch {
+                if (!interactor.getVpnConnectionStateManager().isVPNConnected()){
+                    proxyDNSManager.stopControlD()
+                }
+            }
         }
     }
 
@@ -482,6 +517,9 @@ class SettingsPresenterImp @Inject constructor(
         val allowBootStart = interactor.getAppPreferenceInterface().autoStartOnBoot
         settingView.setBootStartMode(if (allowBootStart) BOOT_ALLOW else BOOT_BLOCK)
         settingView.setAntiCensorshipMode(interactor.getAppPreferenceInterface().isAntiCensorshipOn)
+        settingView.setCustomDNS(interactor.getAppPreferenceInterface().dnsMode == DNS_MODE_CUSTOM)
+        settingView.setCustomDNSAddress(interactor.getAppPreferenceInterface().dnsAddress ?: "")
+        settingView.setCustomDNSAddressVisibility(interactor.getAppPreferenceInterface().dnsMode == DNS_MODE_CUSTOM)
         setupAppListAdapter()
     }
 
@@ -537,10 +575,7 @@ class SettingsPresenterImp @Inject constructor(
                                         DisposableSingleObserver<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>?>() {
                                     override fun onError(e: Throwable) {
                                         // Error in API Call
-                                        logger.debug(
-                                                "Error while making get session call:" +
-                                                        WindError.instance.convertThrowableToString(e)
-                                        )
+                                        logger.debug("Error while making get session call:" + e.message)
                                     }
 
                                     override fun onSuccess(

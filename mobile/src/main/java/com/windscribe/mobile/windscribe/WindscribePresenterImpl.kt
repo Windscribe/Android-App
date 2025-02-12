@@ -6,16 +6,30 @@ package com.windscribe.mobile.windscribe
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.util.Pair
 import android.view.View
 import androidx.documentfile.provider.DocumentFile
 import androidx.recyclerview.widget.RecyclerView
 import com.google.common.io.CharStreams
 import com.windscribe.mobile.R
-import com.windscribe.mobile.adapter.*
-import com.windscribe.mobile.connectionui.*
+import com.windscribe.mobile.adapter.ConfigAdapter
+import com.windscribe.mobile.adapter.FavouriteAdapter
+import com.windscribe.mobile.adapter.RegionsAdapter
+import com.windscribe.mobile.adapter.StaticRegionAdapter
+import com.windscribe.mobile.adapter.StreamingNodeAdapter
+import com.windscribe.mobile.connectionui.ConnectedAnimationState
+import com.windscribe.mobile.connectionui.ConnectedState
+import com.windscribe.mobile.connectionui.ConnectingAnimationState
+import com.windscribe.mobile.connectionui.ConnectingState
+import com.windscribe.mobile.connectionui.ConnectionOptions
+import com.windscribe.mobile.connectionui.ConnectionOptionsBuilder
+import com.windscribe.mobile.connectionui.DisconnectedState
+import com.windscribe.mobile.connectionui.FailedProtocol
+import com.windscribe.mobile.connectionui.UnsecuredProtocol
 import com.windscribe.mobile.listeners.ProtocolClickListener
 import com.windscribe.mobile.utils.PermissionManager
 import com.windscribe.mobile.utils.UiUtil.getDataRemainingColor
@@ -23,7 +37,8 @@ import com.windscribe.mobile.windscribe.WindscribeActivity.NetworkLayoutState
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.ActivityInteractorImpl.PortMapLoadCallback
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.api.response.*
+import com.windscribe.vpn.api.response.PortMapResponse
+import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.Util.getSavedLocation
@@ -41,7 +56,6 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.AZ_LIST_SELECTION_MODE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.LATENCY_LIST_SELECTION_MODE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
-import com.windscribe.vpn.constants.RateDialogConstants
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.constants.UserStatusConstants.ACCOUNT_STATUS_OK
 import com.windscribe.vpn.errormodel.WindError.Companion.instance
@@ -54,9 +68,21 @@ import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import com.windscribe.vpn.localdatabase.tables.WindNotification
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.LatencyRepository
-import com.windscribe.vpn.serverlist.entity.*
+import com.windscribe.vpn.serverlist.entity.City
+import com.windscribe.vpn.serverlist.entity.CityAndRegion
+import com.windscribe.vpn.serverlist.entity.ConfigFile
+import com.windscribe.vpn.serverlist.entity.Favourite
+import com.windscribe.vpn.serverlist.entity.Group
+import com.windscribe.vpn.serverlist.entity.PingTime
+import com.windscribe.vpn.serverlist.entity.RegionAndCities
+import com.windscribe.vpn.serverlist.entity.ServerListData
+import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.serverlist.interfaces.ListViewClickListener
-import com.windscribe.vpn.serverlist.sort.*
+import com.windscribe.vpn.serverlist.sort.ByCityName
+import com.windscribe.vpn.serverlist.sort.ByConfigName
+import com.windscribe.vpn.serverlist.sort.ByLatency
+import com.windscribe.vpn.serverlist.sort.ByRegionName
+import com.windscribe.vpn.serverlist.sort.ByStaticRegionName
 import com.windscribe.vpn.services.DeviceStateService.Companion.enqueueWork
 import com.windscribe.vpn.state.NetworkInfoListener
 import inet.ipaddr.AddressStringException
@@ -72,21 +98,23 @@ import io.reactivex.subscribers.DisposableSubscriber
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.io.InputStreamReader
-import java.util.*
-import java.util.concurrent.TimeUnit
+import java.util.Collections
+import java.util.Date
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 import javax.inject.Inject
 
+
 class WindscribePresenterImpl @Inject constructor(
-        private var windscribeView: WindscribeView,
-        private var interactor: ActivityInteractor,
-        private val permissionManager: PermissionManager
+    private var windscribeView: WindscribeView,
+    private var interactor: ActivityInteractor,
+    private val permissionManager: PermissionManager
 ) : WindscribePresenter, ListViewClickListener, ProtocolClickListener, NetworkInfoListener {
 
     // Adapters
@@ -142,30 +170,30 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun addToFavourite(
-            cityId: Int,
-            position: Int,
-            adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
+        cityId: Int,
+        position: Int,
+        adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
     ) {
         val favourite = Favourite()
         favourite.id = cityId
         interactor.getCompositeDisposable()
-                .add(interactor.addToFavourites(favourite).flatMap { interactor.getFavourites() }
-                        .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                        .subscribe({ favourites: List<Favourite> ->
-                            resetAdapters(
-                                    favourites,
-                                    interactor.getResourceString(R.string.added_to_favourites),
-                                    position,
-                                    adapter
-                            )
-                        }) { throwable: Throwable ->
-                            logger.debug(
-                                    String.format(
-                                            "Failed to add to favourites. : %s", throwable.localizedMessage
-                                    )
-                            )
-                            windscribeView.showToast("Failed to add to favourites.")
-                        })
+            .add(interactor.addToFavourites(favourite).flatMap { interactor.getFavourites() }
+                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ favourites: List<Favourite> ->
+                    resetAdapters(
+                        favourites,
+                        interactor.getResourceString(R.string.added_to_favourites),
+                        position,
+                        adapter
+                    )
+                }) { throwable: Throwable ->
+                    logger.debug(
+                        String.format(
+                            "Failed to add to favourites. : %s", throwable.localizedMessage
+                        )
+                    )
+                    windscribeView.showToast("Failed to add to favourites.")
+                })
     }
 
     override val lastSelectedTabIndex: Int
@@ -173,20 +201,20 @@ class WindscribePresenterImpl @Inject constructor(
 
     override fun deleteConfigFile(configFile: ConfigFile) {
         interactor.getCompositeDisposable().add(
-                interactor.deleteConfigFile(configFile.getPrimaryKey())
-                        .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
-                        .subscribeWith(object : DisposableCompletableObserver() {
-                            override fun onComplete() {
-                                interactor.getPreferenceChangeObserver().postConfigListChange()
-                                logger.error("Config deleted successfully")
-                                windscribeView.showToast("Config deleted successfully")
-                            }
+            interactor.deleteConfigFile(configFile.getPrimaryKey())
+                .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
+                .subscribeWith(object : DisposableCompletableObserver() {
+                    override fun onComplete() {
+                        interactor.getPreferenceChangeObserver().postConfigListChange()
+                        logger.error("Config deleted successfully")
+                        windscribeView.showToast("Config deleted successfully")
+                    }
 
-                            override fun onError(e: Throwable) {
-                                logger.error(e.toString())
-                                windscribeView.showToast("Error deleting config file.")
-                            }
-                        })
+                    override fun onError(e: Throwable) {
+                        logger.error(e.toString())
+                        windscribeView.showToast("Error deleting config file.")
+                    }
+                })
         )
     }
 
@@ -211,9 +239,9 @@ class WindscribePresenterImpl @Inject constructor(
         }
         if (extras != null && extras.containsKey("type") && "promo" == extras.getString("type")) {
             val pushNotificationAction = PushNotificationAction(
-                    extras.getString("pcpid")!!,
-                    extras.getString("promo_code")!!,
-                    extras.getString("type")!!
+                extras.getString("pcpid")!!,
+                extras.getString("promo_code")!!,
+                extras.getString("type")!!
             )
             appContext.appLifeCycleObserver.pushNotificationAction = pushNotificationAction
             logger.debug("App Launch by push notification with promo action. Taking user to upgrade")
@@ -249,7 +277,7 @@ class WindscribePresenterImpl @Inject constructor(
         configAdapter?.let { windscribeView.setConfigLocListAdapter(it) }
         if (staticRegionAdapter == null) {
             windscribeView.showStaticIpAdapterLoadError(
-                    "No Static IP's", interactor.getResourceString(R.string.add_static_ip), ""
+                "No Static IP's", interactor.getResourceString(R.string.add_static_ip), ""
             )
         }
     }
@@ -266,70 +294,73 @@ class WindscribePresenterImpl @Inject constructor(
         logger.debug("Loading config locations.")
         val serverListData = ServerListData()
         interactor.getCompositeDisposable().add(
-                interactor.getAllPings().flatMap { pingTestResults: List<PingTime> ->
-                    serverListData.pingTimes = pingTestResults
-                    interactor.getAllConfigs()
-                }.onErrorResumeNext(
-                        interactor.getAllConfigs()
-                ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(object : DisposableSingleObserver<List<ConfigFile>>() {
-                            override fun onError(e: Throwable) {
-                                windscribeView.hideRecyclerViewProgressBar()
-                                windscribeView.setConfigLocListAdapter(null)
-                                logger.debug("Error getting config locations..")
-                                windscribeView.showConfigLocAdapterLoadError(
-                                        interactor.getResourceString(R.string.no_custom_configs), 0
-                                )
-                            }
+            interactor.getAllPings().flatMap { pingTestResults: List<PingTime> ->
+                serverListData.pingTimes = pingTestResults
+                interactor.getAllConfigs()
+            }.onErrorResumeNext(
+                interactor.getAllConfigs()
+            ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(object : DisposableSingleObserver<List<ConfigFile>>() {
+                    override fun onError(e: Throwable) {
+                        windscribeView.hideRecyclerViewProgressBar()
+                        windscribeView.setConfigLocListAdapter(null)
+                        logger.debug("Error getting config locations..")
+                        windscribeView.showConfigLocAdapterLoadError(
+                            interactor.getResourceString(R.string.no_custom_configs), 0
+                        )
+                    }
 
-                            override fun onSuccess(configFiles: List<ConfigFile>) {
-                                val selection = interactor.getAppPreferenceInterface().selection
-                                if (selection == LATENCY_LIST_SELECTION_MODE) {
-                                    Collections.sort(configFiles) { o1: ConfigFile, o2: ConfigFile ->
-                                        serverListData.pingTimes
-                                        getPingTimeFromCity(
-                                                o1.getPrimaryKey(), serverListData
-                                        ) - getPingTimeFromCity(
-                                                o2.getPrimaryKey(), serverListData
-                                        )
-                                    }
-                                } else if (selection == AZ_LIST_SELECTION_MODE) {
-                                    Collections.sort(configFiles, ByConfigName())
-                                }
-                                logger.debug("Setting config location adapter")
-                                serverListData.setShowLatencyInMs(interactor.getAppPreferenceInterface().showLatencyInMS)
-                                serverListData.setShowLocationHealth(
-                                        interactor.getAppPreferenceInterface().isShowLocationHealthEnabled
+                    override fun onSuccess(configFiles: List<ConfigFile>) {
+                        val selection = interactor.getAppPreferenceInterface().selection
+                        if (selection == LATENCY_LIST_SELECTION_MODE) {
+                            Collections.sort(configFiles) { o1: ConfigFile, o2: ConfigFile ->
+                                serverListData.pingTimes
+                                getPingTimeFromCity(
+                                    o1.getPrimaryKey(), serverListData
+                                ) - getPingTimeFromCity(
+                                    o2.getPrimaryKey(), serverListData
                                 )
-                                serverListData.flags = flagIcons
-                                serverListData.isProUser =
-                                        interactor.getAppPreferenceInterface().userStatus == 1
-                                if (configFiles.isNotEmpty()) {
-                                    configAdapter = ConfigAdapter(
-                                            configFiles, serverListData, this@WindscribePresenterImpl
-                                    )
-                                    windscribeView.setConfigLocListAdapter(configAdapter!!)
-                                    windscribeView.showConfigLocAdapterLoadError(
-                                            "", configFiles.size
-                                    )
-                                } else {
-                                    windscribeView.setConfigLocListAdapter(null)
-                                    logger.debug("No Configured Location found")
-                                    configAdapter = null
-                                    windscribeView.showConfigLocAdapterLoadError(
-                                            interactor.getResourceString(R.string.no_custom_configs), 0
-                                    )
-                                }
-                                windscribeView.hideRecyclerViewProgressBar()
                             }
-                        })
+                        } else if (selection == AZ_LIST_SELECTION_MODE) {
+                            Collections.sort(configFiles, ByConfigName())
+                        }
+                        logger.debug("Setting config location adapter")
+                        serverListData.setShowLatencyInMs(interactor.getAppPreferenceInterface().showLatencyInMS)
+                        serverListData.setShowLocationHealth(
+                            interactor.getAppPreferenceInterface().isShowLocationHealthEnabled
+                        )
+                        serverListData.flags = flagIcons
+                        serverListData.isProUser =
+                            interactor.getAppPreferenceInterface().userStatus == 1
+                        if (configFiles.isNotEmpty()) {
+                            configAdapter = ConfigAdapter(
+                                configFiles, serverListData, this@WindscribePresenterImpl
+                            )
+                            windscribeView.setConfigLocListAdapter(configAdapter!!)
+                            windscribeView.showConfigLocAdapterLoadError(
+                                "", configFiles.size
+                            )
+                        } else {
+                            windscribeView.setConfigLocListAdapter(null)
+                            logger.debug("No Configured Location found")
+                            configAdapter = null
+                            windscribeView.showConfigLocAdapterLoadError(
+                                interactor.getResourceString(R.string.no_custom_configs), 0
+                            )
+                        }
+                        windscribeView.hideRecyclerViewProgressBar()
+                    }
+                })
         )
     }
 
     override suspend fun observeAllLocations() {
         interactor.getServerListUpdater().regions.collectLatest {
-            if (it.isNotEmpty()) {
-                loadServerList(it.toMutableList())
+            val updatedServerListHash = interactor.getAppPreferenceInterface().locationHash
+            if (adapter?.serverListData?.serverListHash != updatedServerListHash) {
+                if (it.isNotEmpty()) {
+                    loadServerList(it.toMutableList(), updatedServerListHash)
+                }
             }
         }
     }
@@ -340,7 +371,7 @@ class WindscribePresenterImpl @Inject constructor(
             if (latencyAtomic.getAndSet(false)) return@collectLatest
             when (it.second) {
                 LatencyRepository.LatencyType.Servers -> {
-                    interactor.getServerListUpdater().load()
+                    interactor.getServerListUpdater().invalidateServerListUI()
                 }
 
                 LatencyRepository.LatencyType.StaticIp -> {
@@ -354,64 +385,65 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
-    private fun loadServerList(regions: MutableList<RegionAndCities>) {
+    private fun loadServerList(regions: MutableList<RegionAndCities>, serverListHash: String?) {
         logger.info("Loading server list from disk.")
         windscribeView.showRecyclerViewProgressBar()
         val serverListData = ServerListData()
         val oneTimeCompositeDisposable = CompositeDisposable()
         oneTimeCompositeDisposable.add(
-                interactor.getAllPings().onErrorReturnItem(ArrayList()).flatMap {
-                    serverListData.pingTimes = it
-                    logger.info("Loaded Latency data.")
-                    interactor.getFavourites()
-                }.onErrorReturnItem(ArrayList()).flatMap {
-                    logger.info("Loaded favourites data.")
-                    serverListData.favourites = it
-                    interactor.getLocationProvider().bestLocation
-                }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(object : DisposableSingleObserver<CityAndRegion?>() {
-                            override fun onError(e: Throwable) {
-                                windscribeView.hideRecyclerViewProgressBar()
-                                val error =
-                                        if (e is WindScribeException) e.message else "Unknown error loading while loading server list."
-                                logger.debug(error)
-                                windscribeView.showReloadError(error!!)
-                                if (!oneTimeCompositeDisposable.isDisposed) {
-                                    oneTimeCompositeDisposable.dispose()
-                                }
-                            }
+            interactor.getAllPings().onErrorReturnItem(ArrayList()).flatMap {
+                serverListData.pingTimes = it
+                logger.info("Loaded Latency data.")
+                interactor.getFavourites()
+            }.onErrorReturnItem(ArrayList()).flatMap {
+                logger.info("Loaded favourites data.")
+                serverListData.favourites = it
+                interactor.getLocationProvider().bestLocation
+            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(object : DisposableSingleObserver<CityAndRegion?>() {
+                    override fun onError(e: Throwable) {
+                        windscribeView.hideRecyclerViewProgressBar()
+                        val error =
+                            if (e is WindScribeException) e.message else "Unknown error loading while loading server list."
+                        logger.debug(error)
+                        windscribeView.showReloadError(error!!)
+                        if (!oneTimeCompositeDisposable.isDisposed) {
+                            oneTimeCompositeDisposable.dispose()
+                        }
+                    }
 
-                            override fun onSuccess(cityAndRegion: CityAndRegion) {
-                                logger.debug("Successfully loaded server list.")
-                                if (selectedLocation == null) {
-                                    val coordinatesArray =
-                                            cityAndRegion.city.coordinates.split(",".toRegex()).toTypedArray()
-                                    selectedLocation = LastSelectedLocation(
-                                            cityAndRegion.city.getId(),
-                                            cityAndRegion.city.nodeName,
-                                            cityAndRegion.city.nickName,
-                                            cityAndRegion.region.countryCode,
-                                            coordinatesArray[0],
-                                            coordinatesArray[1]
-                                    )
-                                }
-                                updateLocationUI(selectedLocation, true)
-                                serverListData.setShowLatencyInMs(interactor.getAppPreferenceInterface().showLatencyInMS)
-                                serverListData.setShowLocationHealth(
-                                        interactor.getAppPreferenceInterface().isShowLocationHealthEnabled
-                                )
-                                serverListData.flags = flagIcons
-                                serverListData.bestLocation = cityAndRegion
-                                serverListData.isProUser =
-                                        interactor.getAppPreferenceInterface().userStatus == 1
-                                logger.debug(if (serverListData.isProUser) "Setting server list for pro user" else "Setting server list for free user")
-                                setAllServerView(regions, serverListData)
-                                setFavouriteServerView(serverListData)
-                                if (!oneTimeCompositeDisposable.isDisposed) {
-                                    oneTimeCompositeDisposable.dispose()
-                                }
-                            }
-                        })
+                    override fun onSuccess(cityAndRegion: CityAndRegion) {
+                        logger.debug("Successfully loaded server list.")
+                        if (selectedLocation == null) {
+                            val coordinatesArray =
+                                cityAndRegion.city.coordinates.split(",".toRegex()).toTypedArray()
+                            selectedLocation = LastSelectedLocation(
+                                cityAndRegion.city.getId(),
+                                cityAndRegion.city.nodeName,
+                                cityAndRegion.city.nickName,
+                                cityAndRegion.region.countryCode,
+                                coordinatesArray[0],
+                                coordinatesArray[1]
+                            )
+                        }
+                        updateLocationUI(selectedLocation, true)
+                        serverListData.setShowLatencyInMs(interactor.getAppPreferenceInterface().showLatencyInMS)
+                        serverListData.setShowLocationHealth(
+                            interactor.getAppPreferenceInterface().isShowLocationHealthEnabled
+                        )
+                        serverListData.serverListHash = serverListHash
+                        serverListData.flags = flagIcons
+                        serverListData.bestLocation = cityAndRegion
+                        serverListData.isProUser =
+                            interactor.getAppPreferenceInterface().userStatus == 1
+                        logger.debug(if (serverListData.isProUser) "Setting server list for pro user" else "Setting server list for free user")
+                        setAllServerView(regions, serverListData)
+                        setFavouriteServerView(serverListData)
+                        if (!oneTimeCompositeDisposable.isDisposed) {
+                            oneTimeCompositeDisposable.dispose()
+                        }
+                    }
+                })
         )
     }
 
@@ -425,68 +457,69 @@ class WindscribePresenterImpl @Inject constructor(
     fun loadStaticServers(regions: MutableList<StaticRegion>) {
         logger.debug("Loading static servers.")
         interactor.getCompositeDisposable()
-                .add(interactor.getAllPings().onErrorReturnItem(ArrayList()).flatMap {
+            .add(
+                interactor.getAllPings().onErrorReturnItem(ArrayList()).flatMap {
                     val dataDetails = ServerListData()
                     dataDetails.pingTimes = it
                     dataDetails.setShowLatencyInMs(interactor.getAppPreferenceInterface().showLatencyInMS)
                     dataDetails.setShowLocationHealth(
-                            interactor.getAppPreferenceInterface().isShowLocationHealthEnabled
+                        interactor.getAppPreferenceInterface().isShowLocationHealthEnabled
                     )
                     dataDetails.flags = flagIcons
                     dataDetails.isProUser = interactor.getAppPreferenceInterface().userStatus == 1
                     Single.fromCallable { dataDetails }
                 }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(object : DisposableSingleObserver<ServerListData?>() {
-                            override fun onError(e: Throwable) {
-                                logger.debug("Error loading static server list:$e")
-                            }
+                    .subscribeWith(object : DisposableSingleObserver<ServerListData?>() {
+                        override fun onError(e: Throwable) {
+                            logger.debug("Error loading static server list:$e")
+                        }
 
-                            override fun onSuccess(serverListData: ServerListData) {
-                                val selection = interactor.getAppPreferenceInterface().selection
-                                if (selection == LATENCY_LIST_SELECTION_MODE) {
-                                    regions.sortWith { o1: StaticRegion, o2: StaticRegion ->
-                                        serverListData.pingTimes
-                                        getPingTimeFromCity(
-                                                o1.id, serverListData
-                                        ) - getPingTimeFromCity(
-                                                o2.id, serverListData
-                                        )
-                                    }
-                                } else if (selection == AZ_LIST_SELECTION_MODE) {
-                                    Collections.sort(regions, ByStaticRegionName())
-                                }
-                                if (regions.size > 0) {
-                                    logger.debug("Setting static ip adapter with " + regions.size + " items.")
-                                    staticRegionAdapter = StaticRegionAdapter(
-                                            regions, serverListData, this@WindscribePresenterImpl
-                                    )
-                                    staticRegionAdapter?.let {
-                                        windscribeView.setStaticRegionAdapter(it)
-                                    }
-                                    var deviceName = ""
-                                    if (regions[0].deviceName != null) {
-                                        deviceName = regions[0].deviceName
-                                    }
-                                    windscribeView.showStaticIpAdapterLoadError(
-                                            "",
-                                            interactor.getResourceString(R.string.add_static_ip),
-                                            deviceName
-                                    )
-                                } else {
-                                    staticRegionAdapter?.let { staticRegionAdapter ->
-                                        staticRegionAdapter.setStaticIpList(null)
-                                        staticRegionAdapter.notifyDataSetChanged()
-                                    }
-                                    logger.debug(if (staticRegionAdapter != null) "Removing static ip adapter." else "Setting no static ip error.")
-                                    windscribeView.showStaticIpAdapterLoadError(
-                                            "No Static IP's",
-                                            interactor.getResourceString(R.string.add_static_ip),
-                                            ""
+                        override fun onSuccess(serverListData: ServerListData) {
+                            val selection = interactor.getAppPreferenceInterface().selection
+                            if (selection == LATENCY_LIST_SELECTION_MODE) {
+                                regions.sortWith { o1: StaticRegion, o2: StaticRegion ->
+                                    serverListData.pingTimes
+                                    getPingTimeFromCity(
+                                        o1.id, serverListData
+                                    ) - getPingTimeFromCity(
+                                        o2.id, serverListData
                                     )
                                 }
+                            } else if (selection == AZ_LIST_SELECTION_MODE) {
+                                Collections.sort(regions, ByStaticRegionName())
                             }
-                        })
-                )
+                            if (regions.size > 0) {
+                                logger.debug("Setting static ip adapter with " + regions.size + " items.")
+                                staticRegionAdapter = StaticRegionAdapter(
+                                    regions, serverListData, this@WindscribePresenterImpl
+                                )
+                                staticRegionAdapter?.let {
+                                    windscribeView.setStaticRegionAdapter(it)
+                                }
+                                var deviceName = ""
+                                if (regions[0].deviceName != null) {
+                                    deviceName = regions[0].deviceName
+                                }
+                                windscribeView.showStaticIpAdapterLoadError(
+                                    "",
+                                    interactor.getResourceString(R.string.add_static_ip),
+                                    deviceName
+                                )
+                            } else {
+                                staticRegionAdapter?.let { staticRegionAdapter ->
+                                    staticRegionAdapter.setStaticIpList(null)
+                                    staticRegionAdapter.notifyDataSetChanged()
+                                }
+                                logger.debug(if (staticRegionAdapter != null) "Removing static ip adapter." else "Setting no static ip error.")
+                                windscribeView.showStaticIpAdapterLoadError(
+                                    "No Static IP's",
+                                    interactor.getResourceString(R.string.add_static_ip),
+                                    ""
+                                )
+                            }
+                        }
+                    })
+            )
     }
 
     override fun logoutFromCurrentSession() {
@@ -518,15 +551,15 @@ class WindscribePresenterImpl @Inject constructor(
                     }
                 }
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                    .subscribe { protocolInfo, error ->
-                        if (error != null) {
-                            logger.debug("Unable to get Protocol info from custom config. ${error.message}")
-                        } else if (protocolInfo != null) {
-                            windscribeView.setPortAndProtocol(
-                                    Util.getProtocolLabel(protocolInfo.protocol), protocolInfo.port
-                            )
-                        }
+                .subscribe { protocolInfo, error ->
+                    if (error != null) {
+                        logger.debug("Unable to get Protocol info from custom config. ${error.message}")
+                    } else if (protocolInfo != null) {
+                        windscribeView.setPortAndProtocol(
+                            Util.getProtocolLabel(protocolInfo.protocol), protocolInfo.port
+                        )
                     }
+                }
         }
     }
 
@@ -618,7 +651,8 @@ class WindscribePresenterImpl @Inject constructor(
         logger.debug("User clicked on city.")
         selectedLocation?.cityId?.let {
             if (it == cityId && (interactor.getVpnConnectionStateManager()
-                            .isVPNActive() || connectingFromServerList)) {
+                    .isVPNActive() || connectingFromServerList)
+            ) {
                 return@let
             }
             connectingFromServerList = true
@@ -635,7 +669,7 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun onConfigFileContentReceived(
-            name: String, content: String, username: String, password: String
+        name: String, content: String, username: String, password: String
     ) {
         val configFile = ConfigFile(0, name, content, username, password, true)
         addConfigFileToDatabase(configFile)
@@ -674,11 +708,11 @@ class WindscribePresenterImpl @Inject constructor(
                     if (sourceType != null) {
                         when (sourceType) {
                             SelectedLocationType.StaticIp -> connectToStaticIp(
-                                    it.cityId
+                                it.cityId
                             )
 
                             SelectedLocationType.CustomConfiguredProfile -> connectToConfiguredLocation(
-                                    it.cityId
+                                it.cityId
                             )
 
                             SelectedLocationType.CityLocation -> connectToCity(it.cityId)
@@ -695,7 +729,7 @@ class WindscribePresenterImpl @Inject constructor(
     override fun onConnectedAnimationCompleted() {
         selectedLocation?.let {
             windscribeView.setupLayoutConnected(
-                    ConnectedState(it, connectionOptions, appContext)
+                ConnectedState(it, connectionOptions, appContext)
             )
         }
     }
@@ -703,9 +737,9 @@ class WindscribePresenterImpl @Inject constructor(
     override fun onConnectingAnimationCompleted() {
         selectedLocation?.let {
             windscribeView.setupLayoutConnecting(
-                    ConnectingState(
-                            it, connectionOptions, appContext
-                    )
+                ConnectingState(
+                    it, connectionOptions, appContext
+                )
             )
         }
     }
@@ -714,9 +748,9 @@ class WindscribePresenterImpl @Inject constructor(
         selectedLocation?.let {
             windscribeView.setCountryFlag(FlagIconResource.getFlag(it.countryCode))
             windscribeView.setupLayoutConnecting(
-                    ConnectingState(
-                            it, connectionOptions, appContext
-                    )
+                ConnectingState(
+                    it, connectionOptions, appContext
+                )
             )
         }
     }
@@ -773,17 +807,17 @@ class WindscribePresenterImpl @Inject constructor(
             if (networkInformation?.isAutoSecureOn != true) {
                 logger.debug("Setting closed Preferred layout.")
                 windscribeView.setNetworkLayout(
-                        networkInformation, NetworkLayoutState.OPEN_1, false
+                    networkInformation, NetworkLayoutState.OPEN_1, false
                 )
             } else if (networkInformation?.isPreferredOn != true) {
                 logger.debug("Setting open 2 Preferred layout.")
                 windscribeView.setNetworkLayout(
-                        networkInformation, NetworkLayoutState.OPEN_2, false
+                    networkInformation, NetworkLayoutState.OPEN_2, false
                 )
             } else {
                 logger.debug("Setting open 3 Preferred layout.")
                 windscribeView.setNetworkLayout(
-                        networkInformation, NetworkLayoutState.OPEN_3, false
+                    networkInformation, NetworkLayoutState.OPEN_3, false
                 )
             }
         } else {
@@ -801,7 +835,7 @@ class WindscribePresenterImpl @Inject constructor(
                     setCustomConfigPortAndProtocol()
                 } else {
                     windscribeView.setPortAndProtocol(
-                            Util.getProtocolLabel(it.protocol), it.port
+                        Util.getProtocolLabel(it.protocol), it.port
                     )
                 }
             }
@@ -812,7 +846,7 @@ class WindscribePresenterImpl @Inject constructor(
         if (checkForReconnect) {
             logger.debug("Network Layout collapsed.")
             val connectionPreference =
-                    interactor.getAppPreferenceInterface().globalUserConnectionPreference
+                interactor.getAppPreferenceInterface().globalUserConnectionPreference
             if (networkInformation != null && connectionPreference && WindUtilities.getSourceTypeBlocking() !== SelectedLocationType.CustomConfiguredProfile) {
                 if (isNetworkInfoChanged && (networkInformation?.isAutoSecureOn == true) && networkInformation?.isPreferredOn == true) {
                     if (interactor.getVpnConnectionStateManager().isVPNConnected()) {
@@ -834,7 +868,9 @@ class WindscribePresenterImpl @Inject constructor(
      * Set Ui based on network
      * */
     override fun onNetworkStateChanged() {
-        if (WindUtilities.isOnline() && !interactor.getVpnConnectionStateManager().isVPNActive() && !interactor.getAppPreferenceInterface().isReconnecting) {
+        if (WindUtilities.isOnline() && !interactor.getVpnConnectionStateManager()
+                .isVPNActive() && !interactor.getAppPreferenceInterface().isReconnecting
+        ) {
             interactor.getWorkManager().updateNodeLatencies()
         }
         setIpFromLocalStorage()
@@ -872,7 +908,7 @@ class WindscribePresenterImpl @Inject constructor(
                             networkInformation?.let {
                                 it.protocol = portMap.protocol
                                 windscribeView.setupPortMapAdapter(
-                                        it.port, portMap.ports
+                                    it.port, portMap.ports
                                 )
                                 interactor.getNetworkInfoManager().updateNetworkInfo(it)
                             }
@@ -950,7 +986,7 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getActivityScope().launch {
             withContext(interactor.getMainScope().coroutineContext) {
                 return@withContext interactor.getLatencyRepository()
-                        .updateStreamingServerLatencies()
+                    .updateStreamingServerLatencies()
             }
             windscribeView.setRefreshLayout(false)
             logger.debug("Ping testing finished successfully.")
@@ -966,26 +1002,26 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getMainScope().launch { interactor.getVPNController().disconnectAsync() }
         interactor.getAppPreferenceInterface().setUserAccountUpdateRequired(true)
         interactor.getCompositeDisposable().add(
-                interactor.getConnectionDataUpdater().update()
-                        .andThen(interactor.getServerListUpdater().update())
-                        .andThen(Completable.fromAction { interactor.getUserRepository().reload() })
-                        .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(object : DisposableCompletableObserver() {
-                            override fun onComplete() {
-                                windscribeView.hideRecyclerViewProgressBar()
-                                logger.debug("Server list, connection data and static ip data is updated successfully.")
-                                windscribeView.showToast("Updated successfully.")
-                                interactor.getAppPreferenceInterface().migrationRequired = false
-                                interactor.getAppPreferenceInterface().setUserAccountUpdateRequired(false)
-                            }
+            interactor.getConnectionDataUpdater().update()
+                .andThen(interactor.getServerListUpdater().update())
+                .andThen(Completable.fromAction { interactor.getUserRepository().reload() })
+                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(object : DisposableCompletableObserver() {
+                    override fun onComplete() {
+                        windscribeView.hideRecyclerViewProgressBar()
+                        logger.debug("Server list, connection data and static ip data is updated successfully.")
+                        windscribeView.showToast("Updated successfully.")
+                        interactor.getAppPreferenceInterface().migrationRequired = false
+                        interactor.getAppPreferenceInterface().setUserAccountUpdateRequired(false)
+                    }
 
-                            override fun onError(e: Throwable) {
-                                windscribeView.hideRecyclerViewProgressBar()
-                                logger.debug("Server list update failed.$e")
-                                windscribeView.showToast("Check your internet connection.")
-                                windscribeView.showReloadError("Error loading server list")
-                            }
-                        })
+                    override fun onError(e: Throwable) {
+                        windscribeView.hideRecyclerViewProgressBar()
+                        logger.debug("Server list update failed.$e")
+                        windscribeView.showToast("Check your internet connection.")
+                        windscribeView.showReloadError("Error loading server list")
+                    }
+                })
         )
     }
 
@@ -1016,7 +1052,7 @@ class WindscribePresenterImpl @Inject constructor(
                     searchGroups.addAll(groupsList)
                 }
                 windscribeView.setupSearchLayout(
-                        searchGroups, adapter.serverListData, this@WindscribePresenterImpl
+                    searchGroups, adapter.serverListData, this@WindscribePresenterImpl
                 )
             }
         }
@@ -1057,14 +1093,6 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
-    override fun onShowLocationHealthChanged() {
-        adapter?.let {
-            val dataDetails = it.serverListData
-            dataDetails.setShowLocationHealth(interactor.getAppPreferenceInterface().isShowLocationHealthEnabled)
-            updateServerListData(dataDetails)
-        }
-    }
-
     override fun onShowStaticIpListClicked() {
         logger.info("Starting show static ip list transition...")
         windscribeView.showListBarSelectTransition(R.id.img_static_ip_list)
@@ -1095,9 +1123,9 @@ class WindscribePresenterImpl @Inject constructor(
             if (windscribeView.uiConnectionState !is ConnectingAnimationState) {
                 logger.debug("Changing UI state to connecting.")
                 windscribeView.startVpnConnectingAnimation(
-                        ConnectingAnimationState(
-                                it, connectionOptions, appContext
-                        )
+                    ConnectingAnimationState(
+                        it, connectionOptions, appContext
+                    )
                 )
             } else {
                 updateLocationUI(it, true)
@@ -1108,9 +1136,9 @@ class WindscribePresenterImpl @Inject constructor(
     private fun onUnsecuredNetwork() {
         selectedLocation?.let {
             windscribeView.setupLayoutUnsecuredNetwork(
-                    UnsecuredProtocol(
-                            it, connectionOptions, appContext
-                    )
+                UnsecuredProtocol(
+                    it, connectionOptions, appContext
+                )
             )
         }
     }
@@ -1126,9 +1154,9 @@ class WindscribePresenterImpl @Inject constructor(
             selectedLocation?.let {
                 windscribeView.clearConnectingAnimation()
                 windscribeView.setupLayoutDisconnected(
-                        DisconnectedState(
-                                it, connectionOptions, appContext
-                        )
+                    DisconnectedState(
+                        it, connectionOptions, appContext
+                    )
                 )
                 setIpAddress()
                 updateLocationUI(it, false)
@@ -1138,8 +1166,8 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun onVPNDisconnecting() {
         windscribeView.setupLayoutDisconnecting(
-                interactor.getResourceString(R.string.disconnecting),
-                interactor.getColorResource(R.color.colorLightBlue)
+            interactor.getResourceString(R.string.disconnecting),
+            interactor.getColorResource(R.color.colorLightBlue)
         )
     }
 
@@ -1152,11 +1180,11 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getCompositeDisposable().add(getSavedLocation().filter {
             interactor.getVpnConnectionStateManager().isVPNActive()
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ location: LastSelectedLocation -> onLastSelectedLocationLoaded(location) }) { throwable: Throwable ->
-                    onLastSelectedLocationLoadFailed(
-                            throwable
-                    )
-                })
+            .subscribe({ location: LastSelectedLocation -> onLastSelectedLocationLoaded(location) }) { throwable: Throwable ->
+                onLastSelectedLocationLoadFailed(
+                    throwable
+                )
+            })
     }
 
     private fun onVpnRequiresUserInput() {
@@ -1164,14 +1192,14 @@ class WindscribePresenterImpl @Inject constructor(
         if (locationSourceType === SelectedLocationType.CustomConfiguredProfile) {
             val cityId = interactor.getLocationProvider().selectedCity.value
             interactor.getCompositeDisposable().add(
-                    interactor.getConfigFile(cityId).subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribeWith(object : DisposableSingleObserver<ConfigFile?>() {
-                                override fun onError(e: Throwable) {}
-                                override fun onSuccess(configFile: ConfigFile) {
-                                    windscribeView.openProvideUsernameAndPasswordDialog(configFile)
-                                }
-                            })
+                interactor.getConfigFile(cityId).subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(object : DisposableSingleObserver<ConfigFile?>() {
+                        override fun onError(e: Throwable) {}
+                        override fun onSuccess(configFile: ConfigFile) {
+                            windscribeView.openProvideUsernameAndPasswordDialog(configFile)
+                        }
+                    })
             )
         }
     }
@@ -1190,31 +1218,31 @@ class WindscribePresenterImpl @Inject constructor(
      * @Param cityID
      * */
     override fun removeFromFavourite(
-            cityId: Int,
-            position: Int,
-            adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
+        cityId: Int,
+        position: Int,
+        adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
     ) {
         val favourite = Favourite()
         favourite.id = cityId
         interactor.getCompositeDisposable()
-                .add(Completable.fromAction { interactor.deleteFavourite(favourite) }
-                        .andThen(interactor.getFavourites()).subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe({ favourites: List<Favourite> ->
-                            resetAdapters(
-                                    favourites,
-                                    interactor.getResourceString(R.string.remove_from_favourites),
-                                    position,
-                                    adapter
-                            )
-                        }) { throwable: Throwable ->
-                            logger.debug(
-                                    String.format(
-                                            "Failed to remove from favourites. : %s", throwable.localizedMessage
-                                    )
-                            )
-                            windscribeView.showToast("Failed to remove from favourites.")
-                        })
+            .add(Completable.fromAction { interactor.deleteFavourite(favourite) }
+                .andThen(interactor.getFavourites()).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ favourites: List<Favourite> ->
+                    resetAdapters(
+                        favourites,
+                        interactor.getResourceString(R.string.remove_from_favourites),
+                        position,
+                        adapter
+                    )
+                }) { throwable: Throwable ->
+                    logger.debug(
+                        String.format(
+                            "Failed to remove from favourites. : %s", throwable.localizedMessage
+                        )
+                    )
+                    windscribeView.showToast("Failed to remove from favourites.")
+                })
     }
 
     override fun saveLastSelectedTabIndex(index: Int) {
@@ -1245,7 +1273,7 @@ class WindscribePresenterImpl @Inject constructor(
                     }
                     heading?.let {
                         windscribeView.setupProtocolAdapter(
-                                heading, protocols.toTypedArray()
+                            heading, protocols.toTypedArray()
                         )
                     }
                 }
@@ -1260,16 +1288,16 @@ class WindscribePresenterImpl @Inject constructor(
     override suspend fun observerSelectedLocation() {
         interactor.getCompositeDisposable().add(Single.fromCallable {
             return@fromCallable Util.getLastSelectedLocation(appContext)
-                    ?: throw Exception("No saved location found")
+                ?: throw Exception("No saved location found")
         }.onErrorResumeNext(interactor.getLocationProvider().bestLocation.flatMap {
             val coordinatesArray = it.city.coordinates.split(",".toRegex()).toTypedArray()
             val location = LastSelectedLocation(
-                    it.city.id,
-                    it.city.nodeName,
-                    it.city.nickName,
-                    it.region.countryCode,
-                    coordinatesArray[0],
-                    coordinatesArray[1]
+                it.city.id,
+                it.city.nodeName,
+                it.city.nickName,
+                it.region.countryCode,
+                coordinatesArray[0],
+                coordinatesArray[1]
             )
             Util.saveSelectedLocation(location)
             return@flatMap Single.fromCallable { location }
@@ -1293,27 +1321,28 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
-    private fun setPreferredNetworkLayout(){
+    private fun setPreferredNetworkLayout() {
         if (windscribeView.networkLayoutState === NetworkLayoutState.CLOSED) {
             if (networkInformation?.isAutoSecureOn != true) {
                 windscribeView.setNetworkLayout(
-                        networkInformation, NetworkLayoutState.OPEN_1, false
+                    networkInformation, NetworkLayoutState.OPEN_1, false
                 )
             } else if (networkInformation?.isPreferredOn != true) {
                 windscribeView.setNetworkLayout(
-                        networkInformation, NetworkLayoutState.OPEN_2, false
+                    networkInformation, NetworkLayoutState.OPEN_2, false
                 )
             } else {
                 windscribeView.setNetworkLayout(
-                        networkInformation, NetworkLayoutState.OPEN_3, false
+                    networkInformation, NetworkLayoutState.OPEN_3, false
                 )
             }
         } else {
             windscribeView.setNetworkLayout(
-                    networkInformation, NetworkLayoutState.CLOSED, false
+                networkInformation, NetworkLayoutState.CLOSED, false
             )
         }
     }
+
     override fun onCollapseExpandIconClick() {
         try {
             WindUtilities.getNetworkName()
@@ -1325,16 +1354,21 @@ class WindscribePresenterImpl @Inject constructor(
                     windscribeView.setNetworkLayout(null, NetworkLayoutState.CLOSED, false)
                     windscribeView.showToast("No Network")
                 }
-                is BackgroundLocationPermissionNotAvailable , is NoLocationPermissionException-> {
+
+                is BackgroundLocationPermissionNotAvailable, is NoLocationPermissionException -> {
+                    if (!isGPSEnabled(appContext)) {
+                        windscribeView.showToast("Location service is disabled. Enable it to use preferred protocols.")
+                    }
                     windscribeView.setNetworkLayout(null, NetworkLayoutState.CLOSED, false)
                     permissionManager.withForegroundLocationPermission { error ->
-                        if (error != null){
+                        if (error != null) {
                             logger.debug(error)
                         } else {
                             interactor.getNetworkInfoManager().reload(true)
                         }
                     }
                 }
+
                 else -> {
                     logger.info("Unknown error.")
                 }
@@ -1344,40 +1378,45 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
+    private fun isGPSEnabled(context: Context): Boolean {
+        val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+    }
+
     override fun updateConfigFile(configFile: ConfigFile) {
         interactor.getCompositeDisposable().add(
-                interactor.addConfigFile(configFile).observeOn(AndroidSchedulers.mainThread())
-                        .subscribeOn(Schedulers.io())
-                        .subscribeWith(object : DisposableCompletableObserver() {
-                            @SuppressLint("NotifyDataSetChanged")
-                            override fun onComplete() {
-                                windscribeView.showToast("Updated profile")
-                                configAdapter?.notifyDataSetChanged()
-                            }
+            interactor.addConfigFile(configFile).observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribeWith(object : DisposableCompletableObserver() {
+                    @SuppressLint("NotifyDataSetChanged")
+                    override fun onComplete() {
+                        windscribeView.showToast("Updated profile")
+                        configAdapter?.notifyDataSetChanged()
+                    }
 
-                            override fun onError(e: Throwable) {
-                                logger.error(e.toString())
-                                windscribeView.showToast("Error updating config file.")
-                            }
-                        })
+                    override fun onError(e: Throwable) {
+                        logger.error(e.toString())
+                        windscribeView.showToast("Error updating config file.")
+                    }
+                })
         )
     }
 
     override fun updateConfigFileConnect(configFile: ConfigFile) {
         interactor.getCompositeDisposable().add(
-                interactor.addConfigFile(configFile).observeOn(AndroidSchedulers.mainThread())
-                        .subscribeOn(Schedulers.io())
-                        .subscribeWith(object : DisposableCompletableObserver() {
-                            override fun onComplete() {
-                                connectToConfiguredLocation(configFile.getPrimaryKey())
-                                interactor.getPreferenceChangeObserver().postConfigListChange()
-                            }
+            interactor.addConfigFile(configFile).observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribeWith(object : DisposableCompletableObserver() {
+                    override fun onComplete() {
+                        connectToConfiguredLocation(configFile.getPrimaryKey())
+                        interactor.getPreferenceChangeObserver().postConfigListChange()
+                    }
 
-                            override fun onError(e: Throwable) {
-                                logger.error(e.toString())
-                                windscribeView.showToast("Error updating config file.")
-                            }
-                        })
+                    override fun onError(e: Throwable) {
+                        logger.error(e.toString())
+                        windscribeView.showToast("Error updating config file.")
+                    }
+                })
         )
     }
 
@@ -1386,28 +1425,29 @@ class WindscribePresenterImpl @Inject constructor(
             return
         }
         interactor.getCompositeDisposable()
-                .add(interactor.getAllPings().flatMap { pingTimes: List<PingTime> ->
+            .add(
+                interactor.getAllPings().flatMap { pingTimes: List<PingTime> ->
                     interactor.getLocationProvider().bestLocation.flatMap { cityAndRegion: CityAndRegion ->
                         Single.fromCallable {
                             Pair(
-                                    pingTimes, cityAndRegion
+                                pingTimes, cityAndRegion
                             )
                         }
                     }
                 }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(object :
-                                DisposableSingleObserver<Pair<List<PingTime>, CityAndRegion>>() {
-                            override fun onError(e: Throwable) {}
-                            override fun onSuccess(pair: Pair<List<PingTime>, CityAndRegion>) {
-                                adapter?.let {
-                                    val serverListData = it.serverListData
-                                    serverListData.pingTimes = pair.first
-                                    serverListData.bestLocation = pair.second
-                                    updateServerListData(serverListData)
-                                }
+                    .subscribeWith(object :
+                        DisposableSingleObserver<Pair<List<PingTime>, CityAndRegion>>() {
+                        override fun onError(e: Throwable) {}
+                        override fun onSuccess(pair: Pair<List<PingTime>, CityAndRegion>) {
+                            adapter?.let {
+                                val serverListData = it.serverListData
+                                serverListData.pingTimes = pair.first
+                                serverListData.bestLocation = pair.second
+                                updateServerListData(serverListData)
                             }
-                        })
-                )
+                        }
+                    })
+            )
     }
 
     override fun userHasAccess(): Boolean {
@@ -1428,56 +1468,57 @@ class WindscribePresenterImpl @Inject constructor(
     private fun addConfigFileToDatabase(configFile: ConfigFile) {
         windscribeView.showRecyclerViewProgressBar()
         interactor.getCompositeDisposable()
-                .add(interactor.getMaxPrimaryKey().onErrorReturnItem(20000)
-                        .flatMapCompletable { max: Int ->
-                            configFile.setPrimaryKey(max + 1)
-                            interactor.addConfigFile(configFile)
-                        }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
-                        .subscribeWith(object : DisposableCompletableObserver() {
-                            override fun onComplete() {
-                                logger.error("Config added successfully to database.")
-                                interactor.getActivityScope().launch {
-                                    withContext(interactor.getMainScope().coroutineContext) {
-                                        interactor.getLatencyRepository().updateConfigLatencies()
-                                    }
-                                    windscribeView.showToast(interactor.getResourceString(R.string.config_added))
-                                    interactor.getPreferenceChangeObserver().postConfigListChange()
+            .add(
+                interactor.getMaxPrimaryKey().onErrorReturnItem(20000)
+                    .flatMapCompletable { max: Int ->
+                        configFile.setPrimaryKey(max + 1)
+                        interactor.addConfigFile(configFile)
+                    }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
+                    .subscribeWith(object : DisposableCompletableObserver() {
+                        override fun onComplete() {
+                            logger.error("Config added successfully to database.")
+                            interactor.getActivityScope().launch {
+                                withContext(interactor.getMainScope().coroutineContext) {
+                                    interactor.getLatencyRepository().updateConfigLatencies()
                                 }
+                                windscribeView.showToast(interactor.getResourceString(R.string.config_added))
+                                interactor.getPreferenceChangeObserver().postConfigListChange()
                             }
+                        }
 
-                            override fun onError(e: Throwable) {
-                                windscribeView.hideRecyclerViewProgressBar()
-                                logger.error(e.toString())
-                                windscribeView.showToast("Error adding config file.")
-                            }
-                        })
-                )
+                        override fun onError(e: Throwable) {
+                            windscribeView.hideRecyclerViewProgressBar()
+                            logger.error(e.toString())
+                            windscribeView.showToast("Error adding config file.")
+                        }
+                    })
+            )
     }
 
     private fun addNotificationChangeListener() {
         logger.debug("Registering notification listener.")
         interactor.getCompositeDisposable().add(
-                interactor.getNotifications(interactor.getAppPreferenceInterface().userName)
-                        .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(object : DisposableSubscriber<List<PopupNotificationTable>>() {
-                            override fun onComplete() {
-                                logger.debug("Registering notification listener finishing.")
-                            }
+            interactor.getNotifications(interactor.getAppPreferenceInterface().userName)
+                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(object : DisposableSubscriber<List<PopupNotificationTable>>() {
+                    override fun onComplete() {
+                        logger.debug("Registering notification listener finishing.")
+                    }
 
-                            override fun onError(t: Throwable) {
-                                logger.debug(
-                                        "Error reading popup notification table. StackTrace: " + instance.convertThrowableToString(
-                                                t
-                                        )
-                                )
-                            }
+                    override fun onError(t: Throwable) {
+                        logger.debug(
+                            "Error reading popup notification table. StackTrace: " + instance.convertThrowableToString(
+                                t
+                            )
+                        )
+                    }
 
-                            override fun onNext(popupNotificationTables: List<PopupNotificationTable>) {
-                                logger.debug("Notification data changed.")
-                                updateNotificationCount()
-                                checkForPopNotification(popupNotificationTables)
-                            }
-                        })
+                    override fun onNext(popupNotificationTables: List<PopupNotificationTable>) {
+                        logger.debug("Notification data changed.")
+                        updateNotificationCount()
+                        checkForPopNotification(popupNotificationTables)
+                    }
+                })
         )
     }
 
@@ -1520,7 +1561,8 @@ class WindscribePresenterImpl @Inject constructor(
         // User account status
         if (interactor.getUserAccountStatus() == UserStatusConstants.ACCOUNT_STATUS_EXPIRED && !isStaticIp) {
             logger.info("Error: account status is expired.")
-            windscribeView.setupAccountStatusExpired()
+            val resetDate = interactor.getUserRepository().user.value?.nextResetDate() ?: ""
+            windscribeView.setupAccountStatusExpired(resetDate)
             return false
         }
         if (interactor.getUserAccountStatus() == UserStatusConstants.ACCOUNT_STATUS_BANNED) {
@@ -1551,11 +1593,11 @@ class WindscribePresenterImpl @Inject constructor(
     private fun checkForPopNotification(popupNotificationTables: List<PopupNotificationTable>) {
         for (popupNotification in popupNotificationTables) {
             val alreadySeen = interactor.getAppPreferenceInterface()
-                    .isNotificationAlreadyShown(popupNotification.notificationId.toString())
+                .isNotificationAlreadyShown(popupNotification.notificationId.toString())
             if (!alreadySeen && popupNotification.popUpStatus == 1) {
                 logger.info("New popup notification received, showing notification...")
                 interactor.getAppPreferenceInterface()
-                        .saveNotificationId(popupNotification.notificationId.toString())
+                    .saveNotificationId(popupNotification.notificationId.toString())
                 windscribeView.openNewsFeedActivity(true, popupNotification.notificationId)
                 break
             }
@@ -1578,115 +1620,115 @@ class WindscribePresenterImpl @Inject constructor(
     private fun connectToCity(cityId: Int) {
         logger.debug("Getting city data.")
         interactor.getCompositeDisposable().add(
-                interactor.getCityAndRegionByID(cityId).subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(object : DisposableSingleObserver<CityAndRegion?>() {
-                            override fun onError(e: Throwable) {
-                                logger.debug("Could not find selected location in database.")
-                                windscribeView.showToast("Error")
-                            }
+            interactor.getCityAndRegionByID(cityId).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(object : DisposableSingleObserver<CityAndRegion?>() {
+                    override fun onError(e: Throwable) {
+                        logger.debug("Could not find selected location in database.")
+                        windscribeView.showToast("Error")
+                    }
 
-                            override fun onSuccess(cityAndRegion: CityAndRegion) {
-                                val serverStatus = cityAndRegion.region.status
-                                val eligibleToConnect = checkEligibility(
-                                        cityAndRegion.city.pro, false, serverStatus
-                                )
-                                if (eligibleToConnect) {
-                                    interactor.getAppPreferenceInterface().globalUserConnectionPreference =
-                                            true
-                                    interactor.getAppPreferenceInterface().setConnectingToStaticIP(false)
-                                    interactor.getAppPreferenceInterface()
-                                            .setConnectingToConfiguredLocation(false)
-                                    val coordinatesArray =
-                                            cityAndRegion.city.coordinates.split(",".toRegex()).toTypedArray()
-                                    selectedLocation = LastSelectedLocation(
-                                            cityAndRegion.city.getId(),
-                                            cityAndRegion.city.nodeName,
-                                            cityAndRegion.city.nickName,
-                                            cityAndRegion.region.countryCode,
-                                            coordinatesArray[0],
-                                            coordinatesArray[1]
-                                    )
-                                    updateLocationUI(selectedLocation, false)
-                                    logger.debug("Attempting to connect")
-                                    interactor.getMainScope().launch {
-                                        interactor.getAutoConnectionManager().connectInForeground()
-                                    }
-                                } else {
-                                    logger.debug("User can not connect to location right now.")
-                                }
+                    override fun onSuccess(cityAndRegion: CityAndRegion) {
+                        val serverStatus = cityAndRegion.region.status
+                        val eligibleToConnect = checkEligibility(
+                            cityAndRegion.city.pro, false, serverStatus
+                        )
+                        if (eligibleToConnect) {
+                            interactor.getAppPreferenceInterface().globalUserConnectionPreference =
+                                true
+                            interactor.getAppPreferenceInterface().setConnectingToStaticIP(false)
+                            interactor.getAppPreferenceInterface()
+                                .setConnectingToConfiguredLocation(false)
+                            val coordinatesArray =
+                                cityAndRegion.city.coordinates.split(",".toRegex()).toTypedArray()
+                            selectedLocation = LastSelectedLocation(
+                                cityAndRegion.city.getId(),
+                                cityAndRegion.city.nodeName,
+                                cityAndRegion.city.nickName,
+                                cityAndRegion.region.countryCode,
+                                coordinatesArray[0],
+                                coordinatesArray[1]
+                            )
+                            updateLocationUI(selectedLocation, false)
+                            logger.debug("Attempting to connect")
+                            interactor.getMainScope().launch {
+                                interactor.getAutoConnectionManager().connectInForeground()
                             }
-                        })
+                        } else {
+                            logger.debug("User can not connect to location right now.")
+                        }
+                    }
+                })
         )
     }
 
     private fun connectToConfiguredLocation(id: Int) {
         interactor.getCompositeDisposable().add(
-                interactor.getConfigFile(id).subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(object : DisposableSingleObserver<ConfigFile?>() {
-                            override fun onError(e: Throwable) {
-                                windscribeView.showToast("Error connecting to location")
-                            }
+            interactor.getConfigFile(id).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(object : DisposableSingleObserver<ConfigFile?>() {
+                    override fun onError(e: Throwable) {
+                        windscribeView.showToast("Error connecting to location")
+                    }
 
-                            override fun onSuccess(configFile: ConfigFile) {
-                                interactor.getLocationProvider().setSelectedCity(configFile.getPrimaryKey())
-                                selectedLocation = LastSelectedLocation(
-                                        configFile.getPrimaryKey(), "Custom Config", configFile.name, "", "", ""
-                                )
-                                updateLocationUI(selectedLocation, false)
-                                interactor.getAppPreferenceInterface().globalUserConnectionPreference = true
-                                interactor.getAppPreferenceInterface()
-                                        .setConnectingToConfiguredLocation(true)
-                                interactor.getAppPreferenceInterface().setConnectingToStaticIP(false)
-                                interactor.getVPNController().connectAsync()
-                            }
-                        })
+                    override fun onSuccess(configFile: ConfigFile) {
+                        interactor.getLocationProvider().setSelectedCity(configFile.getPrimaryKey())
+                        selectedLocation = LastSelectedLocation(
+                            configFile.getPrimaryKey(), "Custom Config", configFile.name, "", "", ""
+                        )
+                        updateLocationUI(selectedLocation, false)
+                        interactor.getAppPreferenceInterface().globalUserConnectionPreference = true
+                        interactor.getAppPreferenceInterface()
+                            .setConnectingToConfiguredLocation(true)
+                        interactor.getAppPreferenceInterface().setConnectingToStaticIP(false)
+                        interactor.getVPNController().connectAsync()
+                    }
+                })
         )
     }
 
     private fun connectToStaticIp(staticId: Int) {
         logger.debug("Getting static ip data.")
         interactor.getCompositeDisposable().add(
-                interactor.getStaticRegionByID(staticId).subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(object : DisposableSingleObserver<StaticRegion?>() {
-                            override fun onError(e: Throwable) {
-                                logger.debug("Could not find static ip in database")
-                                windscribeView.showToast("Error connecting to Location")
-                            }
+            interactor.getStaticRegionByID(staticId).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(object : DisposableSingleObserver<StaticRegion?>() {
+                    override fun onError(e: Throwable) {
+                        logger.debug("Could not find static ip in database")
+                        windscribeView.showToast("Error connecting to Location")
+                    }
 
-                            override fun onSuccess(staticRegion: StaticRegion) {
-                                val eligibleToConnect = checkEligibility(1, true, 1)
-                                if (eligibleToConnect) {
-                                    interactor.getAppPreferenceInterface().globalUserConnectionPreference =
-                                            true
-                                    interactor.getAppPreferenceInterface().setConnectingToStaticIP(true)
-                                    interactor.getAppPreferenceInterface()
-                                            .setConnectingToConfiguredLocation(false)
-                                    selectedLocation = LastSelectedLocation(
-                                            staticRegion.id,
-                                            staticRegion.cityName,
-                                            staticRegion.staticIp,
-                                            staticRegion.countryCode,
-                                            "",
-                                            ""
-                                    )
-                                    updateLocationUI(selectedLocation, false)
-                                    logger.debug("Attempting to connect..")
-                                    interactor.getMainScope().launch {
-                                        interactor.getAutoConnectionManager().connectInForeground()
-                                    }
-                                } else {
-                                    logger.debug("User can not connect to location right now.")
-                                }
+                    override fun onSuccess(staticRegion: StaticRegion) {
+                        val eligibleToConnect = checkEligibility(1, true, 1)
+                        if (eligibleToConnect) {
+                            interactor.getAppPreferenceInterface().globalUserConnectionPreference =
+                                true
+                            interactor.getAppPreferenceInterface().setConnectingToStaticIP(true)
+                            interactor.getAppPreferenceInterface()
+                                .setConnectingToConfiguredLocation(false)
+                            selectedLocation = LastSelectedLocation(
+                                staticRegion.id,
+                                staticRegion.cityName,
+                                staticRegion.staticIp,
+                                staticRegion.countryCode,
+                                "",
+                                ""
+                            )
+                            updateLocationUI(selectedLocation, false)
+                            logger.debug("Attempting to connect..")
+                            interactor.getMainScope().launch {
+                                interactor.getAutoConnectionManager().connectInForeground()
                             }
-                        })
+                        } else {
+                            logger.debug("User can not connect to location right now.")
+                        }
+                    }
+                })
         )
     }
 
     private fun elapsedOneDayAfterLogin(): Boolean {
-        val milliSeconds1 = interactor.getAppPreferenceInterface().loginTime.time
+        val milliSeconds1 = interactor.getAppPreferenceInterface().loginTime?.time ?: Date().time
         val milliSeconds2 = Date().time
         val periodSeconds = (milliSeconds2 - milliSeconds1) / 1000
         val elapsedDays = periodSeconds / 60 / 60 / 24
@@ -1697,23 +1739,23 @@ class WindscribePresenterImpl @Inject constructor(
         if (windscribeView.isConnectedToNetwork) {
             logger.info("Getting ip address from Api call.")
             interactor.getCompositeDisposable().add(
-                    interactor.getApiCallManager().checkConnectivityAndIpAddress()
-                            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                            .subscribe({ response ->
-                                response.dataClass?.let {
-                                    logger.info("Setting up user ip address...")
-                                    if (validIpAddress(it.userIp)) {
-                                        windscribeView.setIpAddress(getModifiedIpAddress(it.userIp))
-                                    }
-                                }
-                                response.errorClass?.let {
-                                    logger.info("Server returned error response when getting user ip.")
-                                    windscribeView.setIpAddress("---.---.---.---")
-                                }
-                            }, {
-                                logger.debug("Network call to get ip failed ${it.message}")
-                                windscribeView.setIpAddress("---.---.---.---")
-                            })
+                interactor.getApiCallManager().checkConnectivityAndIpAddress()
+                    .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                    .subscribe({ response ->
+                        response.dataClass?.let {
+                            logger.info("Setting up user ip address...")
+                            if (validIpAddress(it.userIp)) {
+                                windscribeView.setIpAddress(getModifiedIpAddress(it.userIp))
+                            }
+                        }
+                        response.errorClass?.let {
+                            logger.info("Server returned error response when getting user ip.")
+                            windscribeView.setIpAddress("---.---.---.---")
+                        }
+                    }, {
+                        logger.debug("Network call to get ip failed ${it.message}")
+                        windscribeView.setIpAddress("---.---.---.---")
+                    })
             )
         } else {
             logger.debug("Network is not available. Ip update failed...")
@@ -1733,7 +1775,7 @@ class WindscribePresenterImpl @Inject constructor(
             ipAddress = ipResponse
         }
         interactor.getAppPreferenceInterface()
-                .saveResponseStringData(PreferencesKeyConstants.USER_IP, ipAddress)
+            .saveResponseStringData(PreferencesKeyConstants.USER_IP, ipAddress)
         return ipAddress
     }
 
@@ -1772,13 +1814,13 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun onLastSelectedLocationLoadFailed(throwable: Throwable) {
         logger.debug(
-                "Error getting connected profile.StackTrace: " + instance.convertThrowableToString(
-                        throwable
-                )
+            "Error getting connected profile.StackTrace: " + instance.convertThrowableToString(
+                throwable
+            )
         )
         selectedLocation?.let {
             windscribeView.startVpnConnectedAnimation(
-                    ConnectedAnimationState(it, connectionOptions, appContext)
+                ConnectedAnimationState(it, connectionOptions, appContext)
             )
             updateLocationUI(it, true)
         }
@@ -1788,33 +1830,34 @@ class WindscribePresenterImpl @Inject constructor(
         selectedLocation = location
         selectedLocation?.let {
             windscribeView.startVpnConnectedAnimation(
-                    ConnectedAnimationState(
-                            it, connectionOptions, appContext
-                    )
+                ConnectedAnimationState(
+                    it, connectionOptions, appContext
+                )
             )
         }
         interactor.getCompositeDisposable().add(Single.fromCallable {
             interactor.getLocationProvider().setSelectedCity(location.cityId)
             return@fromCallable interactor.getAppPreferenceInterface().connectedFlagPath ?: ""
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe { flagPath: String ->
-                    if (interactor.getAppPreferenceInterface().isCustomBackground) {
-                        if (flagPath.isEmpty()) {
-                            windscribeView.setCountryFlag(R.drawable.dummy_flag)
-                        } else {
-                            windscribeView.setupLayoutForCustomBackground(flagPath)
-                        }
+            .subscribe { flagPath: String ->
+                if (interactor.getAppPreferenceInterface().isCustomBackground) {
+                    if (flagPath.isEmpty()) {
+                        windscribeView.setCountryFlag(R.drawable.dummy_flag)
+                    } else {
+                        windscribeView.setupLayoutForCustomBackground(flagPath)
                     }
-                    windscribeView.updateLocationName(location.nodeName, location.nickName)
-                })
+                }
+                windscribeView.updateLocationName(location.nodeName, location.nickName)
+            })
     }
 
     private fun onNotificationResponse(windNotifications: List<WindNotification>) {
         var count = 0
         for ((notificationId) in windNotifications) {
             if (!interactor.getAppPreferenceInterface().isNotificationAlreadyShown(
-                            notificationId.toString()
-                    )) {
+                    notificationId.toString()
+                )
+            ) {
                 count++
             }
         }
@@ -1829,7 +1872,7 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun onUserSessionError(e: Throwable) {
         logger.debug(
-                "Error retrieving user session data from storage" + instance.convertThrowableToString(e)
+            "Error retrieving user session data from storage" + instance.convertThrowableToString(e)
         )
     }
 
@@ -1838,10 +1881,10 @@ class WindscribePresenterImpl @Inject constructor(
      * */
     @SuppressLint("NotifyDataSetChanged")
     private fun resetAdapters(
-            favourites: List<Favourite>,
-            message: String,
-            position: Int,
-            changedAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
+        favourites: List<Favourite>,
+        message: String,
+        position: Int,
+        changedAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
     ) {
         logger.debug(message)
         windscribeView.showToast(message)
@@ -1864,7 +1907,7 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     private fun setAllServerView(
-            regionAndCities: List<RegionAndCities>, serverListData: ServerListData
+        regionAndCities: List<RegionAndCities>, serverListData: ServerListData
     ) {
         logger.debug("Setting server list adapters.")
         // All Server list
@@ -1878,15 +1921,15 @@ class WindscribePresenterImpl @Inject constructor(
             Collections.sort(regionAndCity.cities, ByCityName())
             if (regionAndCity.region != null && (regionAndCity.region.locationType == "streaming")) {
                 streamingGroups.add(
-                        Group(
-                                regionAndCity.region.name, regionAndCity.region, regionAndCity.cities, total
-                        )
+                    Group(
+                        regionAndCity.region.name, regionAndCity.region, regionAndCity.cities, total
+                    )
                 )
             } else if (regionAndCity.region != null) {
                 normalGroups.add(
-                        Group(
-                                regionAndCity.region.name, regionAndCity.region, regionAndCity.cities, total
-                        )
+                    Group(
+                        regionAndCity.region.name, regionAndCity.region, regionAndCity.cities, total
+                    )
                 )
             }
         }
@@ -1927,55 +1970,55 @@ class WindscribePresenterImpl @Inject constructor(
             favIds[i] = serverListData.favourites[i].id
         }
         interactor.getCompositeDisposable().add(
-                interactor.getCityByID(favIds).observeOn(AndroidSchedulers.mainThread())
-                        .subscribeOn(Schedulers.io())
-                        .subscribeWith(object : DisposableSingleObserver<List<City>?>() {
-                            override fun onError(e: Throwable) {
-                                logger.info("Error setting favourite adapter.")
-                                windscribeView.setFavouriteAdapter(null)
-                                windscribeView.showFavouriteAdapterLoadError(
-                                        interactor.getResourceString(R.string.no_favourites)
+            interactor.getCityByID(favIds).observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribeWith(object : DisposableSingleObserver<List<City>?>() {
+                    override fun onError(e: Throwable) {
+                        logger.info("Error setting favourite adapter.")
+                        windscribeView.setFavouriteAdapter(null)
+                        windscribeView.showFavouriteAdapterLoadError(
+                            interactor.getResourceString(R.string.no_favourites)
+                        )
+                    }
+
+                    override fun onSuccess(cities: List<City>) {
+                        // Sort Normal regions
+                        val selection = interactor.getAppPreferenceInterface().selection
+                        if (selection == LATENCY_LIST_SELECTION_MODE) {
+
+                            Collections.sort(cities) { o1: City, o2: City ->
+                                serverListData.pingTimes
+                                getPingTimeFromCity(
+                                    o1.getId(), serverListData
+                                ) - getPingTimeFromCity(
+                                    o2.getId(), serverListData
                                 )
                             }
-
-                            override fun onSuccess(cities: List<City>) {
-                                // Sort Normal regions
-                                val selection = interactor.getAppPreferenceInterface().selection
-                                if (selection == LATENCY_LIST_SELECTION_MODE) {
-
-                                    Collections.sort(cities) { o1: City, o2: City ->
-                                        serverListData.pingTimes
-                                        getPingTimeFromCity(
-                                                o1.getId(), serverListData
-                                        ) - getPingTimeFromCity(
-                                                o2.getId(), serverListData
-                                        )
-                                    }
-                                } else if (selection == AZ_LIST_SELECTION_MODE) {
-                                    Collections.sort(cities, ByCityName())
-                                }
-                                if (cities.isNotEmpty()) {
-                                    logger.info("Setting favourite adapter with " + cities.size + " items.")
-                                    favouriteAdapter = FavouriteAdapter(
-                                            cities, serverListData, this@WindscribePresenterImpl
-                                    )
-                                    windscribeView.setFavouriteAdapter(favouriteAdapter!!)
-                                } else {
-                                    logger.info("Setting empty favourite adapter")
-                                    favouriteAdapter = null
-                                    windscribeView.setFavouriteAdapter(null)
-                                    windscribeView.showFavouriteAdapterLoadError(
-                                            interactor.getResourceString(R.string.no_favourites)
-                                    )
-                                }
-                            }
-                        })
+                        } else if (selection == AZ_LIST_SELECTION_MODE) {
+                            Collections.sort(cities, ByCityName())
+                        }
+                        if (cities.isNotEmpty()) {
+                            logger.info("Setting favourite adapter with " + cities.size + " items.")
+                            favouriteAdapter = FavouriteAdapter(
+                                cities, serverListData, this@WindscribePresenterImpl
+                            )
+                            windscribeView.setFavouriteAdapter(favouriteAdapter!!)
+                        } else {
+                            logger.info("Setting empty favourite adapter")
+                            favouriteAdapter = null
+                            windscribeView.setFavouriteAdapter(null)
+                            windscribeView.showFavouriteAdapterLoadError(
+                                interactor.getResourceString(R.string.no_favourites)
+                            )
+                        }
+                    }
+                })
         )
     }
 
     private fun setIpFromLocalStorage() {
         val ipAddress = interactor.getAppPreferenceInterface()
-                .getResponseString(PreferencesKeyConstants.USER_IP)
+            .getResponseString(PreferencesKeyConstants.USER_IP)
         if (ipAddress != null && interactor.getVpnConnectionStateManager().isVPNActive()) {
             logger.info("Vpn is connected setting ip from stored data...")
             windscribeView.setIpAddress(ipAddress)
@@ -2024,13 +2067,14 @@ class WindscribePresenterImpl @Inject constructor(
             // Save city and update location
             interactor.getLocationProvider().setSelectedCity(lastSelectedLocation.cityId)
             windscribeView.updateLocationName(
-                    lastSelectedLocation.nodeName, lastSelectedLocation.nickName
+                lastSelectedLocation.nodeName, lastSelectedLocation.nickName
             )
             // Custom flag
             val customBackground = interactor.getAppPreferenceInterface().isCustomBackground
             if (customBackground) {
                 val path = if (interactor.getVpnConnectionStateManager()
-                                .isVPNActive()) interactor.getAppPreferenceInterface().connectedFlagPath else interactor.getAppPreferenceInterface().disConnectedFlagPath
+                        .isVPNActive()
+                ) interactor.getAppPreferenceInterface().connectedFlagPath else interactor.getAppPreferenceInterface().disConnectedFlagPath
                 path?.let {
                     windscribeView.setupLayoutForCustomBackground(path)
                 } ?: kotlin.run {
@@ -2047,9 +2091,9 @@ class WindscribePresenterImpl @Inject constructor(
             // Rebuild state if not available.
             if (windscribeView.uiConnectionState == null) {
                 windscribeView.setLastConnectionState(
-                        DisconnectedState(
-                                lastSelectedLocation, connectionOptions, appContext
-                        )
+                    DisconnectedState(
+                        lastSelectedLocation, connectionOptions, appContext
+                    )
                 )
             }
         }
@@ -2057,13 +2101,13 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun updateNotificationCount() {
         interactor.getCompositeDisposable()
-                .add(interactor.getWindNotifications().subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe({ windNotifications: List<WindNotification> ->
-                            onNotificationResponse(
-                                    windNotifications
-                            )
-                        }) { onNotificationResponseError() })
+            .add(interactor.getWindNotifications().subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ windNotifications: List<WindNotification> ->
+                    onNotificationResponse(
+                        windNotifications
+                    )
+                }) { onNotificationResponseError() })
     }
 
     private fun setAccountStatus(user: User) {
@@ -2075,24 +2119,25 @@ class WindscribePresenterImpl @Inject constructor(
             User.AccountStatus.Banned -> {
                 if (interactor.getVpnConnectionStateManager().isVPNActive()) {
                     interactor.getMainScope()
-                            .launch { interactor.getVPNController().disconnectAsync() }
+                        .launch { interactor.getVPNController().disconnectAsync() }
                 }
                 windscribeView.setupAccountStatusBanned()
             }
 
             else -> {
                 val previousAccountStatus =
-                        interactor.getAppPreferenceInterface().getPreviousAccountStatus(user.userName)
+                    interactor.getAppPreferenceInterface().getPreviousAccountStatus(user.userName)
                 if (user.accountStatusToInt != previousAccountStatus) {
                     interactor.getAppPreferenceInterface()
-                            .setPreviousAccountStatus(user.userName, user.accountStatusToInt)
+                        .setPreviousAccountStatus(user.userName, user.accountStatusToInt)
                     if (user.accountStatus == User.AccountStatus.Expired) {
                         setUserStatus(user)
                         if (interactor.getVpnConnectionStateManager().isVPNActive()) {
                             interactor.getMainScope()
-                                    .launch { interactor.getVPNController().disconnectAsync() }
+                                .launch { interactor.getVPNController().disconnectAsync() }
                         }
-                        windscribeView.setupAccountStatusExpired()
+                        val resetDate = interactor.getUserRepository().user.value?.nextResetDate() ?: ""
+                        windscribeView.setupAccountStatusExpired(resetDate)
                     }
                 }
             }
@@ -2105,9 +2150,9 @@ class WindscribePresenterImpl @Inject constructor(
             user.dataLeft?.let {
                 val dataRemaining = interactor.getDataLeftString(R.string.data_left, it)
                 windscribeView.setupLayoutForFreeUser(
-                        dataRemaining,
-                        interactor.getResourceString(R.string.get_more_data),
-                        getDataRemainingColor(it, user.maxData)
+                    dataRemaining,
+                    interactor.getResourceString(R.string.get_more_data),
+                    getDataRemainingColor(it, user.maxData)
                 )
             }
         } else {
@@ -2133,7 +2178,7 @@ class WindscribePresenterImpl @Inject constructor(
                 }
                 logger.info("Successfully read file.")
                 onConfigFileContentReceived(
-                        fileName, content, username, password
+                    fileName, content, username, password
                 )
             }
 
@@ -2172,7 +2217,7 @@ class WindscribePresenterImpl @Inject constructor(
         interactor.getUserRepository().user.value?.let {
             delay(4000)
             logger.debug("Share link criteria: Free user: ${it.isPro.not()} Days registered since:${it.daysRegisteredSince} Already shown: ${interactor.getAppPreferenceInterface().alreadyShownShareAppLink}")
-            if (it.isGhost.not() && it.isPro.not() && it.daysRegisteredSince > 30 && interactor.getAppPreferenceInterface().alreadyShownShareAppLink.not()) {
+            if (it.isGhost.not() && it.isPro.not() && it.daysRegisteredSince > 30 && interactor.getAppPreferenceInterface().getConnectionCount() >= 10 && interactor.getAppPreferenceInterface().alreadyShownShareAppLink.not()) {
                 windscribeView.showShareLinkDialog()
             }
         }
@@ -2208,27 +2253,28 @@ class WindscribePresenterImpl @Inject constructor(
      */
     override fun checkForWgIpChange() {
         if (interactor.getVpnConnectionStateManager()
-                        .isVPNConnected() && interactor.getAppPreferenceInterface().selectedProtocol == PROTO_WIRE_GUARD) {
+                .isVPNConnected() && interactor.getAppPreferenceInterface().selectedProtocol == PROTO_WIRE_GUARD
+        ) {
             logger.debug("Checking dynamic wg ip change.")
             interactor.getCompositeDisposable()
-                    .add(interactor.getApiCallManager().checkConnectivityAndIpAddress()
-                            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                            .subscribe { response, _ ->
-                                response?.dataClass?.let { ip ->
-                                    if (validIpAddress(ip.userIp)) {
-                                        val updatedIpAddress = getModifiedIpAddress(ip.userIp)
-                                        interactor.getAppPreferenceInterface().saveResponseStringData(
-                                                PreferencesKeyConstants.USER_IP, updatedIpAddress
-                                        )
-                                        logger.debug("Updating ip address to $updatedIpAddress")
-                                        windscribeView.setIpAddress(updatedIpAddress)
-                                    } else {
-                                        logger.debug("Invalid ip returned from Api $ip")
-                                    }
-                                } ?: kotlin.run {
-                                    logger.debug("Failed to get ip from APi.")
-                                }
-                            })
+                .add(interactor.getApiCallManager().checkConnectivityAndIpAddress()
+                    .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                    .subscribe { response, _ ->
+                        response?.dataClass?.let { ip ->
+                            if (validIpAddress(ip.userIp)) {
+                                val updatedIpAddress = getModifiedIpAddress(ip.userIp)
+                                interactor.getAppPreferenceInterface().saveResponseStringData(
+                                    PreferencesKeyConstants.USER_IP, updatedIpAddress
+                                )
+                                logger.debug("Updating ip address to $updatedIpAddress")
+                                windscribeView.setIpAddress(updatedIpAddress)
+                            } else {
+                                logger.debug("Invalid ip returned from Api $ip")
+                            }
+                        } ?: kotlin.run {
+                            logger.debug("Failed to get ip from APi.")
+                        }
+                    })
         }
     }
 
@@ -2242,5 +2288,46 @@ class WindscribePresenterImpl @Inject constructor(
         } else {
             windscribeView.setCensorShipIconVisibility(View.GONE)
         }
+    }
+
+    override suspend fun observeLocationUIInvalidation() {
+        interactor.getServerListUpdater().locationUIInvalidation.collectLatest {
+            if (adapter?.serverListData != null) {
+                adapter?.serverListData?.serverListHash = ""
+                interactor.getServerListUpdater().load()
+            }
+        }
+    }
+
+    override suspend fun observeConnectionCount() {
+        interactor.getVpnConnectionStateManager().connectionCount
+            .filter { count ->
+                val showCount = interactor.getAppPreferenceInterface().getPowerWhiteListDialogCount()
+                count > 1 && !isIgnoringBatteryOptimizations(appContext) && showCount < 3
+            }.collectLatest { connectionCount ->
+                logger.debug("Connection count: $connectionCount")
+                if (!isIgnoringBatteryOptimizations(appContext) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    windscribeView.launchBatteryOptimizationActivity()
+                }
+            }
+    }
+
+    private fun isIgnoringBatteryOptimizations(context: Context): Boolean {
+        val manager =
+            context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
+        val name = context.applicationContext.packageName
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return manager.isIgnoringBatteryOptimizations(name)
+        }
+        return true
+    }
+
+    override fun neverAskPowerWhiteListPermissionAgain() {
+        interactor.getAppPreferenceInterface().setPowerWhiteListDialogCount(3)
+    }
+
+    override fun askPowerWhiteListPermissionLater() {
+        val count = interactor.getAppPreferenceInterface().getPowerWhiteListDialogCount()
+        interactor.getAppPreferenceInterface().setPowerWhiteListDialogCount( count + 1)
     }
 }

@@ -27,6 +27,7 @@ import com.windscribe.mobile.utils.PermissionManager
 import com.windscribe.mobile.utils.UiUtil
 import com.windscribe.vpn.constants.FeatureExplainer
 import org.slf4j.LoggerFactory
+import java.util.zip.GZIPOutputStream
 import javax.inject.Inject
 
 class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, ExtraDataUseWarningDialogCallBack {
@@ -267,7 +268,9 @@ class ConnectionSettingsActivity : BaseActivity(), ConnectionSettingsView, Extra
             override fun onToggleClick() {
                 presenter.onAntiCensorshipClick()
             }
-            override fun onExplainClick() {}
+            override fun onExplainClick() {
+                openURLInBrowser(FeatureExplainer.CIRCUMVENT_CENSORSHIP)
+            }
         }
         clAutoConnectToggleView.delegate = object : ToggleView.Delegate {
             override fun onToggleClick() {

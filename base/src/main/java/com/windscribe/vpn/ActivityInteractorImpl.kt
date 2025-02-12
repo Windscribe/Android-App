@@ -227,6 +227,8 @@ class ActivityInteractorImpl(
     override fun getDebugFilePath(): String {
         return if (advanceParameterRepository.showStrongSwanLog()) {
             "${appContext.filesDir}/charon.log"
+        } else if(advanceParameterRepository.showWgLog()) {
+            "${appContext.filesDir}/wireguard_log.txt"
         } else {
             appContext.cacheDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
         }
@@ -388,7 +390,7 @@ class ActivityInteractorImpl(
     }
 
     private fun elapsedTwoDayAfterLogin(): Boolean {
-        val milliSeconds1 = preferenceHelper.loginTime.time
+        val milliSeconds1 = preferenceHelper.loginTime?.time ?: Date().time
         val milliSeconds2 = Date().time
         val periodSeconds = (milliSeconds2 - milliSeconds1) / 1000
         val elapsedDays = periodSeconds / 60 / 60 / 24

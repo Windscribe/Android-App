@@ -22,6 +22,7 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_WIRE_GUARD_P
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_ROBERT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.FAKE_TRAFFIC_VOLUME
+import com.windscribe.vpn.constants.PreferencesKeyConstants.LOCATION_HASH
 import com.windscribe.vpn.constants.PreferencesKeyConstants.SUGGESTED_PORT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.SUGGESTED_PROTOCOL
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WG_CONNECT_API_FAIL_OVER_STATE
@@ -94,8 +95,8 @@ class AppPreferenceHelper(
     override val currentConnectionAttemptTag: String?
         get() = preference.getString(PreferencesKeyConstants.CONNECTION_ATTEMPT, null)
 
-    override fun getDeviceUUID(username: String): String? {
-        return preference.getString(username, null)
+    override fun getDeviceUUID(): String? {
+        return preference.getString(PreferencesKeyConstants.DEVICE_ID, null)
     }
 
     override val disConnectedFlagPath: String?
@@ -168,8 +169,20 @@ class AppPreferenceHelper(
             showLatencyInMS = showInMs
         }
 
-    override val loginTime: Date
-        get() = Date(preference.getLong(PreferencesKeyConstants.LOGIN_TIME, Date().time))
+    override var loginTime: Date?
+        get() {
+            val time = preference.getLong(PreferencesKeyConstants.LOGIN_TIME, -1L)
+            return if (time == -1L) {
+                null
+            } else {
+                Date(time)
+            }
+        }
+        set(value) {
+            if (value != null) {
+                preference.put(PreferencesKeyConstants.LOGIN_TIME, value.time)
+            }
+        }
     override var lowestPingId: Int
         get() = preference.getInt(PreferencesKeyConstants.LOWEST_PING_ID, -1)
         set(lowestPingId) {
@@ -537,8 +550,8 @@ class AppPreferenceHelper(
         )
     }
 
-    override fun setDeviceUUID(userName: String, deviceUUID: String?) {
-        preference.put(userName, deviceUUID)
+    override fun setDeviceUUID(deviceUUID: String?) {
+        preference.put(PreferencesKeyConstants.DEVICE_ID, deviceUUID)
     }
 
     override fun setDisconnectedFlagPath(path: String?) {
@@ -717,4 +730,27 @@ class AppPreferenceHelper(
         set(value) {
             preference.put(WHITELISTED_NETWORK, value)
         }
+
+    override var locationHash: String?
+        get() = preference.getString(LOCATION_HASH, null)
+        set(value) {
+            preference.put(LOCATION_HASH, value)
+        }
+
+    override fun increaseConnectionCount() {
+        val connectionCount = preference.getInt(PreferencesKeyConstants.CONNECTION_COUNT, 0)
+        preference.put(PreferencesKeyConstants.CONNECTION_COUNT, connectionCount + 1)
+    }
+
+    override fun getConnectionCount(): Int {
+        return preference.getInt(PreferencesKeyConstants.CONNECTION_COUNT, 0)
+    }
+
+    override fun getPowerWhiteListDialogCount(): Int {
+        return preference.getInt(PreferencesKeyConstants.POWER_WHITE_LIST_POPUP_SHOW_COUNT, 0)
+    }
+
+    override fun setPowerWhiteListDialogCount(count: Int) {
+        preference.put(PreferencesKeyConstants.POWER_WHITE_LIST_POPUP_SHOW_COUNT, count)
+    }
 }

@@ -3,6 +3,9 @@
  */
 package com.windscribe.mobile.connectionsettings
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+
 interface ConnectionSettingsView {
     fun gotoSplitTunnelingSettings()
     fun goToNetworkSecurity()

@@ -8,6 +8,8 @@ import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.model.User.AccountStatus.*
 import com.windscribe.vpn.model.User.EmailStatus.*
+import java.lang.Exception
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -116,6 +118,23 @@ class User(private val sessionResponse: UserSessionResponse) {
             return TimeUnit.DAYS.convert(difference, TimeUnit.MILLISECONDS)
         }
 
+    fun nextResetDate(): String? {
+        return if (resetDate != null) {
+            try {
+                val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val lastResetDate = formatter.parse(resetDate)
+                val c = Calendar.getInstance()
+                c.time = Objects.requireNonNull(lastResetDate)
+                c.add(Calendar.MONTH, 1)
+                val nextResetDate = c.time
+                formatter.format(nextResetDate)
+            } catch (e: Exception) {
+                null
+            }
+        } else {
+            null
+        }
+    }
     override fun toString(): String {
         return "Account Status: $accountStatus | User Status: $userStatusInt | Ghost $isGhost | Email Status: $emailStatus | Sip count $sipCount"
     }

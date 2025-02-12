@@ -79,6 +79,9 @@ class PlansFragment : Fragment(), OnClickListener {
 
     @SuppressLint("SetTextI18n")
     private fun setPlans(windscribeInAppProduct: WindscribeInAppProduct) {
+        if (windscribeInAppProduct.getSkus().isEmpty()) {
+            return
+        }
         windscribeInAppProduct.getSkus().forEach {
             val viewGroup: LinearLayoutCompat =
                 layoutInflater.inflate(R.layout.plan_button_layout, null) as LinearLayoutCompat

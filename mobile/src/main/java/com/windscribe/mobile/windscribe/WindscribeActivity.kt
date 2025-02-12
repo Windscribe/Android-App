@@ -18,14 +18,19 @@ import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.transition.AutoTransition
 import android.transition.Slide
 import android.view.*
 import android.view.animation.AccelerateInterpolator
 import android.widget.*
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
@@ -81,9 +86,10 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Named
 
+
 class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         RateAppDialogCallback, EditConfigFileDialogCallback, FragmentClickListener, DeviceStateListener, NodeStatusDialogCallback,
-        AccountStatusDialogCallback {
+        AccountStatusDialogCallback, PowerWhitelistDialogCallback {
     enum class NetworkLayoutState {
         CLOSED, OPEN_1, OPEN_2, OPEN_3
     }
@@ -387,6 +393,8 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         activityScope { presenter.observeDecoyTrafficState() }
         activityScope { presenter.showShareLinkDialog() }
         activityScope { presenter.observeLatency() }
+        activityScope { presenter.observeLocationUIInvalidation() }
+        activityScope { presenter.observeConnectionCount() }
         presenter.registerNetworkInfoListener()
         presenter.handlePushNotification(intent.extras)
         presenter.observeUserData(this)
@@ -1213,11 +1221,11 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         }
     }
 
-    override fun setupAccountStatusExpired() {
+    override fun setupAccountStatusExpired(resetDate: String) {
         AccountStatusDialogData(
                 title = resources.getString(R.string.you_re_out_of_data),
                 icon = R.drawable.garry_nodata,
-                description = resources.getString(R.string.upgrade_to_stay_protected),
+                description = resources.getString(R.string.upgrade_to_stay_protected, resetDate),
                 showSkipButton = true,
                 skipText = resources.getString(R.string.upgrade_later),
                 showUpgradeButton = true,
@@ -1767,9 +1775,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         preferenceChangeObserver.addLanguageChangeObserver(
                 this
         ) { presenter.onLanguageChanged() }
-        preferenceChangeObserver.addShowLocationHealthChangeObserver(
-                this
-        ) { presenter.onShowLocationHealthChanged() }
         preferenceChangeObserver.addLocationSettingsChangeObserver(this) {
             presenter.onLocationSettingsChanged()
         }
@@ -1930,10 +1935,36 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         antiCensorShipIcon?.visibility = visible
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
+    override fun launchBatteryOptimizationActivity() {
+        PowerWhitelistDialog.show(this)
+    }
+
+    private val addToPowerWhitelist = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { _: ActivityResult? -> }
+
+    override fun neverAskPowerWhiteListPermissionAgain() {
+        presenter.neverAskPowerWhiteListPermissionAgain()
+    }
+
+    override fun askPowerWhiteListPermissionLater() {
+       presenter.askPowerWhiteListPermissionLater()
+    }
+
+    override fun askForPowerWhiteListPermission() {
+        val intent = Intent(
+            Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+            Uri.parse("package:" + packageName)
+        )
+        addToPowerWhitelist.launch(intent)
+    }
+
     companion object {
         @JvmStatic
         fun getStartIntent(context: Context): Intent {
             return Intent(context, WindscribeActivity::class.java)
         }
     }
+
 }

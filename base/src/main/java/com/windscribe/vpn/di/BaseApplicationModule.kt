@@ -170,12 +170,14 @@ open class BaseApplicationModule {
             localDbInterface: LocalDbInterface,
             wsNet: WSNet,
             vpnConnectionStateManager: Lazy<VPNConnectionStateManager>,
+            advanceParameterRepository: AdvanceParameterRepository
     ): LatencyRepository {
         return LatencyRepository(
                 preferencesHelper,
                 localDbInterface,
                 wsNet.pingManager(),
-                vpnConnectionStateManager
+                vpnConnectionStateManager,
+                advanceParameterRepository
         )
     }
 
@@ -392,7 +394,8 @@ open class BaseApplicationModule {
             preferenceChangeObserver: PreferenceChangeObserver,
             userRepository: UserRepository,
             appLifeCycleObserver: AppLifeCycleObserver,
-            advanceParameterRepository: AdvanceParameterRepository
+            advanceParameterRepository: AdvanceParameterRepository,
+            preferencesHelper: PreferencesHelper
     ): ServerListRepository {
         return ServerListRepository(
                 scope,
@@ -401,7 +404,8 @@ open class BaseApplicationModule {
                 preferenceChangeObserver,
                 userRepository,
                 appLifeCycleObserver,
-                advanceParameterRepository
+                advanceParameterRepository,
+            preferencesHelper
         )
     }
 
@@ -784,13 +788,15 @@ open class BaseApplicationModule {
             val msg = it.split(Regex("\\]\\s*")).lastOrNull()?.trim() ?: ""
             logger.debug(msg)
         }, BuildConfig.DEV)
-        preferencesHelper.setDeviceUUID(preferencesHelper.userName, UUID.randomUUID().toString())
+        if (preferencesHelper.getDeviceUUID() == null) {
+            preferencesHelper.setDeviceUUID(UUID.randomUUID().toString())
+        }
         val systemLanguageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             appContext.resources.configuration.locales.get(0).language.substring(0..1)
         } else {
             appContext.resources.configuration.locale.language.substring(0..1)
         }
-        WSNet.initialize("android", "android", WindUtilities.getVersionName(), preferencesHelper.getDeviceUUID(preferencesHelper.userName) ?: "", "2.6.0",  BuildConfig.DEV, systemLanguageCode, preferencesHelper.wsNetSettings)
+        WSNet.initialize("android", "android", WindUtilities.getVersionName(), preferencesHelper.getDeviceUUID() ?: "", "2.6.0", "4",  BuildConfig.DEV, systemLanguageCode, preferencesHelper.wsNetSettings)
         val networkListener = object : DeviceStateManager.DeviceStateListener {
             override fun onNetworkStateChanged() {
                 super.onNetworkStateChanged()
@@ -801,7 +807,7 @@ open class BaseApplicationModule {
             WSNet.instance().advancedParameters().setCountryOverrideValue(override)
         }
         WSNet.instance().setConnectivityState(WindUtilities.isOnline())
-        WSNet.instance().advancedParameters().setAPIExtraTLSPadding(preferencesHelper.isAntiCensorshipOn)
+        WSNet.instance().advancedParameters().isAPIExtraTLSPadding = preferencesHelper.isAntiCensorshipOn
         deviceStateManager.addListener(networkListener)
         return WSNet.instance()
     }

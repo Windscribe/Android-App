@@ -10,6 +10,8 @@ import com.windscribe.mobile.R
 import com.windscribe.vpn.commonutils.CommonPasswordChecker
 import com.windscribe.vpn.ActivityInteractor
 import com.windscribe.vpn.api.response.*
+import com.windscribe.vpn.backend.Util
+import com.windscribe.vpn.commonutils.RegionLocator
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.UserStatusConstants.USER_STATUS_PREMIUM
@@ -67,27 +69,27 @@ class WelcomePresenterImpl @Inject constructor(
     }
 
     override fun startAccountClaim(
-        username: String, password: String, email: String, ignoreEmptyEmail: Boolean
+        username: String, password: String, email: String, ignoreEmptyEmail: Boolean, voucherCode: String
     ) {
         welcomeView.hideSoftKeyboard()
         if (validateLoginInputs(username, password, email, false)) {
             if (ignoreEmptyEmail.not() && email.isEmpty()) {
                 val proUser =
                     (interactor.getAppPreferenceInterface().userStatus == USER_STATUS_PREMIUM)
-                welcomeView.showNoEmailAttentionFragment(username, password, true, proUser)
+                welcomeView.showNoEmailAttentionFragment(username, password, true, proUser, voucherCode)
                 return
             }
             logger.info("Trying to claim account with provided credentials...")
             welcomeView.prepareUiForApiCallFinished()
             welcomeView.prepareUiForApiCallStart()
             interactor.getCompositeDisposable().add(interactor.getApiCallManager()
-                .claimAccount(username, password, email)
+                .claimAccount(username, password, email, voucherCode)
                 .doOnSubscribe { welcomeView.updateCurrentProcess("Signing up") }
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object :
                     DisposableSingleObserver<GenericResponseClass<ClaimAccountResponse?, ApiErrorResponse?>>() {
                     override fun onError(e: Throwable) {
-                        logger.debug("User SignUp error..." + e.message)
+                        logger.error("Account claim: {}", e.message)
                         onSignUpFailedWithNoError()
                     }
 
@@ -95,10 +97,10 @@ class WelcomePresenterImpl @Inject constructor(
                         when (val result =
                             genericLoginResponse.callResult<ClaimAccountResponse>()) {
                             is CallResult.Error -> {
+                                logger.error("Account claim: {}", result)
                                 if (result.code == NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA) {
                                     onSignUpFailedWithNoError()
                                 } else {
-                                    logger.info("Account claim Error ${result.errorMessage}")
                                     onLoginResponseError(result.code, result.errorMessage)
                                 }
                             }
@@ -136,10 +138,10 @@ class WelcomePresenterImpl @Inject constructor(
                 DisposableSingleObserver<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>() {
                 override fun onError(e: Throwable) {
                     welcomeView.prepareUiForApiCallFinished()
+                    logger.error("Ghost account setup: {}", e.message)
                     if (e is IOException) {
                         welcomeView.showError("Unable to reach server. Check your network connection.")
                     } else {
-                        logger.debug(e.message)
                         welcomeView.goToSignUp()
                     }
                 }
@@ -149,17 +151,17 @@ class WelcomePresenterImpl @Inject constructor(
                 ) {
                     when (val result = regResponse.callResult<UserRegistrationResponse>()) {
                         is CallResult.Error -> {
+                            logger.error("Ghost account setup: {}", result)
                             welcomeView.prepareUiForApiCallFinished()
                             if (result.code != NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA) {
-                                logger.debug(result.errorMessage)
                                 welcomeView.goToSignUp()
                             }
                         }
                         is CallResult.Success -> {
                             interactor.getAppPreferenceInterface().sessionHash =
                                 result.data.sessionAuthHash
-                            interactor.getFireBaseManager().getFirebaseToken { session ->
-                                prepareLoginRegistrationDashboard(session)
+                            interactor.getFireBaseManager().getFirebaseToken { token ->
+                                prepareLoginRegistrationDashboard(token)
                             }
                         }
                     }
@@ -182,13 +184,7 @@ class WelcomePresenterImpl @Inject constructor(
                         object :
                             DisposableSingleObserver<GenericResponseClass<UserLoginResponse?, ApiErrorResponse?>>() {
                             override fun onError(e: Throwable) {
-                                if (e is Exception) {
-                                    logger.debug(
-                                        "Login Error: " + WindError.instance.rxErrorToString(
-                                            e,
-                                        )
-                                    )
-                                }
+                                logger.error("Login: {}", e.message)
                                 onLoginFailedWithNoError()
                             }
 
@@ -198,10 +194,10 @@ class WelcomePresenterImpl @Inject constructor(
                                 when (val result =
                                     genericLoginResponse.callResult<UserLoginResponse>()) {
                                     is CallResult.Error -> {
+                                        logger.error("Login: {}", result)
                                         if (result.code == NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA) {
                                             onLoginFailedWithNoError()
                                         } else {
-                                            logger.info("Login error..." + genericLoginResponse.errorClass)
                                             onLoginResponseError(result.code, result.errorMessage)
                                         }
                                     }
@@ -210,8 +206,8 @@ class WelcomePresenterImpl @Inject constructor(
                                         welcomeView.updateCurrentProcess("Login successful...")
                                         interactor.getAppPreferenceInterface().sessionHash =
                                             result.data.sessionAuthHash
-                                        interactor.getFireBaseManager().getFirebaseToken { session ->
-                                            prepareLoginRegistrationDashboard(session)
+                                        interactor.getFireBaseManager().getFirebaseToken { token ->
+                                            prepareLoginRegistrationDashboard(token)
                                         }
                                     }
                                 }
@@ -226,26 +222,25 @@ class WelcomePresenterImpl @Inject constructor(
         password: String,
         email: String,
         referralUsername: String,
-        ignoreEmptyEmail: Boolean
+        ignoreEmptyEmail: Boolean,
+        voucherCode: String
     ) {
         welcomeView.hideSoftKeyboard()
         if (validateLoginInputs(username, password, email, false)) {
             if (!ignoreEmptyEmail && email.isEmpty()) {
-                welcomeView.showNoEmailAttentionFragment(
-                    username, password, accountClaim = false, pro = false
-                )
+                welcomeView.showNoEmailAttentionFragment(username, password, accountClaim = false, pro = false, voucherCode)
                 return
             }
             logger.info("Trying to sign up with provided credentials...")
             welcomeView.prepareUiForApiCallStart()
             interactor.getCompositeDisposable().add(interactor.getApiCallManager()
-                .signUserIn(username, password, referralUsername, email)
+                .signUserIn(username, password, referralUsername, email, voucherCode)
                 .doOnSubscribe { welcomeView.updateCurrentProcess("Signing up") }
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object :
                     DisposableSingleObserver<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>() {
                     override fun onError(e: Throwable) {
-                        logger.debug("User SignUp error..." + e.message)
+                        logger.error("Signup: {}", e.message)
                         onSignUpFailedWithNoError()
                     }
 
@@ -255,7 +250,7 @@ class WelcomePresenterImpl @Inject constructor(
                         when (val result =
                             genericLoginResponse.callResult<UserRegistrationResponse>()) {
                             is CallResult.Error -> {
-                                logger.info("SignUp...$result")
+                                logger.error("Signup: {}", result)
                                 if (result.code == NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA) {
                                     onSignUpFailedWithNoError()
                                 } else {
@@ -301,10 +296,7 @@ class WelcomePresenterImpl @Inject constructor(
                     override fun onError(e: Throwable) {
                         welcomeView.prepareUiForApiCallFinished()
                         welcomeView.showError("Unable to auto login. Log in using new credentials.")
-                        logger.debug(
-                            "Error getting session"
-                                    + WindError.instance.convertThrowableToString(e)
-                        )
+                        logger.error("Account claim session: {}", e.message)
                     }
                 })
         )
@@ -341,21 +333,21 @@ class WelcomePresenterImpl @Inject constructor(
         welcomeView.showFailedAlert(interactor.getResourceString(R.string.failed_network_alert))
     }
 
-    private fun prepareLoginRegistrationDashboard(sessionMap: Map<String, String>) {
+    private fun prepareLoginRegistrationDashboard(firebaseToken: String?) {
+        interactor.getAppPreferenceInterface().loginTime = Date()
         welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_session))
         interactor.getCompositeDisposable()
-            .add(interactor.getApiCallManager().getSessionGeneric(sessionMap)
+            .add(interactor.getApiCallManager().getSessionGeneric(firebaseToken)
                 .flatMapCompletable { sessionResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> ->
                     Completable.fromSingle(Single.fromCallable {
                         when (val result = sessionResponse.callResult<UserSessionResponse>()) {
                             is CallResult.Error -> {}
                             is CallResult.Success -> {
+                                logger.debug("Successfully added token $firebaseToken to ${result.data.userName}.")
                                 if (interactor.getAppPreferenceInterface()
-                                        .getDeviceUUID(result.data.userName) == null) {
+                                        .getDeviceUUID() == null) {
                                     logger.debug("No device id is found for the current user, generating and saving UUID")
-                                    interactor.getAppPreferenceInterface().setDeviceUUID(
-                                        result.data.userName, UUID.randomUUID().toString()
-                                    )
+                                    interactor.getAppPreferenceInterface().setDeviceUUID(UUID.randomUUID().toString())
                                 }
                             }
                         }
@@ -370,19 +362,14 @@ class WelcomePresenterImpl @Inject constructor(
                 .andThen(Completable.fromAction {
                     interactor.getPreferenceChangeObserver().postCityServerChange()
                 }).andThen(interactor.updateUserData()).onErrorResumeNext { throwable: Throwable ->
-                    logger.info(
-                        "*****Preparing dashboard failed: ${
-                            WindError.instance.rxErrorToString(
-                                throwable as Exception
-                            )
-                        } Use reload button in server list in home activity."
-                    )
+                    logger.error("Prepare dashboard: {}", throwable.message)
                     Completable.fromAction {
                         interactor.getPreferenceChangeObserver().postCityServerChange()
                     }.andThen(interactor.updateUserData())
                 }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableCompletableObserver() {
                     override fun onComplete() {
+                        Util.removeLastSelectedLocation()
                         interactor.getWorkManager().onAppStart()
                         interactor.getWorkManager().onAppMovedToForeground()
                         interactor.getWorkManager().updateNodeLatencies()
@@ -391,11 +378,7 @@ class WelcomePresenterImpl @Inject constructor(
 
                     override fun onError(e: Throwable) {
                         welcomeView.prepareUiForApiCallFinished()
-                        logger.debug(
-                            "Error while updating server status to local db. StackTrace: " + WindError.instance.convertThrowableToString(
-                                e
-                            )
-                        )
+                        logger.error("Prepare dashboard: {}", e.message)
                     }
                 })
             )
@@ -426,7 +409,7 @@ class WelcomePresenterImpl @Inject constructor(
         }
 
         //Invalid username
-        if (!validateUsernameCharacters(username)) {
+        if (!isLogin && !validateUsernameCharacters(username)) {
             logger.info("[username] has invalid characters in , displaying toast to the user...")
             welcomeView.setUsernameError(interactor.getResourceString(R.string.login_with_username))
             welcomeView.showToast(interactor.getResourceString(R.string.login_with_username))
@@ -446,23 +429,30 @@ class WelcomePresenterImpl @Inject constructor(
             welcomeView.showToast(interactor.getResourceString(R.string.invalid_email_format))
             return false
         }
-        if (!isLogin && password.length < 8) {
-            logger.info("[Password] is small, displaying toast to the user...")
-            welcomeView.setPasswordError(interactor.getResourceString(R.string.small_password))
-            welcomeView.showToast(interactor.getResourceString(R.string.small_password))
-            return false
+        if (!isRussian()) {
+            if (!isLogin && password.length < 8) {
+                logger.info("[Password] is small, displaying toast to the user...")
+                welcomeView.setPasswordError(interactor.getResourceString(R.string.small_password))
+                welcomeView.showToast(interactor.getResourceString(R.string.small_password))
+                return false
+            }
+            // Sign up and claim account password minimum strength enforce.
+            if (!isLogin && !evaluatePassword(password)) {
+                logger.info("[Password] is weak, displaying toast to the user...")
+                welcomeView.setPasswordError(interactor.getResourceString(R.string.weak_password))
+                welcomeView.showToast(interactor.getResourceString(R.string.weak_password))
+                return false
+            }
+            if (!isLogin && CommonPasswordChecker.isAMatch(password)) {
+                logger.info("[Password] matches worst password list, displaying toast to the user...")
+                welcomeView.setPasswordError(interactor.getResourceString(R.string.common_password))
+                welcomeView.showToast(interactor.getResourceString(R.string.common_password))
+                return false
+            }
         }
-        // Sign up and claim account password minimum strength enforce.
-        if (!isLogin && !evaluatePassword(password)) {
-            logger.info("[Password] is weak, displaying toast to the user...")
-            welcomeView.setPasswordError(interactor.getResourceString(R.string.weak_password))
-            welcomeView.showToast(interactor.getResourceString(R.string.weak_password))
-            return false
-        }
-        if (!isLogin && CommonPasswordChecker.isAMatch(password)) {
-            logger.info("[Password] matches worst password list, displaying toast to the user...")
-            welcomeView.setPasswordError(interactor.getResourceString(R.string.common_password))
-            welcomeView.showToast(interactor.getResourceString(R.string.common_password))
+        if (!WindUtilities.isOnline()) {
+            logger.info("User is not connected to internet.")
+            welcomeView.setLoginRegistrationError(interactor.getResourceString(R.string.no_internet))
             return false
         }
         if (!WindUtilities.isOnline()) {
@@ -475,5 +465,9 @@ class WelcomePresenterImpl @Inject constructor(
 
     private fun validateUsernameCharacters(username: String): Boolean {
         return username.matches(Regex("[a-zA-Z0-9_-]*"))
+    }
+
+    private fun isRussian(): Boolean {
+        return RegionLocator.isCountry("ru")
     }
 }

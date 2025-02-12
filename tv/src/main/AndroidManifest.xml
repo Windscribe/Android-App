@@ -65,8 +65,8 @@
             android:name="com.windscribe.tv.splash.SplashActivity"
             android:banner="@drawable/tv_banner"
             android:exported="true"
-            android:icon="@drawable/tv_banner"
-            android:logo="@drawable/tv_banner"
+            android:icon="@mipmap/ws_launcher"
+            android:logo="@mipmap/ws_launcher"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.WindLauncher">
             <intent-filter>

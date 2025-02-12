@@ -59,7 +59,8 @@ class DnsModeView(childView: View) : BaseView(childView) {
             return false
         }
         val ipAddressRegex = """^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$""".toRegex()
-        val urlRegex = """^(https?://)?([\w-]+(\.[\w-]+)+)(/[\w- ./?%&=]*)?$""".toRegex()
-        return customDNS.matches(ipAddressRegex) || customDNS.matches(urlRegex)
+        val urlOrDomainRegex = """^(https?|h3)://([\w-]+(\.[\w-]+)+)(/[\w- ./?%&=]*)?$|^([\w-]+(\.[\w-]+)+)$""".toRegex()
+        val sdnsRegex = """^sdns://[A-Za-z0-9_-]+$""".toRegex()
+        return customDNS.matches(ipAddressRegex) || customDNS.matches(urlOrDomainRegex) || customDNS.matches(sdnsRegex)
     }
 }
