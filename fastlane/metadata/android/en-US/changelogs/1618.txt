@@ -1,0 +1,11 @@
+v3.81(TV)
+* Fixed ChromeOS crash.
+* Fixed crash where plan SKU is not found on play store.
+* Fixed crash where favorite location is removed during latency check.
+* Allow special characters in the username field for login.
+* Dynamic listener port selection for ctrld.
+* Improved accuracy of select best location algorithm.
+* Added reset date to the "Out of Data" popup.
+* Added a link to the changelog in the info section.
+* Added missing flag keys.
+* Added Battery optimization app list exclusion permission popup.
