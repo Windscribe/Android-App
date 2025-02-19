@@ -358,7 +358,7 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
     }
 
     companion object {
-        private const val TAG = "main_menu_a"
+        private const val TAG = "basic"
 
         @JvmStatic
         fun getStartIntent(context: Context?): Intent {

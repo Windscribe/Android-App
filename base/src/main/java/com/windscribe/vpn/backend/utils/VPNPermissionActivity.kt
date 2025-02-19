@@ -34,7 +34,7 @@ import javax.inject.Inject
 class VPNPermissionActivity : Activity() {
 
     private var cmFixed = false
-    private val logger = LoggerFactory.getLogger("vpn_backend")
+    private val logger = LoggerFactory.getLogger("vpn")
 
     @Inject
     lateinit var vpnConnectionStateManager: VPNConnectionStateManager
@@ -112,7 +112,6 @@ class VPNPermissionActivity : Activity() {
                     finish()
                 } else {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        logger.debug("requesting notification permission.")
                         requestPermissions(
                                 arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION
                         )

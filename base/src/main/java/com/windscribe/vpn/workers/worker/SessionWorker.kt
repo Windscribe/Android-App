@@ -33,7 +33,7 @@ import javax.inject.Inject
 
 class SessionWorker(context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
 
-    val logger: Logger = LoggerFactory.getLogger("session_worker")
+    val logger: Logger = LoggerFactory.getLogger("worker")
 
     @Inject
     lateinit var preferencesHelper: PreferencesHelper

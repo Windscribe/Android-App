@@ -11,7 +11,7 @@ import javax.inject.Inject
 import org.slf4j.LoggerFactory
 
 class CredentialsWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(appContext, params) {
-    private val logger = LoggerFactory.getLogger("credentials_updater")
+    private val logger = LoggerFactory.getLogger("worker")
 
     @Inject
     lateinit var connectionDataRepository: ConnectionDataRepository

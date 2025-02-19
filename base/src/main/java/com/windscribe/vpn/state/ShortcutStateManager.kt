@@ -18,7 +18,7 @@ class ShortcutStateManager(
     private val interactor: ServiceInteractor,
     private val windVpnController: WindVpnController
 ) {
-    private var logger = LoggerFactory.getLogger("shortcut_manager")
+    private var logger = LoggerFactory.getLogger("shortcut")
     private var initilized = false
     fun connect() {
         if (initilized) {

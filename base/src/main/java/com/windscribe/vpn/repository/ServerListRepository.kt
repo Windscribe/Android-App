@@ -40,7 +40,7 @@ class ServerListRepository @Inject constructor(
         private val advanceParameterRepository: AdvanceParameterRepository,
         private val preferenceHelper: PreferencesHelper
 ) {
-    private val logger = LoggerFactory.getLogger("server_list_repository")
+    private val logger = LoggerFactory.getLogger("data")
     private var _events = MutableSharedFlow<List<RegionAndCities>>(replay = 1)
     val regions: SharedFlow<List<RegionAndCities>> = _events
     private var _locationUIInvalidation = MutableSharedFlow<Boolean>(replay = 1)
@@ -138,7 +138,6 @@ class ServerListRepository @Inject constructor(
     }
 
     private fun addToDatabase(regions: List<Region>): Completable {
-        logger.debug("Saving server list to database")
         val cities: MutableList<City> = ArrayList()
         for (region in regions) {
             if (region.getCities() != null) {
@@ -154,7 +153,6 @@ class ServerListRepository @Inject constructor(
                     preferenceChangeObserver.postCityServerChange()
                     load()
                 })
-                .doOnError { logger.debug("Error saving server list to database") }
     }
 
 

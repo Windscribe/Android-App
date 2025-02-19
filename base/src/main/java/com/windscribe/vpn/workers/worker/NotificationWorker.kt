@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 
 class NotificationWorker(context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
 
-    private val logger = LoggerFactory.getLogger("notification_updater")
+    private val logger = LoggerFactory.getLogger("worker")
     @Inject
     lateinit var notificationRepository: NotificationRepository
     @Inject

@@ -40,7 +40,7 @@ class DeviceStateService : JobIntentWorkAroundService() {
     @Inject
     lateinit var vpnConnectionStateManager: VPNConnectionStateManager
 
-    private val logger = LoggerFactory.getLogger("network_status")
+    private val logger = LoggerFactory.getLogger("vpn")
     private val stateBoolean = AtomicBoolean()
     private val compositeDisposable = CompositeDisposable()
     override fun onCreate() {

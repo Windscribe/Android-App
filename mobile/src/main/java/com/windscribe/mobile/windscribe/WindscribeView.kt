@@ -28,7 +28,6 @@ interface WindscribeView {
     val networkLayoutState: NetworkLayoutState?
     val uiConnectionState: ConnectionUiState?
     fun gotoLoginRegistrationActivity()
-    fun handleRateView()
     fun hideProgressView()
     fun hideRecyclerViewProgressBar()
     val isBannedLayoutShown: Boolean

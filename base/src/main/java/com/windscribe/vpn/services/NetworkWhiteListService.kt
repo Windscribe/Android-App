@@ -126,7 +126,7 @@ class NetworkWhiteListService : Service(), NetworkInfoListener {
 
         const val UNSECURED_NETWORK_ACTION = "unsecured_network_action"
         const val DISCONNECT_ACTION = "disconnect_action"
-        private const val TAG = "check_network_service"
+        private const val TAG = "vpn"
         fun startService(context: Context) {
             val startIntent = Intent(context, NetworkWhiteListService::class.java)
             startIntent.action = UNSECURED_NETWORK_ACTION

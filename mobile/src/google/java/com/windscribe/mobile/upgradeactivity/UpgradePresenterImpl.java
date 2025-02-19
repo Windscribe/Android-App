@@ -87,7 +87,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class UpgradePresenterImpl implements UpgradePresenter {
 
-    private static final String TAG = "upgrade_p";
+    private static final String TAG = "billing";
     private final Logger presenterLog = LoggerFactory.getLogger(TAG);
     private Purchase mPurchase;
     private PushNotificationAction mPushNotificationAction;
@@ -113,7 +113,6 @@ public class UpgradePresenterImpl implements UpgradePresenter {
         }
 
         if (!mUpgradeInteractor.getCompositeDisposable().isDisposed()) {
-            presenterLog.info("Disposing network observer...");
             mUpgradeInteractor.getCompositeDisposable().dispose();
         }
 

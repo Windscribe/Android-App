@@ -39,7 +39,7 @@ class WelcomePresenterImpl @Inject constructor(
 ) : WelcomePresenter {
     private var isRegistration = false
     private val compositeDisposable = CompositeDisposable()
-    private val logger = LoggerFactory.getLogger("login-p")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun onDestroy() {
         compositeDisposable.clear()
         interactor.getCompositeDisposable().clear()

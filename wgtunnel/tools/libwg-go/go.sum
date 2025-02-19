@@ -46,10 +46,10 @@ github.com/Windscribe/ctrld v1.3.11-android h1:1KZp0d4PiuCi6+Huc+2rlr0wfY1OuxGes
 github.com/Windscribe/ctrld v1.3.11-android/go.mod h1:MKw4e72Ao9PKQDkGGTkmSprnlYSAVYCFtoMBTDD1woM=
 github.com/Windscribe/wireguard v1.0.3 h1:8CKOCJZW8R5f+UcdIyz6U0yVMIRXLDJ6F8xinsCbzoo=
 github.com/Windscribe/wireguard v1.0.3/go.mod h1:whfbyDBt09xhCYQWtO2+3UVjlaq6/9hDZrjg2ZE6SyA=
-github.com/Windscribe/wstunnel v0.0.0-20240826061744-234a5b466a28 h1:AH1kMjqJpQEglv7QIUgzhxen9FJ2WmEB4z64U9C6s+Q=
-github.com/Windscribe/wstunnel v0.0.0-20240826061744-234a5b466a28/go.mod h1:Br1cd2+peGu39CTPsBF1d36AtYKbc8waBU2NQlss3Wg=
-github.com/Windscribe/wstunnel/websocket v0.0.0-20240826061744-234a5b466a28 h1:MIcKSDRar1TyLMKe+XdIL2+mZ8PCh49XpHtvs2gG8gE=
-github.com/Windscribe/wstunnel/websocket v0.0.0-20240826061744-234a5b466a28/go.mod h1:TRuYNgKZOeo4OFmQPWLVp7AhisMpNtYeKn4KuCP7Z+E=
+github.com/Windscribe/wstunnel v1.0.2-0.20250204211052-c191d6e13771 h1:iECpNyyoXxY6DWEqMVXEyPTb0KEa/nU/GKMFda++kzM=
+github.com/Windscribe/wstunnel v1.0.2-0.20250204211052-c191d6e13771/go.mod h1:Br1cd2+peGu39CTPsBF1d36AtYKbc8waBU2NQlss3Wg=
+github.com/Windscribe/wstunnel/websocket v0.0.0-20250204211052-c191d6e13771 h1:NBrYZFWQ+mccHvJg/eBgFGsU/3mgwkBFwI1J6j3dikQ=
+github.com/Windscribe/wstunnel/websocket v0.0.0-20250204211052-c191d6e13771/go.mod h1:TRuYNgKZOeo4OFmQPWLVp7AhisMpNtYeKn4KuCP7Z+E=
 github.com/Windscribe/zerolog v0.0.0-20241206130353-cc6e8ef5397c h1:UqFsxmwiCh/DBvwJB0m7KQ2QFDd6DdUkosznfMppdhE=
 github.com/Windscribe/zerolog v0.0.0-20241206130353-cc6e8ef5397c/go.mod h1:bJsvje4Z08ROH4Nhs5iH600c3IkWhwp44iRc54W6wYQ=
 github.com/alexbrainman/sspi v0.0.0-20231016080023-1a75b4708caa h1:LHTHcTQiSGT7VVbI0o4wBRNQIgn917usHWOd6VAffYI=

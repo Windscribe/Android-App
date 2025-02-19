@@ -72,7 +72,7 @@ class SplitTunnelingActivity : BaseActivity(), SplitTunnelingView {
     private var mTransition: AutoTransition? = null
     private val constraintSetTunnel = ConstraintSet()
 
-    private val mSplitViewLog = LoggerFactory.getLogger("split_settings_a")
+    private val mSplitViewLog = LoggerFactory.getLogger("basic")
     private val setView = AtomicBoolean()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -131,8 +131,6 @@ class SplitTunnelingActivity : BaseActivity(), SplitTunnelingView {
             }
 
             override fun onTransitionEnd(transition: Transition) {
-                mSplitViewLog.info("Show split tunnel mode transition finished...")
-                //ConnSettingsPresenter.onManualLayoutSetupCompleted();
                 transition.removeListener(this)
             }
 
@@ -220,8 +218,6 @@ class SplitTunnelingActivity : BaseActivity(), SplitTunnelingView {
             }
 
             override fun onTransitionEnd(transition: Transition) {
-                mSplitViewLog.info("Show split tunnel mode transition finished...")
-                //ConnSettingsPresenter.onManualLayoutSetupCompleted();
                 transition.removeListener(this)
             }
 

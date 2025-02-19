@@ -29,7 +29,7 @@ class TrafficCounter(
     val preferencesHelper: PreferencesHelper,
     val deviceStateManager: DeviceStateManager,
 ) {
-    private val logger = LoggerFactory.getLogger("traffic_counter")
+    private val logger = LoggerFactory.getLogger("vpn")
     var trafficStats = MutableSharedFlow<Traffic>()
     private var _stats = trafficStats
     private var trafficCounterJob: Job? = null

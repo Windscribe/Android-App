@@ -54,7 +54,7 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
     @BindView(R.id.title)
     var title: TextView? = null
 
-    private val logger = LoggerFactory.getLogger("add_email_a")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)

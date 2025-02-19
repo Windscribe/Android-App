@@ -65,7 +65,7 @@ import kotlin.Pair;
 public class UpgradeActivity extends BaseActivity
         implements UpgradeView {
 
-    private static final String TAG = "upgrade_a";
+    private static final String TAG = "billing";
     private final Logger logger = LoggerFactory.getLogger(TAG);
     @Inject
     UpgradePresenter presenter;

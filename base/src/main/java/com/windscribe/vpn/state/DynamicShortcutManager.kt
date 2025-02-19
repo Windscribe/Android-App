@@ -41,7 +41,7 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
         const val RECENT_DATE_KEY = "ws_recent_date_key"
     }
 
-    private val logger = LoggerFactory.getLogger("shortcut_m")
+    private val logger = LoggerFactory.getLogger("shortcut")
 
     init {
         listenForVPNState()
@@ -139,7 +139,6 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
             putExtra(RECENT_CONNECT_ID, selectedLocation.cityId)
             putExtra(RECENT_LOCATION_TYPE_INT, locationTypeInt.ordinal)
         }
-        logger.debug("****Ordinal ${locationTypeInt.ordinal}")
         val latestShortcut = ShortcutInfoCompat.Builder(context, shortcutID)
                 .setShortLabel("${selectedLocation.nodeName} ${selectedLocation.nickName}")
                 .setIcon(IconCompat.createWithResource(context, FlagIconResource.getSmallFlag(selectedLocation.countryCode)))
@@ -168,8 +167,7 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
                     .setExtras(v.extras ?: PersistableBundle.EMPTY)
                     .setRank(index + 2)
                     .build()
-            val added = ShortcutManagerCompat.pushDynamicShortcut(context, updated)
-            logger.debug("Pushing shortcut - ${updated.shortLabel} at index ${index + 2} Result: $added")
+            val ignored = ShortcutManagerCompat.pushDynamicShortcut(context, updated)
         }
     }
 

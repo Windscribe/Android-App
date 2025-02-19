@@ -22,7 +22,7 @@ class WindscribeReviewManagerImpl(
     val userRepository: UserRepository
 ) : WindscribeReviewManager {
     private val reviewManager = ReviewManagerFactory.create(context)
-    private val logger = LoggerFactory.getLogger("review_m")
+    private val logger = LoggerFactory.getLogger("state")
     override fun handleAppReview() {
         // TV does not not In build review popup.
         if (appContext.applicationInterface.isTV) {

@@ -20,7 +20,7 @@ class NetworkSecurityPresenterImpl @Inject constructor(
     private val networkSecurityView: NetworkSecurityView,
     private val interactor: ActivityInteractor
 ) : NetworkSecurityPresenter, NetworkInfoListener {
-    private val logger = LoggerFactory.getLogger("net_security_p")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun onDestroy() {
         interactor.getNetworkInfoManager().removeNetworkInfoListener(this)
         //Dispose any observer

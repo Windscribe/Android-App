@@ -29,7 +29,7 @@ import javax.inject.Singleton
 
 @Singleton
 class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionManager: AutoConnectionManager, val preferencesHelper: PreferencesHelper, val userRepository: Lazy<UserRepository>) {
-    private val logger = LoggerFactory.getLogger("vpn_backend")
+    private val logger = LoggerFactory.getLogger("vpn")
 
     private val _events = MutableStateFlow(VPNState(Disconnected))
     val state: StateFlow<VPNState> = _events

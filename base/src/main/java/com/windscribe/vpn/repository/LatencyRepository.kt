@@ -56,7 +56,7 @@ class LatencyRepository @Inject constructor(
     companion object {
         const val MINIMUM_PING_VALIDATION_MINUTES = 5
     }
-    private val logger = LoggerFactory.getLogger("latency")
+    private val logger = LoggerFactory.getLogger("ping")
     private var _latencyEvent = MutableStateFlow(Pair(false, LatencyType.Servers))
     val latencyEvent: StateFlow<Pair<Boolean, LatencyType>> = _latencyEvent.asStateFlow()
     private val skipPing

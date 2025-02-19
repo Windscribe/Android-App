@@ -20,7 +20,7 @@ class IpRepository(
     private val apiCallManagerV2: IApiCallManager,
     private val vpnConnectionStateManager: VPNConnectionStateManager
 ) {
-    private val logger = LoggerFactory.getLogger("ip_repository")
+    private val logger = LoggerFactory.getLogger("data")
     private val _state = MutableSharedFlow<RepositoryState<String>>()
     val state = _state
 
@@ -79,7 +79,6 @@ class IpRepository(
             ipAddress = ipAddress.replace("000".toRegex(), "")
             ipAddress = ipAddress.replace("00".toRegex(), "")
         } else {
-            logger.info("Saving Ipv4 address...")
             ipAddress = ipResponse
         }
         return ipAddress
