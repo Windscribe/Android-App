@@ -12,11 +12,11 @@ replace github.com/mr-karan/doggo => github.com/Windscribe/doggo v0.0.0-20220919
 
 replace github.com/rs/zerolog => github.com/Windscribe/zerolog v0.0.0-20241206130353-cc6e8ef5397c
 
-replace github.com/gorilla/websocket => github.com/Windscribe/wstunnel/websocket v0.0.0-20240826061744-234a5b466a28
+replace github.com/gorilla/websocket => github.com/Windscribe/wstunnel/websocket v0.0.0-20250204211052-c191d6e13771
 
 require (
 	github.com/Control-D-Inc/ctrld v1.3.11
-	github.com/Windscribe/wstunnel v0.0.0-20240826061744-234a5b466a28
+	github.com/Windscribe/wstunnel v1.0.2-0.20250204211052-c191d6e13771
 	github.com/spf13/cobra v1.8.1
 	golang.org/x/sys v0.28.0
 	golang.zx2c4.com/wireguard v0.0.0-00010101000000-000000000000

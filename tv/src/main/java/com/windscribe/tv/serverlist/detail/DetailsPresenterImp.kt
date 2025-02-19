@@ -26,7 +26,7 @@ class DetailsPresenterImp(
     private val detailView: DetailView,
     private val interactor: ActivityInteractor
 ) : DetailPresenter, DetailListener {
-    private val logger = LoggerFactory.getLogger("detail:p")
+    private val logger = LoggerFactory.getLogger("basic")
     private var detailViewAdapter: DetailViewAdapter? = null
     override fun onDestroy() {
         logger.debug("Destroying detail presenter")
@@ -157,7 +157,6 @@ class DetailsPresenterImp(
                 }
 
                 override fun onSuccess(favourites: List<Favourite>) {
-                    logger.debug("Added to favourites.")
                     detailView.showToast(interactor.getResourceString(R.string.added_to_favourites))
                     detailViewAdapter?.setFavourites(favourites)
                 }

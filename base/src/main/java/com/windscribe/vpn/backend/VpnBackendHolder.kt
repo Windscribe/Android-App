@@ -34,7 +34,7 @@ class VpnBackendHolder(
 ) {
 
     var activeBackend: VpnBackend? = null
-    private val vpnLogger = LoggerFactory.getLogger("vpn_backend")
+    private val vpnLogger = LoggerFactory.getLogger("vpn")
 
     /**
     @return VpnBackend Based on selected protocol and existing vpn profile.

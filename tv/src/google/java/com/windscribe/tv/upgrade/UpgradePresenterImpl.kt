@@ -64,7 +64,7 @@ class UpgradePresenterImpl @Inject constructor(
     private var mPurchase: Purchase? = null
     private var notificationAction: PushNotificationAction? = null
     private var mobileBillingPlans: List<BillingPlans> = ArrayList()
-    private val logger = LoggerFactory.getLogger("upgrade_p")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun onDestroy() {
         logger.info("Stopping billing connection...")
         // Start the background service to verify purchase before destroying

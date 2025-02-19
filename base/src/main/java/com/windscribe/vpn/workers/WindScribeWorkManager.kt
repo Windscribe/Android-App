@@ -27,19 +27,16 @@ import javax.inject.Singleton
 @Singleton
 class WindScribeWorkManager(private val context: Context, private val scope: CoroutineScope, private val vpnConnectionStateManager: VPNConnectionStateManager, val preferencesHelper: PreferencesHelper) {
     private var foregroundSessionUpdateJob: Job? = null
-    private var logger = LoggerFactory.getLogger("work_manager")
+    private var logger = LoggerFactory.getLogger("worker")
     fun onAppStart() {
         if (preferencesHelper.sessionHash == null) return
-        logger.debug("Starting one time work requests")
         // One time
         val data = Data.Builder().putBoolean("forceUpdate", true).build()
         updateSession(data)
         // Hourly
-        logger.debug("Starting hourly work requests")
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(NOTIFICATION_HOURLY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(NotificationWorker::class.java, HOURS))
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(SESSION_HOURLY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(SessionWorker::class.java, HOURS))
         // Every day
-        logger.debug("Starting every day work requests")
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(NOTIFICATION_DAY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(NotificationWorker::class.java, DAYS))
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(SESSION_DAY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(SessionWorker::class.java, DAYS))
         keepSessionUpdated()
@@ -47,7 +44,6 @@ class WindScribeWorkManager(private val context: Context, private val scope: Cor
 
     fun onAppMovedToForeground() {
         if (preferencesHelper.sessionHash == null) return
-        logger.debug("Starting foreground session update")
         WorkManager.getInstance(context).enqueueUniqueWork(SERVER_LIST_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(SessionWorker::class.java))
         keepSessionUpdated()
     }
@@ -56,14 +52,12 @@ class WindScribeWorkManager(private val context: Context, private val scope: Cor
         foregroundSessionUpdateJob = scope.launch {
             while (true) {
                 delay(1000 * 60)
-                logger.debug("Starting foreground session update")
                 WorkManager.getInstance(context).enqueueUniqueWork(SESSION_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(SessionWorker::class.java))
             }
         }
     }
 
     fun onAppMovedToBackground() {
-        logger.debug("Removed foreground session update.")
         foregroundSessionUpdateJob?.cancel()
     }
 

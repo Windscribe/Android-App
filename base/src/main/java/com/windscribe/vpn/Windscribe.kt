@@ -76,7 +76,7 @@ open class Windscribe : MultiDexApplication() {
         ): Boolean
     }
 
-    private val logger = LoggerFactory.getLogger("Windscribe")
+    private val logger = LoggerFactory.getLogger("app")
     var activeActivity: AppCompatActivity? = null
     lateinit var applicationInterface: ApplicationInterface
 

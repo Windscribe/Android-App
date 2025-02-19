@@ -18,7 +18,7 @@ class EmergencyConnectViewModal(
     private val windVpnController: WindVpnController,
     private val vpnConnectionStateManager: VPNConnectionStateManager
 ) : ViewModel() {
-    private val logger = LoggerFactory.getLogger("e_connect_v")
+    private val logger = LoggerFactory.getLogger("emergency_connect")
     private var _uiState = MutableStateFlow(EmergencyConnectUIState.Disconnected)
     val uiState: StateFlow<EmergencyConnectUIState> = _uiState
     private var _connectionProgressText = MutableStateFlow("Resolving e-connect domain..")
@@ -26,14 +26,12 @@ class EmergencyConnectViewModal(
     private var connectingJob: Job? = null
 
     init {
-        logger.debug("Initializing Emergency connect view modal.")
         observeConnectionState()
     }
 
     private fun observeConnectionState() {
         viewModelScope.launch {
             vpnConnectionStateManager.state.collectLatest {
-                logger.debug("Connection state changed to ${it.status}")
                 when (it.status) {
                     Connecting -> _uiState.emit(EmergencyConnectUIState.Connecting)
                     Connected -> _uiState.emit(EmergencyConnectUIState.Connected)
@@ -70,7 +68,7 @@ class EmergencyConnectViewModal(
             }.onSuccess {
                 logger.debug("Successfully connected to emergency server.")
             }.onFailure {
-                logger.debug("Failure to connect using emergency vpn profiles: $it")
+                logger.error("Failure to connect using emergency vpn profiles: $it")
                 _uiState.emit(EmergencyConnectUIState.Disconnected)
             }
         }

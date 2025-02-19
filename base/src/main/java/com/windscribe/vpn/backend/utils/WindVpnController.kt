@@ -74,7 +74,7 @@ open class WindVpnController @Inject constructor(
 
 ) {
 
-    private val logger = LoggerFactory.getLogger("controller_v")
+    private val logger = LoggerFactory.getLogger("vpn")
     private var isConnecting = false
 
     private suspend fun createVPNProfile(
@@ -295,7 +295,6 @@ open class WindVpnController @Inject constructor(
             logger.debug("Protocol: $protocolInformation")
             val profileToConnect = createVPNProfile(protocolInformation, attempt)
             logger.debug("Location: $profileToConnect")
-            logger.debug("Selecting VPN service to launch.")
             launchVPNService(protocolInformation, connectionId)
         } catch (e: Exception) {
             if (e is InvalidVPNConfigException) {
@@ -364,7 +363,6 @@ open class WindVpnController @Inject constructor(
             // Force disconnect if state did not change to disconnect
             vpnConnectionStateManager.setState(VPNState(Disconnected, error = error), true)
             delay(100)
-            logger.debug("Force disconnected")
         }
         checkForReconnect()
     }

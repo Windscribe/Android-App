@@ -27,7 +27,7 @@ class HelpPresenterImpl @Inject constructor(
         private val helpView: HelpView,
         private val interactor: ActivityInteractor
 ) : HelpPresenter {
-    private val logger = LoggerFactory.getLogger("help_p")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun init() {
         helpView.setActivityTitle(interactor.getResourceString(R.string.help_me))
     }

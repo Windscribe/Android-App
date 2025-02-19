@@ -18,7 +18,7 @@ import javax.inject.Inject
 class SplashActivity : BaseActivity(), SplashView {
     @Inject
     lateinit var presenter: SplashPresenter
-    private val logger = LoggerFactory.getLogger("splash_a")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)

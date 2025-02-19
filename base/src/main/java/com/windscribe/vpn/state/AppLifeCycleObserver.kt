@@ -70,7 +70,6 @@ class AppLifeCycleObserver @Inject constructor(
             logger.debug("----------------App moved to Foreground.------------\n")
         }
         if (appContext.vpnConnectionStateManager.isVPNConnected().not()) {
-            logger.debug("Resetting server list country code.")
             overriddenCountryCode = null
         }
         networkInfoManager.reload()

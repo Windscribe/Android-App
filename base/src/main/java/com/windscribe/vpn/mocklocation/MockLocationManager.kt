@@ -22,7 +22,7 @@ import javax.inject.Singleton
 @Singleton
 class MockLocationManager(val context: Context, val scope: CoroutineScope, val vpnConnectionStateManager: VPNConnectionStateManager, val preferencesHelper: PreferencesHelper) {
 
-    private val logger = LoggerFactory.getLogger("mock_location")
+    private val logger = LoggerFactory.getLogger("state")
     private var mockGps: MockLocationProvider? = null
     private var mockNetwork: MockLocationProvider? = null
     private var pushLocationJob: Job? = null
@@ -62,7 +62,6 @@ class MockLocationManager(val context: Context, val scope: CoroutineScope, val v
 
     fun init() {
         scope.launch {
-            logger.info("Initiating mock location controller.")
             vpnConnectionStateManager.state.collectLatest { state ->
                 if (state.status == VPNState.Status.Disconnected || !preferencesHelper.isGpsSpoofingOn) {
                     stop()
@@ -71,7 +70,6 @@ class MockLocationManager(val context: Context, val scope: CoroutineScope, val v
                         val latitude = it.lat?.toDoubleOrNull()
                         val longitude = it.lang?.toDoubleOrNull()
                         if (latitude != null && longitude != null) {
-                            logger.info("Starting mock location providers.")
                             start(latitude, longitude)
                         }
                     }

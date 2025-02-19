@@ -33,12 +33,11 @@ class UserRepository(
     private val autoConnectionManager: AutoConnectionManager
 ) {
     var user = MutableLiveData<User>()
-    private val logger = LoggerFactory.getLogger("user_repo")
+    private val logger = LoggerFactory.getLogger("data")
     private val _userInfo = MutableSharedFlow<User>(replay = 1)
     val userInfo: SharedFlow<User> = _userInfo
 
     init {
-        logger.debug("Starting user repository.")
         reload()
     }
 
@@ -56,7 +55,6 @@ class UserRepository(
                 callback?.invoke(newUser)
             } ?: kotlin.run {
                 try {
-                    logger.debug("Loading user info from cache")
                     val cachedSessionResponse =
                         serviceInteractor.preferenceHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
                     val userSession =
@@ -64,7 +62,7 @@ class UserRepository(
                     user.postValue(User(userSession))
                     _userInfo.emit(User(userSession))
                 } catch (ignored: Exception) {
-                    logger.debug("No user is logged in.")
+                    logger.info("No user is logged in.")
                 }
             }
         }
@@ -80,7 +78,7 @@ class UserRepository(
             user.postValue(User(userSession))
             _userInfo.tryEmit(User(userSession))
         } catch (ignored: Exception) {
-            logger.debug("No user is logged in.")
+            logger.info("No user is logged in.")
         }
     }
 

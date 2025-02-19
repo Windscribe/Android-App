@@ -46,7 +46,7 @@ import javax.inject.Singleton
 @Singleton
 open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedApiFactory, val wsNetServerAPI: WSNetServerAPI, val preferencesHelper: PreferencesHelper) : IApiCallManager {
 
-    private val logger = LoggerFactory.getLogger("api_call")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun getWebSession(): Single<GenericResponseClass<WebSession?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create

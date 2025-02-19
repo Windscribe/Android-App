@@ -26,7 +26,7 @@ class NewsFeedPresenterImpl @Inject constructor(
 ) : NewsFeedPresenter, NewsFeedAdapter.NewsFeedListener {
     private var newsFeedAdapter: NewsFeedAdapter? = null
     private var notificationList: List<WindNotification>? = null
-    private val logger = LoggerFactory.getLogger("news_feed_p")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun onDestroy() {
         if (!interactor.getCompositeDisposable().isDisposed) {
             interactor.getCompositeDisposable().dispose()
@@ -45,7 +45,6 @@ class NewsFeedPresenterImpl @Inject constructor(
                             Single
                                 .fromCallable {
                                     it.dataClass?.let {
-                                        logger.info("Received data from api call. Saving in storage...")
                                         interactor.getAppPreferenceInterface()
                                             .saveResponseStringData(
                                                 PreferencesKeyConstants.NEWS_FEED_RESPONSE,

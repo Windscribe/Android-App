@@ -72,7 +72,7 @@ class VPNProfileCreator @Inject constructor(
         private val proxyDNSManager: ProxyDNSManager
 ) {
 
-    private val logger = LoggerFactory.getLogger("profile_creator")
+    private val logger = LoggerFactory.getLogger("vpn")
     var wgForceInit = AtomicBoolean(false)
     private val publicIpV4Array = arrayOf(
             "0.0.0.0/5", "8.0.0.0/7", "11.0.0.0/8", "12.0.0.0/6",

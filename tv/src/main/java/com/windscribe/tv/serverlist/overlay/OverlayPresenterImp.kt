@@ -37,7 +37,7 @@ class OverlayPresenterImp @Inject constructor(
     private var serverAdapter: ServerAdapter? = null
     private var staticIpAdapter: StaticIpAdapter? = null
     private var windAdapter: ServerAdapter? = null
-    private val logger = LoggerFactory.getLogger("overlay:p")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun onDestroy() {
         logger.debug("Destroying Overlay presenter.")
         if (!interactor.getCompositeDisposable().isDisposed) {
@@ -108,7 +108,6 @@ class OverlayPresenterImp @Inject constructor(
 
     private fun resetAllAdapter(regions: MutableList<RegionAndCities>) {
         overlayView.setState(LoadState.Loading, R.drawable.ic_all_icon, R.string.load_loading, 1)
-        logger.info("****Loading server list from local storage****")
         val dataDetails = ServerListData()
         val oneTimeCompositeDisposable = CompositeDisposable()
         oneTimeCompositeDisposable.add(

@@ -11,7 +11,7 @@ import com.windscribe.vpn.services.FirebaseManager
 import org.slf4j.LoggerFactory
 
 class FireBaseManagerImpl(private val context: Windscribe): FirebaseManager {
-    private val logger = LoggerFactory.getLogger("firebase_m")
+    private val logger = LoggerFactory.getLogger("fcm")
     override fun getFirebaseToken(callback: (String?) -> Unit) {
         var token: String? = null
         if (BuildConfig.API_KEY.isEmpty()) {

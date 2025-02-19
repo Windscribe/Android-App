@@ -18,7 +18,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 object WindStunnelUtility {
-    var logger: Logger = LoggerFactory.getLogger("wind_stunnel_util")
+    var logger: Logger = LoggerFactory.getLogger("vpn")
     val isStunnelRunning: Boolean
         get() = File(appContext.filesDir.path + "/" + VpnPreferenceConstants.STUNNEL_PID)
                 .exists()

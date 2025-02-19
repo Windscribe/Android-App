@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 
 class ProxyTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBackend) {
-    var logger: Logger = LoggerFactory.getLogger("proxy")
+    var logger: Logger = LoggerFactory.getLogger("vpn")
     val running: Boolean
         get() = proxyJob?.isActive == true
     private var proxyJob: Job? = null

@@ -26,7 +26,7 @@ class BootSessionService : JobIntentWorkAroundService() {
     @Inject
     lateinit var shortcutStateManager: ShortcutStateManager
 
-    private val logger = LoggerFactory.getLogger("boot_session_s")
+    private val logger = LoggerFactory.getLogger("vpn")
     private val stateBoolean = AtomicBoolean()
     override fun onCreate() {
         super.onCreate()

@@ -45,7 +45,7 @@ class WireGuardWrapperService : GoBackend.VpnService() {
     @Inject
     lateinit var preferencesHelper: PreferencesHelper
 
-    private var logger = LoggerFactory.getLogger("vpn_backend")
+    private var logger = LoggerFactory.getLogger("vpn")
 
     override fun onCreate() {
         Windscribe.appContext.serviceComponent.inject(this)

@@ -58,7 +58,7 @@ public class GoogleBillingManager implements PurchasesUpdatedListener, Lifecycle
 
     private final Application app;
 
-    private final Logger logger = LoggerFactory.getLogger("Billing manager");
+    private final Logger logger = LoggerFactory.getLogger("billing");
 
     // private BillingManagerResponseListener mListener;
     private BillingClient mBillingClient;

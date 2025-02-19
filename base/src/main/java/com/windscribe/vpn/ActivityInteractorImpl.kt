@@ -93,7 +93,7 @@ class ActivityInteractorImpl(
 
     private var compositeDisposable = CompositeDisposable()
 
-    private val logger = LoggerFactory.getLogger("activity_i")
+    private val logger = LoggerFactory.getLogger("basic")
 
     private var mapResponse: PortMapResponse? = null
 

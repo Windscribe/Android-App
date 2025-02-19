@@ -54,7 +54,7 @@ class WindscribePresenterImpl @Inject constructor(
     var interactor: ActivityInteractor
 ) : WindscribePresenter, ConnectionStateAnimationListener {
 
-    private val logger = LoggerFactory.getLogger("windscribe_p")
+    private val logger = LoggerFactory.getLogger("basic")
     private var canQuit = false
     private val serverListUpdate = AtomicBoolean()
     private var selectedLocation: LastSelectedLocation? = null
@@ -63,7 +63,6 @@ class WindscribePresenterImpl @Inject constructor(
     override suspend fun observeVPNState() {
         interactor.getVpnConnectionStateManager().state.collect { vpnState: VPNState ->
             if (vpnState.status === lastVPNState) return@collect
-            logger.info("Setting Connection UI: ${lastVPNState.name}")
             lastVPNState = vpnState.status
             when (vpnState.status) {
                 VPNState.Status.Connected -> {
@@ -138,7 +137,6 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun connectWithSelectedLocation(cityID: Int) {
-        logger.debug("Getting city data.")
         interactor.getAppPreferenceInterface().globalUserConnectionPreference = true
         interactor.getCompositeDisposable().add(
             interactor.getCityAndRegionByID(cityID)
@@ -195,7 +193,6 @@ class WindscribePresenterImpl @Inject constructor(
         val ipAddress = interactor.getAppPreferenceInterface()
             .getResponseString(PreferencesKeyConstants.USER_IP)
         if (ipAddress != null && interactor.getVpnConnectionStateManager().isVPNActive()) {
-            logger.info("Setting up user ip address...")
             windscribeView.setIpAddress(ipAddress)
         }
         if (!interactor.getVpnConnectionStateManager().isVPNActive()) {
@@ -256,7 +253,6 @@ class WindscribePresenterImpl @Inject constructor(
 
     override fun onConnectedAnimationCompleted() {
         interactor.getAppPreferenceInterface()
-        logger.info("Vpn connected animation completed. Setting IP Address")
         windscribeView.showSplitViewIcon(interactor.getAppPreferenceInterface().lastConnectedUsingSplit)
     }
 
@@ -377,7 +373,6 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     private fun setPartialOverlayView() {
-        logger.debug("Loading server list.")
         windscribeView.showPartialViewProgress(true)
         val regions: MutableList<RegionAndCities> = ArrayList()
         val dataDetails = ServerListData()
@@ -385,18 +380,15 @@ class WindscribePresenterImpl @Inject constructor(
         oneTimeCompositeDisposable.add(
             interactor.getAllRegion()
                 .flatMap {
-                    logger.info("Loaded server regions.")
                     regions.clear()
                     regions.addAll(it)
                     interactor.getAllPings()
                 }.onErrorReturnItem(ArrayList())
                 .flatMap {
-                    logger.info("Loaded ping times.")
                     dataDetails.pingTimes = it
                     interactor.getFavourites()
                 }.onErrorReturnItem(ArrayList())
                 .flatMap {
-                    logger.info("Loaded favourites items.")
                     dataDetails.favourites = it
                     interactor.getLocationProvider().bestLocation
                 }.flatMap {
@@ -437,7 +429,6 @@ class WindscribePresenterImpl @Inject constructor(
                     }
 
                     override fun onSuccess(regionsList: List<RegionAndCities>) {
-                        logger.debug("Successfully loaded server list.")
                         windscribeView.showPartialViewProgress(false)
                         updateLocationData(selectedLocation, true)
                         if (regions.isNotEmpty()) {
@@ -467,7 +458,6 @@ class WindscribePresenterImpl @Inject constructor(
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableSingleObserver<LastSelectedLocation?>() {
                     override fun onError(e: Throwable) {
-                        logger.debug("No last connected location found.")
                         updateLocationData(null, false)
                     }
 
@@ -481,7 +471,6 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     private fun addNotificationChangeListener() {
-        logger.debug("Registering notification listener.")
         interactor.getCompositeDisposable().add(
             interactor.getNotifications(interactor.getAppPreferenceInterface().userName)
                 .subscribeOn(Schedulers.io())
@@ -499,7 +488,6 @@ class WindscribePresenterImpl @Inject constructor(
                     }
 
                     override fun onNext(popupNotificationTables: List<PopupNotificationTable>) {
-                        logger.debug("Notification data changed.")
                         checkForPopNotification(popupNotificationTables)
                     }
                 })
@@ -575,7 +563,6 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun setIPAddress() {
         if (WindUtilities.isOnline()) {
-            logger.info("Getting ip address from Api.")
             interactor.getCompositeDisposable().add(
                 interactor.getApiCallManager()
                     .checkConnectivityAndIpAddress()
@@ -590,7 +577,6 @@ class WindscribePresenterImpl @Inject constructor(
                                 windscribeView.setIpAddress("---.---.---.---")
                             }
                         } ?: kotlin.run {
-                            logger.info("Setting up user ip address...")
                             windscribeView.setIpAddress("---.---.---.---")
                         }
                     }, {
@@ -628,7 +614,6 @@ class WindscribePresenterImpl @Inject constructor(
         get() {
             when (interactor.getUserRepository().user.value?.accountStatus) {
                 User.AccountStatus.Okay -> {
-                    logger.debug("Account status was okay")
                     return true
                 }
                 User.AccountStatus.Expired -> {
@@ -669,7 +654,6 @@ class WindscribePresenterImpl @Inject constructor(
         if (selectedLocation != null) {
             isLocationNotAvailableToUser(false)
             interactor.getAppPreferenceInterface().globalUserConnectionPreference = true
-            logger.info("VPN connection attempt started...")
             interactor.getMainScope().launch {
                 interactor.getAutoConnectionManager().connectInForeground()
             }

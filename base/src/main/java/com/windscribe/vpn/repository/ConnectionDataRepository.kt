@@ -27,7 +27,7 @@ class ConnectionDataRepository @Inject constructor(
     private val apiCallManager: IApiCallManager,
     private val autoConnectionManager: Lazy<AutoConnectionManager>
 ) {
-    private val logger = LoggerFactory.getLogger("connection_data_updater")
+    private val logger = LoggerFactory.getLogger("data")
 
     suspend fun updateConnectionData() {
         update().await()
