@@ -482,4 +482,31 @@ last chosen location.</string>
     <string name="enter_1_key_value_per_line">Enter 1 key=value per line.</string>
     <string name="upgrade_to_stay_protected">Upgrade now to stay protected or wait until your bandwidth is reset on %s</string>
     <string name="changelog">Changelog</string>
+    <string name="restore">بحال کریں</string>
+    <string name="unlimited_everything">لا محدود سب کچھ</string>
+    <string name="use_on_all_devices_with_no_data_limits">تمام ڈیوائسز پر بغیر کسی ڈیٹا حد کے استعمال کریں</string>
+    <string name="all_vpn_locations">تمام VPN مقامات</string>
+    <string name="servers_in_cities_more_than_any_other_vpn">130 شہروں میں سرورز، کسی بھی دوسرے VPN سے زیادہ</string>
+    <string name="increased_speed_and_security">زیادہ رفتار اور سیکیورٹی</string>
+    <string name="blocks_malicious_websites_trackers">99.9٪ نقصان دہ ویب سائٹس اور ٹریکرز کو بلاک کرتا ہے</string>
+    <string name="plan_monthly">ماہانہ</string>
+    <string name="billed_monthly">ماہانہ بل</string>
+    <string name="plan_yearly">سالانہ</string>
+    <string name="subscribe">سبسکرائب کریں</string>
+    <string name="subscriptions_info">سبسکرپشنز کو ماہانہ، سالانہ منظم کیا جا سکتا ہے یا خریداری کے بعد پلے اسٹور اکاؤنٹ سیٹنگز میں جا کر بند کیا جا سکتا ہے۔ تمام قیمتوں میں لاگو ٹیکس شامل ہیں۔</string>
+    <string name="monthly_billed">%s/ماہ، سالانہ بل</string>
+    <string name="yearly_billed">سالانہ بل</string>
+    <string name="start_using_pro">Pro کا استعمال شروع کریں</string>
+    <string name="welcome_to_windscribe_pro">Windscribe Pro میں خوش آمدید!</string>
+    <string name="thanks_for_upgrading">Windscribe Pro میں اپ گریڈ کرنے کا شکریہ! اب آپ مزید طاقتور خصوصیات تک رسائی حاصل کر سکتے ہیں۔</string>
+    <string name="set_up_on_all_your_devices">اپنی تمام ڈیوائسز پر سیٹ اپ کریں</string>
+    <string name="connect_to_any_location">کسی بھی مقام سے جڑیں</string>
+    <string name="unlimited_bandwidth">لا محدود بینڈوڈتھ</string>
+    <string name="share">شیئر کریں</string>
+    <string name="join_our_discord_community">ہماری Discord کمیونٹی میں شامل ہوں</string>
+    <string name="join_our_reddit_community">ہماری Reddit کمیونٹی میں شامل ہوں</string>
+    <string name="find_us_on_youtube">ہمیں YouTube پر تلاش کریں</string>
+    <string name="follow_us_on_x">ہمیں X پر فالو کریں</string>
+    <string name="charged_every_month">ہر مہینے چارج کیا جاتا ہے</string>
+    <string name="charged_every_12_months">ہر 12 مہینے بعد چارج کیا جاتا ہے</string>
 </resources>

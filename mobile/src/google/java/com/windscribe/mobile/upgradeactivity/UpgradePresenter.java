@@ -34,13 +34,11 @@ public interface UpgradePresenter {
 
     void onConsumeFailed(int responseCode, Purchase purchase);
 
-    void onContinueFreeClick();
-
     void onContinuePlanClick(final Product selectedSku);
 
     void onDestroy();
 
-    void onMonthlyItemClicked(@Nullable ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParams);
+    void buyGoogleProduct(@Nullable ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParams);
 
     void onProductDataResponse(Map<String, Product> products);
 
@@ -57,8 +55,6 @@ public interface UpgradePresenter {
     void onSkuDetailsReceived(int responseCode, List<ProductDetails> productDetails);
 
     void restorePurchase();
-
-    void setLayoutFromApiSession();
 
     void setPurchaseFlowState(PurchaseState state);
 

@@ -4,11 +4,13 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.TypedArray
 import android.util.AttributeSet
+import android.view.Gravity
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.widget.TextViewCompat
 import com.windscribe.mobile.R
 import com.windscribe.mobile.utils.UiUtil
 
@@ -32,7 +34,8 @@ class IconLinkView @JvmOverloads constructor(
         }
 
     init {
-        view.findViewById<TextView>(R.id.title).text =
+        val titleTextView = view.findViewById<TextView>(R.id.title)
+        titleTextView.text =
             attributes.getString(R.styleable.ItemLinkView_ItemLinkViewTitle)
         val leftIcon = attributes.getResourceId(R.styleable.ItemLinkView_ItemLinkViewLeftIcon, -1)
         if (leftIcon == -1) {
@@ -45,11 +48,20 @@ class IconLinkView @JvmOverloads constructor(
             view.findViewById<ImageView>(R.id.right_icon).setImageResource(rightIcon)
             view.findViewById<ImageView>(R.id.right_icon).tag = rightIcon
         }
-        UiUtil.setupOnTouchListener(
-            container = view.findViewById(R.id.container),
-            textView = view.findViewById(R.id.title),
-            iconView = view.findViewById(R.id.right_icon)
-        )
+        val isCommunityLink = attributes.getBoolean(R.styleable.ItemLinkView_CommunityLinkLabel, false)
+        if (isCommunityLink) {
+            titleTextView.apply {
+                TextViewCompat.setTextAppearance(this, R.style.CommunityLinkLabel)
+                gravity = Gravity.START or Gravity.CENTER_VERTICAL
+            }
+        }
+        if (!isCommunityLink) {
+            UiUtil.setupOnTouchListener(
+                container = view.findViewById(R.id.container),
+                textView = view.findViewById(R.id.title),
+                iconView = view.findViewById(R.id.right_icon)
+            )
+        }
     }
 
     fun onClick(click: OnClickListener) {

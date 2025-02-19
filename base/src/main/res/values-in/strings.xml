@@ -483,4 +483,31 @@ Lokasi terakhir yang dipilih.</string>
     <string name="enter_1_key_value_per_line">Masukkan 1 kunci=nilai per baris.</string>
     <string name="upgrade_to_stay_protected">Tingkatkan sekarang untuk tetap terlindungi atau tunggu hingga bandwidth Anda direset pada %s</string>
     <string name="changelog">Catatan Perubahan</string>
+    <string name="restore">Pulihkan</string>
+    <string name="unlimited_everything">Semua Tanpa Batas</string>
+    <string name="use_on_all_devices_with_no_data_limits">Gunakan di semua perangkat, tanpa batas data</string>
+    <string name="all_vpn_locations">Semua Lokasi VPN</string>
+    <string name="servers_in_cities_more_than_any_other_vpn">Server di 130 kota, lebih banyak dari VPN lainnya</string>
+    <string name="increased_speed_and_security">Kecepatan dan Keamanan Ditingkatkan</string>
+    <string name="blocks_malicious_websites_trackers">Memblokir 99,9% situs berbahaya dan pelacak</string>
+    <string name="plan_monthly">Bulanan</string>
+    <string name="billed_monthly">Ditagih Bulanan</string>
+    <string name="plan_yearly">Tahunan</string>
+    <string name="subscribe">Berlangganan</string>
+    <string name="subscriptions_info">Langganan dapat dikelola secara bulanan, tahunan, atau dinonaktifkan dengan masuk ke Pengaturan Akun Play Store setelah pembelian. Semua harga sudah termasuk pajak yang berlaku.</string>
+    <string name="monthly_billed">%s/bulan, Ditagih Tahunan</string>
+    <string name="yearly_billed">Ditagih Tahunan</string>
+    <string name="start_using_pro">Mulai Menggunakan Pro</string>
+    <string name="welcome_to_windscribe_pro">Selamat Datang di Windscribe Pro!</string>
+    <string name="thanks_for_upgrading">Terima kasih telah meningkatkan ke Windscribe Pro! Sekarang Anda memiliki akses ke fitur yang lebih canggih.</string>
+    <string name="set_up_on_all_your_devices">Atur di Semua Perangkat Anda</string>
+    <string name="connect_to_any_location">Terhubung ke Lokasi Mana Pun</string>
+    <string name="unlimited_bandwidth">Bandwidth Tanpa Batas</string>
+    <string name="share">BAGIKAN</string>
+    <string name="join_our_discord_community">Bergabung dengan komunitas Discord kami</string>
+    <string name="join_our_reddit_community">Bergabung dengan komunitas Reddit kami</string>
+    <string name="find_us_on_youtube">Temukan kami di YouTube</string>
+    <string name="follow_us_on_x">Ikuti kami di X</string>
+    <string name="charged_every_month">dikenakan biaya setiap bulan</string>
+    <string name="charged_every_12_months">dikenakan biaya setiap 12 bulan</string>
 </resources>

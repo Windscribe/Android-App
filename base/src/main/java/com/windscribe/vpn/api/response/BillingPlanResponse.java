@@ -5,6 +5,7 @@
 package com.windscribe.vpn.api.response;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -93,6 +94,10 @@ public class BillingPlanResponse {
         @Expose
         private Integer reBill;
 
+        @SerializedName("price_original")
+        @Expose
+        private String originalPrice;
+
         public String getExtId() {
             return extId;
         }
@@ -115,6 +120,10 @@ public class BillingPlanResponse {
 
         public boolean isReBill() {
             return reBill != null && reBill == 1;
+        }
+
+        public @Nullable String getOriginalPrice() {
+            return originalPrice;
         }
 
         @NonNull

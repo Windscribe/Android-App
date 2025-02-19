@@ -483,4 +483,31 @@
     <string name="enter_1_key_value_per_line">Introduzca 1 clave=valor por línea.</string>
     <string name="upgrade_to_stay_protected">Actualiza ahora para mantenerte protegido o espera hasta que tu ancho de banda se restablezca el %s</string>
     <string name="changelog">Registro de cambios</string>
+    <string name="restore">Restaurar</string>
+    <string name="unlimited_everything">Todo ilimitado</string>
+    <string name="use_on_all_devices_with_no_data_limits">Usa en todos los dispositivos sin límites de datos</string>
+    <string name="all_vpn_locations">Todas las ubicaciones VPN</string>
+    <string name="servers_in_cities_more_than_any_other_vpn">Servidores en 130 ciudades, más que cualquier otro VPN</string>
+    <string name="increased_speed_and_security">Mayor velocidad y seguridad</string>
+    <string name="blocks_malicious_websites_trackers">Bloquea el 99.9% de los sitios web maliciosos y rastreadores</string>
+    <string name="plan_monthly">Mensual</string>
+    <string name="billed_monthly">Facturado mensualmente</string>
+    <string name="plan_yearly">Anual</string>
+    <string name="subscribe">Suscribirse</string>
+    <string name="subscriptions_info">Las suscripciones pueden gestionarse mensualmente, anualmente o desactivarse accediendo a la configuración de la cuenta de Play Store después de la compra. Todos los precios incluyen los impuestos aplicables.</string>
+    <string name="monthly_billed">%s/mes, facturado anualmente</string>
+    <string name="yearly_billed">Facturado anualmente</string>
+    <string name="start_using_pro">Comienza a usar Pro</string>
+    <string name="welcome_to_windscribe_pro">¡Bienvenido a Windscribe Pro!</string>
+    <string name="thanks_for_upgrading">¡Gracias por actualizar a Windscribe Pro! Ahora tienes acceso a funciones aún más potentes.</string>
+    <string name="set_up_on_all_your_devices">Configura en todos tus dispositivos</string>
+    <string name="connect_to_any_location">Conéctate a cualquier ubicación</string>
+    <string name="unlimited_bandwidth">Ancho de banda ilimitado</string>
+    <string name="share">COMPARTIR</string>
+    <string name="join_our_discord_community">Únete a nuestra comunidad de Discord</string>
+    <string name="join_our_reddit_community">Únete a nuestra comunidad de Reddit</string>
+    <string name="find_us_on_youtube">Encuéntranos en YouTube</string>
+    <string name="follow_us_on_x">Síguenos en X</string>
+    <string name="charged_every_month">cobrado cada mes</string>
+    <string name="charged_every_12_months">cobrado cada 12 meses</string>
 </resources>
