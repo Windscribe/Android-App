@@ -483,4 +483,31 @@
     <string name="enter_1_key_value_per_line">라인마다 키=값을 입력하세요.</string>
     <string name="upgrade_to_stay_protected">지금 업그레이드하여 보호 상태를 유지하거나 %s에 대역폭이 재설정될 때까지 기다리세요</string>
     <string name="changelog">변경 로그</string>
+    <string name="restore">복원</string>
+    <string name="unlimited_everything">무제한 이용</string>
+    <string name="use_on_all_devices_with_no_data_limits">모든 기기에서 데이터 제한 없이 사용 가능</string>
+    <string name="all_vpn_locations">모든 VPN 위치</string>
+    <string name="servers_in_cities_more_than_any_other_vpn">130개 도시의 서버 제공, 다른 VPN보다 많음</string>
+    <string name="increased_speed_and_security">속도 및 보안 향상</string>
+    <string name="blocks_malicious_websites_trackers">악성 웹사이트 및 트래커의 99.9% 차단</string>
+    <string name="plan_monthly">월간 요금제</string>
+    <string name="billed_monthly">월 단위 청구</string>
+    <string name="plan_yearly">연간 요금제</string>
+    <string name="subscribe">구독</string>
+    <string name="subscriptions_info">구독은 매월 또는 매년 관리하거나 구매 후 Play 스토어 계정 설정에서 해제할 수 있습니다. 모든 가격에는 적용 가능한 세금이 포함됩니다.</string>
+    <string name="monthly_billed">%s/월 (연간 청구)</string>
+    <string name="yearly_billed">연간 청구</string>
+    <string name="start_using_pro">Pro 사용 시작</string>
+    <string name="welcome_to_windscribe_pro">Windscribe Pro에 오신 것을 환영합니다!</string>
+    <string name="thanks_for_upgrading">Windscribe Pro로 업그레이드해 주셔서 감사합니다! 이제 더욱 강력한 기능을 사용할 수 있습니다.</string>
+    <string name="set_up_on_all_your_devices">모든 기기에서 설정</string>
+    <string name="connect_to_any_location">모든 위치에 연결</string>
+    <string name="unlimited_bandwidth">무제한 대역폭</string>
+    <string name="share">공유</string>
+    <string name="join_our_discord_community">Discord 커뮤니티 참여</string>
+    <string name="join_our_reddit_community">Reddit 커뮤니티 참여</string>
+    <string name="find_us_on_youtube">YouTube에서 찾기</string>
+    <string name="follow_us_on_x">X에서 팔로우</string>
+    <string name="charged_every_month">매달 청구됨</string>
+    <string name="charged_every_12_months">12개월마다 청구됨</string>
 </resources>

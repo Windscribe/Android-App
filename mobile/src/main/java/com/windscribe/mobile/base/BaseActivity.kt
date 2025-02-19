@@ -110,13 +110,17 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     protected fun setContentLayout(layoutID: Int, setTheme: Boolean = true) {
+        setContentLayout(setTheme)
+        setContentView(layoutID)
+        ButterKnife.bind(this)
+    }
+
+    protected fun setContentLayout(setTheme: Boolean = true) {
         if (setTheme) {
             setTheme(this)
         }
         setLanguage()
         coldLoad.set(true)
-        setContentView(layoutID)
-        ButterKnife.bind(this)
     }
 
     fun setLanguage() {

@@ -483,4 +483,31 @@
     <string name="enter_1_key_value_per_line">أدخل مفتاح=قيمة في كل سطر.</string>
     <string name="upgrade_to_stay_protected">قم بالترقية الآن للبقاء محميًا أو انتظر حتى تتم إعادة تعيين النطاق الترددي الخاص بك في %s</string>
     <string name="changelog">سجل التغييرات</string>
+    <string name="restore">استعادة</string>
+    <string name="unlimited_everything">غير محدود كل شيء</string>
+    <string name="use_on_all_devices_with_no_data_limits">استخدم على جميع الأجهزة بدون حدود للبيانات</string>
+    <string name="all_vpn_locations">جميع مواقع VPN</string>
+    <string name="servers_in_cities_more_than_any_other_vpn">خوادم في 130 مدينة، أكثر من أي VPN آخر</string>
+    <string name="increased_speed_and_security">زيادة السرعة والأمان</string>
+    <string name="blocks_malicious_websites_trackers">يحجب 99.9% من المواقع الضارة والمتعقبات</string>
+    <string name="plan_monthly">شهريًا</string>
+    <string name="billed_monthly">يتم الفوترة شهريًا</string>
+    <string name="plan_yearly">سنويًا</string>
+    <string name="subscribe">اشترك</string>
+    <string name="subscriptions_info">يمكن إدارة الاشتراكات شهريًا أو سنويًا أو إيقافها من خلال إعدادات حساب متجر Play بعد الشراء. تشمل جميع الأسعار الضرائب المطبقة.</string>
+    <string name="monthly_billed">%s/شهر، يتم الفوترة سنويًا</string>
+    <string name="yearly_billed">يتم الفوترة سنويًا</string>
+    <string name="start_using_pro">ابدأ استخدام برو</string>
+    <string name="welcome_to_windscribe_pro">مرحبًا بك في Windscribe Pro!</string>
+    <string name="thanks_for_upgrading">شكرًا لترقيتك إلى Windscribe Pro! لديك الآن وصول إلى ميزات أكثر قوة.</string>
+    <string name="set_up_on_all_your_devices">إعداد على جميع أجهزتك</string>
+    <string name="connect_to_any_location">اتصل بأي موقع</string>
+    <string name="unlimited_bandwidth">عرض نطاق غير محدود</string>
+    <string name="share">شارك</string>
+    <string name="join_our_discord_community">انضم إلى مجتمع Discord الخاص بنا</string>
+    <string name="join_our_reddit_community">انضم إلى مجتمع Reddit الخاص بنا</string>
+    <string name="find_us_on_youtube">اعثر علينا على YouTube</string>
+    <string name="follow_us_on_x">تابعنا على X</string>
+    <string name="charged_every_month">يتم الشحن كل شهر</string>
+    <string name="charged_every_12_months">يتم الشحن كل 12 شهرًا</string>
 </resources>

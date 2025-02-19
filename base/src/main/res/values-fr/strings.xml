@@ -483,4 +483,31 @@ dernier emplacement choisi.</string>
     <string name="enter_1_key_value_per_line">Saisissez une clé=valeur par ligne.</string>
     <string name="upgrade_to_stay_protected">Mettez à niveau maintenant pour rester protégé ou attendez que votre bande passante soit réinitialisée le %s</string>
     <string name="changelog">Journal des modifications</string>
+    <string name="restore">Restaurer</string>
+    <string name="unlimited_everything">Tout illimité</string>
+    <string name="use_on_all_devices_with_no_data_limits">Utilisez sur tous les appareils, sans limite de données</string>
+    <string name="all_vpn_locations">Tous les emplacements VPN</string>
+    <string name="servers_in_cities_more_than_any_other_vpn">Des serveurs dans 130 villes, plus que tout autre VPN</string>
+    <string name="increased_speed_and_security">Vitesse et sécurité accrues</string>
+    <string name="blocks_malicious_websites_trackers">Bloque 99,9 % des sites malveillants et des traqueurs</string>
+    <string name="plan_monthly">Mensuel</string>
+    <string name="billed_monthly">Facturé mensuellement</string>
+    <string name="plan_yearly">Annuel</string>
+    <string name="subscribe">S\'abonner</string>
+    <string name="subscriptions_info">Les abonnements peuvent être gérés mensuellement, annuellement ou désactivés en accédant aux paramètres du compte Play Store après l\'achat. Tous les prix incluent les taxes applicables.</string>
+    <string name="monthly_billed">%s/mois, facturé annuellement</string>
+    <string name="yearly_billed">Facturé annuellement</string>
+    <string name="start_using_pro">Commencez à utiliser Pro</string>
+    <string name="welcome_to_windscribe_pro">Bienvenue sur Windscribe Pro !</string>
+    <string name="thanks_for_upgrading">Merci d\'avoir mis à niveau vers Windscribe Pro ! Vous avez maintenant accès à des fonctionnalités encore plus puissantes.</string>
+    <string name="set_up_on_all_your_devices">Configurez sur tous vos appareils</string>
+    <string name="connect_to_any_location">Connectez-vous à n\'importe quel emplacement</string>
+    <string name="unlimited_bandwidth">Bande passante illimitée</string>
+    <string name="share">PARTAGER</string>
+    <string name="join_our_discord_community">Rejoignez notre communauté Discord</string>
+    <string name="join_our_reddit_community">Rejoignez notre communauté Reddit</string>
+    <string name="find_us_on_youtube">Trouvez-nous sur YouTube</string>
+    <string name="follow_us_on_x">Suivez-nous sur X</string>
+    <string name="charged_every_month">facturé chaque mois</string>
+    <string name="charged_every_12_months">facturé tous les 12 mois</string>
 </resources>

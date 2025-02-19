@@ -8,7 +8,7 @@ import androidx.core.app.NotificationCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.windscribe.vpn.BuildConfig
+import com.windscribe.vpn.BuildConfig.DEV
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.ServiceInteractorImpl
 import com.windscribe.vpn.Windscribe
@@ -787,7 +787,7 @@ open class BaseApplicationModule {
         WSNet.setLogger({
             val msg = it.split(Regex("\\]\\s*")).lastOrNull()?.trim() ?: ""
             logger.debug(msg)
-        }, BuildConfig.DEV)
+        }, DEV)
         if (preferencesHelper.getDeviceUUID() == null) {
             preferencesHelper.setDeviceUUID(UUID.randomUUID().toString())
         }
@@ -796,7 +796,7 @@ open class BaseApplicationModule {
         } else {
             appContext.resources.configuration.locale.language.substring(0..1)
         }
-        WSNet.initialize("android", "android", WindUtilities.getVersionName(), preferencesHelper.getDeviceUUID() ?: "", "2.6.0", "4",  BuildConfig.DEV, systemLanguageCode, preferencesHelper.wsNetSettings)
+        WSNet.initialize("android", "android", WindUtilities.getVersionName(), preferencesHelper.getDeviceUUID() ?: "", "2.6.0", "4",  DEV, systemLanguageCode, preferencesHelper.wsNetSettings)
         val networkListener = object : DeviceStateManager.DeviceStateListener {
             override fun onNetworkStateChanged() {
                 super.onNetworkStateChanged()

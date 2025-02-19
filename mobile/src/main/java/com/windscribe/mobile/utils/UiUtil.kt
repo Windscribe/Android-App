@@ -4,28 +4,22 @@
 
 package com.windscribe.mobile.utils
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
 import android.content.res.Resources
-import android.os.Build
 import android.view.ContextThemeWrapper
 import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.windscribe.mobile.R
-import com.windscribe.mobile.base.BaseActivity.Companion.REQUEST_BACKGROUND_PERMISSION
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.alert.showAlertDialog
 import com.windscribe.vpn.commonutils.ThemeUtils
 import com.windscribe.vpn.constants.BillingConstants
 import com.windscribe.vpn.constants.UserStatusConstants
+import java.util.regex.Pattern
 
 
 object UiUtil {
@@ -35,40 +29,41 @@ object UiUtil {
                     maxData /
                             UserStatusConstants.GB_DATA.toFloat()
                     ) -> appContext.resources.getColor(R.color.colorRed)
+
             dataRemaining
                     < BillingConstants.DATA_WARNING_PERCENTAGE * (maxData / UserStatusConstants.GB_DATA.toFloat()) ->
                 appContext.resources.getColor(R.color.colorYellow)
+
             else ->
                 appContext.resources.getColor(R.color.colorWhite)
         } else appContext.resources.getColor(R.color.colorWhite)
     }
 
-    fun isBackgroundLocationPermissionGranted(context: Context): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            (ContextCompat
-                .checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED)
-        } else {
-            true
+    fun getPriceWithCurrency(price: String?): Pair<String, Double>? {
+        if (price == null){
+            return null
         }
-    }
+        val rawPrice = price.replace("\u00A0", " ").trim()
+        val pattern = Pattern.compile("([A-Za-z]{3}|[^\\d,\\.]+)?\\s?([\\d,.]+)")
+        val matcher = pattern.matcher(rawPrice)
 
-    fun showBackgroundLocationPermissionAlert(context: AppCompatActivity) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            showAlertDialog(context.getString(R.string.app_requires_background_location_permission)) {
-                context.requestPermissions(
-                    arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
-                    REQUEST_BACKGROUND_PERMISSION
-                )
+        return if (matcher.find()) {
+            val currency = matcher.group(1)?.trim().orEmpty()
+            val priceString = matcher.group(2)?.replace(",", "")
+            priceString?.toDoubleOrNull()?.let { priceValue ->
+                Pair(currency, priceValue)
             }
+        } else {
+            null
         }
     }
 
-    fun locationPermissionAvailable(): Boolean {
-        return (ContextCompat
-            .checkSelfPermission(appContext, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED
-                ) && isBackgroundLocationPermissionGranted(appContext)
+    fun getStartCount(resources: Resources, width: Int, height: Int): Int {
+        val density = resources.displayMetrics.density
+        val referenceWidthPx = 163f * density
+        val referenceHeightPx = 182f * density
+        val starDensity = 60 / (referenceWidthPx * referenceHeightPx)
+        return (starDensity * width * height).toInt()
     }
 
     @SuppressLint("ClickableViewAccessibility")

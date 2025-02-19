@@ -1,14 +1,312 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  ~ Copyright (c) 2021 Windscribe Limited.
-  -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/cl_upgrade"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/transparent"
-    tools:context="com.windscribe.mobile.upgradeactivity.UpgradeActivity">
+    <ScrollView
+        android:id="@+id/cl_upgrade"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorDeepNavy">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <androidx.constraintlayout.widget.ConstraintLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:context="com.windscribe.mobile.upgradeactivity.UpgradeActivity">
+
+            <androidx.constraintlayout.widget.Barrier
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:id="@+id/plan_bottom_barrier"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="monthly_plan_container,yearly_plan_container" />
+
+            <com.windscribe.mobile.custom_view.StarsView
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/hero"
+                />
+
+            <ImageView
+                android:id="@+id/close_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin_8"
+                android:layout_marginTop="@dimen/padding_48"
+                android:padding="@dimen/padding_8"
+                android:scaleType="center"
+                android:src="@drawable/ic_close_no_background"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/restore_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/margin_8"
+                android:fontFamily="@font/ibm_plex_sans_semi_bold"
+                android:includeFontPadding="false"
+                android:padding="@dimen/padding_8"
+                android:text="@string/restore"
+                android:textColor="@color/colorWhite80"
+                android:textSize="@dimen/text_size_14"
+                app:layout_constraintBottom_toBottomOf="@id/close_btn"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/close_btn" />
+
+            <ImageView
+                android:id="@+id/logo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_24"
+                android:adjustViewBounds="true"
+                android:src="@drawable/upgrade_logo"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/close_btn" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/hero_grid"
+                android:layout_width="458dp"
+                android:layout_height="82dp"
+                android:layout_marginTop="105dp"
+                android:src="@drawable/upgrade_hero_grid"
+                app:layout_constraintEnd_toEndOf="@id/hero"
+                app:layout_constraintStart_toStartOf="@+id/hero"
+                app:layout_constraintTop_toTopOf="@id/hero" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/hero"
+                android:layout_width="wrap_content"
+                android:layout_height="180dp"
+                android:layout_marginTop="@dimen/margin_16"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+                android:src="@drawable/upgrade_hero"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/logo" />
+
+            <TextView
+                android:id="@+id/feature_1_title"
+                style="@style/FeatureTitleText"
+                android:layout_marginTop="@dimen/margin_16"
+                android:text="@string/unlimited_everything"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/hero_grid" />
+
+            <TextView
+                android:id="@+id/feature_1_subtitle"
+                style="@style/FeatureSubtitleText"
+                android:text="@string/use_on_all_devices_with_no_data_limits"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/feature_1_title" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/feature_1_star"
+                style="@style/FeatureImage"
+                app:layout_constraintBottom_toBottomOf="@id/feature_1_subtitle"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/feature_1_title" />
+
+            <TextView
+                android:id="@+id/feature_2_title"
+                style="@style/FeatureTitleText"
+                android:layout_marginTop="@dimen/reg_10dp"
+                android:text="@string/all_vpn_locations"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/feature_1_subtitle" />
+
+            <TextView
+                android:id="@+id/feature_2_subtitle"
+                style="@style/FeatureSubtitleText"
+                android:text="@string/servers_in_cities_more_than_any_other_vpn"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/feature_2_title" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/feature_2_star"
+                style="@style/FeatureImage"
+                app:layout_constraintBottom_toBottomOf="@id/feature_2_subtitle"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/feature_2_title" />
+
+            <TextView
+                android:id="@+id/feature_3_title"
+                style="@style/FeatureTitleText"
+                android:layout_marginTop="@dimen/reg_10dp"
+                android:text="@string/increased_speed_and_security"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/feature_2_subtitle" />
+
+            <TextView
+                android:id="@+id/feature_3_subtitle"
+                style="@style/FeatureSubtitleText"
+                android:text="@string/blocks_malicious_websites_trackers"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/feature_3_title" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/feature_3_star"
+                style="@style/FeatureImage"
+                app:layout_constraintBottom_toBottomOf="@id/feature_3_subtitle"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/feature_3_title" />
+
+            <com.windscribe.mobile.custom_view.PlanUpgradeStarsBackgroundView
+                android:id="@+id/monthly_plan_container"
+                style="@style/PlanContainerStyle"
+                app:layout_constraintEnd_toStartOf="@id/yearly_plan_container"
+                app:layout_constraintHorizontal_weight="1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/feature_3_subtitle" />
+
+            <TextView
+                android:id="@+id/monthly_plan_title"
+                style="@style/PlanTitleStyle"
+                android:text="@string/plan_monthly"
+                app:layout_constraintStart_toStartOf="@id/monthly_plan_container"
+                app:layout_constraintTop_toTopOf="@id/monthly_plan_container" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/monthly_plan_selection"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/reg_20dp"
+                app:layout_constraintTop_toTopOf="@id/monthly_plan_title"
+                app:layout_constraintBottom_toBottomOf="@id/monthly_plan_title"
+                app:layout_constraintEnd_toEndOf="@id/monthly_plan_container"
+                android:layout_marginEnd="@dimen/margin_24"
+                android:clickable="false"
+                android:checked="true"
+                android:button="@drawable/rb_checked"
+                />
+
+            <TextView
+                android:id="@+id/monthly_plan_price"
+                style="@style/PlanPriceStyle"
+                app:layout_constraintStart_toStartOf="@id/monthly_plan_container"
+                app:layout_constraintTop_toBottomOf="@id/monthly_plan_title"
+                tools:text="USD 9.00" />
+
+            <TextView
+                android:id="@+id/monthly_promo_discount"
+                style="@style/PromoDiscountStyle"
+                app:layout_constraintEnd_toEndOf="@id/monthly_plan_container"
+                app:layout_constraintTop_toTopOf="@id/monthly_plan_container"
+                android:visibility="gone"
+                tools:text="SAVE 33%" />
+
+            <TextView
+                android:id="@+id/monthly_billed"
+                style="@style/PlanBilledStyle"
+                app:layout_constraintBottom_toBottomOf="@id/monthly_plan_container"
+                app:layout_constraintStart_toStartOf="@id/monthly_plan_container" />
+
+            <com.windscribe.mobile.custom_view.PlanUpgradeStarsBackgroundView
+                android:id="@+id/yearly_plan_container"
+                style="@style/PlanContainerStyle"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_weight="1"
+                app:layout_constraintStart_toEndOf="@id/monthly_plan_container"
+                app:layout_constraintTop_toBottomOf="@id/feature_3_subtitle" />
+
+            <TextView
+                android:id="@+id/yearly_plan_title"
+                style="@style/PlanTitleStyle"
+                android:text="@string/plan_yearly"
+                app:layout_constraintStart_toStartOf="@id/yearly_plan_container"
+                app:layout_constraintTop_toTopOf="@id/yearly_plan_container" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/yearly_plan_selection"
+                android:layout_width="@dimen/reg_20dp"
+                android:layout_height="@dimen/reg_20dp"
+                app:layout_constraintTop_toTopOf="@id/yearly_plan_title"
+                app:layout_constraintBottom_toBottomOf="@id/yearly_plan_title"
+                app:layout_constraintEnd_toEndOf="@id/yearly_plan_container"
+                android:layout_marginEnd="@dimen/margin_24"
+                android:clickable="false"
+                android:checked="true"
+                android:button="@drawable/rb_checked"
+                />
+
+            <TextView
+                android:id="@+id/yearly_plan_price"
+                style="@style/PlanPriceStyle"
+                app:layout_constraintStart_toStartOf="@id/yearly_plan_container"
+                app:layout_constraintTop_toBottomOf="@id/yearly_plan_title"
+                tools:text="USD 69.00" />
+
+            <TextView
+                android:id="@+id/yearly_plan_discount"
+                style="@style/PlanDiscountStyle"
+                app:layout_constraintStart_toEndOf="@id/yearly_plan_title"
+                app:layout_constraintTop_toTopOf="@id/yearly_plan_title"
+                app:layout_constraintBottom_toBottomOf="@id/yearly_plan_title"
+                android:background="@drawable/discount_background"
+                tools:text="33%" />
+
+            <TextView
+                android:id="@+id/yearly_promo_discount"
+                style="@style/PromoDiscountStyle"
+                app:layout_constraintEnd_toEndOf="@id/yearly_plan_container"
+                app:layout_constraintTop_toTopOf="@id/yearly_plan_container"
+                android:visibility="gone"
+                tools:text="SAVE 33%" />
+
+            <TextView
+                android:id="@+id/yearly_billed"
+                style="@style/PlanBilledStyle"
+                android:layout_width="0dp"
+                app:layout_constraintBottom_toBottomOf="@id/yearly_plan_container"
+                app:layout_constraintEnd_toEndOf="@id/yearly_plan_container"
+                app:layout_constraintStart_toStartOf="@id/yearly_plan_container"
+                tools:text="$5.75/month, Billed Annually" />
+
+            <com.windscribe.mobile.custom_view.PlanUpgradeGradientButton
+                android:id="@+id/subscribe"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/reg_50dp"
+                android:layout_marginStart="@dimen/margin_16"
+                android:layout_marginTop="@dimen/margin_16"
+                android:layout_marginEnd="@dimen/margin_16"
+                android:fontFamily="@font/ibm_plex_sans_semi_bold"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:text="@string/subscribe"
+                android:textColor="@color/colorDeepNavy"
+                android:textSize="18sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/plan_bottom_barrier"/>
+
+            <TextView
+                android:id="@+id/description"
+                style="@style/FeatureSubtitleText"
+                android:layout_marginTop="@dimen/margin_24"
+                android:text="@string/subscriptions_info"
+                android:textSize="@dimen/text_size_10"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/subscribe" />
+
+            <TextView
+                android:id="@+id/terms"
+                style="@style/FeatureSubtitleText"
+                android:layout_marginTop="@dimen/margin_8"
+                android:textSize="@dimen/text_size_10"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/description" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</layout>

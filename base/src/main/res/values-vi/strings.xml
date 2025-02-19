@@ -483,4 +483,31 @@ Vị trí được chọn cuối cùng.</string>
     <string name="enter_1_key_value_per_line">Nhập 1 key=value mỗi dòng.</string>
     <string name="upgrade_to_stay_protected">Nâng cấp ngay để được bảo vệ hoặc chờ đến khi băng thông của bạn được đặt lại vào %s</string>
     <string name="changelog">Nhật ký thay đổi</string>
+    <string name="restore">Khôi phục</string>
+    <string name="unlimited_everything">Mọi thứ không giới hạn</string>
+    <string name="use_on_all_devices_with_no_data_limits">Sử dụng trên tất cả thiết bị mà không có giới hạn dữ liệu</string>
+    <string name="all_vpn_locations">Tất cả vị trí VPN</string>
+    <string name="servers_in_cities_more_than_any_other_vpn">Máy chủ tại 130 thành phố, nhiều hơn bất kỳ VPN nào khác</string>
+    <string name="increased_speed_and_security">Tốc độ và bảo mật cao hơn</string>
+    <string name="blocks_malicious_websites_trackers">Chặn 99,9% trang web độc hại và trình theo dõi</string>
+    <string name="plan_monthly">Hàng tháng</string>
+    <string name="billed_monthly">Thanh toán hàng tháng</string>
+    <string name="plan_yearly">Hàng năm</string>
+    <string name="subscribe">Đăng ký</string>
+    <string name="subscriptions_info">Đăng ký có thể được quản lý hàng tháng, hàng năm hoặc tắt bằng cách vào Cài đặt tài khoản Play Store sau khi mua. Tất cả giá đã bao gồm thuế áp dụng.</string>
+    <string name="monthly_billed">%s/tháng, Thanh toán hàng năm</string>
+    <string name="yearly_billed">Thanh toán hàng năm</string>
+    <string name="start_using_pro">Bắt đầu sử dụng Pro</string>
+    <string name="welcome_to_windscribe_pro">Chào mừng đến với Windscribe Pro!</string>
+    <string name="thanks_for_upgrading">Cảm ơn bạn đã nâng cấp lên Windscribe Pro! Giờ đây, bạn có thể truy cập nhiều tính năng mạnh mẽ hơn.</string>
+    <string name="set_up_on_all_your_devices">Thiết lập trên tất cả thiết bị của bạn</string>
+    <string name="connect_to_any_location">Kết nối đến bất kỳ vị trí nào</string>
+    <string name="unlimited_bandwidth">Băng thông không giới hạn</string>
+    <string name="share">CHIA SẺ</string>
+    <string name="join_our_discord_community">Tham gia cộng đồng Discord của chúng tôi</string>
+    <string name="join_our_reddit_community">Tham gia cộng đồng Reddit của chúng tôi</string>
+    <string name="find_us_on_youtube">Tìm chúng tôi trên YouTube</string>
+    <string name="follow_us_on_x">Theo dõi chúng tôi trên X</string>
+    <string name="charged_every_month">được tính phí hàng tháng</string>
+    <string name="charged_every_12_months">được tính phí mỗi 12 tháng</string>
 </resources>
