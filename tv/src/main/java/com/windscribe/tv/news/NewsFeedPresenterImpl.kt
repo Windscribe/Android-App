@@ -38,38 +38,14 @@ class NewsFeedPresenterImpl @Inject constructor(
             interactor.getAppPreferenceInterface().setShowNewsFeedAlert(false)
         }
         interactor.getCompositeDisposable().add(
-            interactor.getAppPreferenceInterface().notifications
-                .onErrorResumeNext {
-                    interactor.getApiCallManager().getNotifications(null)
-                        .flatMap {
-                            Single
-                                .fromCallable {
-                                    it.dataClass?.let {
-                                        interactor.getAppPreferenceInterface()
-                                            .saveResponseStringData(
-                                                PreferencesKeyConstants.NEWS_FEED_RESPONSE,
-                                                Gson().toJson(it)
-                                            )
-                                        return@fromCallable it
-                                    } ?: kotlin.run {
-                                        logger.debug("Server returned null response!")
-                                        it.errorClass?.let {
-                                            throw Exception(it.errorMessage)
-                                        }
-                                    }
-                                }
-                        }.doOnError {
-                            logger.debug(
-                                "Error getting notification data. Error: " + instance.convertThrowableToString(
-                                    it
-                                )
-                            )
-                            newsFeedView.showLoadingError("Error loading news feed data...")
-                        }
-                }
+            interactor.getNotifications()
+                .onErrorResumeNext(
+                    interactor.getNotificationUpdater().update()
+                        .andThen(interactor.getNotifications())
+                )
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSingleObserver<NewsFeedNotification?>() {
+                .subscribeWith(object : DisposableSingleObserver<List<WindNotification>>() {
                     override fun onError(e: Throwable) {
                         logger.debug(
                             "Error getting notification data. Error: " + instance.convertThrowableToString(
@@ -78,10 +54,9 @@ class NewsFeedPresenterImpl @Inject constructor(
                         )
                         newsFeedView.showLoadingError("Error loading news feed data...")
                     }
-
-                    override fun onSuccess(newsFeedNotification: NewsFeedNotification) {
+                    override fun onSuccess(newsFeedNotification: List<WindNotification>) {
                         logger.info("Received notification data successfully...")
-                        notificationList = newsFeedNotification.notifications
+                        notificationList = newsFeedNotification
                         newsFeedAdapter =
                             NewsFeedAdapter(
                                 notificationList
@@ -94,7 +69,7 @@ class NewsFeedPresenterImpl @Inject constructor(
                             newsFeedView.setItemSelected(if (showPopUp) popUpId else it[0].notificationId)
                             newsFeedView.setNewsFeedContentText(it[0].notificationMessage)
                             it[0].action?.let { action ->
-                                logger.debug("Action: $action")
+                                logger.debug("Action: {}", action)
                                 newsFeedView.setActionLabel(action)
                             }
                         }
