@@ -483,4 +483,31 @@
     <string name="enter_1_key_value_per_line">در هر خط یک کلید=مقدار وارد کنید.</string>
     <string name="upgrade_to_stay_protected">هم‌اکنون ارتقا دهید تا محافظت شوید یا منتظر بمانید تا پهنای باند شما در %s بازنشانی شود</string>
     <string name="changelog">لیست تغییرات</string>
+    <string name="restore">بازیابی</string>
+    <string name="unlimited_everything">همه چیز نامحدود</string>
+    <string name="use_on_all_devices_with_no_data_limits">استفاده در تمام دستگاه‌ها بدون محدودیت داده</string>
+    <string name="all_vpn_locations">همه موقعیت‌های VPN</string>
+    <string name="servers_in_cities_more_than_any_other_vpn">سرورها در ۱۳۰ شهر، بیشتر از هر VPN دیگر</string>
+    <string name="increased_speed_and_security">سرعت و امنیت بیشتر</string>
+    <string name="blocks_malicious_websites_trackers">مسدود کردن ۹۹.۹٪ از وب‌سایت‌های مخرب و ردیاب‌ها</string>
+    <string name="plan_monthly">ماهانه</string>
+    <string name="billed_monthly">صورتحساب ماهانه</string>
+    <string name="plan_yearly">سالانه</string>
+    <string name="subscribe">اشتراک</string>
+    <string name="subscriptions_info">اشتراک‌ها را می‌توان به‌صورت ماهانه یا سالانه مدیریت کرد یا پس از خرید از طریق تنظیمات حساب Play Store غیرفعال کرد. همه قیمت‌ها شامل مالیات‌های اعمال‌شده هستند.</string>
+    <string name="monthly_billed">%s/ماه، صورتحساب سالانه</string>
+    <string name="yearly_billed">صورتحساب سالانه</string>
+    <string name="start_using_pro">شروع استفاده از Pro</string>
+    <string name="welcome_to_windscribe_pro">به Windscribe Pro خوش آمدید!</string>
+    <string name="thanks_for_upgrading">سپاس از ارتقاء به Windscribe Pro! اکنون به ویژگی‌های قدرتمندتری دسترسی دارید.</string>
+    <string name="set_up_on_all_your_devices">راه‌اندازی در تمام دستگاه‌های شما</string>
+    <string name="connect_to_any_location">اتصال به هر موقعیت</string>
+    <string name="unlimited_bandwidth">پهنای باند نامحدود</string>
+    <string name="share">اشتراک‌گذاری</string>
+    <string name="join_our_discord_community">به انجمن Discord ما بپیوندید</string>
+    <string name="join_our_reddit_community">به انجمن Reddit ما بپیوندید</string>
+    <string name="find_us_on_youtube">ما را در YouTube پیدا کنید</string>
+    <string name="follow_us_on_x">ما را در X دنبال کنید</string>
+    <string name="charged_every_month">هر ماه شارژ می‌شود</string>
+    <string name="charged_every_12_months">هر ۱۲ ماه شارژ می‌شود</string>
 </resources>

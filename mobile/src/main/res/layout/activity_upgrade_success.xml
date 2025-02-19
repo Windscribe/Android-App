@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <ScrollView
+        android:id="@+id/cl_upgrade_success"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorDeepNavy">
+
+        <androidx.constraintlayout.widget.ConstraintLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:context="com.windscribe.mobile.upgradeactivity.UpgradeSuccessActivity">
+
+            <ImageView
+                android:id="@+id/close_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin_8"
+                android:layout_marginTop="@dimen/padding_48"
+                android:padding="@dimen/padding_8"
+                android:scaleType="center"
+                android:src="@drawable/ic_close_no_background"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/hero"
+                android:layout_width="184dp"
+                android:layout_height="180dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/upgrade_welcome"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/close_btn" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/title"
+                app:layout_constraintTop_toBottomOf="@id/hero"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:text="@string/welcome_to_windscribe_pro"
+                android:textSize="20sp"
+                android:textColor="@color/colorWhite"
+                android:fontFamily="@font/ibm_plex_sans_semi_bold"
+                android:gravity="center"
+                android:layout_marginTop="@dimen/margin_16"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/subtitle"
+                app:layout_constraintTop_toBottomOf="@id/title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:text="@string/thanks_for_upgrading"
+                android:textSize="16sp"
+                android:textColor="@color/colorWhite80"
+                android:fontFamily="@font/ibm_plex_sans_regular"
+                android:layout_marginTop="@dimen/margin_16"
+                android:maxWidth="295dp"
+                android:gravity="center"
+                />
+
+
+            <TextView
+                android:id="@+id/feature_1_title"
+                style="@style/FeatureTitleText"
+                android:layout_marginTop="@dimen/margin_24"
+                android:layout_marginStart="@dimen/margin_24"
+                android:text="@string/set_up_on_all_your_devices"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/subtitle" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/feature_1_star"
+                style="@style/FeatureImage"
+                android:layout_marginEnd="@dimen/margin_24"
+                app:layout_constraintTop_toTopOf="@id/feature_1_title"
+                app:layout_constraintBottom_toBottomOf="@id/feature_1_title"
+                app:layout_constraintEnd_toEndOf="parent"
+               />
+
+            <TextView
+                android:id="@+id/feature_2_title"
+                style="@style/FeatureTitleText"
+                android:layout_marginTop="@dimen/reg_10dp"
+                android:text="@string/connect_to_any_location"
+                android:layout_marginStart="@dimen/margin_24"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/feature_1_title" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/feature_2_star"
+                style="@style/FeatureImage"
+                app:layout_constraintTop_toTopOf="@id/feature_2_title"
+                app:layout_constraintBottom_toBottomOf="@id/feature_2_title"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="@dimen/margin_24"
+                />
+
+            <TextView
+                android:id="@+id/feature_3_title"
+                style="@style/FeatureTitleText"
+                android:layout_marginTop="@dimen/reg_10dp"
+                android:layout_marginStart="@dimen/margin_24"
+                android:text="@string/unlimited_bandwidth"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/feature_2_title" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/feature_3_star"
+                style="@style/FeatureImage"
+                app:layout_constraintTop_toTopOf="@id/feature_3_title"
+                app:layout_constraintBottom_toBottomOf="@id/feature_3_title"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="@dimen/margin_24"
+                 />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/feature_3_title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="@dimen/margin_24"
+                android:layout_marginStart="@dimen/margin_16"
+                android:layout_marginEnd="@dimen/margin_16"
+                android:id="@+id/divider"
+                app:dividerColor="@color/colorWhite10"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/share"
+                app:layout_constraintTop_toBottomOf="@id/divider"
+                app:layout_constraintStart_toStartOf="parent"
+                android:text="@string/share"
+                android:textSize="12sp"
+                android:textColor="@color/colorWhite"
+                android:fontFamily="@font/ibm_plex_sans_semi_bold"
+                android:layout_marginTop="@dimen/margin_8"
+                android:layout_marginStart="@dimen/margin_24"
+                />
+
+            <com.windscribe.mobile.custom_view.preferences.IconLinkView
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/reg_40dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/share"
+                android:id="@+id/discord"
+                android:layout_marginStart="@dimen/margin_8"
+                android:layout_marginEnd="@dimen/margin_16"
+                app:ItemLinkViewTitle="@string/join_our_discord_community"
+                app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_white"
+                app:ItemLinkViewLeftIcon="@drawable/discord"
+                app:CommunityLinkLabel="true"
+                />
+
+            <com.windscribe.mobile.custom_view.preferences.IconLinkView
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/reg_40dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/discord"
+                android:id="@+id/reddit"
+                android:layout_marginStart="@dimen/margin_8"
+                android:layout_marginEnd="@dimen/margin_16"
+                app:ItemLinkViewTitle="@string/join_our_reddit_community"
+                app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_white"
+                app:ItemLinkViewLeftIcon="@drawable/reddit"
+                app:CommunityLinkLabel="true"
+                />
+
+            <com.windscribe.mobile.custom_view.preferences.IconLinkView
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/reg_40dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/reddit"
+                android:layout_marginStart="@dimen/margin_8"
+                android:layout_marginEnd="@dimen/margin_16"
+                android:id="@+id/youtube"
+                app:ItemLinkViewTitle="@string/find_us_on_youtube"
+                app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_white"
+                app:ItemLinkViewLeftIcon="@drawable/youtube"
+                app:CommunityLinkLabel="true"
+                />
+
+            <com.windscribe.mobile.custom_view.preferences.IconLinkView
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/reg_40dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/youtube"
+                android:layout_marginStart="@dimen/margin_8"
+                android:layout_marginEnd="@dimen/margin_16"
+                android:id="@+id/x"
+                app:ItemLinkViewTitle="@string/follow_us_on_x"
+                app:ItemLinkViewRightIcon="@drawable/ic_forward_arrow_white"
+                app:ItemLinkViewLeftIcon="@drawable/x"
+                app:CommunityLinkLabel="true"
+                />
+
+            <com.windscribe.mobile.custom_view.PlanUpgradeGradientButton
+                android:id="@+id/start_using_pro"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/reg_50dp"
+                android:layout_marginStart="@dimen/margin_16"
+                android:layout_marginTop="@dimen/margin_24"
+                android:layout_marginEnd="@dimen/margin_16"
+                android:fontFamily="@font/ibm_plex_sans_semi_bold"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:text="@string/start_using_pro"
+                android:textColor="@color/colorDeepNavy"
+                android:textSize="18sp"
+                app:CommunityLinkLabel="true"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/x"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</layout>

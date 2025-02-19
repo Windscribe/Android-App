@@ -484,4 +484,31 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="enter_1_key_value_per_line">Geben Sie pro Zeile 1 Schlüssel=Wert ein.</string>
     <string name="upgrade_to_stay_protected">Jetzt upgraden, um geschützt zu bleiben, oder warten Sie, bis Ihr Datenvolumen am %s zurückgesetzt wird</string>
     <string name="changelog">Änderungsprotokoll</string>
+    <string name="restore">Wiederherstellen</string>
+    <string name="unlimited_everything">Unbegrenzt Alles</string>
+    <string name="use_on_all_devices_with_no_data_limits">Auf allen Geräten verwenden, ohne Datenbeschränkungen</string>
+    <string name="all_vpn_locations">Alle VPN-Standorte</string>
+    <string name="servers_in_cities_more_than_any_other_vpn">Server in 130 Städten, mehr als jedes andere VPN</string>
+    <string name="increased_speed_and_security">Erhöhte Geschwindigkeit und Sicherheit</string>
+    <string name="blocks_malicious_websites_trackers">Blockiert 99,9 % schädlicher Websites und Tracker</string>
+    <string name="plan_monthly">Monatlich</string>
+    <string name="billed_monthly">Monatlich abgerechnet</string>
+    <string name="plan_yearly">Jährlich</string>
+    <string name="subscribe">Abonnieren</string>
+    <string name="subscriptions_info">Abonnements können monatlich oder jährlich verwaltet oder deaktiviert werden, indem Sie nach dem Kauf die Play Store-Kontoeinstellungen aufrufen. Alle Preise enthalten die geltenden Steuern.</string>
+    <string name="monthly_billed">%s/Monat, jährlich abgerechnet</string>
+    <string name="yearly_billed">Jährlich abgerechnet</string>
+    <string name="start_using_pro">Beginne mit Pro</string>
+    <string name="welcome_to_windscribe_pro">Willkommen bei Windscribe Pro!</string>
+    <string name="thanks_for_upgrading">Danke für dein Upgrade auf Windscribe Pro! Du hast jetzt Zugriff auf noch leistungsstärkere Funktionen.</string>
+    <string name="set_up_on_all_your_devices">Auf allen Geräten einrichten</string>
+    <string name="connect_to_any_location">Mit jedem Standort verbinden</string>
+    <string name="unlimited_bandwidth">Unbegrenzte Bandbreite</string>
+    <string name="share">TEILEN</string>
+    <string name="join_our_discord_community">Tritt unserer Discord-Community bei</string>
+    <string name="join_our_reddit_community">Tritt unserer Reddit-Community bei</string>
+    <string name="find_us_on_youtube">Finde uns auf YouTube</string>
+    <string name="follow_us_on_x">Folge uns auf X</string>
+    <string name="charged_every_month">jeden Monat berechnet</string>
+    <string name="charged_every_12_months">alle 12 Monate berechnet</string>
 </resources>

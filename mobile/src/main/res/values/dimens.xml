@@ -5,6 +5,7 @@
 
 <resources>
     <!--Dimensions -->
+    <dimen name="reg_1dp">1dp</dimen>
     <dimen name="reg_2dp">2dp</dimen>
     <dimen name="reg_8dp">8dp</dimen>
     <dimen name="reg_10dp">10dp</dimen>

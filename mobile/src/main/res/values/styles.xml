@@ -653,6 +653,13 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <style name="CommunityLinkLabel" parent="MenuItemLabel">
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:textSize">@dimen/text_size_14</item>
+        <item name="android:gravity">left|center</item>
+        <item name="android:textColor">@color/colorWhite80</item>
+    </style>
+
     <style name="MenuItemLabelNoStartMargin" parent="MenuItemLabel">
         <item name="android:layout_marginStart">0dp</item>
         <item name="android:layout_marginLeft">0dp</item>
@@ -1114,5 +1121,104 @@
 
     <!-- OpenVPN -->
     <style name="blinkt.dialog" parent="android:Theme.DeviceDefault.Light.Dialog" />
+
+    <!-- Style for Title TextView -->
+    <style name="FeatureTitleText">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">@dimen/margin_16</item>
+        <item name="android:layout_marginTop">@dimen/margin_24</item>
+        <item name="android:layout_marginEnd">@dimen/margin_16</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_medium</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:textSize">@dimen/text_size_14</item>
+    </style>
+
+    <!-- Style for Subtitle TextView -->
+    <style name="FeatureSubtitleText">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">@dimen/margin_16</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginEnd">@dimen/margin_16</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textColor">@color/colorWhite50</item>
+        <item name="android:textSize">@dimen/text_size_12</item>
+    </style>
+
+    <!-- Style for ImageView -->
+    <style name="FeatureImage">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">@dimen/margin_16</item>
+        <item name="android:src">@drawable/ic_star</item>
+    </style>
+
+    <!-- Common container style -->
+    <style name="PlanContainerStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">142dp</item>
+        <item name="android:layout_marginStart">@dimen/margin_16</item>
+        <item name="android:layout_marginTop">@dimen/margin_16</item>
+        <item name="android:layout_marginEnd">@dimen/margin_8</item>
+        <item name="android:padding">@dimen/padding_8</item>
+    </style>
+
+    <!-- Common title style -->
+    <style name="PlanTitleStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:textSize">@dimen/text_size_14</item>
+        <item name="android:layout_marginTop">@dimen/margin_24</item>
+        <item name="android:layout_marginStart">@dimen/margin_24</item>
+    </style>
+
+    <!-- Common price style -->
+    <style name="PlanPriceStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_semi_bold</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:layout_marginStart">@dimen/margin_24</item>
+    </style>
+
+    <style name="PlanDiscountStyle">
+        <item name="android:layout_width">34dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/colorDeepNavy</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_semi_bold</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:layout_marginStart">@dimen/margin_8</item>
+    </style>
+
+    <style name="PromoDiscountStyle" parent="PlanDiscountStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/colorBlack</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_semi_bold</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:layout_marginStart">0dp</item>
+        <item name="android:layout_marginEnd">@dimen/margin_32</item>
+        <item name="android:background">@drawable/promo_background</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <!-- Common billed description style -->
+    <style name="PlanBilledStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:layout_marginTop">@dimen/margin_16</item>
+        <item name="android:layout_marginStart">@dimen/margin_24</item>
+        <item name="android:paddingBottom">@dimen/padding_16</item>
+    </style>
 
 </resources>
