@@ -45,7 +45,6 @@ interface PreferencesHelper {
     var migrationRequired: Boolean
     val multipleTunnel: Boolean
     var notificationStat: Boolean
-    val notifications: Single<NewsFeedNotification>
     val oldSessionAuth: String?
     var packetSize: Int
     var pingTestRequired: Boolean
