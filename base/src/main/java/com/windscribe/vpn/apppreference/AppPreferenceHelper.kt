@@ -201,19 +201,6 @@ class AppPreferenceHelper(
         set(show) {
             preference.put(PreferencesKeyConstants.NOTIFICATION_STAT, show)
         }
-    override val notifications: Single<NewsFeedNotification>
-        get() = Single.fromCallable {
-            val jsonResponseString = preference
-                .getString(PreferencesKeyConstants.NEWS_FEED_RESPONSE, null)
-            if (jsonResponseString != null) {
-                return@fromCallable Gson().fromJson(
-                    jsonResponseString,
-                    NewsFeedNotification::class.java
-                )
-            } else {
-                throw PreferenceException()
-            }
-        }
     override val oldSessionAuth: String?
         get() = preference.getString(PreferencesKeyConstants.SESSION_HASH, null)
     override var packetSize: Int
