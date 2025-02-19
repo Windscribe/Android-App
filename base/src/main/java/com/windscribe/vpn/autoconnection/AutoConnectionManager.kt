@@ -40,7 +40,7 @@ class AutoConnectionManager(
 ) : NetworkInfoListener {
 
     private var continuation: CancellableContinuation<Boolean>? = null
-    private val logger = LoggerFactory.getLogger("auto_connection_manager")
+    private val logger = LoggerFactory.getLogger("vpn")
     var listOfProtocols = ThreadSafeList<ProtocolInformation>()
     private var manualProtocol: ProtocolInformation? = null
     private var lastKnownProtocolInformation: Pair<String, ProtocolInformation>? = null
@@ -91,13 +91,12 @@ class AutoConnectionManager(
         listOfProtocols.clear()
         listOfProtocols = reloadProtocols()
         updateNextInLineProtocol()
-        logger.debug("$listOfProtocols")
+        logger.debug("{}", listOfProtocols)
     }
 
     fun stop() {
         isEnabled = false
         continuation?.let {
-            logger.debug("Cancelling auto connect.")
             it.cancel()
             continuation = null
             dismissDialog()

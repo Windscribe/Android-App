@@ -52,7 +52,7 @@ class NewsFeedActivity : BaseActivity(), NewsFeedView {
     lateinit var presenter: NewsFeedPresenter
     private var newsFeedAdapter: NewsFeedAdapter? = null
 
-    private val logger = LoggerFactory.getLogger("news_feed_a")
+    private val logger = LoggerFactory.getLogger("basic")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -22,6 +22,7 @@ import de.blinkt.openvpn.core.VpnStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.slf4j.LoggerFactory
 import java.util.*
 import javax.inject.Singleton
 
@@ -39,13 +40,16 @@ class OpenVPNBackend(
 
     override var active = false
     private var stickyDisconnectEvent = false
+    private val openVPNLogger = LoggerFactory.getLogger("openvpn")
     var service: OpenVPNWrapperService? = null
     override fun activate() {
         vpnLogger.debug("Activating OpenVPN backend.")
         stickyDisconnectEvent = true
         VpnStatus.addStateListener(this)
         VpnStatus.addLogListener {
-            vpnLogger.debug(it.toString())
+            if(it.logLevel == VpnStatus.LogLevel.INFO || it.logLevel == VpnStatus.LogLevel.ERROR) {
+                openVPNLogger.debug(it.toString())
+            }
         }
         VpnStatus.addByteCountListener(this)
         active = true

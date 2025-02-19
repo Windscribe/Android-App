@@ -38,7 +38,7 @@ class NewsFeedActivity : BaseActivity(), NewsFeedView {
     @BindView(R.id.tv_error)
     lateinit var tvError: TextView
 
-    val logger: Logger = LoggerFactory.getLogger("news_feed_a")
+    val logger: Logger = LoggerFactory.getLogger("basic")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +64,6 @@ class NewsFeedActivity : BaseActivity(), NewsFeedView {
 
     @OnClick(R.id.img_news_feed_close_btn)
     fun onCloseButtonClicked() {
-        logger.info("User clicked on close button.")
         onBackPressed()
     }
 

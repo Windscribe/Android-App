@@ -37,7 +37,7 @@ class WelcomePresenterImpl @Inject constructor(
     private val welcomeView: WelcomeView, private val interactor: ActivityInteractor
 ) : WelcomePresenter {
 
-    private val logger = LoggerFactory.getLogger("login-p")
+    private val logger = LoggerFactory.getLogger("basic")
 
     override fun onDestroy() {
         interactor.getCompositeDisposable().clear()

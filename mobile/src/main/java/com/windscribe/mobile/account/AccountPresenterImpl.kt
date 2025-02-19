@@ -38,7 +38,7 @@ class AccountPresenterImpl @Inject constructor(
     private val accountView: AccountView,
     private val interactor: ActivityInteractor
 ) : AccountPresenter {
-    private val logger = LoggerFactory.getLogger("account_p")
+    private val logger = LoggerFactory.getLogger("basic")
     private val successMessage =
         """
     Sweet, you should be

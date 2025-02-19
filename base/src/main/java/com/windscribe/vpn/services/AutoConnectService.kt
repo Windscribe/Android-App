@@ -56,7 +56,7 @@ class AutoConnectService : Service(), NetworkInfoListener {
 
     private var serviceScope = CoroutineScope(Dispatchers.Main + Job())
 
-    private var logger = LoggerFactory.getLogger("auto_connect_s")
+    private var logger = LoggerFactory.getLogger("vpn")
 
     companion object {
         var isAutoConnectingServiceRunning = false

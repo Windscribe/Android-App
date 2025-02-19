@@ -190,7 +190,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     // Life cycle
     override fun onStart() {
         super.onStart()
-        mainLogger.info("Activity on start method,registering network and vpn status listener")
         if (intent != null && intent.action != null && intent.action == NotificationConstants.DISCONNECT_VPN_INTENT) {
             mainLogger.info("Disconnect intent received...")
             windscribePresenter.onDisconnectIntentReceived()
@@ -334,17 +333,14 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
             onFadeOut(flagIconResource)
         }
         icon = flagIconResource
-        mainLogger.info("Setting country flag." + resources.getResourceName(flagIconResource))
     }
 
     // Connect btn
     override fun setGlowVisibility(visibility: Int) {
-        mainLogger.info("Setting glow visibility changed")
         runOnUiThread { connectGlow?.visibility = visibility }
     }
 
     override fun setIpAddress(ipAddress: String) {
-        mainLogger.info("Setting ip address")
         ipAddressLabel?.text = ipAddress
     }
 
@@ -387,7 +383,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
 
     override fun setupLayoutConnecting() {
         runOnUiThread {
-            mainLogger.info("Setting layout for connecting state.")
             setGlowVisibility(View.GONE)
             setConnectionStateText(VPNState.Status.Connecting)
             imgConnected?.visibility = View.GONE
@@ -409,7 +404,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
                     it.cancel()
                 }
             }
-            mainLogger.info("Setting layout for disconnected state.")
             setConnectionStateText(VPNState.Status.Disconnected)
             btnVpn?.clearAnimation()
             state = 0
@@ -426,21 +420,18 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     override fun setupLayoutDisconnecting() {
         setGlowVisibility(View.GONE)
         runOnUiThread {
-            mainLogger.info("Setting layout for disconnecting state.")
             setConnectionStateText(VPNState.Status.Disconnecting)
             state = 0
         }
     }
 
     override fun setupLayoutForFreeUser(dataLeft: String, color: Int) {
-        mainLogger.debug("Setting layout for free user.")
         dataLeftLabel?.text = dataLeft
         dataLeftLabel?.setTextColor(color)
         btnUpgrade?.visibility = View.VISIBLE
     }
 
     override fun setupLayoutForProUser() {
-        mainLogger.info("Setting layout for pro user.")
         btnUpgrade?.visibility = View.GONE
     }
 
@@ -472,7 +463,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
 
     override fun startSessionServiceScheduler() {
         appContext.workManager.updateSession()
-        mainLogger.debug("starting a session service")
     }
 
     override fun startVpnConnectedAnimation(
@@ -538,7 +528,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         textColorFinal: Int,
         listenerState: ConnectionStateAnimationListener
     ) {
-        mainLogger.debug("Starting vpn connecting state animation.")
         runOnUiThread {
             state = 1
             setConnectionStateText(VPNState.Status.Connecting)
@@ -646,7 +635,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     @OnClick(id.btn_settings)
     fun onSettingClick() {
         windscribePresenter.onMenuButtonClicked()
-        mainLogger.debug("Setting button clicked.")
     }
 
     @OnFocusChange(id.vpn)
@@ -713,7 +701,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     companion object {
 
         const val ERROR_TAG = "login_error_tag"
-        private const val TAG = "windscribe_a"
+        private const val TAG = "basic"
 
         @JvmStatic
         fun getStartIntent(context: Context?): Intent {

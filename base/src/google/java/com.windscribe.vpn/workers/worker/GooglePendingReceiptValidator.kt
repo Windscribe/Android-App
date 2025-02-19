@@ -18,7 +18,7 @@ import javax.inject.Inject
 import kotlin.coroutines.suspendCoroutine
 
 class GooglePendingReceiptValidator(appContext: Context, params: WorkerParameters) : CoroutineWorker(appContext, params) {
-    private val logger = LoggerFactory.getLogger("google_receipt_w")
+    private val logger = LoggerFactory.getLogger("billing")
 
     @Inject
     lateinit var interactor: ServiceInteractor

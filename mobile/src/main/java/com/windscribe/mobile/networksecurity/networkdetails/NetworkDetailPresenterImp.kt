@@ -26,7 +26,7 @@ class NetworkDetailPresenterImp @Inject constructor(
     private val interactor: ActivityInteractor
 ) : NetworkDetailPresenter {
 
-    private val logger = LoggerFactory.getLogger("network_detail_p")
+    private val logger = LoggerFactory.getLogger("basic")
 
     override fun onDestroy() {
         if (!interactor.getCompositeDisposable().isDisposed) {

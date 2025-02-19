@@ -46,7 +46,7 @@ class WindNotificationBuilder @Inject constructor(
 
     private var lastUpdateTime = System.currentTimeMillis()
     private var trafficStats: String? = null
-    private var logger = LoggerFactory.getLogger("notification_builder")
+    private var logger = LoggerFactory.getLogger("vpn")
 
     fun buildNotification(status: Status): Notification {
         val location = notificationTitle
@@ -83,7 +83,6 @@ class WindNotificationBuilder @Inject constructor(
         try {
             notificationManager.cancel(notificationId)
             notificationManager.cancelAll()
-            logger.debug("Cancelled sticky notification.")
         } catch (e: Exception) {
             logger.debug(e.toString())
         }
@@ -180,7 +179,6 @@ class WindNotificationBuilder @Inject constructor(
                 if (it.status === Disconnected) {
                     trafficStats = null
                     lastUpdateTime = System.currentTimeMillis()
-                    logger.debug("Cancelling notification on disconnect.")
                     notificationManager.cancel(NotificationConstants.SERVICE_NOTIFICATION_ID)
                 } else {
                     notificationManager.notify(

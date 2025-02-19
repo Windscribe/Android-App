@@ -29,7 +29,7 @@ class ProxyDNSManager(
     var dnsDetails: DNSDetails? = null
     var invalidConfig = false
     private var isRunning = AtomicBoolean(false)
-    private val logger = LoggerFactory.getLogger("proxy_dns")
+    private val logger = LoggerFactory.getLogger("vpn")
 
 
     private fun updateControlDConfig() {
@@ -108,7 +108,6 @@ class ProxyDNSManager(
     }
 
     suspend fun stopControlD() {
-        logger.debug("Stopping ControlD.")
         cdLib.stopCd(true, 0)
         controlDJob?.join()
         invalidConfig = false

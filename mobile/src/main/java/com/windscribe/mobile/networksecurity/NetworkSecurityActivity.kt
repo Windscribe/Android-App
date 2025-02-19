@@ -61,7 +61,7 @@ class NetworkSecurityActivity : BaseActivity(), NetworkSecurityView, NetworkAdap
     @Inject
     lateinit var presenter: NetworkSecurityPresenter
 
-    private val logger = LoggerFactory.getLogger("net_security_a")
+    private val logger = LoggerFactory.getLogger("basic")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,7 +99,6 @@ class NetworkSecurityActivity : BaseActivity(), NetworkSecurityView, NetworkAdap
     }
 
     override fun hideProgress() {
-        logger.info("Dismissing progress dialog...")
         customProgress.dismiss()
     }
 
@@ -154,7 +153,6 @@ class NetworkSecurityActivity : BaseActivity(), NetworkSecurityView, NetworkAdap
     }
 
     override fun showProgress(progressTitle: String) {
-        logger.info("Showing loading dialog...")
         customProgress.show()
         (customProgress.findViewById<View>(R.id.tv_dialog_header) as TextView).text =
             progressTitle

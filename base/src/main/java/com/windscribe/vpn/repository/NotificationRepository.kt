@@ -20,7 +20,7 @@ class NotificationRepository @Inject constructor(
     private val apiCallManager: IApiCallManager,
     private val localDbInterface: LocalDbInterface
 ) {
-    private val logger = LoggerFactory.getLogger("notification_updater")
+    private val logger = LoggerFactory.getLogger("data")
     fun update(): Completable {
         logger.debug("Starting notification data update.")
         return apiCallManager.getNotifications(appContext.appLifeCycleObserver.pushNotificationAction?.pcpID)

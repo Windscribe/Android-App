@@ -15,11 +15,6 @@ interface EmergencyConnectRepository {
  * Implementation of emergency connect repository.
  */
 class EmergencyConnectRepositoryImpl(private val emergencyConnect: WSNetEmergencyConnect) : EmergencyConnectRepository {
-    private val logger = LoggerFactory.getLogger("e_connect_r")
-
-    init {
-        logger.debug("Initializing Emergency connect repository.")
-    }
 
     /** Get emergency connect profiles.
      * @return

@@ -25,7 +25,7 @@ class SplashPresenterImpl @Inject constructor(
     private var interactor: ActivityInteractor
 ) : SplashPresenter {
 
-    private val logger = LoggerFactory.getLogger("splash_p")
+    private val logger = LoggerFactory.getLogger("basic")
 
     /* Stop Session service if running
      * Check purchase token if available
@@ -41,10 +41,8 @@ class SplashPresenterImpl @Inject constructor(
      * */
     override fun onDestroy() {
         if (!interactor.getCompositeDisposable().isDisposed) {
-            logger.info("Disposing network observer...")
             interactor.getCompositeDisposable().dispose()
         }
-        logger.info("Setting view and interactor to null...")
     }
 
     fun checkApplicationInstanceAndDecideActivity() {
@@ -54,7 +52,6 @@ class SplashPresenterImpl @Inject constructor(
                 .getResponseString(PreferencesKeyConstants.NEW_INSTALLATION)
             if (PreferencesKeyConstants.I_NEW == installation) {
                 //Record new install
-                logger.info("Recording new installation of the app")
                 interactor.getAppPreferenceInterface()
                     .saveResponseStringData(
                         PreferencesKeyConstants.NEW_INSTALLATION,
@@ -142,7 +139,6 @@ class SplashPresenterImpl @Inject constructor(
     }
 
     fun decideActivity() {
-        logger.info("Checking if user already logged in...")
         val sessionHash = interactor.getAppPreferenceInterface().sessionHash
         if (sessionHash != null) {
             if (interactor.getAppPreferenceInterface().loginTime == null){
@@ -158,8 +154,6 @@ class SplashPresenterImpl @Inject constructor(
                 view.navigateToHome()
             }
         } else {
-            //Goto Login/Registration Activity
-            logger.info("Session auth hash not present. User not logged in...")
             view.navigateToLogin()
         }
     }
