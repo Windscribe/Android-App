@@ -44,7 +44,7 @@ class CharonVpnServiceWrapper : CharonVpnService() {
     @Inject
     lateinit var scope: CoroutineScope
 
-    private var logger = LoggerFactory.getLogger("vpn_backend")
+    private var logger = LoggerFactory.getLogger("vpn")
 
     override fun onCreate() {
         appContext.serviceComponent.inject(this)

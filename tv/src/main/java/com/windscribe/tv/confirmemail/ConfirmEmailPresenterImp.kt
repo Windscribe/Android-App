@@ -17,7 +17,7 @@ class ConfirmEmailPresenterImp @Inject constructor(
     private var confirmEmailView: ConfirmEmailView,
     private var interactor: ActivityInteractor
 ) : ConfirmEmailPresenter {
-    private val logger = LoggerFactory.getLogger("confirm-email-i")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun onDestroy() {
         if (!interactor.getCompositeDisposable().isDisposed) {
             interactor.getCompositeDisposable().dispose()

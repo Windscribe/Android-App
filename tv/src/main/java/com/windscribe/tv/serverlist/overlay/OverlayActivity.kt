@@ -127,7 +127,7 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
     private var isHeaderOpen = false
     private var maxHeader: ConstraintSet? = null
     private var minHeader: ConstraintSet? = null
-    private val logger = LoggerFactory.getLogger("overlay:a")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)

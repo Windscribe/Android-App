@@ -24,7 +24,7 @@ class SplashActivity : BaseActivity(), SplashView {
     @Inject
     lateinit var presenter: SplashPresenter
 
-    private val logger = LoggerFactory.getLogger("splash_a")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)

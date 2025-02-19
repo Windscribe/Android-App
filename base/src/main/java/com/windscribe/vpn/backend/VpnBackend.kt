@@ -36,7 +36,7 @@ abstract class VpnBackend(
         private val advanceParameterRepository: AdvanceParameterRepository
 ) {
 
-    val vpnLogger: Logger = LoggerFactory.getLogger("vpn_backend")
+    val vpnLogger: Logger = LoggerFactory.getLogger("vpn")
     var connectionJob: Job? = null
     var reconnecting = false
     var protocolInformation: ProtocolInformation? = null
@@ -65,14 +65,13 @@ abstract class VpnBackend(
             return
         }
         connectionJob = mainScope.launch {
-            vpnLogger.debug("Connection timer started.")
             delay(CONNECTING_WAIT)
             connectionTimeout()
         }
     }
 
     private suspend fun connectionTimeout() {
-        vpnLogger.debug("Connection timeout.")
+        vpnLogger.error("Connection timeout.")
         disconnect(
                 error = VPNState.Error(
                         error = VPNState.ErrorType.TimeoutError,

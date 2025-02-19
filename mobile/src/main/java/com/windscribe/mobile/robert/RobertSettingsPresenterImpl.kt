@@ -29,7 +29,7 @@ class RobertSettingsPresenterImpl(
     private val robertSettingsView: RobertSettingsView,
     private val interactor: ActivityInteractor
 ) : RobertSettingsPresenter, RobertAdapterListener {
-    private val mPresenterLog = LoggerFactory.getLogger("robert_p")
+    private val mPresenterLog = LoggerFactory.getLogger("basic")
     private var robertSettingsAdapter: RobertSettingsAdapter? = null
     override fun onDestroy() {
         interactor.getCompositeDisposable().clear()

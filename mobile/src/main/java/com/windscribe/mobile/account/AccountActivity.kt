@@ -123,7 +123,7 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
     lateinit var presenter: AccountPresenter
 
     var alertDialog: AlertDialog? = null
-    private val logger = LoggerFactory.getLogger("account_a")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         DaggerActivityComponent.builder().activityModule(ActivityModule(this, this))
@@ -282,7 +282,6 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
         infoIcon: Int,
         containerBackground: Int
     ) {
-        logger.info("Setting up confirmed email layout.")
         tvAccountEmail.text = emailConfirm
         tvAccountEmail.setTextColor(emailColor)
         warningContainer.visibility = View.GONE
@@ -296,7 +295,6 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
     }
 
     override fun setPlanName(planName: String) {
-        logger.info("Displaying user plan name ...")
         tvPlanData.text = planName
     }
 
@@ -314,13 +312,11 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
     }
 
     override fun setResetDate(resetDateLabel: String, resetDate: String) {
-        logger.info("Displaying user next reset date ...")
         tvResetDateLabel.text = resetDateLabel
         tvResetDate.text = resetDate
     }
 
     override fun setUsername(username: String) {
-        logger.info("Displaying account username ...")
         tvAccountUserName.text = username
     }
 
@@ -332,7 +328,6 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
     }
 
     override fun setupLayoutForFreeUser(upgradeText: String, color: Int) {
-        logger.info("Setting up layout for free user...")
         tvUpgradeInfo.text = upgradeText
         tvUpgradeInfo.setTextColor(color)
     }
@@ -342,7 +337,6 @@ class AccountActivity : BaseActivity(), AccountView, AccountFragmentCallback {
     }
 
     override fun setupLayoutForPremiumUser(upgradeText: String, color: Int) {
-        logger.info("Setting up layout for premium user...")
         tvUpgradeInfo.text = upgradeText
         tvUpgradeInfo.setTextColor(color)
     }

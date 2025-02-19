@@ -101,7 +101,7 @@ import javax.inject.Singleton
 
 @Module
 open class BaseApplicationModule {
-    private val logger = LoggerFactory.getLogger("di_")
+    private val logger = LoggerFactory.getLogger("wsnet")
 
     open lateinit var windscribeApp: Windscribe
 

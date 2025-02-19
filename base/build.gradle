@@ -112,6 +112,9 @@ dependencies {
     //Logging
     api 'org.slf4j:slf4j-api:1.7.36'
     api 'com.github.tony19:logback-android:2.0.0'
+    implementation ('net.logstash.logback:logstash-logback-encoder:5.0') {
+        exclude group: 'ch.qos.logback', module: 'logback-core'
+    }
     //Room
     api "androidx.room:room-rxjava2:$room"
     api "androidx.room:room-runtime:$room"

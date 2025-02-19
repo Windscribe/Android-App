@@ -22,11 +22,10 @@ class SplashPresenterImpl @Inject constructor(
     private var splashView: SplashView,
     private var interactor: ActivityInteractor
 ) : SplashPresenter {
-    private val logger = LoggerFactory.getLogger("splash_p")
+    private val logger = LoggerFactory.getLogger("basic")
 
     override fun onDestroy() {
         if (!interactor.getCompositeDisposable().isDisposed) {
-            logger.info("Disposing network observer...")
             interactor.getCompositeDisposable().dispose()
         }
     }
@@ -40,7 +39,6 @@ class SplashPresenterImpl @Inject constructor(
                 .getResponseString(PreferencesKeyConstants.NEW_INSTALLATION)
             if (PreferencesKeyConstants.I_NEW == installation) {
                 // Record new install
-                logger.info("Recording new installation of the app")
                 interactor.getAppPreferenceInterface()
                     .saveResponseStringData(
                         PreferencesKeyConstants.NEW_INSTALLATION,
@@ -123,7 +121,6 @@ class SplashPresenterImpl @Inject constructor(
     }
 
     fun decideActivity() {
-        logger.info("Checking if user already logged in...")
         val sessionHash = interactor.getAppPreferenceInterface().sessionHash
         if (sessionHash != null) {
             logger.info("Session auth hash present. User is already logged in...")
@@ -133,8 +130,6 @@ class SplashPresenterImpl @Inject constructor(
             }
             splashView.navigateToHome()
         } else {
-            // Goto Login/Registration Activity
-            logger.info("Session auth hash not present. User not logged in...")
             splashView.navigateToLogin()
         }
     }

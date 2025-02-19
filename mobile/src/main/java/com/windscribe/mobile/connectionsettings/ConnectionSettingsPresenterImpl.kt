@@ -56,7 +56,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
         private val permissionManager: PermissionManager,
         private val proxyDNSManager: ProxyDNSManager
 ) : ConnectionSettingsPresenter {
-    private val logger = LoggerFactory.getLogger("con_settings_p")
+    private val logger = LoggerFactory.getLogger("basic")
     private var currentPoint = 1500
     override fun onStart() {
         //Set split tunnel text view
@@ -282,7 +282,6 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
     }
 
     override fun onPortSelected(heading: String, port: String) {
-        logger.info("Saving selected port...")
         interactor.loadPortMap(object : PortMapLoadCallback {
             override fun onFinished(portMapResponse: PortMapResponse) {
                 when (getProtocolFromHeading(portMapResponse, heading)) {
@@ -331,10 +330,7 @@ class ConnectionSettingsPresenterImpl @Inject constructor(
             override fun onFinished(portMapResponse: PortMapResponse) {
                 val protocol = getProtocolFromHeading(portMapResponse, heading)
                 val savedProtocol = interactor.getSavedProtocol()
-                if (savedProtocol == protocol) {
-                    //Do nothing
-                    logger.info("Protocol re-selected is same as saved. No action taken...")
-                } else {
+                if (savedProtocol != protocol) {
                     logger.info("Saving selected protocol...")
                     interactor.saveProtocol(protocol)
                     setPortMapAdapter(heading)

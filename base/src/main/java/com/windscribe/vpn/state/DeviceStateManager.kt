@@ -28,7 +28,7 @@ class DeviceStateManager @Inject constructor(val scope: CoroutineScope) : Broadc
     private val listeners = ConcurrentLinkedQueue<DeviceStateListener>()
     private var _deviceInteractiveEvents = MutableStateFlow(false)
     val isDeviceInteractive: StateFlow<Boolean> = _deviceInteractiveEvents
-    private val logger = LoggerFactory.getLogger("device_state")
+    private val logger = LoggerFactory.getLogger("state")
 
     fun addListener(deviceStateListener: DeviceStateListener) {
         listeners.add(deviceStateListener)

@@ -50,7 +50,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
     lateinit var amazonBillingManager: AmazonBillingManager
     @Inject
     lateinit var googleBillingManager: GoogleBillingManager
-    private val logger = LoggerFactory.getLogger("upgrade_a")
+    private val logger = LoggerFactory.getLogger("basic")
     private var selectedProductDetails: ProductDetails? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

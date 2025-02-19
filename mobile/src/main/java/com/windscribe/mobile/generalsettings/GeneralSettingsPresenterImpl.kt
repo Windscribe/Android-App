@@ -22,7 +22,7 @@ class GeneralSettingsPresenterImpl @Inject constructor(
         private var settingsView: GeneralSettingsView, private var interactor: ActivityInteractor
 ) : GeneralSettingsPresenter {
 
-    private val logger = LoggerFactory.getLogger("gen_settings_p")
+    private val logger = LoggerFactory.getLogger("basic")
 
     override fun onDestroy() {
         if (interactor.getCompositeDisposable().isDisposed.not()) {

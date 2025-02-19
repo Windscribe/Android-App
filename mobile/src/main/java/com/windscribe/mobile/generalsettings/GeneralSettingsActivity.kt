@@ -34,7 +34,7 @@ import javax.inject.Inject
 
 class GeneralSettingsActivity : BaseActivity(), GeneralSettingsView {
 
-    private val logger = LoggerFactory.getLogger("gen_settings_a")
+    private val logger = LoggerFactory.getLogger("basic")
 
     @BindView(R.id.cl_app_background_settings)
     lateinit var appBackgroundDropDown: AppBackgroundView
@@ -307,7 +307,6 @@ class GeneralSettingsActivity : BaseActivity(), GeneralSettingsView {
         selectedKey: String,
         keys: Array<String>
     ) {
-        logger.info("Setting up language adapter...")
         languageDropDown.setAdapter(localiseValues, selectedKey, keys)
     }
 
@@ -316,7 +315,6 @@ class GeneralSettingsActivity : BaseActivity(), GeneralSettingsView {
         selelctedKey: String,
         keys: Array<String>
     ) {
-        logger.info("Setting up latency adapter...")
         latencyDropDown.setAdapter(localiseValues, selelctedKey, keys)
     }
 
@@ -333,7 +331,6 @@ class GeneralSettingsActivity : BaseActivity(), GeneralSettingsView {
         selectedKey: String,
         keys: Array<String>
     ) {
-        logger.info("Setting up selection adapter...")
         locationSelectionDropDown.setAdapter(localiseValues, selectedKey, keys)
     }
 
@@ -342,7 +339,6 @@ class GeneralSettingsActivity : BaseActivity(), GeneralSettingsView {
         selectedKey: String,
         keys: Array<String>
     ) {
-        logger.info("Setting up theme adapter..")
         themeDropDown.setAdapter(localiseValues, selectedKey, keys)
     }
 
