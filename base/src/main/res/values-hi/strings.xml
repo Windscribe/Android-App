@@ -483,4 +483,31 @@
     <string name="enter_1_key_value_per_line">प्रति पंक्ति 1 key=value दर्ज करें।</string>
     <string name="upgrade_to_stay_protected">सुरक्षित रहने के लिए अभी अपग्रेड करें या तब तक प्रतीक्षा करें जब तक आपका बैंडविड्थ %s को रीसेट नहीं हो जाता</string>
     <string name="changelog">परिवर्तन सूची</string>
+    <string name="restore">पुनर्स्थापित करें</string>
+    <string name="unlimited_everything">असीमित सबकुछ</string>
+    <string name="use_on_all_devices_with_no_data_limits">सभी डिवाइस पर उपयोग करें, बिना डेटा सीमा के</string>
+    <string name="all_vpn_locations">सभी वीपीएन स्थान</string>
+    <string name="servers_in_cities_more_than_any_other_vpn">130 शहरों में सर्वर, किसी भी अन्य वीपीएन से अधिक</string>
+    <string name="increased_speed_and_security">बेहतर गति और सुरक्षा</string>
+    <string name="blocks_malicious_websites_trackers">99.9% हानिकारक वेबसाइट और ट्रैकर को ब्लॉक करता है</string>
+    <string name="plan_monthly">मासिक</string>
+    <string name="billed_monthly">मासिक बिल किया जाएगा</string>
+    <string name="plan_yearly">वार्षिक</string>
+    <string name="subscribe">सदस्यता लें</string>
+    <string name="subscriptions_info">सदस्यता को मासिक, वार्षिक रूप से प्रबंधित किया जा सकता है या खरीदारी के बाद प्ले स्टोर खाता सेटिंग्स में जाकर बंद किया जा सकता है। सभी कीमतों में लागू कर शामिल हैं।</string>
+    <string name="monthly_billed">%s/माह, वार्षिक बिल किया जाएगा</string>
+    <string name="yearly_billed">वार्षिक बिल किया जाएगा</string>
+    <string name="start_using_pro">प्रो उपयोग करना शुरू करें</string>
+    <string name="welcome_to_windscribe_pro">विंडस्क्राइब प्रो में आपका स्वागत है!</string>
+    <string name="thanks_for_upgrading">विंडस्क्राइब प्रो में अपग्रेड करने के लिए धन्यवाद! अब आपके पास और भी शक्तिशाली सुविधाओं की पहुँच है।</string>
+    <string name="set_up_on_all_your_devices">अपने सभी उपकरणों पर सेटअप करें</string>
+    <string name="connect_to_any_location">किसी भी स्थान से कनेक्ट करें</string>
+    <string name="unlimited_bandwidth">असीमित बैंडविड्थ</string>
+    <string name="share">साझा करें</string>
+    <string name="join_our_discord_community">हमारे डिस्कॉर्ड समुदाय में शामिल हों</string>
+    <string name="join_our_reddit_community">हमारे रेडिट समुदाय में शामिल हों</string>
+    <string name="find_us_on_youtube">हमें यूट्यूब पर खोजें</string>
+    <string name="follow_us_on_x">हमें X पर फॉलो करें</string>
+    <string name="charged_every_month">हर महीने चार्ज किया जाता है</string>
+    <string name="charged_every_12_months">हर 12 महीने में चार्ज किया जाता है</string>
 </resources>

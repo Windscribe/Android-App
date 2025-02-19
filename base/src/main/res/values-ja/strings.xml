@@ -483,4 +483,31 @@
     <string name="enter_1_key_value_per_line">1 行に 1 つの key=value を入力します。</string>
     <string name="upgrade_to_stay_protected">今すぐアップグレードして保護を維持するか、帯域幅が%sにリセットされるまで待ってください</string>
     <string name="changelog">変更履歴</string>
+    <string name="restore">復元</string>
+    <string name="unlimited_everything">すべて無制限</string>
+    <string name="use_on_all_devices_with_no_data_limits">すべてのデバイスで、データ制限なしで使用可能</string>
+    <string name="all_vpn_locations">すべてのVPNロケーション</string>
+    <string name="servers_in_cities_more_than_any_other_vpn">130都市にサーバーを配置、他のVPNよりも多い</string>
+    <string name="increased_speed_and_security">速度とセキュリティの向上</string>
+    <string name="blocks_malicious_websites_trackers">99.9%の悪意あるウェブサイトとトラッカーをブロック</string>
+    <string name="plan_monthly">月額プラン</string>
+    <string name="billed_monthly">月額請求</string>
+    <string name="plan_yearly">年額プラン</string>
+    <string name="subscribe">購読</string>
+    <string name="subscriptions_info">サブスクリプションは毎月または毎年管理したり、購入後にPlayストアのアカウント設定からオフにしたりできます。すべての価格には適用される税金が含まれています。</string>
+    <string name="monthly_billed">%s/月（年額請求）</string>
+    <string name="yearly_billed">年額請求</string>
+    <string name="start_using_pro">Pro版を使い始める</string>
+    <string name="welcome_to_windscribe_pro">Windscribe Proへようこそ！</string>
+    <string name="thanks_for_upgrading">Windscribe Proにアップグレードしていただきありがとうございます！さらに強力な機能が利用可能になりました。</string>
+    <string name="set_up_on_all_your_devices">すべてのデバイスでセットアップ</string>
+    <string name="connect_to_any_location">どのロケーションにも接続可能</string>
+    <string name="unlimited_bandwidth">無制限の帯域幅</string>
+    <string name="share">共有</string>
+    <string name="join_our_discord_community">Discordコミュニティに参加</string>
+    <string name="join_our_reddit_community">Redditコミュニティに参加</string>
+    <string name="find_us_on_youtube">YouTubeで見つける</string>
+    <string name="follow_us_on_x">Xでフォロー</string>
+    <string name="charged_every_month">毎月請求されます</string>
+    <string name="charged_every_12_months">12か月ごとに請求されます</string>
 </resources>

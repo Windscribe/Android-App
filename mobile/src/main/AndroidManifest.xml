@@ -102,6 +102,8 @@
         <activity
             android:name=".networksecurity.NetworkSecurityActivity"
             android:screenOrientation="portrait" />
+        <activity android:name=".upgradeactivity.UpgradeSuccessActivity"
+            android:screenOrientation="portrait" />
     </application>
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />

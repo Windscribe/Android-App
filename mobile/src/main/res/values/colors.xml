@@ -66,5 +66,14 @@
     <color name="darkGray">#343434</color>
     <!--Dead code Requires more refactor-->
     <color name="colorBackgroundDark">#0e1927</color>
+    <!-- Upgrade view v2 -->
+    <color name="colorDeepNavy">#090E19</color>
+    <color name="colorDeepNavy80">#CC090E19</color>
+    <color name="colorPowderBlue0">#00C3E5EE</color>
+    <color name="colorPowderBlue14">#24C3E5EE</color>
+    <color name="colorPowderBlue">#C3E5EE</color>
+    <color name="colorPastelYellow0">#00DDFF87</color>
+    <color name="colorPastelBlue">#00DDFF87</color>
+    <color name="colorPaleBlue">#CADFF2</color>
 
 </resources>

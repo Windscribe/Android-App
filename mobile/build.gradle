@@ -19,6 +19,7 @@ android {
     }
     buildFeatures {
         buildConfig = true
+        dataBinding = true
     }
 
     compileSdkVersion rootProject.appCompiledSdk

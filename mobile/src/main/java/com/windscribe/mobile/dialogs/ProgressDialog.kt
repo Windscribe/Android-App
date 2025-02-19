@@ -9,6 +9,7 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import com.windscribe.mobile.databinding.FragmentProgressBinding
 
@@ -33,6 +34,9 @@ class ProgressDialog : FullScreenDialog() {
         arguments?.getString(progressTextKey)?.let {
             binding?.progressLabel?.text = it
         }
+        arguments?.getInt(ProgressDialog.backgroundColorKey)?.let {
+            view.setBackgroundColor(it)
+        }
     }
 
     override fun onDestroyView() {
@@ -48,10 +52,11 @@ class ProgressDialog : FullScreenDialog() {
 
     companion object {
         private const val progressTextKey = "progressTextKey"
+        private const val backgroundColorKey = "backgroundColor"
         const val tag = "ProgressDialog"
 
         @JvmStatic
-        fun show(activity: AppCompatActivity, progressText: String? = null) {
+        fun show(activity: AppCompatActivity, progressText: String? = null, @ColorInt backgroundColor: Int? = null) {
             if (activity.supportFragmentManager.findFragmentByTag(tag) != null) {
                 return
             }
@@ -60,6 +65,7 @@ class ProgressDialog : FullScreenDialog() {
                     ProgressDialog().apply {
                         Bundle().apply {
                             putString(progressTextKey, progressText)
+                            backgroundColor?.let { putInt(ProgressDialog.backgroundColorKey, it) }
                             arguments = this
                         }
                     }.show(activity.supportFragmentManager, tag)

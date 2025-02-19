@@ -480,4 +480,31 @@
     <string name="save">সংরক্ষণ করুন</string>
     <string name="clear">খালি করুন </string>
     <string name="enter_1_key_value_per_line">প্রতি লাইনে 1 key=value লিখুন।.</string>
+    <string name="restore">পুনরুদ্ধার</string>
+    <string name="unlimited_everything">অসীমিত সবকিছু</string>
+    <string name="use_on_all_devices_with_no_data_limits">সব ডিভাইসে ব্যবহার করুন, কোন ডাটা সীমা নেই</string>
+    <string name="all_vpn_locations">সকল VPN অবস্থান</string>
+    <string name="servers_in_cities_more_than_any_other_vpn">১৩০ শহরে সার্ভার, অন্য যে কোনো VPN থেকে বেশি</string>
+    <string name="increased_speed_and_security">বর্ধিত গতি ও নিরাপত্তা</string>
+    <string name="blocks_malicious_websites_trackers">99.9% ক্ষতিকারক ওয়েবসাইট ও ট্র্যাকার ব্লক করে</string>
+    <string name="plan_monthly">মাসিক</string>
+    <string name="billed_monthly">মাসিক বিল</string>
+    <string name="plan_yearly">বাৎসরিক</string>
+    <string name="subscribe">সাবস্ক্রাইব করুন</string>
+    <string name="subscriptions_info">সাবস্ক্রিপশনগুলি মাসিক, বার্ষিকভাবে পরিচালনা করা বা বন্ধ করা যেতে পারে প্লে স্টোর অ্যাকাউন্ট সেটিংসে গিয়ে। সমস্ত মূল্যে প্রযোজ্য কর অন্তর্ভুক্ত।</string>
+    <string name="monthly_billed">%s/মাস, বাৎসরিক বিল</string>
+    <string name="yearly_billed">বাৎসরিক বিল</string>
+    <string name="start_using_pro">প্রো ব্যবহার শুরু করুন</string>
+    <string name="welcome_to_windscribe_pro">Windscribe Pro-এ স্বাগতম!</string>
+    <string name="thanks_for_upgrading">Windscribe Pro-এ আপগ্রেড করার জন্য ধন্যবাদ! এখন আপনি আরও শক্তিশালী ফিচার ব্যবহার করতে পারবেন।</string>
+    <string name="set_up_on_all_your_devices">আপনার সমস্ত ডিভাইসে সেটআপ করুন</string>
+    <string name="connect_to_any_location">যেকোনো অবস্থানে সংযোগ করুন</string>
+    <string name="unlimited_bandwidth">অসীমিত ব্যান্ডউইথ</string>
+    <string name="share">শেয়ার করুন</string>
+    <string name="join_our_discord_community">আমাদের Discord কমিউনিটিতে যোগ দিন</string>
+    <string name="join_our_reddit_community">আমাদের Reddit কমিউনিটিতে যোগ দিন</string>
+    <string name="find_us_on_youtube">আমাদের YouTube-এ খুঁজুন</string>
+    <string name="follow_us_on_x">আমাদের X-এ অনুসরণ করুন</string>
+    <string name="charged_every_month">প্রতি মাসে চার্জ করা হয়</string>
+    <string name="charged_every_12_months">প্রতি ১২ মাসে চার্জ করা হয়</string>
 </resources>

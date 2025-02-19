@@ -26,6 +26,30 @@ open class WindscribeInAppProduct(
         }.planPrice
     }
 
+    open fun getOriginalPrice(sku: String): String? {
+        return billingPlans.first {
+            it.extId == sku
+        }.originalPrice
+    }
+
+
+    fun getMonthlyPlan(): String? {
+        return billingPlans.firstOrNull {
+            it.duration == 1
+        }?.extId
+    }
+
+    fun getYearlyPlan(): String? {
+        return billingPlans.firstOrNull {
+            it.duration == 12
+        }?.extId
+    }
+
+    fun getPromoPlan(): String? {
+        return billingPlans.firstOrNull {
+            it.discount > 0
+        }?.extId
+    }
     fun getPlanDuration(sku: String): String {
         val numberOfMonths = billingPlans.first {
             it.extId == sku
@@ -40,7 +64,7 @@ open class WindscribeInAppProduct(
     }
 
     fun isPromo(): Boolean {
-        return pushNotificationAction != null && pushNotificationAction.promoCode.isNotEmpty()
+        return billingPlans.firstOrNull { it.discount > 0 } != null
     }
 
     fun getDiscountLabel(sku: String): String {
@@ -48,6 +72,12 @@ open class WindscribeInAppProduct(
             it.extId == sku
         }.discount
         return "Save $discount%"
+    }
+
+    fun getUsdPrice(sku: String): String {
+        return billingPlans.first {
+            it.extId == sku
+        }.planPrice
     }
 
     fun getPromoStickerLabel(sku: String): String {

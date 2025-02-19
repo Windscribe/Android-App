@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/checked_radio_circle" android:state_checked="true"/>
+    <item>
+        <shape android:shape="oval">
+            <size android:width="@dimen/reg_16dp" android:height="@dimen/reg_16dp"/>
+            <stroke android:width="@dimen/reg_2dp" android:color="@color/colorWhite50"/>
+            <solid android:color="@android:color/transparent"/>
+        </shape>
+    </item>
+</selector>

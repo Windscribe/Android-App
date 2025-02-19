@@ -483,4 +483,31 @@
     <string name="save">Зберегти</string>
     <string name="clear">Ясний</string>
     <string name="enter_1_key_value_per_line">Введіть 1 ключ=значення в кожному рядку.</string>
+    <string name="restore">Відновити</string>
+    <string name="unlimited_everything">Необмежені можливості</string>
+    <string name="use_on_all_devices_with_no_data_limits">Використовуйте на всіх пристроях без обмежень даних</string>
+    <string name="all_vpn_locations">Усі VPN-локації</string>
+    <string name="servers_in_cities_more_than_any_other_vpn">Сервери у 130 містах, більше ніж у будь-якого іншого VPN</string>
+    <string name="increased_speed_and_security">Підвищена швидкість і безпека</string>
+    <string name="blocks_malicious_websites_trackers">Блокує 99,9% шкідливих сайтів і трекерів</string>
+    <string name="plan_monthly">Щомісячно</string>
+    <string name="billed_monthly">Виставляється рахунок щомісяця</string>
+    <string name="plan_yearly">Щорічно</string>
+    <string name="subscribe">Підписатися</string>
+    <string name="subscriptions_info">Підписками можна керувати щомісяця, щорічно або вимикати їх у налаштуваннях облікового запису Play Store після покупки. Усі ціни включають застосовні податки.</string>
+    <string name="monthly_billed">%s/місяць, рахунок виставляється щорічно</string>
+    <string name="yearly_billed">Рахунок виставляється щорічно</string>
+    <string name="start_using_pro">Почати користуватися Pro</string>
+    <string name="welcome_to_windscribe_pro">Ласкаво просимо до Windscribe Pro!</string>
+    <string name="thanks_for_upgrading">Дякуємо за оновлення до Windscribe Pro! Тепер у вас є доступ до ще потужніших функцій.</string>
+    <string name="set_up_on_all_your_devices">Налаштуйте на всіх своїх пристроях</string>
+    <string name="connect_to_any_location">Підключайтеся до будь-якого місця</string>
+    <string name="unlimited_bandwidth">Необмежена пропускна здатність</string>
+    <string name="share">ПОДІЛИТИСЯ</string>
+    <string name="join_our_discord_community">Приєднуйтесь до нашої спільноти Discord</string>
+    <string name="join_our_reddit_community">Приєднуйтесь до нашої спільноти Reddit</string>
+    <string name="find_us_on_youtube">Знайдіть нас на YouTube</string>
+    <string name="follow_us_on_x">Слідкуйте за нами в X</string>
+    <string name="charged_every_month">стягується щомісяця</string>
+    <string name="charged_every_12_months">стягується кожні 12 місяців</string>
 </resources>
