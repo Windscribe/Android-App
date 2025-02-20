@@ -129,7 +129,7 @@ public class RegionsAdapter extends ExpandableRecyclerViewAdapter<RegionViewHold
         holder.itemView.setOnClickListener(view -> {
             if (serverListData.isProUser()
                     && region.getStatus() == NetworkKeyConstants.SERVER_STATUS_TEMPORARILY_UNAVAILABLE) {
-                mListener.onUnavailableRegion();
+                mListener.onUnavailableRegion(false);
             } else {
                 holder.onClick(view);
             }
@@ -139,7 +139,7 @@ public class RegionsAdapter extends ExpandableRecyclerViewAdapter<RegionViewHold
         holder.imgDropDown.setOnClickListener(view -> {
             if (serverListData.isProUser()
                     && region.getStatus() == NetworkKeyConstants.SERVER_STATUS_TEMPORARILY_UNAVAILABLE) {
-                mListener.onUnavailableRegion();
+                mListener.onUnavailableRegion(false);
             } else {
                 holder.onClick(view);
             }
@@ -298,9 +298,9 @@ public class RegionsAdapter extends ExpandableRecyclerViewAdapter<RegionViewHold
                 return;
             }
             if (!city.nodesAvailable() && city.getPro() != 1) {
-                mListener.onUnavailableRegion();
+                mListener.onUnavailableRegion(false);
             } else if (!city.nodesAvailable() && city.getPro() == 1 && serverListData.isProUser()) {
-                mListener.onUnavailableRegion();
+                mListener.onUnavailableRegion(false);
             } else {
                 mListener.onCityClick(city.getId());
             }
