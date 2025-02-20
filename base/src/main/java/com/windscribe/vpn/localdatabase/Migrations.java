@@ -63,6 +63,16 @@ public class Migrations {
         }
     };
 
+    public static final Migration migration_34_35 = new Migration(34, 35) {
+        @Override
+        public void migrate(@NonNull final SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE StaticRegion"
+                    + " ADD COLUMN status INTEGER");
+            invalidateData();
+            logger.debug("Migrated database from version:34 to version:35");
+        }
+    };
+
     private static void invalidateData() {
         Windscribe.getAppContext().getPreference().setMigrationRequired(true);
     }
