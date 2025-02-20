@@ -46,7 +46,13 @@ class StaticIpAdapter(
                 ContextCompat.getColor(itemView.context, R.color.colorWhite40),
                 PorterDuff.Mode.MULTIPLY
             )
-            btnConnect.setOnClickListener { listener.onStaticIpClick(region) }
+            btnConnect.setOnClickListener {
+                if (region.status == 0) {
+                    listener.onDisabledClick()
+                } else {
+                    listener.onStaticIpClick(region)
+                }
+            }
             itemView.onFocusChangeListener =
                 View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
                     selectedBackground(hasFocus)

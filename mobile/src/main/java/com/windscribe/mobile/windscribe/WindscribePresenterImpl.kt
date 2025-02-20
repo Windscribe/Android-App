@@ -1091,9 +1091,9 @@ class WindscribePresenterImpl @Inject constructor(
         connectToStaticIp(staticIpId)
     }
 
-    override fun onUnavailableRegion() {
+    override fun onUnavailableRegion(isStaticIP: Boolean) {
         windscribeView.exitSearchLayout()
-        windscribeView.setUpLayoutForNodeUnderMaintenance()
+        windscribeView.setUpLayoutForNodeUnderMaintenance(isStaticIP)
     }
 
     override fun onUpgradeClicked() {

@@ -6,6 +6,7 @@ package com.windscribe.vpn.api.response;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.windscribe.vpn.serverlist.entity.StaticRegion;
 
 import java.util.List;
 
@@ -14,13 +15,13 @@ public class StaticIPResponse {
 
     @SerializedName("static_ips")
     @Expose
-    private List<StaticIp> staticIpList;
+    private List<StaticRegion> staticIpList;
 
-    public List<StaticIp> getStaticIpList() {
+    public List<StaticRegion> getStaticIpList() {
         return staticIpList;
     }
 
-    public void setStaticIpList(List<StaticIp> staticIpList) {
+    public void setStaticIpList(List<StaticRegion> staticIpList) {
         this.staticIpList = staticIpList;
     }
 }

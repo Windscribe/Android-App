@@ -1203,8 +1203,8 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         }
     }
 
-    override fun setUpLayoutForNodeUnderMaintenance() {
-        NodeStatusDialog.show(this)
+    override fun setUpLayoutForNodeUnderMaintenance(isStaticLocation: Boolean) {
+        NodeStatusDialog.show(this, isStaticLocation)
     }
 
     override fun setupAccountStatusBanned() {

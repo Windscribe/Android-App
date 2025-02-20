@@ -28,15 +28,13 @@ import java.util.List;
 
 public class StaticRegionAdapter extends RecyclerView.Adapter<StaticRegionHolder> {
 
-    private ServerListData dataDetails;
-
     private final ListViewClickListener mListener;
-
+    private ServerListData dataDetails;
     private List<StaticRegion> mStaticIpList;
 
 
     public StaticRegionAdapter(List<StaticRegion> mStaticIpList, ServerListData dataDetails,
-            ListViewClickListener mListener) {
+                               ListViewClickListener mListener) {
         this.mStaticIpList = mStaticIpList;
         this.dataDetails = dataDetails;
         this.mListener = mListener;
@@ -93,8 +91,14 @@ public class StaticRegionAdapter extends RecyclerView.Adapter<StaticRegionHolder
             }
         }
 
-        staticRegionHolder.itemView.setOnClickListener(
-                v -> mListener.onStaticIpClick(mStaticIpList.get(staticRegionHolder.getAdapterPosition()).getId()));
+        staticRegionHolder.itemView.setOnClickListener(v -> {
+            StaticRegion region = mStaticIpList.get(staticRegionHolder.getAdapterPosition());
+            if (region.getStatus() != null && region.getStatus() == 0) {
+                mListener.onUnavailableRegion(true);
+            } else {
+                mListener.onStaticIpClick(mStaticIpList.get(staticRegionHolder.getAdapterPosition()).getId());
+            }
+        });
         setTouchListener(staticRegionHolder);
     }
 
