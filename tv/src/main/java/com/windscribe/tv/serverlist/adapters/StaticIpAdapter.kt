@@ -56,12 +56,12 @@ class StaticIpAdapter(
             itemView.onFocusChangeListener =
                 View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
                     selectedBackground(hasFocus)
-                    setHighlightText(hasFocus)
+                    setHighlightText(hasFocus, region)
                 }
             btnConnect.onFocusChangeListener =
                 View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
                     selectedBackground(hasFocus)
-                    setHighlightText(hasFocus)
+                    setHighlightText(hasFocus, region)
                 }
         }
 
@@ -81,13 +81,15 @@ class StaticIpAdapter(
             }
         }
 
-        private fun setHighlightText(hasFocus: Boolean) {
-            if (hasFocus) {
+        private fun setHighlightText(hasFocus: Boolean, region: StaticRegion) {
+            if (region.status != null && region.status == 0) {
+                highlightTextView.text = highlightTextView.resources.getString(R.string.unavailable)
+            } else {
                 highlightTextView.text = highlightTextView.resources.getString(R.string.connect)
+            }
+            if (hasFocus) {
                 highlightTextView.visibility = View.VISIBLE
             } else {
-                highlightTextView.text =
-                    highlightTextView.resources.getString(R.string.connect)
                 highlightTextView.visibility = View.INVISIBLE
             }
         }
