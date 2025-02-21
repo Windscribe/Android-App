@@ -398,6 +398,7 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
 
     @OnClick(R.id.header_item_all)
     fun onHeaderAllClick() {
+        overlayParent?.setCurrentFragment(0)
         if (currentFragment is AllOverlayFragment) {
             return
         }
@@ -413,11 +414,11 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         headerFavItemText?.alpha = 0.40f
         headerWindItemText?.alpha = 0.40f
         headerStaticItemText?.alpha = 0.40f
-        overlayParent?.setCurrentFragment(0)
     }
 
     @OnClick(R.id.header_item_fav)
     fun onHeaderFavClick() {
+        overlayParent?.setCurrentFragment(1)
         if (currentFragment is FavouriteFragment) {
             return
         }
@@ -433,11 +434,11 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         headerFavItemText?.alpha = 1.0f
         headerWindItemText?.alpha = 0.40f
         headerStaticItemText?.alpha = 0.40f
-        overlayParent?.setCurrentFragment(1)
     }
 
     @OnClick(R.id.header_item_static)
     fun onHeaderStaticClick() {
+        overlayParent?.setCurrentFragment(3)
         if (currentFragment is StaticIpFragment) {
             return
         }
@@ -453,11 +454,11 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         headerFavItemText?.alpha = 0.40f
         headerWindItemText?.alpha = 0.40f
         headerStaticItemText?.alpha = 1.0f
-        overlayParent?.setCurrentFragment(3)
     }
 
     @OnClick(R.id.header_item_wind)
     fun onHeaderWindClick() {
+        overlayParent?.setCurrentFragment(2)
         if (currentFragment is WindOverlayFragment) {
             return
         }
@@ -473,7 +474,6 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         headerFavItemText?.alpha = 0.40f
         headerWindItemText?.alpha = 1.0f
         headerStaticItemText?.alpha = 0.40f
-        overlayParent?.setCurrentFragment(2)
     }
 
     private val currentFragment: Fragment?
