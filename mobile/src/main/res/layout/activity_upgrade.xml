@@ -164,6 +164,8 @@
             <com.windscribe.mobile.custom_view.PlanUpgradeStarsBackgroundView
                 android:id="@+id/monthly_plan_container"
                 style="@style/PlanContainerStyle"
+                android:layout_marginEnd="@dimen/reg_2dp"
+                android:layout_marginStart="@dimen/reg_8dp"
                 app:layout_constraintEnd_toStartOf="@id/yearly_plan_container"
                 app:layout_constraintHorizontal_weight="1"
                 app:layout_constraintStart_toStartOf="parent"
@@ -208,11 +210,18 @@
                 android:id="@+id/monthly_billed"
                 style="@style/PlanBilledStyle"
                 app:layout_constraintBottom_toBottomOf="@id/monthly_plan_container"
-                app:layout_constraintStart_toStartOf="@id/monthly_plan_container" />
+                app:layout_constraintStart_toStartOf="@id/monthly_plan_container"
+                app:layout_constraintEnd_toEndOf="@id/monthly_plan_container"
+                app:layout_constraintHorizontal_bias="0.0"
+                android:layout_marginEnd="@dimen/margin_24"
+                android:layout_width="0dp"
+                android:lines="2"
+                />
 
             <com.windscribe.mobile.custom_view.PlanUpgradeStarsBackgroundView
                 android:id="@+id/yearly_plan_container"
                 style="@style/PlanContainerStyle"
+                android:layout_marginStart="@dimen/reg_2dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_weight="1"
                 app:layout_constraintStart_toEndOf="@id/monthly_plan_container"
@@ -232,6 +241,8 @@
                 app:layout_constraintTop_toTopOf="@id/yearly_plan_title"
                 app:layout_constraintBottom_toBottomOf="@id/yearly_plan_title"
                 app:layout_constraintEnd_toEndOf="@id/yearly_plan_container"
+                app:layout_constraintStart_toEndOf="@id/yearly_plan_discount"
+                app:layout_constraintHorizontal_bias="1.0"
                 android:layout_marginEnd="@dimen/margin_24"
                 android:clickable="false"
                 android:checked="true"
@@ -268,6 +279,11 @@
                 android:layout_width="0dp"
                 app:layout_constraintBottom_toBottomOf="@id/yearly_plan_container"
                 app:layout_constraintEnd_toEndOf="@id/yearly_plan_container"
+                android:layout_marginEnd="@dimen/reg_24dp"
+                android:layout_marginBottom="@dimen/margin_16"
+                android:padding="0dp"
+                android:ellipsize="end"
+                android:lines="2"
                 app:layout_constraintStart_toStartOf="@id/yearly_plan_container"
                 tools:text="$5.75/month, Billed Annually" />
 
