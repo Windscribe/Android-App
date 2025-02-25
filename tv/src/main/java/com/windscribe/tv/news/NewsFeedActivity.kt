@@ -13,16 +13,14 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.URLSpan
 import android.view.View
-import android.widget.TextView
+import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.OnClick
 import com.windscribe.tv.R
 import com.windscribe.tv.adapter.NewsFeedAdapter
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.customview.CustomDialog
+import com.windscribe.tv.databinding.ActivityNewsFeedBinding
 import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.upgrade.UpgradeActivity
 import com.windscribe.vpn.api.response.PushNotificationAction
@@ -33,37 +31,36 @@ import javax.inject.Inject
 
 class NewsFeedActivity : BaseActivity(), NewsFeedView {
     @JvmField
-    @BindView(R.id.action_label)
-    var actionLabel: TextView? = null
-
-    @JvmField
     @Inject
     var customProgressDialog: CustomDialog? = null
-
-    @JvmField
-    @BindView(R.id.newsFeedContentTextView)
-    var newsFeedContentTextView: TextView? = null
-
-    @JvmField
-    @BindView(R.id.newsFeedRecycleView)
-    var newsFeedRecyclerView: RecyclerView? = null
 
     @Inject
     lateinit var presenter: NewsFeedPresenter
     private var newsFeedAdapter: NewsFeedAdapter? = null
 
+    private lateinit var binding: ActivityNewsFeedBinding
     private val logger = LoggerFactory.getLogger("basic")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
-        setContentLayout(R.layout.activity_news_feed)
-        newsFeedRecyclerView?.itemAnimator = DefaultItemAnimator()
-        newsFeedRecyclerView?.layoutManager = LinearLayoutManager(this)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_news_feed)
+        setupUI()
+    }
+
+    private fun setupUI() {
+        binding.newsFeedRecycleView.itemAnimator = DefaultItemAnimator()
+        binding.newsFeedRecycleView.layoutManager = LinearLayoutManager(this)
         presenter.init(
             intent.getBooleanExtra("showPopUp", false),
             intent.getIntExtra("popUp", -1)
         )
+        binding.actionLabel.setOnClickListener {
+            val action = binding.actionLabel.getTag(R.id.action_label)
+            if (action is NewsfeedAction) {
+                presenter.onActionClick(action)
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -71,22 +68,14 @@ class NewsFeedActivity : BaseActivity(), NewsFeedView {
         super.onDestroy()
     }
 
-    @OnClick(R.id.action_label)
-    fun onActionClick() {
-        val action = actionLabel?.getTag(R.id.action_label)
-        if (action is NewsfeedAction) {
-            presenter.onActionClick(action)
-        }
-    }
-
     override fun setActionLabel(action: NewsfeedAction) {
-        actionLabel?.text = action.label
-        actionLabel?.setTag(R.id.action_label, action)
-        actionLabel?.visibility = View.VISIBLE
+        binding.actionLabel.text = action.label
+        binding.actionLabel.setTag(R.id.action_label, action)
+        binding.actionLabel.visibility = View.VISIBLE
     }
 
     override fun hideActionLabel() {
-        actionLabel?.visibility = View.GONE
+        binding.actionLabel.visibility = View.GONE
     }
 
     override fun setItemSelected(notificationId: Int) {
@@ -96,7 +85,7 @@ class NewsFeedActivity : BaseActivity(), NewsFeedView {
     override fun setNewsFeedAdapter(mAdapter: NewsFeedAdapter) {
         logger.info("Setting news feed adapter.")
         newsFeedAdapter = mAdapter
-        newsFeedRecyclerView?.adapter = mAdapter
+        binding.newsFeedRecycleView.adapter = mAdapter
     }
 
     override fun setNewsFeedContentText(contentText: String) {
@@ -110,7 +99,7 @@ class NewsFeedActivity : BaseActivity(), NewsFeedView {
         for (span in spans) {
             spannable.removeSpan(span)
         }
-        newsFeedContentTextView?.text = spannable
+        binding.newsFeedContentTextView.text = spannable
     }
 
     override fun showLoadingError(errorMessage: String) {

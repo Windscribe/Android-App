@@ -9,26 +9,21 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.windscribe.tv.R
+import com.windscribe.tv.databinding.FragmentProgressBinding
 
 class ProgressFragment : Fragment() {
-    @JvmField
-    @BindView(R.id.progressLabel)
-    var progressLabel: TextView? = null
     private var progressText = ""
+    private lateinit var binding: FragmentProgressBinding
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_progress, container, false)
-        ButterKnife.bind(this, view)
-        return view
+    ): View {
+        binding = FragmentProgressBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -63,15 +58,9 @@ class ProgressFragment : Fragment() {
         add(activity, container, addToBackStack)
     }
 
-    fun finishProgress() {
-        requireActivity().supportFragmentManager.popBackStack()
-    }
-
     fun updateProgressStatus(call: String) {
-        if (progressLabel != null) {
-            progressText = call
-            progressLabel?.text = progressText
-        }
+        progressText = call
+        binding.progressLabel.text = progressText
     }
 
     companion object {

@@ -36,6 +36,11 @@ abstract class BaseActivity : AppCompatActivity() {
         ButterKnife.bind(this)
     }
 
+    protected fun onActivityLaunch() {
+        coldLoad.set(true)
+        updateLanguage()
+    }
+
     protected fun updateLanguage() {
         val newLocale = appContext.getSavedLocale()
         Locale.setDefault(newLocale)

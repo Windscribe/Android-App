@@ -12,19 +12,19 @@ import android.os.Bundle
 import android.transition.Slide
 import android.view.Gravity
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GravityCompat
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
-import butterknife.BindView
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.customview.ErrorFragment
 import com.windscribe.tv.customview.ProgressFragment
+import com.windscribe.tv.databinding.ActivityWelcomeBinding
 import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.email.AddEmailActivity
 import com.windscribe.tv.welcome.fragment.ForgotPasswordFragment
@@ -45,17 +45,17 @@ class WelcomeActivity :
     FragmentCallback,
     WelcomeView,
     FragmentManager.OnBackStackChangedListener {
-    @JvmField
-    @BindView(R.id.image)
-    var backgroundImageView: ImageView? = null
 
     @Inject
     lateinit var presenter: WelcomePresenter
 
+    private lateinit var binding: ActivityWelcomeBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
-        setContentLayout(R.layout.activity_welcome)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_welcome)
+        onActivityLaunch()
         registerFragmentChangeListener()
         addStartFragment()
     }
@@ -152,8 +152,7 @@ class WelcomeActivity :
     override fun onBackStackChanged() {
         val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
         if (fragment != null) {
-            backgroundImageView?.alpha =
-                if (fragment is LoginFragment) 0.5f else 1.0f
+            binding.image.alpha = if (fragment is LoginFragment) 0.5f else 1.0f
         }
     }
 
@@ -320,9 +319,9 @@ class WelcomeActivity :
     private fun permissionGranted(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             (
-                checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED
-                )
+                    checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            == PackageManager.PERMISSION_GRANTED
+                    )
         } else {
             true
         }

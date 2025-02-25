@@ -6,27 +6,25 @@ package com.windscribe.tv.serverlist.overlay
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.res.ResourcesCompat
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.transition.AutoTransition
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
-import butterknife.BindView
 import butterknife.OnClick
 import butterknife.OnFocusChange
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
+import com.windscribe.tv.databinding.ActivityOverlayBinding
 import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.disconnectalert.DisconnectActivity.Companion.getIntent
 import com.windscribe.tv.serverlist.adapters.FavouriteAdapter
 import com.windscribe.tv.serverlist.adapters.ServerAdapter
 import com.windscribe.tv.serverlist.adapters.StaticIpAdapter
-import com.windscribe.tv.serverlist.customviews.OverlayFocusAware
 import com.windscribe.tv.serverlist.detail.DetailActivity
 import com.windscribe.tv.serverlist.fragments.AllOverlayFragment
 import com.windscribe.tv.serverlist.fragments.FavouriteFragment
@@ -39,91 +37,11 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
-    @JvmField
-    @BindView(R.id.BrowseRow)
-    var fragmentContainer: ConstraintLayout? = null
-
-    // header
-    @JvmField
-    @BindView(R.id.header_item_all)
-    var headerAll: ConstraintLayout? = null
-
-    @JvmField
-    @BindView(R.id.header_item_all_bar)
-    var headerAllItemBar: ImageView? = null
-
-    @JvmField
-    @BindView(R.id.header_item_all_icon)
-    var headerAllItemIcon: ImageView? = null
-
-    @JvmField
-    @BindView(R.id.header_item_all_text)
-    var headerAllItemText: TextView? = null
-
-    @JvmField
-    @BindView(R.id.header_item_fav)
-    var headerFav: ConstraintLayout? = null
-
-    @JvmField
-    @BindView(R.id.header_item_fav_bar)
-    var headerFavItemBar: ImageView? = null
-
-    @JvmField
-    @BindView(R.id.header_item_fav_icon)
-    var headerFavItemIcon: ImageView? = null
-
-    @JvmField
-    @BindView(R.id.header_item_fav_text)
-    var headerFavItemText: TextView? = null
-
-    @JvmField
-    @BindView(R.id.headerRow)
-    var headerRow: ConstraintLayout? = null
-
-    @JvmField
-    @BindView(R.id.header_item_static)
-    var headerStatic: ConstraintLayout? = null
-
-    @JvmField
-    @BindView(R.id.header_item_static_bar)
-    var headerStaticItemBar: ImageView? = null
-
-    @JvmField
-    @BindView(R.id.header_item_static_icon)
-    var headerStaticItemIcon: ImageView? = null
-
-    @JvmField
-    @BindView(R.id.header_item_static_text)
-    var headerStaticItemText: TextView? = null
-
-    @JvmField
-    @BindView(R.id.header_item_wind)
-    var headerWind: ConstraintLayout? = null
-
-    @JvmField
-    @BindView(R.id.header_item_wind_bar)
-    var headerWindItemBar: ImageView? = null
-
-    @JvmField
-    @BindView(R.id.header_item_wind_icon)
-    var headerWindItemIcon: ImageView? = null
-
-    @JvmField
-    @BindView(R.id.header_item_wind_text)
-    var headerWindItemText: TextView? = null
-
-    @Inject
-    lateinit var mPreferenceChangeObserver: PreferenceChangeObserver
-
-    @JvmField
-    @BindView(R.id.overlayParent)
-    var overlayParent: OverlayFocusAware? = null
+    private lateinit var binding: ActivityOverlayBinding
 
     @Inject
     lateinit var presenter: OverlayPresenter
-
     private val requestDetailCode = 901
-    private val firstTimeServerListLoad = true
     private var isHeaderOpen = false
     private var maxHeader: ConstraintSet? = null
     private var minHeader: ConstraintSet? = null
@@ -131,12 +49,58 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
-        setContentLayout(R.layout.activity_overlay)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_overlay)
+        onActivityLaunch()
         setConstraints()
         supportFragmentManager.beginTransaction()
             .replace(R.id.BrowseRow, AllOverlayFragment(), "1")
             .commit()
         registerDataChangeObservers()
+        addClickListeners()
+        addFocusListeners()
+    }
+
+    private fun addClickListeners() {
+        binding.headerItemAll.setOnClickListener {
+            onHeaderClick(
+                0,
+                AllOverlayFragment::class.java,
+                binding.headerItemAllBar,
+                binding.headerItemAllIcon,
+                binding.headerItemAllText
+            )
+            onAllNodeClick()
+        }
+        binding.headerItemFav.setOnClickListener {
+            onHeaderClick(
+                1,
+                FavouriteFragment::class.java,
+                binding.headerItemFavBar,
+                binding.headerItemFavIcon,
+                binding.headerItemFavText
+            )
+            onFavNodeClick()
+        }
+        binding.headerItemWind.setOnClickListener {
+            onHeaderClick(
+                2,
+                WindOverlayFragment::class.java,
+                binding.headerItemWindBar,
+                binding.headerItemWindIcon,
+                binding.headerItemWindText
+            )
+            onWindNodeClick()
+        }
+        binding.headerItemStatic.setOnClickListener {
+            onHeaderClick(
+                3,
+                StaticIpFragment::class.java,
+                binding.headerItemStaticBar,
+                binding.headerItemStaticIcon,
+                binding.headerItemStaticText
+            )
+            onStaticClick()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -153,19 +117,16 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         super.onDestroy()
     }
 
-    @OnClick(R.id.header_item_all)
-    fun onAllNodeClick() {
+    private fun onAllNodeClick() {
         if (currentFragment is AllOverlayFragment) {
             return
         }
         val fragment = AllOverlayFragment()
-        overlayParent?.let {
-            TransitionManager.beginDelayedTransition(it, Slide())
-            val transaction = supportFragmentManager.beginTransaction()
-            transaction.replace(R.id.BrowseRow, fragment, "1")
-            transaction.commit()
-            supportFragmentManager.executePendingTransactions()
-        }
+        TransitionManager.beginDelayedTransition(binding.overlayParent, Slide())
+        val transaction = supportFragmentManager.beginTransaction()
+        transaction.replace(R.id.BrowseRow, fragment, "1")
+        transaction.commit()
+        supportFragmentManager.executePendingTransactions()
     }
 
     override suspend fun onAllOverlayViewReady() {
@@ -190,19 +151,16 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         finish()
     }
 
-    @OnClick(R.id.header_item_fav)
-    fun onFavNodeClick() {
+    private fun onFavNodeClick() {
         if (currentFragment is FavouriteFragment) {
             return
         }
-        overlayParent?.let {
-            val fragment = FavouriteFragment()
-            TransitionManager.beginDelayedTransition(it, Slide())
-            val transaction = supportFragmentManager.beginTransaction()
-            transaction.replace(R.id.BrowseRow, fragment, "2")
-            transaction.commit()
-            supportFragmentManager.executePendingTransactions()
-        }
+        val fragment = FavouriteFragment()
+        TransitionManager.beginDelayedTransition(binding.overlayParent, Slide())
+        val transaction = supportFragmentManager.beginTransaction()
+        transaction.replace(R.id.BrowseRow, fragment, "2")
+        transaction.commit()
+        supportFragmentManager.executePendingTransactions()
     }
 
     override fun onFavouriteOverlayReady() {
@@ -228,19 +186,16 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         startActivity(startIntent)
     }
 
-    @OnClick(R.id.header_item_static)
-    fun onStaticClick() {
+    private fun onStaticClick() {
         if (currentFragment is StaticIpFragment) {
             return
         }
-        overlayParent?.let {
-            val fragment = StaticIpFragment()
-            TransitionManager.beginDelayedTransition(it, Slide())
-            val transaction = supportFragmentManager.beginTransaction()
-            transaction.replace(R.id.BrowseRow, fragment, "4")
-            transaction.commit()
-            supportFragmentManager.executePendingTransactions()
-        }
+        val fragment = StaticIpFragment()
+        TransitionManager.beginDelayedTransition(binding.overlayParent, Slide())
+        val transaction = supportFragmentManager.beginTransaction()
+        transaction.replace(R.id.BrowseRow, fragment, "4")
+        transaction.commit()
+        supportFragmentManager.executePendingTransactions()
     }
 
     override fun onStaticOverlayReady() {
@@ -258,19 +213,16 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         startActivity(startIntent)
     }
 
-    @OnClick(R.id.header_item_wind)
-    fun onWindNodeClick() {
+    private fun onWindNodeClick() {
         if (currentFragment is WindOverlayFragment) {
             return
         }
-        overlayParent?.let {
-            val fragment = WindOverlayFragment()
-            TransitionManager.beginDelayedTransition(it, Slide())
-            val transaction = supportFragmentManager.beginTransaction()
-            transaction.replace(R.id.BrowseRow, fragment, "3")
-            transaction.commit()
-            supportFragmentManager.executePendingTransactions()
-        }
+        val fragment = WindOverlayFragment()
+        TransitionManager.beginDelayedTransition(binding.overlayParent, Slide())
+        val transaction = supportFragmentManager.beginTransaction()
+        transaction.replace(R.id.BrowseRow, fragment, "3")
+        transaction.commit()
+        supportFragmentManager.executePendingTransactions()
     }
 
     override suspend fun onWindOverlayReady() {
@@ -289,7 +241,12 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         }
     }
 
-    override fun setState(state: LoadState, stateDrawable: Int, stateText: Int, fragmentIndex: Int) {
+    override fun setState(
+        state: LoadState,
+        stateDrawable: Int,
+        stateText: Int,
+        fragmentIndex: Int
+    ) {
         currentFragment?.let { fragment ->
             fragment.tag?.let { tag ->
                 if (tag == fragmentIndex.toString()) {
@@ -329,10 +286,8 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
 
     private fun maximizeHeader() {
         isHeaderOpen = true
-        overlayParent?.let {
-            TransitionManager.beginDelayedTransition(it)
-            maxHeader?.applyTo(overlayParent)
-        }
+        TransitionManager.beginDelayedTransition(binding.overlayParent)
+        maxHeader?.applyTo(binding.overlayParent)
     }
 
     private fun minimizeHeader() {
@@ -342,138 +297,64 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         autoTransition.excludeTarget(R.id.header_item_fav_text, true)
         autoTransition.excludeTarget(R.id.header_item_wind_text, true)
         autoTransition.excludeTarget(R.id.header_item_static_text, true)
-        overlayParent?.let {
-            TransitionManager.beginDelayedTransition(it, autoTransition)
-            minHeader?.applyTo(overlayParent)
-        }
+        TransitionManager.beginDelayedTransition(binding.overlayParent, autoTransition)
+        minHeader?.applyTo(binding.overlayParent)
     }
 
-    @OnFocusChange(R.id.header_item_all)
-    fun onFocusToAll() {
-        headerAll?.let {
-            if (it.hasFocus() && !isHeaderOpen) {
+    private fun addFocusListeners() {
+        val focusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
+            if (hasFocus && !isHeaderOpen) {
                 maximizeHeader()
-            }
-            if (!it.hasFocus() && isHeaderOpen) {
+            } else if (!hasFocus && isHeaderOpen) {
                 minimizeHeader()
             }
         }
-    }
-
-    @OnFocusChange(R.id.header_item_fav)
-    fun onFocusToFav() {
-        headerFav?.let {
-            if (it.hasFocus() && !isHeaderOpen) {
-                maximizeHeader()
-            }
-            if (!it.hasFocus() && isHeaderOpen) {
-                minimizeHeader()
-            }
+        with(binding) {
+            headerItemAll.onFocusChangeListener = focusChangeListener
+            headerItemFav.onFocusChangeListener = focusChangeListener
+            headerItemWind.onFocusChangeListener = focusChangeListener
+            headerItemStatic.onFocusChangeListener = focusChangeListener
         }
     }
 
-    @OnFocusChange(R.id.header_item_static)
-    fun onFocusToStatic() {
-        headerStatic?.let {
-            if (it.hasFocus() && !isHeaderOpen) {
-                maximizeHeader()
-            }
-            if (!it.hasFocus() && isHeaderOpen) {
-                minimizeHeader()
-            }
-        }
-    }
-
-    @OnFocusChange(R.id.header_item_wind)
-    fun onFocusToWind() {
-        headerWind?.let {
-            if (it.hasFocus() && !isHeaderOpen) {
-                maximizeHeader()
-            }
-            if (!it.hasFocus() && isHeaderOpen) {
-                minimizeHeader()
-            }
-        }
-    }
-
-    @OnClick(R.id.header_item_all)
-    fun onHeaderAllClick() {
-        overlayParent?.setCurrentFragment(0)
-        if (currentFragment is AllOverlayFragment) {
+    private fun onHeaderClick(
+        fragmentIndex: Int,
+        fragmentClass: Class<*>,
+        selectedBar: View,
+        selectedIcon: View,
+        selectedText: View
+    ) {
+        binding.overlayParent.setCurrentFragment(fragmentIndex)
+        if (fragmentClass.isInstance(currentFragment)) {
             return
         }
-        headerAllItemBar?.visibility = View.VISIBLE
-        headerFavItemBar?.visibility = View.INVISIBLE
-        headerWindItemBar?.visibility = View.INVISIBLE
-        headerStaticItemBar?.visibility = View.INVISIBLE
-        headerAllItemIcon?.alpha = 1.0f
-        headerFavItemIcon?.alpha = 0.40f
-        headerWindItemIcon?.alpha = 0.40f
-        headerStaticItemIcon?.alpha = 0.40f
-        headerAllItemText?.alpha = 1.0f
-        headerFavItemText?.alpha = 0.40f
-        headerWindItemText?.alpha = 0.40f
-        headerStaticItemText?.alpha = 0.40f
-    }
 
-    @OnClick(R.id.header_item_fav)
-    fun onHeaderFavClick() {
-        overlayParent?.setCurrentFragment(1)
-        if (currentFragment is FavouriteFragment) {
-            return
-        }
-        headerFavItemBar?.visibility = View.VISIBLE
-        headerWindItemBar?.visibility = View.INVISIBLE
-        headerStaticItemBar?.visibility = View.INVISIBLE
-        headerAllItemBar?.visibility = View.INVISIBLE
-        headerAllItemIcon?.alpha = 0.40f
-        headerFavItemIcon?.alpha = 1.0f
-        headerWindItemIcon?.alpha = 0.40f
-        headerStaticItemIcon?.alpha = 0.40f
-        headerAllItemText?.alpha = 0.40f
-        headerFavItemText?.alpha = 1.0f
-        headerWindItemText?.alpha = 0.40f
-        headerStaticItemText?.alpha = 0.40f
-    }
+        // Update visibility for bars
+        listOf(
+            binding.headerItemAllBar,
+            binding.headerItemFavBar,
+            binding.headerItemWindBar,
+            binding.headerItemStaticBar
+        ).forEach { it.visibility = View.INVISIBLE }
+        selectedBar.visibility = View.VISIBLE
 
-    @OnClick(R.id.header_item_static)
-    fun onHeaderStaticClick() {
-        overlayParent?.setCurrentFragment(3)
-        if (currentFragment is StaticIpFragment) {
-            return
-        }
-        headerAllItemBar?.visibility = View.INVISIBLE
-        headerFavItemBar?.visibility = View.INVISIBLE
-        headerWindItemBar?.visibility = View.INVISIBLE
-        headerStaticItemBar?.visibility = View.VISIBLE
-        headerAllItemIcon?.alpha = 0.40f
-        headerFavItemIcon?.alpha = 0.40f
-        headerWindItemIcon?.alpha = 0.40f
-        headerStaticItemIcon?.alpha = 1.0f
-        headerAllItemText?.alpha = 0.40f
-        headerFavItemText?.alpha = 0.40f
-        headerWindItemText?.alpha = 0.40f
-        headerStaticItemText?.alpha = 1.0f
-    }
+        // Update alpha for icons
+        listOf(
+            binding.headerItemAllIcon,
+            binding.headerItemFavIcon,
+            binding.headerItemWindIcon,
+            binding.headerItemStaticIcon
+        ).forEach { it.alpha = 0.40f }
+        selectedIcon.alpha = 1.0f
 
-    @OnClick(R.id.header_item_wind)
-    fun onHeaderWindClick() {
-        overlayParent?.setCurrentFragment(2)
-        if (currentFragment is WindOverlayFragment) {
-            return
-        }
-        headerFavItemBar?.visibility = View.INVISIBLE
-        headerWindItemBar?.visibility = View.VISIBLE
-        headerStaticItemBar?.visibility = View.INVISIBLE
-        headerAllItemBar?.visibility = View.INVISIBLE
-        headerAllItemIcon?.alpha = 0.40f
-        headerFavItemIcon?.alpha = 0.40f
-        headerWindItemIcon?.alpha = 1.0f
-        headerStaticItemIcon?.alpha = 0.40f
-        headerAllItemText?.alpha = 0.40f
-        headerFavItemText?.alpha = 0.40f
-        headerWindItemText?.alpha = 1.0f
-        headerStaticItemText?.alpha = 0.40f
+        // Update alpha for text
+        listOf(
+            binding.headerItemAllText,
+            binding.headerItemFavText,
+            binding.headerItemWindText,
+            binding.headerItemStaticText
+        ).forEach { it.alpha = 0.40f }
+        selectedText.alpha = 1.0f
     }
 
     private val currentFragment: Fragment?

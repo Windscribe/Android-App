@@ -3,52 +3,37 @@
  */
 package com.windscribe.tv.welcome.fragment
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
-import butterknife.OnFocusChange
 import com.windscribe.tv.R
+import com.windscribe.tv.databinding.ForgotPasswordBinding
 
 class ForgotPasswordFragment : Fragment() {
-    @JvmField
-    @SuppressLint("NonConstantResourceId")
-    @BindView(R.id.back)
-    var backButton: TextView? = null
+    private lateinit var binding: ForgotPasswordBinding
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.forgot_password, container, false)
-        ButterKnife.bind(this, view)
-        return view
+    ): View {
+        binding = ForgotPasswordBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        backButton?.requestFocus()
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnClick(R.id.back)
-    fun onBackButtonClicked() {
-        requireActivity().onBackPressed()
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnFocusChange(R.id.back)
-    fun onFocusChangeToBackButton() {
-        if (backButton?.hasFocus() == true) {
-            backButton?.setTextColor(resources.getColor(R.color.colorWhite))
-        } else {
-            backButton?.setTextColor(resources.getColor(R.color.colorWhite50))
+        binding.back.requestFocus()
+        binding.back.setOnClickListener {
+            requireActivity().onBackPressed()
+        }
+        binding.back.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                binding.back.setTextColor(resources.getColor(R.color.colorWhite))
+            } else {
+                binding.back.setTextColor(resources.getColor(R.color.colorWhite50))
+            }
         }
     }
 }

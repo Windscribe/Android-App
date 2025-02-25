@@ -1,95 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2021 Windscribe Limited.
   -->
+<layout>
 
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorDeepBlue96"
-    tools:context="com.windscribe.tv.news.NewsFeedActivity">
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorDeepBlue96"
+        tools:context="com.windscribe.tv.news.NewsFeedActivity">
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline50"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent=".50" />
-
-    <TextView
-        android:id="@+id/overlayTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/reg_24dp"
-        android:fontFamily="@font/ibm_plex_sans_bold"
-        android:text="@string/notifications"
-        android:textColor="@color/colorWhite25"
-        android:textSize="@dimen/text_size_48"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/newsFeedRecycleView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="@dimen/reg_24dp"
-        android:layout_marginBottom="@dimen/reg_24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/guideline50"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/overlayTitle" />
-
-    <androidx.appcompat.widget.LinearLayoutCompat
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toEndOf="@id/guideline50"
-        app:layout_constraintTop_toBottomOf="@id/overlayTitle"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:orientation="vertical"
-        android:layout_marginStart="@dimen/reg_48dp"
-        android:layout_marginEnd="@dimen/reg_24dp"
-        >
-
-        <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/newsFeedContentTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="start"
-            android:layout_marginTop="@dimen/reg_24dp"
-            android:fontFamily="@font/ibm_plex_sans_regular"
-            android:textColor="@color/colorWhite"
-            android:textSize="@dimen/text_size_21"
-            app:layout_constraintStart_toStartOf="@id/guideline50"
-            app:layout_constraintTop_toBottomOf="@id/overlayTitle"
-            app:layout_constraintEnd_toEndOf="parent"
-            />
-
-
-        <TextView
-            android:id="@+id/action_label"
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline50"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_16"
-            android:background="@drawable/promo_action_button_background"
-            android:focusable="true"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent=".50" />
+
+        <TextView
+            android:id="@+id/overlayTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/reg_24dp"
             android:fontFamily="@font/ibm_plex_sans_bold"
-            android:gravity="center"
-            android:includeFontPadding="false"
-            android:paddingStart="98dp"
-            android:paddingTop="@dimen/padding_16"
-            android:paddingEnd="98dp"
-            android:paddingBottom="@dimen/padding_16"
-            android:textColor="@color/colorWhite"
-            android:textSize="@dimen/text_size_18"
-            android:textStyle="bold"
-            android:visibility="invisible"
-            app:layout_constraintStart_toStartOf="@id/newsFeedContentTextView"
-            app:layout_constraintTop_toBottomOf="@id/newsFeedContentTextView" />
+            android:text="@string/notifications"
+            android:textColor="@color/colorWhite25"
+            android:textSize="@dimen/text_size_48"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    </androidx.appcompat.widget.LinearLayoutCompat>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/newsFeedRecycleView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:layout_marginBottom="@dimen/reg_24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/guideline50"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/overlayTitle" />
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_48dp"
+            android:layout_marginEnd="@dimen/reg_24dp"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/guideline50"
+            app:layout_constraintTop_toBottomOf="@id/overlayTitle">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/newsFeedContentTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/reg_24dp"
+                android:fontFamily="@font/ibm_plex_sans_regular"
+                android:gravity="start"
+                android:textColor="@color/colorWhite"
+                android:textSize="@dimen/text_size_21"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/guideline50"
+                app:layout_constraintTop_toBottomOf="@id/overlayTitle" />
 
 
+            <TextView
+                android:id="@+id/action_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_16"
+                android:background="@drawable/promo_action_button_background"
+                android:focusable="true"
+                android:fontFamily="@font/ibm_plex_sans_bold"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:paddingStart="98dp"
+                android:paddingTop="@dimen/padding_16"
+                android:paddingEnd="98dp"
+                android:paddingBottom="@dimen/padding_16"
+                android:textColor="@color/colorWhite"
+                android:textSize="@dimen/text_size_18"
+                android:textStyle="bold"
+                android:visibility="invisible"
+                app:layout_constraintStart_toStartOf="@id/newsFeedContentTextView"
+                app:layout_constraintTop_toBottomOf="@id/newsFeedContentTextView" />
 
+        </androidx.appcompat.widget.LinearLayoutCompat>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

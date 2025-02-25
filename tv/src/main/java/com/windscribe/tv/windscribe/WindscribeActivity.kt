@@ -17,26 +17,21 @@ import android.os.Bundle
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.ImageView
-import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
-import butterknife.BindView
-import butterknife.OnClick
-import butterknife.OnFocusChange
+import androidx.databinding.DataBindingUtil
 import com.bumptech.glide.Glide
 import com.windscribe.tv.R
 import com.windscribe.tv.R.*
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.customview.ErrorPrimaryFragment
+import com.windscribe.tv.databinding.ActivityWindscribeBinding
 import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.news.NewsFeedActivity
 import com.windscribe.tv.rate.RateMyAppActivity
 import com.windscribe.tv.serverlist.adapters.ServerAdapter
-import com.windscribe.tv.serverlist.customviews.AutoFitRecyclerView
 import com.windscribe.tv.serverlist.customviews.FocusAwareConstraintLayout
-import com.windscribe.tv.serverlist.customviews.HomeUpgradeButton
 import com.windscribe.tv.serverlist.overlay.OverlayActivity
 import com.windscribe.tv.settings.SettingActivity
 import com.windscribe.tv.support.HelpActivity
@@ -72,119 +67,26 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     lateinit var vpnConnectionStateManager: VPNConnectionStateManager
 
     @JvmField
-    @BindView(id.btn_help)
-    var btnHelp: ImageView? = null
-
-    @JvmField
-    @BindView(id.btn_notifications)
-    var btnNotifications: ImageView? = null
-
-    @JvmField
-    @BindView(id.btn_settings)
-    var btnSettings: ImageView? = null
-
-    @JvmField
-    @BindView(id.upgrade_parent)
-    var btnUpgrade: HomeUpgradeButton? = null
-
-    @JvmField
-    @BindView(id.vpn)
-    var btnVpn: ImageView? = null
-
-    @JvmField
-    @BindView(id.city_name)
-    var cityNameLabel: TextView? = null
-
-    @JvmField
-    @BindView(id.connectGlow)
-    var connectGlow: ImageView? = null
-
-    @JvmField
-    @BindView(id.connection_progress_bar)
-    var connectionProgressBar: ProgressBar? = null
-
-    @JvmField
-    @BindView(id.connection_status)
-    var connectionStateLabel: TextView? = null
-
-    @JvmField
-    @BindView(id.data_left_label)
-    var dataLeftLabel: TextView? = null
-
-    @JvmField
-    @BindView(id.img_connected)
-    var imgConnected: ImageView? = null
-
-    @JvmField
-    @BindView(id.ip_address_label)
-    var ipAddressLabel: TextView? = null
-
-    @JvmField
     @Inject
     var rgbEvaluator: ArgbEvaluator? = null
 
-    @JvmField
-    @BindView(id.protocol_divider_view)
-    var protocolDividerView: ImageView? = null
-
-    @JvmField
-    @BindView(id.protocol_text)
-    var protocolText: TextView? = null
-
-    @JvmField
-    @BindView(id.port_text)
-    var portText: TextView? = null
-
-    @JvmField
-    @BindView(id.img_flag_gradient_top)
-    var flagGradientTop: ImageView? = null
-
-    @JvmField
-    @BindView(id.flag_alpha)
-    var flagView: ImageView? = null
-
-    @JvmField
-    @BindView(id.lockIcon)
-    var lockIcon: ImageView? = null
-
-    @JvmField
-    @BindView(id.cl_windscribe_main)
-    var mainParentLayout: FocusAwareConstraintLayout? = null
-
-    @JvmField
-    @BindView(id.node_name)
-    var nodeNameLabel: TextView? = null
-
-    @JvmField
-    @BindView(id.partialOverlay)
-    var partialView: AutoFitRecyclerView? = null
-
-    @JvmField
-    @BindView(id.progressBar)
-    var progressView: ProgressBar? = null
-
-    @JvmField
-    @BindView(id.upgrade_label)
-    var upgradeLabel: TextView? = null
-
-    @JvmField
-    @BindView(id.vpnButtonWrapper)
-    var vpnButtonWrapper: ConstraintLayout? = null
+    private lateinit var binding: ActivityWindscribeBinding
 
     private var connectedAnimator: ValueAnimator? = null
     private var connectingAnimator: ValueAnimator? = null
     private var icon = 0
     private val mainLogger = LoggerFactory.getLogger(TAG)
-    private val serverListLoadedFirstTime = true
     private var state = 0
     private val overlayStartRequestCode = 101
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
-        setContentLayout(R.layout.activity_windscribe)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_windscribe)
+        onActivityLaunch()
         setViews()
         registerDataChangeObserver()
+        addClickListeners()
     }
 
     // Life cycle
@@ -290,39 +192,54 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     }
 
     override fun setProtocolAndPortInfo(protocol: String, port: String, disconnected: Boolean) {
-       runOnUiThread {
-           protocolText?.text = protocol
-           portText?.text = port
-       }
+        runOnUiThread {
+            binding.protocolText.text = protocol
+            binding.portText.text = port
+        }
     }
 
     private fun setConnectionStateText(status: VPNState.Status) {
         runOnUiThread {
-            when(status) {
+            when (status) {
                 Connecting -> {
-                    connectionStateLabel?.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_connecting_status_bg, theme)
-                    connectionStateLabel?.text = getString(R.string.ON)
-                    connectionStateLabel?.setTextColor(resources.getColor(R.color.colorLightBlue))
-                    protocolDividerView?.setBackgroundColor(resources.getColor(R.color.colorWhite20))
-                    protocolText?.setTextColor(resources.getColor(R.color.colorLightBlue))
-                    portText?.setTextColor(resources.getColor(R.color.colorLightBlue))
+                    binding.connectionStatus.background = ResourcesCompat.getDrawable(
+                        resources,
+                        R.drawable.ic_connecting_status_bg,
+                        theme
+                    )
+                    binding.connectionStatus.text = getString(R.string.ON)
+                    binding.connectionStatus.setTextColor(resources.getColor(R.color.colorLightBlue))
+                    binding.protocolDividerView.setBackgroundColor(resources.getColor(R.color.colorWhite20))
+                    binding.protocolText.setTextColor(resources.getColor(R.color.colorLightBlue))
+                    binding.portText.setTextColor(resources.getColor(R.color.colorLightBlue))
                 }
+
                 Connected -> {
-                    connectionStateLabel?.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_connected_status_bg, theme)
-                    connectionStateLabel?.text = getString(R.string.ON)
-                    connectionStateLabel?.setTextColor(resources.getColor(R.color.sea_green))
-                    protocolDividerView?.setBackgroundColor(resources.getColor(R.color.colorWhite20))
-                    protocolText?.setTextColor(resources.getColor(R.color.sea_green))
-                    portText?.setTextColor(resources.getColor(R.color.sea_green))
+                    binding.connectionStatus.background = ResourcesCompat.getDrawable(
+                        resources,
+                        R.drawable.ic_connected_status_bg,
+                        theme
+                    )
+                    binding.connectionStatus.text = getString(R.string.ON)
+                    binding.connectionStatus.setTextColor(resources.getColor(R.color.sea_green))
+                    binding.protocolDividerView.setBackgroundColor(resources.getColor(R.color.colorWhite20))
+                    binding.protocolText.setTextColor(resources.getColor(R.color.sea_green))
+                    binding.portText.setTextColor(resources.getColor(R.color.sea_green))
                 }
+
                 Disconnecting, Disconnected -> {
-                    connectionStateLabel?.background = ResourcesCompat.getDrawable(resources,R.drawable.ic_disconnected_status_bg, theme)
-                    connectionStateLabel?.text = getString(R.string.OFF)
-                    connectionStateLabel?.setTextColor(resources.getColor(R.color.colorWhite))
-                    protocolDividerView?.setBackgroundColor(resources.getColor(R.color.colorWhite20))
-                    protocolText?.setTextColor(resources.getColor(R.color.colorWhite50))
-                    portText?.setTextColor(resources.getColor(R.color.colorWhite50))
+                    binding.connectionStatus.background = ResourcesCompat.getDrawable(
+                        resources,
+                        R.drawable.ic_disconnected_status_bg,
+                        theme
+                    )
+                    binding.connectionStatus.text = getString(R.string.OFF)
+                    binding.connectionStatus.setTextColor(resources.getColor(R.color.colorWhite))
+                    binding.protocolDividerView.setBackgroundColor(resources.getColor(R.color.colorWhite20))
+                    binding.protocolText.setTextColor(resources.getColor(R.color.colorWhite50))
+                    binding.portText.setTextColor(resources.getColor(R.color.colorWhite50))
                 }
+
                 else -> {}
             }
         }
@@ -337,15 +254,15 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
 
     // Connect btn
     override fun setGlowVisibility(visibility: Int) {
-        runOnUiThread { connectGlow?.visibility = visibility }
+        runOnUiThread { binding.connectGlow.visibility = visibility }
     }
 
     override fun setIpAddress(ipAddress: String) {
-        ipAddressLabel?.text = ipAddress
+        binding.ipAddressLabel.text = ipAddress
     }
 
     override fun setPartialAdapter(serverAdapter: ServerAdapter) {
-        partialView?.adapter = serverAdapter
+        binding.partialOverlay.adapter = serverAdapter
     }
 
     override fun setState(state: Int) {
@@ -354,7 +271,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
 
     override fun setVpnButtonState() {
         runOnUiThread {
-            btnVpn?.let {
+            binding.vpn.let {
                 if (state == 1 && it.rotation >= 0.0f && it.rotation < 180.0f) {
                     it.animate().rotation(180.0f).duration =
                         AnimConstants.BROWSE_WINDOW_ANIM_DURATION
@@ -385,8 +302,8 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         runOnUiThread {
             setGlowVisibility(View.GONE)
             setConnectionStateText(VPNState.Status.Connecting)
-            imgConnected?.visibility = View.GONE
-            connectionProgressBar?.visibility = View.VISIBLE
+            binding.imgConnected.visibility = View.GONE
+            binding.connectionProgressBar.visibility = View.VISIBLE
             state = 1
             setVpnButtonState()
         }
@@ -405,15 +322,15 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
                 }
             }
             setConnectionStateText(VPNState.Status.Disconnected)
-            btnVpn?.clearAnimation()
+            binding.vpn.clearAnimation()
             state = 0
             setVpnButtonState()
             setGlowVisibility(View.INVISIBLE)
-            lockIcon?.setImageResource(drawable.ic_ip_none_secure_icon)
-            imgConnected?.visibility = View.GONE
-            connectionProgressBar?.visibility = View.GONE
-            flagGradientTop?.clearColorFilter()
-            flagGradientTop?.clearAnimation()
+            binding.lockIcon.setImageResource(drawable.ic_ip_none_secure_icon)
+            binding.imgConnected.visibility = View.GONE
+            binding.connectionProgressBar.visibility = View.GONE
+            binding.imgFlagGradientTop.clearColorFilter()
+            binding.imgFlagGradientTop.clearAnimation()
         }
     }
 
@@ -426,13 +343,13 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     }
 
     override fun setupLayoutForFreeUser(dataLeft: String, color: Int) {
-        dataLeftLabel?.text = dataLeft
-        dataLeftLabel?.setTextColor(color)
-        btnUpgrade?.visibility = View.VISIBLE
+        binding.dataLeftLabel.text = dataLeft
+        binding.dataLeftLabel.setTextColor(color)
+        binding.upgradeParent.visibility = View.VISIBLE
     }
 
     override fun setupLayoutForProUser() {
-        btnUpgrade?.visibility = View.GONE
+        binding.upgradeParent.visibility = View.GONE
     }
 
     override fun showErrorDialog(error: String) {
@@ -441,17 +358,29 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
 
     override fun showPartialViewProgress(inProgress: Boolean) {
         if (inProgress) {
-            progressView?.visibility = View.VISIBLE
+            binding.progressBar.visibility = View.VISIBLE
         } else {
-            progressView?.visibility = View.GONE
+            binding.progressBar.visibility = View.GONE
         }
     }
 
     override fun showSplitViewIcon(show: Boolean) {
         if (show) {
-            imgConnected?.setImageDrawable(ResourcesCompat.getDrawable(resources, drawable.ic_connected_split_ring, theme))
+            binding.imgConnected.setImageDrawable(
+                ResourcesCompat.getDrawable(
+                    resources,
+                    drawable.ic_connected_split_ring,
+                    theme
+                )
+            )
         } else {
-            imgConnected?.setImageDrawable(ResourcesCompat.getDrawable(resources, drawable.ic_connected_ring, theme))
+            binding.imgConnected.setImageDrawable(
+                ResourcesCompat.getDrawable(
+                    resources,
+                    drawable.ic_connected_ring,
+                    theme
+                )
+            )
         }
     }
 
@@ -478,7 +407,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
             state = 1
             setVpnButtonState()
             setConnectionStateText(VPNState.Status.Connected)
-            lockIcon?.setImageResource(drawable.ic_ip_secure_icon)
+            binding.lockIcon.setImageResource(drawable.ic_ip_secure_icon)
             connectedAnimator = ValueAnimator.ofFloat(0f, 1f)
             connectedAnimator?.let { animator ->
                 animator.addUpdateListener {
@@ -487,14 +416,14 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
                         rgbEvaluator,
                         backgroundColorStart,
                         backgroundColorFinal,
-                        flagGradientTop
+                        binding.imgFlagGradientTop
                     )
                     setTextColor(
                         animator,
                         rgbEvaluator,
                         textColorStart,
                         textColorFinal,
-                        arrayOf(connectionStateLabel, portText, protocolText)
+                        arrayOf(binding.connectionStatus, binding.portText, binding.protocolText)
                     )
                 }
                 animator.addListener(object : AnimatorListener {
@@ -504,8 +433,8 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
 
                     override fun onAnimationEnd(animation: Animator) {
                         animator.removeAllListeners()
-                        connectionProgressBar?.visibility = View.GONE
-                        imgConnected?.visibility = View.VISIBLE
+                        binding.connectionProgressBar.visibility = View.GONE
+                        binding.imgConnected.visibility = View.VISIBLE
                         listenerState.onConnectedAnimationCompleted()
                         mainLogger.info("Ending connected animation.")
                     }
@@ -531,8 +460,8 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         runOnUiThread {
             state = 1
             setConnectionStateText(VPNState.Status.Connecting)
-            connectionProgressBar?.visibility = View.VISIBLE
-            flagView?.alpha = 0.5f
+            binding.connectionProgressBar.visibility = View.VISIBLE
+            binding.flagAlpha.alpha = 0.5f
             connectingAnimator = ValueAnimator.ofFloat(0f, 1f)
             connectingAnimator?.let { it ->
                 it.addUpdateListener {
@@ -541,14 +470,14 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
                         rgbEvaluator,
                         backgroundColorStart,
                         backgroundColorFinal,
-                        flagGradientTop
+                        binding.imgFlagGradientTop
                     )
                     setTextColor(
                         it,
                         rgbEvaluator,
                         textColorStart,
                         textColorFinal,
-                        arrayOf(connectionStateLabel, portText, protocolText)
+                        arrayOf(binding.connectionStatus, binding.portText, binding.protocolText)
                     )
                 }
                 it.addListener(object : AnimatorListener {
@@ -606,50 +535,23 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     }
 
     override fun updateLocationName(nodeName: String, nodeNickName: String) {
-        cityNameLabel?.text = nodeName
-        nodeNameLabel?.text = nodeNickName
+        binding.cityName.text = nodeName
+        binding.nodeName.text = nodeNickName
         mainLogger.info("Updating location name to:$nodeName")
     }
 
-    @OnClick(id.btn_help)
-    fun helpClick() {
-        startActivity(HelpActivity.getStartIntent(this))
-    }
-
-    @OnClick(id.btn_notifications)
-    fun notificationClick() {
-        openNewsFeedActivity(false, -1)
-        mainLogger.debug("News feed button clicked.")
-    }
-
     private fun onFadeIn() {
-        flagView?.let { it.animate().alpha(0.5f).setDuration(500).withEndAction {} }
+        binding.flagAlpha.let { it.animate().alpha(0.5f).setDuration(500).withEndAction {} }
     }
 
     private fun onFadeOut(flagIconResource: Int) {
-        flagView?.let {
+        binding.flagAlpha.let {
             it.animate().alpha(0.0f).setDuration(500).withEndAction { setFlag(flagIconResource) }
         }
     }
 
-    @OnClick(id.btn_settings)
-    fun onSettingClick() {
-        windscribePresenter.onMenuButtonClicked()
-    }
-
-    @OnFocusChange(id.vpn)
-    fun onVpnBtnFocus() {
-        btnVpn?.let {
-            if (it.hasFocus()) {
-                it.setImageResource(drawable.ic_on_button_off_focused)
-            } else {
-                it.setImageResource(drawable.ic_on_button_off)
-            }
-        }
-    }
-
     private fun setFlag(flagIconResource: Int) {
-        flagView?.let {
+        binding.flagAlpha.let {
             Glide.with(this@WindscribeActivity)
                 .load(ResourcesCompat.getDrawable(resources, flagIconResource, theme))
                 .dontAnimate()
@@ -658,16 +560,32 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         onFadeIn()
     }
 
-    @OnClick(id.upgrade_parent)
-    fun upGradeClick() {
-        openUpgradeActivity()
-        mainLogger.debug("Upgrade button clicked.")
-    }
-
-    @OnClick(id.vpn)
-    fun vpnClick() {
-        windscribePresenter.onConnectClicked()
-        mainLogger.debug("Connect button clicked.")
+    private fun addClickListeners() {
+        binding.upgradeParent.setOnClickListener {
+            openUpgradeActivity()
+            mainLogger.debug("Upgrade button clicked.")
+        }
+        binding.vpn.setOnClickListener {
+            windscribePresenter.onConnectClicked()
+            mainLogger.debug("Connect button clicked.")
+        }
+        binding.btnSettings.setOnClickListener {
+            windscribePresenter.onMenuButtonClicked()
+        }
+        binding.btnHelp.setOnClickListener {
+            startActivity(HelpActivity.getStartIntent(this))
+        }
+        binding.btnNotifications.setOnClickListener {
+            openNewsFeedActivity(false, -1)
+            mainLogger.debug("News feed button clicked.")
+        }
+        binding.vpn.setOnFocusChangeListener { _, _ ->
+            if (binding.vpn.hasFocus()) {
+                binding.vpn.setImageResource(R.drawable.ic_on_button_off_focused)
+            } else {
+                binding.vpn.setImageResource(drawable.ic_on_button_off)
+            }
+        }
     }
 
     private fun registerDataChangeObserver() {
@@ -680,7 +598,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     }
 
     private fun setFocusListener() {
-        mainParentLayout?.setListener(this)
+        binding.clWindscribeMain.setListener(this)
     }
 
     private fun setViews() {

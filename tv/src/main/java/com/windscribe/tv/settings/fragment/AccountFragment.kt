@@ -8,14 +8,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
 import com.windscribe.tv.R
+import com.windscribe.tv.databinding.FragmentAccountBinding
 import com.windscribe.tv.listeners.SettingsFragmentListener
 import com.windscribe.tv.settings.SettingActivity
 
@@ -24,45 +19,7 @@ class AccountFragment : Fragment() {
         NOT_ADDED, NOT_CONFIRMED, NOT_ADDED_PRO, CONFIRMED
     }
 
-    @JvmField
-    @BindView(R.id.confirmContainer)
-    var confirmContainer: ConstraintLayout? = null
-
-    @JvmField
-    @BindView(R.id.emailContainer)
-    var emailContainer: ConstraintLayout? = null
-
-    @JvmField
-    @BindView(R.id.email_underline_mask)
-    var emailTextView: TextView? = null
-
-    @JvmField
-    @BindView(R.id.expiryLabel)
-    var expiryLabel: TextView? = null
-
-    @JvmField
-    @BindView(R.id.plan)
-    var planCase: TextView? = null
-
-    @JvmField
-    @BindView(R.id.planLabel)
-    var planTextView: TextView? = null
-
-    @JvmField
-    @BindView(R.id.planContainer)
-    var playContainer: ConstraintLayout? = null
-
-    @JvmField
-    @BindView(R.id.proIcon)
-    var proIcon: ImageView? = null
-
-    @JvmField
-    @BindView(R.id.expiry)
-    var resetTextView: TextView? = null
-
-    @JvmField
-    @BindView(R.id.username)
-    var userNameTextView: TextView? = null
+    private lateinit var binding: FragmentAccountBinding
     private var listener: SettingsFragmentListener? = null
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -81,80 +38,76 @@ class AccountFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_account, container, false)
-        ButterKnife.bind(this, view)
-        return view
+    ): View {
+        binding = FragmentAccountBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         listener?.onFragmentReady(this)
+        binding.confirmContainer.setOnClickListener {
+            listener?.onEmailResend()
+        }
+        binding.emailContainer.setOnClickListener {
+            listener?.onEmailClick()
+        }
+        binding.planContainer.setOnClickListener {
+            val planText = binding.plan.text.toString()
+            listener?.onUpgradeClick(planText)
+        }
     }
 
     fun setEmail(email: String?) {
-        emailTextView?.text = email
+        binding.emailLabel.text = email
     }
 
     fun setEmailState(status: Status?, email: String?) {
         when (status) {
             Status.CONFIRMED -> {
-                emailTextView?.text = email
-                confirmContainer?.visibility = View.GONE
-                emailContainer?.isFocusable = false
+                binding.emailLabel.text = email
+                binding.confirmContainer.visibility = View.GONE
+                binding.emailContainer.isFocusable = false
             }
+
             Status.NOT_CONFIRMED -> {
-                emailTextView?.text = email
-                confirmContainer?.visibility = View.VISIBLE
-                emailContainer?.isFocusable = false
+                binding.emailLabel.text = email
+                binding.confirmContainer.visibility = View.VISIBLE
+                binding.emailContainer.isFocusable = false
             }
+
             Status.NOT_ADDED_PRO, Status.NOT_ADDED -> {
-                emailTextView?.setText(R.string.add_email_pro)
-                confirmContainer?.visibility = View.GONE
-                emailContainer?.isFocusable = true
+                binding.emailLabel.setText(R.string.add_email_pro)
+                binding.confirmContainer.visibility = View.GONE
+                binding.emailContainer.isFocusable = true
             }
+
             else -> {}
         }
     }
 
     fun setPlanName(planName: String?) {
-        planTextView?.text = planName
+        binding.planLabel.text = planName
     }
 
     fun setResetDate(resetDateLabel: String?, resetDate: String?) {
-        resetTextView?.text = resetDate
-        expiryLabel?.text = resetDateLabel
+        binding.expiry.text = resetDate
+        binding.expiryLabel.text = resetDateLabel
     }
 
     fun setUsername(username: String?) {
-        userNameTextView?.text = username
+        binding.usernameLabel.text = username
     }
 
     fun setupLayoutForFreeUser(upgradeText: String?) {
-        planCase?.text = upgradeText
-        proIcon?.visibility = View.GONE
-        playContainer?.isFocusable = true
+        binding.plan.text = upgradeText
+        binding.proIcon.visibility = View.GONE
+        binding.planContainer.isFocusable = true
     }
 
     fun setupLayoutForPremiumUser(upgradeText: String?) {
-        planCase?.text = upgradeText
-        proIcon?.visibility = View.VISIBLE
-        playContainer?.isFocusable = false
-    }
-
-    @OnClick(R.id.confirmContainer)
-    fun onConfirmClick() {
-        listener?.onEmailResend()
-    }
-
-    @OnClick(R.id.emailContainer)
-    fun onEmailClick() {
-        listener?.onEmailClick()
-    }
-
-    @OnClick(R.id.planContainer)
-    fun onPlanClick() {
-        val planText = planCase?.text.toString()
-        listener?.onUpgradeClick(planText)
+        binding.plan.text = upgradeText
+        binding.proIcon.visibility = View.VISIBLE
+        binding.planContainer.isFocusable = false
     }
 }

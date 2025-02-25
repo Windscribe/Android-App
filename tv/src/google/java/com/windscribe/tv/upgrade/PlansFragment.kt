@@ -17,12 +17,10 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.LinearLayoutCompat
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.get
 import androidx.fragment.app.Fragment
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.windscribe.tv.R
+import com.windscribe.tv.databinding.FragmentPlansBinding
 import com.windscribe.vpn.billing.AmazonProducts
 import com.windscribe.vpn.billing.BillingFragmentCallback
 import com.windscribe.vpn.billing.GoogleProducts
@@ -34,18 +32,8 @@ class PlansFragment : Fragment(), OnClickListener {
     private var isEmailConfirmed = false
     private var mBillingListener: BillingFragmentCallback? = null
     private var mWindscribeInAppProduct: WindscribeInAppProduct? = null
+    private lateinit var binding: FragmentPlansBinding
 
-    @JvmField
-    @BindView(R.id.planContainer)
-    var planContainer: LinearLayoutCompat? = null
-
-    @JvmField
-    @BindView(R.id.restorePurchase)
-    var restorePurchase: ConstraintLayout? = null
-
-    @JvmField
-    @BindView(R.id.promoSticker)
-    var promoSticker: TextView? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -59,10 +47,9 @@ class PlansFragment : Fragment(), OnClickListener {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_plans, container, false)
-        ButterKnife.bind(this, view)
-        return view
+    ): View {
+        binding = FragmentPlansBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     @SuppressLint("SetTextI18n")
@@ -101,23 +88,23 @@ class PlansFragment : Fragment(), OnClickListener {
                     priceView.setTextColor(resources.getColor(R.color.colorWhite48))
                 }
             }
-            planContainer?.addView(viewGroup)
+            binding.planContainer.addView(viewGroup)
             if (windscribeInAppProduct is AmazonProducts) {
-                restorePurchase?.visibility = View.VISIBLE
-                restorePurchase?.setOnClickListener {
+                binding.restorePurchase.visibility = View.VISIBLE
+                binding.restorePurchase.setOnClickListener {
                     mBillingListener?.onRestorePurchaseClick()
                 }
             }
         }
-        val firstView = planContainer?.get(0)
-        firstView?.requestFocus()
+        val firstView = binding.planContainer[0]
+        firstView.requestFocus()
     }
 
     @SuppressLint("SetTextI18n")
     private fun setPromoPlan(windscribeInAppProduct: WindscribeInAppProduct) {
         val it = windscribeInAppProduct.getSkus()[0]
-        promoSticker?.visibility = View.VISIBLE
-        promoSticker?.text = windscribeInAppProduct.getPromoStickerLabel(it)
+        binding.promoSticker.visibility = View.VISIBLE
+        binding.promoSticker.text = windscribeInAppProduct.getPromoStickerLabel(it)
         val viewGroup =
             layoutInflater.inflate(R.layout.promo_plan_button_layout, null) as LinearLayoutCompat
         val labelView = viewGroup.findViewById<TextView>(R.id.label)
@@ -137,7 +124,7 @@ class PlansFragment : Fragment(), OnClickListener {
                 priceView.setTextColor(resources.getColor(R.color.colorWhite48))
             }
         }
-        planContainer?.addView(viewGroup)
+        binding.planContainer.addView(viewGroup)
         planView.requestFocus()
 
         val backButton = viewGroup.findViewById(R.id.back) as TextView
@@ -192,11 +179,13 @@ class PlansFragment : Fragment(), OnClickListener {
                             (mWindscribeInAppProduct as GoogleProducts).getSkuDetails(viewTag)
                         mBillingListener?.onContinuePlanClick(skuDetails, 0)
                     }
+
                     is AmazonProducts -> {
                         val product =
                             (mWindscribeInAppProduct as AmazonProducts).getProduct(viewTag)
                         mBillingListener?.onContinuePlanClick(product)
                     }
+
                     else -> {}
                 }
             }
