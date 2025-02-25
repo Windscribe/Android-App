@@ -18,7 +18,6 @@ class NoEmailAttentionFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_no_email_attention, container, false)
-        ButterKnife.bind(this, view)
         return view
     }
 }

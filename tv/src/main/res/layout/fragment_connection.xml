@@ -1,344 +1,345 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2021 Windscribe Limited.
   -->
+<layout>
 
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/connectionParent"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/reg_24dp"
-    android:background="@color/colorDeepBlue"
-    app:layout_constraintBottom_toBottomOf="parent">
-
-    <TextView
-        android:id="@+id/title"
-        style="@style/preference_item_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/connection_mode"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-
-    <com.windscribe.tv.serverlist.customviews.PreferenceItem
-        android:id="@+id/auto_connection"
-        style="@style/preference_item"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/reg_24dp"
-        android:text="@string/auto"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title" />
-
-
-    <com.windscribe.tv.serverlist.customviews.PreferenceItem
-        android:id="@+id/manual_connection"
-        style="@style/preference_item"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/reg_24dp"
-        android:text="@string/manual"
-        app:layout_constraintBottom_toBottomOf="@id/auto_connection"
-        app:layout_constraintStart_toEndOf="@id/auto_connection"
-        app:layout_constraintTop_toTopOf="@id/auto_connection" />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/expandedView"
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/connectionParent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/manual_connection">
+        android:layout_marginBottom="@dimen/reg_24dp"
+        android:background="@color/colorDeepBlue"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <TextView
-            android:id="@+id/titleProtocol"
+            android:id="@+id/title"
             style="@style/preference_item_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/reg_24dp"
-            android:text="@string/protocol"
+            android:text="@string/connection_mode"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
 
-        <androidx.leanback.widget.HorizontalGridView
-            android:id="@+id/protocolList"
-            android:layout_width="match_parent"
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/auto_connection"
+            style="@style/preference_item"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/reg_24dp"
-            android:focusable="false"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/auto"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/titleProtocol" />
+            app:layout_constraintTop_toBottomOf="@id/title" />
+
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/manual_connection"
+            style="@style/preference_item"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:text="@string/manual"
+            app:layout_constraintBottom_toBottomOf="@id/auto_connection"
+            app:layout_constraintStart_toEndOf="@id/auto_connection"
+            app:layout_constraintTop_toTopOf="@id/auto_connection" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/expandedView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/manual_connection">
+
+            <TextView
+                android:id="@+id/titleProtocol"
+                style="@style/preference_item_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/reg_24dp"
+                android:text="@string/protocol"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+            <androidx.leanback.widget.HorizontalGridView
+                android:id="@+id/protocolList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/reg_24dp"
+                android:focusable="false"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/titleProtocol" />
+
+            <TextView
+                android:id="@+id/titlePort"
+                style="@style/preference_item_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/reg_24dp"
+                android:text="@string/port"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/protocolList" />
+
+
+            <androidx.leanback.widget.HorizontalGridView
+                android:id="@+id/portList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/reg_24dp"
+                android:focusable="false"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/titlePort" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
 
         <TextView
-            android:id="@+id/titlePort"
+            android:id="@+id/connected_dns_title"
             style="@style/preference_item_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/reg_24dp"
-            android:text="@string/port"
+            android:text="@string/connected_dns"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/protocolList" />
+            app:layout_constraintTop_toBottomOf="@id/expandedView" />
 
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/connected_dns_robert"
+            style="@style/preference_item"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/robert"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/connected_dns_title" />
+
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/connected_dns_custom"
+            style="@style/preference_item"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:text="@string/manual"
+            app:layout_constraintBottom_toBottomOf="@id/connected_dns_robert"
+            app:layout_constraintStart_toEndOf="@id/connected_dns_robert"
+            app:layout_constraintTop_toTopOf="@id/connected_dns_robert" />
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/connect_dns_custom_address"
+            android:layout_width="428dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_16"
+            android:background="@drawable/login_reg_input_background"
+            android:focusable="true"
+            android:hint="@string/custom_dns_address_hint"
+            android:imeOptions="actionDone"
+            android:includeFontPadding="false"
+            android:inputType="textNoSuggestions"
+            android:padding="@dimen/padding_16"
+            android:textColor="@color/colorWhite"
+            android:textColorHint="@color/colorWhite"
+            android:textCursorDrawable="@drawable/color_cursor"
+            android:visibility="visible"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/connected_dns_robert" />
+
+        <TextView
+            android:id="@+id/titleSplitRouting"
+            style="@style/preference_item_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:text="@string/split_tunneling"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/connect_dns_custom_address" />
+
+        <ImageView
+            android:id="@+id/splitRoutingIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:focusable="true"
+            android:src="@drawable/info_icon_background"
+            app:layout_constraintBottom_toBottomOf="@id/titleSplitRouting"
+            app:layout_constraintStart_toEndOf="@id/titleSplitRouting"
+            app:layout_constraintTop_toTopOf="@id/titleSplitRouting" />
+
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/disabledMode"
+            style="@style/preference_item"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:text="@string/disabled"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/titleSplitRouting"
+
+            />
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/exclusiveMode"
+            style="@style/preference_item"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:text="@string/exclusive"
+            app:layout_constraintBottom_toBottomOf="@id/disabledMode"
+            app:layout_constraintStart_toEndOf="@id/disabledMode"
+            app:layout_constraintTop_toTopOf="@id/disabledMode" />
+
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/inclusiveMode"
+            style="@style/preference_item"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:text="@string/inclusive"
+            app:layout_constraintBottom_toBottomOf="@id/exclusiveMode"
+            app:layout_constraintStart_toEndOf="@id/exclusiveMode"
+            app:layout_constraintTop_toTopOf="@id/exclusiveMode" />
+
+        <TextView
+            android:id="@+id/titleSplitRoutingApps"
+            style="@style/preference_item_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:text="@string/apps"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/inclusiveMode" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/showSystemApps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:checked="false"
+            android:fontFamily="@font/ibm_plex_sans_bold"
+            android:padding="@dimen/reg_8dp"
+            android:text="@string/show_system_apps"
+            android:textColor="@color/colorWhite50"
+            android:textSize="@dimen/text_size_16"
+            android:theme="@style/CheckBox"
+            app:layout_constraintBottom_toBottomOf="@id/titleSplitRoutingApps"
+            app:layout_constraintStart_toEndOf="@id/titleSplitRoutingApps"
+            app:layout_constraintTop_toTopOf="@id/titleSplitRoutingApps" />
 
         <androidx.leanback.widget.HorizontalGridView
-            android:id="@+id/portList"
+            android:id="@+id/appsList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/reg_24dp"
             android:focusable="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/titlePort" />
+            app:layout_constraintTop_toBottomOf="@id/titleSplitRoutingApps" />
 
+        <TextView
+            android:id="@+id/titleLanTraffic"
+            style="@style/preference_item_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:text="@string/lan_by_pass"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/appsList" />
+
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/allow_lan"
+            style="@style/preference_item"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:text="@string/allow"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/titleLanTraffic" />
+
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/block"
+            style="@style/preference_item"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:text="@string/block"
+            app:layout_constraintBottom_toBottomOf="@id/allow_lan"
+            app:layout_constraintStart_toEndOf="@id/allow_lan"
+            app:layout_constraintTop_toTopOf="@id/allow_lan" />
+
+        <TextView
+            android:id="@+id/titleBootStart"
+            style="@style/preference_item_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:text="@string/auto_start_on_boot"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/block" />
+
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/allow_boot_start"
+            style="@style/preference_item"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:text="@string/allow"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/titleBootStart" />
+
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/block_boot_start"
+            style="@style/preference_item"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:text="@string/block"
+            app:layout_constraintBottom_toBottomOf="@id/allow_boot_start"
+            app:layout_constraintStart_toEndOf="@id/allow_boot_start"
+            app:layout_constraintTop_toTopOf="@id/allow_boot_start" />
+
+        <TextView
+            android:id="@+id/title_anti_censorship"
+            style="@style/preference_item_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:text="@string/anti_censorship"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/block_boot_start" />
+
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/allow_anti_censorship"
+            style="@style/preference_item"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:text="@string/allow"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/title_anti_censorship" />
+
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/block_anti_censorship"
+            style="@style/preference_item"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:text="@string/block"
+            app:layout_constraintBottom_toBottomOf="@id/allow_anti_censorship"
+            app:layout_constraintStart_toEndOf="@id/allow_anti_censorship"
+            app:layout_constraintTop_toTopOf="@id/allow_anti_censorship" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-    <TextView
-        android:id="@+id/connected_dns_title"
-        style="@style/preference_item_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/connected_dns"
-        android:layout_marginTop="@dimen/reg_24dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/expandedView" />
-
-    <com.windscribe.tv.serverlist.customviews.PreferenceItem
-        android:id="@+id/connected_dns_robert"
-        style="@style/preference_item"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="@string/robert"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/connected_dns_title" />
-
-
-    <com.windscribe.tv.serverlist.customviews.PreferenceItem
-        android:id="@+id/connected_dns_custom"
-        style="@style/preference_item"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:text="@string/manual"
-        android:layout_marginStart="@dimen/reg_24dp"
-        app:layout_constraintBottom_toBottomOf="@id/connected_dns_robert"
-        app:layout_constraintStart_toEndOf="@id/connected_dns_robert"
-        app:layout_constraintTop_toTopOf="@id/connected_dns_robert" />
-
-    <androidx.appcompat.widget.AppCompatEditText
-        android:layout_width="428dp"
-        android:layout_height="wrap_content"
-        android:focusable="true"
-        android:inputType="textNoSuggestions"
-        android:imeOptions="actionDone"
-        android:background="@drawable/login_reg_input_background"
-        android:hint="@string/custom_dns_address_hint"
-        android:textColorHint="@color/colorWhite"
-        android:textColor="@color/colorWhite"
-        android:textCursorDrawable="@drawable/color_cursor"
-        android:visibility="visible"
-        android:layout_marginTop="@dimen/margin_16"
-        android:padding="@dimen/padding_16"
-        android:includeFontPadding="false"
-        android:id="@+id/connect_dns_custom_address"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/connected_dns_robert" />
-
-    <TextView
-        android:id="@+id/titleSplitRouting"
-        style="@style/preference_item_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/reg_24dp"
-        android:text="@string/split_tunneling"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/connect_dns_custom_address" />
-
-    <ImageView
-        android:id="@+id/splitRoutingIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/reg_24dp"
-        android:focusable="true"
-        android:src="@drawable/info_icon_background"
-        app:layout_constraintBottom_toBottomOf="@id/titleSplitRouting"
-        app:layout_constraintStart_toEndOf="@id/titleSplitRouting"
-        app:layout_constraintTop_toTopOf="@id/titleSplitRouting" />
-
-
-    <com.windscribe.tv.serverlist.customviews.PreferenceItem
-        android:id="@+id/disabledMode"
-        style="@style/preference_item"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/reg_24dp"
-        android:text="@string/disabled"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titleSplitRouting"
-
-        />
-
-    <com.windscribe.tv.serverlist.customviews.PreferenceItem
-        android:id="@+id/exclusiveMode"
-        style="@style/preference_item"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/reg_24dp"
-        android:text="@string/exclusive"
-        app:layout_constraintBottom_toBottomOf="@id/disabledMode"
-        app:layout_constraintStart_toEndOf="@id/disabledMode"
-        app:layout_constraintTop_toTopOf="@id/disabledMode" />
-
-
-    <com.windscribe.tv.serverlist.customviews.PreferenceItem
-        android:id="@+id/inclusiveMode"
-        style="@style/preference_item"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/reg_24dp"
-        android:text="@string/inclusive"
-        app:layout_constraintBottom_toBottomOf="@id/exclusiveMode"
-        app:layout_constraintStart_toEndOf="@id/exclusiveMode"
-        app:layout_constraintTop_toTopOf="@id/exclusiveMode" />
-
-    <TextView
-        android:id="@+id/titleSplitRoutingApps"
-        style="@style/preference_item_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/reg_24dp"
-        android:text="@string/apps"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/inclusiveMode" />
-
-    <androidx.appcompat.widget.AppCompatCheckBox
-        android:id="@+id/showSystemApps"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/reg_24dp"
-        android:checked="false"
-        android:fontFamily="@font/ibm_plex_sans_bold"
-        android:padding="@dimen/reg_8dp"
-        android:text="@string/show_system_apps"
-        android:textColor="@color/colorWhite50"
-        android:textSize="@dimen/text_size_16"
-        android:theme="@style/CheckBox"
-        app:layout_constraintBottom_toBottomOf="@id/titleSplitRoutingApps"
-        app:layout_constraintStart_toEndOf="@id/titleSplitRoutingApps"
-        app:layout_constraintTop_toTopOf="@id/titleSplitRoutingApps" />
-
-    <androidx.leanback.widget.HorizontalGridView
-        android:id="@+id/appsList"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/reg_24dp"
-        android:focusable="false"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titleSplitRoutingApps" />
-
-    <TextView
-        android:id="@+id/titleLanTraffic"
-        style="@style/preference_item_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/reg_24dp"
-        android:text="@string/lan_by_pass"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/appsList" />
-
-
-    <com.windscribe.tv.serverlist.customviews.PreferenceItem
-        android:id="@+id/allow_lan"
-        style="@style/preference_item"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/reg_24dp"
-        android:text="@string/allow"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titleLanTraffic" />
-
-
-    <com.windscribe.tv.serverlist.customviews.PreferenceItem
-        android:id="@+id/block"
-        style="@style/preference_item"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/reg_24dp"
-        android:text="@string/block"
-        app:layout_constraintBottom_toBottomOf="@id/allow_lan"
-        app:layout_constraintStart_toEndOf="@id/allow_lan"
-        app:layout_constraintTop_toTopOf="@id/allow_lan" />
-
-    <TextView
-        android:id="@+id/titleBootStart"
-        style="@style/preference_item_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/reg_24dp"
-        android:text="@string/auto_start_on_boot"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/block" />
-
-
-    <com.windscribe.tv.serverlist.customviews.PreferenceItem
-        android:id="@+id/allow_boot_start"
-        style="@style/preference_item"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/reg_24dp"
-        android:text="@string/allow"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titleBootStart" />
-
-
-    <com.windscribe.tv.serverlist.customviews.PreferenceItem
-        android:id="@+id/block_boot_start"
-        style="@style/preference_item"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/reg_24dp"
-        android:text="@string/block"
-        app:layout_constraintBottom_toBottomOf="@id/allow_boot_start"
-        app:layout_constraintStart_toEndOf="@id/allow_boot_start"
-        app:layout_constraintTop_toTopOf="@id/allow_boot_start" />
-
-    <TextView
-        android:id="@+id/title_anti_censorship"
-        style="@style/preference_item_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/reg_24dp"
-        android:text="@string/anti_censorship"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/block_boot_start" />
-
-
-    <com.windscribe.tv.serverlist.customviews.PreferenceItem
-        android:id="@+id/allow_anti_censorship"
-        style="@style/preference_item"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/reg_24dp"
-        android:text="@string/allow"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title_anti_censorship" />
-
-
-    <com.windscribe.tv.serverlist.customviews.PreferenceItem
-        android:id="@+id/block_anti_censorship"
-        style="@style/preference_item"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/reg_24dp"
-        android:text="@string/block"
-        app:layout_constraintBottom_toBottomOf="@id/allow_anti_censorship"
-        app:layout_constraintStart_toEndOf="@id/allow_anti_censorship"
-        app:layout_constraintTop_toTopOf="@id/allow_anti_censorship" />
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

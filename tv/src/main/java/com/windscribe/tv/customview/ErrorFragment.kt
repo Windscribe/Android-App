@@ -16,11 +16,12 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
 import com.windscribe.tv.R
+import com.windscribe.tv.databinding.FragmentErrorBinding
+import com.windscribe.tv.databinding.FragmentPlansBinding
 
 class ErrorFragment : Fragment() {
-    @JvmField
-    @BindView(R.id.error)
-    var errorView: TextView? = null
+
+    private lateinit var binding: FragmentErrorBinding
     private var error: String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,15 +32,18 @@ class ErrorFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_error, container, false)
-        ButterKnife.bind(this, view)
-        return view
+    ): View {
+        binding = FragmentErrorBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        errorView?.text = error
+        binding.error.text = error
+        binding.closeBtn.requestFocus()
+        binding.closeBtn.setOnClickListener {
+            requireActivity().onBackPressed()
+        }
     }
 
     fun add(error: String?, activity: AppCompatActivity, container: Int, addToBackStack: Boolean) {
@@ -54,11 +58,6 @@ class ErrorFragment : Fragment() {
             transaction.addToBackStack(this.javaClass.name)
         }
         transaction.commit()
-    }
-
-    @OnClick(R.id.close_btn)
-    fun onCloseButtonClick() {
-        requireActivity().onBackPressed()
     }
 
     companion object {

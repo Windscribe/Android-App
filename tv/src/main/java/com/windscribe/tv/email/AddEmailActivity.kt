@@ -3,23 +3,18 @@
  */
 package com.windscribe.tv.email
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
-import androidx.constraintlayout.widget.ConstraintLayout
-import butterknife.BindView
-import butterknife.OnClick
-import butterknife.OnFocusChange
+import androidx.databinding.DataBindingUtil
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.confirmemail.ConfirmActivity
 import com.windscribe.tv.customview.ProgressFragment.Companion.instance
+import com.windscribe.tv.databinding.ActivityAddEmailAddressBinding
 import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.windscribe.WindscribeActivity
 import com.windscribe.vpn.constants.PreferencesKeyConstants
@@ -27,40 +22,39 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 class AddEmailActivity : BaseActivity(), AddEmailView {
-    @JvmField
-    @BindView(R.id.addEmail)
-    var addEmailAddress: TextView? = null
-
-    @JvmField
-    @BindView(R.id.back)
-    var back: TextView? = null
-
-    @JvmField
-    @BindView(R.id.dialog_label)
-    var dialogTitle: TextView? = null
-
-    @JvmField
-    @BindView(R.id.email_container)
-    var emailContainer: ConstraintLayout? = null
-
-    @JvmField
-    @BindView(R.id.email_edit)
-    var emailEditView: EditText? = null
 
     @Inject
     lateinit var presenter: AddEmailPresenter
 
-    @JvmField
-    @BindView(R.id.title)
-    var title: TextView? = null
+    private lateinit var binding: ActivityAddEmailAddressBinding
 
     private val logger = LoggerFactory.getLogger("basic")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
-        setContentLayout(R.layout.activity_add_email_address)
-        emailContainer?.requestFocus()
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_add_email_address)
+        onActivityLaunch()
+        setupUI()
+    }
+
+    private fun setupUI() {
+        binding.emailContainer.requestFocus()
         setTextFieldsFromStartingPoint()
+        binding.back.setOnClickListener {
+            logger.info("User clicked to skip adding email address...")
+            presenter.onSkipEmailClicked()
+        }
+        binding.addEmail.setOnClickListener {
+            onAddEmailClick()
+        }
+        binding.emailContainer.setOnClickListener {
+            binding.emailEdit.visibility = View.VISIBLE
+            binding.emailEdit.requestFocus()
+        }
+        binding.back.setOnFocusChangeListener { _, _ ->
+            resetButtonTextColor()
+        }
     }
 
     override fun onDestroy() {
@@ -74,9 +68,11 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
                 PreferencesKeyConstants.ACTION_ADD_EMAIL_FROM_ACCOUNT -> {
                     goToConfirmEmailActivity()
                 }
+
                 PreferencesKeyConstants.ACTION_RESEND_EMAIL_FROM_ACCOUNT -> {
                     gotoAccountActivity()
                 }
+
                 else -> {
                     gotoWindscribeActivity()
                 }
@@ -90,9 +86,11 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
                 PreferencesKeyConstants.ACTION_ADD_EMAIL_FROM_ACCOUNT -> {
                     finish()
                 }
+
                 PreferencesKeyConstants.ACTION_RESEND_EMAIL_FROM_ACCOUNT -> {
                     finish()
                 }
+
                 else -> {
                     gotoWindscribeActivity()
                 }
@@ -119,10 +117,8 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
         )
     }
 
-    @SuppressLint("NonConstantResourceId")
-    @OnClick(R.id.addEmail)
-    fun onAddEmailClick() {
-        val email = emailEditView?.text
+    private fun onAddEmailClick() {
+        val email = binding.emailEdit.text
         if (intent != null && intent.action != null && (intent.action == PreferencesKeyConstants.ACTION_RESEND_EMAIL_FROM_ACCOUNT)
         ) {
             email?.let {
@@ -131,13 +127,6 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
         } else {
             presenter.onAddEmailClicked(email.toString())
         }
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnClick(R.id.back)
-    fun onSkipEmailClick() {
-        logger.info("User clicked to skip adding email address...")
-        presenter.onSkipEmailClicked()
     }
 
     override fun prepareUiForApiCallFinished() {
@@ -158,22 +147,9 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
         Toast.makeText(this, toastString, Toast.LENGTH_SHORT).show()
     }
 
-    @SuppressLint("NonConstantResourceId")
-    @OnClick(R.id.email_container)
-    fun onEmailContainerClick() {
-        emailEditView?.visibility = View.VISIBLE
-        emailEditView?.requestFocus()
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnFocusChange(R.id.back)
-    fun onFocusChangeToBack() {
-        resetButtonTextColor()
-    }
-
     private fun resetButtonTextColor() {
-        back?.setTextColor(
-            if (back?.hasFocus() == true) resources.getColor(R.color.colorWhite) else resources.getColor(
+        binding.back.setTextColor(
+            if (binding.back.hasFocus()) resources.getColor(R.color.colorWhite) else resources.getColor(
                 R.color.colorWhite50
             )
         )
@@ -187,18 +163,20 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
     private fun setTextFieldsFromStartingPoint() {
         val action = intent.action ?: return
         val proUser = intent.getBooleanExtra("pro_user", false)
-        title?.setText(if (proUser) R.string.pro_reason_to_add_email else R.string.free_reason_to_add_email)
+        binding.title.setText(if (proUser) R.string.pro_reason_to_add_email else R.string.free_reason_to_add_email)
         when (action) {
             PreferencesKeyConstants.ACTION_RESEND_EMAIL_FROM_ACCOUNT -> {
-                back?.text = getString(R.string.back_uppercase)
+                binding.back.text = getString(R.string.back_uppercase)
             }
+
             PreferencesKeyConstants.ACTION_ADD_EMAIL_FROM_ACCOUNT -> {
-                addEmailAddress?.text = getString(R.string.add_email_pro)
-                back?.text = getString(R.string.back_uppercase)
+                binding.addEmail.text = getString(R.string.add_email_pro)
+                binding.back.text = getString(R.string.back_uppercase)
             }
+
             else -> {
-                addEmailAddress?.text = getString(R.string.add_email_pro)
-                back?.text = getString(R.string.skip)
+                binding.addEmail.text = getString(R.string.add_email_pro)
+                binding.back.text = getString(R.string.skip)
             }
         }
     }

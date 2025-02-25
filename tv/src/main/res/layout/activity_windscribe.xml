@@ -1,455 +1,456 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2021 Windscribe Limited.
   -->
+<layout>
 
-<com.windscribe.tv.serverlist.customviews.FocusAwareConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/cl_windscribe_main"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorDeepBlue"
-    android:focusable="false">
+    <com.windscribe.tv.serverlist.customviews.FocusAwareConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/cl_windscribe_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorDeepBlue"
+        android:focusable="false">
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_min"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent=".90" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_top"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_begin="@dimen/reg_24dp" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_begin="@dimen/reg_24dp" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_end"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_end="@dimen/reg_24dp" />
-
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/flag_alpha"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/reg_16dp"
-        android:adjustViewBounds="true"
-        android:alpha="0.5"
-        android:scaleType="fitXY"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/img_flag_gradient"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:paddingBottom="@dimen/reg_8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/flag_alpha"
-        app:srcCompat="@drawable/flag_gradient" />
-
-    <ImageView
-        android:id="@+id/img_flag_gradient_top"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:contentDescription="@null"
-        android:paddingBottom="@dimen/reg_8dp"
-        app:layout_constraintBottom_toBottomOf="@id/img_flag_gradient"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/flag_gradient" />
-
-    <com.windscribe.tv.serverlist.customviews.HomeMenuButton
-        android:id="@+id/btn_settings"
-        android:layout_width="@dimen/reg_56"
-        android:layout_height="@dimen/reg_56"
-        android:contentDescription="@string/settings"
-        android:focusable="true"
-        android:nextFocusRight="@id/btn_notifications"
-        android:nextFocusDown="@id/vpn"
-        app:layout_constraintStart_toStartOf="@id/guideline_start"
-        app:layout_constraintTop_toTopOf="@id/guideline_top" />
-
-    <com.windscribe.tv.serverlist.customviews.HomeMenuButton
-        android:id="@+id/btn_notifications"
-        android:layout_width="@dimen/reg_56"
-        android:layout_height="@dimen/reg_56"
-        android:layout_marginStart="@dimen/reg_24dp"
-        android:contentDescription="@string/notifications"
-        android:focusable="true"
-        android:nextFocusLeft="@id/btn_settings"
-        android:nextFocusRight="@id/btn_help"
-        android:nextFocusDown="@id/vpn"
-        app:layout_constraintStart_toEndOf="@id/btn_settings"
-        app:layout_constraintTop_toTopOf="@id/guideline_top" />
-
-    <com.windscribe.tv.serverlist.customviews.HomeMenuButton
-        android:id="@+id/btn_help"
-        android:layout_width="@dimen/reg_56"
-        android:layout_height="@dimen/reg_56"
-        android:layout_marginStart="@dimen/reg_24dp"
-        android:contentDescription="@string/notifications"
-        android:focusable="true"
-        android:nextFocusLeft="@id/btn_notifications"
-        android:nextFocusRight="@id/upgrade_parent"
-        android:nextFocusDown="@id/vpn"
-        app:layout_constraintStart_toEndOf="@id/btn_notifications"
-        app:layout_constraintTop_toTopOf="@id/guideline_top" />
-
-    <ImageView
-        android:id="@+id/lockIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/reg_4dp"
-        android:contentDescription="@string/notifications"
-        android:focusable="false"
-        android:scaleType="fitCenter"
-        app:layout_constraintBottom_toBottomOf="@id/btn_notifications"
-        app:layout_constraintEnd_toStartOf="@id/ip_address_label"
-        app:layout_constraintTop_toTopOf="@id/btn_notifications"
-        app:srcCompat="@drawable/ic_ip_none_secure_icon"
-
-        />
-
-    <com.windscribe.tv.serverlist.customviews.HomeUpgradeButton
-        android:id="@+id/upgrade_parent"
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/reg_56"
-        android:layout_marginStart="@dimen/reg_24dp"
-        android:background="@drawable/upgrade_box_background"
-        android:focusable="true"
-        android:nextFocusLeft="@id/btn_help"
-        android:nextFocusRight="@id/vpn"
-        android:nextFocusDown="@id/vpn"
-        android:orientation="horizontal"
-        android:paddingStart="@dimen/reg_24dp"
-        android:paddingEnd="@dimen/reg_24dp"
-        android:visibility="gone"
-        app:layout_constraintStart_toEndOf="@id/btn_help"
-        app:layout_constraintTop_toTopOf="@id/guideline_top">
-
-        <TextView
-            android:id="@+id/data_left_label"
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_min"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="start|center_vertical"
-            android:layout_marginEnd="@dimen/reg_24dp"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent=".90" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_begin="@dimen/reg_24dp" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_begin="@dimen/reg_24dp" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_end="@dimen/reg_24dp" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/flag_alpha"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_16dp"
+            android:adjustViewBounds="true"
+            android:alpha="0.5"
+            android:scaleType="fitXY"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/img_flag_gradient"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:paddingBottom="@dimen/reg_8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/flag_alpha"
+            app:srcCompat="@drawable/flag_gradient" />
+
+        <ImageView
+            android:id="@+id/img_flag_gradient_top"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:contentDescription="@null"
+            android:paddingBottom="@dimen/reg_8dp"
+            app:layout_constraintBottom_toBottomOf="@id/img_flag_gradient"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/flag_gradient" />
+
+        <com.windscribe.tv.serverlist.customviews.HomeMenuButton
+            android:id="@+id/btn_settings"
+            android:layout_width="@dimen/reg_56"
+            android:layout_height="@dimen/reg_56"
+            android:contentDescription="@string/settings"
+            android:focusable="true"
+            android:nextFocusRight="@id/btn_notifications"
+            android:nextFocusDown="@id/vpn"
+            app:layout_constraintStart_toStartOf="@id/guideline_start"
+            app:layout_constraintTop_toTopOf="@id/guideline_top" />
+
+        <com.windscribe.tv.serverlist.customviews.HomeMenuButton
+            android:id="@+id/btn_notifications"
+            android:layout_width="@dimen/reg_56"
+            android:layout_height="@dimen/reg_56"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:contentDescription="@string/notifications"
+            android:focusable="true"
+            android:nextFocusLeft="@id/btn_settings"
+            android:nextFocusRight="@id/btn_help"
+            android:nextFocusDown="@id/vpn"
+            app:layout_constraintStart_toEndOf="@id/btn_settings"
+            app:layout_constraintTop_toTopOf="@id/guideline_top" />
+
+        <com.windscribe.tv.serverlist.customviews.HomeMenuButton
+            android:id="@+id/btn_help"
+            android:layout_width="@dimen/reg_56"
+            android:layout_height="@dimen/reg_56"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:contentDescription="@string/notifications"
+            android:focusable="true"
+            android:nextFocusLeft="@id/btn_notifications"
+            android:nextFocusRight="@id/upgrade_parent"
+            android:nextFocusDown="@id/vpn"
+            app:layout_constraintStart_toEndOf="@id/btn_notifications"
+            app:layout_constraintTop_toTopOf="@id/guideline_top" />
+
+        <ImageView
+            android:id="@+id/lockIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/reg_4dp"
+            android:contentDescription="@string/notifications"
             android:focusable="false"
-            android:fontFamily="@font/ibm_plex_sans_bold"
-            android:gravity="center"
-            android:letterSpacing=".1"
-            android:textAllCaps="true"
-            android:textColor="@color/sea_green"
-            android:textSize="@dimen/text_size_16"
-            android:textStyle="bold" />
+            android:scaleType="fitCenter"
+            app:layout_constraintBottom_toBottomOf="@id/btn_notifications"
+            app:layout_constraintEnd_toStartOf="@id/ip_address_label"
+            app:layout_constraintTop_toTopOf="@id/btn_notifications"
+            app:srcCompat="@drawable/ic_ip_none_secure_icon"
+
+            />
+
+        <com.windscribe.tv.serverlist.customviews.HomeUpgradeButton
+            android:id="@+id/upgrade_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/reg_56"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:background="@drawable/upgrade_box_background"
+            android:focusable="true"
+            android:nextFocusLeft="@id/btn_help"
+            android:nextFocusRight="@id/vpn"
+            android:nextFocusDown="@id/vpn"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/reg_24dp"
+            android:paddingEnd="@dimen/reg_24dp"
+            android:visibility="gone"
+            app:layout_constraintStart_toEndOf="@id/btn_help"
+            app:layout_constraintTop_toTopOf="@id/guideline_top">
+
+            <TextView
+                android:id="@+id/data_left_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
+                android:layout_marginEnd="@dimen/reg_24dp"
+                android:focusable="false"
+                android:fontFamily="@font/ibm_plex_sans_bold"
+                android:gravity="center"
+                android:letterSpacing=".1"
+                android:textAllCaps="true"
+                android:textColor="@color/sea_green"
+                android:textSize="@dimen/text_size_16"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/divider"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
+                android:focusable="false"
+                android:fontFamily="@font/ibm_font_family"
+                android:gravity="center"
+                android:text=" | "
+                android:textColor="@color/colorWhite24"
+                android:textStyle="bold"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:id="@+id/upgrade_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
+                android:layout_marginStart="@dimen/reg_24dp"
+                android:fontFamily="@font/ibm_plex_sans_bold"
+                android:gravity="center"
+                android:letterSpacing=".1"
+                android:text="@string/upgrade_case_normal"
+                android:textAllCaps="true"
+                android:textColor="@color/colorWhite"
+                android:textSize="@dimen/text_size_16"
+                android:textStyle="bold" />
+
+        </com.windscribe.tv.serverlist.customviews.HomeUpgradeButton>
+
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="@dimen/reg_56"
+            android:layout_height="@dimen/reg_56"
+            android:contentDescription="@string/notifications"
+            android:focusable="false"
+            android:scaleType="fitCenter"
+            app:layout_constraintBottom_toBottomOf="@id/btn_notifications"
+            app:layout_constraintEnd_toEndOf="@id/guideline_end"
+            app:layout_constraintTop_toTopOf="@id/btn_notifications"
+            app:srcCompat="@drawable/ic_ws_logo_icon" />
 
         <TextView
-            android:id="@+id/divider"
+            android:id="@+id/ip_address_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start|center_vertical"
+            android:layout_marginEnd="@dimen/reg_8dp"
             android:focusable="false"
             android:fontFamily="@font/ibm_font_family"
             android:gravity="center"
-            android:text=" | "
-            android:textColor="@color/colorWhite24"
+            android:maxLength="39"
+            android:minWidth="120dp"
+            android:textColor="@color/colorWhite"
             android:textStyle="bold"
-            tools:ignore="HardcodedText" />
+            app:layout_constraintBottom_toBottomOf="@id/btn_notifications"
+            app:layout_constraintEnd_toStartOf="@id/logo"
+            app:layout_constraintTop_toTopOf="@id/btn_notifications" />
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/vpnButtonWrapper"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:focusable="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/btn_settings"
+            app:layout_constraintTop_toTopOf="parent"
+
+            >
+
+            <com.windscribe.tv.serverlist.customviews.ConnectButtonGlow
+                android:id="@+id/connectGlow"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="@id/vpn"
+                app:layout_constraintEnd_toEndOf="@id/vpn"
+                app:layout_constraintStart_toStartOf="@id/vpn"
+                app:layout_constraintTop_toTopOf="@id/vpn" />
+
+
+            <ProgressBar
+                android:id="@+id/connection_progress_bar"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:focusable="false"
+                android:indeterminate="true"
+                android:indeterminateDrawable="@drawable/progress_bar_drawable"
+                android:theme="@style/StyleNeonGreen"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/vpn"
+                app:layout_constraintEnd_toEndOf="@id/vpn"
+                app:layout_constraintStart_toStartOf="@id/vpn"
+                app:layout_constraintTop_toTopOf="@id/vpn" />
+
+            <ImageView
+                android:id="@+id/vpn"
+                android:layout_width="168dp"
+                android:layout_height="168dp"
+                android:contentDescription="@string/notifications"
+                android:focusable="true"
+                android:nextFocusUp="@id/btn_settings"
+                android:nextFocusDown="@+id/server_item"
+                android:nextFocusForward="@+id/server_item"
+                android:scaleType="fitCenter"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_on_button_off"
+
+
+                />
+
+            <ImageView
+                android:id="@+id/img_connected"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:contentDescription="@null"
+                android:focusable="false"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/vpn"
+                app:layout_constraintEnd_toEndOf="@id/vpn"
+                app:layout_constraintStart_toStartOf="@id/vpn"
+                app:layout_constraintTop_toTopOf="@id/vpn"
+                app:srcCompat="@drawable/ic_connected_ring" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@null"
+                android:focusable="false"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/vpn"
+                app:layout_constraintEnd_toEndOf="@id/vpn"
+                app:layout_constraintStart_toStartOf="@id/vpn"
+                app:layout_constraintTop_toTopOf="@id/vpn"
+                app:srcCompat="@drawable/img_ring_mask" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/guideline_end"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent=".70">
+
+            <TextView
+                android:id="@+id/city_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:focusable="false"
+                android:fontFamily="sans-serif-black"
+                android:gravity="right|center_vertical"
+                android:includeFontPadding="false"
+                android:lineSpacingExtra="0dp"
+                android:maxLines="1"
+                android:padding="0dp"
+                android:text="@string/best_location"
+                android:textColor="@color/colorWhite"
+                android:textSize="80sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/node_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:focusable="false"
+                android:fontFamily="@font/ibm_plex_sans_regular"
+                android:gravity="end|center_vertical"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:padding="0dp"
+                android:textColor="@color/colorWhite"
+                android:textSize="64sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/city_name" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/protocol_divider_view"
+                android:layout_width="2dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="@dimen/reg_12dp"
+                android:background="@color/colorWhite15"
+                app:layout_constraintBottom_toBottomOf="@id/connection_status"
+                app:layout_constraintEnd_toStartOf="@id/port_text"
+                app:layout_constraintTop_toTopOf="@id/connection_status" />
+
+            <TextView
+                android:id="@+id/protocol_text"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:layout_marginEnd="@dimen/reg_12dp"
+                android:fontFamily="@font/ibm_plex_sans_bold"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:text="IKEv2"
+                android:textColor="@color/colorWhite50"
+                android:textSize="@dimen/text_size_24"
+                app:layout_constraintBottom_toBottomOf="@id/connection_status"
+                app:layout_constraintEnd_toStartOf="@id/protocol_divider_view"
+                app:layout_constraintTop_toTopOf="@id/connection_status" />
+
+            <TextView
+                android:id="@+id/port_text"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:layout_marginEnd="@dimen/reg_8dp"
+                android:fontFamily="@font/ibm_plex_sans_bold"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:text="500"
+                android:textColor="@color/colorWhite50"
+                android:textSize="@dimen/text_size_24"
+                app:layout_constraintBottom_toBottomOf="@id/connection_status"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/connection_status" />
+
+            <TextView
+                android:id="@+id/connection_status"
+                android:layout_width="67dp"
+                android:layout_height="38dp"
+                android:layout_marginStart="@dimen/margin_16"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="18dp"
+                android:background="@drawable/ic_disconnected_status_bg"
+                android:ellipsize="end"
+                android:focusable="false"
+                android:fontFamily="@font/ibm_plex_sans_bold"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:padding="0dp"
+                android:text="@string/OFF"
+                android:textColor="@color/colorWhite"
+                android:textSize="24sp"
+                app:layout_constraintBottom_toTopOf="@id/city_name"
+                app:layout_constraintEnd_toStartOf="@id/protocol_text" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
-            android:id="@+id/upgrade_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="start|center_vertical"
-            android:layout_marginStart="@dimen/reg_24dp"
+            android:layout_marginBottom="@dimen/reg_24dp"
             android:fontFamily="@font/ibm_plex_sans_bold"
-            android:gravity="center"
-            android:letterSpacing=".1"
-            android:text="@string/upgrade_case_normal"
+            android:letterSpacing="0.1"
+            android:text="@string/locations"
             android:textAllCaps="true"
             android:textColor="@color/colorWhite"
             android:textSize="@dimen/text_size_16"
-            android:textStyle="bold" />
+            app:layout_constraintBottom_toTopOf="@id/partialOverlay"
+            app:layout_constraintStart_toStartOf="@id/guideline_start" />
 
-    </com.windscribe.tv.serverlist.customviews.HomeUpgradeButton>
-
-    <ImageView
-        android:id="@+id/logo"
-        android:layout_width="@dimen/reg_56"
-        android:layout_height="@dimen/reg_56"
-        android:contentDescription="@string/notifications"
-        android:focusable="false"
-        android:scaleType="fitCenter"
-        app:layout_constraintBottom_toBottomOf="@id/btn_notifications"
-        app:layout_constraintEnd_toEndOf="@id/guideline_end"
-        app:layout_constraintTop_toTopOf="@id/btn_notifications"
-        app:srcCompat="@drawable/ic_ws_logo_icon" />
-
-    <TextView
-        android:id="@+id/ip_address_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start|center_vertical"
-        android:layout_marginEnd="@dimen/reg_8dp"
-        android:focusable="false"
-        android:fontFamily="@font/ibm_font_family"
-        android:gravity="center"
-        android:maxLength="39"
-        android:minWidth="120dp"
-        android:textColor="@color/colorWhite"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@id/btn_notifications"
-        app:layout_constraintEnd_toStartOf="@id/logo"
-        app:layout_constraintTop_toTopOf="@id/btn_notifications" />
-
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/vpnButtonWrapper"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:focusable="false"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@id/btn_settings"
-        app:layout_constraintTop_toTopOf="parent"
-
-        >
-
-        <com.windscribe.tv.serverlist.customviews.ConnectButtonGlow
-            android:id="@+id/connectGlow"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="@id/vpn"
-            app:layout_constraintEnd_toEndOf="@id/vpn"
-            app:layout_constraintStart_toStartOf="@id/vpn"
-            app:layout_constraintTop_toTopOf="@id/vpn" />
-
+        <com.windscribe.tv.serverlist.customviews.AutoFitRecyclerView
+            android:id="@+id/partialOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:layout_marginEnd="@dimen/reg_24dp"
+            android:animateLayoutChanges="false"
+            android:columnWidth="200dp"
+            android:descendantFocusability="blocksDescendants"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/guideline_min" />
 
         <ProgressBar
-            android:id="@+id/connection_progress_bar"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:focusable="false"
-            android:indeterminate="true"
-            android:indeterminateDrawable="@drawable/progress_bar_drawable"
-            android:theme="@style/StyleNeonGreen"
+            android:id="@+id/progressBar"
+            style="@style/ProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@id/vpn"
-            app:layout_constraintEnd_toEndOf="@id/vpn"
-            app:layout_constraintStart_toStartOf="@id/vpn"
-            app:layout_constraintTop_toTopOf="@id/vpn" />
-
-        <ImageView
-            android:id="@+id/vpn"
-            android:layout_width="168dp"
-            android:layout_height="168dp"
-            android:contentDescription="@string/notifications"
-            android:focusable="true"
-            android:nextFocusUp="@id/btn_settings"
-            android:nextFocusDown="@+id/server_item"
-            android:nextFocusForward="@+id/server_item"
-            android:scaleType="fitCenter"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_on_button_off"
+            app:layout_constraintTop_toTopOf="@id/guideline_min" />
 
-
-            />
-
-        <ImageView
-            android:id="@+id/img_connected"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:contentDescription="@null"
-            android:focusable="false"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@id/vpn"
-            app:layout_constraintEnd_toEndOf="@id/vpn"
-            app:layout_constraintStart_toStartOf="@id/vpn"
-            app:layout_constraintTop_toTopOf="@id/vpn"
-            app:srcCompat="@drawable/ic_connected_ring" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@null"
-            android:focusable="false"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@id/vpn"
-            app:layout_constraintEnd_toEndOf="@id/vpn"
-            app:layout_constraintStart_toStartOf="@id/vpn"
-            app:layout_constraintTop_toTopOf="@id/vpn"
-            app:srcCompat="@drawable/img_ring_mask" />
-
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/guideline_end"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent=".70">
-
-        <TextView
-            android:id="@+id/city_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:focusable="false"
-            android:fontFamily="sans-serif-black"
-            android:gravity="right|center_vertical"
-            android:includeFontPadding="false"
-            android:lineSpacingExtra="0dp"
-            android:maxLines="1"
-            android:padding="0dp"
-            android:text="@string/best_location"
-            android:textColor="@color/colorWhite"
-            android:textSize="80sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            />
-
-        <TextView
-            android:id="@+id/node_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:focusable="false"
-            android:fontFamily="@font/ibm_plex_sans_regular"
-            android:gravity="end|center_vertical"
-            android:includeFontPadding="false"
-            android:maxLines="1"
-            android:padding="0dp"
-            android:textColor="@color/colorWhite"
-            android:textSize="64sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/city_name" />
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/protocol_divider_view"
-            android:layout_width="2dp"
-            android:layout_height="20dp"
-            android:layout_marginEnd="@dimen/reg_12dp"
-            android:background="@color/colorWhite15"
-            app:layout_constraintBottom_toBottomOf="@id/connection_status"
-            app:layout_constraintEnd_toStartOf="@id/port_text"
-            app:layout_constraintTop_toTopOf="@id/connection_status"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="44dp"
-            android:id="@+id/protocol_text"
-            android:gravity="center"
-            android:layout_marginEnd="@dimen/reg_12dp"
-            app:layout_constraintBottom_toBottomOf="@id/connection_status"
-            app:layout_constraintTop_toTopOf="@id/connection_status"
-            app:layout_constraintEnd_toStartOf="@id/protocol_divider_view"
-            android:textColor="@color/colorWhite50"
-            android:textSize="@dimen/text_size_24"
-            android:fontFamily="@font/ibm_plex_sans_bold"
-            android:text="IKEv2"
-            android:includeFontPadding="false" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="44dp"
-            android:id="@+id/port_text"
-            android:gravity="center"
-            android:layout_marginEnd="@dimen/reg_8dp"
-            app:layout_constraintBottom_toBottomOf="@id/connection_status"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/connection_status"
-            android:textColor="@color/colorWhite50"
-            android:textSize="@dimen/text_size_24"
-            android:fontFamily="@font/ibm_plex_sans_bold"
-            android:text="500"
-            android:includeFontPadding="false" />
-
-        <TextView
-            android:id="@+id/connection_status"
-            android:layout_width="67dp"
-            android:layout_height="38dp"
-            android:layout_marginStart="@dimen/margin_16"
-            android:layout_marginEnd="16dp"
-            android:ellipsize="end"
-            android:focusable="false"
-            android:fontFamily="@font/ibm_plex_sans_bold"
-            android:gravity="center"
-            android:includeFontPadding="false"
-            android:maxLines="1"
-            android:padding="0dp"
-            android:text="@string/OFF"
-            android:background="@drawable/ic_disconnected_status_bg"
-            android:textColor="@color/colorWhite"
-            android:textSize="24sp"
-            android:layout_marginBottom="18dp"
-            app:layout_constraintBottom_toTopOf="@id/city_name"
-            app:layout_constraintEnd_toStartOf="@id/protocol_text" />
-
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/reg_24dp"
-        android:fontFamily="@font/ibm_plex_sans_bold"
-        android:letterSpacing="0.1"
-        android:text="@string/locations"
-        android:textAllCaps="true"
-        android:textColor="@color/colorWhite"
-        android:textSize="@dimen/text_size_16"
-        app:layout_constraintBottom_toTopOf="@id/partialOverlay"
-        app:layout_constraintStart_toStartOf="@id/guideline_start" />
-
-    <com.windscribe.tv.serverlist.customviews.AutoFitRecyclerView
-        android:id="@+id/partialOverlay"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginStart="@dimen/reg_24dp"
-        android:layout_marginEnd="@dimen/reg_24dp"
-        android:animateLayoutChanges="false"
-        android:columnWidth="200dp"
-        android:descendantFocusability="blocksDescendants"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/guideline_min" />
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="@style/ProgressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/guideline_min" />
-
-</com.windscribe.tv.serverlist.customviews.FocusAwareConstraintLayout>
+    </com.windscribe.tv.serverlist.customviews.FocusAwareConstraintLayout>
+</layout>

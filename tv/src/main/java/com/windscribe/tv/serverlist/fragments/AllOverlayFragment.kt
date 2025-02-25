@@ -12,14 +12,13 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import butterknife.ButterKnife
 import com.windscribe.tv.R
 import com.windscribe.tv.serverlist.adapters.ServerAdapter
 import com.windscribe.tv.serverlist.overlay.OverlayListener
 import kotlinx.coroutines.launch
 
 class AllOverlayFragment : Fragment(), CustomVerticalGridView.CustomFocusListener {
-    var recyclerView: CustomVerticalGridView? = null
+    private var recyclerView: CustomVerticalGridView? = null
     private var overlayListener: OverlayListener? = null
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -32,7 +31,6 @@ class AllOverlayFragment : Fragment(), CustomVerticalGridView.CustomFocusListene
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_all_overlay, container, false)
-        ButterKnife.bind(this, view)
         return view
     }
 
