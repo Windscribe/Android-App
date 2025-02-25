@@ -266,12 +266,13 @@ class SettingActivity :
     }
 
     override fun reloadApp() {
-        TaskStackBuilder.create(this)
-            .addNextIntent(WindscribeActivity.getStartIntent(this))
-            .addNextIntent(SettingActivity.getStartIntent(this))
-            .addNextIntentWithParentStack(intent)
-            .startActivities()
-
+        val windscribeIntent = WindscribeActivity.getStartIntent(this).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val settingsIntent = getStartIntent(this).apply {
+            flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+        }
+        startActivities(arrayOf(windscribeIntent, settingsIntent))
     }
 
     override fun setBootStartMode(mode: String) {
