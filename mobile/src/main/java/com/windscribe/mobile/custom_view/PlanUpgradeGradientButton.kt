@@ -111,6 +111,7 @@ class PlanUpgradeGradientButton @JvmOverloads constructor(
     }
 
     private fun drawGlare(rect: RectF, canvas: Canvas) {
+        if (glareAnimator?.isPaused == true || glareAnimator?.isRunning == false) return
         canvas.save()
         clipPath?.let {
             canvas.clipPath(it)
@@ -162,7 +163,7 @@ class PlanUpgradeGradientButton @JvmOverloads constructor(
 
             Handler(Looper.getMainLooper()).postDelayed({
                 start()
-            }, 800)
+            }, 1500)
         }
     }
 }
