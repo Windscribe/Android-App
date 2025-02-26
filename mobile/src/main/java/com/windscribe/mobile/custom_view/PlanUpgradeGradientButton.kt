@@ -13,6 +13,7 @@ import android.graphics.Shader
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.LinearInterpolator
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.animation.doOnRepeat
@@ -143,7 +144,7 @@ class PlanUpgradeGradientButton @JvmOverloads constructor(
         val end = rect?.width() ?: 0F
         glareAnimator = ValueAnimator.ofFloat(0f, end).apply {
             duration = 800
-            interpolator = LinearInterpolator()
+            interpolator = AccelerateDecelerateInterpolator()
             repeatCount = ValueAnimator.INFINITE
             repeatMode = ValueAnimator.RESTART
 
