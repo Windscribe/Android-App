@@ -292,9 +292,9 @@ open class WindVpnController @Inject constructor(
                 autoConnectionManager.setSelectedProtocol(it)
                 return@let it
             } ?: getProtocolInformationToConnect()
-            logger.debug("Protocol: $protocolInformation")
+            logger.info("Protocol: $protocolInformation")
             val profileToConnect = createVPNProfile(protocolInformation, attempt)
-            logger.debug("Location: $profileToConnect")
+            logger.info("Location: $profileToConnect")
             launchVPNService(protocolInformation, connectionId)
         } catch (e: Exception) {
             if (e is InvalidVPNConfigException) {

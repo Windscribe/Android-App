@@ -93,7 +93,7 @@ class UserRepository(
             val sipChanged = it.sipCount != newUser.sipCount
             val migrationRequired = serviceInteractor.preferenceHelper.migrationRequired
             val emailStatusChanged = it.emailStatus != newUser.emailStatus
-            logger.info("What changed: Server list: $locationHashChanged | Alc: $alcListChanged | Sip: $sipChanged | User Status: $userStatusChanged | Account Status: $accountStatusChanged | Migration: $migrationRequired | Email Status: $emailStatusChanged")
+            logger.debug("What changed: Server list: $locationHashChanged | Alc: $alcListChanged | Sip: $sipChanged | User Status: $userStatusChanged | Account Status: $accountStatusChanged | Migration: $migrationRequired | Email Status: $emailStatusChanged")
             return listOf(alcListChanged or locationHashChanged, sipChanged, userStatusChanged or accountStatusChanged or migrationRequired, emailStatusChanged)
         } ?: kotlin.run {
             logger.debug("No user information found to compare.")

@@ -61,13 +61,13 @@ class AppLifeCycleObserver @Inject constructor(
             }
         }
         appContext.preference.wsNetSettings = WSNet.instance().currentPersistentSettings()
-        logger.debug("----------App going to background.--------\n")
+        logger.info("----------App going to background.--------\n")
     }
 
     @OnLifecycleEvent(ON_RESUME)
     fun resumingApp() {
         if (startingFresh.get().not()) {
-            logger.debug("----------------App moved to Foreground.------------\n")
+            logger.info("----------------App moved to Foreground.------------\n")
         }
         if (appContext.vpnConnectionStateManager.isVPNConnected().not()) {
             overriddenCountryCode = null

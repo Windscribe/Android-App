@@ -634,7 +634,7 @@ class WindscribePresenterImpl @Inject constructor(
 
     override fun onCityClick(cityId: Int) {
         windscribeView.exitSearchLayout()
-        logger.debug("User clicked on city.")
+        logger.info("User clicked on city.")
         selectedLocation?.cityId?.let {
             if (it == cityId && (interactor.getVpnConnectionStateManager()
                     .isVPNActive() || connectingFromServerList)
@@ -662,7 +662,7 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun onConnectClicked() {
-        logger.debug(
+        logger.info(
             "Connection UI State: {} Last connection State: {}",
             windscribeView.uiConnectionState?.javaClass?.simpleName,
             lastVPNState
@@ -786,7 +786,7 @@ class WindscribePresenterImpl @Inject constructor(
         if (windscribeView.networkLayoutState != NetworkLayoutState.CLOSED) {
             windscribeView.setNetworkLayout(networkInformation, NetworkLayoutState.CLOSED, true)
         }
-        logger.debug("Opening main menu activity...")
+        logger.info("Opening main menu activity...")
         windscribeView.openMenuActivity()
     }
 

@@ -88,7 +88,7 @@ abstract class VpnBackend(
     fun testConnectivity() {
         connectionJob?.cancel()
         connectivityTestJob.clear()
-        vpnLogger.debug("Starting connectivity test.")
+        vpnLogger.info("Starting connectivity test.")
         val startDelay = advanceParameterRepository.getTunnelStartDelay() ?: 500
         val retryDelay = advanceParameterRepository.getTunnelTestRetryDelay() ?: 500
         // Max Attempts = First attempt + retries
@@ -104,7 +104,7 @@ abstract class VpnBackend(
                             .checkConnectivityAndIpAddress()
                             .doOnError {
                                 failedAttemptIndex++
-                                vpnLogger.debug("Failed Attempt: $failedAttemptIndex")
+                                vpnLogger.info("Failed Attempt: $failedAttemptIndex")
                             }.retryWhen { error ->
                                 return@retryWhen error.take(maxRetries).delay(retryDelay, TimeUnit.MILLISECONDS)
                             }
@@ -152,7 +152,7 @@ abstract class VpnBackend(
     }
 
     open fun connectivityTestPassed(ip: String) {
-        vpnLogger.debug("Connectivity test successful: $ip")
+        vpnLogger.info("Connectivity test successful: $ip")
         updateState(VPNState(VPNState.Status.Connected, ip = ip))
         mainScope.launch {
             delay(500)
@@ -166,7 +166,7 @@ abstract class VpnBackend(
         // If app is in foreground, try other protocols.
         if (reconnecting.not()) {
             mainScope.launch {
-                vpnLogger.debug("Connectivity test failed.")
+                vpnLogger.info("Connectivity test failed.")
                 disconnect(
                         error = VPNState.Error(
                                 VPNState.ErrorType.ConnectivityTestFailed,
@@ -175,7 +175,7 @@ abstract class VpnBackend(
                 )
             }
         } else {
-            vpnLogger.debug("Connectivity test failed in background.")
+            vpnLogger.info("Connectivity test failed in background.")
             // Consider it connected and will fetch ip on app launch.
             vpnServiceInteractor.preferenceHelper.removeResponseData(PreferencesKeyConstants.USER_IP)
             updateState(VPNState(VPNState.Status.Connected))

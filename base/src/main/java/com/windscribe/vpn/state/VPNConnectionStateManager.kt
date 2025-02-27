@@ -63,7 +63,7 @@ class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionMan
             state.collectLatest {
                 WSNet.instance().setIsConnectedToVpnState(isVPNConnected())
                 if (start.getAndSet(true)) {
-                    logger.debug("VPN state changed to ${it.status}")
+                    logger.info("VPN state changed to ${it.status}")
                 } else {
                     val logFile = Windscribe.appContext.resources.getString(
                         R.string.log_file_header,
@@ -76,7 +76,7 @@ class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionMan
                         WindUtilities.getVersionCode()
                     )
                     logger.info(logFile)
-                    logger.debug("VPN state initialized with ${it.status}")
+                    logger.info("VPN state initialized with ${it.status}")
                     if (autoConnectionManager.listOfProtocols.isEmpty()){
                         autoConnectionManager.reset()
                     }
