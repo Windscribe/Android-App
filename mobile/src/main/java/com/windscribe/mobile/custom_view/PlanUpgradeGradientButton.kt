@@ -14,7 +14,6 @@ import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.LinearInterpolator
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.animation.doOnRepeat
 
@@ -116,23 +115,23 @@ class PlanUpgradeGradientButton @JvmOverloads constructor(
         clipPath?.let {
             canvas.clipPath(it)
         }
-        val glareSize = 93 * density
+        val glareSize = 48 * density
         val left = glareOffset
-        val top = rect.top
         val right = left + glareSize
-        val bottom = top + glareSize
+        val top = rect.bottom
+        val bottom = rect.top
 
         // **Glare Base Layer (70% Opacity)**
         glarePaint.alpha = (0.7f * 255).toInt()
-        canvas.drawLine(right, top, left, bottom, glarePaint)
+        canvas.drawLine(left, top, right, bottom, glarePaint)  // Forward slash `/`
 
-        // **Blurred Glare Layer (2.5px Blur)**
+        // **Blurred Glare Layer (Soft Blur)**
         glareBlurPaint.maskFilter = BlurMaskFilter(2.5f * density, BlurMaskFilter.Blur.NORMAL)
-        canvas.drawLine(right, top, left, bottom, glareBlurPaint)
+        canvas.drawLine(left, top, right, bottom, glareBlurPaint)
 
-        // **Final Glare (Plus-Lighter Blend)**
+        // **Final Glare (Smoother Soft Edge)**
         glareBlendPaint.maskFilter = BlurMaskFilter(3f * density, BlurMaskFilter.Blur.NORMAL)
-        canvas.drawLine(right, top, left, bottom, glareBlendPaint)
+        canvas.drawLine(left, top, right, bottom, glareBlendPaint)
 
         canvas.restore()
     }
