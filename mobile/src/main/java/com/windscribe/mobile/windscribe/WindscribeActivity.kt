@@ -548,7 +548,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     @OnClick(R.id.on_off_button)
     fun onConnectButtonClick() {
-        logger.debug("User clicked on connect button.")
+        logger.info("User clicked on connect button.")
         presenter.onConnectClicked()
         onOffButton?.isEnabled = false
         // Disable connect button to avoid mismatched state between animations.

@@ -117,12 +117,12 @@ class WireguardBackend(
         get() = healthJob?.isActive ?: false
 
     fun serviceCreated(vpnService: WireGuardWrapperService) {
-        vpnLogger.debug("WireGuard service created.")
+        vpnLogger.info("WireGuard service created.")
         service = vpnService
     }
 
     fun serviceDestroyed() {
-        vpnLogger.debug("WireGuard service destroyed.")
+        vpnLogger.info("WireGuard service destroyed.")
         service = null
     }
 
@@ -133,10 +133,10 @@ class WireguardBackend(
     private var stickyDisconnectEvent = false
     override fun activate() {
         stickyDisconnectEvent = true
-        vpnLogger.debug("Activating wireGuard backend.")
+        vpnLogger.info("Activating wireGuard backend.")
         connectionStateJob = scope.launch {
             testTunnel.stateFlow.cancellable().collectLatest {
-                vpnLogger.debug("WireGuard tunnel state changed to ${it.name}")
+                vpnLogger.info("WireGuard tunnel state changed to ${it.name}")
                 when (it) {
                     DOWN -> {
                         if (!stickyDisconnectEvent && !reconnecting) {
@@ -155,7 +155,7 @@ class WireguardBackend(
                 stickyDisconnectEvent = false
             }
         }
-        vpnLogger.debug("WireGuard backend activated.")
+        vpnLogger.info("WireGuard backend activated.")
         active = true
         scope.launch {
             wgLogger.captureLogs(appContext)
@@ -207,14 +207,14 @@ class WireguardBackend(
         startConnectionJob()
         scope.launch {
             proxyDNSManager.startControlDIfRequired()
-            vpnLogger.debug("Getting WireGuard profile.")
+            vpnLogger.info("Getting WireGuard profile.")
             Util.getProfile<WireGuardVpnProfile>()?.let {
                 withContext(Dispatchers.IO) {
                     val content = WireGuardVpnProfile.createConfigFromString(it.content)
                     if (preferencesHelper.isAntiCensorshipOn) {
                         sendUdpStuffingForWireGuard(content)
                     }
-                    vpnLogger.debug("Setting WireGuard state UP.")
+                    vpnLogger.info("Setting WireGuard state UP.")
                     try {
                         backend.setState(testTunnel, UP, content)
                     } catch (e: Exception) {
@@ -223,7 +223,7 @@ class WireguardBackend(
                     }
                 }
             } ?: kotlin.run {
-                vpnLogger.debug("Failed to get WireGuard profile.")
+                vpnLogger.info("Failed to get WireGuard profile.")
                 updateState(VPNState(Disconnected))
             }
         }
@@ -239,13 +239,13 @@ class WireguardBackend(
         healthJob?.cancel()
         connectionHealthJob?.cancel()
         connectionJob?.cancel()
-        vpnLogger.debug("Stopping WireGuard service.")
+        vpnLogger.info("Stopping WireGuard service.")
         service?.close()
         delay(20)
-        vpnLogger.debug("Setting WireGuard tunnel state down.")
+        vpnLogger.info("Setting WireGuard tunnel state down.")
         backend.setState(testTunnel, DOWN, null)
         delay(DISCONNECT_DELAY)
-        vpnLogger.debug("Deactivating WireGuard backend.")
+        vpnLogger.info("Deactivating WireGuard backend.")
         deactivate()
     }
 
@@ -282,7 +282,7 @@ class WireguardBackend(
             appContext.appLifeCycleObserver.appActivationState.collectIndexed { index, value ->
                 if (index > 0) {
                     if (isHealthServiceRunning.not()) {
-                        vpnLogger.debug("App is active: checking tunnel health.")
+                        vpnLogger.info("App is active: checking tunnel health.")
                         checkLastHandshake()
                     }
                 }
@@ -324,7 +324,11 @@ class WireguardBackend(
                 when (val response = vpnProfileCreator.updateWireGuardConfig(config)) {
                     is CallResult.Success -> {
                         if (config.`interface`.addresses.first() != response.data.`interface`.addresses.first()) {
-                            vpnLogger.debug("${config.`interface`.addresses.first()} > ${response.data.`interface`.addresses.first()}")
+                            vpnLogger.debug(
+                                "{} > {}",
+                                config.`interface`.addresses.first(),
+                                response.data.`interface`.addresses.first()
+                            )
                             reconnecting = true
                             try {
                                 protectByVPN.set(false)

@@ -91,7 +91,7 @@ class AutoConnectionManager(
         listOfProtocols.clear()
         listOfProtocols = reloadProtocols()
         updateNextInLineProtocol()
-        logger.debug("{}", listOfProtocols)
+        logger.info("{}", listOfProtocols)
     }
 
     fun stop() {
@@ -231,7 +231,7 @@ class AutoConnectionManager(
         val protocolLog =
             "Last known: ${lastKnownProtocolInformation ?: ""} Preferred: ${preferredProtocol ?: ""} Manual: ${manualProtocol ?: ""}"
         if (protocolLog != lastProtocolLog) {
-            logger.debug(protocolLog)
+            logger.info(protocolLog)
         }
         lastProtocolLog = protocolLog
         return appSupportedProtocolOrder
@@ -577,13 +577,13 @@ class AutoConnectionManager(
                 }
             })
         if (launched.not()) {
-            logger.debug("App is in background. existing auto connect.")
+            logger.info("App is in background. existing auto connect.")
             stop()
         }
     }
 
     fun setSelectedProtocol(protocolInformation: ProtocolInformation) {
-        logger.debug("Trying to connect: $protocolInformation")
+        logger.info("Trying to connect: $protocolInformation")
         scope.launch {
             interactor.preferenceHelper.selectedProtocol = protocolInformation.protocol
             interactor.preferenceHelper.selectedPort = protocolInformation.port

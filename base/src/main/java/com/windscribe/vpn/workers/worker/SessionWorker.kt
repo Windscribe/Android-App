@@ -124,10 +124,10 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
     }
 
     private fun handleAccountStatusChange(user: User) {
-        logger.debug("User account status: ${user.accountStatus} is VPN Connected: ${vpnStateManager.isVPNConnected()}")
+        logger.info("User account status: ${user.accountStatus} is VPN Connected: ${vpnStateManager.isVPNConnected()}")
         if (user.accountStatus != User.AccountStatus.Okay) {
             if (vpnStateManager.isVPNConnected()) {
-                logger.debug("Disconnecting...")
+                logger.info("Disconnecting...")
                 vpnController.disconnectAsync()
             }
             wgConfigRepository.deleteKeys()

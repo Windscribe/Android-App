@@ -45,7 +45,7 @@ class EmergencyConnectViewModal(
     }
 
     fun connectButtonClick() {
-        logger.debug("User clicked connect button with current state: ${uiState.value}")
+        logger.info("User clicked connect button with current state: ${uiState.value}")
         if (uiState.value == EmergencyConnectUIState.Connected || uiState.value == EmergencyConnectUIState.Connecting) {
             disconnect()
         } else {
@@ -66,7 +66,7 @@ class EmergencyConnectViewModal(
             windVpnController.connectUsingEmergencyProfile { progress ->
                 _connectionProgressText.value = progress
             }.onSuccess {
-                logger.debug("Successfully connected to emergency server.")
+                logger.info("Successfully connected to emergency server.")
             }.onFailure {
                 logger.error("Failure to connect using emergency vpn profiles: $it")
                 _uiState.emit(EmergencyConnectUIState.Disconnected)

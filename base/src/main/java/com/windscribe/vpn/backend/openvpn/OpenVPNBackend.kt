@@ -43,7 +43,7 @@ class OpenVPNBackend(
     private val openVPNLogger = LoggerFactory.getLogger("openvpn")
     var service: OpenVPNWrapperService? = null
     override fun activate() {
-        vpnLogger.debug("Activating OpenVPN backend.")
+        vpnLogger.info("Activating OpenVPN backend.")
         stickyDisconnectEvent = true
         VpnStatus.addStateListener(this)
         VpnStatus.addLogListener {
@@ -53,7 +53,7 @@ class OpenVPNBackend(
         }
         VpnStatus.addByteCountListener(this)
         active = true
-        vpnLogger.debug("Open VPN backend activated.")
+        vpnLogger.info("Open VPN backend activated.")
     }
 
     override fun deactivate() {
@@ -61,13 +61,13 @@ class OpenVPNBackend(
         VpnStatus.removeStateListener(this)
         VpnStatus.removeByteCountListener(this)
         active = false
-        vpnLogger.debug("Open VPN backend deactivated.")
+        vpnLogger.info("Open VPN backend deactivated.")
     }
 
     override fun connect(protocolInformation: ProtocolInformation, connectionId: UUID) {
         this.protocolInformation = protocolInformation
         this.connectionId = connectionId
-        vpnLogger.debug("Starting Open VPN Service.")
+        vpnLogger.info("Starting Open VPN Service.")
         startConnectionJob()
         scope.launch {
             proxyDNSManager.startControlDIfRequired()
@@ -82,7 +82,7 @@ class OpenVPNBackend(
         }
         if (active) {
             stickyDisconnectEvent = false
-            vpnLogger.debug("Stopping Open VPN Service.")
+            vpnLogger.info("Stopping Open VPN Service.")
             connectionJob?.cancel()
             startOpenVPN(OpenVPNService.PAUSE_VPN)
             delay(DISCONNECT_DELAY)
@@ -93,10 +93,10 @@ class OpenVPNBackend(
     private fun startOpenVPN(action: String?) {
         val ovpnService = Intent(Windscribe.appContext, OpenVPNWrapperService::class.java)
         if (action != null) {
-            vpnLogger.debug("Sending stop event to OpenVPN service")
+            vpnLogger.info("Sending stop event to OpenVPN service")
             ovpnService.action = action
         } else {
-            vpnLogger.debug("Sending start event to OpenVPN service")
+            vpnLogger.info("Sending start event to OpenVPN service")
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Windscribe.appContext.startForegroundService(ovpnService)
@@ -112,7 +112,7 @@ class OpenVPNBackend(
             level: ConnectionStatus?,
             Intent: Intent?
     ) {
-        vpnLogger.debug("$openVpnState $localizedResId $level")
+        vpnLogger.debug("{} {} {}", openVpnState, localizedResId, level)
         level?.let {
             when (it) {
                 ConnectionStatus.LEVEL_START, ConnectionStatus.LEVEL_CONNECTING_NO_SERVER_REPLY_YET,
