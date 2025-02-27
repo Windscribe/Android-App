@@ -115,7 +115,7 @@ class PlanUpgradeGradientButton @JvmOverloads constructor(
         clipPath?.let {
             canvas.clipPath(it)
         }
-        val glareSize = 48 * density
+        val glareSize = 66 * density
         val left = glareOffset
         val right = left + glareSize
         val top = rect.bottom
