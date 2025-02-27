@@ -107,6 +107,7 @@ class PlanUpgradeGradientButton @JvmOverloads constructor(
     override fun setEnabled(enabled: Boolean) {
         super.setEnabled(enabled)
         alpha = if (enabled) 1.0f else 0.5f
+        animateGlare()
     }
 
     private fun drawGlare(rect: RectF, canvas: Canvas) {
@@ -137,6 +138,8 @@ class PlanUpgradeGradientButton @JvmOverloads constructor(
     }
 
     private fun animateGlare() {
+        if(rect == null) return
+        glareAnimator?.cancel()
         val cornerRadius = height / 2f
         clipPath = Path().apply {
             addRoundRect(rect!!, cornerRadius, cornerRadius, Path.Direction.CW)
