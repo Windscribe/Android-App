@@ -169,7 +169,7 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun getStaticIpList(deviceID: String?): Single<GenericResponseClass<StaticIPResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.staticIps(preferencesHelper.sessionHash, 2) { code, json ->
+            val callback = wsNetServerAPI.staticIps(preferencesHelper.sessionHash) { code, json ->
                 buildResponse(sub, code, json, StaticIPResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
