@@ -197,7 +197,7 @@ class WelcomeActivity : BaseActivity(), FragmentCallback, WelcomeView, UnknownEr
         username: String,
         password: String,
         email: String,
-        referralUsername: String,
+        referralUsername: String?,
         ignoreEmptyEmail: Boolean,
         voucherCode: String
     ) {

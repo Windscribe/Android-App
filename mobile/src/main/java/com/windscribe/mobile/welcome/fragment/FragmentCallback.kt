@@ -22,7 +22,7 @@ interface FragmentCallback {
         username: String,
         password: String,
         email: String,
-        referralUsername: String,
+        referralUsername: String?,
         ignoreEmptyEmail: Boolean,
         voucherCode: String
     )
