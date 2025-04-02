@@ -7,10 +7,16 @@ import android.text.TextUtils
 import android.util.Patterns
 import android.view.View
 import com.windscribe.mobile.R
-import com.windscribe.vpn.commonutils.CommonPasswordChecker
 import com.windscribe.vpn.ActivityInteractor
-import com.windscribe.vpn.api.response.*
+import com.windscribe.vpn.api.response.ApiErrorResponse
+import com.windscribe.vpn.api.response.ClaimAccountResponse
+import com.windscribe.vpn.api.response.GenericResponseClass
+import com.windscribe.vpn.api.response.RegToken
+import com.windscribe.vpn.api.response.UserLoginResponse
+import com.windscribe.vpn.api.response.UserRegistrationResponse
+import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.backend.Util
+import com.windscribe.vpn.commonutils.CommonPasswordChecker
 import com.windscribe.vpn.commonutils.RegionLocator
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes
@@ -26,11 +32,11 @@ import io.reactivex.functions.Function
 import io.reactivex.observers.DisposableCompletableObserver
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
-import java.util.*
+import java.util.Date
+import java.util.UUID
 import javax.inject.Inject
 
 class WelcomePresenterImpl @Inject constructor(
@@ -221,7 +227,7 @@ class WelcomePresenterImpl @Inject constructor(
         username: String,
         password: String,
         email: String,
-        referralUsername: String,
+        referralUsername: String?,
         ignoreEmptyEmail: Boolean,
         voucherCode: String
     ) {

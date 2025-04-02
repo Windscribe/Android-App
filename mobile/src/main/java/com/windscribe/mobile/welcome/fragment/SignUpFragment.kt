@@ -12,7 +12,12 @@ import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.ScrollView
+import android.widget.TextView
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.fragment.app.Fragment
@@ -246,11 +251,16 @@ class SignUpFragment : Fragment(), TextWatcher,
         } else {
             val referral = referralUsernameEditText.text.toString().trim { it <= ' ' }
             val email = emailEditText.text.toString().trim { it <= ' ' }
+            val referralToSend = if (referral.isEmpty() || referral == getString(R.string.please_provide_email_first)) {
+                null
+            } else {
+                referral.replace(" ", "")
+            }
             fragmentCallBack?.onSignUpButtonClick(
                 usernameEditText.text.toString().trim { it <= ' ' },
                 passwordEditText.text.toString().trim { it <= ' ' },
                 email,
-                referral,
+                referralToSend,
                 false,
                 voucher.text.toString().trim {it <= ' '},
             )
