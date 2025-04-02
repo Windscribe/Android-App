@@ -164,7 +164,7 @@ Slack:
     - apk --no-cache add curl
 
 BuildWsnet:
-  stage: Build
+  stage: Deploy
   script:
     - echo "Cloning client-desktop repository..."
     - git clone https://gitlab.int.windscribe.com/ws/client/desktop/client-desktop.git
