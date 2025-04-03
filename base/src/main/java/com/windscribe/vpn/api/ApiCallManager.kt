@@ -3,7 +3,6 @@
  */
 package com.windscribe.vpn.api
 
-import android.util.Log
 import com.windscribe.vpn.api.response.AddEmailResponse
 import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.api.response.BillingPlanResponse
@@ -32,7 +31,6 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.exceptions.WindScribeException
-import com.wsnet.lib.WSNet
 import com.wsnet.lib.WSNetServerAPI
 import io.reactivex.Single
 import io.reactivex.SingleEmitter
@@ -169,7 +167,7 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun getStaticIpList(deviceID: String?): Single<GenericResponseClass<StaticIPResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.staticIps(preferencesHelper.sessionHash) { code, json ->
+            val callback = wsNetServerAPI.staticIps(preferencesHelper.sessionHash, 2) { code, json ->
                 buildResponse(sub, code, json, StaticIPResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
