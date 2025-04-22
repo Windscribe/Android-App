@@ -304,7 +304,7 @@ private fun SearchListNavigation(viewModel: ServerViewModel) {
             Text(
                 stringResource(R.string.clear),
                 style = font16,
-                color = AppColors.neonGreen,
+                color = AppColors.cyberBlue.copy(0.7f),
                 modifier = Modifier
                     .padding(8.dp)
                     .clickable {
