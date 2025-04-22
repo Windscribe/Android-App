@@ -55,7 +55,7 @@ class UnknownErrorDialogTest : BaseTest() {
                 withText(appContext.getString(R.string.contact_support))
             )
         )
-        onView(withId(R.id.unknownErrorSendLogButton)).inRoot(isDialog()).check(
+        onView(withId(R.id.contact_support)).inRoot(isDialog()).check(
             ViewAssertions.matches(
                 withText(appContext.getString(R.string.export_log))
             )
@@ -72,7 +72,7 @@ class UnknownErrorDialogTest : BaseTest() {
         countingIdlingResource.increment()
         activity.showFailedAlert(activity.getString(R.string.failed_network_alert))
         val intent = IntentMatchers.hasAction(Intent.ACTION_CHOOSER)
-        onView(withId(R.id.unknownErrorSendLogButton)).inRoot(isDialog()).perform(click())
+        onView(withId(R.id.contact_support)).inRoot(isDialog()).perform(click())
         Intents.intended(intent)
         UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).pressBack()
 

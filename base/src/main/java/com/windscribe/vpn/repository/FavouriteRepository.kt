@@ -20,14 +20,18 @@ class FavouriteRepository @Inject constructor(
         load()
     }
 
-    fun load() {
+    private fun load() {
         scope.launch {
-            localDbInterface.favourites.toResult().onSuccess { favourites ->
-                val favouriteCityList = favourites.map {
-                    return@map localDbInterface.getCityByID(it.id).toResult().getOrNull()
-                }.filterNotNull().toList()
+            localDbInterface.getFavourites().collect { favourites ->
+                val favouriteCityList = favourites.mapNotNull { fav ->
+                    try {
+                        localDbInterface.getCityByIDAsync(fav.id)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
                 _favourites.emit(favouriteCityList)
-            }.onFailure {}
+            }
         }
     }
 
@@ -35,7 +39,9 @@ class FavouriteRepository @Inject constructor(
         return localDbInterface.addToFavourites(Favourite(city.id)).toResult()
     }
 
-    fun remove(city: City): Result<Unit> {
-        return kotlin.runCatching { localDbInterface.delete(Favourite(city.id)) }
+    fun remove(id: Int) {
+        scope.launch {
+            localDbInterface.deleteFavourite(id)
+        }
     }
 }

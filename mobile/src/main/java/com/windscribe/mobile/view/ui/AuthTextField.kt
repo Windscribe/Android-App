@@ -1,0 +1,145 @@
+package com.windscribe.mobile.view.ui
+
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.windscribe.mobile.R
+import com.windscribe.mobile.view.theme.AppColors
+import com.windscribe.mobile.view.theme.Dimen
+import com.windscribe.mobile.view.theme.font16
+
+@Composable
+fun AuthTextField(
+    modifier: Modifier = Modifier,
+    hint: String,
+    isError: Boolean = false,
+    isPassword: Boolean = false,
+    onValueChange: (String) -> Unit = {},
+    onHintClick: () -> Unit = {}
+) {
+    var text by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    Column(modifier = modifier) {
+        // Hint label
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(bottom = Dimen.dp8, start = Dimen.dp8, end = Dimen.dp16),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = hint,
+                style = font16.copy(fontWeight = FontWeight.Medium),
+                color = if(isError) AppColors.red else AppColors.white,
+                modifier = Modifier.clickable { onHintClick() }
+            )
+            if (isError) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_input_error_icon),
+                    contentDescription = stringResource(id = R.string.username),
+                    tint = Color.Red,
+                )
+            }
+        }
+
+        Box {
+            TextField(
+                value = text,
+                onValueChange = {
+                    text = it
+                    onValueChange(it)
+                },
+                isError = isError,
+                singleLine = true,
+                shape = RoundedCornerShape(9.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = if(isError) AppColors.red else AppColors.white,
+                    unfocusedTextColor = if(isError) AppColors.red else AppColors.white,
+                    disabledTextColor = if (isError) AppColors.red else AppColors.white,
+                    unfocusedContainerColor = AppColors.gray,
+                    focusedContainerColor = AppColors.gray,
+                    disabledContainerColor = AppColors.gray,
+                    errorContainerColor = AppColors.gray,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    errorIndicatorColor = Color.Transparent,
+                    cursorColor = AppColors.white,
+                ),
+                visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
+                trailingIcon = {
+                    if (isPassword) {
+                        IconButton(
+                            onClick = { passwordVisible = !passwordVisible }
+                        ) {
+                            Icon(
+                                painter = painterResource(
+                                    id = if (passwordVisible) R.drawable.ic_show_password else R.drawable.ic_hide_password
+                                ),
+                                contentDescription = if (passwordVisible)
+                                    stringResource(id = R.string.password)
+                                else
+                                    stringResource(id = R.string.show_password),
+                                tint = AppColors.white50
+                            )
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(Dimen.dp52)
+                    .then(
+                        if (isError) Modifier.border(
+                            width = 1.dp,
+                            color = AppColors.red,
+                            shape = RoundedCornerShape(9.dp)
+                        ) else Modifier
+                    ),
+                textStyle = font16.copy(color = if (isError) AppColors.red else AppColors.white, textAlign = TextAlign.Start),
+            )
+        }
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun AuthTextFieldPreview() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 100.dp, start = 16.dp, end = 16.dp)
+    ) {
+        AuthTextField(hint = "Username", isError = true)
+        Spacer(modifier = Modifier.height(Dimen.dp16))
+        AuthTextField(hint = "Password", isPassword = true)
+    }
+}

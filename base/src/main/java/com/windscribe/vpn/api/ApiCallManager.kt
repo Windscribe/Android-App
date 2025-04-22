@@ -30,6 +30,7 @@ import com.windscribe.vpn.api.response.XPressLoginVerifyResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.errormodel.WindError
+import com.windscribe.vpn.exceptions.WSNetException
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.wsnet.lib.WSNetServerAPI
 import io.reactivex.Single
@@ -381,10 +382,10 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
 
     private fun <T> buildResponse(sub: SingleEmitter<GenericResponseClass<T?, ApiErrorResponse?>>, code: Int, responseDataString: String, modelType: Class<T>) {
         when (code) {
-            1 -> sub.onError(WindScribeException("WSNet: Network failed to connect to server."))
-            2 -> sub.onError(WindScribeException("WSNet: No network available to reach API."))
-            3 -> sub.onError(WindScribeException("WSNet: Server returned incorrect json response. Unable to parse it. Response: $responseDataString"))
-            4 -> sub.onError(WindScribeException("WSNet: All fallback domains have failed."))
+            1 -> sub.onError(WSNetException("WSNet: Network failed to connect to server.", 1))
+            2 -> sub.onError(WSNetException("WSNet: No network available to reach API.", 2))
+            3 -> sub.onError(WSNetException("WSNet: Server returned incorrect json response. Unable to parse it. Response: $responseDataString", 3))
+            4 -> sub.onError(WSNetException("WSNet: All fallback domains have failed.", 4))
             else -> {
                 try {
                     if (modelType.simpleName.equals("String")) {
@@ -398,7 +399,7 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
                         val errorObject = JsonResponseConverter.getErrorClass(JSONObject(responseDataString))
                         sub.onSuccess(GenericResponseClass(null, errorObject))
                     } catch (e: Exception) {
-                        sub.onError(WindScribeException("App: Unable to parse [ $responseDataString ] to ${modelType.simpleName}. ) "))
+                        sub.onError(WSNetException("App: Unable to parse [ $responseDataString ] to ${modelType.simpleName}. ) ", 3))
                     }
                 }
             }

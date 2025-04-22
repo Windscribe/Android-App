@@ -4,14 +4,15 @@
 package com.windscribe.mobile.windscribe
 
 import android.content.Intent
-import android.view.ViewGroup
-import androidx.core.view.children
-import androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE
 import com.windscribe.mobile.R
-import com.windscribe.mobile.connectionmode.*
-import com.windscribe.mobile.splash.SplashActivity
+import com.windscribe.mobile.connectionmode.AllProtocolFailedFragment
+import com.windscribe.mobile.connectionmode.ConnectionChangeFragment
+import com.windscribe.mobile.connectionmode.ConnectionFailureFragment
+import com.windscribe.mobile.connectionmode.DebugLogSentFragment
+import com.windscribe.mobile.connectionmode.SetupPreferredProtocolFragment
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
-import com.windscribe.mobile.welcome.WelcomeActivity
+import com.windscribe.mobile.view.AppStartActivity
+import com.windscribe.mobile.view.ui.FragmentView
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.ApplicationInterface
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
@@ -29,11 +30,11 @@ class PhoneApplication : Windscribe(), ApplicationInterface {
     override val homeIntent: Intent
         get() = Intent(appContext, WindscribeActivity::class.java)
     override val splashIntent: Intent
-        get() = Intent(appContext, SplashActivity::class.java)
+        get() = Intent(appContext, AppStartActivity::class.java)
     override val upgradeIntent: Intent
         get() = Intent(appContext, UpgradeActivity::class.java)
     override val welcomeIntent: Intent
-        get() = Intent(appContext, WelcomeActivity::class.java)
+        get() = Intent(appContext, AppStartActivity::class.java)
     override val isTV: Boolean
         get() = false
 
@@ -52,34 +53,37 @@ class PhoneApplication : Windscribe(), ApplicationInterface {
         autoConnectionModeCallback: AutoConnectionModeCallback,
         protocolInformation: ProtocolInformation?
     ): Boolean {
-        return if (activeActivity == null) {
-            false
-        } else {
-            val viewGroup: ViewGroup =
-                activeActivity?.findViewById(android.R.id.content) as ViewGroup
-            if (viewGroup.children.count() > 0 && viewGroup.children.first().id != -1) {
-                val fragment = when (fragmentType) {
-                    FragmentType.ConnectionFailure -> ConnectionFailureFragment.newInstance(
-                        protocolInformationList, autoConnectionModeCallback
-                    )
-                    FragmentType.ConnectionChange -> ConnectionChangeFragment.newInstance(
-                        protocolInformationList, autoConnectionModeCallback
-                    )
-                    FragmentType.SetupAsPreferredProtocol -> SetupPreferredProtocolFragment.newInstance(
-                        protocolInformation, autoConnectionModeCallback
-                    )
-                    FragmentType.DebugLogSent -> DebugLogSentFragment.newInstance(
-                        autoConnectionModeCallback
-                    )
-                    FragmentType.AllProtocolFailed -> AllProtocolFailedFragment.newInstance(
-                        autoConnectionModeCallback
-                    )
-                }
-                activeActivity?.supportFragmentManager?.beginTransaction()
-                    ?.setTransition(TRANSIT_FRAGMENT_FADE)
-                    ?.add(viewGroup.children.first().id, fragment, "")?.commit()
+        return if (activeActivity is AppStartActivity) {
+            val fragment = when (fragmentType) {
+                FragmentType.ConnectionFailure -> ConnectionFailureFragment.newInstance(
+                    protocolInformationList, autoConnectionModeCallback
+                )
+                FragmentType.ConnectionChange -> ConnectionChangeFragment.newInstance(
+                    protocolInformationList, autoConnectionModeCallback
+                )
+                FragmentType.SetupAsPreferredProtocol -> SetupPreferredProtocolFragment.newInstance(
+                    protocolInformation, autoConnectionModeCallback
+                )
+                FragmentType.DebugLogSent -> DebugLogSentFragment.newInstance(
+                    autoConnectionModeCallback
+                )
+                FragmentType.AllProtocolFailed -> AllProtocolFailedFragment.newInstance(
+                    autoConnectionModeCallback
+                )
+            }
+            (activeActivity as? AppStartActivity)?.presentDialog {
+                FragmentView(fragment, activeActivity as AppStartActivity)
             }
             true
+        } else {
+            false
+        }
+    }
+
+    override fun cancelDialog() {
+        if (activeActivity is AppStartActivity) {
+            (activeActivity as AppStartActivity).cancelDialog()
+            activeActivity?.supportFragmentManager?.popBackStack()
         }
     }
 }

@@ -16,6 +16,7 @@ import com.windscribe.vpn.serverlist.entity.Favourite;
 import java.util.List;
 
 import io.reactivex.Single;
+import kotlinx.coroutines.flow.Flow;
 
 @Dao
 public interface FavouriteDao {
@@ -28,4 +29,10 @@ public interface FavouriteDao {
 
     @Query("Select * from Favourite")
     Single<List<Favourite>> getFavourites();
+
+    @Query("Select * from Favourite")
+    Flow<List<Favourite>> getFavouritesAsFlow();
+
+    @Query("Delete from Favourite where favourite_id = :ID")
+    void deleteFavourite(int ID);
 }

@@ -6,7 +6,6 @@ package com.windscribe.vpn.apppreference
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.api.response.NewsFeedNotification
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.constants.PreferencesKeyConstants
@@ -31,11 +30,11 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.WHITELISTED_NETWORK
 import com.windscribe.vpn.constants.PreferencesKeyConstants.WS_NET_SETTINGS
 import com.windscribe.vpn.constants.VpnPreferenceConstants
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
-import com.windscribe.vpn.exceptions.PreferenceException
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.WgLocalParams
 import io.reactivex.Single
 import net.grandcentrix.tray.AppPreferences
+import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
 import java.util.Date
 import javax.inject.Singleton
 
@@ -740,4 +739,77 @@ class AppPreferenceHelper(
     override fun setPowerWhiteListDialogCount(count: Int) {
         preference.put(PreferencesKeyConstants.POWER_WHITE_LIST_POPUP_SHOW_COUNT, count)
     }
+
+    override fun addObserver(listener: OnTrayPreferenceChangeListener) {
+        preference.registerOnTrayPreferenceChangeListener(listener)
+    }
+
+    override fun removeObserver(listener: OnTrayPreferenceChangeListener) {
+        preference.unregisterOnTrayPreferenceChangeListener(listener)
+    }
+    override var whenDisconnectedBackgroundOption: Int
+        get() = preference.getInt(PreferencesKeyConstants.WHEN_DISCONNECTED_BACKGROUND_OPTION, 1)
+        set(value) {
+            preference.put(PreferencesKeyConstants.WHEN_DISCONNECTED_BACKGROUND_OPTION, value)
+        }
+    override var whenConnectedBackgroundOption: Int
+        get() = preference.getInt(PreferencesKeyConstants.WHEN_CONNECTED_BACKGROUND_OPTION, 1)
+        set(value) {
+            preference.put(PreferencesKeyConstants.WHEN_CONNECTED_BACKGROUND_OPTION, value)
+        }
+    override var backgroundAspectRatioOption: Int
+        get() = preference.getInt(PreferencesKeyConstants.ASPECT_RATIO_BACKGROUND_OPTION, 1)
+        set(value) {
+            preference.put(PreferencesKeyConstants.ASPECT_RATIO_BACKGROUND_OPTION, value)
+        }
+    override var disconnectedBundleBackgroundOption: Int
+        get() = preference.getInt(PreferencesKeyConstants.DISCONNECTED_BUNDLE_BACKGROUND_OPTION, 1)
+        set(value) {
+            preference.put(PreferencesKeyConstants.DISCONNECTED_BUNDLE_BACKGROUND_OPTION, value)
+        }
+    override var connectedBundleBackgroundOption: Int
+        get() = preference.getInt(PreferencesKeyConstants.CONNECTED_BUNDLE_BACKGROUND_OPTION, 1)
+        set(value) {
+            preference.put(PreferencesKeyConstants.CONNECTED_BUNDLE_BACKGROUND_OPTION, value)
+        }
+    override var customDisconnectedBackground: String?
+        get() = preference.getString(PreferencesKeyConstants.DISCONNECTED_CUSTOM_BACKGROUND, null)
+        set(value) {
+            preference.put(PreferencesKeyConstants.DISCONNECTED_CUSTOM_BACKGROUND, value)
+        }
+    override var customConnectedBackground: String?
+        get() = preference.getString(PreferencesKeyConstants.CONNECTED_CUSTOM_BACKGROUND, null)
+        set(value) {
+            preference.put(PreferencesKeyConstants.CONNECTED_CUSTOM_BACKGROUND, value)
+        }
+    override var whenDisconnectedSoundOption: Int
+        get() = preference.getInt(PreferencesKeyConstants.WHEN_DISCONNECTED_SOUND_OPTION, 1)
+        set(value) {
+            preference.put(PreferencesKeyConstants.WHEN_DISCONNECTED_SOUND_OPTION, value)
+        }
+    override var whenConnectedSoundOption: Int
+        get() = preference.getInt(PreferencesKeyConstants.WHEN_CONNECTED_SOUND_OPTION, 1)
+        set(value) {
+            preference.put(PreferencesKeyConstants.WHEN_CONNECTED_SOUND_OPTION, value)
+        }
+    override var disconnectedBundleSoundOption: Int
+        get() = preference.getInt(PreferencesKeyConstants.DISCONNECTED_BUNDLE_SOUND_OPTION, 1)
+        set(value) {
+            preference.put(PreferencesKeyConstants.DISCONNECTED_BUNDLE_SOUND_OPTION, value)
+        }
+    override var connectedBundleSoundOption: Int
+        get() = preference.getInt(PreferencesKeyConstants.CONNECTED_BUNDLE_SOUND_OPTION, 1)
+        set(value) {
+            preference.put(PreferencesKeyConstants.CONNECTED_BUNDLE_SOUND_OPTION, value)
+        }
+    override var customDisconnectedSound: String?
+        get() = preference.getString(PreferencesKeyConstants.DISCONNECTED_CUSTOM_SOUND, null)
+        set(value) {
+            preference.put(PreferencesKeyConstants.DISCONNECTED_CUSTOM_SOUND, value)
+        }
+    override var customConnectedSound: String?
+        get() = preference.getString(PreferencesKeyConstants.CONNECTED_CUSTOM_SOUND, null)
+        set(value) {
+            preference.put(PreferencesKeyConstants.CONNECTED_CUSTOM_SOUND, value)
+        }
 }

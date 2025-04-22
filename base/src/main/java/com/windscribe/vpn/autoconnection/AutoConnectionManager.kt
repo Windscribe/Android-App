@@ -18,14 +18,19 @@ import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.Lazy
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.rx2.await
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.slf4j.LoggerFactory
-import java.util.*
+import java.util.UUID
 import javax.inject.Singleton
 
 @Singleton
@@ -379,6 +384,7 @@ class AutoConnectionManager(
             it is DialogFragment
         } as? DialogFragment
         dialog?.dismiss()
+        appContext.applicationInterface.cancelDialog()
     }
 
     private fun contactSupport() {

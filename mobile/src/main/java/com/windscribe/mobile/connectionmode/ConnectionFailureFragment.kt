@@ -13,6 +13,7 @@ import butterknife.OnClick
 import com.windscribe.mobile.R
 import com.windscribe.mobile.adapter.ItemSelectListener
 import com.windscribe.mobile.adapter.ProtocolInformationAdapter
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.commonutils.Ext.launchPeriodicAsync
@@ -85,6 +86,7 @@ class ConnectionFailureFragment : DialogFragment(), ItemSelectListener {
 
     override fun onItemSelect(protocolInformation: ProtocolInformation) {
         dismissAllowingStateLoss()
+        appContext.applicationInterface.cancelDialog()
         scope.cancel()
         autoConnectionModeCallback?.onProtocolSelect(protocolInformation)
     }

@@ -9,6 +9,7 @@ import butterknife.ButterKnife
 import butterknife.OnClick
 import com.windscribe.mobile.R
 import com.windscribe.mobile.base.BaseActivity
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.constants.NetworkKeyConstants
 
@@ -33,6 +34,7 @@ class DebugLogSentFragment : DialogFragment() {
     @OnClick(R.id.contact_support)
     fun onContactSupportClick() {
         dismiss()
+        appContext.applicationInterface.cancelDialog()
         val activity = activity as? BaseActivity
         activity?.openURLInBrowser(NetworkKeyConstants.getWebsiteLink(NetworkKeyConstants.URL_HELP_ME))
     }

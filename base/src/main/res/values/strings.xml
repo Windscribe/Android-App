@@ -385,7 +385,6 @@ last chosen location.</string>
     <string name="location_order_description">Arrange the location list in ascending order of the alphabet, geography, or latency.</string>
     <string name="latency_display_description">Display latency as signal strength bars or in milliseconds.</string>
     <string name="language_description">Localize Windscribe to supported languages.</string>
-    <string name="app_background_description">Customize the in-app connection screen.</string>
     <string name="notification_stats_description">Show traffic stats in the notification.</string>
     <string name="location_load_description">Display the location load as a bar. The shorter the bar, the lesser the load on the location (with respect to the location\'s total capacity).</string>
     <string name="haptic_feedback_description">Physical responses(Vibration) to user actions</string>
@@ -531,4 +530,27 @@ last chosen location.</string>
     <string name="follow_us_on_x">Follow us on X</string>
     <string name="charged_every_month">charged every month</string>
     <string name="charged_every_12_months">charged every 12 months</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="continue_with_apple">Continue with Apple</string>
+    
+    <string name="look_and_feel">Look &amp; Feel</string>
+    <string name="when_disconnected">When Disconnected</string>
+    <string name="when_connected">When Connected</string>
+    <string name="aspect_ratio">Aspect Ratio</string>
+    <string name="fill">Fill</string>
+    <string name="scale">Scale</string>
+    <string name="tile">Tile</string>
+    <string name="bundle">Bundle</string>
+    <string name="None">None</string>
+    <string name="sound_notifications">Sound Notifications</string>
+    <string name="app_background_description">Customize the background of main app screen.</string>
+    <string name="sound_notifications_description">Choose sounds to play when connection events occur.</string>
+    <string name="renamed_location">Rename Locations</string>
+    <string name="renamed_location_description">Change location names to your liking.</string>
+    <string name="export_locations">Export</string>
+    <string name="import_locations">Import</string>
+    <string name="reset">Reset</string>
+    <string name="no_static_ip">No Static IPs</string>
+    <string name="unblock_full_access">Unlock full access to Windscribe</string>
+    <string name="go_pro_for_unlimited_everything">Go Pro for unlimited everything</string>
 </resources>

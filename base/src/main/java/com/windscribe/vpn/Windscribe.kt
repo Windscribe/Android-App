@@ -51,7 +51,7 @@ import org.conscrypt.Conscrypt
 import org.slf4j.LoggerFactory
 import org.strongswan.android.logic.StrongSwanApplication
 import java.security.Security
-import java.util.*
+import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import javax.inject.Inject
@@ -74,6 +74,7 @@ open class Windscribe : MultiDexApplication() {
                 autoConnectionModeCallback: AutoConnectionModeCallback,
                 protocolInformation: ProtocolInformation? = null
         ): Boolean
+        fun cancelDialog() {}
     }
 
     private val logger = LoggerFactory.getLogger("app")

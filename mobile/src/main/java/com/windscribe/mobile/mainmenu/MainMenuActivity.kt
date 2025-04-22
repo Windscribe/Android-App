@@ -15,11 +15,9 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import butterknife.BindView
 import butterknife.OnClick
-import com.windscribe.mobile.BuildConfig
 import com.windscribe.mobile.R
 import com.windscribe.mobile.about.AboutActivity
 import com.windscribe.mobile.account.AccountActivity
-import com.windscribe.mobile.advance.AdvanceParamsActivity
 import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.confirmemail.ConfirmActivity
 import com.windscribe.mobile.connectionsettings.ConnectionSettingsActivity
@@ -29,12 +27,11 @@ import com.windscribe.mobile.dialogs.ShareAppLinkDialog
 import com.windscribe.mobile.email.AddEmailActivity
 import com.windscribe.mobile.generalsettings.GeneralSettingsActivity
 import com.windscribe.mobile.help.HelpActivity
+import com.windscribe.mobile.lipstick.LipstickActivity
 import com.windscribe.mobile.robert.RobertSettingsActivity
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.utils.UiUtil
 import com.windscribe.mobile.welcome.WelcomeActivity
-import com.windscribe.vpn.BuildConfig.BUILD_TYPE
-import com.windscribe.vpn.BuildConfig.DEV
 import com.windscribe.vpn.alert.showAlertDialog
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.PreferenceChangeObserver
@@ -108,6 +105,9 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
     @BindView(R.id.cl_refer_for_data)
     lateinit var referForDataView: IconLinkView
 
+    @BindView(R.id.cl_lipstick)
+    lateinit var lipstickView: IconLinkView
+
     @BindView(R.id.divider_refer_for_data)
     lateinit var referForDataDivider: ImageView
 
@@ -154,6 +154,10 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
             performHapticFeedback(it)
             presenter.onReferForDataClick()
         }
+        lipstickView.onClick {
+            performHapticFeedback(it)
+            presenter.onLipstickClicked()
+        }
         UiUtil.setupOnTouchListener(textViewContainer = tvDataUpgrade, textView = tvDataUpgrade)
     }
 
@@ -199,6 +203,12 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
 
     override fun gotoGeneralSettingsActivity() {
         val intent = GeneralSettingsActivity.getStartIntent(this)
+        val options = ActivityOptions.makeSceneTransitionAnimation(this)
+        startActivity(intent, options.toBundle())
+    }
+
+    override fun showLipstickView() {
+        val intent = Intent(this, LipstickActivity::class.java)
         val options = ActivityOptions.makeSceneTransitionAnimation(this)
         startActivity(intent, options.toBundle())
     }

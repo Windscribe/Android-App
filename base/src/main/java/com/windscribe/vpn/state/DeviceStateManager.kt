@@ -13,14 +13,14 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Build
 import com.windscribe.vpn.services.DeviceStateService.Companion.enqueueWork
-import java.util.concurrent.ConcurrentLinkedQueue
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import java.util.concurrent.ConcurrentLinkedQueue
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class DeviceStateManager @Inject constructor(val scope: CoroutineScope) : BroadcastReceiver() {

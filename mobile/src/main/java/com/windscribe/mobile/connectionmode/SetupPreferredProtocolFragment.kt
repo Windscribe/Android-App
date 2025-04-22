@@ -10,6 +10,7 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
 import com.windscribe.mobile.R
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
@@ -50,6 +51,7 @@ class SetupPreferredProtocolFragment : DialogFragment() {
     @OnClick(R.id.set_as_preferred)
     fun onSetAsPreferredProtocolClick() {
         dismiss()
+        appContext.applicationInterface.cancelDialog()
         autoConnectionModeCallback?.onSetAsPreferredClicked()
     }
 
