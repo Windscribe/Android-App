@@ -1,4 +1,4 @@
-package com.windscribe.mobile.welcome.viewmodal
+package com.windscribe.mobile.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -12,8 +12,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
-class EmergencyConnectViewModal(
+class EmergencyConnectViewModal @Inject constructor(
     private val scope: CoroutineScope,
     private val windVpnController: WindVpnController,
     private val vpnConnectionStateManager: VPNConnectionStateManager

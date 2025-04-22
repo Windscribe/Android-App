@@ -35,25 +35,11 @@
                     />
 
                 <com.windscribe.mobile.custom_view.preferences.DropDownView
-                    android:id="@+id/cl_latency_settings"
-                    android:layout_marginTop="@dimen/margin_16"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/cl_selection_settings"
-                    android:layout_height="wrap_content"
-                    android:layout_width="match_parent"
-                    app:DropDownTitle="@string/display_latency"
-                    app:DropDownLeftIcon="@drawable/ic_latency_display"
-                    app:DropDownDescription="@string/latency_display_description"
-                    app:DropDownShowRightIcon="false"
-                    />
-
-                <com.windscribe.mobile.custom_view.preferences.DropDownView
                     android:id="@+id/cl_language_settings"
                     android:layout_marginTop="@dimen/margin_16"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/cl_latency_settings"
+                    app:layout_constraintTop_toBottomOf="@id/cl_selection_settings"
                     android:layout_height="wrap_content"
                     android:layout_width="match_parent"
                     app:DropDownTitle="@string/preferred_language"
@@ -62,36 +48,12 @@
                     app:DropDownShowRightIcon="false"
                     />
 
-                <com.windscribe.mobile.custom_view.preferences.DropDownView
-                    android:id="@+id/cl_theme_settings"
-                    android:layout_marginTop="@dimen/margin_16"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/cl_language_settings"
-                    android:layout_height="wrap_content"
-                    android:layout_width="match_parent"
-                    app:DropDownTitle="@string/theme"
-                    app:DropDownDescription="@string/appearance_description"
-                    app:DropDownLeftIcon="@drawable/ic_appearance"
-                    app:DropDownShowRightIcon="false"
-                    />
-
-                <com.windscribe.mobile.custom_view.preferences.AppBackgroundView
-                    android:id="@+id/cl_app_background_settings"
-                    android:layout_marginTop="@dimen/margin_16"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/cl_theme_settings"
-                    android:layout_height="wrap_content"
-                    android:layout_width="match_parent"
-                    />
-
                 <com.windscribe.mobile.custom_view.preferences.ToggleView
                     android:id="@+id/cl_notification_settings"
                     android:layout_marginTop="@dimen/margin_16"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/cl_app_background_settings"
+                    app:layout_constraintTop_toBottomOf="@id/cl_language_settings"
                     android:layout_height="wrap_content"
                     android:layout_width="match_parent"
                     app:ToggleTitle="@string/show_timer_in_notifications"
@@ -101,25 +63,11 @@
                     />
 
                 <com.windscribe.mobile.custom_view.preferences.ToggleView
-                    android:id="@+id/cl_show_health"
-                    android:layout_marginTop="@dimen/margin_16"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/cl_notification_settings"
-                    android:layout_height="wrap_content"
-                    android:layout_width="match_parent"
-                    app:ToggleTitle="@string/show_location_health"
-                    app:ToggleLeftIcon="@drawable/ic_location_load"
-                    app:ToggleShowRightIcon="false"
-                    app:ToggleDescription="@string/location_load_description"
-                    />
-
-                <com.windscribe.mobile.custom_view.preferences.ToggleView
                     android:id="@+id/cl_haptic_settings"
                     android:layout_marginTop="@dimen/margin_16"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/cl_show_health"
+                    app:layout_constraintTop_toBottomOf="@id/cl_notification_settings"
                     android:layout_height="wrap_content"
                     android:layout_width="match_parent"
                     app:ToggleTitle="@string/haptic_setting_label"
@@ -127,6 +75,7 @@
                     app:ToggleShowRightIcon="false"
                     app:ToggleDescription="@string/haptic_feedback_description"
                     />
+
 
                 <!--Version-->
                 <androidx.constraintlayout.widget.ConstraintLayout

@@ -13,7 +13,7 @@ import com.windscribe.mobile.R
 import com.windscribe.mobile.databinding.FragmentEmergencyConnectBinding
 import com.windscribe.mobile.welcome.WelcomeActivity
 import com.windscribe.mobile.welcome.state.EmergencyConnectUIState
-import com.windscribe.mobile.welcome.viewmodal.EmergencyConnectViewModal
+import com.windscribe.mobile.viewmodel.EmergencyConnectViewModal
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 

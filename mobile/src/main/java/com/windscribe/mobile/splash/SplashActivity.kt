@@ -12,8 +12,8 @@ import com.windscribe.mobile.R
 import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.di.ActivityModule
 import com.windscribe.mobile.di.DaggerActivityComponent
+import com.windscribe.mobile.view.AppStartActivity
 import com.windscribe.mobile.welcome.WelcomeActivity
-import com.windscribe.mobile.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -58,7 +58,7 @@ class SplashActivity : BaseActivity(), SplashView {
 
     override fun navigateToHome() {
         logger.info("Navigating to home activity...")
-        val homeIntent = Intent(this, WindscribeActivity::class.java)
+        val homeIntent = Intent(this, AppStartActivity::class.java)
         if (intent.extras != null) {
             logger.debug("Forwarding intent extras home activity.")
             homeIntent.putExtras(intent.extras!!)

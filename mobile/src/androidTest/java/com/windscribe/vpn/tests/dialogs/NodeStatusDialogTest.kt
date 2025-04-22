@@ -33,7 +33,7 @@ class NodeStatusDialogTest : BaseTest() {
         activity.supportFragmentManager.addFragmentOnAttachListener(listener)
 
         countingIdlingResource.increment()
-        activity.setUpLayoutForNodeUnderMaintenance()
+        activity.setUpLayoutForNodeUnderMaintenance(false)
         Espresso.onView(withId(R.id.nodeStatusTitle)).inRoot(RootMatchers.isDialog()).check(
             ViewAssertions.matches(
                 ViewMatchers.withText(activity.getString(R.string.under_maintenance))
@@ -72,7 +72,7 @@ class NodeStatusDialogTest : BaseTest() {
         UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).pressBack()
 
         countingIdlingResource.increment()
-        activity.setUpLayoutForNodeUnderMaintenance()
+        activity.setUpLayoutForNodeUnderMaintenance(false)
         Espresso.onView(withId(R.id.nodeStatusSecondaryButton)).inRoot(RootMatchers.isDialog())
             .perform(click())
         activity.supportFragmentManager.findFragmentByTag(NodeStatusDialog.tag)?.let { fragment ->

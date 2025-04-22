@@ -42,6 +42,9 @@ abstract public class CityDao {
     @Query("Select * from City where city_id=:id")
     public abstract Single<City> getCityByID(int id);
 
+    @Query("Select * from City where city_id=:id")
+    public abstract City getCityByIDAsync(int id);
+
     @Query("Select * from City where city_id in (:ids)")
     public abstract Single<List<City>> getCityByID(int[] ids);
 

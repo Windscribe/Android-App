@@ -1,0 +1,45 @@
+package com.windscribe.mobile.view.ui
+
+import com.windscribe.mobile.R
+import com.windscribe.mobile.viewmodel.ServerListItem
+import com.windscribe.vpn.constants.NetworkKeyConstants
+import com.windscribe.vpn.serverlist.entity.City
+
+fun averageHealth(item: ServerListItem): Int {
+    var averageHealth = 0
+    var numberOfCities = 0
+    for (city in item.cities) {
+        if (city.health > 0) {
+            numberOfCities++
+            averageHealth += city.health
+        }
+    }
+    if (averageHealth > 0 && numberOfCities > 0) {
+        averageHealth /= numberOfCities
+    }
+    return averageHealth
+}
+
+fun healthColor(health: Int): Int {
+    return if (health < 60) {
+        R.color.colorNeonGreen
+    } else if (health < 89) {
+        R.color.colorYellow
+    } else {
+        R.color.colorRed
+    }
+}
+
+fun getLatencyBar(time: Int): Int {
+    return when {
+        time == -1 -> R.drawable.ic_bar_no
+        time < NetworkKeyConstants.PING_TEST_3_BAR_UPPER_LIMIT -> R.drawable.ic_bar_high
+        time < NetworkKeyConstants.PING_TEST_2_BAR_UPPER_LIMIT -> R.drawable.ic_bar_medium
+        time < NetworkKeyConstants.PING_TEST_1_BAR_UPPER_LIMIT -> R.drawable.ic_bar_low
+        else -> R.drawable.ic_bar_no
+    }
+}
+
+fun City.isEnabled(isUserPro: Boolean): Boolean {
+    return (nodesAvailable() || (!isUserPro && pro == 1))
+}

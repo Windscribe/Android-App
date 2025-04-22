@@ -20,6 +20,7 @@ import com.windscribe.vpn.serverlist.converter.NodeToJson;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @SuppressWarnings("unused")
 @Entity(tableName = "City")
@@ -108,6 +109,14 @@ public class City implements Parcelable {
     @Nullable
     private String pingHost;
 
+    public City(int region_id, int id, String nodeName, String nickName, int pro, String coordinates, String tz, List<Node> nodes) {
+        this.region_id = region_id;
+        this.id = id;
+        this.nodeName = nodeName;
+        this.nickName = nickName;
+        this.pro = pro;
+    }
+
     protected City(Parcel in) {
         region_id = in.readInt();
         id = in.readInt();
@@ -136,12 +145,16 @@ public class City implements Parcelable {
     }
 
     @Override
-    public boolean equals(@Nullable Object obj) {
-        if (obj instanceof City) {
-            City city = (City) obj;
-            return city.getId() == id;
-        }
-        return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        City city = (City) o;
+        return id == city.id && primaryKey == city.primaryKey && region_id == city.region_id && health == city.health && pro == city.pro && Objects.equals(nodes, city.nodes) && Objects.equals(coordinates, city.coordinates) && Objects.equals(linkSpeed, city.linkSpeed) && Objects.equals(nickName, city.nickName) && Objects.equals(nodeName, city.nodeName) && Objects.equals(ovpnX509, city.ovpnX509) && Objects.equals(pingIp, city.pingIp) && Objects.equals(pubKey, city.pubKey) && Objects.equals(tz, city.tz) && Objects.equals(pingHost, city.pingHost);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, nodes, primaryKey, region_id, coordinates, health, linkSpeed, nickName, nodeName, ovpnX509, pingIp, pro, pubKey, tz, pingHost);
     }
 
     public String getCoordinates() {

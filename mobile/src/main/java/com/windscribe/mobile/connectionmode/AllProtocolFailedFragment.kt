@@ -11,6 +11,7 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
 import com.windscribe.mobile.R
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 
 class AllProtocolFailedFragment : DialogFragment() {
@@ -41,6 +42,7 @@ class AllProtocolFailedFragment : DialogFragment() {
 
     @OnClick(R.id.send_debug_log)
     fun onSendLogClick() {
+        appContext.applicationInterface.cancelDialog()
         sendDebugLog.visibility = View.INVISIBLE
         progressView.visibility = View.VISIBLE
         autoConnectionModeCallback?.onSendLogClicked()

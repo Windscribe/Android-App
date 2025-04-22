@@ -15,30 +15,27 @@
         android:theme="@style/DarkTheme"
         tools:targetApi="n">
         <activity
+            android:name=".lipstick.LipstickActivity"
+            android:exported="false" />
+        <activity
             android:name=".advance.AdvanceParamsActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
             />
         <activity
             android:name=".robert.RobertSettingsActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
+            android:exported="false"/>
         <activity
-            android:name=".about.AboutActivity"
-            android:screenOrientation="portrait" />
+            android:name=".about.AboutActivity" />
         <activity
-            android:name=".ticket.SendTicketActivity"
-            android:screenOrientation="portrait" />
+            android:name=".ticket.SendTicketActivity" />
         <activity
-            android:name=".help.HelpActivity"
-            android:screenOrientation="portrait" />
+            android:name=".help.HelpActivity" />
         <activity android:name=".confirmemail.ConfirmActivity" />
         <activity
             android:name=".welcome.WelcomeActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".gpsspoofing.GpsSpoofingSettingsActivity"
-            android:screenOrientation="portrait"
             android:theme="@style/Theme.Transparent" />
         <activity
             android:name="com.windscribe.vpn.backend.utils.VPNPermissionActivity"
@@ -46,20 +43,13 @@
             android:excludeFromRecents="true"
             android:theme="@style/blinkt.dialog" />
         <activity
-            android:name=".networksecurity.networkdetails.NetworkDetailsActivity"
-            android:screenOrientation="portrait" />
+            android:name=".networksecurity.networkdetails.NetworkDetailsActivity" />
         <activity
-            android:name=".debug.DebugViewActivity"
-            android:screenOrientation="portrait" />
+            android:name=".debug.DebugViewActivity"/>
         <activity
             android:name=".splash.SplashActivity"
             android:exported="true"
             android:theme="@style/AppTheme.WindLauncher">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
             <layout android:defaultHeight="800dp"
                 android:defaultWidth="600dp"
                 android:gravity="top|end"
@@ -67,8 +57,7 @@
                 android:minWidth="300dp" />
         </activity>
         <activity
-            android:name=".email.AddEmailActivity"
-            android:screenOrientation="portrait" />
+            android:name=".email.AddEmailActivity"/>
         <activity
             android:name=".windscribe.WindscribeActivity"
             android:exported="true"
@@ -79,31 +68,33 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".mainmenu.MainMenuActivity"
-            android:screenOrientation="portrait" />
+            android:name=".mainmenu.MainMenuActivity" />
         <activity
             android:name=".newsfeedactivity.NewsFeedActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".upgradeactivity.UpgradeActivity"
-            android:screenOrientation="portrait" />
+            android:name=".upgradeactivity.UpgradeActivity"/>
         <activity
-            android:name=".account.AccountActivity"
-            android:screenOrientation="portrait" />
+            android:name=".account.AccountActivity"/>
         <activity
-            android:name=".generalsettings.GeneralSettingsActivity"
-            android:screenOrientation="portrait" />
+            android:name=".generalsettings.GeneralSettingsActivity"/>
         <activity
-            android:name=".connectionsettings.ConnectionSettingsActivity"
-            android:screenOrientation="portrait" />
+            android:name=".connectionsettings.ConnectionSettingsActivity"/>
         <activity
-            android:name=".splittunneling.SplitTunnelingActivity"
-            android:screenOrientation="portrait" />
+            android:name=".splittunneling.SplitTunnelingActivity" />
         <activity
-            android:name=".networksecurity.NetworkSecurityActivity"
-            android:screenOrientation="portrait" />
-        <activity android:name=".upgradeactivity.UpgradeSuccessActivity"
-            android:screenOrientation="portrait" />
+            android:name=".networksecurity.NetworkSecurityActivity"/>
+        <activity android:name=".upgradeactivity.UpgradeSuccessActivity" />
+        <activity
+            android:name=".view.AppStartActivity"
+            android:exported="true"
+            android:theme="@style/AppTheme.WindLauncher" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />

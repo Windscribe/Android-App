@@ -12,7 +12,6 @@ import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.constants.PreferencesKeyConstants
-import com.windscribe.vpn.errormodel.WindError.Companion.instance
 import com.windscribe.vpn.model.User
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.observers.DisposableSingleObserver
@@ -202,6 +201,10 @@ class MainMenuPresenterImpl @Inject constructor(
             mainMenuView.showShareLinkOption()
         }
         setupActionButton(user)
+    }
+
+    override fun onLipstickClicked() {
+        mainMenuView.showLipstickView()
     }
 
     companion object {

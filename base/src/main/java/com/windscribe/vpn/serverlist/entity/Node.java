@@ -47,6 +47,14 @@ public class Node {
 
     }
 
+    public Node(String hostname, String ip, String ip2, String ip3, int weight, int forceDisconnect){
+        this.hostname = hostname;
+        this.ip = ip;
+        this.ip2 = ip2;
+        this.ip3 = ip3;
+        this.weight = weight;
+    }
+
     @Override
     public boolean equals(@Nullable Object obj) {
         if (obj instanceof Node) {

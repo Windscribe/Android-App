@@ -60,6 +60,10 @@ android {
 
     buildFeatures {
         viewBinding true
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.4.0"
     }
     lint {
         abortOnError false
@@ -104,4 +108,21 @@ dependencies {
     implementation "androidx.test.espresso:espresso-intents:3.5.1"
     implementation 'androidx.test.uiautomator:uiautomator:2.2.0'
     implementation "androidx.core:core-splashscreen:1.0.1"
+    //Compose
+    implementation("androidx.activity:activity-ktx:1.9.0")
+    Dependency composeBom = platform('androidx.compose:compose-bom:2024.02.00')
+    implementation composeBom
+    testImplementation composeBom
+    androidTestImplementation composeBom
+    implementation ("androidx.compose.ui:ui")
+    implementation ("androidx.compose.ui:ui-tooling-preview")
+    implementation ("androidx.activity:activity-compose")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material3:material3-window-size-class")
+    debugImplementation ("androidx.compose.ui:ui-tooling")
+    testImplementation ("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation ("androidx.compose.ui:ui-test")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation 'androidx.compose.material3:material3-adaptive-android:1.0.0-alpha06'
+    implementation("io.coil-kt:coil-compose:2.4.0")
 }
