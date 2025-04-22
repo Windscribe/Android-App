@@ -18,9 +18,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -124,9 +125,10 @@ fun AllServerList(
                 is ListState.Success -> {
                     LocationCount(viewModel)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Column(modifier = Modifier.verticalScroll(scrollState)) {
-                        bestLocation?.let { BestLocation(it, connectionViewModel) }
-                        (state as ListState.Success).data.forEach { item ->
+                    bestLocation?.let { BestLocation(it, connectionViewModel) }
+                    val list = (state as ListState.Success).data
+                    LazyColumn(modifier = Modifier.weight(1f)) {
+                        items(list, key = { it.id }) { item ->
                             ExpandableListItem(
                                 viewModel,
                                 connectionViewModel,

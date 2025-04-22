@@ -148,7 +148,7 @@ private fun SuccessView(
                     modifier = Modifier.padding(start = 16.dp, top = 16.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                LazyColumn(modifier = Modifier.weight(1f)) {
                     items(list, key = { it.id }) { item ->
                         CustomConfigItem(item, viewModel, connectionViewModel, configViewmodel)
                     }
