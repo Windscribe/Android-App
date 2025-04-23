@@ -85,6 +85,7 @@ fun SearchServerList(viewModel: ServerViewModel, connectionViewModel: Connection
                 .fillMaxSize()
                 .offset(y = 54.dp)
                 .verticalScroll(scrollState)
+                .clickable {  }
         ) {
             when (state) {
                 is ListState.Loading -> {
