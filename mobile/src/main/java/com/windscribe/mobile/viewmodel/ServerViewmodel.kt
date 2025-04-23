@@ -3,6 +3,9 @@ package com.windscribe.mobile.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.constants.PreferencesKeyConstants.AZ_LIST_SELECTION_MODE
+import com.windscribe.vpn.constants.PreferencesKeyConstants.LATENCY_LIST_SELECTION_MODE
+import com.windscribe.vpn.constants.PreferencesKeyConstants.SELECTION_KEY
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.FavouriteRepository
 import com.windscribe.vpn.repository.LatencyRepository
@@ -19,11 +22,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
 import java.util.Locale
 import java.util.logging.Logger
 
@@ -163,6 +168,7 @@ class ServerViewModelImpl(
         _searchItemsExpandState
     private val _refreshState = MutableStateFlow(false)
     override val refreshState: StateFlow<Boolean> = _refreshState
+    private var preferenceChangeListener: OnTrayPreferenceChangeListener? = null
 
 
     private val logger = Logger.getLogger("ServerViewModel")
@@ -170,6 +176,7 @@ class ServerViewModelImpl(
     init {
         fetchAllLists()
         fetchUserState()
+        fetchUserPreferences()
     }
 
     private fun fetchAllLists() {
@@ -178,6 +185,31 @@ class ServerViewModelImpl(
         fetchStaticList()
         fetchConfigList()
         fetchLatencyList()
+    }
+
+    private fun fetchLatencyList() {
+        fetchData(
+            ignoreLatencyAwait = true,
+            stateFlow = _latencyListState,
+            repositoryFlow = localDbInterface.getLatency(),
+            transform = { latency -> latency.map { LatencyListItem(it.ping_id, it.pingTime) } },
+            errorMessage = "Failed to load latency times."
+        )
+    }
+
+    private fun fetchUserPreferences() {
+        viewModelScope.launch {
+            preferenceChangeListener = OnTrayPreferenceChangeListener {
+                val locationOrderChanged = it.count { item -> item.key() == SELECTION_KEY } > 0
+                if (locationOrderChanged) {
+                    fetchServerList()
+                    fetchFavouriteList()
+                    fetchStaticList()
+                    fetchConfigList()
+                }
+            }
+            preferencesHelper.addObserver(preferenceChangeListener!!)
+        }
     }
 
     private fun fetchUserState() {
@@ -212,23 +244,106 @@ class ServerViewModelImpl(
                 if (regions.isNotEmpty()) {
                     preferencesHelper.migrationRequired = false
                 }
-                regions.map {
-                    ServerListItem(
-                        it.region.id,
-                        it.region,
-                        it.cities
-                    )
-                }
+
+                regions
+                    .map { region ->
+                        ServerListItem(
+                            id = region.region.id,
+                            region = region.region,
+                            cities = region.cities.sortCities()
+                        )
+                    }
+                    .sortRegions()
             },
             errorMessage = "Failed to load servers"
         )
+    }
+
+    private fun List<City>.sortCities(): List<City> {
+        return when (preferencesHelper.selection) {
+            LATENCY_LIST_SELECTION_MODE -> {
+                val state = latencyListState.value as? ListState.Success<LatencyListItem>
+                if (state != null) {
+                    sortedBy { city ->
+                        state.data.firstOrNull { it.id == city.id }?.time
+                    }
+                } else {
+                    sortedBy { it.nodeName }
+                }
+            }
+
+            else -> sortedBy { it.nodeName }
+        }
+    }
+
+    private fun List<ServerListItem>.sortRegions(): List<ServerListItem> {
+        return when (preferencesHelper.selection) {
+            LATENCY_LIST_SELECTION_MODE -> {
+                val state = latencyListState.value as? ListState.Success<LatencyListItem>
+                if (state != null) {
+                    val latencyMap = state.data.associateBy { it.id }
+                    sortedBy { item ->
+                        // Calculate average latency; fallback to max to sort these to the bottom
+                        val (latencySum, count) = item.cities.fold(0 to 0) { acc, _ ->
+                            val time = latencyMap[item.id]?.time ?: -1
+                            if (time > 0) {
+                                acc.first + time to acc.second + 1
+                            } else {
+                                acc
+                            }
+                        }
+                        if (count > 0) latencySum / count else Int.MAX_VALUE
+                    }
+                } else {
+                    this
+                }
+            }
+            AZ_LIST_SELECTION_MODE -> sortedBy { it.region.name }
+            else -> this
+        }
+    }
+
+    private fun List<StaticListItem>.sortStaticRegions(): List<StaticListItem> {
+        return when (preferencesHelper.selection) {
+            LATENCY_LIST_SELECTION_MODE -> {
+                val state = latencyListState.value as? ListState.Success<LatencyListItem>
+                if (state != null) {
+                    sortedBy { item ->
+                        state.data.find { it.id == item.id }?.time ?: -1
+                    }
+                } else {
+                    sortedBy { it.staticItem.cityName }
+                }
+            }
+
+            else -> sortedBy { it.staticItem.cityName }
+        }
+    }
+
+    private fun List<ConfigListItem>.sortConfigs(): List<ConfigListItem> {
+        return when (preferencesHelper.selection) {
+            LATENCY_LIST_SELECTION_MODE -> {
+                val state = latencyListState.value as? ListState.Success<LatencyListItem>
+                if (state != null) {
+                    sortedBy { item ->
+                        state.data.find { it.id == item.id }?.time ?: -1
+                    }
+                } else {
+                    sortedBy { it.config.name }
+                }
+            }
+
+            else -> sortedBy { it.config.name }
+        }
     }
 
     private fun fetchFavouriteList() {
         fetchData(
             stateFlow = _favouriteListState,
             repositoryFlow = favouriteRepository.favourites,
-            transform = { favourites -> favourites.map { FavouriteListItem(it.id, it) } },
+            transform = { favourites ->
+                favourites.sortCities().map { FavouriteListItem(it.id, it) }
+            },
             errorMessage = "Failed to load favourites"
         )
     }
@@ -237,7 +352,9 @@ class ServerViewModelImpl(
         fetchData(
             stateFlow = _staticListState,
             repositoryFlow = staticIpRepository.regions,
-            transform = { regions -> regions.map { StaticListItem(it.id, it) } },
+            transform = { regions ->
+                regions.map { StaticListItem(it.id, it) }.sortStaticRegions()
+            },
             errorMessage = "Failed to load static IPs"
         )
     }
@@ -246,21 +363,15 @@ class ServerViewModelImpl(
         fetchData(
             stateFlow = _configListState,
             repositoryFlow = localDbInterface.getConfigs(),
-            transform = { configs -> configs.map { ConfigListItem(it.getPrimaryKey(), it) } },
+            transform = { configs ->
+                configs.map { ConfigListItem(it.getPrimaryKey(), it) }.sortConfigs()
+            },
             errorMessage = "Failed to load custom configs"
         )
     }
 
-    private fun fetchLatencyList() {
-        fetchData(
-            stateFlow = _latencyListState,
-            repositoryFlow = localDbInterface.getLatency(),
-            transform = { latency -> latency.map { LatencyListItem(it.ping_id, it.pingTime) } },
-            errorMessage = "Failed to load latency times."
-        )
-    }
-
     private fun <T, R> fetchData(
+        ignoreLatencyAwait: Boolean = false,
         stateFlow: MutableStateFlow<ListState<R>>,
         repositoryFlow: Flow<List<T>>,
         transform: (List<T>) -> List<R>,
@@ -268,6 +379,9 @@ class ServerViewModelImpl(
     ) {
         stateFlow.value = ListState.Loading
         viewModelScope.launch {
+            if (!ignoreLatencyAwait) {
+                awaitLatencyIfNeeded()
+            }
             repositoryFlow
                 .flowOn(Dispatchers.IO)
                 .map { transform(it) }
@@ -275,6 +389,14 @@ class ServerViewModelImpl(
                 .collect { result ->
                     stateFlow.value = ListState.Success(result)
                 }
+        }
+    }
+
+    private suspend fun awaitLatencyIfNeeded() {
+        if (preferencesHelper.selection == LATENCY_LIST_SELECTION_MODE) {
+            latencyListState
+                .filterIsInstance<ListState.Success<*>>()
+                .first()
         }
     }
 
@@ -375,13 +497,18 @@ class ServerViewModelImpl(
         viewModelScope.launch(Dispatchers.IO) {
             _refreshState.emit(true)
             when (serverListType) {
-                ServerListType.All ->  latencyRepository.updateAllServerLatencies()
-                ServerListType.Fav ->  latencyRepository.updateFavouriteCityLatencies()
-                ServerListType.Static ->  latencyRepository.updateStaticIpLatency()
-                ServerListType.Config ->  latencyRepository.updateConfigLatencies()
+                ServerListType.All -> latencyRepository.updateAllServerLatencies()
+                ServerListType.Fav -> latencyRepository.updateFavouriteCityLatencies()
+                ServerListType.Static -> latencyRepository.updateStaticIpLatency()
+                ServerListType.Config -> latencyRepository.updateConfigLatencies()
             }
             latencyRepository.latencyEvent.first()
             _refreshState.emit(false)
         }
+    }
+
+    override fun onCleared() {
+        preferencesHelper.removeObserver(preferenceChangeListener!!)
+        super.onCleared()
     }
 }
