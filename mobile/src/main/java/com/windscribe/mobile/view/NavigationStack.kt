@@ -1,5 +1,7 @@
 package com.windscribe.mobile.view
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -16,20 +18,22 @@ import com.windscribe.mobile.view.screen.HomeScreen
 import com.windscribe.mobile.view.screen.LoginScreen
 import com.windscribe.mobile.view.screen.NewsfeedScreen
 import com.windscribe.mobile.view.screen.NoEmailAttentionScreen
+import com.windscribe.mobile.view.screen.PowerWhitelistScreen
 import com.windscribe.mobile.view.screen.Screen
+import com.windscribe.mobile.view.screen.ShareLinkScreen
 import com.windscribe.mobile.view.screen.SignupScreen
 import com.windscribe.mobile.view.screen.WebViewScreenUI
 import com.windscribe.mobile.viewmodel.AppStartViewModel
 import com.windscribe.mobile.viewmodel.ConfigViewmodel
 import com.windscribe.mobile.viewmodel.ConnectionViewmodel
 import com.windscribe.mobile.viewmodel.EmergencyConnectViewModal
+import com.windscribe.mobile.viewmodel.HomeViewmodel
 import com.windscribe.mobile.viewmodel.LoginViewModel
 import com.windscribe.mobile.viewmodel.NewsfeedViewmodel
+import com.windscribe.mobile.viewmodel.PowerWhitelistViewmodel
 import com.windscribe.mobile.viewmodel.ServerViewModel
+import com.windscribe.mobile.viewmodel.SharedLinkViewmodel
 import com.windscribe.mobile.viewmodel.SignupViewModel
-import com.windscribe.mobile.viewmodel.mockConfigViewmodel
-import com.windscribe.mobile.viewmodel.mockConnectionViewmodel
-import com.windscribe.mobile.viewmodel.mockServerViewModel
 
 val LocalNavController = staticCompositionLocalOf<NavController> {
     error("No NavController provided")
@@ -54,6 +58,12 @@ private fun NavGraphBuilder.addNavigationScreens() {
     composable(route = Screen.NoEmailAttention.route) { NoEmailAttentionScreen(false) {} }
     composable(route = Screen.Newsfeed.route) { NewsfeedViewRoute() }
     composable(route = Screen.Web.route) { WebViewScreenUI(LocalNavController.current) }
+    composable(route = Screen.PowerWhitelist.route) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PowerWhitelistViewRoute()
+        }
+    }
+    composable(route = Screen.ShareLink.route) { ShareLinkViewRoute() }
 }
 
 @Composable
@@ -72,7 +82,7 @@ private fun AddStartScreenRoute() {
 private fun AddHomeScreenRoute() {
     val composeComponent = (LocalContext.current as? AppStartActivity)?.di
     if (composeComponent == null) {
-        HomeScreen(mockServerViewModel(), mockConnectionViewmodel(), mockConfigViewmodel())
+        HomeScreen(null, null, null, null)
     } else {
         val serverViewModel: ServerViewModel =
             viewModel(factory = composeComponent.getViewModelFactory())
@@ -80,7 +90,9 @@ private fun AddHomeScreenRoute() {
             viewModel(factory = composeComponent.getViewModelFactory())
         val configViewModel: ConfigViewmodel =
             viewModel(factory = composeComponent.getViewModelFactory())
-        HomeScreen(serverViewModel, connectionViewModel, configViewModel)
+        val homeViewModel: HomeViewmodel =
+            viewModel(factory = composeComponent.getViewModelFactory())
+        HomeScreen(serverViewModel, connectionViewModel, configViewModel, homeViewModel)
     }
 }
 
@@ -117,6 +129,31 @@ private fun SignupViewRoute() {
         val viewModel: SignupViewModel =
             viewModel(factory = composeComponent.getViewModelFactory())
         SignupScreen(null, viewModel)
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.M)
+@Composable
+private fun PowerWhitelistViewRoute() {
+    val composeComponent = (LocalContext.current as? AppStartActivity)?.di
+    if (composeComponent == null) {
+        PowerWhitelistScreen(null)
+    } else {
+        val viewModel: PowerWhitelistViewmodel =
+            viewModel(factory = composeComponent.getViewModelFactory())
+        PowerWhitelistScreen(viewModel)
+    }
+}
+
+@Composable
+private fun ShareLinkViewRoute() {
+    val composeComponent = (LocalContext.current as? AppStartActivity)?.di
+    if (composeComponent == null) {
+        ShareLinkScreen(null)
+    } else {
+        val viewModel: SharedLinkViewmodel =
+            viewModel(factory = composeComponent.getViewModelFactory())
+        ShareLinkScreen(viewModel)
     }
 }
 

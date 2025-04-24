@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.view.theme.AppColors
@@ -50,9 +49,6 @@ import com.windscribe.mobile.viewmodel.ConnectionViewmodel
 import com.windscribe.mobile.viewmodel.ListState
 import com.windscribe.mobile.viewmodel.ServerListType
 import com.windscribe.mobile.viewmodel.ServerViewModel
-import com.windscribe.mobile.viewmodel.mockConfigViewmodel
-import com.windscribe.mobile.viewmodel.mockConnectionViewmodel
-import com.windscribe.mobile.viewmodel.mockServerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -148,7 +144,7 @@ private fun SuccessView(
                     modifier = Modifier.padding(start = 16.dp, top = 16.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                LazyColumn(modifier = Modifier.weight(1f)) {
                     items(list, key = { it.id }) { item ->
                         CustomConfigItem(item, viewModel, connectionViewModel, configViewmodel)
                     }
@@ -178,10 +174,4 @@ private fun ProgressIndicator() {
             color = AppColors.white
         )
     }
-}
-
-@Composable
-@Preview(showSystemUi = true)
-private fun Preview() {
-    ConfigServerList(mockServerViewModel(), mockConnectionViewmodel(), mockConfigViewmodel())
 }

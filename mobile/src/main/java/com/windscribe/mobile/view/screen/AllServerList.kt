@@ -18,9 +18,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,7 +50,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.windscribe.mobile.R
@@ -69,13 +68,12 @@ import com.windscribe.mobile.view.ui.TenGIcon
 import com.windscribe.mobile.view.ui.averageHealth
 import com.windscribe.mobile.view.ui.healthColor
 import com.windscribe.mobile.viewmodel.ConnectionViewmodel
+import com.windscribe.mobile.viewmodel.HomeViewmodel
 import com.windscribe.mobile.viewmodel.ListState
 import com.windscribe.mobile.viewmodel.ServerListItem
 import com.windscribe.mobile.viewmodel.ServerListType
 import com.windscribe.mobile.viewmodel.ServerViewModel
 import com.windscribe.mobile.viewmodel.UserState
-import com.windscribe.mobile.viewmodel.mockConnectionViewmodel
-import com.windscribe.mobile.viewmodel.mockServerViewModel
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.serverlist.entity.City
 
@@ -84,11 +82,11 @@ import com.windscribe.vpn.serverlist.entity.City
 fun AllServerList(
     viewModel: ServerViewModel,
     connectionViewModel: ConnectionViewmodel,
+    homeViewmodel: HomeViewmodel,
     pullToRefreshState: PullToRefreshState = rememberPullToRefreshState()
 ) {
     val state by viewModel.serverListState.collectAsState()
     val expandedStates = remember { mutableStateMapOf<String, Boolean>() }
-    val scrollState = rememberScrollState()
     val bestLocation by connectionViewModel.bestLocation.collectAsState()
     val isRefreshing by viewModel.refreshState.collectAsState()
 
@@ -123,20 +121,24 @@ fun AllServerList(
 
                 is ListState.Success -> {
                     LocationCount(viewModel)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Column(modifier = Modifier.verticalScroll(scrollState)) {
-                        bestLocation?.let { BestLocation(it, connectionViewModel) }
-                        (state as ListState.Success).data.forEach { item ->
+                    val list = (state as ListState.Success).data
+                    LazyColumn(modifier = Modifier.weight(1f)) {
+                        item {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            bestLocation?.let { BestLocation(it, connectionViewModel) }
+                        }
+                        items(list, key = { it.id }) { item ->
                             ExpandableListItem(
                                 viewModel,
                                 connectionViewModel,
+                                homeViewmodel,
                                 item,
                                 expanded = expandedStates[item.region.name] ?: false,
                                 onExpandChange = { expandedStates[item.region.name] = it }
                             )
                         }
                     }
-                    UpgradeBar(viewModel)
+                    UpgradeBar(homeViewmodel)
                 }
             }
         }
@@ -150,9 +152,9 @@ fun AllServerList(
 }
 
 @Composable
-fun UpgradeBar(viewModel: ServerViewModel) {
+fun UpgradeBar(viewModel: HomeViewmodel?) {
     val activity = LocalContext.current as AppStartActivity
-    val userState by viewModel.userState.collectAsState()
+    val userState by viewModel?.userState?.collectAsState() ?: return
     if (userState is UserState.Free) {
         val angle = (userState as UserState.Free).dataLeftAngle
         Row(
@@ -344,6 +346,7 @@ private fun BestLocation(item: ServerListItem, connectionViewModel: ConnectionVi
 private fun ExpandableListItem(
     viewModel: ServerViewModel,
     connectionViewModel: ConnectionViewmodel,
+    homeViewmodel: HomeViewmodel,
     item: ServerListItem,
     expanded: Boolean,
     onExpandChange: (Boolean) -> Unit
@@ -408,7 +411,7 @@ private fun ExpandableListItem(
         AnimatedVisibility(visible = expanded) {
             Column {
                 item.cities.forEach {
-                    ServerListItemView(it, viewModel, connectionViewModel)
+                    ServerListItemView(it, viewModel, connectionViewModel, homeViewmodel)
                 }
             }
         }
@@ -419,9 +422,10 @@ private fun ExpandableListItem(
 private fun ServerListItemView(
     item: City,
     viewModel: ServerViewModel,
-    connectionViewModel: ConnectionViewmodel
+    connectionViewModel: ConnectionViewmodel,
+    homeViewmodel: HomeViewmodel
 ) {
-    val userState by viewModel.userState.collectAsState()
+    val userState by homeViewmodel.userState.collectAsState()
     val favouriteState by viewModel.favouriteListState.collectAsState()
     var isFavorite = false
     if (favouriteState is ListState.Success) {
@@ -473,11 +477,4 @@ private fun ProgressIndicator() {
                 .align(Alignment.Center), color = AppColors.white
         )
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-@Preview
-private fun AllServerListPreview() {
-    AllServerList(mockServerViewModel(), mockConnectionViewmodel())
 }

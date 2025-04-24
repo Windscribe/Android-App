@@ -51,12 +51,6 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import javax.inject.Inject
 
-sealed class HomeGoto {
-    object Upgrade : HomeGoto()
-    data class Expired(val date: String) : HomeGoto()
-    object Banned : HomeGoto()
-    object None : HomeGoto()
-}
 
 sealed class LocationInfoState {
     data class Success(val locationInfo: LocationInfo) : LocationInfoState()
@@ -698,6 +692,7 @@ class ConnectionViewmodelImpl @Inject constructor(
         }
     }
 
+
     override fun clearGoTo() {
         viewModelScope.launch {
             _goto.emit(HomeGoto.None)
@@ -708,44 +703,5 @@ class ConnectionViewmodelImpl @Inject constructor(
         networkInfoManager.removeNetworkInfoListener(networkListener!!)
         preferences.removeObserver(preferenceChangeListener!!)
         super.onCleared()
-    }
-}
-
-fun mockConnectionViewmodel(): ConnectionViewmodel {
-    return object : ConnectionViewmodel() {
-        override val connectionUIState: StateFlow<ConnectionUIState>
-            get() = MutableStateFlow(ConnectionUIState.Idle)
-        override val ipState: StateFlow<String>
-            get() = MutableStateFlow("127.0.0.1")
-        override val networkInfoState: StateFlow<NetworkInfoState>
-            get() = MutableStateFlow(NetworkInfoState.Unknown)
-        override val ipContextMenuState: StateFlow<Pair<Boolean, Offset>>
-            get() = MutableStateFlow(Pair(false, Offset.Zero))
-        override val toastMessage: StateFlow<ToastMessage>
-            get() = MutableStateFlow(ToastMessage.None)
-        override val bestLocation: StateFlow<ServerListItem?>
-            get() = MutableStateFlow(null)
-        override val isAntiCensorshipEnabled: StateFlow<Boolean>
-            get() = MutableStateFlow(false)
-        override val isPreferredProtocolEnabled: StateFlow<Boolean>
-            get() = MutableStateFlow(false)
-        override val goto: StateFlow<HomeGoto>
-            get() = MutableStateFlow(HomeGoto.None)
-        override val newFeedCount: StateFlow<Int>
-            get() = MutableStateFlow(0)
-        override val aspectRatio: StateFlow<Int>
-            get() = MutableStateFlow(1)
-
-        override fun onConnectButtonClick() {}
-        override fun onCityClick(city: City) {}
-        override fun onStaticIpClick(staticRegion: StaticRegion) {}
-        override fun onConfigClick(config: ConfigFile) {}
-        override fun onIpContextMenuPosition(position: Offset) {}
-        override fun onRotateIpClick() {}
-        override fun onFavouriteIpClick() {}
-        override fun setContextMenuState(state: Boolean) {}
-        override fun clearToast() {}
-        override fun onProtocolChangeClick() {}
-        override fun clearGoTo() {}
     }
 }

@@ -269,7 +269,7 @@ private fun ReferralFeatures() {
 }
 
 @Composable
-private fun ReferralFeature(text: String) {
+fun ReferralFeature(text: String) {
     Row(
         modifier = Modifier.padding(start = Dimen.dp16, end = Dimen.dp16),
         verticalAlignment = Alignment.CenterVertically

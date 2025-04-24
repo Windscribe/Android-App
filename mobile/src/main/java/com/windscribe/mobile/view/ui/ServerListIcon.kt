@@ -15,7 +15,7 @@ import com.windscribe.vpn.serverlist.entity.City
 
 @Composable
 fun ServerListIcon(city: City, userState: UserState, angle: Float, color: androidx.compose.ui.graphics.Color) {
-    if (city.pro == 1 && userState is UserState.Free) {
+    if (city.pro == 1 && (userState is UserState.Free || userState is UserState.UnlimitedData)) {
         Image(
             painter = painterResource(R.drawable.ic_hs_pro_badge),
             contentDescription = "Pro",
