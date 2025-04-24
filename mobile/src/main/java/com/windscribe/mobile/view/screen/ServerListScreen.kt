@@ -23,6 +23,7 @@ import com.windscribe.mobile.view.screen.ServerListNavigation
 import com.windscribe.mobile.view.screen.StaticIPServerList
 import com.windscribe.mobile.viewmodel.ConfigViewmodel
 import com.windscribe.mobile.viewmodel.ConnectionViewmodel
+import com.windscribe.mobile.viewmodel.HomeViewmodel
 import com.windscribe.mobile.viewmodel.ServerListType
 import com.windscribe.mobile.viewmodel.ServerViewModel
 import kotlinx.coroutines.launch
@@ -32,7 +33,8 @@ import kotlinx.coroutines.launch
 fun ServerListScreen(
     viewModel: ServerViewModel,
     connectionViewModel: ConnectionViewmodel,
-    configViewmodel: ConfigViewmodel
+    configViewmodel: ConfigViewmodel,
+    homeViewmodel: HomeViewmodel
 ) {
     val selectedType by viewModel.selectedServerListType.collectAsState()
     val pagerState = rememberPagerState(
@@ -64,8 +66,8 @@ fun ServerListScreen(
                     contentAlignment = Alignment.TopStart
                 ) {
                     when (pageIndex) {
-                        0 -> AllServerList(viewModel, connectionViewModel)
-                        1 -> FavouriteList(viewModel, connectionViewModel)
+                        0 -> AllServerList(viewModel, connectionViewModel, homeViewmodel)
+                        1 -> FavouriteList(viewModel, connectionViewModel, homeViewmodel)
                         2 -> StaticIPServerList(viewModel, connectionViewModel)
                         3 -> ConfigServerList(viewModel, connectionViewModel, configViewmodel)
                     }

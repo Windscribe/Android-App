@@ -11,10 +11,8 @@ import com.windscribe.vpn.repository.FavouriteRepository
 import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
-import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.serverlist.entity.City
 import com.windscribe.vpn.serverlist.entity.ConfigFile
-import com.windscribe.vpn.serverlist.entity.Node
 import com.windscribe.vpn.serverlist.entity.Region
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import kotlinx.coroutines.Dispatchers
@@ -30,19 +28,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
 import java.util.Locale
-import java.util.logging.Logger
 
 data class ServerListItem(val id: Int, val region: Region, val cities: List<City>)
 data class FavouriteListItem(val id: Int, val city: City)
 data class StaticListItem(val id: Int, val staticItem: StaticRegion)
 data class ConfigListItem(val id: Int, val config: ConfigFile)
 data class LatencyListItem(val id: Int, val time: Int)
-sealed class UserState() {
-    object Loading : UserState()
-    object Pro : UserState()
-    object UnlimitedData : UserState()
-    data class Free(val dataLeft: String, val dataLeftAngle: Float) : UserState()
-}
 
 sealed class ListState<out T> {
     object Loading : ListState<Nothing>()
@@ -72,56 +63,7 @@ abstract class ServerViewModel : ViewModel() {
     abstract fun toggleSearch()
     abstract fun onQueryTextChange(query: String)
     abstract fun onExpandStateChanged(id: String, expanded: Boolean)
-    abstract val userState: StateFlow<UserState>
     abstract fun refresh(serverListType: ServerListType)
-}
-
-fun mockServerViewModel(): ServerViewModel {
-    val node = Node()
-    val city1 = City(1, 1, "Toronto", "Comfort Zone", 1, "Coordinates", "TZ", listOf(node))
-    val city2 = City(1, 1, "Montreal", "Bagels", 1, "Coordinates", "TZ", listOf(node))
-    val city3 = City(1, 1, "Ottawa", "Parliament", 1, "Coordinates", "TZ", listOf(node))
-    val region1 = Region(1, "Canada East", "CA", 1, 1, "canada-east", 1, "", "", "", 1, "")
-    val region2 = Region(2, "Canada West", "US", 1, 1, "canada-east", 1, "", "", "", 1, "")
-    val region3 = Region(3, "India", "IN", 1, 1, "canada-east", 1, "", "", "", 1, "")
-    val serverListItem1 = ServerListItem(1, region1, listOf(city1, city2, city3))
-    val serverListItem2 = ServerListItem(2, region2, listOf(city1, city2, city3))
-    val serverListItem3 = ServerListItem(3, region3, listOf(city1, city2, city3))
-    val serverList = listOf(serverListItem1, serverListItem2, serverListItem3)
-    return object : ServerViewModel() {
-        override val serverListState: StateFlow<ListState<ServerListItem>>
-            get() = MutableStateFlow(ListState.Success(serverList))
-        override val favouriteListState: StateFlow<ListState<FavouriteListItem>>
-            get() = MutableStateFlow(ListState.Loading)
-        override val staticListState: StateFlow<ListState<StaticListItem>>
-            get() = MutableStateFlow(ListState.Loading)
-        override val configListState: StateFlow<ListState<ConfigListItem>>
-            get() = MutableStateFlow(ListState.Loading)
-        override val selectedServerListType: StateFlow<ServerListType>
-            get() = MutableStateFlow(ServerListType.All)
-        override val latencyListState: StateFlow<ListState<LatencyListItem>>
-            get() = MutableStateFlow(ListState.Loading)
-        override val searchListState: StateFlow<ListState<ServerListItem>>
-            get() = MutableStateFlow(ListState.Loading)
-        override val showSearchView: StateFlow<Boolean>
-            get() = MutableStateFlow(false)
-        override val searchKeyword: StateFlow<String>
-            get() = MutableStateFlow("")
-        override val searchItemsExpandState: StateFlow<HashMap<String, Boolean>>
-            get() = MutableStateFlow(hashMapOf())
-        override val userState: StateFlow<UserState>
-            get() = MutableStateFlow(UserState.Loading)
-        override val refreshState: StateFlow<Boolean>
-            get() = MutableStateFlow(false)
-
-        override fun setSelectedType(type: ServerListType) {}
-        override fun toggleFavorite(city: City) {}
-        override fun deleteFavourite(id: Int) {}
-        override fun toggleSearch() {}
-        override fun onQueryTextChange(query: String) {}
-        override fun onExpandStateChanged(id: String, expanded: Boolean) {}
-        override fun refresh(serverListType: ServerListType) {}
-    }
 }
 
 class ServerViewModelImpl(
@@ -129,7 +71,6 @@ class ServerViewModelImpl(
     private val favouriteRepository: FavouriteRepository,
     private val staticIpRepository: StaticIpRepository,
     private val localDbInterface: LocalDbInterface,
-    private val userRepository: UserRepository,
     private val preferencesHelper: PreferencesHelper,
     private val latencyRepository: LatencyRepository
 ) : ServerViewModel() {
@@ -156,8 +97,6 @@ class ServerViewModelImpl(
     private val _selectedServerListType = MutableStateFlow(ServerListType.All)
     override val selectedServerListType: StateFlow<ServerListType> = _selectedServerListType
 
-    private val _userState = MutableStateFlow<UserState>(UserState.Loading)
-    override val userState: StateFlow<UserState> = _userState
 
     private val _showSearchView = MutableStateFlow(false)
     override val showSearchView: StateFlow<Boolean> = _showSearchView
@@ -171,12 +110,8 @@ class ServerViewModelImpl(
     override val refreshState: StateFlow<Boolean> = _refreshState
     private var preferenceChangeListener: OnTrayPreferenceChangeListener? = null
 
-
-    private val logger = Logger.getLogger("ServerViewModel")
-
     init {
         fetchAllLists()
-        fetchUserState()
         fetchUserPreferences()
     }
 
@@ -210,32 +145,6 @@ class ServerViewModelImpl(
                 }
             }
             preferencesHelper.addObserver(preferenceChangeListener!!)
-        }
-    }
-
-    private fun fetchUserState() {
-        viewModelScope.launch {
-            userRepository.userInfo.collect {
-                if (it.isPro) {
-                    _userState.emit(UserState.Pro)
-                } else if (it.maxData == -1L) {
-                    _userState.emit(UserState.UnlimitedData)
-                } else {
-                    val dataLeft = it.maxData - it.dataUsed
-                    val angle = (dataLeft.toFloat() / it.maxData.toFloat()) * 360f
-                    logger.info("Data left: $dataLeft, Angle: $angle Max: ${it.maxData}")
-                    _userState.emit(
-                        UserState.Free(
-                            String.format(
-                                Locale.getDefault(),
-                                "%.2f GB",
-                                dataLeft.toDouble() / (1024 * 1024 * 1024)
-                            ),
-                            angle
-                        )
-                    )
-                }
-            }
         }
     }
 

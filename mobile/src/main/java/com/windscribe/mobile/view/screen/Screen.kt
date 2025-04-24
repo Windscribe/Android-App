@@ -10,4 +10,5 @@ sealed class Screen(val route: String) {
     object EmergencyConnect: Screen("emergency_connect")
     object Web: Screen("web")
     object PowerWhitelist: Screen("power_whitelist")
+    object ShareLink: Screen("share_link")
 }

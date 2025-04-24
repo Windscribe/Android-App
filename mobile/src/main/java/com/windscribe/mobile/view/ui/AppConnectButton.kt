@@ -21,13 +21,11 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.view.theme.AppColors
 import com.windscribe.mobile.viewmodel.ConnectionUIState
 import com.windscribe.mobile.viewmodel.ConnectionViewmodel
-import com.windscribe.mobile.viewmodel.mockConnectionViewmodel
 
 @Composable
 fun AppConnectButton(connectionViewmodel: ConnectionViewmodel) {
@@ -101,13 +99,5 @@ fun AppConnectButton(connectionViewmodel: ConnectionViewmodel) {
                 )
             }
         }
-    }
-}
-
-@Composable
-@Preview
-private fun AppConnectButtonPreview() {
-    Box {
-        AppConnectButton(mockConnectionViewmodel())
     }
 }

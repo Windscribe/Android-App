@@ -1,9 +1,6 @@
 package com.windscribe.mobile.viewmodel
 
-import android.content.Context
 import android.media.MediaPlayer
-import android.os.Build
-import android.os.PowerManager
 import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
 import androidx.annotation.StringRes
@@ -48,20 +45,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
 import org.slf4j.LoggerFactory
 import java.io.File
 import javax.inject.Inject
 
-sealed class HomeGoto {
-    object Upgrade : HomeGoto()
-    object PowerWhitelist: HomeGoto()
-    data class Expired(val date: String) : HomeGoto()
-    object Banned : HomeGoto()
-    object None : HomeGoto()
-}
 
 sealed class LocationInfoState {
     data class Success(val locationInfo: LocationInfo) : LocationInfoState()
@@ -203,7 +192,6 @@ class ConnectionViewmodelImpl @Inject constructor(
         fetchBestLocation()
         fetchUserPreferences()
         handleConnectionSoundsState()
-        observeConnectionCount()
     }
 
     private fun fetchNewsfeedCount() {
@@ -704,30 +692,6 @@ class ConnectionViewmodelImpl @Inject constructor(
         }
     }
 
-    private fun observeConnectionCount() {
-        viewModelScope.launch(Dispatchers.IO) {
-            vpnConnectionStateManager.connectionCount
-                .filter { count ->
-                    val showCount = preferences.getPowerWhiteListDialogCount()
-                    count > 1 && !isIgnoringBatteryOptimizations(appContext) && showCount < 3
-                }.collectLatest {
-                    if (!isIgnoringBatteryOptimizations(appContext) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        _goto.emit(HomeGoto.PowerWhitelist)
-                    }
-                }
-        }
-    }
-
-    private fun isIgnoringBatteryOptimizations(context: Context): Boolean {
-        val manager =
-            context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
-        val name = context.applicationContext.packageName
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return manager.isIgnoringBatteryOptimizations(name)
-        }
-        return true
-    }
-
 
     override fun clearGoTo() {
         viewModelScope.launch {
@@ -739,44 +703,5 @@ class ConnectionViewmodelImpl @Inject constructor(
         networkInfoManager.removeNetworkInfoListener(networkListener!!)
         preferences.removeObserver(preferenceChangeListener!!)
         super.onCleared()
-    }
-}
-
-fun mockConnectionViewmodel(): ConnectionViewmodel {
-    return object : ConnectionViewmodel() {
-        override val connectionUIState: StateFlow<ConnectionUIState>
-            get() = MutableStateFlow(ConnectionUIState.Idle)
-        override val ipState: StateFlow<String>
-            get() = MutableStateFlow("127.0.0.1")
-        override val networkInfoState: StateFlow<NetworkInfoState>
-            get() = MutableStateFlow(NetworkInfoState.Unknown)
-        override val ipContextMenuState: StateFlow<Pair<Boolean, Offset>>
-            get() = MutableStateFlow(Pair(false, Offset.Zero))
-        override val toastMessage: StateFlow<ToastMessage>
-            get() = MutableStateFlow(ToastMessage.None)
-        override val bestLocation: StateFlow<ServerListItem?>
-            get() = MutableStateFlow(null)
-        override val isAntiCensorshipEnabled: StateFlow<Boolean>
-            get() = MutableStateFlow(false)
-        override val isPreferredProtocolEnabled: StateFlow<Boolean>
-            get() = MutableStateFlow(false)
-        override val goto: StateFlow<HomeGoto>
-            get() = MutableStateFlow(HomeGoto.None)
-        override val newFeedCount: StateFlow<Int>
-            get() = MutableStateFlow(0)
-        override val aspectRatio: StateFlow<Int>
-            get() = MutableStateFlow(1)
-
-        override fun onConnectButtonClick() {}
-        override fun onCityClick(city: City) {}
-        override fun onStaticIpClick(staticRegion: StaticRegion) {}
-        override fun onConfigClick(config: ConfigFile) {}
-        override fun onIpContextMenuPosition(position: Offset) {}
-        override fun onRotateIpClick() {}
-        override fun onFavouriteIpClick() {}
-        override fun setContextMenuState(state: Boolean) {}
-        override fun clearToast() {}
-        override fun onProtocolChangeClick() {}
-        override fun clearGoTo() {}
     }
 }

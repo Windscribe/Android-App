@@ -45,7 +45,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.view.theme.AppColors
@@ -59,16 +58,15 @@ import com.windscribe.mobile.view.ui.TenGIcon
 import com.windscribe.mobile.view.ui.averageHealth
 import com.windscribe.mobile.view.ui.healthColor
 import com.windscribe.mobile.viewmodel.ConnectionViewmodel
+import com.windscribe.mobile.viewmodel.HomeViewmodel
 import com.windscribe.mobile.viewmodel.ListState
 import com.windscribe.mobile.viewmodel.ServerListItem
 import com.windscribe.mobile.viewmodel.ServerViewModel
-import com.windscribe.mobile.viewmodel.mockConnectionViewmodel
-import com.windscribe.mobile.viewmodel.mockServerViewModel
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.serverlist.entity.City
 
 @Composable
-fun SearchServerList(viewModel: ServerViewModel, connectionViewModel: ConnectionViewmodel) {
+fun SearchServerList(viewModel: ServerViewModel, connectionViewModel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
     val state by viewModel.searchListState.collectAsState()
     val expandedStates by viewModel.searchItemsExpandState.collectAsState()
     val scrollState = rememberScrollState()
@@ -103,6 +101,7 @@ fun SearchServerList(viewModel: ServerViewModel, connectionViewModel: Connection
                         ExpandableListItem(
                             viewModel,
                             connectionViewModel,
+                            homeViewmodel,
                             item,
                             expanded = expandedStates[item.region.name] ?: false,
                             onExpandChange = {
@@ -123,6 +122,7 @@ fun SearchServerList(viewModel: ServerViewModel, connectionViewModel: Connection
 private fun ExpandableListItem(
     viewModel: ServerViewModel,
     connectionViewModel: ConnectionViewmodel,
+    homeViewmodel: HomeViewmodel,
     item: ServerListItem,
     expanded: Boolean,
     onExpandChange: (Boolean) -> Unit
@@ -179,7 +179,7 @@ private fun ExpandableListItem(
         AnimatedVisibility(visible = expanded) {
             Column {
                 item.cities.forEach {
-                    ServerListItemView(it, viewModel, connectionViewModel)
+                    ServerListItemView(it, viewModel, connectionViewModel, homeViewmodel)
                 }
             }
         }
@@ -190,9 +190,10 @@ private fun ExpandableListItem(
 private fun ServerListItemView(
     item: City,
     viewModel: ServerViewModel,
-    connectionViewModel: ConnectionViewmodel
+    connectionViewModel: ConnectionViewmodel,
+    homeViewmodel: HomeViewmodel
 ) {
-    val userState by viewModel.userState.collectAsState()
+    val userState by homeViewmodel.userState.collectAsState()
     val favouriteState by viewModel.favouriteListState.collectAsState()
     var isFavorite = false
     if (favouriteState is ListState.Success) {
@@ -324,10 +325,4 @@ private fun SearchListNavigation(viewModel: ServerViewModel) {
             )
         }
     }
-}
-
-@Composable
-@Preview(showSystemUi = true)
-private fun AllServerListPreview() {
-    SearchServerList(mockServerViewModel(), mockConnectionViewmodel())
 }
