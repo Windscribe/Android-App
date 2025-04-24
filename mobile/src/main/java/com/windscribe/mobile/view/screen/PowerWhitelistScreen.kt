@@ -42,6 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.windscribe.mobile.R
+import com.windscribe.mobile.view.LocalNavController
 import com.windscribe.mobile.view.theme.AppColors
 import com.windscribe.mobile.view.theme.font16
 import com.windscribe.mobile.view.ui.NextButton
@@ -50,7 +51,7 @@ import com.windscribe.mobile.viewmodel.PowerWhitelistViewmodel
 @RequiresApi(Build.VERSION_CODES.M)
 @Composable
 fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
-  //  val navController = LocalNavController.current
+    val navController = LocalNavController.current
     val packageName = LocalContext.current.packageName
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -60,7 +61,7 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
     val shouldExit by viewmodel?.shouldExit?.collectAsState() ?: remember { mutableStateOf(false) }
     LaunchedEffect(shouldExit) {
         if (shouldExit) {
-         //   navController.popBackStack()
+            navController.popBackStack()
         }
     }
     Box(
