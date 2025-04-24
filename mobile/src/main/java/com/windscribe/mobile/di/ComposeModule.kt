@@ -9,16 +9,12 @@ import com.windscribe.mobile.viewmodel.ConfigViewmodelImpl
 import com.windscribe.mobile.viewmodel.ConnectionViewmodel
 import com.windscribe.mobile.viewmodel.ConnectionViewmodelImpl
 import com.windscribe.mobile.viewmodel.EmergencyConnectViewModal
-import com.windscribe.mobile.viewmodel.HomeViewmodel
-import com.windscribe.mobile.viewmodel.HomeViewmodelImpl
 import com.windscribe.mobile.viewmodel.LoginViewModel
 import com.windscribe.mobile.viewmodel.NewsfeedViewmodel
 import com.windscribe.mobile.viewmodel.PowerWhitelistViewmodel
 import com.windscribe.mobile.viewmodel.PowerWhitelistViewmodelImpl
 import com.windscribe.mobile.viewmodel.ServerViewModel
 import com.windscribe.mobile.viewmodel.ServerViewModelImpl
-import com.windscribe.mobile.viewmodel.SharedLinkViewmodel
-import com.windscribe.mobile.viewmodel.SharedLinkViewmodelImpl
 import com.windscribe.mobile.viewmodel.SignupViewModel
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -99,6 +95,7 @@ class ComposeModule {
                         favouriteRepository,
                         staticIpRepository,
                         localDbInterface,
+                        userRepository,
                         appPreferenceHelper,
                         latencyRepository
                     ) as T
@@ -122,14 +119,6 @@ class ComposeModule {
                     return LipstickViewmodelImpl(appPreferenceHelper, serverListRepository) as T
                 } else if (modelClass.isAssignableFrom(PowerWhitelistViewmodel::class.java)) {
                     return PowerWhitelistViewmodelImpl(appPreferenceHelper) as T
-                } else if (modelClass.isAssignableFrom(SharedLinkViewmodel::class.java)) {
-                    return SharedLinkViewmodelImpl(userRepository) as T
-                } else if (modelClass.isAssignableFrom(HomeViewmodel::class.java)) {
-                    return HomeViewmodelImpl(
-                        vpnConnectionStateManager,
-                        userRepository,
-                        appPreferenceHelper
-                    ) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
             }

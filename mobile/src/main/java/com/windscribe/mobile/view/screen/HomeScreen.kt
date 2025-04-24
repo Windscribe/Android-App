@@ -84,7 +84,6 @@ import com.windscribe.mobile.viewmodel.ConfigViewmodel
 import com.windscribe.mobile.viewmodel.ConnectionUIState
 import com.windscribe.mobile.viewmodel.ConnectionViewmodel
 import com.windscribe.mobile.viewmodel.HomeGoto
-import com.windscribe.mobile.viewmodel.HomeViewmodel
 import com.windscribe.mobile.viewmodel.LocationInfoState
 import com.windscribe.mobile.viewmodel.ServerViewModel
 import com.windscribe.mobile.viewmodel.ToastMessage
@@ -94,57 +93,41 @@ import kotlin.math.roundToInt
 
 @Composable
 fun HomeScreen(
-    serverViewModel: ServerViewModel?,
-    connectionViewmodel: ConnectionViewmodel?,
-    configViewmodel: ConfigViewmodel?,
-    homeViewmodel: HomeViewmodel?
+    serverViewModel: ServerViewModel,
+    connectionViewmodel: ConnectionViewmodel,
+    configViewmodel: ConfigViewmodel
 ) {
-    if (serverViewModel == null || connectionViewmodel == null || configViewmodel == null || homeViewmodel == null) {
-        return
-    }
     HandleToast(connectionViewmodel)
-    HandleGoto(connectionViewmodel, homeViewmodel)
-    CompactUI(serverViewModel, connectionViewmodel, configViewmodel, homeViewmodel)
+    HandleGoto(connectionViewmodel)
+    CompactUI(serverViewModel, connectionViewmodel, configViewmodel)
 }
 
 @Composable
-fun HandleGoto(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
-    val context = LocalContext.current
+fun HandleGoto(connectionViewmodel: ConnectionViewmodel) {
     val navController = LocalNavController.current
-    LaunchedEffect(Unit) {
-        connectionViewmodel.goto.collect { goto ->
-            when (goto) {
-                HomeGoto.Banned -> {}
-                is HomeGoto.Expired, HomeGoto.Upgrade -> {
-                    context.startActivity(UpgradeActivity.getStartIntent(context))
-                }
-                HomeGoto.PowerWhitelist -> navController.navigate(Screen.PowerWhitelist.route)
-                HomeGoto.ShareAppLink -> navController.navigate(Screen.ShareLink.route)
-                HomeGoto.None -> return@collect
+    val context = LocalContext.current
+    val goto by connectionViewmodel.goto.collectAsState()
+    LaunchedEffect(goto) {
+        when (goto) {
+            HomeGoto.Banned -> {
+
             }
-            connectionViewmodel.clearGoTo()
-        }
-    }
-    LaunchedEffect(Unit) {
-        homeViewmodel.goto.collect { goto ->
-            when (goto) {
-                HomeGoto.Banned -> {}
-                is HomeGoto.Expired, HomeGoto.Upgrade -> {
-                    context.startActivity(UpgradeActivity.getStartIntent(context))
-                }
-                HomeGoto.PowerWhitelist -> navController.navigate(Screen.PowerWhitelist.route)
-                HomeGoto.ShareAppLink -> navController.navigate(Screen.ShareLink.route)
-                HomeGoto.None -> return@collect
+            is HomeGoto.Expired, HomeGoto.Upgrade -> {
+                context.startActivity(UpgradeActivity.getStartIntent(context))
             }
-            homeViewmodel.clearGoTo()
+            HomeGoto.PowerWhitelist -> {
+                navController.navigate(Screen.PowerWhitelist.route)
+            }
+            HomeGoto.None -> { }
         }
+        connectionViewmodel.clearGoTo()
     }
 }
 
 @Composable
-fun HandleToast(connectionViewmodel: ConnectionViewmodel?) {
+fun HandleToast(connectionViewmodel: ConnectionViewmodel) {
     val context = LocalContext.current
-    val toastMessage by connectionViewmodel?.toastMessage?.collectAsState() ?: return
+    val toastMessage by connectionViewmodel.toastMessage.collectAsState()
     LaunchedEffect(toastMessage) {
         when (toastMessage) {
             is ToastMessage.Localized -> {
@@ -153,7 +136,7 @@ fun HandleToast(connectionViewmodel: ConnectionViewmodel?) {
                     (toastMessage as ToastMessage.Localized).message,
                     Toast.LENGTH_SHORT
                 ).show()
-                connectionViewmodel?.clearToast()
+                connectionViewmodel.clearToast()
             }
 
             is ToastMessage.Raw -> {
@@ -162,7 +145,7 @@ fun HandleToast(connectionViewmodel: ConnectionViewmodel?) {
                     (toastMessage as ToastMessage.Raw).message,
                     Toast.LENGTH_SHORT
                 ).show()
-                connectionViewmodel?.clearToast()
+                connectionViewmodel.clearToast()
             }
 
             else -> {}
@@ -186,8 +169,7 @@ private fun Background(content: @Composable () -> Unit) {
 private fun CompactUI(
     serverViewModel: ServerViewModel,
     connectionViewmodel: ConnectionViewmodel,
-    configViewmodel: ConfigViewmodel,
-    homeViewmodel: HomeViewmodel
+    configViewmodel: ConfigViewmodel
 ) {
     val searchState by serverViewModel.showSearchView.collectAsState()
     Background {
@@ -195,7 +177,7 @@ private fun CompactUI(
         Column {
             Spacer(modifier = Modifier.height(36.dp))
             LocationImage(connectionViewmodel)
-            ServerListScreen(serverViewModel, connectionViewmodel, configViewmodel, homeViewmodel)
+            ServerListScreen(serverViewModel, connectionViewmodel, configViewmodel)
         }
         Column {
             Header(connectionViewmodel)
@@ -216,7 +198,7 @@ private fun CompactUI(
             AppConnectButton(connectionViewmodel)
         }
         if (searchState) {
-            SearchServerList(serverViewModel, connectionViewmodel, homeViewmodel)
+            SearchServerList(serverViewModel, connectionViewmodel)
         }
     }
 }
@@ -502,8 +484,8 @@ private fun Dots(modifier: Modifier) {
 }
 
 @Composable
-private fun ConnectedBackground(connectionViewmodel: ConnectionViewmodel?) {
-    val state by connectionViewmodel?.connectionUIState?.collectAsState() ?: return
+private fun ConnectedBackground(connectionViewmodel: ConnectionViewmodel) {
+    val state by connectionViewmodel.connectionUIState.collectAsState()
     if (state is ConnectionUIState.Connected) {
         Box(
             modifier = Modifier

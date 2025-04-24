@@ -40,6 +40,7 @@ data class LatencyListItem(val id: Int, val time: Int)
 sealed class UserState() {
     object Loading : UserState()
     object Pro : UserState()
+    object UnlimitedData : UserState()
     data class Free(val dataLeft: String, val dataLeftAngle: Float) : UserState()
 }
 
@@ -217,6 +218,8 @@ class ServerViewModelImpl(
             userRepository.userInfo.collect {
                 if (it.isPro) {
                     _userState.emit(UserState.Pro)
+                } else if (it.maxData == -1L) {
+                    _userState.emit(UserState.UnlimitedData)
                 } else {
                     val dataLeft = it.maxData - it.dataUsed
                     val angle = (dataLeft.toFloat() / it.maxData.toFloat()) * 360f
@@ -298,6 +301,7 @@ class ServerViewModelImpl(
                     this
                 }
             }
+
             AZ_LIST_SELECTION_MODE -> sortedBy { it.region.name }
             else -> this
         }

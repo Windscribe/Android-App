@@ -115,7 +115,7 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
                     .fillMaxWidth()
                     .padding(top = 32.dp)
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             TextButton(onClick = {
                 viewmodel?.onLaterClicked()
             }) {
@@ -125,6 +125,7 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
                     color = AppColors.white50
                 )
             }
+            Spacer(modifier = Modifier.height(8.dp))
             TextButton(onClick = {
                 viewmodel?.onNeverAskAgainClicked()
             }) {
