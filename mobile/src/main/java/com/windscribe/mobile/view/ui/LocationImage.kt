@@ -34,6 +34,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import coil.compose.SubcomposeAsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.imageLoader
 import coil.request.ImageRequest
@@ -130,12 +132,22 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel) {
                         2 -> ContentScale.Fit        // Fit
                         else -> ContentScale.FillHeight // Default
                     }
-
-                    Image(
-                        painter = painter,
+                    SubcomposeAsyncImage(
+                        model = imageData,
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = contentScale
+                        contentScale = contentScale,
+                        loading = {
+                            Box(modifier = Modifier.fillMaxSize().background(Color.Gray))
+                        },
+                        error = {
+                            Image(
+                                painterResource(id = R.drawable.dummy_flag),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = contentScale
+                            )
+                        }
                     )
                 }
             }

@@ -21,9 +21,11 @@ import com.windscribe.mobile.R
 import com.windscribe.mobile.di.ComposeComponent
 import com.windscribe.mobile.di.DaggerComposeComponent
 import com.windscribe.mobile.networksecurity.networkdetails.NetworkDetailsActivity
+import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.view.screen.Screen
 import com.windscribe.mobile.view.theme.AndroidTheme
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DARK_THEME
 
 class AppStartActivity : AppCompatActivity() {
@@ -68,6 +70,7 @@ class AppStartActivity : AppCompatActivity() {
                 }
             }
         }
+        handleIntent(intent)
     }
 
     fun isGranted(permission: String): Boolean {
@@ -111,6 +114,38 @@ class AppStartActivity : AppCompatActivity() {
                 "No available browser found to open the desired url!",
                 Toast.LENGTH_SHORT
             ).show()
+        }
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        val extras = intent?.extras ?: return
+        val type = extras.getString("type") ?: return
+
+        when (type) {
+            "promo" -> {
+                val pcpid = extras.getString("pcpid")
+                val promoCode = extras.getString("promo_code")
+
+                if (pcpid != null && promoCode != null) {
+                    appContext.appLifeCycleObserver.pushNotificationAction = PushNotificationAction(
+                        pcpid,
+                        promoCode,
+                        type
+                    )
+                    startActivity(UpgradeActivity.getStartIntent(this))
+                }
+            }
+
+            "user_expired" -> {
+                if (appContext.vpnConnectionStateManager.isVPNConnected()) {
+                    appContext.vpnController.disconnectAsync()
+                }
+                appContext.workManager.updateSession()
+            }
+
+            "user_downgraded" -> {
+                appContext.workManager.updateSession()
+            }
         }
     }
 }

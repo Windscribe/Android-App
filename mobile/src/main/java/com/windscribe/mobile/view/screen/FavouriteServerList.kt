@@ -51,13 +51,14 @@ import com.windscribe.mobile.view.ui.TenGIcon
 import com.windscribe.mobile.view.ui.healthColor
 import com.windscribe.mobile.viewmodel.ConnectionViewmodel
 import com.windscribe.mobile.viewmodel.FavouriteListItem
+import com.windscribe.mobile.viewmodel.HomeViewmodel
 import com.windscribe.mobile.viewmodel.ListState
 import com.windscribe.mobile.viewmodel.ServerListType
 import com.windscribe.mobile.viewmodel.ServerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionViewmodel, pullToRefreshState: PullToRefreshState = rememberPullToRefreshState()) {
+fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel?, pullToRefreshState: PullToRefreshState = rememberPullToRefreshState()) {
     val state by viewModel.favouriteListState.collectAsState()
 
     when (state) {
@@ -111,7 +112,7 @@ fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionVie
                         Spacer(modifier = Modifier.height(8.dp))
                         LazyColumn(modifier = Modifier.fillMaxSize()) {
                             items(list, key = { it.id }) { item ->
-                                ListItemView(item, viewModel, connectionViewmodel)
+                                ListItemView(item, viewModel, connectionViewmodel, homeViewmodel)
                             }
                         }
                     }
@@ -131,9 +132,10 @@ fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionVie
 private fun ListItemView(
     item: FavouriteListItem,
     viewModel: ServerViewModel,
-    connectionViewmodel: ConnectionViewmodel
+    connectionViewmodel: ConnectionViewmodel,
+    homeViewmodel: HomeViewmodel?
 ) {
-    val userState by viewModel.userState.collectAsState()
+    val userState by homeViewmodel?.userState?.collectAsState() ?: return
     val color = colorResource(healthColor(item.city.health))
     val angle = (item.city.health / 100f) * 360f
     val latencyState by viewModel.latencyListState.collectAsState()

@@ -38,7 +38,7 @@ fun AddButton(
             Text(
                 stringResource(buttonTitle),
                 style = font16,
-                color = AppColors.neonGreen,
+                color = AppColors.cyberBlue.copy(0.7f),
                 modifier = Modifier
                     .padding(horizontal = 16.dp, vertical = 13.dp)
                     .clickable {
@@ -60,7 +60,7 @@ fun AddButton(
         Text(
             stringResource(buttonTitle),
             style = font16,
-            color = AppColors.neonGreen,
+            color = AppColors.cyberBlue.copy(0.7f),
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 13.dp)
                 .clickable {
