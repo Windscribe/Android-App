@@ -9,4 +9,5 @@ sealed class Screen(val route: String) {
     object Newsfeed: Screen("newsfeed")
     object EmergencyConnect: Screen("emergency_connect")
     object Web: Screen("web")
+    object PowerWhitelist: Screen("power_whitelist")
 }

@@ -189,7 +189,7 @@ fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel) {
 
     Row(verticalAlignment = Alignment.CenterVertically) {
         Image(
-            painter = painterResource(if (networkInfo is NetworkInfoState.Unsecured) R.drawable.ic_wifi_unsecure else R.drawable.ic_wifi_secure),
+            painter = painterResource(if (networkInfo is NetworkInfoState.Unsecured) R.drawable.ic_wifi_unsecure else R.drawable.ic_wifi),
             contentDescription = null,
             modifier = Modifier.padding(start = 8.dp)
         )

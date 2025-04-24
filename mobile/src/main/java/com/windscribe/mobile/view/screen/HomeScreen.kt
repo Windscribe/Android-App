@@ -104,20 +104,21 @@ fun HomeScreen(
 
 @Composable
 fun HandleGoto(connectionViewmodel: ConnectionViewmodel) {
-    val goto by connectionViewmodel.goto.collectAsState()
+    val navController = LocalNavController.current
     val context = LocalContext.current
+    val goto by connectionViewmodel.goto.collectAsState()
     LaunchedEffect(goto) {
         when (goto) {
             HomeGoto.Banned -> {
 
             }
-
             is HomeGoto.Expired, HomeGoto.Upgrade -> {
-            context.startActivity(UpgradeActivity.getStartIntent(context))
+                context.startActivity(UpgradeActivity.getStartIntent(context))
             }
-            HomeGoto.None -> {
-
+            HomeGoto.PowerWhitelist -> {
+                navController.navigate(Screen.PowerWhitelist.route)
             }
+            HomeGoto.None -> { }
         }
         connectionViewmodel.clearGoTo()
     }

@@ -124,10 +124,12 @@ fun AllServerList(
 
                 is ListState.Success -> {
                     LocationCount(viewModel)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    bestLocation?.let { BestLocation(it, connectionViewModel) }
                     val list = (state as ListState.Success).data
                     LazyColumn(modifier = Modifier.weight(1f)) {
+                        item {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            bestLocation?.let { BestLocation(it, connectionViewModel) }
+                        }
                         items(list, key = { it.id }) { item ->
                             ExpandableListItem(
                                 viewModel,

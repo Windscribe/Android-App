@@ -11,6 +11,8 @@ import com.windscribe.mobile.viewmodel.ConnectionViewmodelImpl
 import com.windscribe.mobile.viewmodel.EmergencyConnectViewModal
 import com.windscribe.mobile.viewmodel.LoginViewModel
 import com.windscribe.mobile.viewmodel.NewsfeedViewmodel
+import com.windscribe.mobile.viewmodel.PowerWhitelistViewmodel
+import com.windscribe.mobile.viewmodel.PowerWhitelistViewmodelImpl
 import com.windscribe.mobile.viewmodel.ServerViewModel
 import com.windscribe.mobile.viewmodel.ServerViewModelImpl
 import com.windscribe.mobile.viewmodel.SignupViewModel
@@ -115,6 +117,8 @@ class ComposeModule {
                     return ConfigViewmodelImpl(localDbInterface, latencyRepository) as T
                 } else if (modelClass.isAssignableFrom(LipstickViewmodel::class.java)) {
                     return LipstickViewmodelImpl(appPreferenceHelper, serverListRepository) as T
+                } else if (modelClass.isAssignableFrom(PowerWhitelistViewmodel::class.java)) {
+                    return PowerWhitelistViewmodelImpl(appPreferenceHelper) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
             }

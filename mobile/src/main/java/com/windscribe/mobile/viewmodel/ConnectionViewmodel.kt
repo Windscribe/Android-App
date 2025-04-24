@@ -1,6 +1,9 @@
 package com.windscribe.mobile.viewmodel
 
+import android.content.Context
 import android.media.MediaPlayer
+import android.os.Build
+import android.os.PowerManager
 import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
 import androidx.annotation.StringRes
@@ -45,6 +48,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
 import org.slf4j.LoggerFactory
@@ -53,6 +57,7 @@ import javax.inject.Inject
 
 sealed class HomeGoto {
     object Upgrade : HomeGoto()
+    object PowerWhitelist: HomeGoto()
     data class Expired(val date: String) : HomeGoto()
     object Banned : HomeGoto()
     object None : HomeGoto()
@@ -198,6 +203,7 @@ class ConnectionViewmodelImpl @Inject constructor(
         fetchBestLocation()
         fetchUserPreferences()
         handleConnectionSoundsState()
+        observeConnectionCount()
     }
 
     private fun fetchNewsfeedCount() {
@@ -697,6 +703,31 @@ class ConnectionViewmodelImpl @Inject constructor(
                 }
         }
     }
+
+    private fun observeConnectionCount() {
+        viewModelScope.launch(Dispatchers.IO) {
+            vpnConnectionStateManager.connectionCount
+                .filter { count ->
+                    val showCount = preferences.getPowerWhiteListDialogCount()
+                    count > 1 && !isIgnoringBatteryOptimizations(appContext) && showCount < 3
+                }.collectLatest {
+                    if (!isIgnoringBatteryOptimizations(appContext) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        _goto.emit(HomeGoto.PowerWhitelist)
+                    }
+                }
+        }
+    }
+
+    private fun isIgnoringBatteryOptimizations(context: Context): Boolean {
+        val manager =
+            context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
+        val name = context.applicationContext.packageName
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return manager.isIgnoringBatteryOptimizations(name)
+        }
+        return true
+    }
+
 
     override fun clearGoTo() {
         viewModelScope.launch {

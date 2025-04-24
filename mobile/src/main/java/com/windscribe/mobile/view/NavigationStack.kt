@@ -1,5 +1,7 @@
 package com.windscribe.mobile.view
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -16,6 +18,7 @@ import com.windscribe.mobile.view.screen.HomeScreen
 import com.windscribe.mobile.view.screen.LoginScreen
 import com.windscribe.mobile.view.screen.NewsfeedScreen
 import com.windscribe.mobile.view.screen.NoEmailAttentionScreen
+import com.windscribe.mobile.view.screen.PowerWhitelistScreen
 import com.windscribe.mobile.view.screen.Screen
 import com.windscribe.mobile.view.screen.SignupScreen
 import com.windscribe.mobile.view.screen.WebViewScreenUI
@@ -25,6 +28,7 @@ import com.windscribe.mobile.viewmodel.ConnectionViewmodel
 import com.windscribe.mobile.viewmodel.EmergencyConnectViewModal
 import com.windscribe.mobile.viewmodel.LoginViewModel
 import com.windscribe.mobile.viewmodel.NewsfeedViewmodel
+import com.windscribe.mobile.viewmodel.PowerWhitelistViewmodel
 import com.windscribe.mobile.viewmodel.ServerViewModel
 import com.windscribe.mobile.viewmodel.SignupViewModel
 import com.windscribe.mobile.viewmodel.mockConfigViewmodel
@@ -54,6 +58,11 @@ private fun NavGraphBuilder.addNavigationScreens() {
     composable(route = Screen.NoEmailAttention.route) { NoEmailAttentionScreen(false) {} }
     composable(route = Screen.Newsfeed.route) { NewsfeedViewRoute() }
     composable(route = Screen.Web.route) { WebViewScreenUI(LocalNavController.current) }
+    composable(route = Screen.PowerWhitelist.route) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PowerWhitelistViewRoute()
+        }
+    }
 }
 
 @Composable
@@ -117,6 +126,19 @@ private fun SignupViewRoute() {
         val viewModel: SignupViewModel =
             viewModel(factory = composeComponent.getViewModelFactory())
         SignupScreen(null, viewModel)
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.M)
+@Composable
+private fun PowerWhitelistViewRoute() {
+    val composeComponent = (LocalContext.current as? AppStartActivity)?.di
+    if (composeComponent == null) {
+        PowerWhitelistScreen(null)
+    } else {
+        val viewModel: PowerWhitelistViewmodel =
+            viewModel(factory = composeComponent.getViewModelFactory())
+        PowerWhitelistScreen(viewModel)
     }
 }
 
