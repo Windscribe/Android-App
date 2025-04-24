@@ -1,19 +1,42 @@
 package com.windscribe.mobile.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.windscribe.vpn.apppreference.PreferencesHelper
+import androidx.lifecycle.viewModelScope
+import com.windscribe.vpn.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import org.slf4j.LoggerFactory
+import kotlinx.coroutines.launch
 
 abstract class SharedLinkViewmodel : ViewModel() {
+    abstract fun exit()
+
     abstract val shouldExit: StateFlow<Boolean>
+    abstract val userName: StateFlow<String>
 }
 
-class SharedLinkViewmodelImpl(private val preferenceHelper: PreferencesHelper) :
+class SharedLinkViewmodelImpl(private val userRepository: UserRepository) :
     SharedLinkViewmodel() {
     private val _shouldExit = MutableStateFlow(false)
     override val shouldExit = _shouldExit.asStateFlow()
-    private val logger = LoggerFactory.getLogger("basic")
+    private val _userName = MutableStateFlow("")
+    override val userName: StateFlow<String> = _userName
+
+    init {
+        fetchUserState()
+    }
+
+    private fun fetchUserState() {
+        viewModelScope.launch {
+            userRepository.userInfo.collect {
+                _userName.emit(it.userName)
+            }
+        }
+    }
+
+    override fun exit() {
+        viewModelScope.launch {
+            _shouldExit.emit(true)
+        }
+    }
 }

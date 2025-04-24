@@ -71,10 +71,8 @@ class HomeViewmodelImpl(
                     _goto.emit(HomeGoto.PowerWhitelist)
                 }
                 val user = _userState.value
-//                if (user is UserState.Free && !user.isGhost && user.registerDays > 30 && count >= 10 && preferences.alreadyShownShareAppLink.not()) {
-//                    _goto.emit(HomeGoto.ShareAppLink)
-//                }
-                if (user is UserState.Free && !user.isGhost && user.registerDays > 30 && count >= 1) {
+                if (user is UserState.Free && !user.isGhost && user.registerDays > 30 && count >= 10 && preferences.alreadyShownShareAppLink.not()) {
+                    preferences.alreadyShownShareAppLink = true
                     _goto.emit(HomeGoto.ShareAppLink)
                 }
             }

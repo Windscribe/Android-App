@@ -123,7 +123,7 @@ class ComposeModule {
                 } else if (modelClass.isAssignableFrom(PowerWhitelistViewmodel::class.java)) {
                     return PowerWhitelistViewmodelImpl(appPreferenceHelper) as T
                 } else if (modelClass.isAssignableFrom(SharedLinkViewmodel::class.java)) {
-                    return SharedLinkViewmodelImpl(appPreferenceHelper) as T
+                    return SharedLinkViewmodelImpl(userRepository) as T
                 } else if (modelClass.isAssignableFrom(HomeViewmodel::class.java)) {
                     return HomeViewmodelImpl(
                         vpnConnectionStateManager,
