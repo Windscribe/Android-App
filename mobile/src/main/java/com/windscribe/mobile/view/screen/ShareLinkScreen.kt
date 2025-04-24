@@ -1,5 +1,6 @@
 package com.windscribe.mobile.view.screen
 
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -97,6 +98,7 @@ fun ShareLinkScreen(viewmodel: SharedLinkViewmodel?) {
     }
 }
 
+@SuppressLint("StringFormatInvalid")
 @Composable
 private fun buildIntentBuilder(viewmodel: SharedLinkViewmodel?): IntentBuilder {
     val context = LocalContext.current
