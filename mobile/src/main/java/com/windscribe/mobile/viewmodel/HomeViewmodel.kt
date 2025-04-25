@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
 import org.slf4j.LoggerFactory
 import java.util.Locale
 
@@ -42,6 +43,7 @@ abstract class HomeViewmodel : ViewModel() {
     abstract val goto: StateFlow<HomeGoto>
     abstract val userState: StateFlow<UserState>
     abstract fun clearGoTo()
+    abstract val hapticFeedbackEnabled: StateFlow<Boolean>
 }
 
 class HomeViewmodelImpl(
@@ -54,11 +56,15 @@ class HomeViewmodelImpl(
     override val goto: StateFlow<HomeGoto> = _goto
     private val _userState = MutableStateFlow<UserState>(UserState.Loading)
     override val userState: StateFlow<UserState> = _userState
+    private val _hapticFeedbackEnabled = MutableStateFlow(preferences.isHapticFeedbackEnabled)
+    override val hapticFeedbackEnabled: StateFlow<Boolean> = _hapticFeedbackEnabled
+    private var preferenceChangeListener: OnTrayPreferenceChangeListener? = null
     private val logger = LoggerFactory.getLogger("basic")
 
     init {
         fetchUserState()
         observeConnectionCount()
+        fetchUserPreferences()
     }
 
     private fun observeConnectionCount() {
@@ -79,6 +85,17 @@ class HomeViewmodelImpl(
         }
     }
 
+    private fun fetchUserPreferences() {
+        viewModelScope.launch {
+            preferenceChangeListener = OnTrayPreferenceChangeListener {
+                viewModelScope.launch(Dispatchers.IO) {
+                    _hapticFeedbackEnabled.emit(preferences.isHapticFeedbackEnabled)
+                }
+            }
+            preferences.addObserver(preferenceChangeListener!!)
+        }
+    }
+
     private fun fetchUserState() {
         viewModelScope.launch {
             userRepository.userInfo.collect {
@@ -94,7 +111,7 @@ class HomeViewmodelImpl(
                         UserState.Free(
                             String.format(
                                 Locale.getDefault(),
-                                "%.2f GB",
+                                "%.2f\nGB",
                                 dataLeft.toDouble() / (1024 * 1024 * 1024)
                             ),
                             angle, it.isGhost, it.daysRegisteredSince
@@ -119,5 +136,10 @@ class HomeViewmodelImpl(
         viewModelScope.launch {
             _goto.emit(HomeGoto.None)
         }
+    }
+
+    override fun onCleared() {
+        preferences.removeObserver(preferenceChangeListener!!)
+        super.onCleared()
     }
 }

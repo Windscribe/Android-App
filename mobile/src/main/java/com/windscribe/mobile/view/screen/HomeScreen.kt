@@ -199,11 +199,11 @@ private fun CompactUI(
         }
         Column {
             Header(connectionViewmodel)
-            ConnectionStatusSheet(connectionViewmodel)
+            ConnectionStatusSheet(connectionViewmodel, homeViewmodel)
             Spacer(modifier = Modifier.height(32.dp))
             LocationName(connectionViewmodel)
             Spacer(modifier = Modifier.height(8.dp))
-            NetworkInfoSheet(connectionViewmodel)
+            NetworkInfoSheet(connectionViewmodel, homeViewmodel)
             Spacer(modifier = Modifier.weight(1.0f))
         }
         IPContextMenu(connectionViewmodel)
@@ -223,8 +223,12 @@ private fun CompactUI(
 
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
-private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
+private fun ConnectionStatusSheet(
+    connectionViewmodel: ConnectionViewmodel,
+    homeViewmodel: HomeViewmodel
+) {
     val state by connectionViewmodel.connectionUIState.collectAsState()
+    val isHapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
     val containerColor = when (state) {
         is ConnectionUIState.Connected -> AppColors.connectedColor
         else -> AppColors.white
@@ -280,10 +284,7 @@ private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
             contentDescription = null,
             modifier = Modifier
                 .size(Dimen.dp24)
-                .clickable(
-                    changeProtocolInteractionSource,
-                    indication = rememberRipple(bounded = false, color = AppColors.white)
-                ) {
+                .hapticClickable(hapticEnabled = isHapticEnabled) {
                     connectionViewmodel.onProtocolChangeClick()
                 },
             contentScale = ContentScale.None,
@@ -319,12 +320,16 @@ private fun LocationName(connectionViewmodel: ConnectionViewmodel) {
 
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
-private fun NetworkInfoSheet(connectionViewmodel: ConnectionViewmodel) {
+private fun NetworkInfoSheet(
+    connectionViewmodel: ConnectionViewmodel,
+    homeViewmodel: HomeViewmodel
+) {
     val ip by connectionViewmodel.ipState.collectAsState()
     val showContextMenu by connectionViewmodel.ipContextMenuState.collectAsState()
+    val isHapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
     val hideIp = remember { mutableStateOf(false) }
     Row(verticalAlignment = Alignment.CenterVertically) {
-        NetworkNameSheet(connectionViewmodel)
+        NetworkNameSheet(connectionViewmodel, homeViewmodel)
         Row(
             modifier = Modifier
                 .weight(1.0f)
@@ -349,7 +354,6 @@ private fun NetworkInfoSheet(connectionViewmodel: ConnectionViewmodel) {
                         }
                 )
             }
-            val interactionSource = MutableInteractionSource()
             Image(
                 painter = painterResource(R.drawable.ic_context),
                 contentDescription = null,
@@ -358,10 +362,7 @@ private fun NetworkInfoSheet(connectionViewmodel: ConnectionViewmodel) {
                     .onGloballyPositioned { layoutCoordinates ->
                         connectionViewmodel.onIpContextMenuPosition(layoutCoordinates.boundsInWindow().topLeft)
                     }
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = rememberRipple(bounded = false, color = AppColors.white)
-                    ) {
+                    .hapticClickable(hapticEnabled = isHapticEnabled) {
                         connectionViewmodel.setContextMenuState(true)
                     }
             )

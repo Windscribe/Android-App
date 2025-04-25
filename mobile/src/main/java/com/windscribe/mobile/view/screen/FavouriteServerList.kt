@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -58,9 +59,10 @@ import com.windscribe.mobile.viewmodel.ServerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel?, pullToRefreshState: PullToRefreshState = rememberPullToRefreshState()) {
+fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel, pullToRefreshState: PullToRefreshState = rememberPullToRefreshState()) {
     val state by viewModel.favouriteListState.collectAsState()
-
+    val lazyListState = rememberLazyListState()
+    HandleScrollHaptic(lazyListState, homeViewmodel)
     when (state) {
         is ListState.Loading -> ProgressIndicator()
 
@@ -110,7 +112,7 @@ fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionVie
                             modifier = Modifier.padding(start = 8.dp, top = 16.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        LazyColumn(modifier = Modifier.fillMaxSize(), lazyListState) {
                             items(list, key = { it.id }) { item ->
                                 ListItemView(item, viewModel, connectionViewmodel, homeViewmodel)
                             }
