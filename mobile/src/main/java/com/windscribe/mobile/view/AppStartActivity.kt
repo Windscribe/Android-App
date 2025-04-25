@@ -55,8 +55,11 @@ class AppStartActivity : AppCompatActivity() {
         setContent {
             AndroidTheme {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    NavigationStack(Screen.Start)
-
+                    if (appContext.preference.sessionHash != null) {
+                        NavigationStack(Screen.Home)
+                    } else {
+                        NavigationStack(Screen.Start)
+                    }
                     dialog.value?.let { content ->
                         // Dim background and show dialog content
                         Box(

@@ -1,3 +1,4 @@
+
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -77,6 +78,7 @@ fun ServerListScreen(
         ServerListNavigation(
             modifier = Modifier.offset(y = (-54.0f).dp),
             viewModel = viewModel,
+            homeViewmodel = homeViewmodel,
             onTabSelected = { index ->
                 coroutineScope.launch {
                     viewModel.setSelectedType(index.toServerListType())

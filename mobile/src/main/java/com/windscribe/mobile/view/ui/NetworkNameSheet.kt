@@ -45,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.view.AppStartActivity
+import com.windscribe.mobile.view.screen.hapticClickable
 import com.windscribe.mobile.view.theme.AppColors
 import com.windscribe.mobile.view.theme.Dimen
 import com.windscribe.mobile.view.theme.font16
@@ -52,6 +53,7 @@ import com.windscribe.mobile.view.theme.font24
 import com.windscribe.mobile.view.ui.NextButton
 import com.windscribe.mobile.view.ui.theme
 import com.windscribe.mobile.viewmodel.ConnectionViewmodel
+import com.windscribe.mobile.viewmodel.HomeViewmodel
 import com.windscribe.mobile.viewmodel.NetworkInfoState
 
 private enum class PermissionDialogType {
@@ -62,9 +64,10 @@ private enum class PermissionDialogType {
 }
 
 @Composable
-fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel) {
+fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
     val activity = LocalContext.current as AppStartActivity
     val networkInfo by connectionViewmodel.networkInfoState.collectAsState()
+    val hapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
 
     var permissionDialogType by remember { mutableStateOf(PermissionDialogType.None) }
 
@@ -217,7 +220,7 @@ fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel) {
             contentDescription = null,
             modifier = Modifier
                 .size(Dimen.dp24)
-                .clickable { requestPermissions() },
+                .hapticClickable(hapticEnabled = hapticEnabled){ requestPermissions() },
             contentScale = ContentScale.None,
         )
     }

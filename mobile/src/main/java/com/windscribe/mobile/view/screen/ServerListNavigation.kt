@@ -3,8 +3,6 @@ package com.windscribe.mobile.view.screen
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,6 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.view.theme.AppColors
+import com.windscribe.mobile.viewmodel.HomeViewmodel
 import com.windscribe.mobile.viewmodel.ServerListType
 import com.windscribe.mobile.viewmodel.ServerViewModel
 
@@ -40,8 +38,10 @@ import com.windscribe.mobile.viewmodel.ServerViewModel
 fun ServerListNavigation(
     modifier: Modifier,
     viewModel: ServerViewModel,
+    homeViewmodel: HomeViewmodel,
     onTabSelected: (Int) -> Unit
 ) {
+    val isHapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
     val selectedType by viewModel.selectedServerListType.collectAsState()
     Box(
         modifier = modifier
@@ -99,14 +99,10 @@ fun ServerListNavigation(
                 R.drawable.ic_location_static to ServerListType.Static,
                 R.drawable.ic_location_config to ServerListType.Config
             ).forEachIndexed { index, (icon, type) ->
-                val interactionSource = MutableInteractionSource()
                 Image(
                     painter = painterResource(icon),
                     contentDescription = null,
-                    modifier = Modifier.clickable(
-                        interactionSource = interactionSource,
-                        indication = rememberRipple(bounded = false, color = AppColors.white)
-                    ) {
+                    modifier = Modifier.hapticClickable(hapticEnabled = isHapticEnabled)  {
                         onTabSelected(index)
                     },
                     colorFilter = if (selectedType == type) ColorFilter.tint(AppColors.white)
@@ -115,14 +111,10 @@ fun ServerListNavigation(
                 if (index < 3) Spacer(modifier = Modifier.width(16.dp))
             }
             Spacer(modifier = Modifier.weight(1.0f))
-            val interactionSource = MutableInteractionSource()
             Image(
                 painter = painterResource(R.drawable.ic_location_search),
                 contentDescription = null,
-                modifier = Modifier.clickable(
-                    interactionSource = interactionSource,
-                    indication = rememberRipple(bounded = false, color = AppColors.white)
-                ) {
+                modifier = Modifier.hapticClickable(hapticEnabled = isHapticEnabled) {
                     viewModel.toggleSearch()
                 },
                 colorFilter = ColorFilter.tint(AppColors.white70)
