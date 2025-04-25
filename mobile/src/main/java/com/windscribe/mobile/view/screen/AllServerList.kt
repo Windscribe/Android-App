@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
@@ -120,9 +121,11 @@ fun AllServerList(
                 }
 
                 is ListState.Success -> {
+                    val lazyListState = rememberLazyListState()
+                    HandleScrollHaptic(lazyListState, homeViewmodel)
                     LocationCount(viewModel)
                     val list = (state as ListState.Success).data
-                    LazyColumn(modifier = Modifier.weight(1f)) {
+                    LazyColumn(state = lazyListState, modifier = Modifier.weight(1f)) {
                         item {
                             Spacer(modifier = Modifier.height(8.dp))
                             bestLocation?.let { BestLocation(it, connectionViewModel) }
@@ -174,7 +177,6 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
                     Canvas(
                         modifier = Modifier
                             .size(40.dp)
-                            .padding(2.dp)
                     ) {
                         val strokeWidth = 3.dp.toPx()
 
@@ -201,10 +203,10 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
                     Text(
                         (userState as UserState.Free).dataLeft,
                         style = font9,
+                        lineHeight = 9.sp,
+                        textAlign = TextAlign.Center,
                         color = if (angle > 0) AppColors.neonGreen else AppColors.red,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(6.dp)
+                        modifier = Modifier.align(Alignment.Center)
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))

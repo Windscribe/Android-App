@@ -77,7 +77,7 @@ fun SearchServerList(viewModel: ServerViewModel, connectionViewModel: Connection
             .background(AppColors.homeBackground)
             .statusBarsPadding()
     ) {
-        SearchListNavigation(viewModel)
+        SearchListNavigation(viewModel, homeViewmodel)
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -251,8 +251,9 @@ private fun ProgressIndicator() {
 
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
-private fun SearchListNavigation(viewModel: ServerViewModel) {
+private fun SearchListNavigation(viewModel: ServerViewModel, homeViewmodel: HomeViewmodel) {
     val query by viewModel.searchKeyword.collectAsState()
+    val isHapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
     val interactionSource =
         remember { MutableInteractionSource() }
 
@@ -279,10 +280,7 @@ private fun SearchListNavigation(viewModel: ServerViewModel) {
             Image(
                 painter = painterResource(R.drawable.ic_location_search),
                 contentDescription = "Search",
-                modifier = Modifier.clickable(
-                    interactionSource = interactionSource,
-                    indication = rememberRipple(bounded = false, color = AppColors.white)
-                ) {
+                modifier = Modifier.hapticClickable(hapticEnabled = isHapticEnabled) {
                     viewModel.toggleSearch()
                 },
                 colorFilter = ColorFilter.tint(AppColors.white70)
