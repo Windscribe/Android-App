@@ -49,18 +49,13 @@ import com.windscribe.mobile.view.theme.font24
 import com.windscribe.mobile.view.ui.theme
 import com.windscribe.mobile.viewmodel.ToastMessage
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.constants.PreferencesKeyConstants.DARK_THEME
 
 class LipstickActivity : AppCompatActivity() {
     lateinit var di: ComposeComponent
     override fun onCreate(savedInstanceState: Bundle?) {
         val applicationComponent = appContext.applicationComponent
         di = DaggerComposeComponent.builder().applicationComponent(applicationComponent).build()
-        if (appContext.preference.selectedTheme == DARK_THEME) {
-            setTheme(R.style.DarkTheme)
-        } else {
-            setTheme(R.style.LightTheme)
-        }
+        setTheme(R.style.DarkTheme)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
