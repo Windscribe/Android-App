@@ -27,6 +27,7 @@ import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
+import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.RepositoryState
@@ -41,7 +42,9 @@ import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -123,7 +126,7 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract val isAntiCensorshipEnabled: StateFlow<Boolean>
     abstract val isPreferredProtocolEnabled: StateFlow<Boolean>
     abstract val aspectRatio: StateFlow<Int>
-    abstract val goto: StateFlow<HomeGoto>
+    abstract val goto: SharedFlow<HomeGoto>
     abstract val newFeedCount: StateFlow<Int>
     abstract fun onConnectButtonClick()
     abstract fun onCityClick(city: City)
@@ -135,7 +138,6 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract fun setContextMenuState(state: Boolean)
     abstract val toastMessage: StateFlow<ToastMessage>
     abstract fun clearToast()
-    abstract fun clearGoTo()
     abstract fun onProtocolChangeClick()
 }
 
@@ -171,8 +173,8 @@ class ConnectionViewmodelImpl @Inject constructor(
     override val isAntiCensorshipEnabled: StateFlow<Boolean> = _isAntiCensorshipEnabled
     private val _isPreferredProtocolEnabled = MutableStateFlow(false)
     override val isPreferredProtocolEnabled: StateFlow<Boolean> = _isPreferredProtocolEnabled
-    private val _goto = MutableStateFlow<HomeGoto>(HomeGoto.None)
-    override val goto: StateFlow<HomeGoto> = _goto
+    private val _goto = MutableSharedFlow<HomeGoto>(extraBufferCapacity = 1)
+    override val goto: SharedFlow<HomeGoto> = _goto
     private val _newFeedCount = MutableStateFlow(0)
     override val newFeedCount: StateFlow<Int> = _newFeedCount
     private var preferenceChangeListener: OnTrayPreferenceChangeListener? = null
@@ -626,17 +628,9 @@ class ConnectionViewmodelImpl @Inject constructor(
             showToast(R.string.no_internet)
             return false
         }
-        val user = userRepository.user.value
-        // Does user own this location
-        if (preferences.userStatus != UserStatusConstants.USER_STATUS_PREMIUM && isPro == 1 && !isStaticIp) {
-            logger.info("Location is pro but user is not. Opening upgrade activity.")
-            viewModelScope.launch {
-                _goto.emit(HomeGoto.Upgrade)
-            }
-            return false
-        }
         // User account status
-        if (user?.accountStatusToInt == UserStatusConstants.ACCOUNT_STATUS_EXPIRED && !isStaticIp) {
+        val user = userRepository.user.value
+        if (user?.accountStatus == User.AccountStatus.Expired && !isStaticIp) {
             logger.info("Error: account status is expired.")
             val resetDate = user.nextResetDate() ?: ""
             viewModelScope.launch {
@@ -644,10 +638,18 @@ class ConnectionViewmodelImpl @Inject constructor(
             }
             return false
         }
-        if (user?.userStatusInt == UserStatusConstants.ACCOUNT_STATUS_BANNED) {
+        if (user?.accountStatus == User.AccountStatus.Banned) {
             logger.info("Error: account status is banned.")
             viewModelScope.launch {
                 _goto.emit(HomeGoto.Banned)
+            }
+            return false
+        }
+        // Does user own this location
+        if (preferences.userStatus != UserStatusConstants.USER_STATUS_PREMIUM && isPro == 1 && !isStaticIp) {
+            logger.info("Location is pro but user is not. Opening upgrade activity.")
+            viewModelScope.launch {
+                _goto.emit(HomeGoto.Upgrade)
             }
             return false
         }
@@ -689,13 +691,6 @@ class ConnectionViewmodelImpl @Inject constructor(
                 }.onFailure {
                     _bestLocation.emit(null)
                 }
-        }
-    }
-
-
-    override fun clearGoTo() {
-        viewModelScope.launch {
-            _goto.emit(HomeGoto.None)
         }
     }
 

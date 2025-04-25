@@ -156,82 +156,76 @@ fun AllServerList(
 
 @Composable
 fun UpgradeBar(viewModel: HomeViewmodel?) {
-    val activity = LocalContext.current as AppStartActivity
+    val activity = LocalContext.current as? AppStartActivity ?: return
     val userState by viewModel?.userState?.collectAsState() ?: return
     if (userState is UserState.Free) {
-        val angle = (userState as UserState.Free).dataLeftAngle
+        val freeState = userState as UserState.Free
+        val angle = freeState.dataLeftAngle
+        val textColor = when {
+            angle <= 0 -> AppColors.red
+            angle <= 36 -> Color.Yellow
+            else -> AppColors.neonGreen
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = AppColors.homeBackground)
-                .border(width = 1.dp, color = AppColors.white5, shape = RoundedCornerShape(8.dp))
+                .background(AppColors.homeBackground)
+                .border(1.dp, AppColors.white5, RoundedCornerShape(8.dp))
                 .padding(12.dp)
+                .clickable { activity.startActivity(UpgradeActivity.getStartIntent(activity)) },
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(modifier = Modifier.clickable {
-                activity.startActivity(UpgradeActivity.getStartIntent(activity))
-            }) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                ) {
-                    Canvas(
-                        modifier = Modifier
-                            .size(40.dp)
-                    ) {
-                        val strokeWidth = 3.dp.toPx()
+            Box(
+                modifier = Modifier.size(40.dp)
+            ) {
+                Canvas(modifier = Modifier.matchParentSize()) {
+                    val strokeWidth = 3.dp.toPx()
 
-                        drawArc(
-                            color = AppColors.neonGreen,
-                            startAngle = 160f, // Start from top
-                            sweepAngle = angle,
-                            useCenter = false,
-                            style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
-                            size = Size(size.width, size.height),
-                            topLeft = Offset.Zero
-                        )
+                    drawArc(
+                        color = if (angle <= 36) Color.Yellow else AppColors.neonGreen,
+                        startAngle = 160f,
+                        sweepAngle = angle,
+                        useCenter = false,
+                        style = Stroke(strokeWidth, cap = StrokeCap.Butt)
+                    )
 
-                        drawArc(
-                            color = AppColors.white20,
-                            startAngle = 160f + angle,
-                            sweepAngle = 360f - angle,
-                            useCenter = false,
-                            style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
-                            size = Size(size.width, size.height),
-                            topLeft = Offset.Zero
-                        )
-                    }
-                    Text(
-                        (userState as UserState.Free).dataLeft,
-                        style = font9,
-                        lineHeight = 9.sp,
-                        textAlign = TextAlign.Center,
-                        color = if (angle > 0) AppColors.neonGreen else AppColors.red,
-                        modifier = Modifier.align(Alignment.Center)
+                    drawArc(
+                        color = AppColors.white20,
+                        startAngle = 160f + angle,
+                        sweepAngle = 360f - angle,
+                        useCenter = false,
+                        style = Stroke(strokeWidth, cap = StrokeCap.Butt)
                     )
                 }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(
-                        stringResource(R.string.unblock_full_access),
-                        style = font16.copy(fontSize = 15.sp),
-                        color = AppColors.white,
-                    )
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Text(
-                        stringResource(R.string.go_pro_for_unlimited_everything),
-                        style = font12,
-                        color = AppColors.cyberBlue.copy(alpha = 0.7f),
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1.0f))
-                Image(
-                    painter = painterResource(R.drawable.arrowright),
-                    contentDescription = "Upgrade",
-                    modifier = Modifier
-                        .size(16.dp)
-                        .align(Alignment.CenterVertically)
+                Text(
+                    text = freeState.dataLeft,
+                    style = font9,
+                    lineHeight = 9.sp,
+                    textAlign = TextAlign.Center,
+                    color = textColor,
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.unblock_full_access),
+                    style = font16.copy(fontSize = 15.sp),
+                    color = AppColors.white
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = stringResource(R.string.go_pro_for_unlimited_everything),
+                    style = font12,
+                    color = AppColors.cyberBlue.copy(alpha = 0.7f)
+                )
+            }
+            Image(
+                painter = painterResource(R.drawable.arrowright),
+                contentDescription = null,
+                modifier = Modifier.size(16.dp)
+            )
         }
     }
 }

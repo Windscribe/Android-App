@@ -12,6 +12,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.windscribe.mobile.dialogs.AccountStatusDialogData
+import com.windscribe.mobile.view.screen.AccountStatusScreen
 import com.windscribe.mobile.view.screen.AppStartScreen
 import com.windscribe.mobile.view.screen.EmergencyConnectScreen
 import com.windscribe.mobile.view.screen.HomeScreen
@@ -64,6 +66,14 @@ private fun NavGraphBuilder.addNavigationScreens() {
         }
     }
     composable(route = Screen.ShareLink.route) { ShareLinkViewRoute() }
+    composable(route = Screen.AccountStatus.route) {
+        val navController = LocalNavController.current
+        val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
+        val data = savedStateHandle?.get<AccountStatusDialogData>("accountStatusDialogData")
+        if (data != null) {
+            AccountStatusScreen(data)
+        }
+    }
 }
 
 @Composable
