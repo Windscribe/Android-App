@@ -7,13 +7,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
-import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -27,6 +24,7 @@ sealed class HomeGoto {
     object Banned : HomeGoto()
     object PowerWhitelist : HomeGoto()
     object ShareAppLink : HomeGoto()
+    object None : HomeGoto()
 }
 
 sealed class UserState() {
@@ -42,7 +40,7 @@ sealed class UserState() {
 }
 
 abstract class HomeViewmodel : ViewModel() {
-    abstract val goto: SharedFlow<HomeGoto>
+    abstract val goto: StateFlow<HomeGoto>
     abstract val userState: StateFlow<UserState>
     abstract fun clearGoTo()
     abstract val hapticFeedbackEnabled: StateFlow<Boolean>
@@ -54,8 +52,8 @@ class HomeViewmodelImpl(
     private val preferences: PreferencesHelper
 ) : HomeViewmodel() {
 
-    private val _goto = MutableSharedFlow<HomeGoto>(extraBufferCapacity = 1)
-    override val goto: SharedFlow<HomeGoto> = _goto
+    private val _goto = MutableStateFlow<HomeGoto>(HomeGoto.None)
+    override val goto: StateFlow<HomeGoto> = _goto
     private val _userState = MutableStateFlow<UserState>(UserState.Loading)
     override val userState: StateFlow<UserState> = _userState
     private val _hapticFeedbackEnabled = MutableStateFlow(preferences.isHapticFeedbackEnabled)
@@ -100,7 +98,7 @@ class HomeViewmodelImpl(
 
     private fun fetchUserState() {
         viewModelScope.launch {
-            userRepository.userInfo.collectLatest {
+            userRepository.userInfo.collect {
                 if (it.isPro) {
                     _userState.emit(UserState.Pro)
                 } else if (it.maxData == -1L) {
@@ -120,22 +118,6 @@ class HomeViewmodelImpl(
                         )
                     )
                 }
-                showUserStatus(it)
-            }
-        }
-    }
-
-    private fun showUserStatus(user: User) {
-        viewModelScope.launch {
-            val previousAccountStatus = preferences.getPreviousAccountStatus(user.userName)
-            if (previousAccountStatus != user.accountStatusToInt) {
-                preferences.setPreviousAccountStatus(user.userName, user.accountStatusToInt)
-                if (user.accountStatus == User.AccountStatus.Banned) {
-                    _goto.emit(HomeGoto.Banned)
-                } else if (user.accountStatus == User.AccountStatus.Expired) {
-                    val resetDate = user.nextResetDate() ?: ""
-                    _goto.emit(HomeGoto.Expired(resetDate))
-                }
             }
         }
     }
@@ -152,7 +134,7 @@ class HomeViewmodelImpl(
 
     override fun clearGoTo() {
         viewModelScope.launch {
-
+            _goto.emit(HomeGoto.None)
         }
     }
 

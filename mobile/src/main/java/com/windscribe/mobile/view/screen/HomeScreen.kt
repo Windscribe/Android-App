@@ -57,7 +57,6 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,10 +65,8 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.navigation.NavController
 import com.windscribe.mobile.R
 import com.windscribe.mobile.connectionsettings.ConnectionSettingsActivity
-import com.windscribe.mobile.dialogs.AccountStatusDialogData
 import com.windscribe.mobile.mainmenu.MainMenuActivity
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.view.AppStartActivity
@@ -112,67 +109,36 @@ fun HomeScreen(
 
 @Composable
 fun HandleGoto(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
-    val connectionGoto by connectionViewmodel.goto.collectAsState(initial = null)
-    val homeGoto by homeViewmodel.goto.collectAsState(initial = null)
-    HandleGotoAction(goto = connectionGoto)
-    HandleGotoAction(goto = homeGoto)
-}
-
-@Composable
-private fun HandleGotoAction(goto: HomeGoto?) {
     val context = LocalContext.current
     val navController = LocalNavController.current
-    when (goto) {
-        HomeGoto.Banned -> {
-            val bannedData = AccountStatusDialogData(
-                title = stringResource(R.string.you_ve_been_banned),
-                icon = R.drawable.garry_angry,
-                description = stringResource(R.string.you_ve_violated_our_terms),
-                showSkipButton = false,
-                skipText = "",
-                showUpgradeButton = true,
-                upgradeText = stringResource(R.string.ok),
-                bannedLayout = true
-            )
-            navigateWithData(navController, Screen.AccountStatus.route, bannedData)
+    LaunchedEffect(Unit) {
+        connectionViewmodel.goto.collect { goto ->
+            when (goto) {
+                HomeGoto.Banned -> {}
+                is HomeGoto.Expired, HomeGoto.Upgrade -> {
+                    context.startActivity(UpgradeActivity.getStartIntent(context))
+                }
+                HomeGoto.PowerWhitelist -> navController.navigate(Screen.PowerWhitelist.route)
+                HomeGoto.ShareAppLink -> navController.navigate(Screen.ShareLink.route)
+                HomeGoto.None -> return@collect
+            }
+            connectionViewmodel.clearGoTo()
         }
-
-        is HomeGoto.Expired -> {
-            val expireData = AccountStatusDialogData(
-                title = stringResource(R.string.you_re_out_of_data),
-                icon = R.drawable.garry_nodata,
-                description = stringResource(R.string.upgrade_to_stay_protected, goto.date),
-                showSkipButton = true,
-                skipText = stringResource(R.string.upgrade_later),
-                showUpgradeButton = true,
-                upgradeText = stringResource(R.string.upgrade),
-            )
-            navigateWithData(navController, Screen.AccountStatus.route, expireData)
-        }
-
-        is HomeGoto.Upgrade -> {
-            context.startActivity(UpgradeActivity.getStartIntent(context))
-        }
-
-        HomeGoto.PowerWhitelist -> {
-            navController.navigate(Screen.PowerWhitelist.route)
-        }
-
-        HomeGoto.ShareAppLink -> {
-            navController.navigate(Screen.ShareLink.route)
-        }
-
-        null -> Unit
     }
-}
-
-private fun navigateWithData(
-    navController: NavController,
-    route: String,
-    data: AccountStatusDialogData
-) {
-    navController.currentBackStackEntry?.savedStateHandle?.set("accountStatusDialogData", data)
-    navController.navigate(route)
+    LaunchedEffect(Unit) {
+        homeViewmodel.goto.collect { goto ->
+            when (goto) {
+                HomeGoto.Banned -> {}
+                is HomeGoto.Expired, HomeGoto.Upgrade -> {
+                    context.startActivity(UpgradeActivity.getStartIntent(context))
+                }
+                HomeGoto.PowerWhitelist -> navController.navigate(Screen.PowerWhitelist.route)
+                HomeGoto.ShareAppLink -> navController.navigate(Screen.ShareLink.route)
+                HomeGoto.None -> return@collect
+            }
+            homeViewmodel.clearGoTo()
+        }
+    }
 }
 
 @Composable
