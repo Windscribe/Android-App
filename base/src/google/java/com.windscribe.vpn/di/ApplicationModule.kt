@@ -9,6 +9,8 @@ import com.windscribe.vpn.backend.AndroidDeviceIdentityImpl
 import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.services.ReceiptValidator
 import com.windscribe.vpn.services.firebasecloud.FireBaseManagerImpl
+import com.windscribe.vpn.services.sso.GoogleSignInManager
+import com.windscribe.vpn.services.sso.GoogleSignInManagerImpl
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import com.windscribe.vpn.workers.worker.AmazonPendingReceiptValidator
 import com.windscribe.vpn.workers.worker.GooglePendingReceiptValidator
@@ -26,12 +28,23 @@ class ApplicationModule(override var windscribeApp: Windscribe) : BaseApplicatio
     @Provides
     @Singleton
     fun provideReceiptValidator(manager: WindScribeWorkManager): ReceiptValidator {
-        return ReceiptValidator(windscribeApp, manager.createOneTimeWorkerRequest(AmazonPendingReceiptValidator::class.java), manager.createOneTimeWorkerRequest(GooglePendingReceiptValidator::class.java))
+        return ReceiptValidator(
+            windscribeApp,
+            manager.createOneTimeWorkerRequest(AmazonPendingReceiptValidator::class.java),
+            manager.createOneTimeWorkerRequest(GooglePendingReceiptValidator::class.java)
+        )
     }
+
     @Provides
     @Singleton
     fun providesFirebaseManager(): FirebaseManager {
         return FireBaseManagerImpl(windscribeApp)
+    }
+
+    @Provides
+    @Singleton
+    fun providesGoogleSignInManager(): GoogleSignInManager {
+        return GoogleSignInManagerImpl(windscribeApp)
     }
 
     @Provides

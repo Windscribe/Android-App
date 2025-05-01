@@ -22,6 +22,7 @@ import com.windscribe.vpn.mocklocation.MockLocationManager
 import com.windscribe.vpn.repository.*
 import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.services.ReceiptValidator
+import com.windscribe.vpn.services.sso.GoogleSignInManager
 import com.windscribe.vpn.state.*
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import com.windscribe.vpn.workers.worker.*
@@ -70,6 +71,7 @@ interface ApplicationComponent {
     val firebaseManager: FirebaseManager
     val proxyDNSManager: ProxyDNSManager
     val dynamicShortCutManager: DynamicShortcutManager
+    val googleSignInManager: GoogleSignInManager
 
     //Repository
     val staticIpRepository: StaticIpRepository

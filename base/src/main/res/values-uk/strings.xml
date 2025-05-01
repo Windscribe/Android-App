@@ -383,7 +383,6 @@
     <string name="location_order_description">Упорядкування списку розташувань за зростанням алфавіту, географії або затримки.</string>
     <string name="latency_display_description">Відображайте затримку як смужки рівня сигналу або в мілісекундах.</string>
     <string name="language_description">Локалізуйте Windscribe підтримуваними мовами.</string>
-    <string name="app_background_description">Налаштуйте екран підключення через додаток.</string>
     <string name="notification_stats_description">Показати статистику трафіку в сповіщенні.</string>
     <string name="location_load_description">Відображення навантаження на розташування у вигляді смужки. Чим коротша планка, тим менше навантаження на локацію (по відношенню до загальної місткості локації).</string>
     <string name="haptic_feedback_description">Фізичні реакції (вібрація) на дії користувача</string>
@@ -510,4 +509,25 @@
     <string name="follow_us_on_x">Слідкуйте за нами в X</string>
     <string name="charged_every_month">стягується щомісяця</string>
     <string name="charged_every_12_months">стягується кожні 12 місяців</string>
+    <string name="look_and_feel">Зовнішній вигляд</string>
+    <string name="when_disconnected">Коли відключено</string>
+    <string name="when_connected">Коли підключено</string>
+    <string name="aspect_ratio">Співвідношення сторін</string>
+    <string name="fill">Заповнення</string>
+    <string name="scale">Масштаб</string>
+    <string name="tile">Плитка</string>
+    <string name="bundle">Пакет</string>
+    <string name="None">Немає</string>
+    <string name="sound_notifications">Звукові сповіщення</string>
+    <string name="app_background_description">Налаштуйте фон головного екрана програми.</string>
+    <string name="sound_notifications_description">Виберіть звуки для відтворення при подіях підключення.</string>
+    <string name="renamed_location">Перейменувати місця</string>
+    <string name="renamed_location_description">Змініть назви місць на власний розсуд.</string>
+    <string name="export_locations">Експорт</string>
+    <string name="import_locations">Імпорт</string>
+    <string name="reset">Скинути</string>
+    <string name="no_static_ip">Немає статичних IP</string>
+    <string name="unblock_full_access">Розблокуйте повний доступ до Windscribe</string>
+    <string name="go_pro_for_unlimited_everything">Оновіть до Pro для необмеженого доступу</string>
+    <string name="custom_configs">Користувацькі налаштування</string>
 </resources>

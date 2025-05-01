@@ -19,11 +19,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -32,8 +34,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.windscribe.mobile.R
 import com.windscribe.mobile.view.theme.AppColors
+import com.windscribe.mobile.view.theme.backgroundColor
+import com.windscribe.mobile.view.theme.backgroundColorInverted
 import com.windscribe.mobile.view.theme.font12
 import com.windscribe.mobile.view.theme.font16
+import com.windscribe.mobile.view.theme.primaryTextColor
 
 @Composable
 fun RenameLocations(viewmodel: LipstickViewmodel? = null) {
@@ -54,7 +59,10 @@ fun RenameLocations(viewmodel: LipstickViewmodel? = null) {
     Column(
         modifier = Modifier
             .padding(top = 16.dp)
-            .background(color = Color(0XFF1E2937), shape = RoundedCornerShape(16.dp))
+            .background(
+                color = MaterialTheme.colorScheme.backgroundColorInverted.copy(alpha = 0.08f),
+                shape = RoundedCornerShape(16.dp)
+            )
             .zIndex(10.0f)
     ) {
         Box {
@@ -64,61 +72,41 @@ fun RenameLocations(viewmodel: LipstickViewmodel? = null) {
             ) {
                 Image(
                     painterResource(R.drawable.ic_rename_location),
-                    contentDescription = "Rename server locations."
+                    contentDescription = "Rename server locations.",
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor)
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
                 Text(
                     stringResource(R.string.renamed_location),
                     style = font16,
-                    color = AppColors.white
+                    color = MaterialTheme.colorScheme.primaryTextColor
                 )
                 Spacer(modifier = Modifier.weight(1.0f))
             }
         }
         HorizontalDivider(
             modifier = Modifier.padding(start = 16.dp),
-            color = AppColors.white5
+            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f)
         )
         Section(R.string.export_locations, "Export server list file.") {
             exportPickerLauncher.launch("locations.json")
         }
         HorizontalDivider(
             modifier = Modifier.padding(start = 16.dp),
-            color = AppColors.white5
+            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f)
         )
         Section(R.string.import_locations, "Import server list file.") {
             importPickerLauncher.launch(arrayOf("*/*"))
         }
         HorizontalDivider(
             modifier = Modifier.padding(start = 16.dp),
-            color = AppColors.white5
+            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f)
         )
         Section(R.string.reset, "Reset custom server list file.") {
             viewmodel?.onResetClick()
         }
     }
-    Box(
-        modifier = Modifier
-            .offset(y = (-16).dp)
-            .fillMaxWidth()
-            .background(Color.Transparent)
-            .padding(horizontal = 0.8.dp)
-            .border(
-                width = 1.dp,
-                color = AppColors.white5,
-                shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
-            )
-    ) {
-        Column {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                stringResource(R.string.renamed_location_description),
-                modifier = Modifier.padding(12.dp),
-                style = font12,
-                color = AppColors.white50
-            )
-        }
-    }
+    PreferencesBottomSection(R.string.renamed_location_description)
 }
 
 @Composable
@@ -126,12 +114,16 @@ private fun Section(title: Int, description: String, onClick: () -> Unit) {
     Row(modifier = Modifier
         .padding(16.dp)
         .clickable { onClick() }) {
-        Text(stringResource(title), style = font12, color = AppColors.white)
+        Text(
+            stringResource(title),
+            style = font12,
+            color = MaterialTheme.colorScheme.primaryTextColor
+        )
         Spacer(modifier = Modifier.weight(1.0f))
         Icon(
             painter = painterResource(R.drawable.ic_forward_arrow_white),
             contentDescription = description,
-            tint = Color.White
+            tint = MaterialTheme.colorScheme.primaryTextColor
         )
     }
 }

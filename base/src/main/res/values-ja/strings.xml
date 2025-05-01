@@ -381,7 +381,6 @@
     <string name="location_order_description">場所リストをアルファベット、国名、または待機時間の昇順で配置します。</string>
     <string name="latency_display_description">遅延を信号強度バーまたはミリ秒単位で表示します。</string>
     <string name="language_description">Windscribe をサポートされている言語にローカライズします。</string>
-    <string name="app_background_description">アプリ内接続画面をカスタマイズします。</string>
     <string name="notification_stats_description">通知にトラフィック統計を表示します。</string>
     <string name="location_load_description">ロケーション負荷をバーとして表示します。バーが短いほど、ロケーションへの負荷は少なくなります(ロケーションの総容量に対して)。</string>
     <string name="haptic_feedback_description">操作に合わせて振動します</string>
@@ -510,4 +509,25 @@
     <string name="follow_us_on_x">Xでフォロー</string>
     <string name="charged_every_month">毎月請求されます</string>
     <string name="charged_every_12_months">12か月ごとに請求されます</string>
+    <string name="look_and_feel">外観と操作感</string>
+    <string name="when_disconnected">切断時</string>
+    <string name="when_connected">接続時</string>
+    <string name="aspect_ratio">アスペクト比</string>
+    <string name="fill">フィル</string>
+    <string name="scale">スケール</string>
+    <string name="tile">タイル</string>
+    <string name="bundle">バンドル</string>
+    <string name="None">なし</string>
+    <string name="sound_notifications">サウンド通知</string>
+    <string name="app_background_description">アプリのメイン画面の背景をカスタマイズします。</string>
+    <string name="sound_notifications_description">接続イベント時に再生するサウンドを選択します。</string>
+    <string name="renamed_location">ロケーション名の変更</string>
+    <string name="renamed_location_description">ロケーションの名前を自由に変更できます。</string>
+    <string name="export_locations">エクスポート</string>
+    <string name="import_locations">インポート</string>
+    <string name="reset">リセット</string>
+    <string name="no_static_ip">静的IPなし</string>
+    <string name="unblock_full_access">Windscribeの全機能にアクセスを解除</string>
+    <string name="go_pro_for_unlimited_everything">無制限のすべての機能にはPro版を取得</string>
+    <string name="custom_configs">カスタム設定</string>
 </resources>

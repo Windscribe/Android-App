@@ -381,7 +381,6 @@
     <string name="location_order_description">Organice la lista de ubicaciones en orden ascendente del alfabeto, la geografía o la latencia.</string>
     <string name="latency_display_description">Muestre la latencia como barras de intensidad de señal o en milisegundos.</string>
     <string name="language_description">Localice Windscribe a los idiomas admitidos.</string>
-    <string name="app_background_description">Personaliza la pantalla de conexión en la aplicación.</string>
     <string name="notification_stats_description">Mostrar estadísticas de tráfico en la notificación.</string>
     <string name="location_load_description">Mostrar la carga de ubicación como una barra. Cuanto más corta sea la barra, menor será la carga en la ubicación (con respecto a la capacidad total de la ubicación).</string>
     <string name="haptic_feedback_description">Respuestas físicas (vibración) a las acciones del usuario</string>
@@ -510,4 +509,25 @@
     <string name="follow_us_on_x">Síguenos en X</string>
     <string name="charged_every_month">cobrado cada mes</string>
     <string name="charged_every_12_months">cobrado cada 12 meses</string>
+    <string name="look_and_feel">Apariencia</string>
+    <string name="when_disconnected">Cuando está desconectado</string>
+    <string name="when_connected">Cuando está conectado</string>
+    <string name="aspect_ratio">Relación de aspecto</string>
+    <string name="fill">Rellenar</string>
+    <string name="scale">Escalar</string>
+    <string name="tile">Mosaico</string>
+    <string name="bundle">Paquete</string>
+    <string name="None">Ninguno</string>
+    <string name="sound_notifications">Notificaciones de sonido</string>
+    <string name="app_background_description">Personaliza el fondo de la pantalla principal de la app.</string>
+    <string name="sound_notifications_description">Elige sonidos que se reproducen cuando ocurren eventos de conexión.</string>
+    <string name="renamed_location">Renombrar ubicaciones</string>
+    <string name="renamed_location_description">Cambia los nombres de las ubicaciones a tu gusto.</string>
+    <string name="export_locations">Exportar</string>
+    <string name="import_locations">Importar</string>
+    <string name="reset">Restablecer</string>
+    <string name="no_static_ip">Sin IPs estáticas</string>
+    <string name="unblock_full_access">Desbloquear acceso completo a Windscribe</string>
+    <string name="go_pro_for_unlimited_everything">Pásate a Pro para todo ilimitado</string>
+    <string name="custom_configs">Configuraciones personalizadas</string>
 </resources>

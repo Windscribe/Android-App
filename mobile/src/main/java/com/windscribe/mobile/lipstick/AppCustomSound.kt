@@ -23,6 +23,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -32,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -40,17 +42,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.windscribe.mobile.R
-import com.windscribe.mobile.view.theme.AppColors
-import com.windscribe.mobile.view.theme.AppColors.homeBackground
+import com.windscribe.mobile.view.theme.backgroundColor
+import com.windscribe.mobile.view.theme.backgroundColorInverted
 import com.windscribe.mobile.view.theme.font12
 import com.windscribe.mobile.view.theme.font16
+import com.windscribe.mobile.view.theme.primaryTextColor
 
 @Composable
 fun AppCustomSound(viewmodel: LipstickViewmodel? = null) {
     Column(
         modifier = Modifier
             .padding(top = 16.dp)
-            .background(color = Color(0XFF1E2937), shape = RoundedCornerShape(16.dp))
+            .background(color = MaterialTheme.colorScheme.backgroundColorInverted.copy(alpha = 0.08f), shape = RoundedCornerShape(16.dp))
             .zIndex(10.0f)
     ) {
         Box {
@@ -60,44 +63,24 @@ fun AppCustomSound(viewmodel: LipstickViewmodel? = null) {
             ) {
                 Image(
                     painterResource(R.drawable.ic_sound),
-                    contentDescription = "App sound notifications."
+                    contentDescription = "App sound notifications.",
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor)
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
                 Text(
                     stringResource(R.string.sound_notifications),
                     style = font16,
-                    color = AppColors.white
+                    color = MaterialTheme.colorScheme.primaryTextColor
                 )
                 Spacer(modifier = Modifier.weight(1.0f))
             }
         }
-        HorizontalDivider(modifier = Modifier.padding(start = 16.dp), color = AppColors.white5)
+        HorizontalDivider(modifier = Modifier.padding(start = 16.dp), color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f))
         WhenDisconnectedSection(viewmodel)
-        HorizontalDivider(modifier = Modifier.padding(start = 16.dp), color = AppColors.white5)
+        HorizontalDivider(modifier = Modifier.padding(start = 16.dp), color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f))
         WhenConnectedSection(viewmodel)
     }
-    Box(
-        modifier = Modifier
-            .offset(y = (-16).dp)
-            .fillMaxWidth()
-            .background(Color.Transparent)
-            .padding(horizontal = 0.8.dp)
-            .border(
-                width = 1.dp,
-                color = AppColors.white5,
-                shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
-            )
-    ) {
-        Column {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                stringResource(R.string.sound_notifications_description),
-                modifier = Modifier.padding(12.dp),
-                style = font12,
-                color = AppColors.white50
-            )
-        }
-    }
+    PreferencesBottomSection(R.string.sound_notifications_description)
 }
 
 @Composable
@@ -134,14 +117,14 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
                     Text(
                         title,
                         style = font12,
-                        color = AppColors.white50
+                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_cm_icon),
                         contentDescription = null,
                         modifier = Modifier.size(12.dp),
-                        tint = AppColors.white
+                        tint = MaterialTheme.colorScheme.primaryTextColor
                     )
                 }
                 if (expandedBundled.value) {
@@ -165,14 +148,14 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
                     Text(
                         customItem?.value ?: "No selection",
                         style = font12,
-                        color = AppColors.white50
+                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_forward_arrow_white),
                         contentDescription = null,
                         modifier = Modifier.size(12.dp),
-                        tint = AppColors.white
+                        tint = MaterialTheme.colorScheme.primaryTextColor
                     )
                 }
             }
@@ -215,14 +198,14 @@ private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
                     Text(
                         title,
                         style = font12,
-                        color = AppColors.white50
+                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_cm_icon),
                         contentDescription = null,
                         modifier = Modifier.size(12.dp),
-                        tint = AppColors.white
+                        tint = MaterialTheme.colorScheme.primaryTextColor
                     )
                 }
                 if (expandedBundled.value) {
@@ -246,14 +229,14 @@ private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
                     Text(
                         customItem?.value ?: "No selection",
                         style = font12,
-                        color = AppColors.white50
+                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_forward_arrow_white),
                         contentDescription = null,
                         modifier = Modifier.size(12.dp),
-                        tint = AppColors.white
+                        tint = MaterialTheme.colorScheme.primaryTextColor
                     )
                 }
             }
@@ -273,7 +256,7 @@ private fun DropdownSection(
     shape: RoundedCornerShape = RoundedCornerShape(0.dp),
     extraContent: (@Composable () -> Unit)? = null
 ) {
-    Box(Modifier.background(Color(0XFF1E2937), shape = shape)) {
+    Box(Modifier.background(MaterialTheme.colorScheme.backgroundColor.copy(alpha = 0.08f), shape = shape)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = modifier
@@ -281,7 +264,7 @@ private fun DropdownSection(
                 .fillMaxWidth()
         ) {
             Column {
-                Text(title, style = font12, color = AppColors.white)
+                Text(title, style = font12, color = MaterialTheme.colorScheme.primaryTextColor)
                 extraContent?.invoke()
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -292,14 +275,14 @@ private fun DropdownSection(
                     .clickable {
                         onDropdownClick()
                     }) {
-                Text(displayValue, style = font12, color = AppColors.white)
+                Text(displayValue, style = font12, color = MaterialTheme.colorScheme.primaryTextColor)
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
                     painter = painterResource(id = R.drawable.ic_cm_icon),
                     contentDescription = null,
                     modifier = Modifier
                         .size(16.dp),
-                    tint = AppColors.white
+                    tint = MaterialTheme.colorScheme.primaryTextColor
                 )
             }
         }
@@ -332,7 +315,7 @@ private fun DropDownItems(
     DropdownMenu(
         expanded = expanded.value,
         onDismissRequest = { expanded.value = false },
-        modifier = Modifier.background(AppColors.white)
+        modifier = Modifier.background(MaterialTheme.colorScheme.primaryTextColor)
     ) {
         items.forEach {
             val title = it.label.ifBlank {
@@ -343,7 +326,7 @@ private fun DropDownItems(
             }, text = {
                 Text(
                     title,
-                    color = homeBackground,
+                    color = MaterialTheme.colorScheme.backgroundColor,
                     style = font16,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
@@ -360,6 +343,7 @@ private fun AppCustomBackgroundPreview() {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .background(Color.White)
     ) {
         Spacer(modifier = Modifier.height(30.dp))
         AppCustomSound()

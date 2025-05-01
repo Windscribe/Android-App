@@ -381,7 +381,6 @@
     <string name="location_order_description">ترتیب لیست مکان به ترتیب صعودی الفبا، جغرافیا یا تاخیر.</string>
     <string name="latency_display_description">نمایش تاخیر به عنوان میله های قدرت سیگنال یا در میلی ثانیه.</string>
     <string name="language_description">محلی سازی Windscribe به زبان های پشتیبانی شده.</string>
-    <string name="app_background_description">صفحه اتصال درون برنامه را سفارشی کنید.</string>
     <string name="notification_stats_description">نمایش امار ترافیک در اعلان.</string>
     <string name="location_load_description">بار مکان را به عنوان یک نوار نمایش دهید. هر چه نوار کوتاهتر باشد، بار روی مکان (با توجه به ظرفیت کل مکان) کمتر است.</string>
     <string name="haptic_feedback_description">پاسخ های فیزیکی (لرزش) به اقدامات کاربر</string>
@@ -510,4 +509,25 @@
     <string name="follow_us_on_x">ما را در X دنبال کنید</string>
     <string name="charged_every_month">هر ماه شارژ می‌شود</string>
     <string name="charged_every_12_months">هر ۱۲ ماه شارژ می‌شود</string>
+    <string name="look_and_feel">ظاهر و احساس</string>
+    <string name="when_disconnected">در هنگام قطع اتصال</string>
+    <string name="when_connected">در هنگام اتصال</string>
+    <string name="aspect_ratio">نسبت تصویر</string>
+    <string name="fill">پر کردن</string>
+    <string name="scale">مقیاس</string>
+    <string name="tile">کاشی</string>
+    <string name="bundle">بسته</string>
+    <string name="None">هیچ‌کدام</string>
+    <string name="sound_notifications">اعلان‌های صوتی</string>
+    <string name="app_background_description">پس‌زمینه صفحه اصلی برنامه را سفارشی کنید.</string>
+    <string name="sound_notifications_description">صداهایی را انتخاب کنید که هنگام رویدادهای اتصال پخش شوند.</string>
+    <string name="renamed_location">تغییر نام مکان‌ها</string>
+    <string name="renamed_location_description">نام مکان‌ها را به دلخواه خود تغییر دهید.</string>
+    <string name="export_locations">صادرات</string>
+    <string name="import_locations">واردات</string>
+    <string name="reset">بازنشانی</string>
+    <string name="no_static_ip">بدون IP ثابت</string>
+    <string name="unblock_full_access">دسترسی کامل به Windscribe را فعال کنید</string>
+    <string name="go_pro_for_unlimited_everything">برای امکانات نامحدود به نسخه Pro ارتقاء دهید</string>
+    <string name="custom_configs">پیکربندی‌های سفارشی</string>
 </resources>

@@ -381,7 +381,6 @@
     <string name="location_order_description">按字母、地理位置或延迟的升序排列位置列表。</string>
     <string name="latency_display_description">将延迟显示为信号强度条或以毫秒为单位。</string>
     <string name="language_description">将 Windscribe 本地化为支持的语言。</string>
-    <string name="app_background_description">自定义应用内连接屏幕。</string>
     <string name="notification_stats_description">在通知中显示流量统计信息。</string>
     <string name="location_load_description">将位置加载显示为条形图。条越短，位置上的负载越小（相对于位置的总容量）。</string>
     <string name="haptic_feedback_description">对用户操作的物理反应（振动）</string>
@@ -510,4 +509,25 @@
     <string name="follow_us_on_x">在 X 上關注我們</string>
     <string name="charged_every_month">每月收費</string>
     <string name="charged_every_12_months">每 12 個月收費</string>
+    <string name="look_and_feel">外觀與風格</string>
+    <string name="when_disconnected">斷線時</string>
+    <string name="when_connected">連線時</string>
+    <string name="aspect_ratio">長寬比</string>
+    <string name="fill">填滿</string>
+    <string name="scale">縮放</string>
+    <string name="tile">平鋪</string>
+    <string name="bundle">綑綁包</string>
+    <string name="None">無</string>
+    <string name="sound_notifications">聲音通知</string>
+    <string name="app_background_description">自訂應用主畫面的背景。</string>
+    <string name="sound_notifications_description">選擇連線事件發生時播放的聲音。</string>
+    <string name="renamed_location">重新命名位置</string>
+    <string name="renamed_location_description">依照個人喜好修改位置名稱。</string>
+    <string name="export_locations">匯出</string>
+    <string name="import_locations">匯入</string>
+    <string name="reset">重設</string>
+    <string name="no_static_ip">無靜態 IP</string>
+    <string name="unblock_full_access">解鎖 Windscribe 的完整存取權</string>
+    <string name="go_pro_for_unlimited_everything">升級為 Pro 獲得無限制功能</string>
+    <string name="custom_configs">自訂配置</string>
 </resources>

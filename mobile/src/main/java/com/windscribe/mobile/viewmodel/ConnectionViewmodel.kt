@@ -1,6 +1,7 @@
 package com.windscribe.mobile.viewmodel
 
 import android.media.MediaPlayer
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
 import androidx.annotation.StringRes
@@ -11,6 +12,7 @@ import com.windscribe.mobile.R
 import com.windscribe.mobile.lipstick.LookAndFeelHelper
 import com.windscribe.mobile.lipstick.LookAndFeelHelper.bundledBackgrounds
 import com.windscribe.mobile.lipstick.LookAndFeelHelper.getSoundFile
+import com.windscribe.mobile.view.ui.isEnabled
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
@@ -524,6 +526,11 @@ class ConnectionViewmodelImpl @Inject constructor(
     override fun onCityClick(city: City) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                val isPro = userRepository.user.value?.isPro ?: false
+                if (!city.isEnabled(isPro)) {
+                    _goto.emit(HomeGoto.LocationMaintenance)
+                    return@launch
+                }
                 val cityAndRegion = localdb.getCityAndRegion(city.id)
                 val serverStatus = cityAndRegion.region.status
                 val eligibleToConnect =
@@ -578,7 +585,13 @@ class ConnectionViewmodelImpl @Inject constructor(
                 preferences.globalUserConnectionPreference = true
                 preferences.setConnectingToConfiguredLocation(true)
                 preferences.setConnectingToStaticIP(false)
-                vpnController.connectAsync()
+                val type = WindUtilities.getConfigType(config.content)
+                if (type == WindUtilities.ConfigType.OpenVPN && (config.username.isNullOrEmpty() || config.password.isNullOrEmpty())) {
+                    _goto.emit(HomeGoto.EditCustomConfig(config.getPrimaryKey(), true))
+                    return@launch
+                } else {
+                    vpnController.connectAsync()
+                }
             } catch (e: Exception) {
                 showToast("Unable to find selected location in database. Update server list.")
             }
@@ -664,6 +677,9 @@ class ConnectionViewmodelImpl @Inject constructor(
         if (serverStatus == NetworkKeyConstants.SERVER_STATUS_TEMPORARILY_UNAVAILABLE) {
             logger.info("Error: Server is temporary unavailable.")
             showToast("Location temporary unavailable.")
+            viewModelScope.launch {
+                _goto.emit(HomeGoto.LocationMaintenance)
+            }
             return false
         }
         return true

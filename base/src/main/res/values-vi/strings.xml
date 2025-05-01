@@ -381,7 +381,6 @@ Vị trí được chọn cuối cùng.</string>
     <string name="location_order_description">Sắp xếp danh sách vị trí theo thứ tự tăng dần của bảng chữ cái, địa lý hoặc độ trễ.</string>
     <string name="latency_display_description">Hiển thị độ trễ dưới dạng thanh cường độ tín hiệu hoặc tính bằng mili giây.</string>
     <string name="language_description">Bản địa hóa Windscribe sang các ngôn ngữ được hỗ trợ.</string>
-    <string name="app_background_description">Tùy chỉnh màn hình kết nối trong ứng dụng.</string>
     <string name="notification_stats_description">Hiển thị số liệu thống kê lưu lượng truy cập trong thông báo.</string>
     <string name="location_load_description">Hiển thị tải vị trí dưới dạng thanh. Thanh càng ngắn, tải trên vị trí càng ít (đối với tổng công suất của vị trí).</string>
     <string name="haptic_feedback_description">Phản ứng vật lý (Rung) đối với hành động của người dùng</string>
@@ -510,4 +509,25 @@ Vị trí được chọn cuối cùng.</string>
     <string name="follow_us_on_x">Theo dõi chúng tôi trên X</string>
     <string name="charged_every_month">được tính phí hàng tháng</string>
     <string name="charged_every_12_months">được tính phí mỗi 12 tháng</string>
+    <string name="look_and_feel">Giao diện và cảm nhận</string>
+    <string name="when_disconnected">Khi ngắt kết nối</string>
+    <string name="when_connected">Khi kết nối</string>
+    <string name="aspect_ratio">Tỷ lệ khung hình</string>
+    <string name="fill">Lấp đầy</string>
+    <string name="scale">Tỷ lệ</string>
+    <string name="tile">Lát gạch</string>
+    <string name="bundle">Gói</string>
+    <string name="None">Không có</string>
+    <string name="sound_notifications">Thông báo âm thanh</string>
+    <string name="app_background_description">Tùy chỉnh nền của màn hình chính ứng dụng.</string>
+    <string name="sound_notifications_description">Chọn âm thanh để phát khi có sự kiện kết nối.</string>
+    <string name="renamed_location">Đổi tên vị trí</string>
+    <string name="renamed_location_description">Thay đổi tên vị trí theo ý thích của bạn.</string>
+    <string name="export_locations">Xuất</string>
+    <string name="import_locations">Nhập</string>
+    <string name="reset">Đặt lại</string>
+    <string name="no_static_ip">Không có IP tĩnh</string>
+    <string name="unblock_full_access">Mở khóa toàn quyền truy cập vào Windscribe</string>
+    <string name="go_pro_for_unlimited_everything">Nâng cấp Pro để sử dụng không giới hạn</string>
+    <string name="custom_configs">Cấu hình tùy chỉnh</string>
 </resources>

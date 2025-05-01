@@ -27,6 +27,8 @@ sealed class HomeGoto {
     object Banned : HomeGoto()
     object PowerWhitelist : HomeGoto()
     object ShareAppLink : HomeGoto()
+    object LocationMaintenance : HomeGoto()
+    data class EditCustomConfig(val id: Int, val connect: Boolean) : HomeGoto()
 }
 
 sealed class UserState() {

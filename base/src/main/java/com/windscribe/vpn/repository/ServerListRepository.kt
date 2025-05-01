@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.await
 import org.json.JSONObject
@@ -66,6 +67,8 @@ class ServerListRepository @Inject constructor(
     val locationJsonToExport: StateFlow<String> = _locationJsonToExport
     private val _customCities = MutableStateFlow<List<CustomCity>>(listOf())
     private val customCities: StateFlow<List<CustomCity>> = _customCities
+    private val _customRegions = MutableStateFlow<List<CustomRegion>>(listOf())
+    private val customRegions: StateFlow<List<CustomRegion>> = _customRegions
     var globalServerList = true
 
     init {
@@ -230,11 +233,13 @@ class ServerListRepository @Inject constructor(
             val jsonString = fileInputStream.bufferedReader().use { it.readText() }
             val type = object : TypeToken<CustomLocationsData>() {}.type
             val customLocationsData = Gson().fromJson<CustomLocationsData>(jsonString, type)
-            val cities = customLocationsData .locations.map { it.cities }.reduce { t1, t2 -> t1 + t2 }
+            val cities =
+                customLocationsData.locations.map { it.cities }.reduce { t1, t2 -> t1 + t2 }
             _customCities.value = cities
+            _customRegions.value = customLocationsData.locations
         } catch (e: IOException) {
             _customCities.value = listOf()
-          //  logger.error("$$$ Error reading or writing file", e)
+            //  logger.error("$$$ Error reading or writing file", e)
         } catch (e: FileNotFoundException) {
             _customCities.value = listOf()
         }
@@ -248,5 +253,10 @@ class ServerListRepository @Inject constructor(
     fun getCustomCityNickName(id: Int): String? {
         val city = customCities.value.firstOrNull { it.id == id }
         return city?.nick
+    }
+
+    fun getCustomRegionName(id: Int): String? {
+        val region = customRegions.value.firstOrNull { it.id == id }
+        return region?.country
     }
 }

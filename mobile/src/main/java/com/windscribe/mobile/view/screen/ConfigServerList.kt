@@ -138,7 +138,7 @@ private fun SuccessView(
                 .fillMaxSize()
                 .nestedScroll(pullToRefreshState.nestedScrollConnection)) {
                 Text(
-                    text = stringResource(R.string.custom_config_title),
+                    text = stringResource(R.string.custom_configs),
                     style = font12,
                     color = AppColors.white70,
                     modifier = Modifier.padding(start = 16.dp, top = 16.dp)

@@ -33,6 +33,12 @@ import com.windscribe.mobile.viewmodel.HomeViewmodel
 import com.windscribe.mobile.viewmodel.ServerListType
 import com.windscribe.mobile.viewmodel.ServerViewModel
 
+data class ServerTabIcon(
+    val unfilledIcon: Int,
+    val filledIcon: Int,
+    val type: ServerListType
+)
+
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
 fun ServerListNavigation(
@@ -43,6 +49,28 @@ fun ServerListNavigation(
 ) {
     val isHapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
     val selectedType by viewModel.selectedServerListType.collectAsState()
+    val serverTabs = listOf(
+        ServerTabIcon(
+            R.drawable.ic_location_all,
+            R.drawable.ic_location_all_filled,
+            ServerListType.All
+        ),
+        ServerTabIcon(
+            R.drawable.ic_location_fav,
+            R.drawable.ic_location_fav_filled,
+            ServerListType.Fav
+        ),
+        ServerTabIcon(
+            R.drawable.ic_location_static,
+            R.drawable.ic_location_static_filled,
+            ServerListType.Static
+        ),
+        ServerTabIcon(
+            R.drawable.ic_location_config,
+            R.drawable.ic_location_config_filled,
+            ServerListType.Config
+        )
+    )
     Box(
         modifier = modifier
             .border(
@@ -93,24 +121,22 @@ fun ServerListNavigation(
                 .fillMaxHeight()
                 .fillMaxWidth()
         ) {
-            listOf(
-                R.drawable.ic_location_all to ServerListType.All,
-                R.drawable.ic_location_fav to ServerListType.Fav,
-                R.drawable.ic_location_static to ServerListType.Static,
-                R.drawable.ic_location_config to ServerListType.Config
-            ).forEachIndexed { index, (icon, type) ->
+            serverTabs.forEachIndexed { index, tab ->
+                val isSelected = selectedType == tab.type
                 Image(
-                    painter = painterResource(icon),
+                    painter = painterResource(if (isSelected) tab.filledIcon else tab.unfilledIcon),
                     contentDescription = null,
-                    modifier = Modifier.hapticClickable(hapticEnabled = isHapticEnabled)  {
+                    modifier = Modifier.hapticClickable(hapticEnabled = isHapticEnabled) {
                         onTabSelected(index)
-                    },
-                    colorFilter = if (selectedType == type) ColorFilter.tint(AppColors.white)
-                    else ColorFilter.tint(AppColors.white70),
+                    }
                 )
-                if (index < 3) Spacer(modifier = Modifier.width(16.dp))
+                if (index < serverTabs.lastIndex) {
+                    Spacer(modifier = Modifier.width(16.dp))
+                }
             }
+
             Spacer(modifier = Modifier.weight(1.0f))
+
             Image(
                 painter = painterResource(R.drawable.ic_location_search),
                 contentDescription = null,

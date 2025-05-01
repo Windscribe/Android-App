@@ -162,10 +162,10 @@ class ServerViewModelImpl(
                         ServerListItem(
                             id = region.region.id,
                             region = region.region,
-                            cities = region.cities.sortCities()
+                            cities = region.cities.sortCities().updateCityNames()
                         )
                     }
-                    .sortRegions()
+                    .sortRegions().updateRegionNames()
             },
             errorMessage = "Failed to load servers"
         )
@@ -185,6 +185,34 @@ class ServerViewModelImpl(
             }
 
             else -> sortedBy { it.nodeName }
+        }
+    }
+
+    private fun List<City>.updateCityNames(): List<City> {
+        return map {
+            val cityName = serverRepository.getCustomCityName(it.id)
+            val nickName = serverRepository.getCustomCityNickName(it.id)
+            if (cityName != null && nickName != null) {
+                it.apply {
+                    this.nodeName = cityName
+                    this.nickName = nickName
+                }
+            } else {
+                it
+            }
+        }
+    }
+
+    private fun List<ServerListItem>.updateRegionNames(): List<ServerListItem> {
+        return map {
+            val countryName = serverRepository.getCustomRegionName(it.id)
+            if (countryName != null) {
+                it.apply {
+                    this.region.name = countryName
+                }
+            } else {
+                it
+            }
         }
     }
 
@@ -356,6 +384,9 @@ class ServerViewModelImpl(
 
     override fun onQueryTextChange(query: String) {
         viewModelScope.launch(Dispatchers.IO) {
+            if (_searchKeyword.value.isEmpty() && query.isEmpty()) {
+                return@launch
+            }
             _searchKeyword.value = query
             _searchListState.emit(ListState.Loading)
             val items =

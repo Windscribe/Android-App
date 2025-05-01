@@ -150,7 +150,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testImplementation 'org.junit.jupiter:junit-jupiter'
     // ECH Conscrypt
-    implementation 'info.guardianproject.conscrypt:conscrypt-android:2.6.alpha1638179154.job1828169525'
+  //  implementation 'info.guardianproject.conscrypt:conscrypt-android:2.6.alpha1638179154.job1828169525'
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'commons-net:commons-net:3.6'
     // Google only dependencies
@@ -160,4 +160,5 @@ dependencies {
     googleApi 'com.android.billingclient:billing:7.0.0'
     googleApi "com.google.android.gms:play-services-appset:16.0.2"
     googleApi 'com.google.android.play:review-ktx:2.0.1'
+    googleApi 'com.google.android.gms:play-services-auth:20.4.1'
 }

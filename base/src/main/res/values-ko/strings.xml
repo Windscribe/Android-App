@@ -381,7 +381,6 @@
     <string name="location_order_description">위치 목록을 알파벳, 지리 또는 대기 시간의 오름차순으로 정렬합니다.</string>
     <string name="latency_display_description">지연 시간을 신호 강도 막대 또는 밀리초 단위로 표시합니다.</string>
     <string name="language_description">Windscribe를 지원되는 언어로 지역화합니다.</string>
-    <string name="app_background_description">인앱 연결 화면을 사용자 지정합니다.</string>
     <string name="notification_stats_description">알림에 트래픽 통계를 표시합니다.</string>
     <string name="location_load_description">위치 하중을 막대로 표시합니다. 막대가 짧을수록 위치에 대한 부하가 줄어 듭니다 (위치의 총 용량과 관련하여).</string>
     <string name="haptic_feedback_description">사용자 행동에 대한 물리적 반응(진동)</string>
@@ -510,4 +509,25 @@
     <string name="follow_us_on_x">X에서 팔로우</string>
     <string name="charged_every_month">매달 청구됨</string>
     <string name="charged_every_12_months">12개월마다 청구됨</string>
+    <string name="look_and_feel">모양 및 느낌</string>
+    <string name="when_disconnected">연결 해제 시</string>
+    <string name="when_connected">연결 시</string>
+    <string name="aspect_ratio">화면 비율</string>
+    <string name="fill">채우기</string>
+    <string name="scale">스케일</string>
+    <string name="tile">타일</string>
+    <string name="bundle">번들</string>
+    <string name="None">없음</string>
+    <string name="sound_notifications">소리 알림</string>
+    <string name="app_background_description">앱 메인 화면의 배경을 사용자 정의합니다.</string>
+    <string name="sound_notifications_description">연결 이벤트가 발생할 때 재생할 소리를 선택하세요.</string>
+    <string name="renamed_location">위치 이름 변경</string>
+    <string name="renamed_location_description">원하는 대로 위치 이름을 변경하세요.</string>
+    <string name="export_locations">내보내기</string>
+    <string name="import_locations">가져오기</string>
+    <string name="reset">초기화</string>
+    <string name="no_static_ip">고정 IP 없음</string>
+    <string name="unblock_full_access">Windscribe의 전체 액세스를 잠금 해제</string>
+    <string name="go_pro_for_unlimited_everything">무제한 기능을 위해 Pro로 업그레이드</string>
+    <string name="custom_configs">사용자 정의 설정</string>
 </resources>

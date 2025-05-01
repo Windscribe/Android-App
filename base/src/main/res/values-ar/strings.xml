@@ -381,7 +381,6 @@
     <string name="location_order_description">رتب قائمة المواقع بترتيب تصاعدي للأبجدية أو الجغرافيا أو زمن الوصول.</string>
     <string name="latency_display_description">عرض زمن الوصول كأشرطة قوة الإشارة أو بالمللي ثانية.</string>
     <string name="language_description">ترجمة Windscribe إلى اللغات المدعومة.</string>
-    <string name="app_background_description">تخصيص شاشة الاتصال داخل التطبيق.</string>
     <string name="notification_stats_description">إظهار إحصائيات حركة المرور في الإشعار.</string>
     <string name="location_load_description">عرض تحميل الموقع كشريط. كلما كان الشريط أقصر ، قل الحمل على الموقع (فيما يتعلق بالسعة الإجمالية للموقع).</string>
     <string name="haptic_feedback_description">الاستجابات المادية (الاهتزاز) لإجراءات المستخدم</string>
@@ -510,4 +509,25 @@
     <string name="follow_us_on_x">تابعنا على X</string>
     <string name="charged_every_month">يتم الشحن كل شهر</string>
     <string name="charged_every_12_months">يتم الشحن كل 12 شهرًا</string>
+    <string name="look_and_feel">المظهر والشكل</string>
+    <string name="when_disconnected">عند الانفصال</string>
+    <string name="when_connected">عند الاتصال</string>
+    <string name="aspect_ratio">نسبة العرض إلى الارتفاع</string>
+    <string name="fill">ملء</string>
+    <string name="scale">مقياس</string>
+    <string name="tile">تكرار</string>
+    <string name="bundle">حزمة</string>
+    <string name="None">لا شيء</string>
+    <string name="sound_notifications">إشعارات الصوت</string>
+    <string name="app_background_description">قم بتخصيص خلفية الشاشة الرئيسية للتطبيق.</string>
+    <string name="sound_notifications_description">اختر الأصوات التي تُشغّل عند حدوث تغييرات في الاتصال.</string>
+    <string name="renamed_location">إعادة تسمية المواقع</string>
+    <string name="renamed_location_description">قم بتغيير أسماء المواقع حسب رغبتك.</string>
+    <string name="export_locations">تصدير</string>
+    <string name="import_locations">استيراد</string>
+    <string name="reset">إعادة تعيين</string>
+    <string name="no_static_ip">لا توجد عناوين IP ثابتة</string>
+    <string name="unblock_full_access">افتح الوصول الكامل إلى Windscribe</string>
+    <string name="go_pro_for_unlimited_everything">احصل على النسخة الاحترافية لكل شيء غير محدود</string>
+    <string name="custom_configs">تكوينات مخصصة</string>
 </resources>

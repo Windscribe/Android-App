@@ -46,4 +46,5 @@ interface IApiCallManager {
         data: String,
         sizeToReceive: String?
     ): Single<GenericResponseClass<String?, ApiErrorResponse?>>
+    fun sso(provider: String, token: String): Single<GenericResponseClass<SsoResponse?, ApiErrorResponse?>>
 }

@@ -380,7 +380,6 @@
     <string name="location_order_description">স্থানের তালিকাটি বর্ণমালা, ভূগোল, বা লেটেন্সির আরোহণক্রমে সাজান।</string>
     <string name="latency_display_description">লেটেন্সি সিগন্যাল শক্তি বার বা মিলিসেকেন্ডে প্রদর্শন করুন।</string>
     <string name="language_description">Windscribe কে সমর্থিত ভাষায় স্থানীয়করণ করুন।</string>
-    <string name="app_background_description">অ্যাপের মধ্যে সংযোগ স্ক্রিন কাস্টমাইজ করুন।</string>
     <string name="notification_stats_description">বিজ্ঞপ্তিতে ট্রাফিক পরিসংখ্যান দেখান।</string>
     <string name="location_load_description">স্থানের লোড একটি বার হিসেবে প্রদর্শন করুন। বার যত ছোট, স্থানের লোড তত কম (স্থানের মোট ক্ষমতার সাপেক্ষে)।</string>
     <string name="haptic_feedback_description">ব্যবহারকারীর ক্রিয়াকলাপে শারীরিক প্রতিক্রিয়া (ভাইব্রেশন)</string>
@@ -507,4 +506,25 @@
     <string name="follow_us_on_x">আমাদের X-এ অনুসরণ করুন</string>
     <string name="charged_every_month">প্রতি মাসে চার্জ করা হয়</string>
     <string name="charged_every_12_months">প্রতি ১২ মাসে চার্জ করা হয়</string>
+    <string name="look_and_feel">চেহারা ও অনুভূতি</string>
+    <string name="when_disconnected">সংযোগ বিচ্ছিন্ন হলে</string>
+    <string name="when_connected">সংযোগ স্থাপিত হলে</string>
+    <string name="aspect_ratio">আস্পেক্ট রেশিও</string>
+    <string name="fill">ভরাট</string>
+    <string name="scale">স্কেল</string>
+    <string name="tile">টাইল</string>
+    <string name="bundle">বান্ডেল</string>
+    <string name="None">কোনোটিই না</string>
+    <string name="sound_notifications">শব্দ বিজ্ঞপ্তি</string>
+    <string name="app_background_description">অ্যাপের প্রধান পর্দার পেছনের ছবি কাস্টমাইজ করুন।</string>
+    <string name="sound_notifications_description">সংযোগের ঘটনায় বাজানোর জন্য শব্দ বেছে নিন।</string>
+    <string name="renamed_location">অবস্থানের নাম পরিবর্তন</string>
+    <string name="renamed_location_description">আপনার ইচ্ছামতো অবস্থানের নাম পরিবর্তন করুন।</string>
+    <string name="export_locations">রপ্তানি করুন</string>
+    <string name="import_locations">আমদানি করুন</string>
+    <string name="reset">রিসেট করুন</string>
+    <string name="no_static_ip">কোনও স্ট্যাটিক IP নেই</string>
+    <string name="unblock_full_access">Windscribe-এর সম্পূর্ণ অ্যাক্সেস আনলক করুন</string>
+    <string name="go_pro_for_unlimited_everything">সীমাহীন সবকিছুর জন্য প্রো নিন</string>
+    <string name="custom_configs">কাস্টম কনফিগারেশন</string>
 </resources>

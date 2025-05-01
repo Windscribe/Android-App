@@ -16,6 +16,7 @@ import com.windscribe.vpn.api.response.PortMapResponse
 import com.windscribe.vpn.api.response.RegToken
 import com.windscribe.vpn.api.response.RobertFilterResponse
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
+import com.windscribe.vpn.api.response.SsoResponse
 import com.windscribe.vpn.api.response.StaticIPResponse
 import com.windscribe.vpn.api.response.TicketResponse
 import com.windscribe.vpn.api.response.UserLoginResponse
@@ -43,7 +44,11 @@ import javax.inject.Singleton
 
 
 @Singleton
-open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedApiFactory, val wsNetServerAPI: WSNetServerAPI, val preferencesHelper: PreferencesHelper) : IApiCallManager {
+open class ApiCallManager @Inject constructor(
+    private val apiFactory: ProtectedApiFactory,
+    val wsNetServerAPI: WSNetServerAPI,
+    val preferencesHelper: PreferencesHelper
+) : IApiCallManager {
 
     private val logger = LoggerFactory.getLogger("basic")
     override fun getWebSession(): Single<GenericResponseClass<WebSession?, ApiErrorResponse?>> {
@@ -59,9 +64,10 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun addUserEmailAddress(email: String): Single<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.addEmail(preferencesHelper.sessionHash, email) { code, json ->
-                buildResponse(sub, code, json, AddEmailResponse::class.java)
-            }
+            val callback =
+                wsNetServerAPI.addEmail(preferencesHelper.sessionHash, email) { code, json ->
+                    buildResponse(sub, code, json, AddEmailResponse::class.java)
+                }
             sub.setCancellable { callback.cancel() }
         }
     }
@@ -75,10 +81,22 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
         }
     }
 
-    override fun claimAccount(username: String, password: String, email: String, voucherCode: String?): Single<GenericResponseClass<ClaimAccountResponse?, ApiErrorResponse?>> {
+    override fun claimAccount(
+        username: String,
+        password: String,
+        email: String,
+        voucherCode: String?
+    ): Single<GenericResponseClass<ClaimAccountResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.claimAccount(preferencesHelper.sessionHash, username, password, email, voucherCode ?: "", "1") { code, json ->
+            val callback = wsNetServerAPI.claimAccount(
+                preferencesHelper.sessionHash,
+                username,
+                password,
+                email,
+                voucherCode ?: "",
+                "1"
+            ) { code, json ->
                 buildResponse(sub, code, json, ClaimAccountResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -88,8 +106,10 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun getNotifications(pcpID: String?): Single<GenericResponseClass<NewsFeedNotification?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.notifications(preferencesHelper.sessionHash, pcpID
-                    ?: "") { code, json ->
+            val callback = wsNetServerAPI.notifications(
+                preferencesHelper.sessionHash, pcpID
+                    ?: ""
+            ) { code, json ->
                 buildResponse(sub, code, json, NewsFeedNotification::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -99,7 +119,11 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun getPortMap(): Single<GenericResponseClass<PortMapResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.portMap(preferencesHelper.sessionHash, 5, arrayOf("wstunnel")) { code, json ->
+            val callback = wsNetServerAPI.portMap(
+                preferencesHelper.sessionHash,
+                5,
+                arrayOf("wstunnel")
+            ) { code, json ->
                 buildResponse(sub, code, json, PortMapResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -118,9 +142,10 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun getServerConfig(): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.serverConfigs(preferencesHelper.sessionHash) { code, json ->
-                buildResponse(sub, code, json, String::class.java)
-            }
+            val callback =
+                wsNetServerAPI.serverConfigs(preferencesHelper.sessionHash) { code, json ->
+                    buildResponse(sub, code, json, String::class.java)
+                }
             sub.setCancellable { callback.cancel() }
         }
     }
@@ -128,7 +153,10 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun getServerCredentials(extraParams: Map<String, String>?): Single<GenericResponseClass<ServerCredentialsResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.serverCredentials(preferencesHelper.sessionHash, true) { code, json ->
+            val callback = wsNetServerAPI.serverCredentials(
+                preferencesHelper.sessionHash,
+                true
+            ) { code, json ->
                 buildResponse(sub, code, json, ServerCredentialsResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -138,17 +166,27 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun getServerCredentialsForIKev2(extraParams: Map<String, String>?): Single<GenericResponseClass<ServerCredentialsResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.serverCredentials(preferencesHelper.sessionHash, false) { code, json ->
+            val callback = wsNetServerAPI.serverCredentials(
+                preferencesHelper.sessionHash,
+                false
+            ) { code, json ->
                 buildResponse(sub, code, json, ServerCredentialsResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
         }
     }
 
-    override fun getServerList(isPro: Boolean, locHash: String, alcList: Array<String>, overriddenCountryCode: String?): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
+    override fun getServerList(
+        isPro: Boolean,
+        locHash: String,
+        alcList: Array<String>,
+        overriddenCountryCode: String?
+    ): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
         return Single.create { sub ->
-            val callback = wsNetServerAPI.serverLocations(overriddenCountryCode
-                    ?: "", locHash, isPro, alcList) { code, json ->
+            val callback = wsNetServerAPI.serverLocations(
+                overriddenCountryCode
+                    ?: "", locHash, isPro, alcList
+            ) { code, json ->
                 buildResponse(sub, code, json, String::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -158,7 +196,11 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun getSessionGeneric(firebaseToken: String?): Single<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.session(preferencesHelper.sessionHash, "", firebaseToken ?: "") { code, json ->
+            val callback = wsNetServerAPI.session(
+                preferencesHelper.sessionHash,
+                "",
+                firebaseToken ?: ""
+            ) { code, json ->
                 buildResponse(sub, code, json, UserSessionResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -168,14 +210,19 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun getStaticIpList(deviceID: String?): Single<GenericResponseClass<StaticIPResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.staticIps(preferencesHelper.sessionHash, 2) { code, json ->
-                buildResponse(sub, code, json, StaticIPResponse::class.java)
-            }
+            val callback =
+                wsNetServerAPI.staticIps(preferencesHelper.sessionHash, 2) { code, json ->
+                    buildResponse(sub, code, json, StaticIPResponse::class.java)
+                }
             sub.setCancellable { callback.cancel() }
         }
     }
 
-    override fun logUserIn(username: String, password: String, twoFa: String?): Single<GenericResponseClass<UserLoginResponse?, ApiErrorResponse?>> {
+    override fun logUserIn(
+        username: String,
+        password: String,
+        twoFa: String?
+    ): Single<GenericResponseClass<UserLoginResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             val callback = wsNetServerAPI.login(username, password, twoFa ?: "") { code, json ->
                 buildResponse(sub, code, json, UserLoginResponse::class.java)
@@ -193,20 +240,44 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
         }
     }
 
-    override fun sendTicket(supportEmail: String, supportName: String, supportSubject: String, supportMessage: String, supportCategory: String, type: String, channel: String): Single<GenericResponseClass<TicketResponse?, ApiErrorResponse?>> {
+    override fun sendTicket(
+        supportEmail: String,
+        supportName: String,
+        supportSubject: String,
+        supportMessage: String,
+        supportCategory: String,
+        type: String,
+        channel: String
+    ): Single<GenericResponseClass<TicketResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.sendSupportTicket(supportEmail, supportName, supportSubject, supportMessage, supportCategory, type, channel) { code, json ->
+            val callback = wsNetServerAPI.sendSupportTicket(
+                supportEmail,
+                supportName,
+                supportSubject,
+                supportMessage,
+                supportCategory,
+                type,
+                channel
+            ) { code, json ->
                 buildResponse(sub, code, json, TicketResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
         }
     }
 
-    override fun signUserIn(username: String, password: String, referringUsername: String?, email: String?, voucherCode: String?): Single<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>> {
+    override fun signUserIn(
+        username: String,
+        password: String,
+        referringUsername: String?,
+        email: String?,
+        voucherCode: String?
+    ): Single<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
-            val callback = wsNetServerAPI.signup(username, password, referringUsername ?: "", email
-                    ?: "", voucherCode ?: "") { code, json ->
+            val callback = wsNetServerAPI.signup(
+                username, password, referringUsername ?: "", email
+                    ?: "", voucherCode ?: ""
+            ) { code, json ->
                 buildResponse(sub, code, json, UserRegistrationResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -216,7 +287,10 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun claimVoucherCode(voucherCode: String): Single<GenericResponseClass<ClaimVoucherCodeResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.claimVoucherCode(preferencesHelper.sessionHash, voucherCode) { code, json ->
+            val callback = wsNetServerAPI.claimVoucherCode(
+                preferencesHelper.sessionHash,
+                voucherCode
+            ) { code, json ->
                 buildResponse(sub, code, json, ClaimVoucherCodeResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -232,10 +306,23 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
         }
     }
 
-    override fun verifyPurchaseReceipt(purchaseToken: String, gpPackageName: String, gpProductId: String, type: String, amazonUserId: String): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>> {
+    override fun verifyPurchaseReceipt(
+        purchaseToken: String,
+        gpPackageName: String,
+        gpProductId: String,
+        type: String,
+        amazonUserId: String
+    ): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.verifyPayment(preferencesHelper.sessionHash, purchaseToken, gpPackageName, gpProductId, type, amazonUserId) { code, json ->
+            val callback = wsNetServerAPI.verifyPayment(
+                preferencesHelper.sessionHash,
+                purchaseToken,
+                gpPackageName,
+                gpProductId,
+                type,
+                amazonUserId
+            ) { code, json ->
                 buildResponse(sub, code, json, GenericSuccess::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -245,7 +332,10 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun verifyExpressLoginCode(loginCode: String): Single<GenericResponseClass<VerifyExpressLoginResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.verifyTvLoginCode(preferencesHelper.sessionHash, loginCode) { code, json ->
+            val callback = wsNetServerAPI.verifyTvLoginCode(
+                preferencesHelper.sessionHash,
+                loginCode
+            ) { code, json ->
                 buildResponse(sub, code, json, VerifyExpressLoginResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -261,16 +351,23 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
         }
     }
 
-    override fun verifyXPressLoginCode(loginCode: String, signature: String): Single<GenericResponseClass<XPressLoginVerifyResponse?, ApiErrorResponse?>> {
+    override fun verifyXPressLoginCode(
+        loginCode: String,
+        signature: String
+    ): Single<GenericResponseClass<XPressLoginVerifyResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
-            val callback = wsNetServerAPI.verifyXpressLoginCode(loginCode, signature) { code, json ->
-                buildResponse(sub, code, json, XPressLoginVerifyResponse::class.java)
-            }
+            val callback =
+                wsNetServerAPI.verifyXpressLoginCode(loginCode, signature) { code, json ->
+                    buildResponse(sub, code, json, XPressLoginVerifyResponse::class.java)
+                }
             sub.setCancellable { callback.cancel() }
         }
     }
 
-    override fun postDebugLog(username: String, log: String): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>> {
+    override fun postDebugLog(
+        username: String,
+        log: String
+    ): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
             val callback = wsNetServerAPI.debugLog(username, log) { code, json ->
@@ -283,17 +380,25 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun postPromoPaymentConfirmation(pcpID: String): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.postBillingCpid(preferencesHelper.sessionHash, pcpID) { code, json ->
-                buildResponse(sub, code, json, GenericSuccess::class.java)
-            }
+            val callback =
+                wsNetServerAPI.postBillingCpid(preferencesHelper.sessionHash, pcpID) { code, json ->
+                    buildResponse(sub, code, json, GenericSuccess::class.java)
+                }
             sub.setCancellable { callback.cancel() }
         }
     }
 
-    override fun updateRobertSettings(id: String, status: Int): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>> {
+    override fun updateRobertSettings(
+        id: String,
+        status: Int
+    ): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.setRobertFilter(preferencesHelper.sessionHash, id, status) { code, json ->
+            val callback = wsNetServerAPI.setRobertFilter(
+                preferencesHelper.sessionHash,
+                id,
+                status
+            ) { code, json ->
                 buildResponse(sub, code, json, GenericSuccess::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -313,9 +418,10 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun getRobertFilters(): Single<GenericResponseClass<RobertFilterResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.getRobertFilters(preferencesHelper.sessionHash) { code, json ->
-                buildResponse(sub, code, json, RobertFilterResponse::class.java)
-            }
+            val callback =
+                wsNetServerAPI.getRobertFilters(preferencesHelper.sessionHash) { code, json ->
+                    buildResponse(sub, code, json, RobertFilterResponse::class.java)
+                }
             sub.setCancellable { callback.cancel() }
         }
     }
@@ -323,27 +429,45 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun deleteSession(): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.deleteSession(preferencesHelper.sessionHash) { code, json ->
-                buildResponse(sub, code, json, GenericSuccess::class.java)
-            }
+            val callback =
+                wsNetServerAPI.deleteSession(preferencesHelper.sessionHash) { code, json ->
+                    buildResponse(sub, code, json, GenericSuccess::class.java)
+                }
             sub.setCancellable { callback.cancel() }
         }
     }
 
-    override fun wgConnect(clientPublicKey: String, hostname: String, deviceId: String): Single<GenericResponseClass<WgConnectResponse?, ApiErrorResponse?>> {
+    override fun wgConnect(
+        clientPublicKey: String,
+        hostname: String,
+        deviceId: String
+    ): Single<GenericResponseClass<WgConnectResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.wgConfigsConnect(preferencesHelper.sessionHash, clientPublicKey, hostname, deviceId, "3600") { code, json ->
+            val callback = wsNetServerAPI.wgConfigsConnect(
+                preferencesHelper.sessionHash,
+                clientPublicKey,
+                hostname,
+                deviceId,
+                "3600"
+            ) { code, json ->
                 buildResponse(sub, code, json, WgConnectResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
         }
     }
 
-    override fun wgInit(clientPublicKey: String, deleteOldestKey: Boolean): Single<GenericResponseClass<WgInitResponse?, ApiErrorResponse?>> {
+    override fun wgInit(
+        clientPublicKey: String,
+        deleteOldestKey: Boolean
+    ): Single<GenericResponseClass<WgInitResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.wgConfigsInit(preferencesHelper.sessionHash, clientPublicKey, deleteOldestKey) { code, json ->
+            val callback = wsNetServerAPI.wgConfigsInit(
+                preferencesHelper.sessionHash,
+                clientPublicKey,
+                deleteOldestKey
+            ) { code, json ->
                 buildResponse(sub, code, json, WgInitResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -353,9 +477,10 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun resendUserEmailAddress(extraParams: Map<String, String>?): Single<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.confirmEmail(preferencesHelper.sessionHash) { code, json ->
-                buildResponse(sub, code, json, AddEmailResponse::class.java)
-            }
+            val callback =
+                wsNetServerAPI.confirmEmail(preferencesHelper.sessionHash) { code, json ->
+                    buildResponse(sub, code, json, AddEmailResponse::class.java)
+                }
             sub.setCancellable { callback.cancel() }
         }
     }
@@ -363,11 +488,25 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
     override fun getBillingPlans(promo: String?): Single<GenericResponseClass<BillingPlanResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.mobileBillingPlans(preferencesHelper.sessionHash, "google", promo
-                    ?: "", 3) { code, json ->
+            val callback = wsNetServerAPI.mobileBillingPlans(
+                preferencesHelper.sessionHash, "google", promo
+                    ?: "", 3
+            ) { code, json ->
                 buildResponse(sub, code, json, BillingPlanResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
+        }
+    }
+
+    override fun sso(
+        provider: String,
+        token: String
+    ): Single<GenericResponseClass<SsoResponse?, ApiErrorResponse?>> {
+        return Single.create { sub ->
+//            val callback = wsNetServerAPI.sso(provider, token) { code, json ->
+//                buildResponse(sub, code, json, SsoResponse::class.java)
+//            }
+//            sub.setCancellable { callback.cancel() }
         }
     }
 
@@ -380,42 +519,69 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
         }
     }
 
-    private fun <T> buildResponse(sub: SingleEmitter<GenericResponseClass<T?, ApiErrorResponse?>>, code: Int, responseDataString: String, modelType: Class<T>) {
+    private fun <T> buildResponse(
+        sub: SingleEmitter<GenericResponseClass<T?, ApiErrorResponse?>>,
+        code: Int,
+        responseDataString: String,
+        modelType: Class<T>
+    ) {
         when (code) {
             1 -> sub.onError(WSNetException("WSNet: Network failed to connect to server.", 1))
             2 -> sub.onError(WSNetException("WSNet: No network available to reach API.", 2))
-            3 -> sub.onError(WSNetException("WSNet: Server returned incorrect json response. Unable to parse it. Response: $responseDataString", 3))
+            3 -> sub.onError(
+                WSNetException(
+                    "WSNet: Server returned incorrect json response. Unable to parse it. Response: $responseDataString",
+                    3
+                )
+            )
+
             4 -> sub.onError(WSNetException("WSNet: All fallback domains have failed.", 4))
             else -> {
                 try {
                     if (modelType.simpleName.equals("String")) {
                         sub.onSuccess(GenericResponseClass(responseDataString as T, null))
                     } else {
-                        val dataObject = JsonResponseConverter.getResponseClass(JSONObject(responseDataString), modelType)
+                        val dataObject = JsonResponseConverter.getResponseClass(
+                            JSONObject(responseDataString),
+                            modelType
+                        )
                         sub.onSuccess(GenericResponseClass(dataObject, null))
                     }
                 } catch (e: Exception) {
                     try {
-                        val errorObject = JsonResponseConverter.getErrorClass(JSONObject(responseDataString))
+                        val errorObject =
+                            JsonResponseConverter.getErrorClass(JSONObject(responseDataString))
                         sub.onSuccess(GenericResponseClass(null, errorObject))
                     } catch (e: Exception) {
-                        sub.onError(WSNetException("App: Unable to parse [ $responseDataString ] to ${modelType.simpleName}. ) ", 3))
+                        sub.onError(
+                            WSNetException(
+                                "App: Unable to parse [ $responseDataString ] to ${modelType.simpleName}. ) ",
+                                3
+                            )
+                        )
                     }
                 }
             }
         }
     }
 
-    override fun sendDecoyTraffic(url: String, data: String, sizeToReceive: String?): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
+    override fun sendDecoyTraffic(
+        url: String,
+        data: String,
+        sizeToReceive: String?
+    ): Single<GenericResponseClass<String?, ApiErrorResponse?>> {
         try {
             return sizeToReceive?.let {
-                return apiFactory.createApi(url).sendDecoyTraffic(hashMapOf(Pair("data", data)), "text/plain", sizeToReceive).flatMap {
-                    responseToModel(it, String::class.java)
-                }
-            }
-                    ?: apiFactory.createApi(url).sendDecoyTraffic(hashMapOf(Pair("data", data)), "text/plain").flatMap {
+                return apiFactory.createApi(url)
+                    .sendDecoyTraffic(hashMapOf(Pair("data", data)), "text/plain", sizeToReceive)
+                    .flatMap {
                         responseToModel(it, String::class.java)
                     }
+            }
+                ?: apiFactory.createApi(url)
+                    .sendDecoyTraffic(hashMapOf(Pair("data", data)), "text/plain").flatMap {
+                    responseToModel(it, String::class.java)
+                }
         } catch (e: Exception) {
             val apiErrorResponse = ApiErrorResponse()
             apiErrorResponse.errorCode = NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
@@ -430,19 +596,26 @@ open class ApiCallManager @Inject constructor(private val apiFactory: ProtectedA
      * @param modelType Class type for data if String is provided raw response is returned .
      * @return Optional Generic Class with either data or ApiErrorResponse
      */
-    private fun <T> responseToModel(responseBody: ResponseBody, modelType: Class<T>): Single<GenericResponseClass<T?, ApiErrorResponse?>> {
+    private fun <T> responseToModel(
+        responseBody: ResponseBody,
+        modelType: Class<T>
+    ): Single<GenericResponseClass<T?, ApiErrorResponse?>> {
         val responseDataString = responseBody.string()
         responseBody.close()
         return Single.fromCallable<GenericResponseClass<T?, ApiErrorResponse?>> {
             if (modelType.simpleName.equals("String")) {
                 return@fromCallable (GenericResponseClass(responseDataString as T, null))
             } else {
-                val dataObject = JsonResponseConverter.getResponseClass(JSONObject(responseDataString), modelType)
+                val dataObject = JsonResponseConverter.getResponseClass(
+                    JSONObject(responseDataString),
+                    modelType
+                )
                 return@fromCallable (GenericResponseClass(dataObject, null))
             }
         }.onErrorResumeNext {
             return@onErrorResumeNext Single.fromCallable {
-                val errorObject = JsonResponseConverter.getErrorClass(JSONObject(responseDataString))
+                val errorObject =
+                    JsonResponseConverter.getErrorClass(JSONObject(responseDataString))
                 return@fromCallable GenericResponseClass(null, errorObject)
             }
         }

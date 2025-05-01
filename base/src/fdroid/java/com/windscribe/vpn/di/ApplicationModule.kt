@@ -9,6 +9,8 @@ import com.windscribe.vpn.backend.AndroidDeviceIdentityImpl
 import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.services.ReceiptValidator
 import com.windscribe.vpn.services.firebasecloud.FirebaseManagerImpl
+import com.windscribe.vpn.services.sso.GoogleSignInManager
+import com.windscribe.vpn.services.sso.GoogleSignInManagerImpl
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import dagger.Module
 import dagger.Provides
@@ -36,5 +38,11 @@ class ApplicationModule(override var windscribeApp: Windscribe) : BaseApplicatio
     @Singleton
     fun provideAndroidIdentity(): AndroidDeviceIdentity {
         return AndroidDeviceIdentityImpl()
+    }
+
+    @Provides
+    @Singleton
+    fun providesGoogleSignInManager(): GoogleSignInManager {
+        return GoogleSignInManagerImpl(windscribeApp)
     }
 }

@@ -553,4 +553,5 @@ last chosen location.</string>
     <string name="no_static_ip">No Static IPs</string>
     <string name="unblock_full_access">Unlock full access to Windscribe</string>
     <string name="go_pro_for_unlimited_everything">Go Pro for unlimited everything</string>
+    <string name="custom_configs">Custom Configs</string>
 </resources>
