@@ -16,10 +16,9 @@ class GoogleSignInManagerImpl(val context: Context) : GoogleSignInManager() {
 
     init {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(BuildConfig.WEB_CLIENT_ID)
+            .requestIdToken("663054486699-d5m13v278rsjgtlsv962uva9s2gnqf37.apps.googleusercontent.com")
             .requestEmail()
             .build()
-        logger.info("Web client id: ${BuildConfig.WEB_CLIENT_ID}")
         val activity = (context as Windscribe).activeActivity
         googleSignInClient = GoogleSignIn.getClient(activity!!, gso)
     }
