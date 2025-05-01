@@ -381,7 +381,6 @@ son seçilen yer.</string>
     <string name="location_order_description">Konum listesini alfabenin, coğrafyanın veya gecikmenin artan sırasına göre düzenleyin.</string>
     <string name="latency_display_description">Gecikmeyi sinyal gücü çubukları olarak veya milisaniye cinsinden görüntüleyin.</string>
     <string name="language_description">Windscribe\ı desteklenen dillere yerelleştirin.</string>
-    <string name="app_background_description">Uygulama içi bağlantı ekranını özelleştirin.</string>
     <string name="notification_stats_description">Bildirimde trafik istatistiklerini gösterin.</string>
     <string name="location_load_description">Konum yüklemesini çubuk olarak görüntüleyin. Çubuk ne kadar kısa olursa, konumdaki yük o kadar az olur (konumun toplam kapasitesine göre).</string>
     <string name="haptic_feedback_description">Kullanıcı eylemlerine fiziksel tepkiler (Titreşim)</string>
@@ -510,4 +509,25 @@ son seçilen yer.</string>
     <string name="follow_us_on_x">Bizi X\'te takip edin</string>
     <string name="charged_every_month">her ay ücretlendirilir</string>
     <string name="charged_every_12_months">her 12 ayda bir ücretlendirilir</string>
+    <string name="look_and_feel">Görünüm ve His</string>
+    <string name="when_disconnected">Bağlantı kesildiğinde</string>
+    <string name="when_connected">Bağlandığında</string>
+    <string name="aspect_ratio">En boy oranı</string>
+    <string name="fill">Doldur</string>
+    <string name="scale">Ölçekle</string>
+    <string name="tile">Döşe</string>
+    <string name="bundle">Paket</string>
+    <string name="None">Hiçbiri</string>
+    <string name="sound_notifications">Sesli Bildirimler</string>
+    <string name="app_background_description">Uygulamanın ana ekran arka planını özelleştirin.</string>
+    <string name="sound_notifications_description">Bağlantı olayları gerçekleştiğinde çalacak sesleri seçin.</string>
+    <string name="renamed_location">Konumları Yeniden Adlandır</string>
+    <string name="renamed_location_description">Konum adlarını istediğiniz gibi değiştirin.</string>
+    <string name="export_locations">Dışa Aktar</string>
+    <string name="import_locations">İçe Aktar</string>
+    <string name="reset">Sıfırla</string>
+    <string name="no_static_ip">Statik IP yok</string>
+    <string name="unblock_full_access">Windscribe’a tam erişimi aç</string>
+    <string name="go_pro_for_unlimited_everything">Sınırsız özellikler için Pro’ya geçin</string>
+    <string name="custom_configs">Özel Yapılandırmalar</string>
 </resources>

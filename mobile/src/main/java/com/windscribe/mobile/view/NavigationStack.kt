@@ -1,11 +1,12 @@
 package com.windscribe.mobile.view
 
 import android.os.Build
-import androidx.annotation.RequiresApi
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -13,29 +14,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.windscribe.mobile.dialogs.AccountStatusDialogData
-import com.windscribe.mobile.view.screen.AccountStatusScreen
-import com.windscribe.mobile.view.screen.AppStartScreen
-import com.windscribe.mobile.view.screen.EmergencyConnectScreen
-import com.windscribe.mobile.view.screen.HomeScreen
-import com.windscribe.mobile.view.screen.LoginScreen
-import com.windscribe.mobile.view.screen.NewsfeedScreen
-import com.windscribe.mobile.view.screen.NoEmailAttentionScreen
-import com.windscribe.mobile.view.screen.PowerWhitelistScreen
-import com.windscribe.mobile.view.screen.Screen
-import com.windscribe.mobile.view.screen.ShareLinkScreen
-import com.windscribe.mobile.view.screen.SignupScreen
-import com.windscribe.mobile.view.screen.WebViewScreenUI
-import com.windscribe.mobile.viewmodel.AppStartViewModel
-import com.windscribe.mobile.viewmodel.ConfigViewmodel
-import com.windscribe.mobile.viewmodel.ConnectionViewmodel
-import com.windscribe.mobile.viewmodel.EmergencyConnectViewModal
-import com.windscribe.mobile.viewmodel.HomeViewmodel
-import com.windscribe.mobile.viewmodel.LoginViewModel
-import com.windscribe.mobile.viewmodel.NewsfeedViewmodel
-import com.windscribe.mobile.viewmodel.PowerWhitelistViewmodel
-import com.windscribe.mobile.viewmodel.ServerViewModel
-import com.windscribe.mobile.viewmodel.SharedLinkViewmodel
-import com.windscribe.mobile.viewmodel.SignupViewModel
+import com.windscribe.mobile.view.screen.*
+import com.windscribe.mobile.viewmodel.*
 
 val LocalNavController = staticCompositionLocalOf<NavController> {
     error("No NavController provided")
@@ -52,129 +32,117 @@ fun NavigationStack(startDestination: Screen) {
 }
 
 private fun NavGraphBuilder.addNavigationScreens() {
-    composable(route = Screen.Start.route) { AddStartScreenRoute() }
-    composable(route = Screen.Login.route) { LoginViewRoute() }
-    composable(route = Screen.Signup.route) { SignupViewRoute() }
-    composable(route = Screen.EmergencyConnect.route) { EmergencyConnectViewRoute() }
+    composable(route = Screen.Start.route) {
+        ViewModelRoute(AppStartViewModel::class.java) {
+            AppStartScreen(
+                null,
+                it
+            )
+        }
+    }
+    composable(route = Screen.Login.route) {
+        ViewModelRoute(LoginViewModel::class.java) {
+            LoginScreen(
+                null,
+                it
+            )
+        }
+    }
+    composable(route = Screen.Signup.route) {
+        ViewModelRoute(SignupViewModel::class.java) {
+            SignupScreen(
+                null,
+                it
+            )
+        }
+    }
+    composable(route = Screen.EmergencyConnect.route) {
+        ViewModelRoute(EmergencyConnectViewModal::class.java) {
+            EmergencyConnectScreen(
+                it
+            )
+        }
+    }
     composable(route = Screen.Home.route) { AddHomeScreenRoute() }
     composable(route = Screen.NoEmailAttention.route) { NoEmailAttentionScreen(false) {} }
-    composable(route = Screen.Newsfeed.route) { NewsfeedViewRoute() }
+    composable(route = Screen.Newsfeed.route) {
+        ViewModelRoute(NewsfeedViewmodel::class.java) {
+            NewsfeedScreen(
+                it
+            )
+        }
+    }
     composable(route = Screen.Web.route) { WebViewScreenUI(LocalNavController.current) }
     composable(route = Screen.PowerWhitelist.route) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            PowerWhitelistViewRoute()
+            ViewModelRoute(PowerWhitelistViewmodel::class.java) { PowerWhitelistScreen(it) }
         }
     }
-    composable(route = Screen.ShareLink.route) { ShareLinkViewRoute() }
+    composable(route = Screen.ShareLink.route) {
+        ViewModelRoute(SharedLinkViewmodel::class.java) {
+            ShareLinkScreen(
+                it
+            )
+        }
+    }
     composable(route = Screen.AccountStatus.route) {
         val navController = LocalNavController.current
         val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
         val data = savedStateHandle?.get<AccountStatusDialogData>("accountStatusDialogData")
-        if (data != null) {
-            AccountStatusScreen(data)
-        }
+        data?.let { AccountStatusScreen(it) }
     }
-}
-
-@Composable
-private fun AddStartScreenRoute() {
-    val composeComponent = (LocalContext.current as? AppStartActivity)?.di
-    if (composeComponent == null) {
-        AppStartScreen()
-    } else {
-        val viewModel: AppStartViewModel =
-            viewModel(factory = composeComponent.getViewModelFactory())
-        AppStartScreen(viewModel = viewModel)
+    composable(route = Screen.LocationUnderMaintenance.route) { LocationUnderMaintenanceScreen() }
+    composable(route = Screen.EditCustomConfig.route) {
+        val viewModel = getViewModel(EditCustomConfigViewmodel::class.java)
+        val navController = LocalNavController.current
+        val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
+        val id = savedStateHandle?.get<Int>("config_id")
+        val shouldConnect = savedStateHandle?.get<Boolean>("connect")
+        id?.let {
+            viewModel.load(id, shouldConnect ?: false)
+        }
+        EditCustomConfigScreen(viewModel)
     }
 }
 
 @Composable
 private fun AddHomeScreenRoute() {
     val composeComponent = (LocalContext.current as? AppStartActivity)?.di
-    if (composeComponent == null) {
-        HomeScreen(null, null, null, null)
-    } else {
-        val serverViewModel: ServerViewModel =
-            viewModel(factory = composeComponent.getViewModelFactory())
-        val connectionViewModel: ConnectionViewmodel =
-            viewModel(factory = composeComponent.getViewModelFactory())
-        val configViewModel: ConfigViewmodel =
-            viewModel(factory = composeComponent.getViewModelFactory())
-        val homeViewModel: HomeViewmodel =
-            viewModel(factory = composeComponent.getViewModelFactory())
-        HomeScreen(serverViewModel, connectionViewModel, configViewModel, homeViewModel)
+    val viewModels = composeComponent?.let {
+        ViewModels(
+            serverViewModel = viewModel(factory = it.getViewModelFactory()),
+            connectionViewModel = viewModel(factory = it.getViewModelFactory()),
+            configViewModel = viewModel(factory = it.getViewModelFactory()),
+            homeViewModel = viewModel(factory = it.getViewModelFactory())
+        )
     }
+    viewModels?.let {
+        HomeScreen(it.serverViewModel, it.connectionViewModel, it.configViewModel, it.homeViewModel)
+    } ?: HomeScreen(null, null, null, null)
 }
 
 @Composable
-private fun EmergencyConnectViewRoute() {
-    val composeComponent = (LocalContext.current as? AppStartActivity)?.di
-    if (composeComponent == null) {
-        EmergencyConnectScreen()
-    } else {
-        val viewModel: EmergencyConnectViewModal =
-            viewModel(factory = composeComponent.getViewModelFactory())
-        EmergencyConnectScreen(viewModel)
-    }
+private inline fun <reified VM : ViewModel> ViewModelRoute(
+    viewModelClass: Class<VM>,
+    content: @Composable (VM) -> Unit
+) {
+    val viewModel: VM = getViewModel(viewModelClass)
+    content(viewModel)
 }
 
 @Composable
-private fun LoginViewRoute() {
+private inline fun <reified VM : ViewModel> getViewModel(viewModelClass: Class<VM>): VM {
     val composeComponent = (LocalContext.current as? AppStartActivity)?.di
-    if (composeComponent == null) {
-        LoginScreen()
+    return if (composeComponent != null) {
+        viewModel(factory = composeComponent.getViewModelFactory())
     } else {
-        val viewModel: LoginViewModel =
-            viewModel(factory = composeComponent.getViewModelFactory())
-        LoginScreen(null, viewModel)
+        viewModel(modelClass = viewModelClass)
     }
 }
 
-@Composable
-private fun SignupViewRoute() {
-    val composeComponent = (LocalContext.current as? AppStartActivity)?.di
-    if (composeComponent == null) {
-        SignupScreen()
-    } else {
-        val viewModel: SignupViewModel =
-            viewModel(factory = composeComponent.getViewModelFactory())
-        SignupScreen(null, viewModel)
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.M)
-@Composable
-private fun PowerWhitelistViewRoute() {
-    val composeComponent = (LocalContext.current as? AppStartActivity)?.di
-    if (composeComponent == null) {
-        PowerWhitelistScreen(null)
-    } else {
-        val viewModel: PowerWhitelistViewmodel =
-            viewModel(factory = composeComponent.getViewModelFactory())
-        PowerWhitelistScreen(viewModel)
-    }
-}
-
-@Composable
-private fun ShareLinkViewRoute() {
-    val composeComponent = (LocalContext.current as? AppStartActivity)?.di
-    if (composeComponent == null) {
-        ShareLinkScreen(null)
-    } else {
-        val viewModel: SharedLinkViewmodel =
-            viewModel(factory = composeComponent.getViewModelFactory())
-        ShareLinkScreen(viewModel)
-    }
-}
-
-@Composable
-private fun NewsfeedViewRoute() {
-    val composeComponent = (LocalContext.current as? AppStartActivity)?.di
-    if (composeComponent == null) {
-        NewsfeedScreen()
-    } else {
-        val viewModel: NewsfeedViewmodel =
-            viewModel(factory = composeComponent.getViewModelFactory())
-        NewsfeedScreen(viewModel)
-    }
-}
+data class ViewModels(
+    val serverViewModel: ServerViewModel,
+    val connectionViewModel: ConnectionViewmodel,
+    val configViewModel: ConfigViewmodel,
+    val homeViewModel: HomeViewmodel
+)

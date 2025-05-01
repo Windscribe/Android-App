@@ -380,7 +380,6 @@ last chosen location.</string>
     <string name="location_order_description">Arrange the location list in ascending order of the alphabet, geography, or latency.</string>
     <string name="latency_display_description">Display latency as signal strength bars or in milliseconds.</string>
     <string name="language_description">Localize Windscribe to supported languages.</string>
-    <string name="app_background_description">Customize the in-app connection screen.</string>
     <string name="notification_stats_description">Show traffic stats in the notification.</string>
     <string name="location_load_description">Display the location load as a bar. The shorter the bar, the lesser the load on the location (with respect to the location\'s total capacity).</string>
     <string name="haptic_feedback_description">Physical responses(Vibration) to user actions</string>
@@ -509,4 +508,25 @@ last chosen location.</string>
     <string name="follow_us_on_x">ہمیں X پر فالو کریں</string>
     <string name="charged_every_month">ہر مہینے چارج کیا جاتا ہے</string>
     <string name="charged_every_12_months">ہر 12 مہینے بعد چارج کیا جاتا ہے</string>
+    <string name="look_and_feel">ظاہری شکل و احساس</string>
+    <string name="when_disconnected">جب منقطع ہو</string>
+    <string name="when_connected">جب منسلک ہو</string>
+    <string name="aspect_ratio">پہلو تناسب</string>
+    <string name="fill">بھریں</string>
+    <string name="scale">پیمانہ</string>
+    <string name="tile">ٹائل</string>
+    <string name="bundle">بنڈل</string>
+    <string name="None">کوئی نہیں</string>
+    <string name="sound_notifications">آواز کی اطلاعات</string>
+    <string name="app_background_description">ایپ کی مرکزی اسکرین کے پس منظر کو حسب ضرورت بنائیں۔</string>
+    <string name="sound_notifications_description">کنکشن کے واقعات پر چلنے والی آوازیں منتخب کریں۔</string>
+    <string name="renamed_location">مقامات کے نام تبدیل کریں</string>
+    <string name="renamed_location_description">مقامات کے نام اپنی مرضی سے تبدیل کریں۔</string>
+    <string name="export_locations">برآمد کریں</string>
+    <string name="import_locations">درآمد کریں</string>
+    <string name="reset">ری سیٹ کریں</string>
+    <string name="no_static_ip">مستقل IP نہیں</string>
+    <string name="unblock_full_access">Windscribe کی مکمل رسائی کو غیر مقفل کریں</string>
+    <string name="go_pro_for_unlimited_everything">لامحدود ہر چیز کے لیے پرو ورژن حاصل کریں</string>
+    <string name="custom_configs">حسب ضرورت ترتیبات</string>
 </resources>

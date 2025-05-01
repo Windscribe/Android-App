@@ -150,18 +150,16 @@ private fun HandleGotoAction(goto: HomeGoto?) {
             navigateWithData(navController, Screen.AccountStatus.route, expireData)
         }
 
-        is HomeGoto.Upgrade -> {
-            context.startActivity(UpgradeActivity.getStartIntent(context))
+        is HomeGoto.EditCustomConfig -> {
+            navController.currentBackStackEntry?.savedStateHandle?.set("config_id", goto.id)
+            navController.currentBackStackEntry?.savedStateHandle?.set("connect", goto.connect)
+            navController.navigate(Screen.EditCustomConfig.route)
         }
 
-        HomeGoto.PowerWhitelist -> {
-            navController.navigate(Screen.PowerWhitelist.route)
-        }
-
-        HomeGoto.ShareAppLink -> {
-            navController.navigate(Screen.ShareLink.route)
-        }
-
+        is HomeGoto.Upgrade -> context.startActivity(UpgradeActivity.getStartIntent(context))
+        HomeGoto.PowerWhitelist -> navController.navigate(Screen.PowerWhitelist.route)
+        HomeGoto.ShareAppLink -> navController.navigate(Screen.ShareLink.route)
+        HomeGoto.LocationMaintenance -> navController.navigate(Screen.LocationUnderMaintenance.route)
         null -> Unit
     }
 }

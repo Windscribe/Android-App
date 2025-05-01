@@ -89,7 +89,7 @@ import javax.inject.Named
 
 
 class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
-        RateAppDialogCallback, EditConfigFileDialogCallback, FragmentClickListener, DeviceStateListener, NodeStatusDialogCallback,
+        EditConfigFileDialogCallback, FragmentClickListener, DeviceStateListener, NodeStatusDialogCallback,
         AccountStatusDialogCallback, PowerWhitelistDialogCallback {
     enum class NetworkLayoutState {
         CLOSED, OPEN_1, OPEN_2, OPEN_3
@@ -508,10 +508,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         runOnUiThread { progressBarRecyclerView?.visibility = View.GONE }
     }
 
-    override fun neverAskAgainClicked() {
-        presenter.saveRateDialogPreference(RateDialogConstants.STATUS_NEVER_ASK)
-    }
-
     override fun onAddConfigClick() {
         logger.debug("User clicked on Add custom config.")
         presenter.onAddConfigLocation()
@@ -845,23 +841,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
                     HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
             )
         }
-    }
-
-    override fun rateLaterClicked() {
-        presenter.saveRateDialogPreference(RateDialogConstants.STATUS_ASK_LATER)
-    }
-
-    override fun rateNowClicked() {
-        presenter.saveRateDialogPreference(RateDialogConstants.STATUS_ALREADY_ASKED)
-        val urlIntent = Intent(Intent.ACTION_VIEW)
-        urlIntent.data = Uri.parse(PLAY_STORE_URL)
-        try {
-            packageManager.getPackageInfo(PLAY_STORE_URL, 0)
-            urlIntent.setPackage(RateDialogConstants.PLAY_STORE_PACKAGE)
-        } catch (e: PackageManager.NameNotFoundException) {
-            e.printStackTrace()
-        }
-        startActivity(urlIntent)
     }
 
     override fun scrollTo(scrollTo: Int) {

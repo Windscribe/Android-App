@@ -4,10 +4,13 @@ import androidx.lifecycle.ViewModelProvider
 import com.windscribe.mobile.lipstick.LipstickViewmodel
 import com.windscribe.mobile.lipstick.LipstickViewmodelImpl
 import com.windscribe.mobile.viewmodel.AppStartViewModel
+import com.windscribe.mobile.viewmodel.AppStartViewModelImpl
 import com.windscribe.mobile.viewmodel.ConfigViewmodel
 import com.windscribe.mobile.viewmodel.ConfigViewmodelImpl
 import com.windscribe.mobile.viewmodel.ConnectionViewmodel
 import com.windscribe.mobile.viewmodel.ConnectionViewmodelImpl
+import com.windscribe.mobile.viewmodel.EditCustomConfigViewmodel
+import com.windscribe.mobile.viewmodel.EditCustomConfigViewmodelImpl
 import com.windscribe.mobile.viewmodel.EmergencyConnectViewModal
 import com.windscribe.mobile.viewmodel.HomeViewmodel
 import com.windscribe.mobile.viewmodel.HomeViewmodelImpl
@@ -34,6 +37,7 @@ import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.services.FirebaseManager
+import com.windscribe.vpn.services.sso.GoogleSignInManager
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.Module
@@ -61,7 +65,8 @@ class ComposeModule {
         networkInfoManager: NetworkInfoManager,
         autoConnectionManager: AutoConnectionManager,
         latencyRepository: LatencyRepository,
-        userRepository: UserRepository
+        userRepository: UserRepository,
+        googleSignInManager: GoogleSignInManager
     ): ViewModelProvider.Factory {
         return object : ViewModelProvider.Factory {
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
@@ -72,7 +77,7 @@ class ComposeModule {
                         vpnConnectionStateManager
                     ) as T
                 } else if (modelClass.isAssignableFrom(AppStartViewModel::class.java)) {
-                    return AppStartViewModel(appPreferenceHelper, vpnConnectionStateManager) as T
+                    return AppStartViewModelImpl(appPreferenceHelper, apiCallManager, vpnConnectionStateManager, googleSignInManager, firebaseManager, userRepository) as T
                 } else if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
                     return LoginViewModel(
                         apiCallManager,
@@ -130,6 +135,8 @@ class ComposeModule {
                         userRepository,
                         appPreferenceHelper
                     ) as T
+                } else if (modelClass.isAssignableFrom(EditCustomConfigViewmodel::class.java)) {
+                    return EditCustomConfigViewmodelImpl(localDbInterface, windVpnController) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
             }

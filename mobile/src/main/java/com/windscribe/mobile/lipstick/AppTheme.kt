@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -34,10 +35,14 @@ import com.windscribe.mobile.R
 import com.windscribe.mobile.lipstick.LipstickActivity
 import com.windscribe.mobile.lipstick.LipstickViewmodel
 import com.windscribe.mobile.lipstick.LookAndFeelHelper
+import com.windscribe.mobile.lipstick.PreferencesBottomSection
 import com.windscribe.mobile.view.theme.AppColors
 import com.windscribe.mobile.view.theme.AppColors.homeBackground
+import com.windscribe.mobile.view.theme.backgroundColor
+import com.windscribe.mobile.view.theme.backgroundColorInverted
 import com.windscribe.mobile.view.theme.font12
 import com.windscribe.mobile.view.theme.font16
+import com.windscribe.mobile.view.theme.primaryTextColor
 
 @Composable
 fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
@@ -53,7 +58,7 @@ fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
         Box(
             modifier = Modifier
                 .zIndex(10.0f)
-                .background(color = Color(0XFF1E2937), shape = RoundedCornerShape(12.dp))
+                .background(color = MaterialTheme.colorScheme.backgroundColorInverted.copy(alpha = 0.08f), shape = RoundedCornerShape(12.dp))
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -64,7 +69,7 @@ fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
                 Text(
                     stringResource(R.string.theme),
                     style = font16,
-                    color = AppColors.white
+                    color = MaterialTheme.colorScheme.primaryTextColor
                 )
                 Spacer(modifier = Modifier.weight(1.0f))
 
@@ -74,14 +79,14 @@ fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
                         Text(
                             stringResource(themeItem.title),
                             style = font12,
-                            color = AppColors.white
+                            color = MaterialTheme.colorScheme.primaryTextColor
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(
                             painter = painterResource(id = R.drawable.ic_cm_icon),
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
-                            tint = AppColors.white
+                            tint = MaterialTheme.colorScheme.primaryTextColor
                         )
                     }
                     Box(
@@ -91,7 +96,7 @@ fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
                         DropdownMenu(
                             expanded = expanded.value,
                             onDismissRequest = { expanded.value = false },
-                            modifier = Modifier.background(AppColors.white)
+                            modifier = Modifier.background(MaterialTheme.colorScheme.primaryTextColor)
                         ) {
                             items.forEach {
                                 DropdownMenuItem(onClick = {
@@ -101,7 +106,7 @@ fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
                                 }, text = {
                                     Text(
                                         stringResource(it.title),
-                                        color = homeBackground,
+                                        color = MaterialTheme.colorScheme.backgroundColor,
                                         style = font16,
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier.fillMaxWidth()
@@ -113,30 +118,7 @@ fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
                 }
             }
         }
-
-        // Bottom description box
-        Box(
-            modifier = Modifier
-                .offset(y = (-16).dp)
-                .fillMaxWidth()
-                .background(Color.Transparent)
-                .padding(horizontal = 0.8.dp)
-                .border(
-                    width = 1.dp,
-                    color = AppColors.white5,
-                    shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
-                )
-        ) {
-            Column {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    stringResource(R.string.appearance_description),
-                    modifier = Modifier.padding(12.dp),
-                    style = font12,
-                    color = AppColors.white50
-                )
-            }
-        }
+        PreferencesBottomSection(R.string.appearance_description)
     }
 }
 

@@ -382,7 +382,6 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="location_order_description">Ordne die Standortliste aufsteigend nach Alphabet, Geografie oder Latenz.</string>
     <string name="latency_display_description">Latenz in Millisekunden oder in Signal-Balken darstellen.</string>
     <string name="language_description">Lokalisieren Sie Windscribe in unterstützte Sprachen.</string>
-    <string name="app_background_description">Pass den In-App-Verbindungsbildschirm an.</string>
     <string name="notification_stats_description">Zeige Traffic-Statistiken in den Benachrichtigung an.</string>
     <string name="location_load_description">Zeige die Standortlast als Balken an. Je kürzer der Balken ist, desto geringer ist die Belastung des Standorts (in Bezug auf die Gesamtkapazität des Standorts).</string>
     <string name="haptic_feedback_description">Physische Reaktionen (Vibration) auf Benutzeraktionen</string>
@@ -511,4 +510,25 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="follow_us_on_x">Folge uns auf X</string>
     <string name="charged_every_month">jeden Monat berechnet</string>
     <string name="charged_every_12_months">alle 12 Monate berechnet</string>
+    <string name="look_and_feel">Aussehen &amp; Verhalten</string>
+    <string name="when_disconnected">Bei Trennung</string>
+    <string name="when_connected">Bei Verbindung</string>
+    <string name="aspect_ratio">Seitenverhältnis</string>
+    <string name="fill">Füllen</string>
+    <string name="scale">Skalieren</string>
+    <string name="tile">Kacheln</string>
+    <string name="bundle">Paket</string>
+    <string name="None">Keine</string>
+    <string name="sound_notifications">Tonbenachrichtigungen</string>
+    <string name="app_background_description">Passen Sie den Hintergrund des Hauptbildschirms der App an.</string>
+    <string name="sound_notifications_description">Wählen Sie Töne aus, die bei Verbindungsereignissen abgespielt werden.</string>
+    <string name="renamed_location">Standorte umbenennen</string>
+    <string name="renamed_location_description">Benennen Sie Standorte nach Ihren Wünschen um.</string>
+    <string name="export_locations">Exportieren</string>
+    <string name="import_locations">Importieren</string>
+    <string name="reset">Zurücksetzen</string>
+    <string name="no_static_ip">Keine statischen IPs</string>
+    <string name="unblock_full_access">Vollzugriff auf Windscribe freischalten</string>
+    <string name="go_pro_for_unlimited_everything">Wechseln Sie zu Pro für unbegrenzten Zugriff</string>
+    <string name="custom_configs">Benutzerdefinierte Konfigurationen</string>
 </resources>

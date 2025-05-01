@@ -4,6 +4,7 @@
 package com.windscribe.vpn.di
 
 import android.content.Context
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.api.*
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -26,6 +27,7 @@ import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.services.firebasecloud.WindscribeCloudMessaging
 import com.windscribe.vpn.state.*
 import com.windscribe.vpn.services.ReceiptValidator
+import com.windscribe.vpn.services.sso.GoogleSignInManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import com.windscribe.vpn.workers.worker.*
 import dagger.Component
@@ -75,6 +77,7 @@ interface ApplicationComponent {
     val firebaseManager: FirebaseManager
     val proxyDNSManager: ProxyDNSManager
     val dynamicShortCutManager: DynamicShortcutManager
+    val googleSignInManager: GoogleSignInManager
 
     //Repository
     val staticIpRepository: StaticIpRepository

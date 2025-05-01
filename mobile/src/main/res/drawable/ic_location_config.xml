@@ -1,19 +1,19 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="32dp"
-    android:height="32dp"
-    android:viewportWidth="32"
-    android:viewportHeight="32">
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
   <path
-      android:pathData="M8.222,8H23.778V6H8.222V8ZM23.778,8C24.004,8 24.316,8.125 24.594,8.406C24.871,8.686 25,9.008 25,9.25H27C27,8.367 26.573,7.564 26.017,7C25.461,6.438 24.663,6 23.778,6V8ZM25,9.25V22.75H27V9.25H25ZM25,22.75C25,22.992 24.871,23.314 24.594,23.594C24.316,23.875 24.004,24 23.778,24V26C24.663,26 25.461,25.562 26.017,25C26.573,24.436 27,23.633 27,22.75H25ZM23.778,24H8.222V26H23.778V24ZM8.222,24C7.642,24 7,23.419 7,22.75H5C5,24.566 6.581,26 8.222,26V24ZM7,22.75V9.25H5V22.75H7ZM7,9.25C7,9.008 7.129,8.686 7.406,8.406C7.684,8.125 7.996,8 8.222,8V6C7.337,6 6.539,6.438 5.983,7C5.426,7.564 5,8.367 5,9.25H7Z"
+      android:pathData="M4.222,4H19.778V2H4.222V4ZM19.778,4C20.004,4 20.316,4.125 20.594,4.406C20.871,4.686 21,5.008 21,5.25H23C23,4.367 22.573,3.564 22.017,3C21.461,2.438 20.663,2 19.778,2V4ZM21,5.25V18.75H23V5.25H21ZM21,18.75C21,18.992 20.871,19.314 20.594,19.594C20.316,19.875 20.004,20 19.778,20V22C20.663,22 21.461,21.562 22.017,21C22.573,20.436 23,19.633 23,18.75H21ZM19.778,20H4.222V22H19.778V20ZM4.222,20C3.642,20 3,19.419 3,18.75H1C1,20.566 2.581,22 4.222,22V20ZM3,18.75V5.25H1V18.75H3ZM3,5.25C3,5.008 3.129,4.686 3.406,4.406C3.684,4.125 3.996,4 4.222,4V2C3.337,2 2.539,2.438 1.983,3C1.426,3.564 1,4.367 1,5.25H3Z"
       android:fillColor="#ffffff"/>
   <path
-      android:pathData="M11.5,12.5L15,16L11.5,19.5"
+      android:pathData="M7.5,8.5L11,12L7.5,15.5"
       android:strokeWidth="2"
       android:fillColor="#00000000"
       android:strokeColor="#ffffff"
       android:strokeLineCap="round"/>
   <path
-      android:pathData="M18,19H21"
+      android:pathData="M14,15H17"
       android:strokeWidth="2"
       android:fillColor="#00000000"
       android:strokeColor="#ffffff"

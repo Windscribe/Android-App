@@ -76,9 +76,16 @@ object LookAndFeelHelper {
         return listOf(
             DropDownItem(1, label = "Arcade"),
             DropDownItem(2, label = "Boing"),
-            DropDownItem(3, label = "Fart"),
-            DropDownItem(4, label = "Sword"),
-            DropDownItem(5, label = "Windscribe"),
+            DropDownItem(3, label = "Fart Deluxe"),
+            DropDownItem(4, label = "Fart"),
+            DropDownItem(5, label = "Ghost Wind"),
+            DropDownItem(6, label = "Pop Can"),
+            DropDownItem(7, label = "Sci Fi"),
+            DropDownItem(8, label = "Sub Ping"),
+            DropDownItem(9, label = "Sword"),
+            DropDownItem(10, label = "Video Game"),
+            DropDownItem(11, label = "Windscribe"),
+            DropDownItem(12, label = "Wiz By")
         )
     }
 
@@ -87,23 +94,37 @@ object LookAndFeelHelper {
      * This is used for ON state.
      */
     private val bundledSoundsConnected = mapOf(
-        Pair(1, R.raw.arcade_on),
-        Pair(2, R.raw.boing_on),
-        Pair(3, R.raw.fart_on),
-        Pair(4, R.raw.sword_on),
-        Pair(5, R.raw.windscribe_on),
+        1 to R.raw.arcade_on,
+        2 to R.raw.boing_on,
+        3 to R.raw.fart_deluxe_on,
+        4 to R.raw.fart_on,
+        5 to R.raw.ghost_wind_on,
+        6 to R.raw.pop_can_on,
+        7 to R.raw.sci_fi_on,
+        8 to R.raw.sub_ping_on,
+        9 to R.raw.sword_on,
+        10 to R.raw.video_game_on,
+        11 to R.raw.windscribe_on,
+        12 to R.raw.wiz_by_on
     )
 
     /**
      * Mappings of app bundled sounds ids to sound resource ids.
-     * This is used for off state.
+     * This is used for OFF state.
      */
     private val bundledSoundsDisconnected = mapOf(
-        Pair(1, R.raw.arcade_off),
-        Pair(2, R.raw.boing_off),
-        Pair(3, R.raw.fart_off),
-        Pair(4, R.raw.sword_off),
-        Pair(5, R.raw.windscribe_off),
+        1 to R.raw.arcade_off,
+        2 to R.raw.boing_off,
+        3 to R.raw.fart_deluxe_off,
+        4 to R.raw.fart_off,
+        5 to R.raw.ghost_wind_off,
+        6 to R.raw.pop_can_off,
+        7 to R.raw.sci_fi_off,
+        8 to R.raw.sub_ping_off,
+        9 to R.raw.sword_off,
+        10 to R.raw.video_game_off,
+        11 to R.raw.windscribe_off,
+        12 to R.raw.wiz_by_off
     )
 
     /**

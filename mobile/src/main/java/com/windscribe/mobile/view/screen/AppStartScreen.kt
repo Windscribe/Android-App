@@ -3,7 +3,10 @@ package com.windscribe.mobile.view.screen
 import FeatureSection
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -57,12 +60,14 @@ import com.windscribe.mobile.view.theme.AppColors
 import com.windscribe.mobile.view.theme.Dimen
 import com.windscribe.mobile.view.theme.font16
 import com.windscribe.mobile.view.theme.font18
+import com.windscribe.mobile.view.ui.AppProgressBar
 import com.windscribe.mobile.viewmodel.AppStartViewModel
+import com.windscribe.mobile.viewmodel.LoginState
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun AppStartScreen(
-    windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass,
+    windowSizeClass: WindowSizeClass? = currentWindowAdaptiveInfo().windowSizeClass,
     viewModel: AppStartViewModel? = null
 ) {
     val navController = LocalNavController.current
@@ -74,7 +79,6 @@ fun AppStartScreen(
         }
         navController.currentBackStackEntry?.savedStateHandle?.remove<Bundle>("result")
     }
-
     LaunchedEffect(viewModel?.loggedIn) {
         viewModel?.loggedIn?.let {
             if (it) {
@@ -84,18 +88,32 @@ fun AppStartScreen(
             }
         }
     }
+    val loginState by viewModel?.loginState?.collectAsState() ?: remember {
+        mutableStateOf(LoginState.Idle)
+    }
+    LaunchedEffect(loginState) {
+        if (loginState is LoginState.Success) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
 
     val isConnected by viewModel?.isConnected?.collectAsState() ?: remember {
         mutableStateOf(false)
     }
-    when (windowSizeClass.widthSizeClass) {
-        WindowWidthSizeClass.Expanded -> ExpandedLayout(isConnected)
-        else -> CompactLayout(isConnected)
+    when (windowSizeClass?.widthSizeClass) {
+        WindowWidthSizeClass.Expanded -> ExpandedLayout(isConnected, viewModel)
+        else -> CompactLayout(isConnected, viewModel)
+    }
+    if (loginState is LoginState.LoggingIn) {
+        val message = (loginState as? LoginState.LoggingIn)?.message ?: ""
+        AppProgressBar(true, message = message)
     }
 }
 
 @Composable
-fun CompactLayout(isConnected: Boolean) {
+fun CompactLayout(isConnected: Boolean, viewModel: AppStartViewModel?) {
     Box(
         modifier = Modifier
             .padding(0.dp)
@@ -119,13 +137,13 @@ fun CompactLayout(isConnected: Boolean) {
             Spacer(modifier = Modifier.weight(1f))
             FeatureSection()
             Spacer(modifier = Modifier.weight(1f))
-            ActionSection(isConnected)
+            ActionSection(isConnected, viewModel)
         }
     }
 }
 
 @Composable
-fun ExpandedLayout(isConnected: Boolean) {
+fun ExpandedLayout(isConnected: Boolean, viewModel: AppStartViewModel?) {
     Box(
         modifier = Modifier
             .padding(0.dp)
@@ -158,7 +176,7 @@ fun ExpandedLayout(isConnected: Boolean) {
                 modifier = Modifier.weight(1f)
             ) {
                 Spacer(modifier = Modifier.weight(1f))
-                ActionSection(isConnected)
+                ActionSection(isConnected, viewModel)
                 Spacer(modifier = Modifier.weight(1f))
             }
         }
@@ -189,12 +207,20 @@ fun Logo() {
 }
 
 @Composable
-private fun GoogleButton() {
-    val navController = LocalNavController.current
+private fun GoogleButton(viewModel: AppStartViewModel?) {
     val interactionSource = remember { MutableInteractionSource() }
+    val signInIntent = viewModel?.signInIntent
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        Log.i("AppStartViewModel", "result: ${result.data}")
+        viewModel?.onSignIntentResult(result.data)
+    }
     Button(
         onClick = {
-            navController.navigate(Screen.Signup.route)
+            signInIntent?.let {
+                launcher.launch(it)
+            }
         },
         Modifier
             .height(Dimen.dp48)
@@ -304,7 +330,7 @@ private fun SignupButton() {
 }
 
 @Composable
-fun ActionSection(isConnected: Boolean) {
+fun ActionSection(isConnected: Boolean, viewModel: AppStartViewModel?) {
     Column(
         modifier = Modifier
             .widthIn(min = 325.dp, max = 373.dp)
@@ -313,8 +339,8 @@ fun ActionSection(isConnected: Boolean) {
         verticalArrangement = Arrangement.spacedBy(Dimen.dp22),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        GoogleButton()
-        AppleButton()
+        GoogleButton(viewModel)
+        Spacer(modifier = Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             EmergencyConnectButton(isConnected)
             Spacer(modifier = Modifier.weight(1f))

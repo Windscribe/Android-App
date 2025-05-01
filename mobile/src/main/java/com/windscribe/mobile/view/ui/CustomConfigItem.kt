@@ -38,6 +38,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
+import com.windscribe.mobile.view.LocalNavController
+import com.windscribe.mobile.view.screen.EditCustomConfigScreen
+import com.windscribe.mobile.view.screen.Screen
 import com.windscribe.mobile.view.theme.AppColors
 import com.windscribe.mobile.view.theme.font16
 import com.windscribe.mobile.viewmodel.ConfigListItem
@@ -113,6 +116,7 @@ fun CustomConfigItem(
             }
     ) {
         // Background actions
+        val navController = LocalNavController.current
         Row(Modifier.align(Alignment.CenterEnd)) {
             Box(
                 modifier = Modifier
@@ -121,7 +125,11 @@ fun CustomConfigItem(
                         interactionSource = editInteractionSource,
                         indication = rememberRipple(bounded = true, color = Color.White)
                     ) {
-                        // Edit action
+                        navController.currentBackStackEntry?.savedStateHandle?.set(
+                            "config_id",
+                            item.id
+                        )
+                        navController.navigate(Screen.EditCustomConfig.route)
                     },
                 contentAlignment = Alignment.Center
             ) {

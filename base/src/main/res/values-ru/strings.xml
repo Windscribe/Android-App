@@ -380,7 +380,6 @@
     <string name="location_order_description">Упорядочить локации в алфавитном порядке, географически или по задержке.</string>
     <string name="latency_display_description">Отображать задержку в виде полос или в миллисекундах.</string>
     <string name="language_description">Локализовать Windscribe на поддерживаемые языки.</string>
-    <string name="app_background_description">Настройка фона главного экрана приложения.</string>
     <string name="notification_stats_description">Показывать статистику трафика в шторке уведомлений.</string>
     <string name="location_load_description">Отображать степень загруженности локаций. Короткая полоса означает меньшую загруженность серверов.</string>
     <string name="haptic_feedback_description">Вибрировать при определённых действиях пользователя</string>
@@ -513,4 +512,25 @@
     <string name="follow_us_on_x">Подписывайтесь на нас в X</string>
     <string name="charged_every_month">списывается каждый месяц</string>
     <string name="charged_every_12_months">списывается каждые 12 месяцев</string>
+    <string name="look_and_feel">Внешний вид</string>
+    <string name="when_disconnected">При отключении</string>
+    <string name="when_connected">При подключении</string>
+    <string name="aspect_ratio">Соотношение сторон</string>
+    <string name="fill">Заполнить</string>
+    <string name="scale">Масштаб</string>
+    <string name="tile">Плитка</string>
+    <string name="bundle">Пакет</string>
+    <string name="None">Нет</string>
+    <string name="sound_notifications">Звуковые уведомления</string>
+    <string name="app_background_description">Настройте фон главного экрана приложения.</string>
+    <string name="sound_notifications_description">Выберите звуки для воспроизведения при подключении/отключении.</string>
+    <string name="renamed_location">Переименовать локации</string>
+    <string name="renamed_location_description">Измените названия локаций по своему вкусу.</string>
+    <string name="export_locations">Экспорт</string>
+    <string name="import_locations">Импорт</string>
+    <string name="reset">Сброс</string>
+    <string name="no_static_ip">Нет статических IP</string>
+    <string name="unblock_full_access">Разблокировать полный доступ к Windscribe</string>
+    <string name="go_pro_for_unlimited_everything">Перейдите на Pro для неограниченного доступа</string>
+    <string name="custom_configs">Пользовательские настройки</string>
 </resources>

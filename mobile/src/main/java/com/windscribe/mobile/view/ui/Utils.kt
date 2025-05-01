@@ -1,5 +1,9 @@
 package com.windscribe.mobile.view.ui
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import com.windscribe.mobile.R
 import com.windscribe.mobile.viewmodel.ServerListItem
 import com.windscribe.vpn.constants.NetworkKeyConstants
@@ -42,4 +46,14 @@ fun getLatencyBar(time: Int): Int {
 
 fun City.isEnabled(isUserPro: Boolean): Boolean {
     return (nodesAvailable() || (!isUserPro && pro == 1))
+}
+
+fun Context.openUrl(path: String) {
+    val url = NetworkKeyConstants.getWebsiteLink(path)
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    if (intent.resolveActivity(packageManager) != null) {
+        startActivity(intent)
+    } else {
+        Toast.makeText(this, "No browser found", Toast.LENGTH_SHORT).show()
+    }
 }

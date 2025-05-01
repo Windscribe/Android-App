@@ -47,10 +47,8 @@ import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import org.conscrypt.Conscrypt
 import org.slf4j.LoggerFactory
 import org.strongswan.android.logic.StrongSwanApplication
-import java.security.Security
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -123,7 +121,6 @@ open class Windscribe : MultiDexApplication() {
         }
         super.onCreate()
         appContext = this
-        setupConscrypt()
         registerForegroundActivityObserver()
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         applicationComponent = getApplicationModuleComponent()
@@ -244,15 +241,6 @@ open class Windscribe : MultiDexApplication() {
                             .detectLeakedRegistrationObjects().detectContentUriWithoutPermission()
                             .penaltyLog().build()
             )
-        }
-    }
-
-    private fun setupConscrypt() {
-        if (VERSION.SDK_INT >= VERSION_CODES.O) {
-            Security.insertProviderAt(
-                    Conscrypt.newProviderBuilder().defaultTlsProtocol("TLSv1.3").build(), 1
-            )
-            Security.removeProvider("AndroidOpenSSL")
         }
     }
 

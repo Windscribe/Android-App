@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -37,8 +38,8 @@ class AppStartActivity : AppCompatActivity() {
         di = DaggerComposeComponent.builder()
             .applicationComponent(applicationComponent)
             .build()
-
-        if (appContext.preference.selectedTheme == DARK_THEME) {
+        val isDark = appContext.preference.selectedTheme == DARK_THEME
+        if (isDark) {
             setTheme(R.style.DarkTheme)
         } else {
             setTheme(R.style.LightTheme)
@@ -53,7 +54,7 @@ class AppStartActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContent {
-            AndroidTheme {
+            AndroidTheme(isDark) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     if (appContext.preference.sessionHash != null) {
                         NavigationStack(Screen.Home)
