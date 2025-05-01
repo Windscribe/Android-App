@@ -108,7 +108,10 @@ class HomeViewmodelImpl(
                 } else if (it.maxData == -1L) {
                     _userState.emit(UserState.UnlimitedData)
                 } else {
-                    val dataLeft = it.maxData - it.dataUsed
+                    var dataLeft = it.maxData - it.dataUsed
+                    if (dataLeft < 0) {
+                        dataLeft = 0
+                    }
                     val angle = (dataLeft.toFloat() / it.maxData.toFloat()) * 360f
                     logger.info("Data left: $dataLeft, Angle: $angle Max: ${it.maxData}")
                     _userState.emit(
