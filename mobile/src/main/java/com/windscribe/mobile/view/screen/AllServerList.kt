@@ -167,77 +167,87 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
         } else {
             AppColors.neonGreen
         }
-        Row(
-            modifier = Modifier
+        Box(
+            Modifier
                 .fillMaxWidth()
-                .background(color = AppColors.homeBackground)
-                .border(width = 1.dp, color = AppColors.white5, shape = RoundedCornerShape(8.dp))
-                .padding(12.dp)
+                .padding(top = 8.dp, start = 16.dp, end = 16.dp)
         ) {
-            Row(modifier = Modifier.clickable {
-                activity.startActivity(UpgradeActivity.getStartIntent(activity))
-            }) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                ) {
-                    Canvas(
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = AppColors.homeBackground)
+                    .border(
+                        width = 1.dp,
+                        color = AppColors.white5,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(12.dp)
+            ) {
+                Row(modifier = Modifier.clickable {
+                    activity.startActivity(UpgradeActivity.getStartIntent(activity))
+                }) {
+                    Box(
                         modifier = Modifier
                             .size(40.dp)
                     ) {
-                        val strokeWidth = 3.dp.toPx()
+                        Canvas(
+                            modifier = Modifier
+                                .size(40.dp)
+                        ) {
+                            val strokeWidth = 3.dp.toPx()
 
-                        drawArc(
-                            color = if (angle > 0 && angle <= 36) Color.Yellow else AppColors.neonGreen,
-                            startAngle = 160f,
-                            sweepAngle = angle,
-                            useCenter = false,
-                            style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
-                            size = Size(size.width, size.height),
-                            topLeft = Offset.Zero
-                        )
+                            drawArc(
+                                color = if (angle > 0 && angle <= 36) Color.Yellow else AppColors.neonGreen,
+                                startAngle = 160f,
+                                sweepAngle = angle,
+                                useCenter = false,
+                                style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
+                                size = Size(size.width, size.height),
+                                topLeft = Offset.Zero
+                            )
 
-                        drawArc(
-                            color = AppColors.white20,
-                            startAngle = 160f + angle,
-                            sweepAngle = 360f - angle,
-                            useCenter = false,
-                            style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
-                            size = Size(size.width, size.height),
-                            topLeft = Offset.Zero
+                            drawArc(
+                                color = AppColors.white20,
+                                startAngle = 160f + angle,
+                                sweepAngle = 360f - angle,
+                                useCenter = false,
+                                style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
+                                size = Size(size.width, size.height),
+                                topLeft = Offset.Zero
+                            )
+                        }
+                        Text(
+                            (userState as UserState.Free).dataLeft,
+                            style = font9,
+                            lineHeight = 9.sp,
+                            textAlign = TextAlign.Center,
+                            color = textColor,
+                            modifier = Modifier.align(Alignment.Center)
                         )
                     }
-                    Text(
-                        (userState as UserState.Free).dataLeft,
-                        style = font9,
-                        lineHeight = 9.sp,
-                        textAlign = TextAlign.Center,
-                        color = textColor,
-                        modifier = Modifier.align(Alignment.Center)
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            stringResource(R.string.unblock_full_access),
+                            style = font16.copy(fontSize = 15.sp),
+                            color = AppColors.white,
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            stringResource(R.string.go_pro_for_unlimited_everything),
+                            style = font12,
+                            color = AppColors.cyberBlue.copy(alpha = 0.7f),
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1.0f))
+                    Image(
+                        painter = painterResource(R.drawable.arrowright),
+                        contentDescription = "Upgrade",
+                        modifier = Modifier
+                            .size(16.dp)
+                            .align(Alignment.CenterVertically)
                     )
                 }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(
-                        stringResource(R.string.unblock_full_access),
-                        style = font16.copy(fontSize = 15.sp),
-                        color = AppColors.white,
-                    )
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Text(
-                        stringResource(R.string.go_pro_for_unlimited_everything),
-                        style = font12,
-                        color = AppColors.cyberBlue.copy(alpha = 0.7f),
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1.0f))
-                Image(
-                    painter = painterResource(R.drawable.arrowright),
-                    contentDescription = "Upgrade",
-                    modifier = Modifier
-                        .size(16.dp)
-                        .align(Alignment.CenterVertically)
-                )
             }
         }
     }
