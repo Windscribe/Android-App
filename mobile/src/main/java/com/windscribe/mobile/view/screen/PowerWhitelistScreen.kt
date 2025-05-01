@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -71,8 +72,9 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 32.dp),
+                .width(400.dp)
+                .padding(horizontal = 32.dp)
+                .align(Alignment.Center),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -102,7 +104,6 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .widthIn(max = 550.dp)
             )
             NextButton(
                 text = stringResource(R.string.grant_permission), enabled = true, onClick = {

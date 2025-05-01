@@ -50,8 +50,9 @@ fun ShareLinkScreen(viewmodel: SharedLinkViewmodel?) {
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 32.dp),
+                .widthIn(max = 400.dp)
+                .padding(horizontal = 32.dp)
+                .align(Alignment.Center),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -83,7 +84,7 @@ fun ShareLinkScreen(viewmodel: SharedLinkViewmodel?) {
                     viewmodel?.exit()
                 }, modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 32.dp)
+                    .padding(top = 32.dp, start = 32.dp, end = 32.dp)
             )
             Text(
                 text = stringResource(id = R.string.referee_must_provide_your_username_at_sign_up_and_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account),
@@ -91,8 +92,7 @@ fun ShareLinkScreen(viewmodel: SharedLinkViewmodel?) {
                 color = Color.White.copy(alpha = 0.5f),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .widthIn(max = 550.dp)
-                    .padding(top = 48.dp)
+                    .padding(top = 48.dp, start = 32.dp, end = 32.dp)
             )
         }
     }
