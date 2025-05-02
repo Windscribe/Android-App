@@ -84,72 +84,75 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel) {
         ) {
             val context = LocalContext.current
             val aspectRatio by connectionViewmodel.aspectRatio.collectAsState()
-            val imageData: Any = when (locationBackground) {
-                is LocationBackground.Custom -> locationBackground.file
-                else -> targetCountryCode.takeIf { it != 0 } ?: R.drawable.dummy_flag
-            }
-            val painter = rememberAsyncImagePainter(
-                model = ImageRequest.Builder(context)
-                    .data(imageData)
-                    .crossfade(true)
-                    .build()
-            )
-            Box(modifier = Modifier.fillMaxSize()) {
-                if (aspectRatio == 3) {
-                    // TILE MODE (repeat pattern)
-                    val imageBitmapState = produceState<ImageBitmap?>(initialValue = null) {
-                        val imageLoader = context.imageLoader
-                        val request = ImageRequest.Builder(context)
-                            .data(imageData)
-                            .allowHardware(false)
-                            .build()
+            if (locationBackground is LocationBackground.Custom) {
+                val imageData = locationBackground.file
+                Box(modifier = Modifier.fillMaxSize()) {
+                    if (aspectRatio == 3) {
+                        // TILE MODE (repeat pattern)
+                        val imageBitmapState = produceState<ImageBitmap?>(initialValue = null) {
+                            val imageLoader = context.imageLoader
+                            val request = ImageRequest.Builder(context)
+                                .data(imageData)
+                                .allowHardware(false)
+                                .build()
 
-                        val result = imageLoader.execute(request)
-                        val drawable = result.drawable
-                        val bitmap = (drawable as? BitmapDrawable)?.bitmap
-                        value = bitmap?.asImageBitmap()
-                    }
+                            val result = imageLoader.execute(request)
+                            val drawable = result.drawable
+                            val bitmap = (drawable as? BitmapDrawable)?.bitmap
+                            value = bitmap?.asImageBitmap()
+                        }
 
-                    imageBitmapState.value?.let { img ->
-                        Canvas(modifier = Modifier.fillMaxSize()) {
-                            val frameworkPaint = Paint().asFrameworkPaint().apply {
-                                isAntiAlias = true
-                                shader = android.graphics.BitmapShader(
-                                    img.asAndroidBitmap(),
-                                    android.graphics.Shader.TileMode.REPEAT,
-                                    android.graphics.Shader.TileMode.REPEAT
+                        imageBitmapState.value?.let { img ->
+                            Canvas(modifier = Modifier.fillMaxSize()) {
+                                val frameworkPaint = Paint().asFrameworkPaint().apply {
+                                    isAntiAlias = true
+                                    shader = android.graphics.BitmapShader(
+                                        img.asAndroidBitmap(),
+                                        android.graphics.Shader.TileMode.REPEAT,
+                                        android.graphics.Shader.TileMode.REPEAT
+                                    )
+                                }
+                                drawContext.canvas.nativeCanvas.drawRect(
+                                    0f, 0f, size.width, size.height, frameworkPaint
                                 )
                             }
-                            drawContext.canvas.nativeCanvas.drawRect(
-                                0f, 0f, size.width, size.height, frameworkPaint
-                            )
                         }
-                    }
-                } else {
-                    // NORMAL IMAGE MODES
-                    val contentScale = when (aspectRatio) {
-                        1 -> ContentScale.FillBounds // Fill
-                        2 -> ContentScale.Fit        // Fit
-                        else -> ContentScale.FillHeight // Default
-                    }
-                    SubcomposeAsyncImage(
-                        model = imageData,
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = contentScale,
-                        loading = {
-                            Box(modifier = Modifier.fillMaxSize().background(Color.Gray))
-                        },
-                        error = {
-                            Image(
-                                painterResource(id = R.drawable.dummy_flag),
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = contentScale
-                            )
+                    } else {
+                        // NORMAL IMAGE MODES
+                        val contentScale = when (aspectRatio) {
+                            1 -> ContentScale.FillBounds // Fill
+                            2 -> ContentScale.Fit        // Fit
+                            else -> ContentScale.FillHeight // Default
                         }
-                    )
+                        SubcomposeAsyncImage(
+                            model = imageData,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = contentScale,
+                            loading = {
+                                Box(modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.Gray))
+                            },
+                            error = {
+                                Image(
+                                    painterResource(id = R.drawable.dummy_flag),
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = contentScale
+                                )
+                            }
+                        )
+                    }
                 }
+            } else {
+                val imageDrawable = targetCountryCode.takeIf { it != 0 } ?: R.drawable.dummy_flag
+                Image(
+                    painterResource(id = imageDrawable),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.FillHeight
+                )
             }
             if (connectionState is ConnectionUIState.Connected) {
                 Box(

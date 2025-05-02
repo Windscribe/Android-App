@@ -1,7 +1,6 @@
 package com.windscribe.mobile.view.screen
 
 import FeatureSection
-import android.R.id.message
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
@@ -64,7 +63,6 @@ import com.windscribe.mobile.view.theme.font18
 import com.windscribe.mobile.view.ui.AppProgressBar
 import com.windscribe.mobile.viewmodel.AppStartViewModel
 import com.windscribe.mobile.viewmodel.LoginState
-import com.windscribe.mobile.viewmodel.SsoLoginErrors
 import com.windscribe.mobile.viewmodel.SsoLoginState
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
@@ -118,7 +116,7 @@ fun AppStartScreen(
     val context = LocalContext.current
     LaunchedEffect(loginState) {
         if (loginState is SsoLoginState.Error) {
-            val errorMessage = (loginState as SsoLoginState.Error).error.msg
+            val errorMessage = (loginState as SsoLoginState.Error).error
             Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
         }
     }

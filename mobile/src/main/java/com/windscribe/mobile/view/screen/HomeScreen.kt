@@ -310,7 +310,6 @@ private fun ConnectionStatusSheet(
                 colorFilter = ColorFilter.tint(containerColor)
             )
         }
-        val changeProtocolInteractionSource = remember { MutableInteractionSource() }
         Image(
             painter = painterResource(R.drawable.arrowright),
             contentDescription = null,

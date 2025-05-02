@@ -23,17 +23,12 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
-sealed class SsoLoginErrors {
-    abstract val msg: String
-    data class ApiError(override val msg: String) : SsoLoginErrors()
-    data class NetworkError(override val msg: String) : SsoLoginErrors()
-}
 
 sealed class SsoLoginState {
     object Idle : SsoLoginState()
     data class LoggingIn(val message: String) : SsoLoginState()
     object Success : SsoLoginState()
-    data class Error(val error: SsoLoginErrors) : SsoLoginState()
+    data class Error(val error: String) : SsoLoginState()
 }
 
 abstract class AppStartViewModel : ViewModel() {
@@ -69,7 +64,7 @@ class AppStartViewModelImpl @Inject constructor(
         _loginState.value = SsoLoginState.LoggingIn("Logging in")
         if (data == null) {
             logger.error("Received empty sign in intent.")
-            updateState(SsoLoginState.Error(SsoLoginErrors.ApiError("Sso login failed.")))
+            updateState(SsoLoginState.Error("Sso login failed."))
             return
         }
         viewModelScope.launch {
@@ -80,10 +75,10 @@ class AppStartViewModelImpl @Inject constructor(
                 } else if (error != null) {
                     logger.debug("Failed to get sso token from google: $error")
                     logger.debug(error)
-                    updateState(SsoLoginState.Error(SsoLoginErrors.ApiError(error)))
+                    updateState(SsoLoginState.Error(error))
                 } else {
                     logger.error("Failed to get sso token from google.")
-                    updateState(SsoLoginState.Error(SsoLoginErrors.ApiError("Failed to get token.")))
+                    updateState(SsoLoginState.Error("Failed to get token."))
                 }
             }
         }
@@ -94,7 +89,7 @@ class AppStartViewModelImpl @Inject constructor(
             when (val result = api.sso("google", token).result<SsoResponse>()) {
                 is CallResult.Error -> {
                     logger.error("Sso login failed with error: ${result.errorMessage}")
-                    updateState(SsoLoginState.Error(SsoLoginErrors.ApiError(result.errorMessage)))
+                    updateState(SsoLoginState.Error(result.errorMessage))
                 }
 
                 is CallResult.Success -> {
@@ -113,7 +108,7 @@ class AppStartViewModelImpl @Inject constructor(
                     when (it) {
                         is UserDataState.Error -> {
                             logger.error("Prepare dashboard failed with error: ${it.error}")
-                            updateState(SsoLoginState.Error(SsoLoginErrors.ApiError(it.error)))
+                            updateState(SsoLoginState.Error(it.error))
                         }
 
                         is UserDataState.Loading -> {
