@@ -8,6 +8,7 @@ import androidx.annotation.StringRes
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.common.collect.Multimaps.index
 import com.windscribe.mobile.R
 import com.windscribe.mobile.lipstick.LookAndFeelHelper
 import com.windscribe.mobile.lipstick.LookAndFeelHelper.bundledBackgrounds
@@ -357,6 +358,10 @@ class ConnectionViewmodelImpl @Inject constructor(
     private fun handleConnectionSoundsState() {
         viewModelScope.launch(Dispatchers.IO) {
             vpnConnectionStateManager.state.collectLatest {
+                if (it.status == VPNState.Status.Connecting && preferences.connectedBundleSoundOption == 3) {
+                    playSoundFromRaw( R.raw.fart_deluxe_loop, loop = true)
+                    return@collectLatest
+                }
                 if (it.status == VPNState.Status.Connected || it.status == VPNState.Status.Disconnected) {
                     val isConnected = vpnConnectionStateManager.isVPNConnected()
                     val option = if (isConnected) {
@@ -395,10 +400,11 @@ class ConnectionViewmodelImpl @Inject constructor(
         }
     }
 
-    private fun playSoundFromFile(filePath: String) {
+    private fun playSoundFromFile(filePath: String, loop: Boolean = false) {
         try {
             mediaPlayer?.release() // release old one if exists
             mediaPlayer = MediaPlayer().apply {
+                isLooping = loop
                 setDataSource(filePath)
                 setOnPreparedListener { it.start() }
                 setOnCompletionListener {
@@ -414,11 +420,12 @@ class ConnectionViewmodelImpl @Inject constructor(
         }
     }
 
-    private fun playSoundFromRaw(@RawRes resId: Int) {
+    private fun playSoundFromRaw(@RawRes resId: Int, loop: Boolean = false) {
         val fileDescriptor = appContext.resources.openRawResourceFd(resId) ?: return
         try {
             mediaPlayer?.release()
             mediaPlayer = MediaPlayer().apply {
+                isLooping = loop
                 setDataSource(
                     fileDescriptor.fileDescriptor,
                     fileDescriptor.startOffset,
