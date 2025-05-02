@@ -503,10 +503,10 @@ open class ApiCallManager @Inject constructor(
         token: String
     ): Single<GenericResponseClass<SsoResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
-//            val callback = wsNetServerAPI.sso(provider, token) { code, json ->
-//                buildResponse(sub, code, json, SsoResponse::class.java)
-//            }
-//            sub.setCancellable { callback.cancel() }
+            val callback = wsNetServerAPI.sso(provider, token) { code, json ->
+                buildResponse(sub, code, json, SsoResponse::class.java)
+            }
+            sub.setCancellable { callback.cancel() }
         }
     }
 

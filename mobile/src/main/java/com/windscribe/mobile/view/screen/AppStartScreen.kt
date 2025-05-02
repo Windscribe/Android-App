@@ -1,6 +1,7 @@
 package com.windscribe.mobile.view.screen
 
 import FeatureSection
+import android.R.id.message
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
@@ -63,6 +64,8 @@ import com.windscribe.mobile.view.theme.font18
 import com.windscribe.mobile.view.ui.AppProgressBar
 import com.windscribe.mobile.viewmodel.AppStartViewModel
 import com.windscribe.mobile.viewmodel.LoginState
+import com.windscribe.mobile.viewmodel.SsoLoginErrors
+import com.windscribe.mobile.viewmodel.SsoLoginState
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -92,8 +95,10 @@ fun AppStartScreen(
         mutableStateOf(LoginState.Idle)
     }
     LaunchedEffect(loginState) {
-        if (loginState is LoginState.Success) {
+        if (loginState is SsoLoginState.Success) {
+            Log.i("AppStartViewModel", "Logged in successfully.")
             navController.navigate(Screen.Home.route) {
+                Log.i("AppStartViewModel", "Routing to home.")
                 popUpTo(0) { inclusive = true }
             }
         }
@@ -106,9 +111,16 @@ fun AppStartScreen(
         WindowWidthSizeClass.Expanded -> ExpandedLayout(isConnected, viewModel)
         else -> CompactLayout(isConnected, viewModel)
     }
-    if (loginState is LoginState.LoggingIn) {
-        val message = (loginState as? LoginState.LoggingIn)?.message ?: ""
+    if (loginState is SsoLoginState.LoggingIn) {
+        val message = (loginState as? SsoLoginState.LoggingIn)?.message ?: ""
         AppProgressBar(true, message = message)
+    }
+    val context = LocalContext.current
+    LaunchedEffect(loginState) {
+        if (loginState is SsoLoginState.Error) {
+            val errorMessage = (loginState as SsoLoginState.Error).error.msg
+            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+        }
     }
 }
 

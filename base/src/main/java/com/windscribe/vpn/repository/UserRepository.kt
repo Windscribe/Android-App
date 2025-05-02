@@ -19,6 +19,7 @@ import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
+import com.windscribe.vpn.services.sso.GoogleSignInManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +51,8 @@ class UserRepository(
     private val workManager: WindScribeWorkManager,
     private val connectionDataRepository: ConnectionDataRepository,
     private val serverListRepository: ServerListRepository,
-    private val staticIpRepository: StaticIpRepository
+    private val staticIpRepository: StaticIpRepository,
+    private val googleSignInManager: GoogleSignInManager
 ) {
     var user = MutableLiveData<User>()
     private val logger = LoggerFactory.getLogger("data")
@@ -133,6 +135,9 @@ class UserRepository(
         scope.launch {
             if (appContext.vpnConnectionStateManager.isVPNActive()) {
                 vpnController.disconnectAsync()
+            }
+            googleSignInManager.signOut {
+                logger.debug("Signed out from Google.")
             }
         }.invokeOnCompletion {
             WorkManager.getInstance(appContext).cancelAllWork()

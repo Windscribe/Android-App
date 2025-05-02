@@ -24,7 +24,7 @@ fun AppProgressBar(showProgressBar: Boolean, message: String) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
-                .background(AppColors.white.copy(alpha = 0.02f))
+                .background(AppColors.white.copy(alpha = 0.05f))
                 .fillMaxSize()
         ) {
             Spacer(modifier = Modifier.height(48.dp))

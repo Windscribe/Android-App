@@ -24,8 +24,9 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 sealed class SsoLoginErrors {
-    data class ApiError(val error: String) : SsoLoginErrors()
-    data class NetworkError(val error: String) : SsoLoginErrors()
+    abstract val msg: String
+    data class ApiError(override val msg: String) : SsoLoginErrors()
+    data class NetworkError(override val msg: String) : SsoLoginErrors()
 }
 
 sealed class SsoLoginState {
@@ -77,6 +78,7 @@ class AppStartViewModelImpl @Inject constructor(
                     logger.debug("Received sso token: $token")
                     ssoLogin(token = token)
                 } else if (error != null) {
+                    logger.debug("Failed to get sso token from google: $error")
                     logger.debug(error)
                     updateState(SsoLoginState.Error(SsoLoginErrors.ApiError(error)))
                 } else {
@@ -119,7 +121,7 @@ class AppStartViewModelImpl @Inject constructor(
                         }
 
                         is UserDataState.Success -> {
-                            logger.error("Prepare dashboard successful.")
+                            logger.info("Prepare dashboard successful.")
                             updateState(SsoLoginState.Success)
                         }
                     }

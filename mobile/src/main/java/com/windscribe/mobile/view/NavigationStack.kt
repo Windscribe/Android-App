@@ -116,6 +116,7 @@ private fun AddHomeScreenRoute() {
             homeViewModel = viewModel(factory = it.getViewModelFactory())
         )
     }
+    Log.i("AppStartViewModel", "Adding home screen.")
     viewModels?.let {
         HomeScreen(it.serverViewModel, it.connectionViewModel, it.configViewModel, it.homeViewModel)
     } ?: HomeScreen(null, null, null, null)

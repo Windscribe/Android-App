@@ -71,6 +71,7 @@ import com.windscribe.vpn.serverlist.dao.RegionAndCitiesDao
 import com.windscribe.vpn.serverlist.dao.RegionDao
 import com.windscribe.vpn.serverlist.dao.StaticRegionDao
 import com.windscribe.vpn.services.review.WindscribeReviewManagerImpl
+import com.windscribe.vpn.services.sso.GoogleSignInManager
 import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.DynamicShortcutManager
@@ -472,7 +473,8 @@ open class BaseApplicationModule {
         workManager: WindScribeWorkManager,
         connectionDataRepository: ConnectionDataRepository,
         serverListRepository: ServerListRepository,
-        staticIpRepository: StaticIpRepository
+        staticIpRepository: StaticIpRepository,
+        googleSignInManager: GoogleSignInManager
     ): UserRepository {
         return UserRepository(
             scope,
@@ -484,7 +486,8 @@ open class BaseApplicationModule {
             workManager,
             connectionDataRepository,
             serverListRepository,
-            staticIpRepository
+            staticIpRepository,
+            googleSignInManager
         )
     }
 

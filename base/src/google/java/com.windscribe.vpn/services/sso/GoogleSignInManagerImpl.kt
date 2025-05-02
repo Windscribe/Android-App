@@ -16,11 +16,10 @@ class GoogleSignInManagerImpl(val context: Context) : GoogleSignInManager() {
 
     init {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("663054486699-d5m13v278rsjgtlsv962uva9s2gnqf37.apps.googleusercontent.com")
+            .requestIdToken("444711012498-5ftbuvd97d8vam8h93ef6l946t7p76kk.apps.googleusercontent.com")
             .requestEmail()
             .build()
-        val activity = (context as Windscribe).activeActivity
-        googleSignInClient = GoogleSignIn.getClient(activity!!, gso)
+        googleSignInClient = GoogleSignIn.getClient(context, gso)
     }
 
     override fun getSignInIntent() = googleSignInClient.signInIntent
@@ -40,6 +39,12 @@ class GoogleSignInManagerImpl(val context: Context) : GoogleSignInManager() {
                 val exception = completedTask.exception
                 callback(null, exception?.localizedMessage ?: "Google Sign-In failed.")
             }
+        }
+    }
+
+    override fun signOut(callback: () -> Unit) {
+        googleSignInClient.signOut().addOnCompleteListener {
+           callback()
         }
     }
 }
