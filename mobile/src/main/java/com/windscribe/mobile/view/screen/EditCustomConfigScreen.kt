@@ -87,7 +87,7 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
                 .verticalScroll(scrollState)
                 .imePadding()
                 .statusBarsPadding()
-                .padding(horizontal = 32.dp),
+                .padding(horizontal = 32.dp).align(Alignment.Center),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
