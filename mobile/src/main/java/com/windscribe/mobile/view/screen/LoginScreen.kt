@@ -3,6 +3,7 @@ package com.windscribe.mobile.view.screen
 import NavBar
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
@@ -52,9 +53,12 @@ import com.windscribe.mobile.view.theme.font16
 import com.windscribe.mobile.view.ui.AppBackground
 import com.windscribe.mobile.view.ui.AppProgressBar
 import com.windscribe.mobile.view.ui.AuthTextField
+import com.windscribe.mobile.view.ui.CaptchaDebugDialog
+import com.windscribe.mobile.view.ui.CaptchaDebugView
 import com.windscribe.mobile.view.ui.NextButton
 import com.windscribe.mobile.viewmodel.AuthError
 import com.windscribe.mobile.viewmodel.AuthInputFields
+import com.windscribe.mobile.viewmodel.CaptchaSolution
 import com.windscribe.mobile.viewmodel.LoginState
 import com.windscribe.mobile.viewmodel.LoginViewModel
 import com.windscribe.vpn.constants.NetworkKeyConstants
@@ -90,6 +94,13 @@ fun LoginScreen(
         val showProgressBar = loginState is LoginState.LoggingIn
         val message = (loginState as? LoginState.LoggingIn)?.message ?: ""
         AppProgressBar(showProgressBar, message = message)
+        if (loginState is LoginState.Captcha) {
+            CaptchaDebugDialog((loginState as LoginState.Captcha).request, onCancel = { },
+                onSolutionSubmit = { t1, t2 ->
+                    Log.i("LoginScreen", "onSolutionSubmit: $t1, $t2")
+                    viewModel?.onCaptchaSolutionReceived(CaptchaSolution(t1, t2, (loginState as LoginState.Captcha).request.secureToken))
+                })
+        }
     }
 }
 
@@ -142,7 +153,8 @@ private fun isError(loginState: LoginState, field: AuthInputFields): Boolean {
 
 @Composable
 fun LoginPasswordTextField(loginState: LoginState, viewModel: LoginViewModel? = null) {
-    AuthTextField(hint = stringResource(R.string.password),
+    AuthTextField(
+        hint = stringResource(R.string.password),
         isError = isError(loginState, AuthInputFields.Password),
         modifier = Modifier.fillMaxWidth(),
         isPassword = true,
@@ -153,7 +165,8 @@ fun LoginPasswordTextField(loginState: LoginState, viewModel: LoginViewModel? = 
 
 @Composable
 fun LoginTwoFactorTextField(loginState: LoginState, viewModel: LoginViewModel? = null) {
-    AuthTextField(hint = stringResource(R.string.two_fa),
+    AuthTextField(
+        hint = stringResource(R.string.two_fa),
         isError = isError(loginState, AuthInputFields.TwoFactor),
         modifier = Modifier.fillMaxWidth(),
         onValueChange = {
@@ -166,7 +179,8 @@ fun LoginTwoFactorTextField(loginState: LoginState, viewModel: LoginViewModel? =
 
 @Composable
 fun LoginUsernameTextField(loginState: LoginState, viewModel: LoginViewModel? = null) {
-    AuthTextField(hint = stringResource(R.string.username),
+    AuthTextField(
+        hint = stringResource(R.string.username),
         isError = isError(loginState, AuthInputFields.Username),
         modifier = Modifier.fillMaxWidth(),
         onValueChange = {

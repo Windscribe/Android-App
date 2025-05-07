@@ -154,8 +154,16 @@ class SignupViewModel @Inject constructor(
 
     private suspend fun startSignupProcess() {
         logger.info("Trying to registering with provided credentials...")
-        val result = apiCallManager.signUserIn(username, password, referralUsername, email, voucher)
-            .toResult()
+        val result = apiCallManager.signUserIn(
+            username,
+            password,
+            referralUsername,
+            email,
+            voucher,
+            null,
+            null,
+            floatArrayOf(), floatArrayOf()
+        ).toResult()
         result.onFailure {
             if (it is WSNetException) {
                 logger.error("SignupError: ${it.message}")

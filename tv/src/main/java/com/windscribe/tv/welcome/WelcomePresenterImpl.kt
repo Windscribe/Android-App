@@ -192,7 +192,7 @@ class WelcomePresenterImpl @Inject constructor(
             welcomeView.prepareUiForApiCallStart()
             interactor.getCompositeDisposable().add(
                 interactor.getApiCallManager()
-                    .logUserIn(username, password, twoFa)
+                    .logUserIn(username, password, twoFa, null, null, floatArrayOf(), floatArrayOf())
                     .doOnSubscribe { welcomeView.updateCurrentProcess("Signing in...") }
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -241,7 +241,7 @@ class WelcomePresenterImpl @Inject constructor(
             welcomeView.prepareUiForApiCallStart()
             interactor.getCompositeDisposable().add(
                 interactor.getApiCallManager()
-                    .signUserIn(username, password, null, email, "")
+                    .signUserIn(username, password, null, email, "", null, null, floatArrayOf(), floatArrayOf())
                     .doOnSubscribe { welcomeView.updateCurrentProcess("Signing up") }
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())

@@ -3,8 +3,10 @@
  */
 package com.windscribe.vpn.api
 
+import android.R.attr.password
 import com.windscribe.vpn.api.response.AddEmailResponse
 import com.windscribe.vpn.api.response.ApiErrorResponse
+import com.windscribe.vpn.api.response.AuthToken
 import com.windscribe.vpn.api.response.BillingPlanResponse
 import com.windscribe.vpn.api.response.ClaimAccountResponse
 import com.windscribe.vpn.api.response.ClaimVoucherCodeResponse
@@ -221,10 +223,14 @@ open class ApiCallManager @Inject constructor(
     override fun logUserIn(
         username: String,
         password: String,
-        twoFa: String?
+        twoFa: String?,
+        secureToken: String?,
+        captchaSolution: String?,
+        captchaTrailX: FloatArray,
+        captchaTrailY: FloatArray
     ): Single<GenericResponseClass<UserLoginResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
-            val callback = wsNetServerAPI.login(username, password, twoFa ?: "") { code, json ->
+            val callback = wsNetServerAPI.login(username, password, twoFa ?: "", secureToken ?: "", captchaSolution ?: "", captchaTrailX, captchaTrailY) { code, json ->
                 buildResponse(sub, code, json, UserLoginResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
@@ -271,12 +277,16 @@ open class ApiCallManager @Inject constructor(
         password: String,
         referringUsername: String?,
         email: String?,
-        voucherCode: String?
+        voucherCode: String?,
+        secureToken: String?,
+        captchaSolution: String?,
+        captchaTrailX: FloatArray,
+        captchaTrailY: FloatArray
     ): Single<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             val callback = wsNetServerAPI.signup(
                 username, password, referringUsername ?: "", email
-                    ?: "", voucherCode ?: ""
+                    ?: "", voucherCode ?: "", secureToken ?: "", captchaSolution ?: "", captchaTrailX, captchaTrailY
             ) { code, json ->
                 buildResponse(sub, code, json, UserRegistrationResponse::class.java)
             }
@@ -505,6 +515,24 @@ open class ApiCallManager @Inject constructor(
         return Single.create { sub ->
             val callback = wsNetServerAPI.sso(provider, token) { code, json ->
                 buildResponse(sub, code, json, SsoResponse::class.java)
+            }
+            sub.setCancellable { callback.cancel() }
+        }
+    }
+
+    override fun authTokenLogin(): Single<GenericResponseClass<AuthToken?, ApiErrorResponse?>> {
+        return Single.create { sub ->
+            val callback = wsNetServerAPI.authTokenLogin() { code, json ->
+                buildResponse(sub, code, json, AuthToken::class.java)
+            }
+            sub.setCancellable { callback.cancel() }
+        }
+    }
+
+    override fun authTokenSignup(): Single<GenericResponseClass<AuthToken?, ApiErrorResponse?>> {
+        return Single.create { sub ->
+            val callback = wsNetServerAPI.authTokenSignup() { code, json ->
+                buildResponse(sub, code, json, AuthToken::class.java)
             }
             sub.setCancellable { callback.cancel() }
         }

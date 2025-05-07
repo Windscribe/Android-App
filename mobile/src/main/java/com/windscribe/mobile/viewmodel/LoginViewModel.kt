@@ -2,8 +2,10 @@ package com.windscribe.mobile.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import com.windscribe.mobile.R
 import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.api.response.AuthToken
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext.toResult
 import com.windscribe.vpn.commonutils.WindUtilities
@@ -27,9 +29,23 @@ import javax.inject.Inject
 sealed class LoginState {
     object Idle : LoginState()
     data class LoggingIn(val message: String) : LoginState()
+    data class Captcha(val request: CaptchaRequest) : LoginState()
     object Success : LoginState()
     data class Error(val errorType: AuthError) : LoginState()
 }
+
+data class CaptchaRequest(
+    val background: String,
+    val top: Int,
+    val slider: String,
+    val secureToken: String
+)
+
+data class CaptchaSolution(
+    val leftOffset: Float,
+    val trail: Map<String, List<Float>>,
+    val token: String
+)
 
 class LoginViewModel @Inject constructor(
     private val apiCallManager: IApiCallManager,
@@ -53,7 +69,7 @@ class LoginViewModel @Inject constructor(
     private var username = ""
     private var password = ""
     private var twoFactorCode = ""
-    private val logger = LoggerFactory.getLogger("basic")
+    private val logger = LoggerFactory.getLogger("LoginScreen")
 
     fun onUsernameChanged(username: String) {
         this.username = username
@@ -67,6 +83,14 @@ class LoginViewModel @Inject constructor(
 
     fun onTwoFactorChanged(twoFactorCode: String) {
         this.twoFactorCode = twoFactorCode
+    }
+
+    fun onCaptchaSolutionReceived(solution: CaptchaSolution) {
+        viewModelScope.launch(Dispatchers.IO) {
+            updateState(LoginState.LoggingIn("Logging in..."))
+            _loginButtonEnabled.emit(false)
+            loginWithCaptcha(solution)
+        }
     }
 
     fun onTwoFactorHintClicked() = toggleTwoFactor()
@@ -103,10 +127,26 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun startLoginProcess() {
-        logger.info("Trying to log in with provided credentials...")
-        val result = apiCallManager.logUserIn(username, password, twoFactorCode)
-            .toResult()
+    private fun saveCaptcha(captchaRequest: CaptchaRequest) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val gson = Gson()
+            val data = gson.toJson(captchaRequest)
+            preferenceHelper.saveResponseStringData("captcha", data)
+        }
+    }
+
+    private suspend fun loginWithCaptcha(captchaSolution: CaptchaSolution) {
+        val trailX = captchaSolution.trail["x"]?.toFloatArray() ?: floatArrayOf()
+        val trailY = captchaSolution.trail["y"]?.toFloatArray() ?: floatArrayOf()
+        val result = apiCallManager.logUserIn(
+            username,
+            password,
+            twoFactorCode,
+            captchaSolution.token,
+            "${captchaSolution.leftOffset}",
+            trailX,
+            trailY
+        ).toResult()
         result.onFailure {
             if (it is WSNetException) {
                 handleNetworkError(it.getType())
@@ -120,6 +160,71 @@ class LoginViewModel @Inject constructor(
             if (it.errorClass != null) {
                 _loginButtonEnabled.emit(true)
                 handleApiError(it.errorClass!!.errorCode, it.errorClass!!.errorMessage)
+            }
+        }
+    }
+
+    private suspend fun startLoginProcess() {
+        logger.info("Trying to log in with provided credentials...")
+        val authResult = apiCallManager.authTokenLogin().toResult()
+        authResult.onSuccess {
+            if (it.errorClass != null) {
+                logger.info("Error login: ${it.errorClass!!.errorMessage}")
+                _loginButtonEnabled.emit(true)
+                handleApiError(it.errorClass!!.errorCode, it.errorClass!!.errorMessage)
+            }
+            if (it.dataClass != null) {
+                logger.info("Received auth token: ${it.dataClass!!.token}")
+                handleAuthToken(it.dataClass!!)
+            }
+        }
+        authResult.onFailure {
+            if (it is WSNetException) {
+                handleNetworkError(it.getType())
+            }
+        }
+    }
+
+    private suspend fun handleAuthToken(authToken: AuthToken) {
+        val captcha = authToken.captcha
+        val token = authToken.token
+        if (captcha != null) {
+            logger.info("Received captcha: ${captcha.top}")
+            val request = CaptchaRequest(
+                captcha.background,
+                captcha.top,
+                captcha.slider,
+                authToken.token
+            )
+            saveCaptcha(request)
+            updateState(LoginState.Captcha(request))
+        } else {
+            val result =
+                apiCallManager.logUserIn(
+                    username,
+                    password,
+                    twoFactorCode,
+                    token,
+                    null,
+                    floatArrayOf(),
+                    floatArrayOf()
+                )
+                    .toResult()
+            result.onFailure {
+                if (it is WSNetException) {
+                    handleNetworkError(it.getType())
+                }
+            }
+            result.onSuccess {
+                if (it.dataClass != null) {
+                    logger.info("User signup in successfully.")
+                    handleSuccessfulLogin(it.dataClass!!.sessionAuthHash)
+                }
+                if (it.errorClass != null) {
+                    logger.info("Error login: ${it.errorClass!!.errorMessage}")
+                    _loginButtonEnabled.emit(true)
+                    handleApiError(it.errorClass!!.errorCode, it.errorClass!!.errorMessage)
+                }
             }
         }
     }

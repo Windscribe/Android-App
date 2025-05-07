@@ -182,7 +182,7 @@ class WelcomePresenterImpl @Inject constructor(
             logger.info("Trying to login with provided credentials...")
             welcomeView.prepareUiForApiCallStart()
             interactor.getCompositeDisposable().add(
-                interactor.getApiCallManager().logUserIn(username, password, twoFa)
+                interactor.getApiCallManager().logUserIn(username, password, twoFa, null, null, floatArrayOf(), floatArrayOf())
                     .doOnSubscribe { welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.signing_in)) }
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -240,7 +240,7 @@ class WelcomePresenterImpl @Inject constructor(
             logger.info("Trying to sign up with provided credentials...")
             welcomeView.prepareUiForApiCallStart()
             interactor.getCompositeDisposable().add(interactor.getApiCallManager()
-                .signUserIn(username, password, referralUsername, email, voucherCode)
+                .signUserIn(username, password, referralUsername, email, voucherCode, null, null, floatArrayOf(), floatArrayOf())
                 .doOnSubscribe { welcomeView.updateCurrentProcess("Signing up") }
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object :
