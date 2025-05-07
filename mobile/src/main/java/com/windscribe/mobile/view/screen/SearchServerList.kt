@@ -75,7 +75,7 @@ fun SearchServerList(viewModel: ServerViewModel, connectionViewModel: Connection
         modifier = Modifier
             .fillMaxSize()
             .background(AppColors.homeBackground)
-            .statusBarsPadding()
+            .statusBarsPadding().clickable {  }
     ) {
         SearchListNavigation(viewModel, homeViewmodel)
         Column(
@@ -83,7 +83,6 @@ fun SearchServerList(viewModel: ServerViewModel, connectionViewModel: Connection
                 .fillMaxSize()
                 .offset(y = 54.dp)
                 .verticalScroll(scrollState)
-                .clickable {  }
         ) {
             when (state) {
                 is ListState.Loading -> {
