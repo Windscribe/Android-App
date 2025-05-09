@@ -44,7 +44,7 @@ class VpnTileService : TileService() {
     @Inject
     lateinit var shortcutStateManager: ShortcutStateManager
 
-    private val logger = LoggerFactory.getLogger("quick_title_s")
+    private val logger = LoggerFactory.getLogger("shortcut")
 
     override fun onCreate() {
         super.onCreate()

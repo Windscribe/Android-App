@@ -28,7 +28,6 @@ interface WindscribeView {
     val networkLayoutState: NetworkLayoutState?
     val uiConnectionState: ConnectionUiState?
     fun gotoLoginRegistrationActivity()
-    fun handleRateView()
     fun hideProgressView()
     fun hideRecyclerViewProgressBar()
     val isBannedLayoutShown: Boolean
@@ -66,7 +65,7 @@ interface WindscribeView {
     fun setRefreshLayout(refreshing: Boolean)
     fun setStaticRegionAdapter(staticRegionAdapter: StaticRegionAdapter)
     fun setStreamingNodeAdapter(streamingNodeAdapter: StreamingNodeAdapter)
-    fun setUpLayoutForNodeUnderMaintenance()
+    fun setUpLayoutForNodeUnderMaintenance(isStaticLocation: Boolean)
     fun setupAccountStatusBanned()
     fun setupAccountStatusExpired(resetDate: String)
     fun setupLayoutConnected(state: ConnectedState)

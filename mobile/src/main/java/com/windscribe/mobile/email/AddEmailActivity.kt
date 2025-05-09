@@ -54,7 +54,7 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
     @Inject
     lateinit var presenter: AddEmailPresenter
 
-    private val logger = LoggerFactory.getLogger("[add_email_a]")
+    private val logger = LoggerFactory.getLogger("basic")
     private var softInputAssist: SoftInputAssist? = null
 
     private val generalTextWatcher: TextWatcher = object : TextWatcher {

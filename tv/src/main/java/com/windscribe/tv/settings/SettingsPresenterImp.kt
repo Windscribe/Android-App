@@ -67,7 +67,7 @@ class SettingsPresenterImp @Inject constructor(
 ) : SettingsPresenter, InstalledAppsAdapter.InstalledAppListener {
     private val installedAppList: MutableList<InstalledAppsData> = ArrayList()
     private var installedAppsAdapter: InstalledAppsAdapter? = null
-    private val logger = LoggerFactory.getLogger("setting_presenter")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun onDestroy() {
         logger.info("Disposing observer...")
         interactor.getAutoConnectionManager().reset()

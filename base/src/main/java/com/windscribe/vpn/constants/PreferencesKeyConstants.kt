@@ -15,7 +15,6 @@ object PreferencesKeyConstants {
     const val OPEN_VPN_SERVER_CONFIG = "server_config"
     const val OPEN_VPN_CREDENTIALS = "server_credentials"
     const val IKEV2_CREDENTIALS = "IKev2_server_credentials"
-    const val NEWS_FEED_RESPONSE = "news_feed_response"
     const val NEWS_FEED_ALERT = "news_feed_alert"
     const val NEW_INSTALLATION = "new_installation"
     const val I_NEW = "new"

@@ -28,15 +28,13 @@ import java.util.List;
 
 public class StaticRegionAdapter extends RecyclerView.Adapter<StaticRegionHolder> {
 
-    private ServerListData dataDetails;
-
     private final ListViewClickListener mListener;
-
+    private ServerListData dataDetails;
     private List<StaticRegion> mStaticIpList;
 
 
     public StaticRegionAdapter(List<StaticRegion> mStaticIpList, ServerListData dataDetails,
-            ListViewClickListener mListener) {
+                               ListViewClickListener mListener) {
         this.mStaticIpList = mStaticIpList;
         this.dataDetails = dataDetails;
         this.mListener = mListener;
@@ -50,8 +48,10 @@ public class StaticRegionAdapter extends RecyclerView.Adapter<StaticRegionHolder
     @Override
     public void onBindViewHolder(@NonNull StaticRegionHolder staticRegionHolder, int i) {
         //Setup icon
-        if (NetworkKeyConstants.STATIC_IP_TYPE_DATA_CENTER
-                .equals(mStaticIpList.get(staticRegionHolder.getAdapterPosition()).getType())) {
+        StaticRegion region = mStaticIpList.get(staticRegionHolder.getAdapterPosition());
+        if (region.getStatus() != null && region.getStatus() == 0) {
+            staticRegionHolder.mImageIpType.setImageResource(R.drawable.ic_under_construction);
+        } else if (NetworkKeyConstants.STATIC_IP_TYPE_DATA_CENTER.equals(region.getType())) {
             staticRegionHolder.mImageIpType.setImageResource(R.drawable.ic_datacenter_ip_icon);
         } else {
             staticRegionHolder.mImageIpType.setImageResource(R.drawable.ic_residential_ip_icon);
@@ -93,8 +93,14 @@ public class StaticRegionAdapter extends RecyclerView.Adapter<StaticRegionHolder
             }
         }
 
-        staticRegionHolder.itemView.setOnClickListener(
-                v -> mListener.onStaticIpClick(mStaticIpList.get(staticRegionHolder.getAdapterPosition()).getId()));
+        staticRegionHolder.itemView.setOnClickListener(v -> {
+            StaticRegion staticRegion = mStaticIpList.get(staticRegionHolder.getAdapterPosition());
+            if (staticRegion.getStatus() != null && staticRegion.getStatus() == 0) {
+                mListener.onUnavailableRegion(true);
+            } else {
+                mListener.onStaticIpClick(staticRegion.getId());
+            }
+        });
         setTouchListener(staticRegionHolder);
     }
 

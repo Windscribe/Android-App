@@ -23,7 +23,7 @@ class DecoyTrafficController(val scope: CoroutineScope, val apiCallManager: IApi
     private var fakeTrafficVolume = 0
     private var sendTrafficRequestInProgress = false
     private var sendTrafficIntervalInSeconds = 1
-    private val logger = LoggerFactory.getLogger("decoy_traffic_controller")
+    private val logger = LoggerFactory.getLogger("vpn")
     private var _events = MutableStateFlow(preferencesHelper.isDecoyTrafficOn)
     val state: StateFlow<Boolean> = _events
     private var fakeTraffic = preferencesHelper.fakeTrafficVolume

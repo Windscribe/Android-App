@@ -28,7 +28,7 @@ import javax.inject.Singleton
 
 @Singleton
 class WgConfigRepository(val scope: CoroutineScope, val interactor: ServiceInteractor) {
-    private val logger = LoggerFactory.getLogger("wg_config_repo")
+    private val logger = LoggerFactory.getLogger("data")
 
     fun deleteKeys() {
         logger.debug("Deleting cached wg params.")

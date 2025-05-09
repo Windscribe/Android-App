@@ -105,6 +105,7 @@
         <attr format="reference" name="ItemLinkViewLeftIcon" />
         <attr format="reference" name="ItemLinkViewRightIcon" />
         <attr name="HideBottomDivider" format="boolean" />
+        <attr name="CommunityLinkLabel" format="boolean" />
     </declare-styleable>
     <declare-styleable name="MultipleLinkExplainView">
         <attr format="string" name="MultiLinkTitle" />

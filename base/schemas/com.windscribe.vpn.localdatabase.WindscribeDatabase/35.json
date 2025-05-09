@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 35,
-    "identityHash": "f84f9d3820d9fab9e07c87398d9e2596",
+    "identityHash": "5e159935e39a27894dd80222509ad820",
     "entities": [
       {
         "tableName": "ping_results",
@@ -28,10 +28,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "node_name"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -60,10 +60,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "user_name"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -86,10 +86,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "user_name"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -118,10 +118,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "notification_id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -210,10 +210,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "primaryKey"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {
@@ -222,6 +222,7 @@
             "columnNames": [
               "region_id"
             ],
+            "orders": [],
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Region_region_id` ON `${TABLE_NAME}` (`region_id`)"
           }
         ],
@@ -229,7 +230,7 @@
       },
       {
         "tableName": "City",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`city_id` INTEGER NOT NULL, `nodes` TEXT, `primaryKey` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `region_id` INTEGER NOT NULL, `gps` TEXT, `nick` TEXT, `city` TEXT, `ping_ip` TEXT DEFAULT '', `pro` INTEGER NOT NULL, `wg_pubkey` TEXT, `tz` TEXT, `ovpn_x509` TEXT, `link_speed` TEXT, `health` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`city_id` INTEGER NOT NULL, `nodes` TEXT, `primaryKey` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `region_id` INTEGER NOT NULL, `gps` TEXT, `health` INTEGER NOT NULL, `link_speed` TEXT, `nick` TEXT, `city` TEXT, `ovpn_x509` TEXT, `ping_ip` TEXT DEFAULT '', `pro` INTEGER NOT NULL, `wg_pubkey` TEXT, `tz` TEXT, `ping_host` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
@@ -262,6 +263,18 @@
             "notNull": false
           },
           {
+            "fieldPath": "health",
+            "columnName": "health",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "linkSpeed",
+            "columnName": "link_speed",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
             "fieldPath": "nickName",
             "columnName": "nick",
             "affinity": "TEXT",
@@ -270,6 +283,12 @@
           {
             "fieldPath": "nodeName",
             "columnName": "city",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ovpnX509",
+            "columnName": "ovpn_x509",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -299,29 +318,17 @@
             "notNull": false
           },
           {
-            "fieldPath": "ovpnX509",
-            "columnName": "ovpn_x509",
+            "fieldPath": "pingHost",
+            "columnName": "ping_host",
             "affinity": "TEXT",
             "notNull": false
-          },
-          {
-            "fieldPath": "linkSpeed",
-            "columnName": "link_speed",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "health",
-            "columnName": "health",
-            "affinity": "INTEGER",
-            "notNull": true
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "primaryKey"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -338,17 +345,17 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "favourite_id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
       },
       {
         "tableName": "PingTime",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`static` INTEGER NOT NULL, `ping_time` INTEGER NOT NULL, `ping_id` INTEGER NOT NULL, `isPro` INTEGER NOT NULL, `region_id` INTEGER NOT NULL, PRIMARY KEY(`ping_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`static` INTEGER NOT NULL, `ping_time` INTEGER NOT NULL, `ping_id` INTEGER NOT NULL, `isPro` INTEGER NOT NULL, `region_id` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `ip` TEXT, PRIMARY KEY(`ping_id`))",
         "fields": [
           {
             "fieldPath": "isStatic",
@@ -379,20 +386,32 @@
             "columnName": "region_id",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ip",
+            "columnName": "ip",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "ping_id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
       },
       {
         "tableName": "StaticRegion",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cityName` TEXT, `countryCode` TEXT, `deviceName` TEXT, `id` INTEGER, `ipId` INTEGER, `name` TEXT, `serverId` INTEGER, `shortName` TEXT, `staticIp` TEXT, `type` TEXT, `wgIp` TEXT, `wgPubKey` TEXT, `ovpnX509` TEXT, `passwordEncoded` TEXT, `userNameEncoded` TEXT, `nodecityName` TEXT, `nodednsHostname` TEXT, `nodehostname` TEXT, `nodeip` TEXT, `nodeip2` TEXT, `nodeip3` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cityName` TEXT, `countryCode` TEXT, `deviceName` TEXT, `id` INTEGER, `ipId` INTEGER, `name` TEXT, `ovpnX509` TEXT, `serverId` INTEGER, `shortName` TEXT, `staticIp` TEXT, `type` TEXT, `wgIp` TEXT, `wgPubKey` TEXT, `pingHost` TEXT, `status` INTEGER, `passwordEncoded` TEXT, `userNameEncoded` TEXT, `nodecityName` TEXT, `nodednsHostname` TEXT, `nodehostname` TEXT, `nodeip` TEXT, `nodeip2` TEXT, `nodeip3` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "cityName",
@@ -427,6 +446,12 @@
           {
             "fieldPath": "name",
             "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ovpnX509",
+            "columnName": "ovpnX509",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -467,9 +492,15 @@
             "notNull": false
           },
           {
-            "fieldPath": "ovpnX509",
-            "columnName": "ovpnX509",
+            "fieldPath": "pingHost",
+            "columnName": "pingHost",
             "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "INTEGER",
             "notNull": false
           },
           {
@@ -522,10 +553,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -566,10 +597,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "networkName"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -616,10 +647,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "primary_key"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -702,10 +733,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -714,7 +745,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f84f9d3820d9fab9e07c87398d9e2596')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5e159935e39a27894dd80222509ad820')"
     ]
   }
 }

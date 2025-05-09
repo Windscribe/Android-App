@@ -41,7 +41,7 @@ class LocationRepository @Inject constructor(
     private val localDbInterface: LocalDbInterface,
     private val userRepository: Lazy<UserRepository>
 ) {
-    private val logger = LoggerFactory.getLogger("selected_location_updater")
+    private val logger = LoggerFactory.getLogger("data")
     private var _selectedCityEvents = MutableStateFlow(preferencesHelper.selectedCity)
     val selectedCity: StateFlow<Int> = _selectedCityEvents
 
@@ -140,8 +140,6 @@ class LocationRepository @Inject constructor(
         get() = localDbInterface.lowestPingId
             .flatMap { localDbInterface.getCityByID(it) }
             .flatMap { city: City -> Single.fromCallable { city.getId() } }
-            .doOnError { logger.debug("Still waiting for latency to complete.") }
-            .doOnSuccess { city: Int -> logger.debug("Found lowest ping city: $city") }
 
     private val randomLocation: Single<Int>
         get() {

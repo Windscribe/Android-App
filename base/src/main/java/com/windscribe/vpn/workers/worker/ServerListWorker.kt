@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
 
 class ServerListWorker(context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
 
-    private val logger = LoggerFactory.getLogger("server_list_worker")
+    private val logger = LoggerFactory.getLogger("worker")
 
     @Inject
     lateinit var serverListRepository: ServerListRepository

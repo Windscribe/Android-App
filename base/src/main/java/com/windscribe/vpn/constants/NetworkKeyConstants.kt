@@ -34,6 +34,8 @@ object NetworkKeyConstants {
     const val PORT_MAP_VERSION = 5
     const val URL_DISCORD = "https://discord.com/invite/vpn"
     const val URL_REDDIT = "https://www.reddit.com/r/Windscribe/"
+    const val URL_YOUTUBE = "https://www.youtube.com/c/Windscribe"
+    const val URL_X = "https://x.com/windscribecom"
     const val URL_GARRY = "/support?garry=1"
     const val URL_KNOWLEDGE = "/support/knowledgebase"
     const val URL_STATUS = "/status"

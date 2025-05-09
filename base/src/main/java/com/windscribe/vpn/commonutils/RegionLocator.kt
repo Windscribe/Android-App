@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 
 object RegionLocator {
 
-    val logger: Logger = LoggerFactory.getLogger("region_locator")
+    val logger: Logger = LoggerFactory.getLogger("util")
 
     fun matchesCountryCode(code: String): Boolean {
         val manager = appContext.getSystemService(TELEPHONY_SERVICE) as TelephonyManager

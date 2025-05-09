@@ -23,12 +23,6 @@ public interface UpgradeView {
 
     void goBackToMainActivity();
 
-    void goToAddEmail();
-
-    void goToConfirmEmail();
-
-    void gotToClaimAccount();
-
     void hideProgressBar();
 
     boolean isBillingProcessFinished();
@@ -44,12 +38,9 @@ public interface UpgradeView {
 
     void setBillingProcessStatus(boolean bProcessFinished);
 
-    void setEmailStatus(boolean isEmailAdded, boolean isEmailConfirmed);
+    void setupPlans(final WindscribeInAppProduct windscribeInAppProduct);
 
-    void showBillingDialog(final WindscribeInAppProduct windscribeInAppProduct, boolean isEmailAdded,
-            boolean isEmailConfirmed);
-
-    void showBillingErrorDialog(String errorMessage);
+    void showBillingError(String errorMessage);
 
     void showProgressBar(String message);
 
@@ -59,9 +50,7 @@ public interface UpgradeView {
 
     void startPurchaseFlow(Product product);
 
-    void startSignUpActivity();
-
-    void startWindscribeActivity();
-
     void openUrlInBrowser(String url);
+
+    void goToSuccessfulUpgrade(Boolean isGhostAccount);
 }

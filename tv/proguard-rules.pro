@@ -66,3 +66,4 @@
 -keep class org.pcap4j.packet.factory.** { *; }
 # Keep classes from minidns-client
 -keep class org.minidns.** { *; }
+-keep class com.windscribe.vpn.commonutils.LowerCaseLevelConverter { *; }

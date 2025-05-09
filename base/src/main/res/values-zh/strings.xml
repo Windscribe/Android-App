@@ -483,4 +483,31 @@
     <string name="enter_1_key_value_per_line">每行输入1个键=值。</string>
     <string name="upgrade_to_stay_protected">立即升级以保持保护，或等待您的带宽在%s重置</string>
     <string name="changelog">更新日志</string>
+    <string name="restore">恢复</string>
+    <string name="unlimited_everything">无限制体验</string>
+    <string name="use_on_all_devices_with_no_data_limits">可在所有设备上使用，无数据限制</string>
+    <string name="all_vpn_locations">所有 VPN 位置</string>
+    <string name="servers_in_cities_more_than_any_other_vpn">覆盖 130 个城市，超过任何其他 VPN</string>
+    <string name="increased_speed_and_security">更快的速度与更高的安全性</string>
+    <string name="blocks_malicious_websites_trackers">拦截 99.9% 恶意网站和跟踪器</string>
+    <string name="plan_monthly">包月</string>
+    <string name="billed_monthly">按月计费</string>
+    <string name="plan_yearly">包年</string>
+    <string name="subscribe">订阅</string>
+    <string name="subscriptions_info">订阅可按月或按年管理，或在购买后前往 Play 商店账户设置关闭。所有价格均包含适用税费。</string>
+    <string name="monthly_billed">%s/月，按年计费</string>
+    <string name="yearly_billed">按年计费</string>
+    <string name="start_using_pro">开始使用 Pro</string>
+    <string name="welcome_to_windscribe_pro">欢迎使用 Windscribe Pro！</string>
+    <string name="thanks_for_upgrading">感谢升级到 Windscribe Pro！您现在可以访问更多强大功能。</string>
+    <string name="set_up_on_all_your_devices">在所有设备上设置</string>
+    <string name="connect_to_any_location">连接到任何位置</string>
+    <string name="unlimited_bandwidth">无限带宽</string>
+    <string name="share">分享</string>
+    <string name="join_our_discord_community">加入我们的 Discord 社区</string>
+    <string name="join_our_reddit_community">加入我们的 Reddit 社区</string>
+    <string name="find_us_on_youtube">在 YouTube 上找到我们</string>
+    <string name="follow_us_on_x">在 X 上关注我们</string>
+    <string name="charged_every_month">每月收费</string>
+    <string name="charged_every_12_months">每 12 个月收费</string>
 </resources>

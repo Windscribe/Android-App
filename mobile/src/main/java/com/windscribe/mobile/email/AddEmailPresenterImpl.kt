@@ -24,11 +24,10 @@ class AddEmailPresenterImpl @Inject constructor(
     private val interactor: ActivityInteractor
 ) : AddEmailPresenter {
 
-    private val logger = LoggerFactory.getLogger("[add_email_p]")
+    private val logger = LoggerFactory.getLogger("basic")
 
     override fun onDestroy() {
         if (interactor.getCompositeDisposable().isDisposed.not()) {
-            logger.info("Disposing network observer...")
             interactor.getCompositeDisposable().dispose()
         }
     }

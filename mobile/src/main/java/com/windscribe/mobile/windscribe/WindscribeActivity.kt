@@ -83,6 +83,7 @@ import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.DeviceStateManager.DeviceStateListener
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import org.slf4j.LoggerFactory
+import org.slf4j.Marker
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -361,7 +362,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     private var lastFlag = 0
 
-    private val logger = LoggerFactory.getLogger("windscribe_a")
+    private val logger = LoggerFactory.getLogger("basic")
 
     override var uiConnectionState: ConnectionUiState? = null
         private set
@@ -375,6 +376,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        logger.info("Loading home screen.")
         setActivityModule(ActivityModule(this, this)).inject(this)
         setContentLayout(R.layout.activity_windscribe, true)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
@@ -398,6 +400,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         presenter.registerNetworkInfoListener()
         presenter.handlePushNotification(intent.extras)
         presenter.observeUserData(this)
+        logger.info("Home screen loaded.")
     }
 
     override fun onStart() {
@@ -405,7 +408,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         if (presenter.userHasAccess()) {
             presenter.onStart()
             if (intent != null && intent.action != null && (intent.action == NotificationConstants.DISCONNECT_VPN_INTENT)) {
-                logger.info("Disconnect intent received...")
+                logger.info("App launched from disconnect vpn intent.")
                 presenter.onDisconnectIntentReceived()
             }
             deviceStateManager.addListener(this)
@@ -416,6 +419,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == FILE_PICK_REQUEST && resultCode == RESULT_OK && data != null) {
+            logger.debug("Picked custom config file.")
             presenter.loadConfigFile(data)
         }
         super.onActivityResult(requestCode, resultCode, data)
@@ -423,6 +427,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
+        logger.debug("Home screen: onRestoreInstanceState.")
         setServerListView(true)
     }
 
@@ -438,11 +443,12 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     override fun onStop() {
         super.onStop()
-        logger.info("Activity on stop method,un-registering network and vpn status listener")
+        logger.info("Home screen: onStop un-registering network and vpn status listener.")
         deviceStateManager.removeListener(this)
     }
 
     override fun onDestroy() {
+        logger.info("Home screen: onDestroy releasing resources.")
         locationFragmentViewPager?.currentItem?.let {
             presenter.saveLastSelectedTabIndex(it)
         }
@@ -459,13 +465,14 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
     }
 
     override fun checkNodeStatus() {
-        logger.info("User clicked on check node status button...")
+        logger.debug("User clicked on check node status button.")
         presenter.onCheckNodeStatusClick()
     }
 
     override fun exitSearchLayout() {
         val fragment = supportFragmentManager.findFragmentById(R.id.cl_windscribe_main)
         if (fragment is SearchFragment) {
+            logger.debug("Closing search layout.")
             fragment.setSearchView(false)
         }
     }
@@ -480,16 +487,13 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         get() = flagDimensionsGuideView?.measuredWidth ?: 0
 
     override fun gotoLoginRegistrationActivity() {
+        logger.debug("Moving to welcome screen.")
         val intent = WelcomeActivity.getStartIntent(this)
         intent.addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_CLEAR_TASK
         )
         startActivity(intent)
         finish()
-    }
-
-    override fun handleRateView() {
-        RateAppDialog.show(this)
     }
 
     override fun hideProgressView() {
@@ -509,6 +513,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
     }
 
     override fun onAddConfigClick() {
+        logger.debug("User clicked on Add custom config.")
         presenter.onAddConfigLocation()
     }
 
@@ -519,7 +524,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     @OnClick(R.id.auto_secure_toggle)
     fun onAutoSecureToggleClick() {
-        logger.info("User clicked on auto secure toggle")
+        logger.debug("User clicked on auto secure toggle")
         presenter.onAutoSecureToggleClick()
     }
 
@@ -533,7 +538,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     @OnClick(R.id.collapse_expand_icon)
     fun onCollapseExpandClick() {
-        logger.info("User clicked on collapse/expand icon")
+        logger.debug("User clicked on collapse/expand icon")
         presenter.onCollapseExpandIconClick()
     }
 
@@ -543,7 +548,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     @OnClick(R.id.on_off_button)
     fun onConnectButtonClick() {
-        logger.info("User clicked on connect button...")
+        logger.debug("User clicked on connect button.")
         presenter.onConnectClicked()
         onOffButton?.isEnabled = false
         // Disable connect button to avoid mismatched state between animations.
@@ -589,7 +594,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     @OnClick(R.id.text_view_notification, R.id.img_windscribe_logo)
     fun onNotificationClick() {
-        logger.info("User clicked news feed icon...")
+        logger.debug("User clicked news feed icon.")
         presenter.onNewsFeedItemClick()
     }
 
@@ -640,7 +645,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     @OnClick(R.id.preferred_protocol_toggle)
     fun onPreferredProtocolToggleClick() {
-        logger.info("User clicked on preferred protocol toggle")
+        logger.debug("User clicked on preferred protocol toggle")
         presenter.onPreferredProtocolToggleClick()
     }
 
@@ -696,7 +701,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     @OnClick(R.id.img_server_list_all)
     fun onShowAllServerClick() {
-        logger.info("User clicked show all servers...")
+        logger.debug("User clicked show all servers...")
         if (locationFragmentViewPager?.currentItem != 0) {
             logger.debug("Setting pager item to 0: Server List Fragment")
             locationFragmentViewPager?.currentItem = 0
@@ -706,7 +711,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     @OnClick(R.id.img_config_loc_list)
     fun onShowConfigLocList() {
-        logger.info("User clicked show config loc list...")
+        logger.debug("User clicked show config loc list...")
         if (locationFragmentViewPager?.currentItem != 4) {
             // Change fragment to config list fragment
             logger.debug("Setting pager item to 4: Config Loc Fragment")
@@ -717,7 +722,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     @OnClick(R.id.img_server_list_favorites)
     fun onShowFavoritesClicked() {
-        logger.debug("User clicked show favorites...")
         if (locationFragmentViewPager?.currentItem != 1) {
             // Change fragment to all server list fragment
             logger.debug("Setting pager item to 1: Favourites list fragment")
@@ -728,7 +732,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     @OnClick(R.id.img_server_list_flix)
     fun onShowFlixListClick() {
-        logger.debug("User clicked show flix locations...")
         if (locationFragmentViewPager?.currentItem != 2) {
             // Change fragment to all server list fragment
             logger.debug("Setting pager item to 2: Flix List Fragment")
@@ -739,7 +742,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
 
     @OnClick(R.id.img_static_ip_list)
     fun onShowStaticIpList() {
-        logger.debug("User clicked show static ips...")
         if (locationFragmentViewPager?.currentItem != 3) {
             logger.debug("Setting pager item to 3: Static IP Fragment")
             locationFragmentViewPager?.currentItem = 3
@@ -748,7 +750,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
     }
 
     override fun onStaticIpClick() {
-        logger.debug("User clicked on add static ip button...")
         presenter.onAddStaticIPClicked()
     }
 
@@ -1202,8 +1203,8 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
         }
     }
 
-    override fun setUpLayoutForNodeUnderMaintenance() {
-        NodeStatusDialog.show(this)
+    override fun setUpLayoutForNodeUnderMaintenance(isStaticLocation: Boolean) {
+        NodeStatusDialog.show(this, isStaticLocation)
     }
 
     override fun setupAccountStatusBanned() {
@@ -1415,7 +1416,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
             supportFragmentManager.beginTransaction()
                     .replace(R.id.cl_windscribe_main, searchFragment).addToBackStack(null).commit()
         } catch (e: IllegalStateException) {
-            logger.info("Illegal state to add search layout.")
+            logger.error("Illegal state to add search layout.")
         }
     }
 
@@ -1445,7 +1446,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
     }
 
     override fun showListBarSelectTransition(resourceSelected: Int) {
-        logger.info("In server list menu selection transition...")
         runOnUiThread {
             constraintSetServerList.connect(
                     R.id.img_server_list_selection_mask,
@@ -1863,7 +1863,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
                 override fun onGlobalLayout() {
                     it.viewTreeObserver.removeOnGlobalLayoutListener(this)
                     if (!reload) {
-                        logger.info("Activity layout drawing completed.")
+                        logger.debug("Activity layout drawing completed.")
                         presenter.init()
                     }
                     //Set adapters if they were created before view was ready.
@@ -1955,7 +1955,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, OnPageChangeListener,
     override fun askForPowerWhiteListPermission() {
         val intent = Intent(
             Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-            Uri.parse("package:" + packageName)
+            Uri.parse("package:$packageName")
         )
         addToPowerWhitelist.launch(intent)
     }

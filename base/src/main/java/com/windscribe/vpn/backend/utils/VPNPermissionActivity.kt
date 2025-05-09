@@ -34,7 +34,7 @@ import javax.inject.Inject
 class VPNPermissionActivity : Activity() {
 
     private var cmFixed = false
-    private val logger = LoggerFactory.getLogger("vpn_backend")
+    private val logger = LoggerFactory.getLogger("vpn")
 
     @Inject
     lateinit var vpnConnectionStateManager: VPNConnectionStateManager
@@ -69,15 +69,18 @@ class VPNPermissionActivity : Activity() {
             val action = intent.getStringExtra(QUICK_CONNECT_ACTION_KEY)
             when (action) {
                 DynamicShortcutManager.QUICK_CONNECT_ACTION -> {
+                    appContext.preference.globalUserConnectionPreference = true
                     vpnController.connectAsync()
                 }
                 DynamicShortcutManager.RECENT_CONNECT_ACTION -> {
                     val connectId = intent.getIntExtra(DynamicShortcutManager.RECENT_CONNECT_ID, -1)
                     locationRepository.setSelectedCity(connectId)
                     setupLocationTypeInt()
+                    appContext.preference.globalUserConnectionPreference = true
                     vpnController.connectAsync()
                 }
                 else -> {
+                    appContext.preference.globalUserConnectionPreference = false
                     vpnController.disconnectAsync()
                 }
             }
@@ -112,7 +115,6 @@ class VPNPermissionActivity : Activity() {
                     finish()
                 } else {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        logger.debug("requesting notification permission.")
                         requestPermissions(
                                 arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION
                         )

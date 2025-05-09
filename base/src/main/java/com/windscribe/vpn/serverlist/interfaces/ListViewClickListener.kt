@@ -14,7 +14,7 @@ interface ListViewClickListener {
     fun onCityClick(cityId: Int)
     fun onConfigFileClicked(configFile: ConfigFile)
     fun onStaticIpClick(staticIpId: Int)
-    fun onUnavailableRegion()
+    fun onUnavailableRegion(isStaticIP: Boolean)
     fun removeFromFavourite(cityId: Int, position: Int, adapter: RecyclerView.Adapter<ViewHolder>)
     fun setScrollTo(scrollTo: Int)
 }

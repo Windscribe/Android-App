@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 class AmazonPendingReceiptValidator(appContext: Context, params: WorkerParameters) : CoroutineWorker(appContext, params) {
-    private val logger = LoggerFactory.getLogger("amazon_receipt_w")
+    private val logger = LoggerFactory.getLogger("billing")
     @Inject
     lateinit var interactor: ServiceInteractor
 

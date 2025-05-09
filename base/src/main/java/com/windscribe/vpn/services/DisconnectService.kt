@@ -29,7 +29,7 @@ class DisconnectService : IntentService("DisconnectService") {
     @Inject
     lateinit var scope: CoroutineScope
 
-    private val logger = LoggerFactory.getLogger("disconnect_service")
+    private val logger = LoggerFactory.getLogger("vpn")
 
     override fun onCreate() {
         super.onCreate()

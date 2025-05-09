@@ -51,7 +51,7 @@ public class AmazonBillingManager implements PurchasingListener, LifecycleObserv
 
     private final Application app;
 
-    private final Logger logger = LoggerFactory.getLogger("Amazon:Billing_m");
+    private final Logger logger = LoggerFactory.getLogger("billing");
 
     public AmazonBillingManager(Application app) {
         this.app = app;

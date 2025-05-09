@@ -48,7 +48,7 @@ class DetailActivity : BaseActivity(), DetailView {
 
     @Inject
     lateinit var presenter: DetailPresenter
-    private val logger = LoggerFactory.getLogger("detail:a")
+    private val logger = LoggerFactory.getLogger("basic")
     private var fragmentTag = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {

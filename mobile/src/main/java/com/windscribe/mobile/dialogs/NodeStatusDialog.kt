@@ -40,6 +40,9 @@ class NodeStatusDialog : FullScreenDialog() {
         binding?.nodeStatusSecondaryButton?.setOnClickListener {
             dismiss()
         }
+        if (arguments?.getBoolean(staticLocation, false) == true) {
+          binding?.nodeStatusPrimaryButton?.visibility = View.GONE
+        }
     }
 
     override fun onDestroyView() {
@@ -49,13 +52,16 @@ class NodeStatusDialog : FullScreenDialog() {
 
     companion object {
         const val tag = "NodeStatusDialog"
-        fun show(activity: AppCompatActivity) {
+        const val staticLocation = "IsStaticLocation"
+        fun show(activity: AppCompatActivity, isStaticLocation: Boolean) {
             if (activity.supportFragmentManager.findFragmentByTag(tag) != null) {
                 return
             }
             activity.runOnUiThread {
                 kotlin.runCatching {
-                    NodeStatusDialog().showNow(activity.supportFragmentManager, tag)
+                    val dialog = NodeStatusDialog()
+                    dialog.arguments = Bundle().apply { putBoolean(staticLocation, isStaticLocation) }
+                    dialog.showNow(activity.supportFragmentManager, tag)
                 }
             }
         }

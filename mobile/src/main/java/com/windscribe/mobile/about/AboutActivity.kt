@@ -54,7 +54,7 @@ class AboutActivity : BaseActivity(), AboutView {
     @BindView(R.id.nav_title)
     lateinit var activityTitleView: TextView
 
-    private val logger = LoggerFactory.getLogger("about_a")
+    private val logger = LoggerFactory.getLogger("basic")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

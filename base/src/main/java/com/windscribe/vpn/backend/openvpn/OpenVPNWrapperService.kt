@@ -42,7 +42,7 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
     @Inject
     lateinit var shortcutStateManager: ShortcutStateManager
 
-    private var logger = LoggerFactory.getLogger("vpn_backend")
+    private var logger = LoggerFactory.getLogger("vpn")
 
     override fun onCreate() {
         Windscribe.appContext.serviceComponent.inject(this)

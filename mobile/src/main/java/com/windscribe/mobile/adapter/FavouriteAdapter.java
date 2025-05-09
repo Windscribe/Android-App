@@ -170,9 +170,9 @@ public class FavouriteAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         //On click item
         holder.itemView.setOnClickListener(v -> {
             if (!city.nodesAvailable() && city.getPro() != 1) {
-                mListener.onUnavailableRegion();
+                mListener.onUnavailableRegion(false);
             } else if (!city.nodesAvailable() && city.getPro() == 1 && dataDetails.isProUser()) {
-                mListener.onUnavailableRegion();
+                mListener.onUnavailableRegion(false);
             } else {
                 mListener.onCityClick(city.getId());
             }

@@ -483,4 +483,31 @@ son seçilen yer.</string>
     <string name="enter_1_key_value_per_line">Her satıra 1 anahtar=değer girin.</string>
     <string name="upgrade_to_stay_protected">Korunmaya devam etmek için şimdi yükseltin veya bant genişliğiniz %s tarihinde sıfırlanana kadar bekleyin</string>
     <string name="changelog">Değişiklik Günlüğü</string>
+    <string name="restore">Geri Yükle</string>
+    <string name="unlimited_everything">Sınırsız Her Şey</string>
+    <string name="use_on_all_devices_with_no_data_limits">Tüm cihazlarda veri sınırı olmadan kullanın</string>
+    <string name="all_vpn_locations">Tüm VPN Konumları</string>
+    <string name="servers_in_cities_more_than_any_other_vpn">130 şehirde sunucular, diğer tüm VPN\'lerden daha fazla</string>
+    <string name="increased_speed_and_security">Artırılmış Hız ve Güvenlik</string>
+    <string name="blocks_malicious_websites_trackers">Kötü amaçlı web sitelerinin ve takipçilerin %99,9\'unu engeller</string>
+    <string name="plan_monthly">Aylık</string>
+    <string name="billed_monthly">Aylık Faturalandırılır</string>
+    <string name="plan_yearly">Yıllık</string>
+    <string name="subscribe">Abone Ol</string>
+    <string name="subscriptions_info">Abonelikler aylık veya yıllık olarak yönetilebilir ya da satın aldıktan sonra Play Store hesap ayarlarından kapatılabilir. Tüm fiyatlar geçerli vergileri içerir.</string>
+    <string name="monthly_billed">%s/ay, Yıllık Faturalandırılır</string>
+    <string name="yearly_billed">Yıllık Faturalandırılır</string>
+    <string name="start_using_pro">Pro\'yu Kullanmaya Başla</string>
+    <string name="welcome_to_windscribe_pro">Windscribe Pro\'ya Hoş Geldiniz!</string>
+    <string name="thanks_for_upgrading">Windscribe Pro\'ya yükselttiğiniz için teşekkürler! Artık daha güçlü özelliklere erişiminiz var.</string>
+    <string name="set_up_on_all_your_devices">Tüm Cihazlarınızda Kurun</string>
+    <string name="connect_to_any_location">Herhangi Bir Konuma Bağlanın</string>
+    <string name="unlimited_bandwidth">Sınırsız Bant Genişliği</string>
+    <string name="share">PAYLAŞ</string>
+    <string name="join_our_discord_community">Discord topluluğumuza katılın</string>
+    <string name="join_our_reddit_community">Reddit topluluğumuza katılın</string>
+    <string name="find_us_on_youtube">Bizi YouTube\'da bulun</string>
+    <string name="follow_us_on_x">Bizi X\'te takip edin</string>
+    <string name="charged_every_month">her ay ücretlendirilir</string>
+    <string name="charged_every_12_months">her 12 ayda bir ücretlendirilir</string>
 </resources>

@@ -15,18 +15,13 @@ import static com.android.billingclient.api.BillingClient.BillingResponseCode.IT
 import static com.android.billingclient.api.BillingClient.BillingResponseCode.OK;
 import static com.android.billingclient.api.BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE;
 import static com.android.billingclient.api.BillingClient.BillingResponseCode.USER_CANCELED;
-import static com.windscribe.vpn.constants.ApiConstants.PAY_ID;
-import static com.windscribe.vpn.constants.ApiConstants.PROMO_CODE;
 import static com.windscribe.vpn.constants.BillingConstants.AMAZON_PURCHASED_ITEM;
-import static com.windscribe.vpn.constants.BillingConstants.AMAZON_PURCHASE_TYPE;
-import static com.windscribe.vpn.constants.BillingConstants.AMAZON_USER_ID;
 import static com.windscribe.vpn.constants.BillingConstants.GP_PACKAGE_NAME;
 import static com.windscribe.vpn.constants.BillingConstants.GP_PRODUCT_ID;
 import static com.windscribe.vpn.constants.BillingConstants.PLAY_STORE_UPDATE;
 import static com.windscribe.vpn.constants.BillingConstants.PURCHASED_ITEM;
 import static com.windscribe.vpn.constants.BillingConstants.PURCHASED_ITEM_NULL;
 import static com.windscribe.vpn.constants.BillingConstants.PURCHASE_TOKEN;
-import static com.windscribe.vpn.constants.BillingConstants.PURCHASE_TYPE;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -61,13 +56,10 @@ import com.windscribe.vpn.billing.PurchaseState;
 import com.windscribe.vpn.commonutils.RegionLocator;
 import com.windscribe.vpn.constants.BillingConstants;
 import com.windscribe.vpn.constants.NetworkErrorCodes;
-import com.windscribe.vpn.constants.PreferencesKeyConstants;
-import com.windscribe.vpn.constants.UserStatusConstants;
 import com.windscribe.vpn.errormodel.WindError;
 import com.windscribe.vpn.exceptions.GenericApiException;
 import com.windscribe.vpn.exceptions.InvalidSessionException;
 import com.windscribe.vpn.exceptions.UnknownException;
-import com.windscribe.vpn.model.User;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -79,6 +71,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -94,20 +87,14 @@ import io.reactivex.schedulers.Schedulers;
 
 public class UpgradePresenterImpl implements UpgradePresenter {
 
-    private static final String TAG = "upgrade_p";
-
+    private static final String TAG = "billing";
+    private final Logger presenterLog = LoggerFactory.getLogger(TAG);
     private Purchase mPurchase;
-
     private PushNotificationAction mPushNotificationAction;
-
     private ActivityInteractor mUpgradeInteractor;
-
     private UpgradeView mUpgradeView;
-
     private List<BillingPlanResponse.BillingPlans> mobileBillingPlans = new ArrayList<>();
     private BillingPlanResponse.OverriddenPlans overriddenPlans = null;
-
-    private final Logger presenterLog = LoggerFactory.getLogger(TAG);
 
     @Inject
     public UpgradePresenterImpl(UpgradeView mUpgradeView, ActivityInteractor activityInteractor) {
@@ -126,7 +113,6 @@ public class UpgradePresenterImpl implements UpgradePresenter {
         }
 
         if (!mUpgradeInteractor.getCompositeDisposable().isDisposed()) {
-            presenterLog.info("Disposing network observer...");
             mUpgradeInteractor.getCompositeDisposable().dispose();
         }
 
@@ -136,10 +122,8 @@ public class UpgradePresenterImpl implements UpgradePresenter {
 
     @Override
     public void checkBillingProcessStatus() {
-        //If the billing process status is true then go back to main activity
         if (mUpgradeView.isBillingProcessFinished()) {
             mUpgradeView.setBillingProcessStatus(false);
-            mUpgradeView.goBackToMainActivity();
         }
     }
 
@@ -163,11 +147,11 @@ public class UpgradePresenterImpl implements UpgradePresenter {
                 verifyAmazonReceipt(amazonPurchase);
             } catch (Exception ignored) {
                 presenterLog.debug("Error saving fulfilling amazon order.");
-                mUpgradeView.showBillingErrorDialog("Error saving fulfilling amazon order.");
+                mUpgradeView.showBillingError("Error saving fulfilling amazon order.");
             }
         } else {
             presenterLog.debug("Subscription/Consumable with receipt is already cancelled.");
-            mUpgradeView.showBillingErrorDialog("Receipt cancelled already.");
+            mUpgradeView.showBillingError("Receipt cancelled already.");
         }
     }
 
@@ -200,7 +184,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
     @Override
     public void onAmazonPurchaseHistoryError(final String error) {
         mUpgradeView.hideProgressBar();
-        mUpgradeView.showBillingErrorDialog(error);
+        mUpgradeView.showBillingError(error);
     }
 
     @Override
@@ -212,7 +196,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
     public void onBillingSetupFailed(int errorCode) {
         String errorMessage = getBillingErrorMessage(errorCode);
         if (mUpgradeView != null) {
-            mUpgradeView.showBillingErrorDialog(errorMessage);
+            mUpgradeView.showBillingError(errorMessage);
         }
     }
 
@@ -249,27 +233,12 @@ public class UpgradePresenterImpl implements UpgradePresenter {
     }
 
     @Override
-    public void onContinueFreeClick() {
-        User user = mUpgradeInteractor.getUserRepository().getUser().getValue();
-        if(user!=null){
-            boolean userLoggedIn = mUpgradeInteractor.getAppPreferenceInterface().getSessionHash() != null;
-            if (user.isGhost()) {
-                mUpgradeView.gotToClaimAccount();
-            } else if (userLoggedIn && user.getEmailStatus() == User.EmailStatus.NoEmail) {
-                mUpgradeView.goToAddEmail();
-            } else if (userLoggedIn && user.getEmailStatus() == User.EmailStatus.EmailProvided) {
-                mUpgradeView.goToConfirmEmail();
-            }
-        }
-    }
-
-    @Override
     public void onContinuePlanClick(final Product selectedSku) {
         mUpgradeView.startPurchaseFlow(selectedSku);
     }
 
     @Override
-    public void onMonthlyItemClicked(@Nullable ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParams) {
+    public void buyGoogleProduct(@Nullable ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParams) {
         if (productDetailsParams != null) {
             //Start purchase flow
             presenterLog.info("Starting purchase flow...");
@@ -283,36 +252,8 @@ public class UpgradePresenterImpl implements UpgradePresenter {
 
     @Override
     public void onProductDataResponse(final Map<String, Product> products) {
-        mUpgradeInteractor.getCompositeDisposable().add(
-                mUpgradeInteractor.getUserSessionData()
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(new DisposableSingleObserver<UserSessionResponse>() {
-                            @Override
-                            public void onError(@NotNull Throwable e) {
-                                presenterLog.debug("Error reading user session response..." + e
-                                        .getLocalizedMessage());
-                                if (mUpgradeView != null) {
-                                    mUpgradeView.hideProgressBar();
-                                    mUpgradeView.showBillingDialog(
-                                            new AmazonProducts(products, mobileBillingPlans, mPushNotificationAction),
-                                            true, true);
-                                }
-                            }
-
-                            @Override
-                            public void onSuccess(@NotNull UserSessionResponse userSessionResponse) {
-                                presenterLog.info("Showing upgrade dialog to the user...");
-                                if (mUpgradeView != null) {
-                                    mUpgradeView.hideProgressBar();
-                                    mUpgradeView.showBillingDialog(
-                                            new AmazonProducts(products, mobileBillingPlans, mPushNotificationAction),
-                                            userSessionResponse.getUserEmail() != null,
-                                            userSessionResponse.getEmailStatus()
-                                                    == UserStatusConstants.EMAIL_STATUS_CONFIRMED);
-                                }
-                            }
-                        }));
+        mUpgradeView.hideProgressBar();
+        mUpgradeView.setupPlans(new AmazonProducts(products, mobileBillingPlans, mPushNotificationAction));
     }
 
     @Override
@@ -347,7 +288,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
                                         public void onError(@NotNull Throwable e) {
                                             presenterLog.debug("Payment verification failed. " + WindError.getInstance().convertThrowableToString(e));
                                             if (mUpgradeView != null) {
-                                                mUpgradeView.showBillingErrorDialog("Payment verification failed!");
+                                                mUpgradeView.showBillingError("Payment verification failed!");
                                             }
                                         }
 
@@ -447,21 +388,17 @@ public class UpgradePresenterImpl implements UpgradePresenter {
         if (mUpgradeInteractor == null | mUpgradeView == null) {
             return;
         }
-        if (responseCode == OK && productDetails.size() > 0) {
-            mUpgradeInteractor.getCompositeDisposable().add(
-                    mUpgradeInteractor.getUserSessionData()
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(userSession -> onUserSessionResponse(productDetails, userSession),
-                                    throwable -> onUserSessionResponseError(productDetails, throwable)));
-        } else if (productDetails.size() == 0) {
+        if (responseCode == OK && !productDetails.isEmpty()) {
+            mUpgradeView.hideProgressBar();
+            mUpgradeView.setupPlans(new GoogleProducts(productDetails, mobileBillingPlans, mPushNotificationAction));
+        } else if (productDetails.isEmpty()) {
             presenterLog.debug("Failed to find requested products from the store.");
-            mUpgradeView.showBillingErrorDialog("Promo is not valid anymore.");
+            mUpgradeView.showBillingError("Promo is not valid anymore.");
         } else {
             String errorMessage = getBillingErrorMessage(responseCode);
             presenterLog.debug("Error while retrieving sku details from play billing. Error Code: " + responseCode
                     + " Message: " + errorMessage);
-            mUpgradeView.showBillingErrorDialog(errorMessage);
+            mUpgradeView.showBillingError(errorMessage);
         }
     }
 
@@ -469,40 +406,6 @@ public class UpgradePresenterImpl implements UpgradePresenter {
     public void restorePurchase() {
         mUpgradeView.showProgressBar("Loading user data...");
         mUpgradeView.restorePurchase();
-    }
-
-    @Override
-    public void setLayoutFromApiSession() {
-        mUpgradeInteractor.getCompositeDisposable().add(mUpgradeInteractor.getApiCallManager()
-                .getSessionGeneric(null)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(
-                        new DisposableSingleObserver<GenericResponseClass<UserSessionResponse, ApiErrorResponse>>() {
-                            @Override
-                            public void onError(@NotNull Throwable e) {
-                                //Error in API Call
-                                presenterLog.debug("Error while making get session call:" + e.getMessage());
-                            }
-
-                            @Override
-                            public void onSuccess(
-                                    @NotNull GenericResponseClass<UserSessionResponse, ApiErrorResponse> userSessionResponse) {
-                                if (userSessionResponse.getDataClass() != null) {
-                                    mUpgradeInteractor.getAppPreferenceInterface()
-                                            .saveResponseStringData(PreferencesKeyConstants.GET_SESSION,
-                                                    new Gson().toJson(userSessionResponse.getDataClass()));
-                                    mUpgradeView
-                                            .setEmailStatus(userSessionResponse.getDataClass().getUserEmail() != null,
-                                                    userSessionResponse.getDataClass().getEmailStatus()
-                                                            == UserStatusConstants.EMAIL_STATUS_CONFIRMED);
-                                } else if (userSessionResponse.getErrorClass() != null) {
-                                    //Server responded with error!
-                                    presenterLog.debug("Server returned error during get session call."
-                                            + userSessionResponse.getErrorClass().toString());
-                                }
-                            }
-                        }));
     }
 
     @Override
@@ -521,7 +424,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
 
     private List<String> billingResponseToSkuList(BillingPlanResponse billingPlanResponse) {
         List<String> inAppSkuList = new ArrayList<>();
-        if (billingPlanResponse.getPlansList().size() > 0) {
+        if (!billingPlanResponse.getPlansList().isEmpty()) {
             this.mobileBillingPlans = billingPlanResponse.getPlansList();
             this.overriddenPlans = billingPlanResponse.getOverriddenPlans();
             presenterLog.debug("Getting in app skus from billing plan...");
@@ -616,7 +519,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
         if (billingPlanResponse.getDataClass() != null) {
             presenterLog.debug("Billing plan received. ");
             List<String> skuList = billingResponseToSkuList(billingPlanResponse.getDataClass());
-            if (skuList.size() > 0) {
+            if (!skuList.isEmpty()) {
                 if (mUpgradeView.getBillingType() == UpgradeActivity.BillingType.Amazon) {
                     presenterLog.debug("Querying amazon products");
                     mUpgradeView.getProducts(skuList);
@@ -638,15 +541,15 @@ public class UpgradePresenterImpl implements UpgradePresenter {
                     mUpgradeView.querySkuDetails(products);
                 }
             } else if (mPushNotificationAction != null) {
-                mUpgradeView.showBillingErrorDialog("Promo is not valid anymore.");
+                mUpgradeView.showBillingError("Promo is not valid anymore.");
             } else {
-                mUpgradeView.showBillingErrorDialog("Failed to get billing plans check your network connection.");
+                mUpgradeView.showBillingError("Failed to get billing plans check your network connection.");
             }
 
         } else if (billingPlanResponse.getErrorClass() != null) {
             presenterLog.debug(String
                     .format("Billing response error: %s", billingPlanResponse.getErrorClass().getErrorMessage()));
-            mUpgradeView.showBillingErrorDialog(billingPlanResponse.getErrorClass().getErrorMessage());
+            mUpgradeView.showBillingError(billingPlanResponse.getErrorClass().getErrorMessage());
         }
     }
 
@@ -654,29 +557,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
         presenterLog
                 .debug("Failed to get the billing plans... proceeding with default plans" + WindError.getInstance()
                         .convertThrowableToString(throwable));
-        mUpgradeView.showBillingErrorDialog("Failed to get billing plans check your network connection.");
-    }
-
-    private void onUserSessionResponse(List<ProductDetails> productDetails, UserSessionResponse userSessionResponse) {
-        presenterLog.info("Showing upgrade dialog to the user...");
-        if (mUpgradeView != null) {
-            mUpgradeView.hideProgressBar();
-            mUpgradeView.showBillingDialog(
-                    new GoogleProducts(productDetails, mobileBillingPlans, mPushNotificationAction),
-                    userSessionResponse.getUserEmail() != null,
-                    userSessionResponse.getEmailStatus()
-                            == UserStatusConstants.EMAIL_STATUS_CONFIRMED);
-        }
-    }
-
-    private void onUserSessionResponseError(List<ProductDetails> productDetails, Throwable throwable) {
-        //We failed to get the data remaining
-        presenterLog.debug("Error reading user session response..." + throwable.getLocalizedMessage());
-        if (mUpgradeView != null) {
-            mUpgradeView.hideProgressBar();
-            mUpgradeView.showBillingDialog(
-                    new GoogleProducts(productDetails, mobileBillingPlans, mPushNotificationAction), true, true);
-        }
+        mUpgradeView.showBillingError("Failed to get billing plans check your network connection.");
     }
 
     private Completable postPromoPaymentConfirmation() {
@@ -701,7 +582,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
 
     private void showBillingError(ApiErrorResponse errorResponse) {
         presenterLog.info(errorResponse.toString());
-        mUpgradeView.showBillingErrorDialog(errorResponse.getErrorMessage());
+        mUpgradeView.showBillingError(errorResponse.getErrorMessage());
         if (errorResponse.getErrorCode() == 4005) {
             presenterLog.debug("Purchase flow: Token was already verified once. Ignore");
             mUpgradeInteractor.getAppPreferenceInterface()
@@ -711,10 +592,10 @@ public class UpgradePresenterImpl implements UpgradePresenter {
 
     private Completable updateUserStatus() {
         return getUserSession().flatMapCompletable(userSessionResponse ->
-                Completable.fromAction(() -> mUpgradeInteractor.getUserRepository().reload(userSessionResponse,null))
+                Completable.fromAction(() -> mUpgradeInteractor.getUserRepository().reload(userSessionResponse, null))
                         .doFinally(() -> mUpgradeInteractor.getServerListUpdater().load())
                         .doOnError(throwable -> presenterLog.debug("Error updating user status table. "
-                        + WindError.getInstance().convertThrowableToString(throwable))));
+                                + WindError.getInstance().convertThrowableToString(throwable))));
     }
 
     private void upgradeUserAccount() {
@@ -723,7 +604,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
         mUpgradeInteractor.getCompositeDisposable()
                 .add((mPushNotificationAction != null ? postPromoPaymentConfirmation()
                         : Completable.fromAction(() -> {
-                        }))
+                }))
                         .andThen(mUpgradeInteractor.getConnectionDataUpdater().update())
                         .andThen(mUpgradeInteractor.getServerListUpdater().update())
                         .andThen(updateUserStatus())
@@ -740,11 +621,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
                                                 .getUserStatus());
                                 boolean ghostMode = mUpgradeInteractor.getAppPreferenceInterface()
                                         .userIsInGhostMode();
-                                if (ghostMode) {
-                                    mUpgradeView.startSignUpActivity();
-                                } else {
-                                    mUpgradeView.startWindscribeActivity();
-                                }
+                                mUpgradeView.goToSuccessfulUpgrade(ghostMode);
                             }
 
                             @Override
@@ -752,7 +629,9 @@ public class UpgradePresenterImpl implements UpgradePresenter {
                                 presenterLog.debug("Could not modify the server list data..."
                                         + WindError.getInstance().convertThrowableToString(e));
                                 mUpgradeView.hideProgressBar();
-                                mUpgradeView.startWindscribeActivity();
+                                boolean ghostMode = mUpgradeInteractor.getAppPreferenceInterface()
+                                        .userIsInGhostMode();
+                                mUpgradeView.goToSuccessfulUpgrade(ghostMode);
                             }
                         }));
 
@@ -772,9 +651,9 @@ public class UpgradePresenterImpl implements UpgradePresenter {
                                         @Override
                                         public void onError(@NotNull Throwable e) {
                                             presenterLog.debug("Payment verification failed. " + WindError.getInstance()
-                                                            .convertThrowableToString(e));
+                                                    .convertThrowableToString(e));
                                             if (mUpgradeView != null) {
-                                                mUpgradeView.showBillingErrorDialog("Payment verification failed!");
+                                                mUpgradeView.showBillingError("Payment verification failed!");
                                             }
                                         }
 
@@ -805,12 +684,12 @@ public class UpgradePresenterImpl implements UpgradePresenter {
     }
 
     @Override
-    public String regionalPlanIfAvailable(String sku){
-        if(overriddenPlans!=null){
-            if(overriddenPlans.russianPlan!=null && RegionLocator.INSTANCE.matchesCountryCode("ru")){
-                if(sku.equals("pro_monthly")){
+    public String regionalPlanIfAvailable(String sku) {
+        if (overriddenPlans != null) {
+            if (overriddenPlans.russianPlan != null && RegionLocator.INSTANCE.matchesCountryCode("ru")) {
+                if (sku.equals("pro_monthly")) {
                     return overriddenPlans.russianPlan.proMonthly;
-                }else if(sku.equals("pro_yearly")){
+                } else if (sku.equals("pro_yearly")) {
                     return overriddenPlans.russianPlan.proYearly;
                 }
             }
@@ -831,7 +710,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
                                     @Override
                                     public void onError(@NonNull final Throwable e) {
                                         mUpgradeView.hideProgressBar();
-                                        mUpgradeView.showBillingErrorDialog("Unable to generate web session. Check your network connection.");
+                                        mUpgradeView.showBillingError("Unable to generate web session. Check your network connection.");
                                     }
 
                                     @Override
@@ -839,13 +718,13 @@ public class UpgradePresenterImpl implements UpgradePresenter {
                                             @NonNull final GenericResponseClass<WebSession, ApiErrorResponse> webSession) {
                                         mUpgradeView.hideProgressBar();
                                         if (webSession.getDataClass() != null) {
-                                            String urlWithSession = url+"&temp_session=" + webSession.getDataClass().getTempSession();
-                                            presenterLog.debug("Url: "+urlWithSession);
+                                            String urlWithSession = url + "&temp_session=" + webSession.getDataClass().getTempSession();
+                                            presenterLog.debug("Url: " + urlWithSession);
                                             mUpgradeView.openUrlInBrowser(urlWithSession);
                                         } else if (webSession.getErrorClass() != null) {
-                                            mUpgradeView.showBillingErrorDialog(webSession.getErrorClass().getErrorMessage());
+                                            mUpgradeView.showBillingError(webSession.getErrorClass().getErrorMessage());
                                         } else {
-                                            mUpgradeView.showBillingErrorDialog("Unable to generate web session. Check your network connection.");
+                                            mUpgradeView.showBillingError("Unable to generate web session. Check your network connection.");
                                         }
                                     }
                                 }));

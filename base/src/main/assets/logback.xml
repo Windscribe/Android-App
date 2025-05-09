@@ -3,6 +3,7 @@
   -->
 
 <configuration>
+    <conversionRule conversionWord="lowerLevel" converterClass="com.windscribe.vpn.commonutils.LowerCaseLevelConverter"/>
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!-- lazy initialization: don't create the file until 1st write -->
         <lazy>false</lazy>
@@ -14,10 +15,11 @@
             <maxIndex>1</maxIndex>
         </rollingPolicy>
         <triggeringPolicy class="com.windscribe.vpn.commonutils.SizeBasedTriggerForLog">
-            <maxFileSize>10KB</maxFileSize>
+            <maxFileSize>100KB</maxFileSize>
         </triggeringPolicy>
-        <encoder>
-            <pattern>%date{dd MMM;HH:mm:ss.SSS} [%12.12thread] [%5.5level] [%15.-15logger] - %msg%n
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>
+                {"tm":"%d{yyyy-MM-dd HH:mm:ss.SSS}","lvl":"%lowerLevel","mod":"%logger{36}","msg":"%msg"}%n
             </pattern>
         </encoder>
     </appender>
@@ -25,8 +27,10 @@
         <appender-ref ref="FILE" />
     </appender>
     <appender name="LOGCAT" class="ch.qos.logback.classic.android.LogcatAppender">
-        <encoder>
-            <pattern>%-5level %logger{36} - %msg%n</pattern>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>
+                {"tm":"%d{yyyy-MM-dd HH:mm:ss.SSS}","lvl":"%lowerLevel","mod":"%logger{36}","msg":"%msg"}%n
+            </pattern>
         </encoder>
     </appender>
     <root level="DEBUG">

@@ -17,7 +17,7 @@ class StaticIpWorker(context: Context, params: WorkerParameters) : CoroutineWork
     @Inject
     lateinit var userRepository: UserRepository
 
-    val logger: Logger = LoggerFactory.getLogger("static_ip_repo")
+    val logger: Logger = LoggerFactory.getLogger("worker")
 
     init {
         appContext.applicationComponent.inject(this)

@@ -84,6 +84,10 @@ public class StaticRegion {
     @Expose
     private String pingHost;
 
+    @SerializedName("status")
+    @Expose
+    private Integer status;
+
     public String getCityName() {
         return cityName;
     }
@@ -217,6 +221,11 @@ public class StaticRegion {
         this.pingHost = pingHost;
     }
 
+    @Nullable
+    public Integer getStatus() { return status; }
+
+    public void setStatus(@Nullable Integer status) { this.status = status; }
+
     @NonNull
     @Override
     public String toString() {
@@ -235,6 +244,7 @@ public class StaticRegion {
                 ", deviceName='" + deviceName + '\'' +
                 ", OvpnX509='" + ovpnX509 + '\'' +
                 ", pingHost='" + pingHost + '\'' +
+                ", status='" + status + '\'' +
                 '}';
     }
 

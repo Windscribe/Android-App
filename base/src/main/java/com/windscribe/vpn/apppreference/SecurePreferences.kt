@@ -10,7 +10,7 @@ import com.windscribe.vpn.Windscribe
 import org.slf4j.LoggerFactory
 
 class SecurePreferences(app: Windscribe) {
-    private val logger = LoggerFactory.getLogger("secure_p")
+    private val logger = LoggerFactory.getLogger("basic")
     private val secureSharedPrefsFile = "windscribe_secure_prefs"
     private var sharedPreferences: SharedPreferences? = null
     fun clear() {

@@ -22,7 +22,6 @@ public class UpgradeActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentLayout(R.layout.activity_upgrade, false);
         ErrorDialog.show(this, getString(R.string.billing_unavailable), null, true);
     }
 }

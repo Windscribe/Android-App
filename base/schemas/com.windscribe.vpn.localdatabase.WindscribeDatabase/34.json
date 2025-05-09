@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 34,
-    "identityHash": "3a598c80b4a2b71fa6d9d85c139ccf19",
+    "identityHash": "5e159935e39a27894dd80222509ad820",
     "entities": [
       {
         "tableName": "ping_results",
@@ -411,7 +411,7 @@
       },
       {
         "tableName": "StaticRegion",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cityName` TEXT, `countryCode` TEXT, `deviceName` TEXT, `id` INTEGER, `ipId` INTEGER, `name` TEXT, `ovpnX509` TEXT, `serverId` INTEGER, `shortName` TEXT, `staticIp` TEXT, `type` TEXT, `wgIp` TEXT, `wgPubKey` TEXT, `pingHost` TEXT, `passwordEncoded` TEXT, `userNameEncoded` TEXT, `nodecityName` TEXT, `nodednsHostname` TEXT, `nodehostname` TEXT, `nodeip` TEXT, `nodeip2` TEXT, `nodeip3` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cityName` TEXT, `countryCode` TEXT, `deviceName` TEXT, `id` INTEGER, `ipId` INTEGER, `name` TEXT, `ovpnX509` TEXT, `serverId` INTEGER, `shortName` TEXT, `staticIp` TEXT, `type` TEXT, `wgIp` TEXT, `wgPubKey` TEXT, `pingHost` TEXT, `status` INTEGER, `passwordEncoded` TEXT, `userNameEncoded` TEXT, `nodecityName` TEXT, `nodednsHostname` TEXT, `nodehostname` TEXT, `nodeip` TEXT, `nodeip2` TEXT, `nodeip3` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "cityName",
@@ -495,6 +495,12 @@
             "fieldPath": "pingHost",
             "columnName": "pingHost",
             "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "INTEGER",
             "notNull": false
           },
           {
@@ -739,7 +745,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3a598c80b4a2b71fa6d9d85c139ccf19')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5e159935e39a27894dd80222509ad820')"
     ]
   }
 }

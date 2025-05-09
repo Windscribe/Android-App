@@ -29,7 +29,7 @@ class SplitTunnelingPresenterImpl @Inject constructor(
 ) : SplitTunnelingPresenter, InstalledAppsAdapter.InstalledAppListener {
     var installedAppsAdapter: InstalledAppsAdapter? = null
     private val mInstalledAppList: MutableList<InstalledAppsData> = ArrayList()
-    private val logger = LoggerFactory.getLogger("split_settings_p")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun onDestroy() {
         //Dispose any composite disposable
         if (!interactor.getCompositeDisposable().isDisposed) {
@@ -110,12 +110,10 @@ class SplitTunnelingPresenterImpl @Inject constructor(
     override fun onToggleButtonClicked() {
         interactor.getAppPreferenceInterface().setReconnectRequired(true)
         if (interactor.getAppPreferenceInterface().splitTunnelToggle) {
-            logger.info("Previous Split Tunnel Toggle Settings: True")
             interactor.getAppPreferenceInterface().splitTunnelToggle = false
             splitTunnelView.setupToggleImage(R.drawable.ic_toggle_button_off)
             splitTunnelView.hideTunnelSettingsLayout()
         } else {
-            logger.info("Previous Split Tunnel Toggle Settings: False")
             interactor.getAppPreferenceInterface().splitTunnelToggle = true
             splitTunnelView.setupToggleImage(R.drawable.ic_toggle_button_on)
             splitTunnelView.showTunnelSettingsLayout()

@@ -18,7 +18,7 @@ class NewsFeedPresenterImpl @Inject constructor(
     private val interactor: ActivityInteractor
 ) : NewsFeedPresenter, NewsFeedListener {
     private var adapter: NewsFeedAdapter? = null
-    private val logger = LoggerFactory.getLogger("news_feed_p")
+    private val logger = LoggerFactory.getLogger("basic")
     override fun onDestroy() {
         interactor.getCompositeDisposable()
         if (!interactor.getCompositeDisposable().isDisposed) {
@@ -81,7 +81,6 @@ class NewsFeedPresenterImpl @Inject constructor(
             wn.isRead = read
         }
         if (showPopUp) {
-            logger.debug("Showing pop up message with Id: $popUpId")
             firstItemToOpen = popUpId
         } else if (firstItemToOpen != -1) {
             logger.debug("Showing unread message with Id: $firstItemToOpen")
