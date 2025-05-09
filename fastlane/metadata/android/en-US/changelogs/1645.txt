@@ -1,0 +1,5 @@
+v3.82(Mobile)
+* Payment UI Upgrade
+* Added json logging support.
+* Added ec flag.
+* Added show message to the user when static ip location is disabled.
