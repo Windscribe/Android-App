@@ -27,7 +27,7 @@ android {
         minSdkVersion rootProject.appMinSdk
         targetSdkVersion rootProject.appTargetSdk
         versionName System.getenv().getOrDefault("VERSION_NAME", "3.82")
-        versionCode 1646
+        versionCode 1648
         vectorDrawables.useSupportLibrary = true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
