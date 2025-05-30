@@ -66,7 +66,7 @@ import com.windscribe.mobile.utils.PermissionManagerImpl
 import com.windscribe.mobile.welcome.WelcomePresenter
 import com.windscribe.mobile.welcome.WelcomePresenterImpl
 import com.windscribe.mobile.welcome.WelcomeView
-import com.windscribe.mobile.viewmodel.EmergencyConnectViewModal
+import com.windscribe.mobile.ui.auth.EmergencyConnectViewModal
 import com.windscribe.mobile.windscribe.WindscribePresenter
 import com.windscribe.mobile.windscribe.WindscribePresenterImpl
 import com.windscribe.mobile.windscribe.WindscribeView

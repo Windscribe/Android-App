@@ -29,7 +29,7 @@ import com.windscribe.mobile.fragments.FeatureFragments
 import com.windscribe.mobile.fragments.FeaturePageTransformer
 import com.windscribe.mobile.welcome.WelcomeActivity
 import com.windscribe.mobile.welcome.state.EmergencyConnectUIState
-import com.windscribe.mobile.viewmodel.EmergencyConnectViewModal
+import com.windscribe.mobile.ui.auth.EmergencyConnectViewModal
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.*

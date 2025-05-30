@@ -398,7 +398,15 @@ open class WindVpnController @Inject constructor(
         val context = coroutineContext
         when (error.code) {
             ERROR_UNABLE_TO_REACH_API, ERROR_UNEXPECTED_API_DATA -> {
-                disconnect()
+                val message = "Unable to reach the server. Please check your internet connection."
+                val errorType = VPNState.ErrorType.WireguardApiError
+                disconnect(
+                    error = VPNState.Error(
+                        error = errorType,
+                        message = message,
+                        showError = true
+                    )
+                )
             }
             ERROR_WG_KEY_LIMIT_EXCEEDED -> {
                 showRetryDialog(error.errorMessage, {

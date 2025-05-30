@@ -19,7 +19,7 @@ import com.windscribe.mobile.custom_view.preferences.DropDownView
 import com.windscribe.mobile.custom_view.preferences.ToggleView
 import com.windscribe.mobile.di.ActivityModule
 import com.windscribe.mobile.mainmenu.MainMenuActivity
-import com.windscribe.mobile.view.AppStartActivity
+import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import org.slf4j.LoggerFactory
 import javax.inject.Inject

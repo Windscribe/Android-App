@@ -15,9 +15,6 @@
         android:theme="@style/DarkTheme"
         tools:targetApi="n">
         <activity
-            android:name=".lipstick.LipstickActivity"
-            android:exported="false" />
-        <activity
             android:name=".advance.AdvanceParamsActivity"
             android:exported="false"
             />
@@ -86,7 +83,7 @@
             android:name=".networksecurity.NetworkSecurityActivity"/>
         <activity android:name=".upgradeactivity.UpgradeSuccessActivity" />
         <activity
-            android:name=".view.AppStartActivity"
+            android:name=".ui.AppStartActivity"
             android:exported="true"
             android:theme="@style/AppTheme.WindLauncher" >
             <intent-filter>

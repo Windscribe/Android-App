@@ -12,7 +12,7 @@ import com.windscribe.mobile.R
 import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.di.ActivityModule
 import com.windscribe.mobile.di.DaggerActivityComponent
-import com.windscribe.mobile.view.AppStartActivity
+import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.welcome.WelcomeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import org.slf4j.LoggerFactory
