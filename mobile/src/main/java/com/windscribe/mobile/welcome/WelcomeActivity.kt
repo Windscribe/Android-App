@@ -33,7 +33,7 @@ import com.windscribe.mobile.welcome.fragment.SignUpFragment
 import com.windscribe.mobile.welcome.fragment.WelcomeActivityCallback
 import com.windscribe.mobile.welcome.fragment.WelcomeFragment
 import com.windscribe.mobile.welcome.state.EmergencyConnectUIState
-import com.windscribe.mobile.viewmodel.EmergencyConnectViewModal
+import com.windscribe.mobile.ui.auth.EmergencyConnectViewModal
 import com.windscribe.mobile.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.constants.NetworkKeyConstants

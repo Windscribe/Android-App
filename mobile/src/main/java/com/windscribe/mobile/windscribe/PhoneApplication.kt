@@ -5,14 +5,9 @@ package com.windscribe.mobile.windscribe
 
 import android.content.Intent
 import com.windscribe.mobile.R
-import com.windscribe.mobile.connectionmode.AllProtocolFailedFragment
-import com.windscribe.mobile.connectionmode.ConnectionChangeFragment
-import com.windscribe.mobile.connectionmode.ConnectionFailureFragment
-import com.windscribe.mobile.connectionmode.DebugLogSentFragment
-import com.windscribe.mobile.connectionmode.SetupPreferredProtocolFragment
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
-import com.windscribe.mobile.view.AppStartActivity
-import com.windscribe.mobile.view.ui.FragmentView
+import com.windscribe.mobile.ui.AppStartActivity
+import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.ApplicationInterface
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
@@ -53,36 +48,25 @@ class PhoneApplication : Windscribe(), ApplicationInterface {
         autoConnectionModeCallback: AutoConnectionModeCallback,
         protocolInformation: ProtocolInformation?
     ): Boolean {
-        return if (activeActivity is AppStartActivity) {
-            val fragment = when (fragmentType) {
-                FragmentType.ConnectionFailure -> ConnectionFailureFragment.newInstance(
-                    protocolInformationList, autoConnectionModeCallback
-                )
-                FragmentType.ConnectionChange -> ConnectionChangeFragment.newInstance(
-                    protocolInformationList, autoConnectionModeCallback
-                )
-                FragmentType.SetupAsPreferredProtocol -> SetupPreferredProtocolFragment.newInstance(
-                    protocolInformation, autoConnectionModeCallback
-                )
-                FragmentType.DebugLogSent -> DebugLogSentFragment.newInstance(
-                    autoConnectionModeCallback
-                )
-                FragmentType.AllProtocolFailed -> AllProtocolFailedFragment.newInstance(
-                    autoConnectionModeCallback
-                )
+        if (activeActivity is AppStartActivity) {
+            val activity = activeActivity as AppStartActivity
+            activity.viewmodel.setConnectionCallback(protocolInformationList, autoConnectionModeCallback, protocolInformation)
+            activity.runOnUiThread {
+                when (fragmentType) {
+                    FragmentType.ConnectionFailure -> activity.navController.navigate(Screen.ConnectionFailure.route)
+                    FragmentType.ConnectionChange -> activity.navController.navigate(Screen.ConnectionChange.route)
+                    FragmentType.SetupAsPreferredProtocol -> activity.navController.navigate(Screen.SetupPreferredProtocol.route)
+                    FragmentType.DebugLogSent -> activity.navController.navigate(Screen.DebugLogSent.route)
+                    FragmentType.AllProtocolFailed -> activity.navController.navigate(Screen.AllProtocolFailed.route)
+                }
             }
-            (activeActivity as? AppStartActivity)?.presentDialog {
-                FragmentView(fragment, activeActivity as AppStartActivity)
-            }
-            true
-        } else {
-            false
+            return true
         }
+        return false
     }
 
     override fun cancelDialog() {
         if (activeActivity is AppStartActivity) {
-            (activeActivity as AppStartActivity).cancelDialog()
             activeActivity?.supportFragmentManager?.popBackStack()
         }
     }

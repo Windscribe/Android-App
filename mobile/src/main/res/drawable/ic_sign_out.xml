@@ -1,14 +1,10 @@
-<!--
-  ~ Copyright (c) 2021 Windscribe Limited.
-  -->
-
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="16dp"
-    android:height="16dp"
-    android:viewportHeight="16"
-    android:viewportWidth="16">
-    <path
-        android:fillColor="@color/colorRed"
-        android:fillType="nonZero"
-        android:pathData="M12,3.446L9,5.161v7.393l3,-1.715L12,3.446zM7,12L7,4l3.5,-2L4,2v10h3zM7,14L2,14L2,0h12v12l-7,4v-2z" />
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <path
+      android:pathData="M18.5,5V17L12.5,20V8L15.5,6.5H7.5V10L6,11.5V5H18.5ZM7.526,12.918C7.821,12.678 8.255,12.695 8.53,12.97C8.805,13.244 8.822,13.679 8.582,13.974L8.53,14.03L7.31,15.25H10C10.414,15.25 10.75,15.586 10.75,16C10.75,16.414 10.414,16.75 10,16.75H7.31L8.53,17.97L8.582,18.026C8.822,18.321 8.805,18.756 8.53,19.03C8.255,19.305 7.821,19.322 7.526,19.082L7.47,19.03L4.439,16L7.47,12.97L7.526,12.918ZM14,8.927V17.572L17,16.072V7.427L14,8.927Z"
+      android:fillColor="#FEBC2E"
+      android:fillAlpha="0.996078"/>
 </vector>

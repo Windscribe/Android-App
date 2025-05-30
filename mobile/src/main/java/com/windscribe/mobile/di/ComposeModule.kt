@@ -1,28 +1,43 @@
 package com.windscribe.mobile.di
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.windscribe.mobile.lipstick.LipstickViewmodel
-import com.windscribe.mobile.lipstick.LipstickViewmodelImpl
-import com.windscribe.mobile.viewmodel.AppStartViewModel
-import com.windscribe.mobile.viewmodel.AppStartViewModelImpl
-import com.windscribe.mobile.viewmodel.ConfigViewmodel
-import com.windscribe.mobile.viewmodel.ConfigViewmodelImpl
-import com.windscribe.mobile.viewmodel.ConnectionViewmodel
-import com.windscribe.mobile.viewmodel.ConnectionViewmodelImpl
-import com.windscribe.mobile.viewmodel.EditCustomConfigViewmodel
-import com.windscribe.mobile.viewmodel.EditCustomConfigViewmodelImpl
-import com.windscribe.mobile.viewmodel.EmergencyConnectViewModal
-import com.windscribe.mobile.viewmodel.HomeViewmodel
-import com.windscribe.mobile.viewmodel.HomeViewmodelImpl
-import com.windscribe.mobile.viewmodel.LoginViewModel
-import com.windscribe.mobile.viewmodel.NewsfeedViewmodel
-import com.windscribe.mobile.viewmodel.PowerWhitelistViewmodel
-import com.windscribe.mobile.viewmodel.PowerWhitelistViewmodelImpl
-import com.windscribe.mobile.viewmodel.ServerViewModel
-import com.windscribe.mobile.viewmodel.ServerViewModelImpl
-import com.windscribe.mobile.viewmodel.SharedLinkViewmodel
-import com.windscribe.mobile.viewmodel.SharedLinkViewmodelImpl
-import com.windscribe.mobile.viewmodel.SignupViewModel
+import com.windscribe.mobile.ui.preferences.lipstick.LipstickViewmodel
+import com.windscribe.mobile.ui.preferences.lipstick.LipstickViewmodelImpl
+import com.windscribe.mobile.ui.AppStartActivityViewModel
+import com.windscribe.mobile.ui.AppStartActivityViewModelImpl
+import com.windscribe.mobile.ui.auth.AppStartViewModel
+import com.windscribe.mobile.ui.auth.AppStartViewModelImpl
+import com.windscribe.mobile.ui.serverlist.ConfigViewmodel
+import com.windscribe.mobile.ui.serverlist.ConfigViewmodelImpl
+import com.windscribe.mobile.ui.connection.ConnectionViewmodel
+import com.windscribe.mobile.ui.connection.ConnectionViewmodelImpl
+import com.windscribe.mobile.ui.popup.EditCustomConfigViewmodel
+import com.windscribe.mobile.ui.popup.EditCustomConfigViewmodelImpl
+import com.windscribe.mobile.ui.auth.EmergencyConnectViewModal
+import com.windscribe.mobile.ui.home.HomeViewmodel
+import com.windscribe.mobile.ui.home.HomeViewmodelImpl
+import com.windscribe.mobile.ui.auth.LoginViewModel
+import com.windscribe.mobile.ui.popup.NewsfeedViewmodel
+import com.windscribe.mobile.ui.popup.PowerWhitelistViewmodel
+import com.windscribe.mobile.ui.popup.PowerWhitelistViewmodelImpl
+import com.windscribe.mobile.ui.serverlist.ServerViewModel
+import com.windscribe.mobile.ui.serverlist.ServerViewModelImpl
+import com.windscribe.mobile.ui.popup.SharedLinkViewmodel
+import com.windscribe.mobile.ui.popup.SharedLinkViewmodelImpl
+import com.windscribe.mobile.ui.auth.SignupViewModel
+import com.windscribe.mobile.ui.preferences.account.AccountViewModel
+import com.windscribe.mobile.ui.preferences.account.AccountViewModelImpl
+import com.windscribe.mobile.ui.preferences.connection.ConnectionViewModel
+import com.windscribe.mobile.ui.preferences.connection.ConnectionViewModelImpl
+import com.windscribe.mobile.ui.preferences.main.MainMenuViewModel
+import com.windscribe.mobile.ui.preferences.main.MainMenuViewModelImpl
+import com.windscribe.mobile.ui.preferences.general.GeneralViewModel
+import com.windscribe.mobile.ui.preferences.general.GeneralViewModelImpl
+import com.windscribe.mobile.ui.preferences.help.HelpViewModel
+import com.windscribe.mobile.ui.preferences.help.HelpViewModelImpl
+import com.windscribe.mobile.ui.preferences.robert.RobertViewModel
+import com.windscribe.mobile.ui.preferences.robert.RobertViewModelImpl
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
@@ -40,9 +55,11 @@ import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.services.sso.GoogleSignInManager
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.windscribe.vpn.workers.WindScribeWorkManager
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
+import kotlin.jvm.java
 
 @Module
 class ComposeModule {
@@ -66,7 +83,8 @@ class ComposeModule {
         autoConnectionManager: AutoConnectionManager,
         latencyRepository: LatencyRepository,
         userRepository: UserRepository,
-        googleSignInManager: GoogleSignInManager
+        googleSignInManager: GoogleSignInManager,
+        workManager: WindScribeWorkManager
     ): ViewModelProvider.Factory {
         return object : ViewModelProvider.Factory {
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
@@ -77,7 +95,14 @@ class ComposeModule {
                         vpnConnectionStateManager
                     ) as T
                 } else if (modelClass.isAssignableFrom(AppStartViewModel::class.java)) {
-                    return AppStartViewModelImpl(appPreferenceHelper, apiCallManager, vpnConnectionStateManager, googleSignInManager, firebaseManager, userRepository) as T
+                    return AppStartViewModelImpl(
+                        appPreferenceHelper,
+                        apiCallManager,
+                        vpnConnectionStateManager,
+                        googleSignInManager,
+                        firebaseManager,
+                        userRepository
+                    ) as T
                 } else if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
                     return LoginViewModel(
                         apiCallManager,
@@ -123,8 +148,6 @@ class ComposeModule {
                     ) as T
                 } else if (modelClass.isAssignableFrom(ConfigViewmodel::class.java)) {
                     return ConfigViewmodelImpl(localDbInterface, latencyRepository) as T
-                } else if (modelClass.isAssignableFrom(LipstickViewmodel::class.java)) {
-                    return LipstickViewmodelImpl(appPreferenceHelper, serverListRepository) as T
                 } else if (modelClass.isAssignableFrom(PowerWhitelistViewmodel::class.java)) {
                     return PowerWhitelistViewmodelImpl(appPreferenceHelper) as T
                 } else if (modelClass.isAssignableFrom(SharedLinkViewmodel::class.java)) {
@@ -137,6 +160,22 @@ class ComposeModule {
                     ) as T
                 } else if (modelClass.isAssignableFrom(EditCustomConfigViewmodel::class.java)) {
                     return EditCustomConfigViewmodelImpl(localDbInterface, windVpnController) as T
+                } else if (modelClass.isAssignableFrom(AppStartActivityViewModel::class.java)) {
+                    return AppStartActivityViewModelImpl() as T
+                } else if (modelClass.isAssignableFrom(MainMenuViewModel::class.java)) {
+                    return MainMenuViewModelImpl(userRepository) as T
+                } else if (modelClass.isAssignableFrom(GeneralViewModel::class.java)) {
+                    return GeneralViewModelImpl(appPreferenceHelper, userRepository) as T
+                } else if (modelClass.isAssignableFrom(AccountViewModel::class.java)) {
+                    return AccountViewModelImpl(userRepository, apiCallManager, workManager) as T
+                } else if (modelClass.isAssignableFrom(ConnectionViewModel::class.java)) {
+                    return ConnectionViewModelImpl(userRepository) as T
+                } else if (modelClass.isAssignableFrom(RobertViewModel::class.java)) {
+                    return RobertViewModelImpl(userRepository) as T
+                } else if (modelClass.isAssignableFrom(LipstickViewmodel::class.java)) {
+                    return LipstickViewmodelImpl(appPreferenceHelper, serverListRepository) as T
+                } else if (modelClass.isAssignableFrom(HelpViewModel::class.java)) {
+                    return HelpViewModelImpl(userRepository) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
             }

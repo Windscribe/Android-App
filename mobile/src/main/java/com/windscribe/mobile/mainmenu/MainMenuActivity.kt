@@ -27,7 +27,6 @@ import com.windscribe.mobile.dialogs.ShareAppLinkDialog
 import com.windscribe.mobile.email.AddEmailActivity
 import com.windscribe.mobile.generalsettings.GeneralSettingsActivity
 import com.windscribe.mobile.help.HelpActivity
-import com.windscribe.mobile.lipstick.LipstickActivity
 import com.windscribe.mobile.robert.RobertSettingsActivity
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.utils.UiUtil
@@ -37,6 +36,7 @@ import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
+import kotlin.jvm.java
 
 class MainMenuActivity : BaseActivity(), MainMenuView {
     @JvmField
@@ -208,9 +208,7 @@ class MainMenuActivity : BaseActivity(), MainMenuView {
     }
 
     override fun showLipstickView() {
-        val intent = Intent(this, LipstickActivity::class.java)
-        val options = ActivityOptions.makeSceneTransitionAnimation(this)
-        startActivity(intent, options.toBundle())
+
     }
 
     override fun gotoLoginRegistrationActivity() {
