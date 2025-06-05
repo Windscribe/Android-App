@@ -37,7 +37,16 @@ class GoogleSignInManagerImpl(val context: Context) : GoogleSignInManager() {
                 }
             } else {
                 val exception = completedTask.exception
-                callback(null, exception?.localizedMessage ?: "Google Sign-In failed.")
+                if (exception is com.google.android.gms.common.api.ApiException) {
+                    val statusCode = exception.statusCode
+                    logger.error("Google Sign-In failed with status code: $statusCode")
+                    callback(null, "Google Sign-In failed with status code: $statusCode")
+                    return@addOnCompleteListener
+                } else {
+                    logger.error("Google Sign-In failed with exception: $exception")
+                    callback(null, "Google Sign-In failed.")
+                    return@addOnCompleteListener
+                }
             }
         }
     }

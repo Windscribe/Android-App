@@ -48,8 +48,12 @@ import com.windscribe.mobile.ui.popup.SharedLinkViewmodel
 import com.windscribe.mobile.ui.preferences.about.AboutScreen
 import com.windscribe.mobile.ui.preferences.account.AccountScreen
 import com.windscribe.mobile.ui.preferences.account.AccountViewModel
+import com.windscribe.mobile.ui.preferences.advance.AdvanceScreen
+import com.windscribe.mobile.ui.preferences.advance.AdvanceViewModel
 import com.windscribe.mobile.ui.preferences.connection.ConnectionScreen
 import com.windscribe.mobile.ui.preferences.connection.ConnectionViewModel
+import com.windscribe.mobile.ui.preferences.debug.DebugScreen
+import com.windscribe.mobile.ui.preferences.debug.DebugViewModel
 import com.windscribe.mobile.ui.preferences.general.GeneralScreen
 import com.windscribe.mobile.ui.preferences.help.HelpScreen
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelScreen
@@ -57,7 +61,15 @@ import com.windscribe.mobile.ui.preferences.robert.RobertScreen
 import com.windscribe.mobile.ui.preferences.general.GeneralViewModel
 import com.windscribe.mobile.ui.preferences.help.HelpViewModel
 import com.windscribe.mobile.ui.preferences.lipstick.LipstickViewmodel
+import com.windscribe.mobile.ui.preferences.network_details.NetworkDetailScreen
+import com.windscribe.mobile.ui.preferences.network_details.NetworkDetailViewModel
+import com.windscribe.mobile.ui.preferences.network_options.NetworkOptionsScreen
+import com.windscribe.mobile.ui.preferences.network_options.NetworkOptionsViewModel
 import com.windscribe.mobile.ui.preferences.robert.RobertViewModel
+import com.windscribe.mobile.ui.preferences.split_tunnel.SplitTunnelScreen
+import com.windscribe.mobile.ui.preferences.split_tunnel.SplitTunnelViewModel
+import com.windscribe.mobile.ui.preferences.ticket.TicketScreen
+import com.windscribe.mobile.ui.preferences.ticket.TicketViewModel
 import com.windscribe.mobile.ui.serverlist.ConfigViewmodel
 import com.windscribe.mobile.ui.serverlist.ServerViewModel
 import kotlin.jvm.java
@@ -177,6 +189,64 @@ private fun NavGraphBuilder.addNavigationScreens() {
     composable(route = Screen.PowerWhitelist.route) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             ViewModelRoute(PowerWhitelistViewmodel::class.java) { PowerWhitelistScreen(it) }
+        }
+    }
+    composable(route = Screen.Ticket.route, enterTransition = {
+        slideInHorizontally(initialOffsetX = { -it })
+    }, exitTransition = {
+        slideOutHorizontally(targetOffsetX = { it })
+    }) {
+        ViewModelRoute(TicketViewModel::class.java) {
+            TicketScreen(it)
+        }
+    }
+    composable(route = Screen.Advance.route, enterTransition = {
+        slideInHorizontally(initialOffsetX = { -it })
+    }, exitTransition = {
+        slideOutHorizontally(targetOffsetX = { it })
+    }) {
+        ViewModelRoute(AdvanceViewModel::class.java) {
+            AdvanceScreen(it)
+        }
+    }
+    composable(route = Screen.Debug.route, enterTransition = {
+        slideInHorizontally(initialOffsetX = { -it })
+    }, exitTransition = {
+        slideOutHorizontally(targetOffsetX = { it })
+    }) {
+        ViewModelRoute(DebugViewModel::class.java) {
+            DebugScreen(it)
+        }
+    }
+    composable(route = Screen.SplitTunnel.route, enterTransition = {
+        slideInHorizontally(initialOffsetX = { -it })
+    }, exitTransition = {
+        slideOutHorizontally(targetOffsetX = { it })
+    }) {
+        ViewModelRoute(SplitTunnelViewModel::class.java) {
+            SplitTunnelScreen(it)
+        }
+    }
+    composable(route = Screen.NetworkOptions.route, enterTransition = {
+        slideInHorizontally(initialOffsetX = { -it })
+    }, exitTransition = {
+        slideOutHorizontally(targetOffsetX = { it })
+    }) {
+        ViewModelRoute(NetworkOptionsViewModel::class.java) {
+            NetworkOptionsScreen(it)
+        }
+    }
+    composable(route = Screen.NetworkDetails.route, enterTransition = {
+        slideInHorizontally(initialOffsetX = { -it })
+    }, exitTransition = {
+        slideOutHorizontally(targetOffsetX = { it })
+    }) {
+        ViewModelRoute(NetworkDetailViewModel::class.java) {
+            val navController = LocalNavController.current
+            val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
+            val data = savedStateHandle?.get<String>("network_name")
+            it.networkNetworkName = data
+            NetworkDetailScreen(it)
         }
     }
     composable(route = Screen.ShareLink.route) {

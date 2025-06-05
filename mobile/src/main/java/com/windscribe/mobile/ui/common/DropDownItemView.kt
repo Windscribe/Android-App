@@ -55,7 +55,7 @@ fun DropDownItemView(
 ) {
     val expanded = remember { mutableStateOf(false) }
     var selected by remember(selectedItemKey, items) {
-        mutableStateOf(items.find { it.key == selectedItemKey } ?: items.first())
+        mutableStateOf(items.find { it.key == selectedItemKey })
     }
     Column(
         modifier = Modifier
@@ -86,7 +86,7 @@ fun DropDownItemView(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = selected.label,
+                        text = selected?.label ?: "",
                         style = font16,
                         color = MaterialTheme.colorScheme.preferencesSubtitleColor
                     )
@@ -113,7 +113,7 @@ fun DropDownItemView(
                             },
                             text = {
                                 Text(
-                                    text = it.label,
+                                    text = it.label ?: "",
                                     color = MaterialTheme.colorScheme.backgroundColor,
                                     style = font16,
                                     textAlign = TextAlign.Center,

@@ -91,7 +91,7 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
 
 @Composable
 private fun HandleAlertState(viewModel: AccountViewModel?) {
-    val activity = LocalContext.current as AppStartActivity
+    val activity = LocalContext.current as? AppStartActivity
     val alertState by viewModel?.alertState?.collectAsState() ?: remember {
         mutableStateOf(AlertState.None)
     }
@@ -323,7 +323,7 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
 
 @Composable
 private fun PlanInfo(viewModel: AccountViewModel? = null) {
-    val activity = LocalContext.current as AppStartActivity
+    val activity = LocalContext.current as? AppStartActivity
     val accountState by viewModel?.accountState?.collectAsState() ?: remember {
         mutableStateOf(AccountState.Loading)
     }
@@ -369,7 +369,7 @@ private fun PlanInfo(viewModel: AccountViewModel? = null) {
             Spacer(modifier = Modifier.weight(1f))
             Text(modifier = Modifier.clickable {
                 if (type is AccountType.Free) {
-                    activity.startActivity(UpgradeActivity.getStartIntent(activity))
+                    activity?.startActivity(UpgradeActivity.getStartIntent(activity))
                     return@clickable
                 }
             }, text = planAction, style = font16.copy(color = AppColors.cyberBlue))
@@ -509,7 +509,7 @@ private fun LazyLogin(viewModel: AccountViewModel?) {
 
 @Composable
 private fun HandleGoto(viewModel: AccountViewModel?) {
-    val activity = LocalContext.current as AppStartActivity
+    val activity = LocalContext.current as? AppStartActivity
     val goto by viewModel?.goTo?.collectAsState(initial = AccountGoTo.None) ?: remember {
         mutableStateOf(
             AccountGoTo.None
@@ -517,7 +517,7 @@ private fun HandleGoto(viewModel: AccountViewModel?) {
     }
     LaunchedEffect(goto) {
         when (goto) {
-            is AccountGoTo.ManageAccount -> activity.openUrl((goto as AccountGoTo.ManageAccount).url)
+            is AccountGoTo.ManageAccount -> activity?.openUrl((goto as AccountGoTo.ManageAccount).url)
             is AccountGoTo.Error -> Toast.makeText(
                 activity,
                 (goto as AccountGoTo.Error).message,
@@ -527,9 +527,4 @@ private fun HandleGoto(viewModel: AccountViewModel?) {
             else -> {}
         }
     }
-}
-
-@Composable
-private fun EnterLazyLoginCode() {
-
 }

@@ -6,7 +6,6 @@ sealed class AuthInputFields {
     object Username : AuthInputFields()
     object Password : AuthInputFields()
     object Email : AuthInputFields()
-    object Voucher : AuthInputFields()
     object TwoFactor : AuthInputFields()
 }
 

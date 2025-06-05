@@ -23,11 +23,12 @@ object AppColors {
     val gray = Color(0x0DFFFFFF)
     val homeBackground = Color(0xFF050A11)
     val homeHeaderBackground = Color(0x4D050A11)
-    val black54 = Color(0x8A000000);
+    val black = Color(0xFF000000);
     val connectedBlue = Color(0xFF0061E8)
     val connectedGradient = Color(0xFF0055CD)
     val cyberBlue = Color(0xFF3BFFEF)
     val navyBlue = Color(0xFF1A3880)
     val goldenLime = Color(0x0DFEBC2E)
     val yellow = Color(0xFEFEBC2E)
+    val lightBlue = Color(0xFF85A7E2)
 }

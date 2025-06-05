@@ -34,7 +34,9 @@ fun NavBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .statusBarsPadding(),
+            .statusBarsPadding()
+            .padding(top = 24.dp, bottom = 8.dp)
+        ,
     ) {
         Image(
             painter = painterResource(id = R.drawable.arrow_left),

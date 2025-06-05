@@ -37,6 +37,7 @@ abstract class AppStartViewModel : ViewModel() {
     abstract val isConnected: StateFlow<Boolean>
     abstract val loggedIn: Boolean
     abstract val signInIntent: Intent?
+    abstract fun clearLoginState()
 }
 
 class AppStartViewModelImpl @Inject constructor(
@@ -128,6 +129,12 @@ class AppStartViewModelImpl @Inject constructor(
     private fun updateState(state: SsoLoginState) {
         viewModelScope.launch {
             _loginState.emit(state)
+        }
+    }
+
+    override fun clearLoginState() {
+        viewModelScope.launch {
+            _loginState.emit(SsoLoginState.Idle)
         }
     }
 

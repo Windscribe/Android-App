@@ -214,6 +214,9 @@ class UserRepository(
             connectionDataRepository.update().await()
             emit(UserDataState.Loading("Getting server list"))
             serverListRepository.update().await()
+            if (appContext.vpnConnectionStateManager.isVPNActive()) {
+                vpnController.disconnectAsync()
+            }
             Util.removeLastSelectedLocation()
             workManager.onAppStart()
             workManager.onAppMovedToForeground()

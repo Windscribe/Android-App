@@ -90,6 +90,8 @@ import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.connection.LocationInfoState
 import com.windscribe.mobile.ui.serverlist.ServerViewModel
 import com.windscribe.mobile.ui.connection.ToastMessage
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
+import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.vpn.backend.Util
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
@@ -660,8 +662,9 @@ private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Home
 }
 
 @Composable
-@Preview(showSystemUi = true)
-@PreviewScreenSizes
+@MultiDevicePreview
 private fun HomeScreenPreview() {
-    NavigationStack(Screen.Home)
+    PreviewWithNav {
+        HomeScreen(null, null, null, null)
+    }
 }

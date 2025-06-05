@@ -40,6 +40,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.common.Description
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
+import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.model.DropDownItem
 import com.windscribe.mobile.ui.theme.backgroundColor
 import com.windscribe.mobile.ui.theme.backgroundColorInverted
@@ -49,35 +52,39 @@ import com.windscribe.mobile.ui.theme.primaryTextColor
 
 @Composable
 fun AppCustomBackground(viewmodel: LipstickViewmodel? = null) {
-    Column(
-        modifier = Modifier
-            .padding(top = 16.dp)
-            .background(color = MaterialTheme.colorScheme.backgroundColorInverted.copy(alpha = 0.08f), shape = RoundedCornerShape(16.dp))
-            .zIndex(10.0f)
-    ) {
-        Box {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Image(painterResource(R.drawable.ic_switch), contentDescription = "", colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor))
-                Spacer(modifier = Modifier.padding(8.dp))
-                Text(
-                    stringResource(R.string.app_background),
-                    style = font16,
-                    color = MaterialTheme.colorScheme.primaryTextColor
-                )
-                Spacer(modifier = Modifier.weight(1.0f))
-            }
-        }
-        HorizontalDivider(modifier = Modifier.padding(start = 16.dp), color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f))
+    Column {
+        Header()
+        Spacer(modifier = Modifier.height(1.dp))
         AspectRationSection(viewmodel)
-        HorizontalDivider(modifier = Modifier.padding(start = 16.dp), color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f))
+        Spacer(modifier = Modifier.height(1.dp))
         WhenDisconnectedSection(viewmodel)
-        HorizontalDivider(modifier = Modifier.padding(start = 16.dp), color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f))
+        Spacer(modifier = Modifier.height(1.dp))
         WhenConnectedSection(viewmodel)
     }
-    PreferencesBottomSection(R.string.app_background_description)
+}
+
+@Composable
+private fun Header() {
+    Column(modifier = Modifier.fillMaxWidth().background(
+        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+    ).padding(16.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically,) {
+            Image(
+                painterResource(R.drawable.ic_switch),
+                contentDescription = "",
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor)
+            )
+            Spacer(modifier = Modifier.padding(8.dp))
+            Text(
+                stringResource(R.string.app_background),
+                style = font16,
+                color = MaterialTheme.colorScheme.primaryTextColor
+            )
+        }
+        Spacer(modifier = Modifier.padding(8.dp))
+        Description(stringResource(R.string.app_background_description))
+    }
 }
 
 @Composable
@@ -91,7 +98,8 @@ private fun AspectRationSection(viewmodel: LipstickViewmodel?) {
         isDropdownExpanded = expanded,
         onDropdownClick = { expanded.value = !expanded.value },
         dropdownItems = LookAndFeelHelper.getAspectRatioOptions(),
-        onItemSelected = { viewmodel?.onAspectRatioItemSelected(it) }
+        onItemSelected = { viewmodel?.onAspectRatioItemSelected(it) },
+        shape = RoundedCornerShape(0.dp)
     )
 }
 
@@ -107,16 +115,15 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? -> uri?.let { viewmodel?.loadDisconnectedCustomBackground(context, it) } }
-    if (bundledItem == null) return
     DropdownSection(
         title = stringResource(R.string.when_disconnected),
         displayValue = stringResource(item?.value?.title ?: R.string.flags),
         isDropdownExpanded = expandedMain,
         onDropdownClick = { expandedMain.value = !expandedMain.value },
         dropdownItems = LookAndFeelHelper.getBackgroundOptions(),
-        onItemSelected = { viewmodel.onWhenDisconnectedBackgroundItemSelected(it) },
+        onItemSelected = { viewmodel?.onWhenDisconnectedBackgroundItemSelected(it) },
         extraContent = {
-            val title = bundledItem.value.label.ifBlank {
+            val title = bundledItem?.value?.label?.ifBlank {
                 stringResource(bundledItem.value.title)
             }
             if (item?.value?.id == 2) {
@@ -127,7 +134,7 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        title,
+                        title ?: "",
                         style = font12,
                         color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f)
                     )
@@ -171,7 +178,8 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
                     )
                 }
             }
-        }
+        },
+        shape = RoundedCornerShape(0.dp)
     )
 }
 
@@ -187,17 +195,16 @@ private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? -> uri?.let { viewmodel?.loadConnectedCustomBackground(context, it) } }
-    if (bundledItem == null) return
     DropdownSection(
         title = stringResource(R.string.when_connected),
         displayValue = stringResource(item?.value?.title ?: R.string.flags),
         isDropdownExpanded = expandedMain,
         onDropdownClick = { expandedMain.value = !expandedMain.value },
         dropdownItems = LookAndFeelHelper.getBackgroundOptions(),
-        onItemSelected = { viewmodel.onWhenConnectedBackgroundItemSelected(it) },
+        onItemSelected = { viewmodel?.onWhenConnectedBackgroundItemSelected(it) },
         shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
         extraContent = {
-            val title = bundledItem.value.label.ifBlank {
+            val title = bundledItem?.value?.label?.ifBlank {
                 stringResource(bundledItem.value.title)
             }
             if (item?.value?.id == 2) {
@@ -208,7 +215,7 @@ private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        title,
+                        title ?: "",
                         style = font12,
                         color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f)
                     )
@@ -268,7 +275,12 @@ private fun DropdownSection(
     shape: RoundedCornerShape = RoundedCornerShape(0.dp),
     extraContent: (@Composable () -> Unit)? = null
 ) {
-    Box(Modifier.background(MaterialTheme.colorScheme.backgroundColor.copy(alpha = 0.08f), shape = shape)) {
+    Box(
+        Modifier.background(
+            MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+            shape = shape
+        )
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = modifier
@@ -287,7 +299,11 @@ private fun DropdownSection(
                     .clickable {
                         onDropdownClick()
                     }) {
-                Text(displayValue, style = font12, color = MaterialTheme.colorScheme.primaryTextColor)
+                Text(
+                    displayValue,
+                    style = font12,
+                    color = MaterialTheme.colorScheme.primaryTextColor
+                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
                     painter = painterResource(id = R.drawable.ic_cm_icon),
@@ -300,9 +316,11 @@ private fun DropdownSection(
         }
 
         if (isDropdownExpanded.value) {
-            Box(modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 8.dp)) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 8.dp)
+            ) {
                 DropDownItems(
                     expanded = isDropdownExpanded,
                     items = dropdownItems,
@@ -347,15 +365,9 @@ private fun DropDownItems(
 }
 
 @Composable
-@Preview(showBackground = true)
+@MultiDevicePreview
 private fun AppCustomBackgroundPreview() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(16.dp)
-    ) {
-        Spacer(modifier = Modifier.height(30.dp))
+    PreviewWithNav {
         AppCustomBackground()
     }
 }
