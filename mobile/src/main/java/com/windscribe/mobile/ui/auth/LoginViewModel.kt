@@ -236,6 +236,7 @@ class LoginViewModel @Inject constructor(
                 userRepository.prepareDashboard(firebaseToken).collect {
                     when (it) {
                         is UserDataState.Error -> {
+                            preferenceHelper.sessionHash = null
                             updateState(
                                 LoginState.Error(
                                     AuthError.InputError(it.error)

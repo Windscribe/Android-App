@@ -1,5 +1,7 @@
 package com.windscribe.mobile.ui.preferences.lipstick
 
+import android.R.attr.description
+import android.R.attr.onClick
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,6 +32,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.common.Description
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.theme.backgroundColorInverted
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
@@ -50,64 +55,53 @@ fun RenameLocations(viewmodel: LipstickViewmodel? = null) {
             }
         }
 
-    Column(
-        modifier = Modifier
-            .padding(top = 16.dp)
-            .background(
-                color = MaterialTheme.colorScheme.backgroundColorInverted.copy(alpha = 0.08f),
-                shape = RoundedCornerShape(16.dp)
-            )
-            .zIndex(10.0f)
-    ) {
-        Box {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Image(
-                    painterResource(R.drawable.ic_rename_location),
-                    contentDescription = "Rename server locations.",
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor)
-                )
-                Spacer(modifier = Modifier.padding(8.dp))
-                Text(
-                    stringResource(R.string.renamed_location),
-                    style = font16,
-                    color = MaterialTheme.colorScheme.primaryTextColor
-                )
-                Spacer(modifier = Modifier.weight(1.0f))
-            }
-        }
-        HorizontalDivider(
-            modifier = Modifier.padding(start = 16.dp),
-            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f)
-        )
+    Column{
+        Header()
+        Spacer(modifier = Modifier.height(1.dp))
         Section(R.string.export_locations, "Export server list file.") {
             exportPickerLauncher.launch("locations.json")
         }
-        HorizontalDivider(
-            modifier = Modifier.padding(start = 16.dp),
-            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f)
-        )
+        Spacer(modifier = Modifier.height(1.dp))
         Section(R.string.import_locations, "Import server list file.") {
             importPickerLauncher.launch(arrayOf("*/*"))
         }
-        HorizontalDivider(
-            modifier = Modifier.padding(start = 16.dp),
-            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f)
-        )
-        Section(R.string.reset, "Reset custom server list file.") {
+        Spacer(modifier = Modifier.height(1.dp))
+        Section(R.string.reset, "Reset custom server list file.", shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)) {
             viewmodel?.onResetClick()
         }
     }
-    PreferencesBottomSection(R.string.renamed_location_description)
 }
 
 @Composable
-private fun Section(title: Int, description: String, onClick: () -> Unit) {
-    Row(modifier = Modifier
-        .padding(16.dp)
-        .clickable { onClick() }) {
+private fun Header() {
+    Column(modifier = Modifier.fillMaxWidth().background(
+        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+    ).padding(16.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically,) {
+            Image(
+                painterResource(R.drawable.ic_sound),
+                contentDescription = "",
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor)
+            )
+            Spacer(modifier = Modifier.padding(8.dp))
+            Text(
+                stringResource(R.string.renamed_location),
+                style = font16,
+                color = MaterialTheme.colorScheme.primaryTextColor
+            )
+        }
+        Spacer(modifier = Modifier.padding(8.dp))
+        Description(stringResource(R.string.renamed_location_description))
+    }
+}
+
+@Composable
+private fun Section(title: Int, description: String, shape: RoundedCornerShape = RoundedCornerShape(0.dp), onClick: () -> Unit) {
+    Row(modifier =  Modifier.background(
+        MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+        shape = shape
+    ).padding(16.dp).clickable { onClick() }) {
         Text(
             stringResource(title),
             style = font12,
@@ -123,7 +117,7 @@ private fun Section(title: Int, description: String, onClick: () -> Unit) {
 }
 
 @Composable
-@Preview(showBackground = true)
+@MultiDevicePreview
 private fun AppCustomBackgroundPreview() {
     Column(
         modifier = Modifier

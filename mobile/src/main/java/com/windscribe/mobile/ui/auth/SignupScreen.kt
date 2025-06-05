@@ -55,6 +55,8 @@ import com.windscribe.mobile.ui.common.AppProgressBar
 import com.windscribe.mobile.ui.common.AuthTextField
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.TextButton
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
+import com.windscribe.mobile.ui.helper.PreviewWithNav
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -321,8 +323,10 @@ private fun SignupErrorText(errorType: AuthError) {
     }
 }
 
-@Preview
 @Composable
+@MultiDevicePreview
 fun SignupScreenPreview() {
-    NavigationStack(Screen.Signup)
+    PreviewWithNav {
+        SignupScreen()
+    }
 }

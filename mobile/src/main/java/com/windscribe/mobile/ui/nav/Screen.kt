@@ -27,4 +27,10 @@ sealed class Screen(val route: String) {
     object LookAndFeel: Screen("look_and_feel")
     object HelpMe: Screen("help_me")
     object About: Screen("about")
+    object Ticket: Screen("ticket")
+    object Debug: Screen("debug")
+    object Advance: Screen("advance")
+    object NetworkOptions : Screen("network_options")
+    object NetworkDetails : Screen("network_details")
+    object SplitTunnel : Screen("split_tunnel")
 }

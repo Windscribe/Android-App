@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.common
 
+import android.R.attr.description
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
@@ -48,6 +49,7 @@ fun SwitchItemView(
     @DrawableRes icon: Int,
     @StringRes description: Int,
     enabled: Boolean,
+    explainer: String? = null,
     onSelect: (Boolean) -> Unit
 ) {
     var isEnabled by remember { mutableStateOf(enabled) }
@@ -98,12 +100,16 @@ fun SwitchItemView(
             }
         }
         Spacer(modifier = Modifier.height(13.5.dp))
-        Text(
-            text = stringResource(description),
-            style = font14.copy(fontWeight = FontWeight.Normal),
-            color = MaterialTheme.colorScheme.preferencesSubtitleColor,
-            textAlign = TextAlign.Start
-        )
+        if (explainer != null) {
+            DescriptionWithLearnMore(stringResource(description), explainer)
+        } else {
+            Text(
+                text = stringResource(description),
+                style = font14.copy(fontWeight = FontWeight.Normal),
+                color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                textAlign = TextAlign.Start
+            )
+        }
     }
 }
 

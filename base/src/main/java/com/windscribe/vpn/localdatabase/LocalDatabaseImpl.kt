@@ -253,12 +253,13 @@ class LocalDatabaseImpl @Inject constructor(
     }
 
     override fun getConfigs(): Flow<List<ConfigFile>> {
-       return configFileDao.allConfigsAsFlow
+        return configFileDao.allConfigsAsFlow
     }
 
     override fun getFavourites(): Flow<List<Favourite>> {
         return favouriteDao.favouritesAsFlow
     }
+
     override suspend fun getCityByIDAsync(cityID: Int): City {
         return cityDao.getCityByIDAsync(cityID)
     }
@@ -277,5 +278,16 @@ class LocalDatabaseImpl @Inject constructor(
 
     override fun deleteCustomConfig(id: Int) {
         configFileDao.deleteCustomConfig(id)
+    }
+
+    override val allNetworks: Flow<List<NetworkInfo>>
+        get() = networkInfoDao.allNetworks()
+
+    override suspend fun updateNetworkSync(networkInfo: NetworkInfo): Int {
+        return networkInfoDao.updateNetworkSync(networkInfo)
+    }
+
+    override suspend fun deleteNetworkSync(networkName: String): Int {
+        return networkInfoDao.deleteNetworkSync(networkName)
     }
 }

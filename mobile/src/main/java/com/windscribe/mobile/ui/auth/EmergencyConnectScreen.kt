@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,6 +34,8 @@ import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.common.AppBackground
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.auth.EmergencyConnectViewModal
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
+import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.welcome.state.EmergencyConnectUIState
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
@@ -52,11 +55,12 @@ fun EmergencyConnectScreen(viewModel: EmergencyConnectViewModal? = null) {
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .statusBarsPadding()
+                .padding(16.dp)
         )
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+                .widthIn(min = 325.dp, max = 373.dp)
+                .padding(16.dp).align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -176,8 +180,9 @@ fun EmergencyConnectCancelButton() {
 }
 
 @Composable
-@Preview(showSystemUi = true)
-@PreviewScreenSizes
+@MultiDevicePreview
 fun EmergencyConnectScreenPreview() {
-    NavigationStack(Screen.EmergencyConnect)
+    PreviewWithNav {
+        EmergencyConnectScreen()
+    }
 }

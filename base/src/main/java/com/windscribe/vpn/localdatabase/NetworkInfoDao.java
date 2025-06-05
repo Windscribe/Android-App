@@ -16,6 +16,7 @@ import java.util.List;
 
 import io.reactivex.Flowable;
 import io.reactivex.Single;
+import kotlinx.coroutines.flow.Flow;
 
 @Dao
 public abstract class NetworkInfoDao {
@@ -30,6 +31,9 @@ public abstract class NetworkInfoDao {
     @Query("Select * from network_info")
     public abstract Flowable<List<NetworkInfo>> getAllNetworksWithUpdate();
 
+    @Query("Select * from network_info")
+    public abstract Flow<List<NetworkInfo>> allNetworks();
+
     @Query("Select * from network_info where networkName=:networkName")
     public abstract Single<NetworkInfo> getNetwork(String networkName);
 
@@ -39,5 +43,9 @@ public abstract class NetworkInfoDao {
     @Update
     public abstract Single<Integer> updateNetwork(NetworkInfo networkInfo);
 
+    @Update
+    public abstract int updateNetworkSync(NetworkInfo networkInfo);
 
+    @Query("Delete from Network_Info where networkName=:networkName")
+    public abstract int deleteNetworkSync(String networkName);
 }

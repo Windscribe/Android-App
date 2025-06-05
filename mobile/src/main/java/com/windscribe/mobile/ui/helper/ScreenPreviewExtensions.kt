@@ -20,14 +20,14 @@ fun PreviewWithNav(content: @Composable () -> Unit) {
     showBackground = true,
     showSystemUi = true,
     uiMode = Configuration.UI_MODE_NIGHT_NO,
-    locale = "en"
+    locale = "ko"
 )
 @Preview(
     name = "Dark Mode",
     showBackground = true,
     showSystemUi = true,
     uiMode = Configuration.UI_MODE_NIGHT_YES,
-    locale = "ko"
+    locale = "en"
 )
 @Preview(
     name = "Tablet Dark",

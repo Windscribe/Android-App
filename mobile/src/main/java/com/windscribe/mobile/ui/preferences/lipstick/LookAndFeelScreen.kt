@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -46,14 +47,18 @@ fun LookAndFeelScreen(viewmodel: LipstickViewmodel? = null) {
     val scrollState = rememberScrollState()
     HandleToast(viewmodel)
     PreferenceBackground {
-        Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
+        Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp).navigationBarsPadding()) {
             PreferencesNavBar(stringResource(R.string.look_and_feel)) {
                 navController.popBackStack()
             }
+            Spacer(modifier = Modifier.height(20.dp))
             Column(modifier = Modifier.verticalScroll(scrollState)) {
                 AppTheme(viewmodel)
+                Spacer(modifier = Modifier.height(16.dp))
                 AppCustomBackground(viewmodel)
+                Spacer(modifier = Modifier.height(16.dp))
                 AppCustomSound(viewmodel)
+                Spacer(modifier = Modifier.height(16.dp))
                 RenameLocations(viewmodel)
             }
             Spacer(modifier = Modifier.height(20.dp))

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -21,26 +22,40 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.google.common.io.Files.append
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.AppStartActivity
+import com.windscribe.mobile.ui.common.Description
+import com.windscribe.mobile.ui.common.DescriptionWithLearnMore
+import com.windscribe.mobile.ui.common.openUrl
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.preferences.lipstick.LipstickViewmodel
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper
+import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.backgroundColor
 import com.windscribe.mobile.ui.theme.font14
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
+import com.windscribe.vpn.constants.FeatureExplainer
+import com.windscribe.vpn.constants.NetworkKeyConstants
 
 @Composable
 fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
     val expanded = remember { mutableStateOf(false) }
     val items = LookAndFeelHelper.getThemeOptions()
     val themeItem = lipstickViewmodel?.themeItem?.value ?: items.first()
+    val activity = LocalContext.current as? AppStartActivity
     Column(
         modifier = Modifier
             .background(
@@ -93,6 +108,7 @@ fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
                             onClick = {
                                 expanded.value = false
                                 lipstickViewmodel?.onThemeItemSelected(it)
+                                activity?.reloadApp()
                             },
                             text = {
                                 Text(
@@ -109,17 +125,12 @@ fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
             }
         }
         Spacer(modifier = Modifier.height(13.5.dp))
-        Text(
-            text = stringResource(R.string.appearance_description),
-            style = font14.copy(fontWeight = FontWeight.Normal),
-            color = MaterialTheme.colorScheme.preferencesSubtitleColor,
-            textAlign = TextAlign.Start
-        )
+        Description(stringResource(R.string.appearance_description))
     }
 }
 
 @Composable
-@Preview(showBackground = true)
+@MultiDevicePreview
 private fun PreviewAppTheme() {
     AppTheme(null)
 }

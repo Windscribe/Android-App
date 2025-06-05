@@ -1,9 +1,11 @@
 package com.windscribe.mobile.ui.common
 
+import android.R.attr.path
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.core.content.ContextCompat.startActivity
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.serverlist.ServerListItem
 import com.windscribe.vpn.constants.NetworkKeyConstants
@@ -49,7 +51,11 @@ fun City.isEnabled(isUserPro: Boolean): Boolean {
 }
 
 fun Context.openUrl(path: String) {
-    val url = NetworkKeyConstants.getWebsiteLink(path)
+    val url = if (path.startsWith("https://") || path.startsWith("http://")) {
+        path
+    } else {
+        NetworkKeyConstants.getWebsiteLink(path)
+    }
     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
     if (intent.resolveActivity(packageManager) != null) {
         startActivity(intent)

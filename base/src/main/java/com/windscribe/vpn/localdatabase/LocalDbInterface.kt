@@ -40,6 +40,7 @@ interface LocalDbInterface {
     fun getAllCities(id: Int): Single<List<City>>
     val allConfigs: Single<List<ConfigFile>>
     val allNetworksWithUpdate: Flowable<List<NetworkInfo>>
+    val allNetworks: Flow<List<NetworkInfo>>
     val allPingTimes: Single<List<PingTime>>
     val allPings: Single<List<PingTestResults>>
     val allRegion: Single<List<RegionAndCities>>
@@ -85,4 +86,6 @@ interface LocalDbInterface {
     fun addConfigSync(configFile: ConfigFile)
     fun getPopupNotificationsAsFlow(userName: String): Flow<List<PopupNotificationTable>>
     fun deleteCustomConfig(id: Int)
+    suspend fun updateNetworkSync(networkInfo: NetworkInfo): Int
+    suspend fun deleteNetworkSync(networkName: String): Int
 }

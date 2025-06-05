@@ -215,6 +215,8 @@ class AutoConnectionManager(
             setupManualProtocol(
                 interactor.preferenceHelper.savedProtocol, appSupportedProtocolOrder
             )
+        } else {
+            manualProtocol = null
         }
         networkInfoManager.networkInfo?.let {
             setupPreferredProtocol(it, appSupportedProtocolOrder)

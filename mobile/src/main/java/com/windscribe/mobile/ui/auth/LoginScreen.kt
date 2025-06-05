@@ -49,6 +49,8 @@ import com.windscribe.mobile.ui.common.AppProgressBar
 import com.windscribe.mobile.ui.common.AuthTextField
 import com.windscribe.mobile.ui.common.CaptchaDebugDialog
 import com.windscribe.mobile.ui.common.NextButton
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
+import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.mobile.ui.nav.Screen
@@ -89,10 +91,17 @@ fun LoginScreen(
         val message = (loginState as? LoginState.LoggingIn)?.message ?: ""
         AppProgressBar(showProgressBar, message = message)
         if (loginState is LoginState.Captcha) {
-            CaptchaDebugDialog((loginState as LoginState.Captcha).request, onCancel = { },
+            CaptchaDebugDialog(
+                (loginState as LoginState.Captcha).request, onCancel = { },
                 onSolutionSubmit = { t1, t2 ->
                     Log.i("LoginScreen", "onSolutionSubmit: $t1, $t2")
-                    viewModel?.onCaptchaSolutionReceived(CaptchaSolution(t1, t2, (loginState as LoginState.Captcha).request.secureToken))
+                    viewModel?.onCaptchaSolutionReceived(
+                        CaptchaSolution(
+                            t1,
+                            t2,
+                            (loginState as LoginState.Captcha).request.secureToken
+                        )
+                    )
                 })
         }
     }
@@ -257,8 +266,10 @@ fun ErrorText(errorType: AuthError) {
     }
 }
 
-@Preview
 @Composable
+@MultiDevicePreview
 fun LoginScreenPreview() {
-    NavigationStack(Screen.Login)
+    PreviewWithNav {
+        LoginScreen()
+    }
 }

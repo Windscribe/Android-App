@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -27,6 +28,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -81,6 +84,11 @@ fun AuthTextField(
                 isError = isError,
                 singleLine = true,
                 shape = RoundedCornerShape(9.dp),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.None,
+                    autoCorrect = false,
+                    imeAction = ImeAction.Done
+                ),
                 colors = TextFieldDefaults.colors(
                     focusedTextColor = if(isError) AppColors.red else AppColors.white,
                     unfocusedTextColor = if(isError) AppColors.red else AppColors.white,
@@ -93,6 +101,7 @@ fun AuthTextField(
                     focusedIndicatorColor = Color.Transparent,
                     errorIndicatorColor = Color.Transparent,
                     cursorColor = AppColors.white,
+                    disabledIndicatorColor = Color.Transparent,
                 ),
                 visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
                 trailingIcon = {

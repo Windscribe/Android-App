@@ -8,7 +8,7 @@
     android:viewportHeight="16.0"
     android:viewportWidth="16.0">
     <path
-        android:fillColor="?attr/wdSecondaryColor"
+        android:fillColor="#fff"
         android:fillType="evenOdd"
         android:pathData="M8,6.59l4.24,-4.25a1,1 0,1 1,1.41 1.41L9.42,8l4.25,4.24a1,1 0,0 1,-1.41 1.41L8,9.42l-4.24,4.25a1,1 0,0 1,-1.41 -1.41L6.58,8 2.34,3.76a1,1 0,1 1,1.41 -1.41L8,6.58z" />
 </vector>

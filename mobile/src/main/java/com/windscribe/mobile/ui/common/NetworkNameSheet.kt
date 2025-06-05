@@ -53,7 +53,11 @@ fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Ho
 
     permissionHelper.backgroundCallback = { granted ->
         if (granted) {
-            permissionHelper.launchNetworkDetailsActivity(networkInfo.name)
+            navController.currentBackStackEntry?.savedStateHandle?.set(
+                "network_name",
+                networkInfo.name
+            )
+            navController.navigate(Screen.NetworkDetails.route)
         } else {
             permissionDialogType.value = PermissionDialogType.OpenSettings
         }
@@ -64,7 +68,11 @@ fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Ho
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 permissionHelper.backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
             } else {
-                permissionHelper.launchNetworkDetailsActivity(networkInfo.name)
+                navController.currentBackStackEntry?.savedStateHandle?.set(
+                    "network_name",
+                    networkInfo.name
+                )
+                navController.navigate(Screen.NetworkDetails.route)
             }
         } else {
             permissionDialogType.value = PermissionDialogType.OpenSettings
@@ -90,7 +98,13 @@ fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Ho
                 }
             }
 
-            else -> permissionHelper.launchNetworkDetailsActivity(networkInfo.name)
+            else -> {
+                navController.currentBackStackEntry?.savedStateHandle?.set(
+                    "network_name",
+                    networkInfo.name
+                )
+                navController.navigate(Screen.NetworkDetails.route)
+            }
         }
     }
 

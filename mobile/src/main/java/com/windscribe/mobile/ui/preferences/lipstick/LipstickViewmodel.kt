@@ -53,7 +53,6 @@ abstract class LipstickViewmodel : ViewModel() {
     abstract fun loadDisconnectedCustomBackground(context: Context, fileUri: Uri)
     abstract fun loadConnectedCustomSound(context: Context, fileUri: Uri)
     abstract fun loadDisconnectedCustomSound(context: Context, fileUri: Uri)
-    abstract fun onExportClick()
     abstract fun loadServerListFile(context: Context, fileUri: Uri)
     abstract fun onResetClick()
     abstract fun exportServerListFile(context: Context, uri: Uri)
@@ -274,10 +273,6 @@ class LipstickViewmodelImpl @Inject constructor(
     override fun onWhenDisconnectedSoundItemSelected(item: DropDownItem) {
         _whenDisconnectedSoundItem.value = item
         preferenceHelper.whenDisconnectedSoundOption = item.id
-    }
-
-    override fun onExportClick() {
-
     }
 
     override fun loadServerListFile(context: Context, fileUri: Uri) {

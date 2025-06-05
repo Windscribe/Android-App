@@ -53,6 +53,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.mobile.ui.nav.Screen
@@ -60,6 +61,8 @@ import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font18
 import com.windscribe.mobile.ui.common.AppProgressBar
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
+import com.windscribe.mobile.ui.helper.PreviewWithNav
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -114,6 +117,7 @@ fun AppStartScreen(
         if (loginState is SsoLoginState.Error) {
             val errorMessage = (loginState as SsoLoginState.Error).error
             Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+            viewModel?.clearLoginState()
         }
     }
 }
@@ -222,11 +226,14 @@ private fun GoogleButton(viewModel: AppStartViewModel?) {
         Log.i("AppStartViewModel", "result: ${result.data}")
         viewModel?.onSignIntentResult(result.data)
     }
+    val activity = LocalContext.current as? AppStartActivity
     Button(
         onClick = {
-            signInIntent?.let {
-                launcher.launch(it)
+            if (signInIntent == null){
+                Toast.makeText(activity, "Google Signin not available.", Toast.LENGTH_SHORT).show()
+                return@Button
             }
+            launcher.launch(signInIntent)
         },
         Modifier
             .height(48.dp)
@@ -234,8 +241,8 @@ private fun GoogleButton(viewModel: AppStartViewModel?) {
         colors = ButtonDefaults.buttonColors(
             containerColor = AppColors.white,
             disabledContainerColor = AppColors.white,
-            disabledContentColor = AppColors.black54,
-            contentColor = AppColors.black54
+            disabledContentColor = AppColors.black,
+            contentColor = AppColors.black
         ),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(24.dp),
@@ -250,7 +257,7 @@ private fun GoogleButton(viewModel: AppStartViewModel?) {
             Text(
                 text = stringResource(R.string.continue_with_google),
                 style = font18.copy(fontWeight = FontWeight.Medium),
-                color = AppColors.black54,
+                color = AppColors.black,
             )
         }
 
@@ -258,18 +265,18 @@ private fun GoogleButton(viewModel: AppStartViewModel?) {
 }
 
 @Composable
-private fun AppleButton() {
+private fun LoginButton() {
     val navController = LocalNavController.current
     val interactionSource = remember { MutableInteractionSource() }
     Button(
         onClick = {
             navController.currentBackStackEntry?.savedStateHandle?.set("isAccountClaim", false)
-            navController.navigate(Screen.Signup.route)
+            navController.navigate(Screen.Login.route)
         },
         Modifier
             .height(48.dp)
             .fillMaxWidth()
-            .border(1.dp, AppColors.white25, RoundedCornerShape(24.dp)),
+            .border(1.dp, AppColors.white.copy(alpha = 0.30f), RoundedCornerShape(24.dp)),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent,
             disabledContainerColor = Color.Transparent,
@@ -279,20 +286,11 @@ private fun AppleButton() {
         interactionSource = interactionSource,
         shape = RoundedCornerShape(24.dp),
     ) {
-        Row {
-            Image(
-                painter = painterResource(R.drawable.apple_logo),
-                contentDescription = "Apple Logo",
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(
-                text = stringResource(R.string.continue_with_apple),
-                style = font18.copy(fontWeight = FontWeight.Medium),
-                color = AppColors.white
-            )
-        }
-
+        Text(
+            text = stringResource(R.string.login),
+            style = font18.copy(fontWeight = FontWeight.Medium),
+            color = AppColors.white
+        )
     }
 }
 
@@ -305,19 +303,6 @@ fun EmergencyConnectButton(isConnected: Boolean) {
         color = if (isConnected) Color(0xFF61FF8A) else Color(0xFF838D9B),
         modifier = Modifier.clickable {
             navController.navigate(Screen.EmergencyConnect.route)
-        }
-    )
-}
-
-@Composable
-private fun LoginButton() {
-    val navController = LocalNavController.current
-    Text(
-        text = stringResource(R.string.login),
-        style = font16.copy(fontWeight = FontWeight.Medium),
-        color = Color(0xFF838D9B),
-        modifier = Modifier.clickable {
-            navController.navigate(Screen.Login.route)
         }
     )
 }
@@ -346,22 +331,19 @@ fun ActionSection(isConnected: Boolean, viewModel: AppStartViewModel?) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         GoogleButton(viewModel)
-        Spacer(modifier = Modifier.height(8.dp))
+        LoginButton()
         Row(verticalAlignment = Alignment.CenterVertically) {
             EmergencyConnectButton(isConnected)
             Spacer(modifier = Modifier.weight(1f))
             SignupButton()
             Spacer(modifier = Modifier.width(8.dp))
-            VerticalDivider(Modifier.height(21.dp), color = AppColors.white20, thickness = 1.dp)
-            Spacer(modifier = Modifier.width(8.dp))
-            LoginButton()
         }
     }
 }
-
 @Composable
-@Preview(showSystemUi = true)
-@PreviewScreenSizes
+@MultiDevicePreview
 fun StartScreenPreview() {
-    NavigationStack(Screen.Start)
+    PreviewWithNav {
+        AppStartScreen()
+    }
 }

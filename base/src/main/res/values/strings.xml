@@ -296,7 +296,7 @@
     <string name="yearly">YEARLY - SAVE 55%</string>
     <string name="upgrade_title">You deserve more than limited privacy.</string>
     <string name="text_login">Login</string>
-    <string name="text_sign_up">Sign up</string>
+    <string name="text_sign_up">Sign Up</string>
     <string name="sending_debug_log">Sending debug log\nPlease wait&#8230;</string>
     <string name="app_log_submitted">Thanks! App log submitted.</string>
     <string name="log_submission_failed">Error submitting log file!</string>
