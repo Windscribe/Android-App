@@ -6,7 +6,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.windscribe.vpn.BuildConfig
-import com.windscribe.vpn.Windscribe
 import org.slf4j.LoggerFactory
 
 
@@ -16,7 +15,7 @@ class GoogleSignInManagerImpl(val context: Context) : GoogleSignInManager() {
 
     init {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("444711012498-5ftbuvd97d8vam8h93ef6l946t7p76kk.apps.googleusercontent.com")
+            .requestIdToken(BuildConfig.WEB_CLIENT_ID)
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(context, gso)
