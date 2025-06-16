@@ -117,6 +117,10 @@ private fun CommunitySupport() {
             backgroundColor = backgroundColor,
             textColor = textColor
         )
+        DescriptionRow(
+            text = stringResource(R.string.community_support_description),
+            backgroundColor = backgroundColor
+        )
         Spacer(modifier = Modifier.height(1.dp))
         CommunityRow(
             label = stringResource(R.string.discord),
@@ -131,14 +135,10 @@ private fun CommunitySupport() {
             label = stringResource(R.string.reddit),
             backgroundColor = backgroundColor,
             textColor = textColor,
+            shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
             onClick = {
                 activity?.openUrl(NetworkKeyConstants.URL_REDDIT)
             }
-        )
-        Spacer(modifier = Modifier.height(1.dp))
-        DescriptionRow(
-            text = stringResource(R.string.community_support_description),
-            backgroundColor = backgroundColor
         )
     }
 }
@@ -152,7 +152,7 @@ private fun HeaderRow(iconRes: Int, text: String, backgroundColor: Color, textCo
                 backgroundColor,
                 shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
             )
-            .padding(12.dp),
+            .padding(start = 12.dp, end = 12.dp, top = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -174,14 +174,15 @@ private fun CommunityRow(
     label: String,
     backgroundColor: Color,
     textColor: Color,
+    shape: RoundedCornerShape = RoundedCornerShape(size = 0.dp),
     onClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(backgroundColor)
-            .padding(12.dp)
-            .clickable { onClick() },
+            .background(backgroundColor, shape = shape)
+            .clickable { onClick() }
+            .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -203,10 +204,7 @@ private fun DescriptionRow(text: String, backgroundColor: Color) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                backgroundColor,
-                shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
-            )
+            .background(backgroundColor)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -229,10 +227,11 @@ private fun DebugView() {
                     alpha = 0.05f
                 ), shape = RoundedCornerShape(size = 12.dp)
             )
-            .padding(vertical = 14.dp, horizontal = 14.dp)
             .clickable {
                 navController.navigate(Screen.Debug.route)
             }
+            .padding(vertical = 14.dp, horizontal = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             modifier = Modifier.size(16.dp),
@@ -281,7 +280,8 @@ private fun DebugSend(viewModel: HelpViewModel? = null) {
                     viewModel?.sendLogClicked()
                 }
             }
-            .padding(vertical = 14.dp, horizontal = 14.dp)
+            .padding(vertical = 14.dp, horizontal = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             modifier = Modifier.size(16.dp),
@@ -345,9 +345,7 @@ private fun HelpItem(
                 color = MaterialTheme.colorScheme.primaryTextColor.copy(
                     alpha = 0.05f
                 ), shape = RoundedCornerShape(size = 12.dp)
-            )
-            .padding(vertical = 14.dp, horizontal = 14.dp)
-            .clickable {
+            ).clickable {
                 if (route is Route.Nav) {
                     val route = route.screen.route
                     navController.navigate(route)
@@ -356,6 +354,7 @@ private fun HelpItem(
                     activity?.openUrl(link)
                 }
             }
+            .padding(vertical = 14.dp, horizontal = 14.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(

@@ -1,11 +1,9 @@
 package com.windscribe.mobile.ui.common
 
-import android.R.attr.path
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
-import androidx.core.content.ContextCompat.startActivity
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.serverlist.ServerListItem
 import com.windscribe.vpn.constants.NetworkKeyConstants

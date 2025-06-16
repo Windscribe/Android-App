@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.popup
 
+import android.provider.Settings.System.DATE_FORMAT
 import android.text.Html
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,6 +15,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.io.Serializable
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
 
@@ -21,6 +26,7 @@ data class NewsfeedItem(
     val id: Int,
     val title: String,
     val message: String,
+    val date: String,
     val action: Action
 )
 
@@ -107,7 +113,6 @@ class NewsfeedViewmodel @Inject constructor(
                 // Extract the <a> tag URL if present
                 val linkRegex = "<a\\s+href=\"(.*?)\".*?>(.*?)<\\/a>".toRegex()
                 val match = linkRegex.find(pTag)
-
                 if (match != null) {
                     val url = match.groupValues[1]
                     val label = match.groupValues[2]
@@ -116,6 +121,7 @@ class NewsfeedViewmodel @Inject constructor(
                         title = Html.fromHtml(notification.notificationTitle.uppercase(Locale.getDefault()))
                             .toString(),
                         message = Html.fromHtml(body).toString().trim(),
+                        date = formatDate(notification.notificationDate),
                         action = Action.Url(label, url)
                     )
                 }
@@ -128,8 +134,17 @@ class NewsfeedViewmodel @Inject constructor(
             title = Html.fromHtml(notification.notificationTitle)
                 .toString(),
             message = htmlBody,
+            date = formatDate(notification.notificationDate),
             action = if (newsfeedAction == null) Action.None else Action.Newsfeed(newsfeedAction)
         )
+    }
+
+    fun formatDate(timestamp: Long): String {
+        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy") // "Nov 23, 1989"
+        return Instant.ofEpochSecond(timestamp)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate()
+            .format(formatter)
     }
 
     fun onNotificationActionClick(action: Action) {

@@ -26,6 +26,7 @@ import com.windscribe.vpn.backend.utils.SelectedLocationType.CityLocation
 import com.windscribe.vpn.backend.utils.SelectedLocationType.StaticIp
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.AdvanceParamKeys
+import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_INVALID_DNS_ADDRESS
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA
@@ -444,6 +445,15 @@ open class WindVpnController @Inject constructor(
             }
             ERROR_WG_INVALID_PUBLIC_KEY -> {
                 wgConfigRepository.deleteKeys()
+                disconnect(
+                    error = VPNState.Error(
+                        error = VPNState.ErrorType.WireguardApiError,
+                        error.errorMessage,
+                        showError = true
+                    )
+                )
+            }
+            ERROR_INVALID_DNS_ADDRESS -> {
                 disconnect(
                     error = VPNState.Error(
                         error = VPNState.ErrorType.WireguardApiError,

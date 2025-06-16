@@ -1,6 +1,7 @@
 package com.windscribe.mobile.ui.serverlist
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -52,6 +53,10 @@ import com.windscribe.mobile.ui.common.healthColor
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.home.HomeViewmodel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
+import com.windscribe.mobile.ui.theme.serverItemTextColor
+import com.windscribe.mobile.ui.theme.serverListBackgroundColor
+import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,7 +69,7 @@ fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionVie
 
         is ListState.Error -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Error loading favourite list.", style = font16, color = AppColors.white)
+                Text("Error loading favourite list.", style = font16, color = MaterialTheme.colorScheme.serverListSecondaryColor)
             }
         }
 
@@ -78,10 +83,10 @@ fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionVie
                             painter = painterResource(R.drawable.ic_location_fav),
                             contentDescription = "No Favourites",
                             modifier = Modifier.size(32.dp),
-                            colorFilter = ColorFilter.tint(AppColors.white70)
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f))
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(stringResource(R.string.no_favourites), style = font16, color = AppColors.white70)
+                        Text(stringResource(R.string.no_favourites), style = font16, color = MaterialTheme.colorScheme.serverListSecondaryColor)
                     }
                 }
                 AddButtonWithDetails(null, R.string.no_favourites, R.drawable.ic_location_fav) { }
@@ -104,7 +109,7 @@ fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionVie
                         Text(
                             text = stringResource(R.string.favourite),
                             style = font12,
-                            color = AppColors.white70,
+                            color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f),
                             modifier = Modifier.padding(start = 8.dp, top = 16.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -118,7 +123,7 @@ fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionVie
                         state = pullToRefreshState,
                         modifier = Modifier.align(Alignment.TopCenter),
                         containerColor = Color.Transparent,
-                        contentColor = Color.White
+                        contentColor = MaterialTheme.colorScheme.serverListSecondaryColor
                     )
                 }
             }
@@ -149,7 +154,7 @@ private fun ListItemView(
             .height(48.dp)
             .clickable(
                 interactionSource,
-                indication = rememberRipple(bounded = true, color = AppColors.white)
+                indication = rememberRipple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)
             ) {
                 connectionViewmodel.onCityClick(item.city)
             }.padding(horizontal = 8.dp),
@@ -176,7 +181,7 @@ private fun ProgressIndicator() {
         CircularProgressIndicator(
             modifier = Modifier
                 .size(48.dp)
-                .align(Alignment.Center), color = AppColors.white
+                .align(Alignment.Center), color = MaterialTheme.colorScheme.serverListSecondaryColor
         )
     }
 }

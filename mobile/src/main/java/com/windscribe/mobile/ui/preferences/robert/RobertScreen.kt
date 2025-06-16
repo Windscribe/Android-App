@@ -6,11 +6,15 @@ import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,24 +32,32 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.ui.common.AppProgressBar
+import com.windscribe.mobile.ui.common.DescriptionWithLearnMore
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.ScreenDescription
 import com.windscribe.mobile.ui.common.openUrl
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.nav.LocalNavController
+import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font12
+import com.windscribe.mobile.ui.theme.font14
 import com.windscribe.mobile.ui.theme.font16
+import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
 import com.windscribe.vpn.api.response.RobertFilter
+import com.windscribe.vpn.constants.FeatureExplainer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -67,7 +79,7 @@ fun RobertScreen(viewModel: RobertViewModel? = null) {
                 navController.popBackStack()
             }
             Spacer(modifier = Modifier.height(20.dp))
-            ScreenDescription(stringResource(R.string.robert_description))
+            RobertScreenDescription()
             Spacer(modifier = Modifier.height(16.dp))
             when (state) {
                 is RobertFilterState.Loading -> {
@@ -98,6 +110,31 @@ fun RobertScreen(viewModel: RobertViewModel? = null) {
         }
         AppProgressBar(showProgress, "")
         HandleGoto(viewModel)
+    }
+}
+
+@Composable
+private fun RobertScreenDescription() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.10f),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(top = 14.dp, bottom = 0.dp, start = 16.dp, end = 16.dp)
+    ) {
+        Icon(
+            painter = painterResource(com.windscribe.mobile.R.drawable.robert),
+            contentDescription = "Robert icon image.",
+            tint = MaterialTheme.colorScheme.primaryTextColor,
+            modifier = Modifier.align(androidx.compose.ui.Alignment.TopEnd)
+                .offset(x = (15.0).dp, y = (-13).dp)
+                .clip(RoundedCornerShape(topEnd = 11.dp))
+
+        )
+        DescriptionWithLearnMore(stringResource(R.string.robert_description), FeatureExplainer.ROBERT)
     }
 }
 
@@ -167,7 +204,7 @@ private fun Filters(filters: List<RobertFilter>, viewModel: RobertViewModel?) {
                     contentDescription = "",
                     tint = MaterialTheme.colorScheme.primaryTextColor
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     filters[index].title,
                     style = font16.copy(
@@ -176,6 +213,14 @@ private fun Filters(filters: List<RobertFilter>, viewModel: RobertViewModel?) {
                     )
                 )
                 Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    if (filters[index].status == 1) stringResource(R.string.blocking) else stringResource(R.string.allowing),
+                    style = font14.copy(
+                        fontWeight = FontWeight.Normal,
+                        color = if (filters[index].status == 1) AppColors.neonGreen else MaterialTheme.colorScheme.preferencesSubtitleColor
+                    )
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 var isEnabled = filters[index].status == 1
                 if (isEnabled) {
                     Image(

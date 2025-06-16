@@ -61,7 +61,7 @@ fun AppConnectButton(connectionViewmodel: ConnectionViewmodel) {
                         .align(Alignment.Center)
                         .graphicsLayer { rotationZ = rotation }, // Rotate continuously
                     contentScale = ContentScale.FillHeight,
-                    colorFilter = ColorFilter.tint(color = AppColors.white40)
+                    colorFilter = ColorFilter.tint(color = AppColors.white.copy(alpha = 0.40f))
                 )
             }
 
@@ -83,7 +83,7 @@ fun AppConnectButton(connectionViewmodel: ConnectionViewmodel) {
                         .width(95.dp)
                         .align(Alignment.Center),
                     contentScale = ContentScale.FillHeight,
-                    colorFilter = ColorFilter.tint(color = AppColors.connectedColor)
+                    colorFilter = ColorFilter.tint(color = AppColors.mintGreen)
                 )
             }
 

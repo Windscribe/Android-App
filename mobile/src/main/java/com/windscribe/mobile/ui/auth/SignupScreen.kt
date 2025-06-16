@@ -152,6 +152,7 @@ private fun SignupCompactLayout(
 @Composable
 private fun SignupPasswordTextField(signupState: SignupState, viewModel: SignupViewModel? = null) {
     AuthTextField(hint = stringResource(R.string.password),
+        placeHolder = stringResource(R.string.enter_password),
         isError = isError(signupState, AuthInputFields.Password),
         modifier = Modifier.fillMaxWidth(),
         isPassword = true,
@@ -165,7 +166,7 @@ private fun Description(text: String) {
     Text(
         text,
         style = font12,
-        color = AppColors.white50,
+        color = AppColors.white.copy(alpha = 0.50f),
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 8.dp),
@@ -191,7 +192,7 @@ private fun ExpandMenu(text: String, content: @Composable () -> Unit = {}) {
             Text(
                 text = text,
                 style = font16.copy(fontWeight = FontWeight.Bold),
-                color = AppColors.white50,
+                color = AppColors.white.copy(alpha = 0.50f),
             )
             Image(
                 painter = painterResource(id = R.drawable.ic_expand),
@@ -204,7 +205,7 @@ private fun ExpandMenu(text: String, content: @Composable () -> Unit = {}) {
                         indication = rememberRipple(bounded = false, color = Color.White),
                         onClick = { expanded.value = !expanded.value }
                     ),
-                colorFilter = ColorFilter.tint(AppColors.white50)
+                colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.50f))
             )
         }
         if (expanded.value) {
@@ -226,6 +227,7 @@ private fun VoucherTextField(viewModel: SignupViewModel?) {
 @Composable
 private fun SignupUsernameTextField(signupState: SignupState, viewModel: SignupViewModel? = null) {
     AuthTextField(hint = stringResource(R.string.username),
+        placeHolder = stringResource(R.string.enter_password),
         isError = isError(signupState, AuthInputFields.Username),
         modifier = Modifier.fillMaxWidth(),
         onValueChange = {
@@ -240,6 +242,7 @@ private fun isError(signupState: SignupState, field: AuthInputFields): Boolean {
 @Composable
 private fun SignupEmailTextField(signupState: SignupState, viewModel: SignupViewModel? = null) {
     AuthTextField(hint = stringResource(R.string.email) + " " + stringResource(R.string.optional),
+        placeHolder = stringResource(R.string.enter_email),
         isError = isError(signupState, AuthInputFields.Email),
         modifier = Modifier.fillMaxWidth(),
         onValueChange = {
@@ -281,7 +284,7 @@ fun ReferralFeature(text: String) {
         Text(
             text,
             style = font12.copy(textAlign = TextAlign.Start),
-            color = AppColors.white50,
+            color = AppColors.white.copy(alpha = 0.50f),
             modifier = Modifier.padding(start = 16.dp)
         )
     }

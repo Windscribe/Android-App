@@ -259,6 +259,10 @@ class SignupViewModel @Inject constructor(
         }
     }
 
+    fun dismissCaptcha() {
+        updateState(SignupState.Idle)
+    }
+
     private fun updateState(state: SignupState) {
         viewModelScope.launch {
             _signupState.emit(state)

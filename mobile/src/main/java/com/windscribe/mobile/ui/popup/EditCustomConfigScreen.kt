@@ -24,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,15 +40,15 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.compose.rememberNavController
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.common.NextButton
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
+import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
-import com.windscribe.mobile.ui.common.NextButton
 
 @Composable
 fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
@@ -75,7 +74,7 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = AppColors.darkBlue)
+            .background(color = AppColors.deepBlue)
     ) {
         Column(
             modifier = Modifier
@@ -84,7 +83,8 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
                 .verticalScroll(scrollState)
                 .imePadding()
                 .statusBarsPadding()
-                .padding(horizontal = 32.dp).align(Alignment.Center),
+                .padding(horizontal = 32.dp)
+                .align(Alignment.Center),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -92,6 +92,7 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
             Image(
                 painter = painterResource(id = R.drawable.ic_network_security_feature_icon),
                 contentDescription = null,
+                colorFilter = ColorFilter.tint(AppColors.white),
             )
             Text(
                 text = stringResource(id = R.string.edit_config_file),
@@ -134,17 +135,22 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
                         painter = painterResource(id = R.drawable.ic_check),
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(tintColor),
-                        modifier = Modifier.clickable {
-                            viewmodel?.onToggleIsRemember()
-                        }.size(24.dp)
+                        modifier = Modifier
+                            .clickable {
+                                viewmodel?.onToggleIsRemember()
+                            }
+                            .size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                 }
             }
             NextButton(
-                text = stringResource(if (connect) R.string.connect else R.string.update), enabled = true, onClick = {
+                text = stringResource(if (connect) R.string.connect else R.string.update),
+                enabled = true,
+                onClick = {
                     viewmodel?.onSaveClick()
-                }, modifier = Modifier
+                },
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 32.dp)
             )
@@ -188,10 +194,10 @@ private fun CustomTextField(
                     focusedTextColor = AppColors.white,
                     unfocusedTextColor = AppColors.white,
                     disabledTextColor = AppColors.white,
-                    unfocusedContainerColor = AppColors.gray,
-                    focusedContainerColor = AppColors.gray,
-                    disabledContainerColor = AppColors.gray,
-                    errorContainerColor = AppColors.gray,
+                    unfocusedContainerColor =  AppColors.white.copy(0.05f),
+                    focusedContainerColor = AppColors.white.copy(0.05f),
+                    disabledContainerColor =  AppColors.white.copy(0.05f),
+                    errorContainerColor =  AppColors.white.copy(0.05f),
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
                     errorIndicatorColor = Color.Transparent,
@@ -210,10 +216,9 @@ private fun CustomTextField(
 }
 
 @Composable
-@Preview
+@MultiDevicePreview
 fun EditCustomConfigScreenPreview() {
-    val navController = rememberNavController()
-    CompositionLocalProvider(LocalNavController provides navController) {
+    PreviewWithNav {
         EditCustomConfigScreen(viewmodel = null)
     }
 }

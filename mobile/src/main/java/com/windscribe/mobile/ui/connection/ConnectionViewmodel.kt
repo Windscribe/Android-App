@@ -290,6 +290,7 @@ class ConnectionViewmodelImpl @Inject constructor(
                     _isPreferredProtocolEnabled.value = false
                     _networkInfoState.value = NetworkInfoState.Unknown
                 } else {
+                    logger.info("NetworkInfo: $networkInfo")
                     val protocolInfo = connectionUIState.value.protocolInfo
                     _isPreferredProtocolEnabled.value =
                         networkInfo.isPreferredOn && networkInfo.protocol == protocolInfo?.protocol && networkInfo.port == protocolInfo?.port
@@ -621,7 +622,7 @@ class ConnectionViewmodelImpl @Inject constructor(
     override fun onProtocolChangeClick() {
         if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CustomConfiguredProfile) {
             showToast(R.string.protocol_change_is_not_available_for_custom_config)
-        } else if (vpnConnectionStateManager.isVPNConnected()) {
+        } else {
             appScope.launch {
                 autoConnectionManager.changeProtocolInForeground()
             }

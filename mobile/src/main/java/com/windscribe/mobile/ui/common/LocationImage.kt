@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.common
 
+import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.graphics.drawable.BitmapDrawable
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -33,6 +34,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -40,134 +42,149 @@ import coil.compose.SubcomposeAsyncImage
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.windscribe.mobile.R
-import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.connection.ConnectionUIState
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.connection.LocationBackground
 import com.windscribe.mobile.ui.connection.LocationInfoState
+import com.windscribe.mobile.ui.home.HomeViewmodel
+import com.windscribe.mobile.ui.home.NetworkInfoSheet
+import com.windscribe.mobile.ui.theme.AppColors
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun LocationImage(connectionViewmodel: ConnectionViewmodel) {
+fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
     val connectionState by connectionViewmodel.connectionUIState.collectAsState()
     val locationBackground =
         (connectionState.locationInfo as? LocationInfoState.Success)?.locationInfo?.locationBackground
     val resource = locationBackground?.resource ?: com.windscribe.vpn.R.drawable.dummy_flag
-    AnimatedContent(
-        targetState = resource,
-        transitionSpec = {
-            slideInVertically(animationSpec = tween(durationMillis = 800)) { it } + fadeIn(
-                animationSpec = tween(800)
-            ) with
-                    slideOutVertically(animationSpec = tween(durationMillis = 800)) { -it } + fadeOut(
-                animationSpec = tween(800)
-            )
-        },
-        label = "Flag Transition"
-    ) { targetCountryCode ->
-        Box(
-            modifier = Modifier
-                .height(273.dp)
-                .alpha(if (locationBackground is LocationBackground.Wallpaper || locationBackground is LocationBackground.Custom) 1.0f else 0.30f)
-                .fillMaxWidth()
-                .graphicsLayer(alpha = 1.0f)
-                .drawWithContent {
-                    drawContent()
-                    if (connectionState !is ConnectionUIState.Connected) {
-                        drawRect(
-                            brush = FlagMask,
-                            blendMode = BlendMode.Modulate
-                        )
-                    }
-                }
-        ) {
-            val context = LocalContext.current
-            val aspectRatio by connectionViewmodel.aspectRatio.collectAsState()
-            if (locationBackground is LocationBackground.Custom) {
-                val imageData = locationBackground.file
-                Box(modifier = Modifier.fillMaxSize()) {
-                    if (aspectRatio == 3) {
-                        // TILE MODE (repeat pattern)
-                        val imageBitmapState = produceState<ImageBitmap?>(initialValue = null) {
-                            val imageLoader = context.imageLoader
-                            val request = ImageRequest.Builder(context)
-                                .data(imageData)
-                                .allowHardware(false)
-                                .build()
-
-                            val result = imageLoader.execute(request)
-                            val drawable = result.drawable
-                            val bitmap = (drawable as? BitmapDrawable)?.bitmap
-                            value = bitmap?.asImageBitmap()
+    val isLandscape = LocalConfiguration.current.orientation == ORIENTATION_LANDSCAPE
+    var flagHeight =
+        if (isLandscape) LocalConfiguration.current.screenWidthDp * 0.30 else LocalConfiguration.current.screenHeightDp * 0.30
+    if (flagHeight < 273.0) {
+       flagHeight = 273.0
+    }
+    Box {
+        AnimatedContent(
+            targetState = resource,
+            transitionSpec = {
+                slideInVertically(animationSpec = tween(durationMillis = 800)) { it } + fadeIn(
+                    animationSpec = tween(800)
+                ) with
+                        slideOutVertically(animationSpec = tween(durationMillis = 800)) { -it } + fadeOut(
+                    animationSpec = tween(800)
+                )
+            },
+            label = "Flag Transition"
+        ) { targetCountryCode ->
+            Box(
+                modifier = Modifier
+                    .height(flagHeight.dp)
+                    .alpha(if (locationBackground is LocationBackground.Wallpaper || locationBackground is LocationBackground.Custom) 1.0f else 0.30f)
+                    .fillMaxWidth()
+                    .graphicsLayer(alpha = 1.0f)
+                    .drawWithContent {
+                        drawContent()
+                        if (connectionState !is ConnectionUIState.Connected) {
+                            drawRect(
+                                brush = FlagMask,
+                                blendMode = BlendMode.Modulate
+                            )
                         }
+                    }
+            ) {
+                val context = LocalContext.current
+                val aspectRatio by connectionViewmodel.aspectRatio.collectAsState()
+                if (locationBackground is LocationBackground.Custom) {
+                    val imageData = locationBackground.file
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        if (aspectRatio == 3) {
+                            // TILE MODE (repeat pattern)
+                            val imageBitmapState = produceState<ImageBitmap?>(initialValue = null) {
+                                val imageLoader = context.imageLoader
+                                val request = ImageRequest.Builder(context)
+                                    .data(imageData)
+                                    .allowHardware(false)
+                                    .build()
 
-                        imageBitmapState.value?.let { img ->
-                            Canvas(modifier = Modifier.fillMaxSize()) {
-                                val frameworkPaint = Paint().asFrameworkPaint().apply {
-                                    isAntiAlias = true
-                                    shader = android.graphics.BitmapShader(
-                                        img.asAndroidBitmap(),
-                                        android.graphics.Shader.TileMode.REPEAT,
-                                        android.graphics.Shader.TileMode.REPEAT
+                                val result = imageLoader.execute(request)
+                                val drawable = result.drawable
+                                val bitmap = (drawable as? BitmapDrawable)?.bitmap
+                                value = bitmap?.asImageBitmap()
+                            }
+
+                            imageBitmapState.value?.let { img ->
+                                Canvas(modifier = Modifier.fillMaxSize()) {
+                                    val frameworkPaint = Paint().asFrameworkPaint().apply {
+                                        isAntiAlias = true
+                                        shader = android.graphics.BitmapShader(
+                                            img.asAndroidBitmap(),
+                                            android.graphics.Shader.TileMode.REPEAT,
+                                            android.graphics.Shader.TileMode.REPEAT
+                                        )
+                                    }
+                                    drawContext.canvas.nativeCanvas.drawRect(
+                                        0f, 0f, size.width, size.height, frameworkPaint
                                     )
                                 }
-                                drawContext.canvas.nativeCanvas.drawRect(
-                                    0f, 0f, size.width, size.height, frameworkPaint
-                                )
                             }
-                        }
-                    } else {
-                        // NORMAL IMAGE MODES
-                        val contentScale = when (aspectRatio) {
-                            1 -> ContentScale.FillBounds // Fill
-                            2 -> ContentScale.Fit        // Fit
-                            else -> ContentScale.FillHeight // Default
-                        }
-                        SubcomposeAsyncImage(
-                            model = imageData,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = contentScale,
-                            loading = {
-                                Box(modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Color.Gray))
-                            },
-                            error = {
-                                Image(
-                                    painterResource(id = R.drawable.dummy_flag),
-                                    contentDescription = null,
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = contentScale
-                                )
+                        } else {
+                            // NORMAL IMAGE MODES
+                            val contentScale = when (aspectRatio) {
+                                1 -> ContentScale.FillBounds // Fill
+                                2 -> ContentScale.Fit        // Fit
+                                else -> ContentScale.FillHeight // Default
                             }
-                        )
+                            SubcomposeAsyncImage(
+                                model = imageData,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = contentScale,
+                                loading = {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(Color.Gray)
+                                    )
+                                },
+                                error = {
+                                    Image(
+                                        painterResource(id = R.drawable.dummy_flag),
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = contentScale
+                                    )
+                                }
+                            )
+                        }
                     }
+                } else {
+                    val imageDrawable =
+                        targetCountryCode.takeIf { it != 0 } ?: R.drawable.dummy_flag
+                    Image(
+                        painter = painterResource(id = imageDrawable),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentScale = ContentScale.FillBounds
+                    )
                 }
-            } else {
-                val imageDrawable = targetCountryCode.takeIf { it != 0 } ?: R.drawable.dummy_flag
-                Image(
-                    painterResource(id = imageDrawable),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.FillHeight
-                )
-            }
-            if (connectionState is ConnectionUIState.Connected) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    AppColors.connectedGradient.copy(alpha = 1.0f),
-                                    Color.Transparent
+                if (connectionState is ConnectionUIState.Connected) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        AppColors.darkBlueAccent.copy(alpha = 1.0f),
+                                        Color.Transparent
+                                    )
                                 )
                             )
-                        )
-                )
+                    )
+                }
             }
         }
+        NetworkInfoSheet(connectionViewmodel, homeViewmodel)
     }
 }
 

@@ -1,8 +1,9 @@
 <resources>
     <string name="username_empty">Empty username!</string>
     <string name="password_empty">Empty password!</string>
-    <string name="enter_username">Please enter your username!</string>
-    <string name="enter_password">Please enter your password!</string>
+    <string name="enter_username">Enter username</string>
+    <string name="enter_password">Enter password</string>
+    <string name="enter_email">Enter email</string>
     <string name="password_too_short">Too short!</string>
     <string name="login_credential_error">Something\'s wrong with your username or password :(</string>
     <string name="sign_out">Sign Out</string>
@@ -99,14 +100,14 @@
     <string name="fake_traffic_volume">Fake Traffic Volume</string>
     <string name="potential_data_use">Estimated Data Usage</string>
     <string name="plan_pro">Pro</string>
-    <string name="a_la_carte_unlimited_plan">Unlimited</string>
+    <string name="a_la_carte_unlimited_plan">A la carte unlimited</string>
     <string name="expiry_date">Expiry  Date</string>
     <string name="reset_date">Reset  Date</string>
     <string name="gb_per_month">&#160;GB/Month</string>
     <string name="my_account">Account</string>
     <string name="cancel">Cancel</string>
     <string name="edit_account">Manage Account</string>
-    <string name="info">INFO</string>
+    <string name="info">ACCOUNT INFO</string>
     <string name="plan">PLAN</string>
     <string name="please_login">Please login first to connect!</string>
     <string name="please_login_to_see_account_details">Sign up or Login to view your account details and safeguard your preferences.</string>
@@ -229,7 +230,7 @@
     <string name="forget_network">Forget network</string>
     <string name="network_secured">Secured</string>
     <string name="network_unsecured">Unsecured</string>
-    <string name="preferred_protocol_description">Choose a default protocol for this network if you are having issues connecting</string>
+    <string name="preferred_protocol_description">Windscribe will always use this protocol to connect for this network. This overrides global connection preferences.</string>
     <string name="unknown">Unknown network</string>
     <string name="loading_network_list">Loading network list\nPlease wait&#8230;</string>
     <string name="no_saved_network_list">No saved network list!</string>
@@ -378,7 +379,7 @@
     <string name="explain_me" translatable="false">Explain me!</string>
     <string name="network_options_description">Windscribe will auto-disconnect when you join an unsecured wifi network.</string>
     <string name="auto_secure_new_networks">Auto-Secure new networks</string>
-    <string name="auto_secure_new_networks_description">Mark all newly encountered networks as Secured.</string>
+    <string name="auto_secure_new_networks_description">Windscribe will mark every new network as “Secured” and turn ON automatically when your device connects to them.</string>
     <string name="auto_secure_description_secondary">Connect automatically on this Wi-Fi network to
 last chosen location.</string>
     <string name="preferred_protocol_description_secondary">Choose the best protocol for this network. This overrides all global connection settings.</string>
@@ -554,4 +555,9 @@ last chosen location.</string>
     <string name="unblock_full_access">Unlock full access to Windscribe</string>
     <string name="go_pro_for_unlimited_everything">Go Pro for unlimited everything</string>
     <string name="custom_configs">Custom Configs</string>
+    <string name="slide_puzzle_piece_into_place">Slide puzzle piece into place</string>
+    <string name="complete_puzzle_to_continue">Complete Puzzle to continue"</string>
+    <string name="none">None</string>
+    <string name="free">Free</string>
+    <string name="upgrade_to_pro">Upgrade to Pro</string>
 </resources>

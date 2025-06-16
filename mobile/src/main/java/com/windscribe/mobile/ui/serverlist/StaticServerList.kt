@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
@@ -50,6 +51,8 @@ import com.windscribe.mobile.ui.common.LatencyIcon
 import com.windscribe.mobile.ui.common.ServerNodeName
 import com.windscribe.mobile.ui.common.openUrl
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
+import com.windscribe.mobile.ui.theme.expandedServerItemTextColor
+import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.NetworkKeyConstants.getWebsiteLink
 
@@ -84,7 +87,7 @@ fun StaticIPServerList(viewModel: ServerViewModel, connectionViewModel: Connecti
                 Text(
                     "Error loading static ip list.",
                     style = font16,
-                    color = AppColors.white
+                    color =MaterialTheme.colorScheme.serverListSecondaryColor
                 )
             }
         }
@@ -109,7 +112,7 @@ fun StaticIPServerList(viewModel: ServerViewModel, connectionViewModel: Connecti
                         Text(
                             text = stringResource(R.string.static_ip),
                             style = font12,
-                            color = AppColors.white70,
+                            color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(0.70f),
                             modifier = Modifier.padding(start = 8.dp, top = 16.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -128,7 +131,7 @@ fun StaticIPServerList(viewModel: ServerViewModel, connectionViewModel: Connecti
                         state = pullToRefreshState,
                         modifier = Modifier.align(Alignment.TopCenter),
                         containerColor = Color.Transparent,
-                        contentColor = Color.White
+                        contentColor = MaterialTheme.colorScheme.serverListSecondaryColor
                     )
                 }
             }
@@ -160,7 +163,7 @@ private fun ListItemView(
             .height(48.dp)
             .clickable(
                 interactionSource,
-                indication = rememberRipple(bounded = true, color = AppColors.white)
+                indication = rememberRipple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)
             ) {
                 connectionViewModel.onStaticIpClick(item.staticItem)
             }
@@ -171,7 +174,7 @@ private fun ListItemView(
             painter = painterResource(staticIcon),
             contentDescription = "Static IP icon.",
             modifier = Modifier.size(24.dp),
-            colorFilter = ColorFilter.tint(AppColors.white)
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
@@ -179,7 +182,7 @@ private fun ListItemView(
             Text(
                 text = item.staticItem.staticIp,
                 style = font12.copy(fontWeight = FontWeight.Medium),
-                color = AppColors.white,
+                color = MaterialTheme.colorScheme.expandedServerItemTextColor,
                 textAlign = TextAlign.Start
             )
         }
@@ -194,7 +197,7 @@ private fun ProgressIndicator() {
         CircularProgressIndicator(
             modifier = Modifier
                 .size(48.dp)
-                .align(Alignment.Center), color = AppColors.white
+                .align(Alignment.Center), color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(0.05f)
         )
     }
 }

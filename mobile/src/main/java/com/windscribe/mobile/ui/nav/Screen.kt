@@ -33,4 +33,8 @@ sealed class Screen(val route: String) {
     object NetworkOptions : Screen("network_options")
     object NetworkDetails : Screen("network_details")
     object SplitTunnel : Screen("split_tunnel")
+    object ExtraDataUseWarning: Screen("extra_data_use_warning")
+    object GpsSpoofing: Screen("gps_spoofing")
+    object AddEmail: Screen("add_email")
+    object ConfirmEmail: Screen("confirm_email")
 }

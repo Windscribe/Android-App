@@ -93,6 +93,11 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    fun dismissCaptcha() {
+        updateState(LoginState.Idle)
+        validateInput()
+    }
+
     fun onTwoFactorHintClicked() = toggleTwoFactor()
 
     fun loginButtonClick() {

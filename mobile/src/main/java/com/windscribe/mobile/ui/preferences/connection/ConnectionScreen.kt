@@ -56,6 +56,7 @@ import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.CustomDropDown
 import com.windscribe.mobile.ui.common.DescriptionWithLearnMore
 import com.windscribe.mobile.ui.common.PreferenceBackground
+import com.windscribe.mobile.ui.common.RequestLocationPermissions
 import com.windscribe.mobile.ui.common.SwitchItemView
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
@@ -75,6 +76,8 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_AUTO
 import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_MANUAL
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_CUSTOM
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_ROBERT
+import com.windscribe.vpn.mocklocation.MockLocationManager.Companion.isAppSelectedInMockLocationList
+import com.windscribe.vpn.mocklocation.MockLocationManager.Companion.isDevModeOn
 
 
 @Composable
@@ -87,12 +90,14 @@ fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
         ?: remember { mutableStateOf(false) }
     val gpsSpoofing by viewModel?.gpsSpoofing?.collectAsState()
         ?: remember { mutableStateOf(false) }
-    val decoyTraffic by viewModel?.decoyTraffic?.collectAsState()
-        ?: remember { mutableStateOf(false) }
     val antiCensorship by viewModel?.antiCensorship?.collectAsState() ?: remember {
         mutableStateOf(
             false
         )
+    }
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        viewModel?.refreshPreferences()
     }
     PreferenceBackground {
         Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
@@ -155,17 +160,19 @@ fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
                     description = com.windscribe.mobile.R.string.gps_spoofing_description,
                     gpsSpoofing,
                     explainer = FeatureExplainer.GPS_SPOOFING,
-                    onSelect = { viewModel?.onGPSSpoofingToggleClicked() }
+                    onSelect = {
+                        if (gpsSpoofing.not() && (!isDevModeOn(context) || !isAppSelectedInMockLocationList(
+                                context
+                            ))
+                        ) {
+                            navController.navigate(Screen.GpsSpoofing.route)
+                        } else {
+                            viewModel?.onGPSSpoofingToggleClicked()
+                        }
+                    }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                SwitchItemView(
-                    title = com.windscribe.mobile.R.string.decoy_traffic,
-                    icon = com.windscribe.mobile.R.drawable.ic_decoy_icon,
-                    description = com.windscribe.mobile.R.string.decoy_caution_description,
-                    decoyTraffic,
-                    explainer = FeatureExplainer.DECOY_TRAFFIC,
-                    onSelect = { viewModel?.onDecoyTrafficToggleClicked() }
-                )
+                DecoyTrafficMode(viewModel)
                 Spacer(modifier = Modifier.height(16.dp))
                 SwitchItemView(
                     title = com.windscribe.mobile.R.string.anti_censorship,
@@ -181,8 +188,83 @@ fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
 }
 
 @Composable
-private fun ConnectionItem(title: Int, screen: Screen) {
+private fun DecoyTrafficMode(viewModel: ConnectionViewModel?) {
     val navController = LocalNavController.current
+    val decoyTraffic by viewModel?.decoyTraffic?.collectAsState()
+        ?: remember { mutableStateOf(false) }
+    val multiplier by viewModel?.trafficMultiplier?.collectAsState() ?: remember {
+        mutableStateOf(
+            DropDownStringItem("")
+        )
+    }
+    val multipliers by viewModel?.trafficMultipliers?.collectAsState() ?: remember {
+        mutableStateOf(
+            emptyList<DropDownStringItem>()
+        )
+    }
+    val potentialDataUse by viewModel?.potentialDataUse?.collectAsState()
+        ?: remember { mutableStateOf("") }
+    Column {
+        SwitchItemView(
+            title = com.windscribe.mobile.R.string.decoy_traffic,
+            icon = com.windscribe.mobile.R.drawable.ic_decoy_icon,
+            description = com.windscribe.mobile.R.string.decoy_caution_description,
+            decoyTraffic,
+            shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
+            explainer = FeatureExplainer.DECOY_TRAFFIC,
+            onSelect = {
+                if (decoyTraffic.not()) {
+                    navController.navigate(Screen.ExtraDataUseWarning.route)
+                } else {
+                    viewModel?.onDecoyTrafficToggleClicked()
+                }
+            }
+        )
+        Spacer(modifier = Modifier.height(1.dp))
+        CustomDropDown(
+            R.string.fake_traffic_volume,
+            multipliers,
+            multiplier.toString(),
+            shape = RoundedCornerShape(0.dp),
+        ) {
+            viewModel?.onFakeTrafficVolumeSelected(it)
+        }
+        Spacer(modifier = Modifier.height(1.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .background(
+                    MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
+                )
+                .padding(14.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.potential_data_use),
+                style = font16.copy(fontWeight = FontWeight.Medium),
+                color = MaterialTheme.colorScheme.primaryTextColor
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = potentialDataUse,
+                style = font16,
+                color = MaterialTheme.colorScheme.preferencesSubtitleColor
+            )
+        }
+    }
+}
+
+@Composable
+private fun ConnectionItem(title: Int, screen: Screen) {
+    var showPermissionRequest by remember { mutableStateOf(false) }
+    val navController = LocalNavController.current
+    if (showPermissionRequest) {
+        RequestLocationPermissions {
+            showPermissionRequest = false
+            navController.navigate(Screen.NetworkOptions.route)
+        }
+    }
     Row(
         modifier = Modifier
             .background(
@@ -191,7 +273,11 @@ private fun ConnectionItem(title: Int, screen: Screen) {
                 ), shape = RoundedCornerShape(size = 12.dp)
             )
             .clickable {
-                navController.navigate(screen.route)
+                if (screen == Screen.NetworkOptions) {
+                    showPermissionRequest = true
+                } else {
+                    navController.navigate(screen.route)
+                }
             }
             .padding(vertical = 14.dp, horizontal = 14.dp)
     ) {

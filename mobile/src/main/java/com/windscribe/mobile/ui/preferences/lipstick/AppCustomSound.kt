@@ -32,8 +32,11 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImagePainter.State.Empty.painter
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.Description
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
@@ -42,6 +45,7 @@ import com.windscribe.mobile.ui.model.DropDownItem
 import com.windscribe.mobile.ui.theme.backgroundColor
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
+import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
 @Composable
@@ -70,7 +74,7 @@ private fun Header() {
             Spacer(modifier = Modifier.padding(8.dp))
             Text(
                 stringResource(R.string.sound_notifications),
-                style = font16,
+                style = font16.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.primaryTextColor
             )
         }
@@ -112,8 +116,8 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
                 ) {
                     Text(
                         title ?: "",
-                        style = font12,
-                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f)
+                        style = font16.copy(fontWeight = FontWeight.Medium),
+                        color = MaterialTheme.colorScheme.preferencesSubtitleColor
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
@@ -143,8 +147,8 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
                 ) {
                     Text(
                         customItem?.value ?: "No selection",
-                        style = font12,
-                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f)
+                        style = font16,
+                        color = MaterialTheme.colorScheme.preferencesSubtitleColor
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
@@ -192,8 +196,8 @@ private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
                 ) {
                     Text(
                         title ?: "",
-                        style = font12,
-                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f)
+                        style = font16,
+                        color = MaterialTheme.colorScheme.preferencesSubtitleColor
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
@@ -223,8 +227,8 @@ private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
                 ) {
                     Text(
                         customItem?.value ?: "No selection",
-                        style = font12,
-                        color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.5f)
+                        style = font16,
+                        color = MaterialTheme.colorScheme.preferencesSubtitleColor
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
@@ -264,7 +268,7 @@ private fun DropdownSection(
                 .fillMaxWidth()
         ) {
             Column {
-                Text(title, style = font12, color = MaterialTheme.colorScheme.primaryTextColor)
+                Text(title, style = font16.copy(fontWeight = FontWeight.Medium), color = MaterialTheme.colorScheme.primaryTextColor)
                 extraContent?.invoke()
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -277,8 +281,8 @@ private fun DropdownSection(
                     }) {
                 Text(
                     displayValue,
-                    style = font12,
-                    color = MaterialTheme.colorScheme.primaryTextColor
+                    style = font16,
+                    color = MaterialTheme.colorScheme.preferencesSubtitleColor
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(

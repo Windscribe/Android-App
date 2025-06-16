@@ -15,15 +15,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
@@ -50,16 +53,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.windscribe.mobile.R
-import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.ui.AppStartActivity
-import com.windscribe.mobile.ui.helper.HandleScrollHaptic
-import com.windscribe.mobile.ui.theme.AppColors
-import com.windscribe.mobile.ui.theme.font12
-import com.windscribe.mobile.ui.theme.font16
-import com.windscribe.mobile.ui.theme.font9
 import com.windscribe.mobile.ui.common.FavouriteIcon
 import com.windscribe.mobile.ui.common.LatencyIcon
 import com.windscribe.mobile.ui.common.ServerListIcon
@@ -68,11 +66,19 @@ import com.windscribe.mobile.ui.common.TenGIcon
 import com.windscribe.mobile.ui.common.averageHealth
 import com.windscribe.mobile.ui.common.healthColor
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
+import com.windscribe.mobile.ui.helper.HandleScrollHaptic
 import com.windscribe.mobile.ui.home.HomeViewmodel
 import com.windscribe.mobile.ui.home.UserState
+import com.windscribe.mobile.ui.theme.AppColors
+import com.windscribe.mobile.ui.theme.expandedServerItemTextColor
+import com.windscribe.mobile.ui.theme.font12
+import com.windscribe.mobile.ui.theme.font16
+import com.windscribe.mobile.ui.theme.font9
+import com.windscribe.mobile.ui.theme.serverItemTextColor
+import com.windscribe.mobile.ui.theme.serverListSecondaryColor
+import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.serverlist.entity.City
-import androidx.compose.foundation.lazy.items
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -132,7 +138,7 @@ fun AllServerList(
                                 connectionViewModel,
                                 homeViewmodel,
                                 item,
-                                expanded = expandedStates[item.region.name] ?: false,
+                                expanded = expandedStates[item.region.name] == true,
                                 onExpandChange = { expandedStates[item.region.name] = it }
                             )
                         }
@@ -145,7 +151,7 @@ fun AllServerList(
             state = pullToRefreshState,
             modifier = Modifier.align(Alignment.TopCenter),
             containerColor = Color.Transparent,
-            contentColor = Color.White
+            contentColor = MaterialTheme.colorScheme.serverListSecondaryColor
         )
     }
 }
@@ -171,10 +177,10 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = AppColors.homeBackground)
+                    .background(color = AppColors.midnightNavy)
                     .border(
                         width = 1.dp,
-                        color = AppColors.white5,
+                        color = AppColors.white.copy(alpha = 0.05f),
                         shape = RoundedCornerShape(8.dp)
                     )
                     .padding(12.dp)
@@ -203,7 +209,7 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
                             )
 
                             drawArc(
-                                color = AppColors.white20,
+                                color = AppColors.white.copy(alpha = 0.20f),
                                 startAngle = 160f + angle,
                                 sweepAngle = 360f - angle,
                                 useCenter = false,
@@ -256,10 +262,16 @@ fun LocationCount(viewModel: ServerViewModel) {
         Text(
             text = "All locations (${(serverListState as ListState.Success).data.count()})",
             style = font12,
-            color = AppColors.white70,
+            color = MaterialTheme.colorScheme.serverItemTextColor,
             modifier = Modifier.padding(start = 8.dp, top = 16.dp)
         )
     }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun SplitBorderCirclePreview() {
+    SplitBorderCircle(10.0f, Color.Red, Color.Green, R.drawable.it_small, true)
 }
 
 @Composable
@@ -267,19 +279,28 @@ fun SplitBorderCircle(
     firstSectionAngle: Float,
     firstColor: Color,
     secondColor: Color,
-    flagRes: Int
+    flagRes: Int,
+    pro: Boolean = false
 ) {
     Box(
         modifier = Modifier
             .size(24.dp)
     ) {
+        Image(
+            painter = painterResource(id = flagRes),
+            contentDescription = "Flag",
+            modifier = Modifier
+                .size(20.dp)
+                .align(Alignment.Center),
+            colorFilter = if (flagRes == R.drawable.ic_dc) ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor) else null
+        )
         Canvas(
             modifier = Modifier
                 .size(24.dp)
-                .padding(2.dp)
+
         ) {
             val strokeWidth = 1.dp.toPx()
-
+            if (firstSectionAngle == 0f) return@Canvas
             drawArc(
                 color = firstColor,
                 startAngle = 160f, // Start from top
@@ -300,14 +321,16 @@ fun SplitBorderCircle(
                 topLeft = Offset.Zero
             )
         }
-        Image(
-            painter = painterResource(id = flagRes),
-            contentDescription = "Flag",
-            modifier = Modifier
-                .size(36.dp)
-                .padding(4.dp)
-                .align(Alignment.Center)
-        )
+        if (pro) {
+            Image(
+                painter = painterResource(id = R.drawable.pro_mask),
+                contentDescription = "Flag",
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .size(16.dp)
+                    .offset(x = (-6).dp)
+            )
+        }
     }
 }
 
@@ -334,7 +357,7 @@ private fun BestLocation(item: ServerListItem, connectionViewModel: ConnectionVi
             SplitBorderCircle(
                 angle,
                 color,
-                AppColors.white70,
+                MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.20f),
                 FlagIconResource.getSmallFlag(item.region.countryCode)
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -342,7 +365,7 @@ private fun BestLocation(item: ServerListItem, connectionViewModel: ConnectionVi
                 text = stringResource(R.string.best_location),
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 modifier = Modifier.weight(1f),
-                color = AppColors.white70,
+                color = MaterialTheme.colorScheme.serverItemTextColor,
                 textAlign = TextAlign.Start
             )
             Spacer(modifier = Modifier.weight(1.0f))
@@ -351,7 +374,8 @@ private fun BestLocation(item: ServerListItem, connectionViewModel: ConnectionVi
                 contentDescription = "Expand",
                 modifier = Modifier
                     .size(32.dp)
-                    .padding(8.dp)
+                    .padding(8.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor)
             )
         }
     }
@@ -369,6 +393,7 @@ private fun ExpandableListItem(
     val health = averageHealth(item)
     val color = colorResource(healthColor(health))
     val angle = (health / 100f) * 360f
+    val userState by homeViewmodel.userState.collectAsState()
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxWidth()
@@ -384,30 +409,34 @@ private fun ExpandableListItem(
             SplitBorderCircle(
                 angle,
                 color,
-                AppColors.white70,
-                FlagIconResource.getSmallFlag(item.region.countryCode)
+                MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.20f),
+                FlagIconResource.getSmallFlag(item.region.countryCode),
+                userState !is UserState.Pro && item.region.premium == 1
             )
             Spacer(modifier = Modifier.size(16.dp))
             Text(
                 text = item.region.name,
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 modifier = Modifier.weight(1f),
-                color = if (expanded) AppColors.white else AppColors.white70,
+                color = if (expanded) MaterialTheme.colorScheme.expandedServerItemTextColor else MaterialTheme.colorScheme.serverItemTextColor,
                 textAlign = TextAlign.Start
             )
             if (item.region.p2p == 0) {
                 Image(
                     painter = painterResource(R.drawable.p2p),
                     contentDescription = "P2P",
-                    colorFilter = ColorFilter.tint(AppColors.white70),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor),
                     modifier = Modifier
-                        .size(16.dp)
+                        .size(16.dp),
+                    alpha = if (expanded) 1f else 0.4f,
                 )
                 Spacer(modifier = Modifier.size(8.dp))
             }
             Image(
                 painter = painterResource(if (expanded) R.drawable.ic_server_list_open else R.drawable.ic_server_list_close),
                 contentDescription = "Expand",
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor),
+                alpha = if (expanded) 1f else 0.4f,
                 modifier = Modifier
                     .size(32.dp)
                     .padding(8.dp)
@@ -416,7 +445,7 @@ private fun ExpandableListItem(
                         indication = rememberRipple(
                             bounded = false,
                             radius = 16.dp,
-                            color = AppColors.white
+                            color = MaterialTheme.colorScheme.expandedServerItemTextColor
                         )
                     ) {
                         onExpandChange(!expanded)

@@ -25,6 +25,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -59,6 +60,9 @@ import com.windscribe.mobile.ui.common.averageHealth
 import com.windscribe.mobile.ui.common.healthColor
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.home.HomeViewmodel
+import com.windscribe.mobile.ui.home.UserState
+import com.windscribe.mobile.ui.theme.serverListBackgroundColor
+import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.serverlist.entity.City
 
@@ -71,7 +75,7 @@ fun SearchServerList(viewModel: ServerViewModel, connectionViewModel: Connection
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.homeBackground)
+            .background(MaterialTheme.colorScheme.serverListBackgroundColor)
             .statusBarsPadding().clickable {  }
     ) {
         SearchListNavigation(viewModel, homeViewmodel)
@@ -87,7 +91,7 @@ fun SearchServerList(viewModel: ServerViewModel, connectionViewModel: Connection
                 }
 
                 is ListState.Error -> {
-                    Text("Error loading server list", color = Color.White)
+                    Text("Error loading server list", color = MaterialTheme.colorScheme.serverListSecondaryColor)
                 }
 
                 is ListState.Success -> {
@@ -123,6 +127,7 @@ private fun ExpandableListItem(
     expanded: Boolean,
     onExpandChange: (Boolean) -> Unit
 ) {
+    val userState by homeViewmodel.userState.collectAsState()
     val health = averageHealth(item)
     val color = colorResource(healthColor(health))
     val angle = (health / 100f) * 360f
@@ -143,19 +148,21 @@ private fun ExpandableListItem(
             SplitBorderCircle(
                 angle,
                 color,
-                AppColors.white70,
-                FlagIconResource.getSmallFlag(item.region.countryCode)
+                MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.20f),
+                FlagIconResource.getSmallFlag(item.region.countryCode),
+                userState !is UserState.Pro && item.region.premium == 1
             )
             Spacer(modifier = Modifier.size(16.dp))
             Text(
                 text = item.region.name,
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 modifier = Modifier.weight(1f),
-                color = if (expanded) AppColors.white else AppColors.white70,
+                color = if (expanded) MaterialTheme.colorScheme.serverListSecondaryColor else MaterialTheme.colorScheme.serverListSecondaryColor.copy(0.70f),
                 textAlign = TextAlign.Start
             )
             Image(
                 painter = painterResource(if (expanded) R.drawable.ic_server_list_open else R.drawable.ic_server_list_close),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor),
                 contentDescription = "Expand",
                 modifier = Modifier
                     .size(32.dp)
@@ -165,7 +172,7 @@ private fun ExpandableListItem(
                         indication = rememberRipple(
                             bounded = false,
                             radius = 16.dp,
-                            color = AppColors.white
+                            color = MaterialTheme.colorScheme.serverListSecondaryColor
                         )
                     ) {
                         onExpandChange(!expanded)
@@ -210,7 +217,7 @@ private fun ServerListItemView(
             .height(48.dp)
             .clickable(
                 interactionSource,
-                indication = rememberRipple(bounded = true, color = AppColors.white)
+                indication = rememberRipple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)
             ) {
                 viewModel.toggleSearch()
                 connectionViewModel.onCityClick(item)
@@ -239,7 +246,7 @@ private fun ProgressIndicator() {
         CircularProgressIndicator(
             modifier = Modifier
                 .size(24.dp)
-                .align(Alignment.Center), color = AppColors.white
+                .align(Alignment.Center), color = MaterialTheme.colorScheme.serverListSecondaryColor
         )
     }
 }
@@ -252,7 +259,7 @@ private fun SearchListNavigation(viewModel: ServerViewModel, homeViewmodel: Home
     val isHapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
     val interactionSource =
         remember { MutableInteractionSource() }
-
+   val stroke = MaterialTheme.colorScheme.serverListSecondaryColor.copy(0.10f)
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -260,13 +267,13 @@ private fun SearchListNavigation(viewModel: ServerViewModel, homeViewmodel: Home
             .drawBehind {
                 val strokeWidth = 1.dp.toPx()
                 drawLine(
-                    color = Color(0x1AFFFFFF),
+                    color = stroke,
                     start = Offset(0f, size.height),
                     end = Offset(size.width, size.height),
                     strokeWidth = strokeWidth
                 )
             }
-            .background(Color(0xFF050A11))
+            .background(MaterialTheme.colorScheme.serverListBackgroundColor)
             .padding(horizontal = 12.dp)
     ) {
         Row(
@@ -279,7 +286,7 @@ private fun SearchListNavigation(viewModel: ServerViewModel, homeViewmodel: Home
                 modifier = Modifier.Companion.hapticClickable(hapticEnabled = isHapticEnabled) {
                     viewModel.toggleSearch()
                 },
-                colorFilter = ColorFilter.tint(AppColors.white70)
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f))
             )
             TextField(
                 value = query,
@@ -287,13 +294,13 @@ private fun SearchListNavigation(viewModel: ServerViewModel, homeViewmodel: Home
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight(),
-                textStyle = font16.copy(textAlign = TextAlign.Start, color = AppColors.white),
+                textStyle = font16.copy(textAlign = TextAlign.Start, color = MaterialTheme.colorScheme.serverListSecondaryColor),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = AppColors.white
+                    cursorColor = MaterialTheme.colorScheme.serverListSecondaryColor
                 ),
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
             )
@@ -311,11 +318,11 @@ private fun SearchListNavigation(viewModel: ServerViewModel, homeViewmodel: Home
                 contentDescription = "Search",
                 modifier = Modifier.clickable(
                     interactionSource = interactionSource,
-                    indication = rememberRipple(bounded = false, color = AppColors.white)
+                    indication = rememberRipple(bounded = false, color = MaterialTheme.colorScheme.serverListSecondaryColor)
                 ) {
                     viewModel.toggleSearch()
                 },
-                colorFilter = ColorFilter.tint(AppColors.white70)
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor)
             )
         }
     }

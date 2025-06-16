@@ -28,6 +28,8 @@ import com.windscribe.vpn.backend.openvpn.ProxyTunnelManager.Companion.PROXY_TUN
 import com.windscribe.vpn.backend.wireguard.WireGuardVpnProfile
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.commonutils.WindUtilities.ConfigType.WIRE_GUARD
+import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_INVALID_DNS_ADDRESS
+import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_VALID_CONFIG_NOT_FOUND
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_CUSTOM
@@ -384,7 +386,9 @@ class VPNProfileCreator @Inject constructor(
     private fun setCustomDNS(): DNSDetails? {
         val dnsDetails = getDNSDetails(appContext,preferencesHelper.dnsMode == DNS_MODE_CUSTOM, preferencesHelper.dnsAddress)
         dnsDetails.exceptionOrNull()?.let { throwable ->
-            throw throwable
+            throw InvalidVPNConfigException(CallResult.Error(ERROR_INVALID_DNS_ADDRESS,
+                throwable.message.toString()
+            ))
         }
         return dnsDetails.getOrNull()?.let { details ->
             proxyDNSManager.dnsDetails = details

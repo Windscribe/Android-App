@@ -121,7 +121,7 @@ private fun Header(viewModel: NetworkDetailViewModel?, networkDetail: NetworkInf
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(
-                painterResource(com.windscribe.mobile.R.drawable.ic_preferences_icon),
+                painterResource(com.windscribe.mobile.R.drawable.ic_connection_mode_icon),
                 contentDescription = "",
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor)
             )

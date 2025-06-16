@@ -35,7 +35,6 @@ import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.nav.LocalNavController
-import com.windscribe.mobile.ui.theme.backgroundColorInverted
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
@@ -97,7 +96,7 @@ private fun HandleToast(lipstickViewmodel: LipstickViewmodel?) {
 
 @Composable
 internal fun PreferencesBottomSection(@StringRes description: Int) {
-    val color = MaterialTheme.colorScheme.backgroundColorInverted.copy(alpha = 0.08f)
+    val color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.08f)
     Box(
         modifier = Modifier
             .offset(y = (-16).dp)

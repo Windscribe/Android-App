@@ -194,8 +194,10 @@ class AutoConnectionManager(
                 stop()
             } else {
                 logger.debug("Engaging auto connect.")
-                listOfProtocols.firstOrNull { it.protocol == interactor.preferenceHelper.selectedProtocol }?.type =
-                    ProtocolConnectionStatus.Connected
+                if (vpnConnectionStateManager.get().state.value.status == VPNState.Status.Connected) {
+                    listOfProtocols.firstOrNull { it.protocol == interactor.preferenceHelper.selectedProtocol }?.type =
+                        ProtocolConnectionStatus.Connected
+                }
                 engageConnectionChangeMode()
             }
         }
@@ -331,13 +333,10 @@ class AutoConnectionManager(
                 listOfProtocols.removeAt(index)
                 listOfProtocols.add(0, connectedProtocol)
             }
-            showConnectionChangeDialog(
-                listOfProtocols,
-                retry = { engageAutomaticMode() })
-        } else {
-            logger.debug("Showing all protocol failed dialog.")
-            showAllProtocolFailedDialog()
         }
+        showConnectionChangeDialog(
+            listOfProtocols,
+            retry = { engageAutomaticMode() })
     }
 
     private fun showAllProtocolFailedDialog() {

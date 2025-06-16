@@ -27,10 +27,10 @@ fun NextButtonLighter(modifier: Modifier = Modifier,
             .height(48.dp)
             .padding(horizontal = 24.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = AppColors.white10,
+            containerColor = AppColors.white.copy(alpha = 0.10f),
             contentColor = AppColors.white,
-            disabledContainerColor = AppColors.white10,
-            disabledContentColor = AppColors.white25
+            disabledContainerColor = AppColors.white.copy(alpha = 0.10f),
+            disabledContentColor = AppColors.white.copy(alpha = 0.25f)
         ),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(24.dp),

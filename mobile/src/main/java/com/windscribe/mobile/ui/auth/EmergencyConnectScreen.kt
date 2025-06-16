@@ -103,9 +103,10 @@ fun EmergencyConnectCloseIcon(modifier: Modifier = Modifier) {
         }, modifier = modifier
     ) {
         Icon(
-            painter = painterResource(id = R.drawable.ic_close_white),
+            painter = painterResource(id = R.drawable.close),
             contentDescription = "Close",
-            tint = AppColors.white
+            tint = AppColors.white,
+            modifier = Modifier.size(24.dp)
         )
     }
 }
@@ -142,7 +143,7 @@ fun EmergencyConnectDescription(uiState: EmergencyConnectUIState) {
         text = descriptionText,
         style = font16,
         textAlign = TextAlign.Center,
-        color = AppColors.white50,
+        color = AppColors.white.copy(alpha = 0.50f),
         modifier = Modifier.padding(horizontal = 16.dp)
     )
 }
@@ -154,7 +155,7 @@ fun EmergencyConnectProgressBar(uiState: EmergencyConnectUIState, connectionProg
             Text(
                 text = connectionProgressText,
                 style = font16,
-                color = AppColors.white50
+                color = AppColors.white.copy(alpha = 0.50f)
             )
             Spacer(modifier = Modifier.height(16.dp))
             CircularProgressIndicator(
@@ -174,7 +175,7 @@ fun EmergencyConnectCancelButton() {
         Text(
             text = stringResource(id = R.string.cancel),
             style = font16,
-            color = AppColors.white50
+            color = AppColors.white.copy(alpha = 0.50f)
         )
     }
 }
