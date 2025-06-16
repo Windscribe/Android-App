@@ -9,12 +9,15 @@ import com.windscribe.mobile.ui.preferences.connection.PortMapItem
 import com.windscribe.mobile.ui.preferences.connection.ProtoItem
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.state.NetworkInfoManager
+import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Protocol
@@ -40,7 +43,9 @@ class NetworkDetailViewModelImpl(
     val localDbInterface: LocalDbInterface,
     val api: IApiCallManager,
     val preferencesHelper: PreferencesHelper,
-    val networkNetworkManager: NetworkInfoManager
+    val networkNetworkManager: NetworkInfoManager,
+    val vpnController: WindVpnController,
+    val vpnConnectionStateManager: VPNConnectionStateManager
 ) :
     NetworkDetailViewModel() {
     private val _showProgress = MutableStateFlow(false)
@@ -98,14 +103,28 @@ class NetworkDetailViewModelImpl(
     private fun loadNetworkDetails() {
         viewModelScope.launch(Dispatchers.IO) {
             _showProgress.value = true
-            localDbInterface.allNetworks.collect {
-                val networkInfo = it.find { it.networkName == networkNetworkName }
-                Log.i("NetworkOptionsViewModel", "onAutoSecureChanged: $it")
-                _networkDetail.value = networkInfo
-                isMyNetwork.value =
-                    networkInfo?.networkName == networkNetworkManager.networkInfo?.networkName
-            }
-            _showProgress.value = false
+            localDbInterface.allNetworks
+                .distinctUntilChanged()
+                .collect { networkList ->
+                    val networkInfo = networkList.find { it.networkName == networkNetworkName }
+                    if (_networkDetail.value != networkInfo) {
+                        _networkDetail.value = networkInfo
+                    }
+                    val isMine = networkInfo?.networkName == networkNetworkManager.networkInfo?.networkName
+                    if (isMyNetwork.value != isMine) {
+                        isMyNetwork.value = isMine
+                    }
+                    val vpnActive = vpnConnectionStateManager.isVPNActive()
+                    when {
+                        networkInfo?.isAutoSecureOn == true && !vpnActive -> {
+                            vpnController.connectAsync()
+                        }
+                        networkInfo?.isAutoSecureOn == false && vpnActive -> {
+                            vpnController.disconnectAsync()
+                        }
+                    }
+                    _showProgress.value = false
+                }
         }
     }
 
@@ -147,7 +166,6 @@ class NetworkDetailViewModelImpl(
             networkInfo?.let {
                 withContext(Dispatchers.IO) {
                     localDbInterface.deleteNetworkSync(it.networkName)
-                    //  networkNetworkManager.reload()
                 }
             }
             _showProgress.value = false
@@ -196,5 +214,10 @@ class NetworkDetailViewModelImpl(
             }
             _showProgress.value = false
         }
+    }
+
+    override fun onCleared() {
+        networkNetworkManager.reload(false)
+        super.onCleared()
     }
 }

@@ -28,6 +28,8 @@ import com.windscribe.mobile.ui.preferences.connection.ConnectionViewModel
 import com.windscribe.mobile.ui.preferences.connection.ConnectionViewModelImpl
 import com.windscribe.mobile.ui.preferences.debug.DebugViewModel
 import com.windscribe.mobile.ui.preferences.debug.DebugViewModelImpl
+import com.windscribe.mobile.ui.preferences.email.EmailViewModel
+import com.windscribe.mobile.ui.preferences.email.EmailViewModelImpl
 import com.windscribe.mobile.ui.preferences.general.GeneralViewModel
 import com.windscribe.mobile.ui.preferences.general.GeneralViewModelImpl
 import com.windscribe.mobile.ui.preferences.help.HelpViewModel
@@ -55,6 +57,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.FavouriteRepository
@@ -73,6 +76,7 @@ import com.windscribe.vpn.workers.WindScribeWorkManager
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
+import kotlin.jvm.java
 
 @Module
 class ComposeModule {
@@ -99,7 +103,8 @@ class ComposeModule {
         googleSignInManager: GoogleSignInManager,
         workManager: WindScribeWorkManager,
         advanceParameterRepository: AdvanceParameterRepository,
-        proxyDNSManager: ProxyDNSManager
+        proxyDNSManager: ProxyDNSManager,
+        decoyTrafficController: DecoyTrafficController
     ): ViewModelProvider.Factory {
         return object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -176,7 +181,7 @@ class ComposeModule {
                 } else if (modelClass.isAssignableFrom(EditCustomConfigViewmodel::class.java)) {
                     return EditCustomConfigViewmodelImpl(localDbInterface, windVpnController) as T
                 } else if (modelClass.isAssignableFrom(AppStartActivityViewModel::class.java)) {
-                    return AppStartActivityViewModelImpl() as T
+                    return AppStartActivityViewModelImpl(appPreferenceHelper) as T
                 } else if (modelClass.isAssignableFrom(MainMenuViewModel::class.java)) {
                     return MainMenuViewModelImpl(userRepository) as T
                 } else if (modelClass.isAssignableFrom(GeneralViewModel::class.java)) {
@@ -184,7 +189,7 @@ class ComposeModule {
                 } else if (modelClass.isAssignableFrom(AccountViewModel::class.java)) {
                     return AccountViewModelImpl(userRepository, apiCallManager, workManager) as T
                 } else if (modelClass.isAssignableFrom(ConnectionViewModel::class.java)) {
-                    return ConnectionViewModelImpl(preferencesHelper = appPreferenceHelper, api = apiCallManager, autoConnectionManager, vpnConnectionStateManager, proxyDNSManager) as T
+                    return ConnectionViewModelImpl(preferencesHelper = appPreferenceHelper, api = apiCallManager, autoConnectionManager, vpnConnectionStateManager, proxyDNSManager, decoyTrafficController) as T
                 } else if (modelClass.isAssignableFrom(RobertViewModel::class.java)) {
                     return RobertViewModelImpl(apiCallManager, appPreferenceHelper) as T
                 } else if (modelClass.isAssignableFrom(LipstickViewmodel::class.java)) {
@@ -200,9 +205,12 @@ class ComposeModule {
                 } else if (modelClass.isAssignableFrom(NetworkOptionsViewModel::class.java)) {
                     return NetworkOptionsViewModelImpl(appPreferenceHelper, networkInfoManager, localDbInterface) as T
                 } else if (modelClass.isAssignableFrom(NetworkDetailViewModel::class.java)) {
-                    return NetworkDetailViewModelImpl(localDbInterface, apiCallManager, appPreferenceHelper, networkInfoManager) as T
+                    return NetworkDetailViewModelImpl(localDbInterface, apiCallManager, appPreferenceHelper, networkInfoManager, windVpnController, vpnConnectionStateManager) as T
                 } else if (modelClass.isAssignableFrom(SplitTunnelViewModel::class.java)) {
                     return SplitTunnelViewModelImpl(appPreferenceHelper) as T
+                }
+                else if (modelClass.isAssignableFrom(EmailViewModel::class.java)) {
+                    return EmailViewModelImpl(apiCallManager, userRepository, workManager) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
             }

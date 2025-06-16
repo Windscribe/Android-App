@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -42,6 +43,7 @@ import com.windscribe.mobile.ui.home.*
 import com.windscribe.mobile.ui.preferences.main.MainMenuScreen
 import com.windscribe.mobile.ui.preferences.main.MainMenuViewModel
 import com.windscribe.mobile.ui.popup.EditCustomConfigViewmodel
+import com.windscribe.mobile.ui.popup.ExtraDataUseWarningScreen
 import com.windscribe.mobile.ui.popup.NewsfeedViewmodel
 import com.windscribe.mobile.ui.popup.PowerWhitelistViewmodel
 import com.windscribe.mobile.ui.popup.SharedLinkViewmodel
@@ -54,11 +56,15 @@ import com.windscribe.mobile.ui.preferences.connection.ConnectionScreen
 import com.windscribe.mobile.ui.preferences.connection.ConnectionViewModel
 import com.windscribe.mobile.ui.preferences.debug.DebugScreen
 import com.windscribe.mobile.ui.preferences.debug.DebugViewModel
+import com.windscribe.mobile.ui.preferences.email.AddEmailScreen
+import com.windscribe.mobile.ui.preferences.email.ConfirmEmailScreen
+import com.windscribe.mobile.ui.preferences.email.EmailViewModel
 import com.windscribe.mobile.ui.preferences.general.GeneralScreen
 import com.windscribe.mobile.ui.preferences.help.HelpScreen
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelScreen
 import com.windscribe.mobile.ui.preferences.robert.RobertScreen
 import com.windscribe.mobile.ui.preferences.general.GeneralViewModel
+import com.windscribe.mobile.ui.preferences.gps_spoofing.GpsSpoofing
 import com.windscribe.mobile.ui.preferences.help.HelpViewModel
 import com.windscribe.mobile.ui.preferences.lipstick.LipstickViewmodel
 import com.windscribe.mobile.ui.preferences.network_details.NetworkDetailScreen
@@ -113,7 +119,12 @@ private fun NavGraphBuilder.addNavigationScreens() {
     }
     composable(route = Screen.Home.route) { AddHomeScreenRoute() }
     composable(route = Screen.NoEmailAttention.route) { NoEmailAttentionScreen(false) {} }
-    composable(route = Screen.Newsfeed.route) {
+
+    composable(route = Screen.Newsfeed.route, enterTransition = {
+        slideInHorizontally(initialOffsetX = { -it })
+    }, exitTransition = {
+        slideOutHorizontally(targetOffsetX = { it })
+    }) {
         ViewModelRoute(NewsfeedViewmodel::class.java) {
             NewsfeedScreen(it)
         }
@@ -295,6 +306,25 @@ private fun NavGraphBuilder.addNavigationScreens() {
     composable(route = Screen.OverlayDialog.route) {
         val activity = LocalContext.current as AppStartActivity
         OverlayDialogScreen(appStartActivityViewModel = activity.viewmodel)
+    }
+    composable(route = Screen.ExtraDataUseWarning.route) {
+        val activity = LocalContext.current as AppStartActivity
+        ExtraDataUseWarningScreen(activity.viewmodel)
+    }
+    composable(route = Screen.GpsSpoofing.route) {
+        val activity = LocalContext.current as AppStartActivity
+        GpsSpoofing(activity.viewmodel)
+    }
+    composable(route = Screen.AddEmail.route) {
+        ViewModelRoute(EmailViewModel::class.java) {
+            AddEmailScreen(it)
+        }
+    }
+    composable(route = Screen.ConfirmEmail.route) {
+        ViewModelRoute(EmailViewModel::class.java) {
+            it.emailAdded = true
+            ConfirmEmailScreen(it)
+        }
     }
 }
 

@@ -46,6 +46,8 @@ import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.common.NextButton
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
+import com.windscribe.mobile.ui.helper.PreviewWithNav
 
 @RequiresApi(Build.VERSION_CODES.M)
 @Composable
@@ -66,7 +68,7 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = AppColors.darkBlue)
+            .background(color = AppColors.deepBlue)
     ) {
         Column(
             modifier = Modifier
@@ -121,7 +123,7 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
                 Text(
                     stringResource(id = R.string.may_be_later),
                     style = font16,
-                    color = AppColors.white50
+                    color = AppColors.white.copy(alpha = 0.50f)
                 )
             }
             TextButton(onClick = {
@@ -130,7 +132,7 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
                 Text(
                     stringResource(id = R.string.never_aks_again_for_permission),
                     style = font16,
-                    color = AppColors.white50
+                    color = AppColors.white.copy(alpha = 0.50f)
                 )
             }
         }
@@ -139,7 +141,9 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
 
 @RequiresApi(Build.VERSION_CODES.M)
 @Composable
-@Preview
+@MultiDevicePreview
 fun PowerWhitelistScreenPreview() {
-    PowerWhitelistScreen(null)
+    PreviewWithNav {
+        PowerWhitelistScreen(null)
+    }
 }

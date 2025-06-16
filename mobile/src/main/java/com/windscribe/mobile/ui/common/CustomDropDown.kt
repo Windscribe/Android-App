@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.common
 
+import android.R.attr.description
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -42,6 +44,7 @@ fun CustomDropDown(
     items: List<DropDownStringItem>,
     selectedItemKey: String,
     shape: RoundedCornerShape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+    @StringRes description: Int? = null,
     onSelect: (DropDownStringItem) -> Unit
 ) {
     val expanded = remember { mutableStateOf(false) }
@@ -113,6 +116,10 @@ fun CustomDropDown(
                     }
                 }
             }
+        }
+        if (description != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Description(stringResource(description))
         }
     }
 }

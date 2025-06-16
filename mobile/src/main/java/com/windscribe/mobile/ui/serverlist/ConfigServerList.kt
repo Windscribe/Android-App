@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
@@ -44,6 +45,7 @@ import com.windscribe.mobile.ui.common.AddButton
 import com.windscribe.mobile.ui.common.AddButtonWithDetails
 import com.windscribe.mobile.ui.common.CustomConfigItem
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
+import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,7 +81,7 @@ private fun ErrorView(filePickerLauncher: ManagedActivityResultLauncher<Array<St
     Box(modifier = Modifier.fillMaxSize()) {
         Icon(
             imageVector = Icons.Default.Add,
-            tint = Color.White,
+            tint = MaterialTheme.colorScheme.serverListSecondaryColor,
             contentDescription = "",
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -89,7 +91,7 @@ private fun ErrorView(filePickerLauncher: ManagedActivityResultLauncher<Array<St
         Text(
             "Error loading config server list",
             style = font16,
-            color = AppColors.white,
+            color = MaterialTheme.colorScheme.serverListSecondaryColor,
             modifier = Modifier.align(Alignment.Center)
         )
     }
@@ -135,7 +137,7 @@ private fun SuccessView(
                 Text(
                     text = stringResource(R.string.custom_configs),
                     style = font12,
-                    color = AppColors.white70,
+                    color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f),
                     modifier = Modifier.padding(start = 16.dp, top = 16.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))

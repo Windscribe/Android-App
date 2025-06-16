@@ -92,7 +92,9 @@ fun LoginScreen(
         AppProgressBar(showProgressBar, message = message)
         if (loginState is LoginState.Captcha) {
             CaptchaDebugDialog(
-                (loginState as LoginState.Captcha).request, onCancel = { },
+                (loginState as LoginState.Captcha).request, onCancel = {
+                    viewModel?.dismissCaptcha()
+                },
                 onSolutionSubmit = { t1, t2 ->
                     Log.i("LoginScreen", "onSolutionSubmit: $t1, $t2")
                     viewModel?.onCaptchaSolutionReceived(
@@ -158,6 +160,7 @@ private fun isError(loginState: LoginState, field: AuthInputFields): Boolean {
 fun LoginPasswordTextField(loginState: LoginState, viewModel: LoginViewModel? = null) {
     AuthTextField(
         hint = stringResource(R.string.password),
+        placeHolder = stringResource(R.string.enter_password),
         isError = isError(loginState, AuthInputFields.Password),
         modifier = Modifier.fillMaxWidth(),
         isPassword = true,
@@ -184,6 +187,7 @@ fun LoginTwoFactorTextField(loginState: LoginState, viewModel: LoginViewModel? =
 fun LoginUsernameTextField(loginState: LoginState, viewModel: LoginViewModel? = null) {
     AuthTextField(
         hint = stringResource(R.string.username),
+        placeHolder = stringResource(R.string.enter_username),
         isError = isError(loginState, AuthInputFields.Username),
         modifier = Modifier.fillMaxWidth(),
         onValueChange = {
@@ -220,7 +224,7 @@ private fun AppTextButton(text: String, onClick: () -> Unit) {
             text = text,
             style = font16.copy(textAlign = TextAlign.Center),
             modifier = Modifier.align(Alignment.CenterStart),
-            color = AppColors.white50,
+            color = AppColors.white.copy(alpha = 0.50f),
         )
     }
 }

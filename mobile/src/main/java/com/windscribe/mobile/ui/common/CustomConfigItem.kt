@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -30,6 +31,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -47,6 +49,9 @@ import com.windscribe.mobile.ui.serverlist.ConfigViewmodel
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.serverlist.ListState
 import com.windscribe.mobile.ui.serverlist.ServerViewModel
+import com.windscribe.mobile.ui.theme.serverItemTextColor
+import com.windscribe.mobile.ui.theme.serverListBackgroundColor
+import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.vpn.commonutils.WindUtilities
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -78,7 +83,6 @@ fun CustomConfigItem(
         modifier = Modifier
             .fillMaxWidth()
             .height(48.dp)
-            .background(Color.Black)
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDrag = { change, dragAmount ->
@@ -122,7 +126,10 @@ fun CustomConfigItem(
                     .size(48.dp)
                     .clickable(
                         interactionSource = editInteractionSource,
-                        indication = rememberRipple(bounded = true, color = Color.White)
+                        indication = rememberRipple(
+                            bounded = true,
+                            color = MaterialTheme.colorScheme.serverListSecondaryColor
+                        )
                     ) {
                         navController.currentBackStackEntry?.savedStateHandle?.set(
                             "config_id",
@@ -135,7 +142,7 @@ fun CustomConfigItem(
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Edit",
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.serverListSecondaryColor,
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -145,7 +152,10 @@ fun CustomConfigItem(
                     .size(48.dp)
                     .clickable(
                         interactionSource = deleteInteractionSource,
-                        indication = rememberRipple(bounded = true, color = Color.White)
+                        indication = rememberRipple(
+                            bounded = true,
+                            color = MaterialTheme.colorScheme.serverListSecondaryColor
+                        )
                     ) {
                         configViewmodel.deleteCustomConfig(item.config)
                     },
@@ -154,7 +164,7 @@ fun CustomConfigItem(
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete",
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.serverListSecondaryColor,
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -168,21 +178,28 @@ fun CustomConfigItem(
                 .height(48.dp)
                 .clickable(
                     interactionSource,
-                    indication = rememberRipple(bounded = true, color = AppColors.white)
+                    indication = rememberRipple(
+                        bounded = true,
+                        color = MaterialTheme.colorScheme.serverListSecondaryColor
+                    )
                 ) {
                     connectionViewModel.onConfigClick(item.config)
                 }
                 .padding(horizontal = 16.dp)
-                .background(color = AppColors.homeBackground),
+                .background(color = MaterialTheme.colorScheme.serverListBackgroundColor),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(painter = painterResource(icon), contentDescription = "Custom config")
+            Image(
+                painter = painterResource(icon),
+                contentDescription = "Custom config",
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverItemTextColor)
+            )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = item.config.name,
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 modifier = Modifier.weight(1f),
-                color = AppColors.white,
+                color = MaterialTheme.colorScheme.serverItemTextColor,
                 textAlign = TextAlign.Start
             )
             LatencyIcon(latency)

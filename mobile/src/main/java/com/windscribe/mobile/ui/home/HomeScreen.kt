@@ -17,6 +17,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -53,16 +54,12 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -74,7 +71,6 @@ import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.nav.LocalNavController
-import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.serverlist.SearchServerList
 import com.windscribe.mobile.ui.theme.AppColors
@@ -209,7 +205,7 @@ private fun Background(content: @Composable () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.homeBackground)
+            .background(AppColors.midnightNavy)
             .navigationBarsPadding()
     ) {
         content()
@@ -228,7 +224,7 @@ private fun CompactUI(
         ConnectedBackground(connectionViewmodel)
         Column {
             Spacer(modifier = Modifier.height(36.dp))
-            LocationImage(connectionViewmodel)
+            LocationImage(connectionViewmodel, homeViewmodel)
             ServerListScreen(serverViewModel, connectionViewmodel, configViewmodel, homeViewmodel)
         }
         Column {
@@ -236,8 +232,6 @@ private fun CompactUI(
             ConnectionStatusSheet(connectionViewmodel, homeViewmodel)
             Spacer(modifier = Modifier.height(32.dp))
             LocationName(connectionViewmodel)
-            Spacer(modifier = Modifier.height(8.dp))
-            NetworkInfoSheet(connectionViewmodel, homeViewmodel)
             Spacer(modifier = Modifier.weight(1.0f))
         }
         IPContextMenu(connectionViewmodel)
@@ -264,7 +258,7 @@ private fun ConnectionStatusSheet(
     val state by connectionViewmodel.connectionUIState.collectAsState()
     val isHapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
     val containerColor = when (state) {
-        is ConnectionUIState.Connected -> AppColors.connectedColor
+        is ConnectionUIState.Connected -> AppColors.mintGreen
         else -> AppColors.white
     }
     Row(
@@ -353,7 +347,7 @@ private fun LocationName(connectionViewmodel: ConnectionViewmodel) {
 
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
-private fun NetworkInfoSheet(
+internal fun BoxScope.NetworkInfoSheet(
     connectionViewmodel: ConnectionViewmodel,
     homeViewmodel: HomeViewmodel
 ) {
@@ -361,7 +355,7 @@ private fun NetworkInfoSheet(
     val showContextMenu by connectionViewmodel.ipContextMenuState.collectAsState()
     val isHapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
     val hideIp = remember { mutableStateOf(false) }
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.align(Alignment.BottomCenter).offset(y = (-66).dp)) {
         NetworkNameSheet(connectionViewmodel, homeViewmodel)
         Row(
             modifier = Modifier
@@ -376,7 +370,7 @@ private fun NetworkInfoSheet(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     style = font16.copy(fontWeight = FontWeight.Medium),
-                    color = AppColors.white70, modifier = Modifier
+                    color = AppColors.white.copy(alpha = 0.70f), modifier = Modifier
                         .clickable {
                             hideIp.value = !hideIp.value
                         }
@@ -389,18 +383,18 @@ private fun NetworkInfoSheet(
                         }
                 )
             }
-            Image(
-                painter = painterResource(R.drawable.ic_context),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(24.dp)
-                    .onGloballyPositioned { layoutCoordinates ->
-                        connectionViewmodel.onIpContextMenuPosition(layoutCoordinates.boundsInWindow().topLeft)
-                    }
-                    .hapticClickable(hapticEnabled = isHapticEnabled) {
-                        connectionViewmodel.setContextMenuState(true)
-                    }
-            )
+//            Image(
+//                painter = painterResource(R.drawable.ic_context),
+//                contentDescription = null,
+//                modifier = Modifier
+//                    .size(24.dp)
+//                    .onGloballyPositioned { layoutCoordinates ->
+//                        connectionViewmodel.onIpContextMenuPosition(layoutCoordinates.boundsInWindow().topLeft)
+//                    }
+//                    .hapticClickable(hapticEnabled = isHapticEnabled) {
+//                        connectionViewmodel.setContextMenuState(true)
+//                    }
+//            )
         }
     }
 }
@@ -408,7 +402,7 @@ private fun NetworkInfoSheet(
 @Composable
 private fun ConnectionStatus(connectionUIState: ConnectionUIState) {
     val containerColor =
-        if (connectionUIState is ConnectionUIState.Connected) AppColors.connectedColor else AppColors.white
+        if (connectionUIState is ConnectionUIState.Connected) AppColors.mintGreen else AppColors.white
     Box(
         modifier = Modifier
             .border(
@@ -548,8 +542,8 @@ private fun ConnectedBackground(connectionViewmodel: ConnectionViewmodel?) {
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            AppColors.connectedBlue,
-                            AppColors.homeBackground
+                            AppColors.primaryBlue,
+                            AppColors.midnightNavy
                         )
                     )
                 )
@@ -561,7 +555,6 @@ private fun ConnectedBackground(connectionViewmodel: ConnectionViewmodel?) {
 @Composable
 private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
     val navController = LocalNavController.current
-    val context = LocalContext.current
     Box(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -575,7 +568,7 @@ private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Home
                     .height(100.dp)
                     .weight(1.0f)
                     .zIndex(0f)
-                    .background(AppColors.homeHeaderBackground)
+                    .background(AppColors.midnightNavy.copy(alpha = 0.03f))
                     .drawBehind {
                         val strokeWidth = 1.dp.toPx() // Stroke thickness
                         drawLine(
@@ -652,7 +645,7 @@ private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Home
                             textAlign = TextAlign.Center,
                             fontWeight = FontWeight.Bold
                         ),
-                        color = AppColors.homeBackground,
+                        color = AppColors.midnightNavy,
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }

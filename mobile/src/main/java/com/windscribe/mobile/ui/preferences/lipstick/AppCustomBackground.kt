@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -30,24 +28,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.Description
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.model.DropDownItem
 import com.windscribe.mobile.ui.theme.backgroundColor
-import com.windscribe.mobile.ui.theme.backgroundColorInverted
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
+import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
 @Composable
@@ -78,7 +74,7 @@ private fun Header() {
             Spacer(modifier = Modifier.padding(8.dp))
             Text(
                 stringResource(R.string.app_background),
-                style = font16,
+                style = font16.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.primaryTextColor
             )
         }
@@ -288,7 +284,7 @@ private fun DropdownSection(
                 .fillMaxWidth()
         ) {
             Column {
-                Text(title, style = font12, color = MaterialTheme.colorScheme.primaryTextColor)
+                Text(title, style = font16.copy(fontWeight = FontWeight.Medium), color = MaterialTheme.colorScheme.primaryTextColor)
                 extraContent?.invoke()
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -301,8 +297,8 @@ private fun DropdownSection(
                     }) {
                 Text(
                     displayValue,
-                    style = font12,
-                    color = MaterialTheme.colorScheme.primaryTextColor
+                    style = font16,
+                    color = MaterialTheme.colorScheme.preferencesSubtitleColor
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(

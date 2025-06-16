@@ -43,6 +43,7 @@ import com.windscribe.mobile.ui.theme.font16
 fun AuthTextField(
     modifier: Modifier = Modifier,
     hint: String,
+    placeHolder: String? = null,
     isError: Boolean = false,
     isPassword: Boolean = false,
     onValueChange: (String) -> Unit = {},
@@ -89,14 +90,23 @@ fun AuthTextField(
                     autoCorrect = false,
                     imeAction = ImeAction.Done
                 ),
+                placeholder = {
+                    if (placeHolder != null) {
+                        Text(
+                            text = placeHolder,
+                            style = font16.copy(fontWeight = FontWeight.Normal),
+                            color = AppColors.white.copy(alpha = 0.70f),
+                            textAlign = TextAlign.Start)
+                    }
+                },
                 colors = TextFieldDefaults.colors(
                     focusedTextColor = if(isError) AppColors.red else AppColors.white,
                     unfocusedTextColor = if(isError) AppColors.red else AppColors.white,
                     disabledTextColor = if (isError) AppColors.red else AppColors.white,
-                    unfocusedContainerColor = AppColors.gray,
-                    focusedContainerColor = AppColors.gray,
-                    disabledContainerColor = AppColors.gray,
-                    errorContainerColor = AppColors.gray,
+                    unfocusedContainerColor = AppColors.white.copy(0.05f),
+                    focusedContainerColor =  AppColors.white.copy(0.05f),
+                    disabledContainerColor =  AppColors.white.copy(0.05f),
+                    errorContainerColor =  AppColors.white.copy(0.05f),
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
                     errorIndicatorColor = Color.Transparent,
@@ -111,13 +121,13 @@ fun AuthTextField(
                         ) {
                             Icon(
                                 painter = painterResource(
-                                    id = if (passwordVisible) R.drawable.ic_show_password else R.drawable.ic_hide_password
+                                    id = if (passwordVisible) R.drawable.ic_hide_password else R.drawable.ic_show_password
                                 ),
                                 contentDescription = if (passwordVisible)
                                     stringResource(id = R.string.password)
                                 else
                                     stringResource(id = R.string.show_password),
-                                tint = AppColors.white50
+                                tint = AppColors.white.copy(alpha = 0.50f)
                             )
                         }
                     }

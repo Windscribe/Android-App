@@ -29,9 +29,9 @@ fun ActionButtonLighter(
             .height(38.dp)
             .padding(horizontal = 16.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = AppColors.neonGreen5,
+            containerColor = AppColors.neonGreen.copy(alpha = 0.05f),
             contentColor = AppColors.neonGreen,
-            disabledContainerColor = AppColors.neonGreen5,
+            disabledContainerColor = AppColors.neonGreen.copy(alpha = 0.05f),
             disabledContentColor = AppColors.neonGreen
         ),
         interactionSource = interactionSource,

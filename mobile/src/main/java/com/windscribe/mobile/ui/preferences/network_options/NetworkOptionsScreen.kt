@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -23,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.ui.common.PreferenceBackground
@@ -32,7 +34,9 @@ import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
+import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
+import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
@@ -53,8 +57,6 @@ fun NetworkOptionsScreen(viewModel: NetworkOptionsViewModel? = null) {
                 navController.popBackStack()
             }
             Spacer(modifier = Modifier.height(20.dp))
-            ScreenDescription(stringResource(R.string.network_options_description))
-            Spacer(modifier = Modifier.height(16.dp))
             SwitchItemView(
                 title = com.windscribe.mobile.R.string.auto_secure_new_networks,
                 icon = com.windscribe.mobile.R.drawable.ic_auto_secure_icon,
@@ -79,8 +81,8 @@ private fun CurrentNetwork(networkInfo: NetworkInfo) {
     Column {
         Text(
             text = stringResource(R.string.current_network),
-            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.50f),
-            style = font16,
+            color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+            style = font12.copy(fontWeight = FontWeight.SemiBold),
             textAlign = TextAlign.Start,
             modifier = Modifier.fillMaxWidth()
         )
@@ -99,22 +101,30 @@ private fun Network(networkInfo: NetworkInfo) {
                 color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
                 shape = RoundedCornerShape(12.dp)
             )
-            .padding(14.dp)
             .clickable {
                 navController.currentBackStackEntry?.savedStateHandle?.set(
                     "network_name",
                     networkInfo.networkName
                 )
                 navController.navigate(Screen.NetworkDetails.route)
-            }, verticalAlignment = Alignment.CenterVertically
+            }
+            .padding(14.dp)
+           , verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = networkInfo.networkName,
-            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.50f),
-            style = font16,
+            color = MaterialTheme.colorScheme.primaryTextColor,
+            style = font16.copy(fontWeight = FontWeight.Medium),
             textAlign = TextAlign.Start,
         )
         Spacer(modifier = Modifier.weight(1f))
+        Text(
+            text = stringResource(if (networkInfo.isAutoSecureOn) R.string.network_secured else R.string.network_unsecured),
+            color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+            style = font16.copy(fontWeight = FontWeight.Normal),
+            textAlign = TextAlign.Start,
+        )
+        Spacer(modifier = Modifier.width(8.dp))
         Icon(
             painterResource(com.windscribe.mobile.R.drawable.arrow_right),
             contentDescription = "", tint = MaterialTheme.colorScheme.primaryTextColor
@@ -133,8 +143,8 @@ private fun OtherNetworks(viewModel: NetworkOptionsViewModel?) {
         Column {
             Text(
                 text = stringResource(R.string.other_networks),
-                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.50f),
-                style = font16,
+                color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                style = font12.copy(fontWeight = FontWeight.SemiBold),
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth()
             )

@@ -2,6 +2,7 @@ package com.windscribe.mobile.ui
 
 import androidx.annotation.DrawableRes
 import androidx.lifecycle.ViewModel
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 
@@ -10,7 +11,12 @@ abstract class DialogCallback {
     abstract fun onConfirm()
 }
 
-data class DialogData(@DrawableRes val icon: Int, val title: String, val description: String, val okLabel: String)
+data class DialogData(
+    @DrawableRes val icon: Int,
+    val title: String,
+    val description: String,
+    val okLabel: String
+)
 
 abstract class AppStartActivityViewModel : ViewModel() {
     var protocolInformationList: List<ProtocolInformation>? = null
@@ -18,6 +24,8 @@ abstract class AppStartActivityViewModel : ViewModel() {
     var protocolInformation: ProtocolInformation? = null
     var dialogCallback: DialogCallback? = null
     var dialogData: DialogData? = null
+    abstract fun enableDecoyTraffic()
+    abstract fun enableGpsSpoofing()
     abstract fun setConnectionCallback(
         protocolInformationList: List<ProtocolInformation>,
         autoConnectionModeCallback: AutoConnectionModeCallback,
@@ -27,7 +35,8 @@ abstract class AppStartActivityViewModel : ViewModel() {
     abstract fun setDialogCallback(data: DialogData, dialogCallback: DialogCallback)
 }
 
-class AppStartActivityViewModelImpl : AppStartActivityViewModel() {
+class AppStartActivityViewModelImpl(val preferencesHelper: PreferencesHelper) :
+    AppStartActivityViewModel() {
     override fun setConnectionCallback(
         protocolInformationList: List<ProtocolInformation>,
         autoConnectionModeCallback: AutoConnectionModeCallback,
@@ -41,5 +50,13 @@ class AppStartActivityViewModelImpl : AppStartActivityViewModel() {
     override fun setDialogCallback(data: DialogData, dialogCallback: DialogCallback) {
         this.dialogData = data
         this.dialogCallback = dialogCallback
+    }
+
+    override fun enableDecoyTraffic() {
+        preferencesHelper.isDecoyTrafficOn = true
+    }
+
+    override fun enableGpsSpoofing() {
+        preferencesHelper.setGpsSpoofing(true)
     }
 }

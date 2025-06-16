@@ -21,7 +21,7 @@ fun DescriptionWithLearnMore(description: String, path: String) {
         pushStringAnnotation(tag = "LEARN_MORE", annotation = "learn_more")
         withStyle(
             style = SpanStyle(
-                color = AppColors.lightBlue,
+                color = AppColors.mediumBlue,
                 fontWeight = FontWeight.Medium
             )
         ) {

@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.PreferenceBackground
@@ -57,7 +58,7 @@ fun AboutScreen() {
             aboutItems.forEachIndexed { index, (title, url) ->
                 AboutItem(title, url)
                 if (index != aboutItems.lastIndex) {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
             }
         }
@@ -78,14 +79,15 @@ private fun AboutItem(
                 color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
                 shape = RoundedCornerShape(size = 12.dp)
             )
-            .padding(start = 14.dp, end = 14.dp)
             .clickable {
                 activity?.openUrl(path)
-            }, verticalAlignment = Alignment.CenterVertically
+            }
+            .padding(start = 14.dp, end = 14.dp)
+           , verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             stringResource(title),
-            style = font16,
+            style = font16.copy(fontWeight = FontWeight.Medium),
             color = MaterialTheme.colorScheme.primaryTextColor
         )
         Spacer(modifier = Modifier.weight(1f))

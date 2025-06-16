@@ -708,7 +708,7 @@ class AppPreferenceHelper(
 
     override fun getDefaultNetworkInfo(networkName: String): NetworkInfo {
         val proto = getDefaultProtoInfo()
-        return NetworkInfo(networkName, true, false, proto.first, proto.second)
+        return NetworkInfo(networkName, isAutoSecureOn, false, proto.first, proto.second)
     }
 
     override var whiteListedNetwork: String?

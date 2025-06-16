@@ -70,7 +70,7 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp, vertical = 16.dp)
         ) {
             PreferencesNavBar(stringResource(R.string.contact_humans)) {
                 navController.popBackStack()

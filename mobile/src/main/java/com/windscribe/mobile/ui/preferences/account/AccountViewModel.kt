@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import java.util.Locale
 
 sealed class AccountType {
     object Pro : AccountType()
@@ -51,6 +52,7 @@ sealed class AccountState {
         override val username: String,
         override val emailState: EmailState,
         val dateType: DateType,
+        val dataLeft: String = ""
     ) : AccountState()
 }
 
@@ -132,11 +134,20 @@ class AccountViewModelImpl(
                         DateType.Reset(it.resetDate ?: "")
                     )
                 } else {
+                    var dataLeft = it.maxData - it.dataUsed
+                    if (dataLeft < 0) {
+                        dataLeft = 0
+                    }
                     _accountState.value = AccountState.Account(
                         AccountType.Free("${it.maxData / UserStatusConstants.GB_DATA.toFloat()} GB"),
                         it.userName,
                         emailState,
-                        DateType.Reset(it.resetDate ?: "")
+                        DateType.Reset(it.resetDate ?: ""),
+                        String.format(
+                            Locale.getDefault(),
+                            "%.2f GB",
+                            dataLeft.toDouble() / (1024 * 1024 * 1024)
+                        )
                     )
                 }
             }

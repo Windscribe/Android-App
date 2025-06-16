@@ -6,21 +6,15 @@ import android.net.LinkProperties
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.PortMapLoader
 import com.windscribe.mobile.ui.model.DropDownStringItem
-import com.windscribe.vpn.R.raw
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
-import com.windscribe.vpn.api.response.PortMapResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
-import com.windscribe.vpn.commonutils.Ext.result
-import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_AUTO
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_IKev2
@@ -29,8 +23,9 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_TCP
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_UDP
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WS_TUNNEL
+import com.windscribe.vpn.decoytraffic.DecoyTrafficController
+import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.exceptions.WindScribeException
-import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -46,6 +41,7 @@ import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.net.NetworkInterface
+import java.util.Locale
 
 abstract class ConnectionViewModel : ViewModel() {
     abstract fun onProtocolSelected(protocol: DropDownStringItem)
@@ -82,6 +78,11 @@ abstract class ConnectionViewModel : ViewModel() {
     abstract fun onAutoDetectClicked()
     abstract val autoDetecting: StateFlow<Boolean>
     abstract val toastMessage: SharedFlow<ToastMessage>
+    abstract fun refreshPreferences()
+    abstract val potentialDataUse: StateFlow<String>
+    abstract fun onFakeTrafficVolumeSelected(item: DropDownStringItem)
+    abstract val trafficMultipliers: StateFlow<List<DropDownStringItem>>
+    abstract val trafficMultiplier: StateFlow<String>
 }
 
 data class ProtoItem(val proto: String, val heading: String)
@@ -96,7 +97,8 @@ class ConnectionViewModelImpl(
     val api: IApiCallManager,
     val autoConnectionManager: AutoConnectionManager,
     val vpnManagerStateManager: VPNConnectionStateManager,
-    val proxyDNSManager: ProxyDNSManager
+    val proxyDNSManager: ProxyDNSManager,
+    val decoyTrafficController: DecoyTrafficController
 ) : ConnectionViewModel() {
     private val _showProgress = MutableStateFlow(false)
     override val showProgress: StateFlow<Boolean> = _showProgress
@@ -137,9 +139,16 @@ class ConnectionViewModelImpl(
     private val _toastMessage = MutableSharedFlow<ToastMessage>(replay = 0)
     override val toastMessage: SharedFlow<ToastMessage> = _toastMessage
     private var currentPoint = 1500
+    private val _potentialDataUse = MutableStateFlow("")
+    override val potentialDataUse: StateFlow<String> = _potentialDataUse
+    private val _trafficMultipliers = MutableStateFlow(getFakeTrafficVolumeOptions())
+    override val trafficMultipliers: StateFlow<List<DropDownStringItem>> = _trafficMultipliers
+    private val _trafficMultiplier = MutableStateFlow("")
+    override val trafficMultiplier: StateFlow<String> = _trafficMultiplier
 
     init {
         loadPortMapItems()
+        setDecoyTrafficParameters()
     }
 
     private fun loadPortMapItems() {
@@ -163,6 +172,19 @@ class ConnectionViewModelImpl(
             if (dnsMode != null) {
                 _dnsMode.emit(dnsMode)
             }
+        }
+    }
+
+    fun getFakeTrafficVolumeOptions(): List<DropDownStringItem> {
+        return FakeTrafficVolume.values().map {
+            DropDownStringItem(it.name)
+        }.toList()
+    }
+
+    override fun refreshPreferences() {
+        viewModelScope.launch {
+            _decoyTraffic.emit(preferencesHelper.isDecoyTrafficOn)
+            _gpsSpoofing.emit(preferencesHelper.isGpsSpoofingOn)
         }
     }
 
@@ -292,7 +314,6 @@ class ConnectionViewModelImpl(
     override fun onCustomDNSAddressChanged(address: String) {
         viewModelScope.launch {
             _customDnsAddress.emit(address)
-
         }
     }
 
@@ -339,6 +360,12 @@ class ConnectionViewModelImpl(
         viewModelScope.launch {
             _decoyTraffic.emit(!_decoyTraffic.value)
             preferencesHelper.isDecoyTrafficOn = _decoyTraffic.value
+            if (_decoyTraffic.value) {
+                if (vpnManagerStateManager.isVPNConnected()) {
+                    decoyTrafficController.load()
+                    decoyTrafficController.start()
+                }
+            }
         }
     }
 
@@ -453,6 +480,49 @@ class ConnectionViewModelImpl(
         return !response.contains("100% packet loss")
     }
 
+    private fun setDecoyTrafficParameters() {
+        viewModelScope.launch {
+            val multiplier = preferencesHelper.fakeTrafficVolume.name
+            _trafficMultiplier.emit(multiplier)
+            resetPotentialTrafficInfo()
+        }
+    }
+
+    override fun onFakeTrafficVolumeSelected(item: DropDownStringItem) {
+        preferencesHelper.fakeTrafficVolume = FakeTrafficVolume.valueOf(item.key)
+        resetPotentialTrafficInfo()
+    }
+
+    private fun resetPotentialTrafficInfo() {
+        viewModelScope.launch {
+            val trafficVolume = preferencesHelper.fakeTrafficVolume
+            if (trafficVolume === FakeTrafficVolume.Low) {
+                _potentialDataUse.emit(
+                    String.format(
+                        Locale.getDefault(),
+                        "%dMB/Hour",
+                        1737
+                    )
+                )
+            } else if (trafficVolume === FakeTrafficVolume.Medium) {
+                _potentialDataUse.emit(
+                    String.format(
+                        Locale.getDefault(),
+                        "%dMB/Hour",
+                        6948
+                    )
+                )
+            } else {
+                _potentialDataUse.emit(
+                    String.format(
+                        Locale.getDefault(),
+                        "%dMB/Hour",
+                        16572
+                    )
+                )
+            }
+        }
+    }
 
     override fun onCleared() {
         autoConnectionManager.reset()

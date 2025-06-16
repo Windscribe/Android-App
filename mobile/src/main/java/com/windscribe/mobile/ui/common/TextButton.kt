@@ -16,7 +16,7 @@ fun TextButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit)
         onClick = onClick,
         colors = ButtonColors(
             containerColor = Color.Transparent,
-            contentColor = AppColors.white50,
+            contentColor = AppColors.white.copy(alpha = 0.50f),
             disabledContainerColor = Color.Transparent,
             disabledContentColor = Color.Transparent
         ),

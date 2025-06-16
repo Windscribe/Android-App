@@ -1,6 +1,5 @@
 package com.windscribe.mobile.ui.common
 
-import android.R.attr.description
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
@@ -16,17 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -36,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
-import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font14
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
@@ -50,14 +41,14 @@ fun SwitchItemView(
     @StringRes description: Int,
     enabled: Boolean,
     explainer: String? = null,
+    shape: RoundedCornerShape = RoundedCornerShape(12.dp),
     onSelect: (Boolean) -> Unit
 ) {
-    var isEnabled by remember { mutableStateOf(enabled) }
     Column(
         modifier = Modifier
             .background(
                 MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(12.dp)
+                shape = shape
             )
             .padding(14.dp)
             .fillMaxWidth()
@@ -79,13 +70,12 @@ fun SwitchItemView(
                 color = MaterialTheme.colorScheme.primaryTextColor
             )
             Spacer(modifier = Modifier.weight(1f))
-            if (isEnabled) {
+            if (enabled) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_toggle_button_on),
                     contentDescription = null,
                     modifier = Modifier.clickable {
-                        isEnabled = !isEnabled
-                        onSelect(isEnabled)
+                        onSelect(!enabled)
                     }
                 )
             } else {
@@ -93,8 +83,7 @@ fun SwitchItemView(
                     painter = painterResource(id = R.drawable.ic_toggle_button_off),
                     contentDescription = null,
                     modifier = Modifier.clickable {
-                        isEnabled = !isEnabled
-                        onSelect(isEnabled)
+                        onSelect(!enabled)
                     }
                 )
             }

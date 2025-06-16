@@ -20,9 +20,13 @@ abstract class SplitTunnelViewModel : ViewModel() {
     abstract val showProgress: StateFlow<Boolean>
     abstract val modes: List<DropDownStringItem>
     abstract val selectedModeKey: StateFlow<String>
-    abstract val apps: StateFlow<List<InstalledAppsData>>
-    abstract fun onModeSelected(mode: DropDownStringItem)
-    abstract fun onAppSelected(app: InstalledAppsData)
+    abstract val filteredApps: StateFlow<List<InstalledAppsData>>
+    abstract val isSplitTunnelEnabled: StateFlow<Boolean>
+    abstract val searchKeyword: StateFlow<String>
+    open fun onModeSelected(mode: DropDownStringItem) {}
+    open fun onAppSelected(app: InstalledAppsData) {}
+    open fun onSplitTunnelSettingChanged() {}
+    open fun onQueryTextChange(query: String) {}
 }
 
 class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitTunnelViewModel() {
@@ -37,15 +41,20 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
     private val _selectedModeKey = MutableStateFlow(preferenceHelper.splitRoutingMode)
     override val selectedModeKey: StateFlow<String> = _selectedModeKey
     private val _apps = MutableStateFlow(emptyList<InstalledAppsData>())
-    override val apps: StateFlow<List<InstalledAppsData>> = _apps
+    private val _isSplitTunnelEnabled = MutableStateFlow(preferenceHelper.splitTunnelToggle)
+    override val isSplitTunnelEnabled = _isSplitTunnelEnabled
+    private val _searchKeyword = MutableStateFlow("")
+    override val searchKeyword: StateFlow<String> = _searchKeyword
+    private val _filteredApps = MutableStateFlow(emptyList<InstalledAppsData>())
+    override val filteredApps: StateFlow<List<InstalledAppsData>> = _filteredApps
 
 
     init {
-        loadApps()
+        loadApps(true)
     }
 
-    private fun loadApps() {
-        viewModelScope.launch {
+    private fun loadApps(initialLoad: Boolean = false) {
+        viewModelScope.launch(Dispatchers.IO) {
             _showProgress.value = true
             val savedApps = preferenceHelper.installedApps()
             val pm = appContext.packageManager
@@ -66,9 +75,12 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
                 appList.add(app)
             }
             Collections.sort(appList, SortByName())
-            Collections.sort(appList, SortBySelected())
+            if (initialLoad) {
+                Collections.sort(appList, SortBySelected())
+            }
             _apps.emit(appList)
             _showProgress.value = false
+            onQueryTextChange(_searchKeyword.value)
         }
     }
 
@@ -90,6 +102,28 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
             }
             preferenceHelper.saveInstalledApps(apps.toList())
             loadApps()
+        }
+    }
+
+    override fun onSplitTunnelSettingChanged() {
+        viewModelScope.launch {
+            val updatedState = _isSplitTunnelEnabled.value.not()
+            _isSplitTunnelEnabled.emit(updatedState)
+            preferenceHelper.splitTunnelToggle = updatedState
+        }
+    }
+
+    override fun onQueryTextChange(query: String) {
+        viewModelScope.launch {
+            _searchKeyword.emit(query)
+            if (query.isEmpty()) {
+                _filteredApps.emit(_apps.value)
+            } else {
+                val apps = _apps.value.filter {
+                    it.appName.contains(query, true)
+                }
+                _filteredApps.emit(apps)
+            }
         }
     }
 }

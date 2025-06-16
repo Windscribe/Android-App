@@ -121,10 +121,11 @@ private fun MainMenuItem(
                 color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
                 shape = RoundedCornerShape(size = 12.dp)
             )
-            .padding(start = 14.dp, end = 14.dp)
             .clickable {
                 navController.navigate(nextRoute)
-            }, verticalAlignment = Alignment.CenterVertically
+            }
+            .padding(start = 14.dp, end = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             modifier = Modifier
@@ -157,13 +158,12 @@ private fun LogoutItem(viewModel: MainMenuViewModel?) {
             .fillMaxWidth()
             .height(44.dp)
             .background(
-                color = AppColors.goldenLime,
+                color = AppColors.yellow.copy(0.05f),
                 shape = RoundedCornerShape(size = 12.dp)
             )
-            .padding(start = 14.dp, end = 14.dp)
             .clickable {
                 viewModel?.logout()
-            },
+            }.padding(start = 14.dp, end = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {

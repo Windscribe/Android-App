@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.popup
 
+import NavBar
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -24,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,9 +38,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -52,6 +57,7 @@ import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font14
+import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font18
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.api.response.PushNotificationAction
@@ -81,7 +87,10 @@ fun NewsfeedScreen(viewModel: NewsfeedViewmodel? = null) {
                 .padding(horizontal = 16.dp)
                 .statusBarsPadding()
         ) {
-            Title()
+            NavBar(stringResource(R.string.news_feed)) {
+                navController.popBackStack()
+            }
+            Spacer(modifier = Modifier.height(16.dp))
             if (state is NewsfeedState.Success) {
                 NotificationList(
                     (state as NewsfeedState.Success).itemToExpand,
@@ -157,10 +166,12 @@ private fun NotificationList(
 ) {
     val scrollState = rememberScrollState()
     Column(
-        modifier = Modifier.background(
-            color = AppColors.gray,
-            shape = RoundedCornerShape(9.dp)
-        ).verticalScroll(scrollState)
+        modifier = Modifier
+            .background(
+                color = AppColors.white.copy(0.05f),
+                shape = RoundedCornerShape(9.dp)
+            )
+            .verticalScroll(scrollState)
     ) {
         list.forEachIndexed { index, notification ->
             NotificationItem(
@@ -199,7 +210,7 @@ private fun NotificationItem(
 
     Column(
         modifier = Modifier.background(
-            if (expanded.value) AppColors.white8 else Color.Transparent,
+            if (expanded.value) AppColors.white.copy(alpha = 0.08f) else Color.Transparent,
             shape
         )
     ) {
@@ -212,11 +223,11 @@ private fun NotificationItem(
                 ) {
                     expanded.value = !expanded.value
                 }
-                .padding(16.dp)
+                .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp)
         ) {
             Text(
                 notification.title,
-                style = font14,
+                style = font16.copy(fontWeight = FontWeight.Medium),
                 textAlign = TextAlign.Start,
                 color = AppColors.white,
                 maxLines = 2,
@@ -226,12 +237,22 @@ private fun NotificationItem(
             Image(
                 painter = painterResource(R.drawable.ic_expand_small),
                 contentDescription = null,
+                alpha = if (expanded.value) 1f else 0.4f,
                 modifier = Modifier
                     .rotate(rotationAngle)
                     .clickable { expanded.value = !expanded.value }
             )
-            Spacer(modifier = Modifier.width(8.dp))
         }
+        Text(
+            notification.date,
+            style = font14.copy(fontWeight = FontWeight.Normal),
+            textAlign = TextAlign.Start,
+            color = AppColors.slateGray,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(start = 16.dp),
+        )
+        Spacer(modifier = Modifier.height(8.dp))
         if (expanded.value) {
             ExpandedNotificationContent(notification, viewModel)
             viewModel?.onExpandClick(notification.id.toString())
@@ -270,8 +291,8 @@ private fun mockNewsfeedState(): NewsfeedState {
     return NewsfeedState.Success(
         -1,
         listOf(
-            NewsfeedItem(1, "Title 1", "Message 1", Action.None),
-            NewsfeedItem(2, "Title 2", "Message 2", Action.Url("", "Watch Now!"))
+            NewsfeedItem(1, "Title 1", "Message 1", "2023-10-11", Action.None),
+            NewsfeedItem(2, "Title 2", "Message 2", "2023-10-11", Action.Url("", "Watch Now!"))
         )
     )
 }
