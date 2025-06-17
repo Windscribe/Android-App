@@ -233,6 +233,7 @@ private fun GoogleButton(viewModel: AppStartViewModel?) {
                 Toast.makeText(activity, "Google Signin not available.", Toast.LENGTH_SHORT).show()
                 return@Button
             }
+            viewModel.onSignIntentLaunch()
             launcher.launch(signInIntent)
         },
         Modifier

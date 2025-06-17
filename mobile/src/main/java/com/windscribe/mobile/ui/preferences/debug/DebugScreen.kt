@@ -10,21 +10,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.windscribe.mobile.ui.common.AppProgressBar
 import com.windscribe.mobile.ui.common.PreferenceBackground
+import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.nav.LocalNavController
-import com.windscribe.vpn.R
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.text.style.TextAlign
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.primaryTextColor
+import com.windscribe.vpn.R
 
 @Composable
 fun DebugScreen(viewModel: DebugViewModel? = null) {
@@ -51,7 +51,7 @@ fun DebugScreen(viewModel: DebugViewModel? = null) {
                 }
             }
         }
-        AppProgressBar(showProgress, "")
+        PreferenceProgressBar(showProgress)
     }
 }
 

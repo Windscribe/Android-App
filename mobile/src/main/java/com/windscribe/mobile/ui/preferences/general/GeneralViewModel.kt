@@ -86,5 +86,5 @@ class GeneralViewModelImpl(
     }
 
     override val versionName: String
-        get() = "${WindUtilities.getVersionName()}.${WindUtilities.getVersionCode()}"
+        get() = WindUtilities.getVersionName()
 }
