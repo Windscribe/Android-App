@@ -197,11 +197,11 @@ class SignupViewModel @Inject constructor(
             updateState(SignupState.Captcha(request))
         } else {
             val result = apiCallManager.signUserIn(
-                username,
-                password,
-                referralUsername,
-                email,
-                voucher,
+                username.trim(),
+                password.trim(),
+                referralUsername.trim(),
+                email.trim(),
+                voucher.trim(),
                 token,
                 null,
                 floatArrayOf(), floatArrayOf()
@@ -229,11 +229,11 @@ class SignupViewModel @Inject constructor(
         val trailX = captchaSolution.trail["x"]?.toFloatArray() ?: floatArrayOf()
         val trailY = captchaSolution.trail["y"]?.toFloatArray() ?: floatArrayOf()
         val result = apiCallManager.signUserIn(
-            username,
-            password,
-            referralUsername,
-            email,
-            voucher,
+            username.trim(),
+            password.trim(),
+            referralUsername.trim(),
+            email.trim(),
+            voucher.trim(),
             captchaSolution.token,
             "${captchaSolution.leftOffset}",
             trailX,

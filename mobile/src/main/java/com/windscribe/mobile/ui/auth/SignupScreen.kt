@@ -2,6 +2,7 @@ package com.windscribe.mobile.ui.auth
 
 import NavBar
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -35,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -66,6 +68,7 @@ fun SignupScreen(
     windowSizeClass: WindowSizeClass? = currentWindowAdaptiveInfo().windowSizeClass,
     viewModel: SignupViewModel? = null
 ) {
+    val context = LocalContext.current
     val navController = LocalNavController.current
     val signupState by viewModel?.signupState?.collectAsState() ?: remember {
         mutableStateOf(SignupState.Idle)
@@ -77,6 +80,13 @@ fun SignupScreen(
         if (signupState is SignupState.Success) {
             navController.navigate(Screen.Home.route) {
                 popUpTo(0) { inclusive = true }
+            }
+        }
+    }
+    LaunchedEffect(Unit) {
+        viewModel?.showAllBackupFailedDialog?.collect { show ->
+            if (show) {
+                Toast.makeText(context, R.string.failed_network_alert, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -169,7 +179,8 @@ private fun SignupCompactLayout(
 
 @Composable
 private fun SignupPasswordTextField(signupState: SignupState, viewModel: SignupViewModel? = null) {
-    AuthTextField(hint = stringResource(R.string.password),
+    AuthTextField(
+        hint = stringResource(R.string.password),
         placeHolder = stringResource(R.string.enter_password),
         isError = isError(signupState, AuthInputFields.Password),
         modifier = Modifier.fillMaxWidth(),
@@ -234,7 +245,8 @@ private fun ExpandMenu(text: String, content: @Composable () -> Unit = {}) {
 
 @Composable
 private fun VoucherTextField(viewModel: SignupViewModel?) {
-    AuthTextField(hint = stringResource(R.string.voucher_code) + " " + stringResource(R.string.optional),
+    AuthTextField(
+        hint = stringResource(R.string.voucher_code) + " " + stringResource(R.string.optional),
         isError = false,
         modifier = Modifier.fillMaxWidth(),
         onValueChange = {
@@ -244,7 +256,8 @@ private fun VoucherTextField(viewModel: SignupViewModel?) {
 
 @Composable
 private fun SignupUsernameTextField(signupState: SignupState, viewModel: SignupViewModel? = null) {
-    AuthTextField(hint = stringResource(R.string.username),
+    AuthTextField(
+        hint = stringResource(R.string.username),
         placeHolder = stringResource(R.string.enter_password),
         isError = isError(signupState, AuthInputFields.Username),
         modifier = Modifier.fillMaxWidth(),
@@ -259,7 +272,8 @@ private fun isError(signupState: SignupState, field: AuthInputFields): Boolean {
 
 @Composable
 private fun SignupEmailTextField(signupState: SignupState, viewModel: SignupViewModel? = null) {
-    AuthTextField(hint = stringResource(R.string.email) + " " + stringResource(R.string.optional),
+    AuthTextField(
+        hint = stringResource(R.string.email) + " " + stringResource(R.string.optional),
         placeHolder = stringResource(R.string.enter_email),
         isError = isError(signupState, AuthInputFields.Email),
         modifier = Modifier.fillMaxWidth(),
@@ -270,7 +284,8 @@ private fun SignupEmailTextField(signupState: SignupState, viewModel: SignupView
 
 @Composable
 private fun ReferralUsernameTextField(viewModel: SignupViewModel?) {
-    AuthTextField(hint = stringResource(R.string.referral_username),
+    AuthTextField(
+        hint = stringResource(R.string.referral_username),
         isError = false,
         modifier = Modifier.fillMaxWidth(),
         onValueChange = {

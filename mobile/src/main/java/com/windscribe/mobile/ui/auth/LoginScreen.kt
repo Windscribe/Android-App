@@ -77,14 +77,13 @@ fun LoginScreen(
             }
         }
     }
-    val showBackupFailed by viewModel?.showAllBackupFailedDialog?.collectAsState(initial = false)
-        ?: remember { mutableStateOf(false) }
-    LaunchedEffect(showBackupFailed) {
-        if (showBackupFailed) {
-            Toast.makeText(context, R.string.failed_network_alert, Toast.LENGTH_SHORT).show()
+    LaunchedEffect(Unit) {
+        viewModel?.showAllBackupFailedDialog?.collect { show ->
+            if (show) {
+                Toast.makeText(context, R.string.failed_network_alert, Toast.LENGTH_SHORT).show()
+            }
         }
     }
-
     AppBackground {
         LoginCompactLayout(navController, loginState, viewModel)
         val showProgressBar = loginState is LoginState.LoggingIn

@@ -63,7 +63,7 @@ class LoginViewModel @Inject constructor(
     private val _twoFactorEnabled = MutableStateFlow(false)
     val twoFactorEnabled: StateFlow<Boolean> = _twoFactorEnabled.asStateFlow()
 
-    private val _showAllBackupFailedDialog = MutableSharedFlow<Boolean>()
+    private val _showAllBackupFailedDialog = MutableSharedFlow<Boolean>(replay = 0)
     val showAllBackupFailedDialog: SharedFlow<Boolean> = _showAllBackupFailedDialog
 
     private var username = ""
@@ -136,9 +136,9 @@ class LoginViewModel @Inject constructor(
         val trailX = captchaSolution.trail["x"]?.toFloatArray() ?: floatArrayOf()
         val trailY = captchaSolution.trail["y"]?.toFloatArray() ?: floatArrayOf()
         val result = apiCallManager.logUserIn(
-            username,
-            password,
-            twoFactorCode,
+            username.trim(),
+            password.trim(),
+            twoFactorCode.trim(),
             captchaSolution.token,
             "${captchaSolution.leftOffset}",
             trailX,
@@ -197,9 +197,9 @@ class LoginViewModel @Inject constructor(
         } else {
             val result =
                 apiCallManager.logUserIn(
-                    username,
-                    password,
-                    twoFactorCode,
+                    username.trim(),
+                    password.trim(),
+                    twoFactorCode.trim(),
                     token,
                     null,
                     floatArrayOf(),
