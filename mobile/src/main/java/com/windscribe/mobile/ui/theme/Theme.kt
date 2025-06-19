@@ -69,6 +69,9 @@ val ColorScheme.serverListSecondaryColor: Color
 val ColorScheme.expandedServerItemTextColor: Color
     @Composable get() = colorForTheme(AppColors.white, AppColors.slateGray)
 
+val ColorScheme.isDark: Boolean
+    @Composable get() = this == DarkColorScheme
+
 // Helper
 @Composable
 fun ColorScheme.colorForTheme(dark: Color, light: Color): Color = when {

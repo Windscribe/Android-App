@@ -132,14 +132,6 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private fun saveCaptcha(captchaRequest: CaptchaRequest) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val gson = Gson()
-            val data = gson.toJson(captchaRequest)
-            preferenceHelper.saveResponseStringData("captcha", data)
-        }
-    }
-
     private suspend fun loginWithCaptcha(captchaSolution: CaptchaSolution) {
         val trailX = captchaSolution.trail["x"]?.toFloatArray() ?: floatArrayOf()
         val trailY = captchaSolution.trail["y"]?.toFloatArray() ?: floatArrayOf()
@@ -201,7 +193,6 @@ class LoginViewModel @Inject constructor(
                 captcha.slider,
                 authToken.token
             )
-            saveCaptcha(request)
             updateState(LoginState.Captcha(request))
         } else {
             val result =

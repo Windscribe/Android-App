@@ -59,7 +59,7 @@ fun NetworkDetailScreen(viewModel: NetworkDetailViewModel? = null) {
             Spacer(modifier = Modifier.height(20.dp))
             SwitchItemView(
                 title = com.windscribe.mobile.R.string.auto_secure,
-                icon = com.windscribe.mobile.R.drawable.ic_auto_secure_check,
+                icon = com.windscribe.mobile.R.drawable.ic_wifi,
                 description = com.windscribe.mobile.R.string.auto_secure_description,
                 networkDetail!!.isAutoSecureOn,
                 onSelect = {

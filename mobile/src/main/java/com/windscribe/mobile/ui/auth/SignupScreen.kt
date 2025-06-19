@@ -1,6 +1,7 @@
 package com.windscribe.mobile.ui.auth
 
 import NavBar
+import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -53,6 +54,7 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.common.AppBackground
 import com.windscribe.mobile.ui.common.AppProgressBar
 import com.windscribe.mobile.ui.common.AuthTextField
+import com.windscribe.mobile.ui.common.CaptchaDebugDialog
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.TextButton
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
@@ -83,6 +85,22 @@ fun SignupScreen(
         val showProgressBar = signupState is SignupState.Registering
         val message = (signupState as? SignupState.Registering)?.message ?: ""
         AppProgressBar(showProgressBar, message = message)
+        if (signupState is SignupState.Captcha) {
+            CaptchaDebugDialog(
+                (signupState as SignupState.Captcha).request, onCancel = {
+                    viewModel?.dismissCaptcha()
+                },
+                onSolutionSubmit = { t1, t2 ->
+                    Log.i("LoginScreen", "onSolutionSubmit: $t1, $t2")
+                    viewModel?.onCaptchaSolutionReceived(
+                        CaptchaSolution(
+                            t1,
+                            t2,
+                            (signupState as SignupState.Captcha).request.secureToken
+                        )
+                    )
+                })
+        }
     }
 }
 

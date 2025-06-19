@@ -74,7 +74,9 @@ import com.windscribe.mobile.ui.theme.expandedServerItemTextColor
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font9
+import com.windscribe.mobile.ui.theme.isDark
 import com.windscribe.mobile.ui.theme.serverItemTextColor
+import com.windscribe.mobile.ui.theme.serverListBackgroundColor
 import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.commonutils.FlagIconResource
@@ -130,7 +132,13 @@ fun AllServerList(
                     LazyColumn(state = lazyListState, modifier = Modifier.weight(1f)) {
                         item {
                             Spacer(modifier = Modifier.height(8.dp))
-                            bestLocation?.let { BestLocation(it, connectionViewModel, homeViewmodel) }
+                            bestLocation?.let {
+                                BestLocation(
+                                    it,
+                                    connectionViewModel,
+                                    homeViewmodel
+                                )
+                            }
                         }
                         items(list, key = { it.id }) { item ->
                             ExpandableListItem(
@@ -177,17 +185,18 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = AppColors.midnightNavy)
+                    .background(color = MaterialTheme.colorScheme.serverListBackgroundColor)
+                    .clickable {
+                        activity.startActivity(UpgradeActivity.getStartIntent(activity))
+                    }
                     .border(
                         width = 1.dp,
-                        color = AppColors.white.copy(alpha = 0.05f),
+                        color = MaterialTheme.colorScheme.expandedServerItemTextColor.copy(alpha = 0.05f),
                         shape = RoundedCornerShape(8.dp)
                     )
                     .padding(12.dp)
             ) {
-                Row(modifier = Modifier.clickable {
-                    activity.startActivity(UpgradeActivity.getStartIntent(activity))
-                }) {
+                Row {
                     Box(
                         modifier = Modifier
                             .size(40.dp)
@@ -232,7 +241,7 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
                         Text(
                             stringResource(R.string.unblock_full_access),
                             style = font16.copy(fontSize = 15.sp),
-                            color = AppColors.white,
+                            color = MaterialTheme.colorScheme.expandedServerItemTextColor,
                         )
                         Spacer(modifier = Modifier.width(2.dp))
                         Text(
@@ -311,7 +320,7 @@ fun SplitBorderCircle(
         }
         if (pro) {
             Image(
-                painter = painterResource(id = R.drawable.pro_mask),
+                painter = painterResource(if (MaterialTheme.colorScheme.isDark) R.drawable.pro_mask else R.drawable.pro_mask_light),
                 contentDescription = "Flag",
                 modifier = Modifier
                     .align(Alignment.CenterStart)
@@ -323,7 +332,11 @@ fun SplitBorderCircle(
 }
 
 @Composable
-private fun BestLocation(item: ServerListItem, connectionViewModel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
+private fun BestLocation(
+    item: ServerListItem,
+    connectionViewModel: ConnectionViewmodel,
+    homeViewmodel: HomeViewmodel
+) {
     val health = averageHealth(item)
     val color = colorResource(healthColor(health))
     val angle = (health / 100f) * 360f

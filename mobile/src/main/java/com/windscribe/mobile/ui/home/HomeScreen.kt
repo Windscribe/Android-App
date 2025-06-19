@@ -307,7 +307,7 @@ private fun ConnectionStatusSheet(
             )
         }
         Image(
-            painter = painterResource(R.drawable.arrow_right),
+            painter = painterResource(R.drawable.arrow_right_small),
             contentDescription = null,
             modifier = Modifier
                 .size(24.dp)
@@ -315,7 +315,7 @@ private fun ConnectionStatusSheet(
                     connectionViewmodel.onProtocolChangeClick()
                 },
             contentScale = ContentScale.None,
-            colorFilter = ColorFilter.tint(containerColor)
+            colorFilter = ColorFilter.tint(containerColor.copy(alpha = 0.4f))
         )
     }
 }
@@ -355,7 +355,7 @@ internal fun BoxScope.NetworkInfoSheet(
     val showContextMenu by connectionViewmodel.ipContextMenuState.collectAsState()
     val isHapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
     val hideIp = remember { mutableStateOf(false) }
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.align(Alignment.BottomCenter).offset(y = (-66).dp)) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.align(Alignment.BottomCenter).offset(y = (-66).dp).padding(end = 12.dp)) {
         NetworkNameSheet(connectionViewmodel, homeViewmodel)
         Row(
             modifier = Modifier

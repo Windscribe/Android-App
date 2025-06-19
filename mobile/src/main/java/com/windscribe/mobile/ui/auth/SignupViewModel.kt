@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.mobile.R
 import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.api.response.AuthToken
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext.toResult
 import com.windscribe.vpn.commonutils.WindUtilities
@@ -29,6 +30,7 @@ sealed class SignupState {
     object Idle : SignupState()
     data class Registering(val message: String) : SignupState()
     object Success : SignupState()
+    data class Captcha(val request: CaptchaRequest) : SignupState()
     data class Error(val error: AuthError) : SignupState()
 }
 
@@ -154,19 +156,91 @@ class SignupViewModel @Inject constructor(
 
     private suspend fun startSignupProcess() {
         logger.info("Trying to registering with provided credentials...")
+        val authResult = apiCallManager.authTokenLogin().toResult()
+        authResult.onSuccess {
+            if (it.errorClass != null) {
+                logger.info("Error login: ${it.errorClass!!.errorMessage}")
+                _signupButtonEnabled.emit(true)
+                handleApiError(it.errorClass!!.errorCode, it.errorClass!!.errorMessage)
+            }
+            if (it.dataClass != null) {
+                logger.info("Received auth token: ${it.dataClass!!.token}")
+                handleAuthToken(it.dataClass!!)
+            }
+        }
+        authResult.onFailure {
+            if (it is WSNetException) {
+                handleNetworkError(it.getType())
+            }
+        }
+    }
+
+    fun onCaptchaSolutionReceived(solution: CaptchaSolution) {
+        viewModelScope.launch(Dispatchers.IO) {
+            updateState(SignupState.Registering("Signing up..."))
+            _signupButtonEnabled.emit(false)
+            loginWithCaptcha(solution)
+        }
+    }
+
+    private suspend fun handleAuthToken(authToken: AuthToken) {
+        val captcha = authToken.captcha
+        val token = authToken.token
+        if (captcha != null) {
+            logger.info("Received captcha: ${captcha.top}")
+            val request = CaptchaRequest(
+                captcha.background,
+                captcha.top,
+                captcha.slider,
+                authToken.token
+            )
+            updateState(SignupState.Captcha(request))
+        } else {
+            val result = apiCallManager.signUserIn(
+                username,
+                password,
+                referralUsername,
+                email,
+                voucher,
+                token,
+                null,
+                floatArrayOf(), floatArrayOf()
+            ).toResult()
+            result.onFailure {
+                if (it is WSNetException) {
+                    logger.error("SignupError: ${it.message}")
+                    handleNetworkError(it.getType())
+                }
+            }
+            result.onSuccess {
+                if (it.dataClass != null) {
+                    logger.info("User signup in successfully.")
+                    handleSuccessfulSignup(it.dataClass!!.sessionAuthHash)
+                }
+                if (it.errorClass != null) {
+                    _signupButtonEnabled.emit(true)
+                    handleApiError(it.errorClass!!.errorCode, it.errorClass!!.errorMessage)
+                }
+            }
+        }
+    }
+
+    private suspend fun loginWithCaptcha(captchaSolution: CaptchaSolution) {
+        val trailX = captchaSolution.trail["x"]?.toFloatArray() ?: floatArrayOf()
+        val trailY = captchaSolution.trail["y"]?.toFloatArray() ?: floatArrayOf()
         val result = apiCallManager.signUserIn(
             username,
             password,
             referralUsername,
             email,
             voucher,
-            null,
-            null,
-            floatArrayOf(), floatArrayOf()
+            captchaSolution.token,
+            "${captchaSolution.leftOffset}",
+            trailX,
+            trailY
         ).toResult()
         result.onFailure {
             if (it is WSNetException) {
-                logger.error("SignupError: ${it.message}")
                 handleNetworkError(it.getType())
             }
         }
@@ -181,6 +255,7 @@ class SignupViewModel @Inject constructor(
             }
         }
     }
+
 
     private fun handleSuccessfulSignup(sessionAuthHash: String) {
         preferenceHelper.sessionHash = sessionAuthHash
