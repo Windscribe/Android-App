@@ -9,6 +9,7 @@ import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -27,6 +28,7 @@ class EmergencyConnectViewModal @Inject constructor(
     private var _connectionProgressText = MutableStateFlow("Resolving e-connect domain..")
     val connectionProgressText: StateFlow<String> = _connectionProgressText
     private var connectingJob: Job? = null
+    val error = MutableSharedFlow<String>(replay = 0)
 
     init {
         observeConnectionState()
@@ -73,6 +75,7 @@ class EmergencyConnectViewModal @Inject constructor(
             }.onFailure {
                 logger.error("Failure to connect using emergency vpn profiles: $it")
                 _uiState.emit(EmergencyConnectUIState.Disconnected)
+                error.emit(it.message ?: "Failed to connect using emergency vpn profile.")
             }
         }
     }

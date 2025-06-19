@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.auth
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +16,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.mobile.ui.nav.Screen
@@ -36,6 +39,7 @@ import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.auth.EmergencyConnectViewModal
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
+import com.windscribe.mobile.ui.preferences.robert.RobertGoToState
 import com.windscribe.mobile.welcome.state.EmergencyConnectUIState
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
@@ -60,7 +64,8 @@ fun EmergencyConnectScreen(viewModel: EmergencyConnectViewModal? = null) {
         Column(
             modifier = Modifier
                 .widthIn(min = 325.dp, max = 373.dp)
-                .padding(16.dp).align(Alignment.Center),
+                .padding(16.dp)
+                .align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -81,6 +86,19 @@ fun EmergencyConnectScreen(viewModel: EmergencyConnectViewModal? = null) {
             EmergencyConnectButton(uiState) { viewModel?.connectButtonClick() }
             Spacer(modifier = Modifier.height(16.dp))
             EmergencyConnectCancelButton()
+        }
+        HandleToast(viewModel)
+    }
+}
+
+@Composable
+private fun HandleToast(viewModel: EmergencyConnectViewModal?) {
+    if (viewModel == null) return
+    val error by viewModel.error.collectAsState(initial = "")
+    val activity = LocalNavController.current.context as AppStartActivity
+    LaunchedEffect(error) {
+        if (error.isNotEmpty()) {
+            Toast.makeText(activity, error, Toast.LENGTH_LONG).show()
         }
     }
 }
