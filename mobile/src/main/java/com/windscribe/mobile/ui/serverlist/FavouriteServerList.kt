@@ -136,12 +136,13 @@ private fun ListItemView(
     item: FavouriteListItem,
     viewModel: ServerViewModel,
     connectionViewmodel: ConnectionViewmodel,
-    homeViewmodel: HomeViewmodel?
+    homeViewmodel: HomeViewmodel
 ) {
-    val userState by homeViewmodel?.userState?.collectAsState() ?: return
+    val userState by homeViewmodel.userState.collectAsState()
     val color = colorResource(healthColor(item.city.health))
     val angle = (item.city.health / 100f) * 360f
     val latencyState by viewModel.latencyListState.collectAsState()
+    val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     val latency by rememberUpdatedState(
         if (latencyState is ListState.Success) {
             (latencyState as ListState.Success).data.find { it.id == item.id }?.time ?: -1
@@ -160,7 +161,7 @@ private fun ListItemView(
             }.padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        ServerListIcon(item.city, userState, angle, color)
+        ServerListIcon(item.city, userState, angle, color, showLocationLoad)
         Spacer(modifier = Modifier.width(8.dp))
         ServerNodeName("${item.city.nodeName} ${item.city.nickName}", Modifier.weight(1f))
         if (item.city.linkSpeed == "10000") {

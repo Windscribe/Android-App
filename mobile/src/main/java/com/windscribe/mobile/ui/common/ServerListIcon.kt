@@ -18,13 +18,14 @@ import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.vpn.serverlist.entity.City
 
 @Composable
-fun ServerListIcon(city: City, userState: UserState, angle: Float, color: androidx.compose.ui.graphics.Color) {
+fun ServerListIcon(city: City, userState: UserState, angle: Float, color: androidx.compose.ui.graphics.Color, showLocationLoad: Boolean = false) {
     if (city.pro == 1 && (userState is UserState.Free || userState is UserState.UnlimitedData)) {
         SplitBorderCircle(
             firstSectionAngle = angle,
             firstColor = color,
             secondColor = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.20f),
-            flagRes = R.drawable.pro
+            flagRes = R.drawable.pro,
+            showLocationLoad = showLocationLoad
         )
     } else if (!city.isEnabled(userState is UserState.Pro)) {
         Image(
@@ -38,7 +39,8 @@ fun ServerListIcon(city: City, userState: UserState, angle: Float, color: androi
             firstSectionAngle = angle,
             firstColor = color,
             secondColor = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.20f),
-            flagRes = R.drawable.ic_dc
+            flagRes = R.drawable.ic_dc,
+            showLocationLoad = showLocationLoad
         )
     }
 }

@@ -131,6 +131,7 @@ private fun ExpandableListItem(
     val health = averageHealth(item)
     val color = colorResource(healthColor(health))
     val angle = (health / 100f) * 360f
+    val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
@@ -150,7 +151,8 @@ private fun ExpandableListItem(
                 color,
                 MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.20f),
                 FlagIconResource.getSmallFlag(item.region.countryCode),
-                userState !is UserState.Pro && item.region.premium == 1
+                userState !is UserState.Pro && item.region.premium == 1,
+                showLocationLoad
             )
             Spacer(modifier = Modifier.size(16.dp))
             Text(
@@ -210,6 +212,7 @@ private fun ServerListItemView(
             (latencyState as ListState.Success).data.find { it.id == item.id }?.time ?: -1
         } else -1
     )
+    val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = Modifier
@@ -225,7 +228,7 @@ private fun ServerListItemView(
             .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        ServerListIcon(item, userState, angle, color)
+        ServerListIcon(item, userState, angle, color, showLocationLoad)
         Spacer(modifier = Modifier.width(8.dp))
         ServerNodeName("${item.nodeName} ${item.nickName}", Modifier.weight(1f))
         if (item.linkSpeed == "10000") {

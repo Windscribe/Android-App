@@ -42,6 +42,8 @@ fun GeneralScreen(viewModel: GeneralViewModel? = null) {
         ?: remember { mutableStateOf(false) }
     val isNotificationStatEnabled by viewModel?.isNotificationStatEnabled?.collectAsState()
         ?: remember { mutableStateOf(false) }
+    val isLocationLoadEnabled by viewModel?.isLocationLoadEnabled?.collectAsState()
+        ?: remember { mutableStateOf(false) }
     LaunchedEffect(reloadAppState?.value) {
         if (reloadAppState?.value == true) {
             activity?.reloadApp()
@@ -73,6 +75,15 @@ fun GeneralScreen(viewModel: GeneralViewModel? = null) {
                 selectedItemKey = viewModel?.selectedLanguage ?: "",
                 onSelect = { viewModel?.onLanguageItemSelected(it) }
             )
+            Spacer(modifier = Modifier.height(14.dp))
+            SwitchItemView(
+                R.string.show_location_health,
+                R.drawable.ic_location_load,
+                R.string.location_load_description,
+                isLocationLoadEnabled
+            ) {
+                viewModel?.onLocationLoadItemClicked()
+            }
             Spacer(modifier = Modifier.height(14.dp))
             SwitchItemView(
                 title = R.string.notifications,

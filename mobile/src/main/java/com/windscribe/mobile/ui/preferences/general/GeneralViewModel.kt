@@ -25,6 +25,9 @@ abstract class GeneralViewModel : ViewModel() {
     abstract val isHapticEnabled: StateFlow<Boolean>
     abstract fun onHapticToggleButtonClicked()
 
+    abstract fun onLocationLoadItemClicked()
+    abstract val isLocationLoadEnabled: StateFlow<Boolean>
+
     abstract val isNotificationStatEnabled: StateFlow<Boolean>
     abstract fun onNotificationStatEnabledClick()
     abstract val versionName: String
@@ -64,6 +67,16 @@ class GeneralViewModelImpl(
         viewModelScope.launch {
             preferenceHelper.saveResponseStringData(PreferencesKeyConstants.USER_LANGUAGE, item.key)
             _reloadApp.emit(true)
+        }
+    }
+
+    private val _isLocationLoadEnabled = MutableStateFlow(preferenceHelper.isShowLocationHealthEnabled)
+    override val isLocationLoadEnabled: StateFlow<Boolean> = _isLocationLoadEnabled
+    override fun onLocationLoadItemClicked() {
+        viewModelScope.launch {
+            val updatedValue = !_isLocationLoadEnabled.value
+            preferenceHelper.isShowLocationHealthEnabled = updatedValue
+            _isLocationLoadEnabled.value = updatedValue
         }
     }
 
