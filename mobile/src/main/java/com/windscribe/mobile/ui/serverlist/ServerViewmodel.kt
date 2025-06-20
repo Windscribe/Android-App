@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
@@ -145,6 +146,12 @@ class ServerViewModelImpl(
                 }
             }
             preferencesHelper.addObserver(preferenceChangeListener!!)
+        }
+        viewModelScope.launch {
+            serverRepository.customLocationNameChange.collectLatest {
+                fetchServerList()
+                fetchFavouriteList()
+            }
         }
     }
 
