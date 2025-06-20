@@ -15,72 +15,12 @@
         android:theme="@style/DarkTheme"
         tools:targetApi="n">
         <activity
-            android:name=".advance.AdvanceParamsActivity"
-            android:exported="false"
-            />
-        <activity
-            android:name=".robert.RobertSettingsActivity"
-            android:exported="false"/>
-        <activity
-            android:name=".about.AboutActivity" />
-        <activity
-            android:name=".ticket.SendTicketActivity" />
-        <activity
-            android:name=".help.HelpActivity" />
-        <activity android:name=".confirmemail.ConfirmActivity" />
-        <activity
-            android:name=".welcome.WelcomeActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".gpsspoofing.GpsSpoofingSettingsActivity"
-            android:theme="@style/Theme.Transparent" />
-        <activity
             android:name="com.windscribe.vpn.backend.utils.VPNPermissionActivity"
             android:autoRemoveFromRecents="true"
             android:excludeFromRecents="true"
             android:theme="@style/blinkt.dialog" />
         <activity
-            android:name=".networksecurity.networkdetails.NetworkDetailsActivity" />
-        <activity
-            android:name=".debug.DebugViewActivity"/>
-        <activity
-            android:name=".splash.SplashActivity"
-            android:exported="true"
-            android:theme="@style/AppTheme.WindLauncher">
-            <layout android:defaultHeight="800dp"
-                android:defaultWidth="600dp"
-                android:gravity="top|end"
-                android:minHeight="450dp"
-                android:minWidth="300dp" />
-        </activity>
-        <activity
-            android:name=".email.AddEmailActivity"/>
-        <activity
-            android:name=".windscribe.WindscribeActivity"
-            android:exported="true"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateAlwaysHidden">
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".mainmenu.MainMenuActivity" />
-        <activity
-            android:name=".newsfeedactivity.NewsFeedActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".upgradeactivity.UpgradeActivity"/>
-        <activity
-            android:name=".account.AccountActivity"/>
-        <activity
-            android:name=".generalsettings.GeneralSettingsActivity"/>
-        <activity
-            android:name=".connectionsettings.ConnectionSettingsActivity"/>
-        <activity
-            android:name=".splittunneling.SplitTunnelingActivity" />
-        <activity
-            android:name=".networksecurity.NetworkSecurityActivity"/>
         <activity android:name=".upgradeactivity.UpgradeSuccessActivity" />
         <activity
             android:name=".ui.AppStartActivity"
