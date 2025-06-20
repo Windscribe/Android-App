@@ -54,13 +54,6 @@ class IconLinkView @JvmOverloads constructor(
                 gravity = Gravity.START or Gravity.CENTER_VERTICAL
             }
         }
-        if (!isCommunityLink) {
-//            UiUtil.setupOnTouchListener(
-//                container = view.findViewById(R.id.container),
-//                textView = view.findViewById(R.id.title),
-//                iconView = view.findViewById(R.id.right_icon)
-//            )
-        }
     }
 
     fun onClick(click: OnClickListener) {

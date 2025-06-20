@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableList;
 import com.windscribe.mobile.R;
 import com.windscribe.mobile.databinding.ActivityUpgradeBinding;
 import com.windscribe.mobile.di.ActivityModule;
+import com.windscribe.mobile.ui.AppStartActivity;
 import com.windscribe.mobile.utils.UiUtil;
 import com.windscribe.vpn.api.response.PushNotificationAction;
 import com.windscribe.vpn.billing.AmazonBillingManager;
@@ -79,7 +80,7 @@ public class UpgradeActivity extends BaseActivity
     private WindscribeInAppProduct plans = null;
 
     public static Intent getStartIntent(Context context) {
-        return new Intent(context, UpgradeActivity.class);
+        return new Intent(context, AppStartActivity.class);
     }
 
     @Override
