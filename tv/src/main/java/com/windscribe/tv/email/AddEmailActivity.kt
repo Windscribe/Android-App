@@ -163,20 +163,20 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
     private fun setTextFieldsFromStartingPoint() {
         val action = intent.action ?: return
         val proUser = intent.getBooleanExtra("pro_user", false)
-        binding.title.setText(if (proUser) R.string.pro_reason_to_add_email else R.string.free_reason_to_add_email)
+        binding.title.setText(if (proUser) com.windscribe.vpn.R.string.pro_reason_to_add_email else com.windscribe.vpn.R.string.free_reason_to_add_email)
         when (action) {
             PreferencesKeyConstants.ACTION_RESEND_EMAIL_FROM_ACCOUNT -> {
-                binding.back.text = getString(R.string.back_uppercase)
+                binding.back.text = getString(com.windscribe.vpn.R.string.back_uppercase)
             }
 
             PreferencesKeyConstants.ACTION_ADD_EMAIL_FROM_ACCOUNT -> {
-                binding.addEmail.text = getString(R.string.add_email_pro)
-                binding.back.text = getString(R.string.back_uppercase)
+                binding.addEmail.text = getString(com.windscribe.vpn.R.string.add_email_pro)
+                binding.back.text = getString(com.windscribe.vpn.R.string.back_uppercase)
             }
 
             else -> {
-                binding.addEmail.text = getString(R.string.add_email_pro)
-                binding.back.text = getString(R.string.skip)
+                binding.addEmail.text = getString(com.windscribe.vpn.R.string.add_email_pro)
+                binding.back.text = getString(com.windscribe.vpn.R.string.skip)
             }
         }
     }

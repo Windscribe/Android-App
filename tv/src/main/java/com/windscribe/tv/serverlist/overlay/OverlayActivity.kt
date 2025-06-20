@@ -141,7 +141,7 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         appContext.startActivity(
             getIntent(
                 appContext,
-                getString(R.string.node_under_construction_text),
+                getString(com.windscribe.vpn.R.string.node_under_construction_text),
                 "Alert"
             )
         )

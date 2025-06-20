@@ -338,7 +338,7 @@ class SettingActivity :
         binding.logout.visibility = View.GONE
         binding.getMoreData.visibility = View.VISIBLE
         binding.login.visibility = View.VISIBLE
-        binding.login.text = getString(R.string.text_login)
+        binding.login.text = getString(com.windscribe.vpn.R.string.text_login)
         binding.login.setTextColor(resources.getColor(R.color.colorWhite50))
     }
 
@@ -347,7 +347,7 @@ class SettingActivity :
         binding.logout.visibility = View.GONE
         binding.getMoreData.visibility = View.GONE
         binding.login.visibility = View.VISIBLE
-        binding.login.text = getString(R.string.claim_account)
+        binding.login.text = getString(com.windscribe.vpn.R.string.claim_account)
         binding.login.setTextColor(resources.getColor(R.color.colorYellow))
     }
 

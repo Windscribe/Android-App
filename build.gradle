@@ -3,11 +3,11 @@ project.ext {
     AppName = "Windscribe"
     AppId = "com.windscribe.vpn"
     appMinSdk = 21
-    appTargetSdk = 34
-    appCompiledSdk = 34
-    appBuildTool = "34.0.0"
-    appVersionCode = 1621
-    appVersionName = "3.82"
+    appTargetSdk = 35
+    appCompiledSdk = 35
+    appBuildTool = "35.0.0"
+    appVersionCode = 1691
+    appVersionName = "3.90"
     java = "17"
 }
 

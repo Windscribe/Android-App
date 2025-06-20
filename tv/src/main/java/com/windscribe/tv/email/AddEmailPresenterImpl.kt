@@ -28,7 +28,7 @@ class AddEmailPresenterImpl @Inject constructor(
         logger.info("Validating input email address...")
         if (TextUtils.isEmpty(emailAddress)) {
             logger.info("Email input empty...")
-            addEmailView.showInputError(interactor.getResourceString(R.string.email_empty))
+            addEmailView.showInputError(interactor.getResourceString(com.windscribe.vpn.R.string.email_empty))
             return
         }
         if (Patterns.EMAIL_ADDRESS.matcher(emailAddress).matches()) {
@@ -44,7 +44,7 @@ class AddEmailPresenterImpl @Inject constructor(
                     .subscribe({
                         addEmailView.prepareUiForApiCallFinished()
                         it.dataClass?.let { data ->
-                            addEmailView.showToast(interactor.getResourceString(R.string.added_email_successfully))
+                            addEmailView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.added_email_successfully))
                             logger.info("Email address added successfully...")
                             addEmailView.decideActivity()
                         } ?: it.errorClass?.let { error ->
@@ -61,7 +61,7 @@ class AddEmailPresenterImpl @Inject constructor(
             )
         } else {
             addEmailView.showInputError(
-                interactor.getResourceString(R.string.invalid_email_format)
+                interactor.getResourceString(com.windscribe.vpn.R.string.invalid_email_format)
             )
         }
     }
@@ -70,11 +70,11 @@ class AddEmailPresenterImpl @Inject constructor(
         logger.info("Validating input email address...")
         if (TextUtils.isEmpty(emailAddress)) {
             logger.info("Email input empty...")
-            addEmailView.showInputError(interactor.getResourceString(R.string.email_empty))
+            addEmailView.showInputError(interactor.getResourceString(com.windscribe.vpn.R.string.email_empty))
             return
         }
         if (!Patterns.EMAIL_ADDRESS.matcher(emailAddress).matches()) {
-            addEmailView.showInputError(interactor.getResourceString(R.string.invalid_email_format))
+            addEmailView.showInputError(interactor.getResourceString(com.windscribe.vpn.R.string.invalid_email_format))
             return
         }
         addEmailView.hideSoftKeyboard()
@@ -88,7 +88,7 @@ class AddEmailPresenterImpl @Inject constructor(
                 .subscribe({ data ->
                     addEmailView.prepareUiForApiCallFinished()
                     data.dataClass?.let {
-                        addEmailView.showToast(interactor.getResourceString(R.string.email_confirmation_sent_successfully))
+                        addEmailView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.email_confirmation_sent_successfully))
                         logger.info("Email confirmation sent successfully...")
                         addEmailView.decideActivity()
                     } ?: data?.errorClass?.let {
@@ -100,7 +100,7 @@ class AddEmailPresenterImpl @Inject constructor(
                 }, { error ->
                     addEmailView.prepareUiForApiCallFinished()
                     logger.debug("Error resending email address..." + error.localizedMessage)
-                    addEmailView.showToast(interactor.getResourceString(R.string.error_sending_email))
+                    addEmailView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.error_sending_email))
                 })
         )
     }

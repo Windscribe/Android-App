@@ -28,7 +28,7 @@ class ServerAdapter(
     internal inner class BestLocationHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val textView: TextView = itemView.findViewById(R.id.label)
         fun bind() {
-            textView.text = itemView.resources.getText(R.string.best_location)
+            textView.text = itemView.resources.getText(com.windscribe.vpn.R.string.best_location)
             itemView.setOnClickListener {
                 serverListData.bestLocation?.let {
                     listener?.onBestLocationClick(it.city.getId())

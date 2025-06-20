@@ -42,7 +42,7 @@ class AutoFitRecyclerView : RecyclerView {
     private fun init(context: Context, attrs: AttributeSet?) {
         if (attrs != null) {
             val attrsArray = intArrayOf(
-                R.attr.columnWidth
+                com.windscribe.vpn.R.attr.columnWidth
             )
             val array = context.obtainStyledAttributes(attrs, attrsArray)
             columnWidth = array.getDimensionPixelSize(0, -1)

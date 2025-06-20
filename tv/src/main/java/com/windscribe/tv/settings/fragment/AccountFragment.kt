@@ -77,7 +77,7 @@ class AccountFragment : Fragment() {
             }
 
             Status.NOT_ADDED_PRO, Status.NOT_ADDED -> {
-                binding.emailLabel.setText(R.string.add_email_pro)
+                binding.emailLabel.setText(com.windscribe.vpn.R.string.add_email_pro)
                 binding.confirmContainer.visibility = View.GONE
                 binding.emailContainer.isFocusable = true
             }

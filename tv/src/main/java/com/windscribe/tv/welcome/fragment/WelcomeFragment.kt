@@ -65,7 +65,7 @@ class WelcomeFragment : Fragment() {
         if (binding.continueWithoutAccount.hasFocus()) {
             binding.buttonLabel.text = ""
         } else {
-            binding.buttonLabel.text = getString(R.string.login_label)
+            binding.buttonLabel.text = getString(com.windscribe.vpn.R.string.login_label)
         }
     }
 }

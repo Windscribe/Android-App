@@ -196,7 +196,7 @@ class ConnectionFragment : Fragment() {
                 binding.exclusiveMode.setState(State.MenuButtonState.NotSelected)
                 binding.inclusiveMode.setState(State.MenuButtonState.NotSelected)
                 binding.disabledMode.setState(State.MenuButtonState.Selected)
-                binding.titleSplitRoutingApps.text = getString(R.string.apps)
+                binding.titleSplitRoutingApps.text = getString(com.windscribe.vpn.R.string.apps)
                 showAppsView(false)
             }
 
@@ -204,7 +204,7 @@ class ConnectionFragment : Fragment() {
                 binding.inclusiveMode.setState(State.MenuButtonState.NotSelected)
                 binding.disabledMode.setState(State.MenuButtonState.NotSelected)
                 binding.exclusiveMode.setState(State.MenuButtonState.Selected)
-                binding.titleSplitRoutingApps.text = getString(R.string.apps_to_exclude)
+                binding.titleSplitRoutingApps.text = getString(com.windscribe.vpn.R.string.apps_to_exclude)
                 showAppsView(true)
             }
 
@@ -212,7 +212,7 @@ class ConnectionFragment : Fragment() {
                 binding.exclusiveMode.setState(State.MenuButtonState.NotSelected)
                 binding.disabledMode.setState(State.MenuButtonState.NotSelected)
                 binding.inclusiveMode.setState(State.MenuButtonState.Selected)
-                binding.titleSplitRoutingApps.text = getString(R.string.apps_to_include)
+                binding.titleSplitRoutingApps.text = getString(com.windscribe.vpn.R.string.apps_to_include)
                 showAppsView(true)
             }
         }

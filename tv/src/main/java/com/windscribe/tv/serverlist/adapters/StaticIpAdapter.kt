@@ -39,7 +39,7 @@ class StaticIpAdapter(
                 latencyView.text = ""
             } else {
                 latencyView.text =
-                    latencyView.resources.getString(R.string.ping_time, pingTime)
+                    latencyView.resources.getString(com.windscribe.vpn.R.string.ping_time, pingTime)
             }
             extraView.text = region.staticIp
             btnConnect.setColorFilter(
@@ -83,9 +83,9 @@ class StaticIpAdapter(
 
         private fun setHighlightText(hasFocus: Boolean, region: StaticRegion) {
             if (region.status != null && region.status == 0) {
-                highlightTextView.text = highlightTextView.resources.getString(R.string.unavailable)
+                highlightTextView.text = highlightTextView.resources.getString(com.windscribe.vpn.R.string.unavailable)
             } else {
-                highlightTextView.text = highlightTextView.resources.getString(R.string.connect)
+                highlightTextView.text = highlightTextView.resources.getString(com.windscribe.vpn.R.string.connect)
             }
             if (hasFocus) {
                 highlightTextView.visibility = View.VISIBLE
