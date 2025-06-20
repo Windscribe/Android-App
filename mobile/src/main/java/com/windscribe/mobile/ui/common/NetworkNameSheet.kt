@@ -1,4 +1,5 @@
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -60,13 +62,13 @@ fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Ho
                     R.drawable.ic_wifi
             ),
             contentDescription = null,
-            modifier = Modifier.padding(start = 8.dp)
+            modifier = Modifier.padding(start = 12.dp)
         )
 
         val hideIp = remember { mutableStateOf(false) }
 
         Text(
-            text = networkInfo.name ?: stringResource(R.string.unknown),
+            text = networkInfo.name ?: stringResource(com.windscribe.vpn.R.string.unknown),
             style = font16.copy(fontWeight = FontWeight.Medium),
             color = AppColors.white,
             modifier = Modifier
@@ -79,8 +81,9 @@ fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Ho
         )
 
         Image(
-            painter = painterResource(R.drawable.arrow_right),
+            painter = painterResource(R.drawable.arrow_right_small),
             contentDescription = null,
+            colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.70f)),
             modifier = Modifier
                 .size(24.dp)
                 .hapticClickable(hapticEnabled = hapticEnabled) { showPermissionRequest = true },

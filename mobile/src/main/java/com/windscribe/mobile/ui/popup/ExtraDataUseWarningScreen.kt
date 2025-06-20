@@ -54,7 +54,7 @@ fun ExtraDataUseWarningScreen(viewmodel: AppStartActivityViewModel? = null) {
                 contentDescription = null,
             )
             Text(
-                text = stringResource(id = R.string.decoy_traffic_mode),
+                text = stringResource(id = com.windscribe.vpn.R.string.decoy_traffic_mode),
                 style = font24,
                 color = MaterialTheme.colorScheme.primaryTextColor,
                 modifier = Modifier
@@ -62,7 +62,7 @@ fun ExtraDataUseWarningScreen(viewmodel: AppStartActivityViewModel? = null) {
                     .fillMaxWidth()
             )
             Text(
-                text = stringResource(id = R.string.decoy_traffic_warning),
+                text = stringResource(id = com.windscribe.vpn.R.string.decoy_traffic_warning),
                 style = font16,
                 color = MaterialTheme.colorScheme.preferencesSubtitleColor,
                 modifier = Modifier
@@ -82,14 +82,14 @@ fun ExtraDataUseWarningScreen(viewmodel: AppStartActivityViewModel? = null) {
                         .align(Alignment.TopCenter)
                 ) {
                     Text(
-                        text = stringResource(R.string.decoy_caution_description),
+                        text = stringResource(com.windscribe.vpn.R.string.decoy_caution_description),
                         style = font12,
                         color = MaterialTheme.colorScheme.preferencesSubtitleColor,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
                 Text(
-                    text = stringResource(R.string.caution),
+                    text = stringResource(com.windscribe.vpn.R.string.caution),
                     style = font12,
                     color = MaterialTheme.colorScheme.preferencesSubtitleColor,
                     modifier = Modifier
@@ -100,7 +100,7 @@ fun ExtraDataUseWarningScreen(viewmodel: AppStartActivityViewModel? = null) {
                 )
             }
             NextButton(
-                text = stringResource(R.string.i_understand), enabled = true, onClick = {
+                text = stringResource(com.windscribe.vpn.R.string.i_understand), enabled = true, onClick = {
                     viewmodel?.protocolInformation
                     viewmodel?.enableDecoyTraffic()
                     navController.popBackStack()
@@ -113,7 +113,7 @@ fun ExtraDataUseWarningScreen(viewmodel: AppStartActivityViewModel? = null) {
                 navController.popBackStack()
             }) {
                 Text(
-                    stringResource(id = R.string.cancel),
+                    stringResource(id = com.windscribe.vpn.R.string.cancel),
                     style = font16,
                     color = MaterialTheme.colorScheme.preferencesSubtitleColor
                 )

@@ -86,8 +86,8 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
                     .padding(top = 32.dp)
             )
             Text(
-                text = stringResource(id = R.string.power_whitelist_title),
-                fontFamily = FontFamily(Font(R.font.ibm_font_family)),
+                text = stringResource(id = com.windscribe.vpn.R.string.power_whitelist_title),
+                fontFamily = FontFamily(Font(com.windscribe.vpn.R.font.ibm_font_family)),
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
                 color = Color.White,
@@ -97,8 +97,8 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
                     .fillMaxWidth()
             )
             Text(
-                text = stringResource(id = R.string.power_whitelist_summary),
-                fontFamily = FontFamily(Font(R.font.ibm_font_family)),
+                text = stringResource(id = com.windscribe.vpn.R.string.power_whitelist_summary),
+                fontFamily = FontFamily(Font(com.windscribe.vpn.R.font.ibm_font_family)),
                 fontSize = 16.sp,
                 color = Color.White.copy(alpha = 0.4f),
                 textAlign = TextAlign.Center,
@@ -106,7 +106,7 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
                     .fillMaxWidth()
             )
             NextButton(
-                text = stringResource(R.string.grant_permission), enabled = true, onClick = {
+                text = stringResource(com.windscribe.vpn.R.string.grant_permission), enabled = true, onClick = {
                     val intent = Intent(
                         Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
                         Uri.parse("package:$packageName")
@@ -121,7 +121,7 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
                 viewmodel?.onLaterClicked()
             }) {
                 Text(
-                    stringResource(id = R.string.may_be_later),
+                    stringResource(id = com.windscribe.vpn.R.string.may_be_later),
                     style = font16,
                     color = AppColors.white.copy(alpha = 0.50f)
                 )
@@ -130,7 +130,7 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
                 viewmodel?.onNeverAskAgainClicked()
             }) {
                 Text(
-                    stringResource(id = R.string.never_aks_again_for_permission),
+                    stringResource(id = com.windscribe.vpn.R.string.never_aks_again_for_permission),
                     style = font16,
                     color = AppColors.white.copy(alpha = 0.50f)
                 )

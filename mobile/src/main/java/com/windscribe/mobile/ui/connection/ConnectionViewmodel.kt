@@ -373,7 +373,7 @@ class ConnectionViewmodelImpl @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             vpnConnectionStateManager.state.collectLatest {
                 if (it.status == VPNState.Status.Connecting && preferences.connectedBundleSoundOption == 3) {
-                    playSoundFromRaw(R.raw.fart_deluxe_loop, loop = true)
+                    playSoundFromRaw(com.windscribe.vpn.R.raw.fart_deluxe_loop, loop = true)
                     return@collectLatest
                 }
                 if (it.status == VPNState.Status.Connected || it.status == VPNState.Status.Disconnected) {
@@ -492,7 +492,7 @@ class ConnectionViewmodelImpl @Inject constructor(
             2 -> {
                 val index =
                     if (isConnected) preferences.connectedBundleBackgroundOption else preferences.disconnectedBundleBackgroundOption
-                LocationBackground.Wallpaper(bundledBackgrounds[index] ?: R.mipmap.square)
+                LocationBackground.Wallpaper(bundledBackgrounds[index] ?: com.windscribe.vpn.R.mipmap.square)
             }
 
             3 -> LocationBackground.Flag(R.drawable.dummy_flag)
@@ -621,7 +621,7 @@ class ConnectionViewmodelImpl @Inject constructor(
 
     override fun onProtocolChangeClick() {
         if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CustomConfiguredProfile) {
-            showToast(R.string.protocol_change_is_not_available_for_custom_config)
+            showToast(com.windscribe.vpn.R.string.protocol_change_is_not_available_for_custom_config)
         } else {
             appScope.launch {
                 autoConnectionManager.changeProtocolInForeground()
@@ -659,7 +659,7 @@ class ConnectionViewmodelImpl @Inject constructor(
         // Check Internet
         if (!WindUtilities.isOnline()) {
             logger.info("Error: no internet available.")
-            showToast(R.string.no_internet)
+            showToast(com.windscribe.vpn.R.string.no_internet)
             return false
         }
         // User account status

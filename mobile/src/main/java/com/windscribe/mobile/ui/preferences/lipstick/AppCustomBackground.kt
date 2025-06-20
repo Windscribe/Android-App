@@ -73,13 +73,13 @@ private fun Header() {
             )
             Spacer(modifier = Modifier.padding(8.dp))
             Text(
-                stringResource(R.string.app_background),
+                stringResource(com.windscribe.vpn.R.string.app_background),
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.primaryTextColor
             )
         }
         Spacer(modifier = Modifier.padding(8.dp))
-        Description(stringResource(R.string.app_background_description))
+        Description(stringResource(com.windscribe.vpn.R.string.app_background_description))
     }
 }
 
@@ -89,8 +89,8 @@ private fun AspectRationSection(viewmodel: LipstickViewmodel?) {
     val expanded = remember { mutableStateOf(false) }
 
     DropdownSection(
-        title = stringResource(R.string.aspect_ratio),
-        displayValue = stringResource(aspectRatioItem?.value?.title ?: R.string.fill),
+        title = stringResource(com.windscribe.vpn.R.string.aspect_ratio),
+        displayValue = stringResource(aspectRatioItem?.value?.title ?: com.windscribe.vpn.R.string.fill),
         isDropdownExpanded = expanded,
         onDropdownClick = { expanded.value = !expanded.value },
         dropdownItems = LookAndFeelHelper.getAspectRatioOptions(),
@@ -112,8 +112,8 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? -> uri?.let { viewmodel?.loadDisconnectedCustomBackground(context, it) } }
     DropdownSection(
-        title = stringResource(R.string.when_disconnected),
-        displayValue = stringResource(item?.value?.title ?: R.string.flags),
+        title = stringResource(com.windscribe.vpn.R.string.when_disconnected),
+        displayValue = stringResource(item?.value?.title ?: com.windscribe.vpn.R.string.flags),
         isDropdownExpanded = expandedMain,
         onDropdownClick = { expandedMain.value = !expandedMain.value },
         dropdownItems = LookAndFeelHelper.getBackgroundOptions(),
@@ -192,8 +192,8 @@ private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? -> uri?.let { viewmodel?.loadConnectedCustomBackground(context, it) } }
     DropdownSection(
-        title = stringResource(R.string.when_connected),
-        displayValue = stringResource(item?.value?.title ?: R.string.flags),
+        title = stringResource(com.windscribe.vpn.R.string.when_connected),
+        displayValue = stringResource(item?.value?.title ?: com.windscribe.vpn.R.string.flags),
         isDropdownExpanded = expandedMain,
         onDropdownClick = { expandedMain.value = !expandedMain.value },
         dropdownItems = LookAndFeelHelper.getBackgroundOptions(),

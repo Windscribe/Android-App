@@ -386,7 +386,7 @@ class WelcomePresenterImpl @Inject constructor(
 
     private fun prepareLoginRegistrationDashboard(firebaseToken: String?) {
         interactor.getAppPreferenceInterface().loginTime = Date()
-        welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_session))
+        welcomeView.updateCurrentProcess(interactor.getResourceString(com.windscribe.vpn.R.string.getting_session))
         interactor.getCompositeDisposable()
             .add(interactor.getApiCallManager().getSessionGeneric(firebaseToken)
                 .flatMapCompletable { sessionResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> ->
@@ -403,9 +403,9 @@ class WelcomePresenterImpl @Inject constructor(
                         true
                     })
                 }
-                .doOnComplete { welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_server_credentials)) }
+                .doOnComplete { welcomeView.updateCurrentProcess(interactor.getResourceString(com.windscribe.vpn.R.string.getting_server_credentials)) }
                 .andThen(interactor.getConnectionDataUpdater().update())
-                .doOnComplete { welcomeView.updateCurrentProcess(interactor.getResourceString(R.string.getting_server_list)) }
+                .doOnComplete { welcomeView.updateCurrentProcess(interactor.getResourceString(com.windscribe.vpn.R.string.getting_server_list)) }
                 .andThen(interactor.getServerListUpdater().update())
                 .andThen(updateStaticIps())
                 .andThen(Completable.fromAction { interactor.getPreferenceChangeObserver().postCityServerChange() })
@@ -460,51 +460,51 @@ class WelcomePresenterImpl @Inject constructor(
         // Empty username
         if (TextUtils.isEmpty(username)) {
             logger.info("[username] is empty, displaying toast to the user...")
-            welcomeView.setUsernameError(interactor.getResourceString(R.string.username_empty))
-            welcomeView.showToast(interactor.getResourceString(R.string.enter_username))
+            welcomeView.setUsernameError(interactor.getResourceString(com.windscribe.vpn.R.string.username_empty))
+            welcomeView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.enter_username))
             return false
         }
 
         // Invalid username
         if (!isLogin && !validateUsernameCharacters(username)) {
             logger.info("[username] has invalid characters in , displaying toast to the user...")
-            welcomeView.setUsernameError(interactor.getResourceString(R.string.login_with_username))
-            welcomeView.showToast(interactor.getResourceString(R.string.login_with_username))
+            welcomeView.setUsernameError(interactor.getResourceString(com.windscribe.vpn.R.string.login_with_username))
+            welcomeView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.login_with_username))
             return false
         }
 
         // Empty Password
         if (TextUtils.isEmpty(password)) {
             logger.info("[password] is empty, displaying toast to the user...")
-            welcomeView.setPasswordError(interactor.getResourceString(R.string.password_empty))
-            welcomeView.showToast(interactor.getResourceString(R.string.enter_password))
+            welcomeView.setPasswordError(interactor.getResourceString(com.windscribe.vpn.R.string.password_empty))
+            welcomeView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.enter_password))
             return false
         }
         if (email?.isNotEmpty() == true && !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             logger.info("[Email] is invalid, displaying toast to the user...")
-            welcomeView.showToast(interactor.getResourceString(R.string.invalid_email_format))
+            welcomeView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.invalid_email_format))
             return false
         }
         if (email?.isNotEmpty() == true && !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             logger.info("[Email] is invalid, displaying toast to the user...")
-            welcomeView.showToast(interactor.getResourceString(R.string.invalid_email_format))
+            welcomeView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.invalid_email_format))
             return false
         }
         if (!isLogin && password.length < 8) {
             logger.info("[Password] is small, displaying toast to the user...")
-            welcomeView.showToast(interactor.getResourceString(R.string.small_password))
+            welcomeView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.small_password))
             return false
         }
         // Sign up and claim account password minimum strength enforce.
         if (!isLogin && !evaluatePassword(password)) {
             logger.info("[Password] is weak, displaying toast to the user...")
-            welcomeView.showToast(interactor.getResourceString(R.string.weak_password))
+            welcomeView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.weak_password))
             return false
         }
         if (!isLogin && CommonPasswordChecker.isAMatch(password)) {
             logger.info("[Password] matches worst password list, displaying toast to the user...")
-            welcomeView.setPasswordError(interactor.getResourceString(R.string.common_password))
-            welcomeView.showToast(interactor.getResourceString(R.string.common_password))
+            welcomeView.setPasswordError(interactor.getResourceString(com.windscribe.vpn.R.string.common_password))
+            welcomeView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.common_password))
             return false
         }
         return true

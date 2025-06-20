@@ -1,6 +1,5 @@
 package com.windscribe.mobile.ui.popup
 
-import android.provider.Settings.System.DATE_FORMAT
 import android.text.Html
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,7 +14,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.io.Serializable
-import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter

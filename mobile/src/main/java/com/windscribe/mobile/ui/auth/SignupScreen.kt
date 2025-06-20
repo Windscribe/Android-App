@@ -1,6 +1,8 @@
 package com.windscribe.mobile.ui.auth
 
 import NavBar
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -34,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -53,6 +56,7 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.common.AppBackground
 import com.windscribe.mobile.ui.common.AppProgressBar
 import com.windscribe.mobile.ui.common.AuthTextField
+import com.windscribe.mobile.ui.common.CaptchaDebugDialog
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.TextButton
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
@@ -64,6 +68,7 @@ fun SignupScreen(
     windowSizeClass: WindowSizeClass? = currentWindowAdaptiveInfo().windowSizeClass,
     viewModel: SignupViewModel? = null
 ) {
+    val context = LocalContext.current
     val navController = LocalNavController.current
     val signupState by viewModel?.signupState?.collectAsState() ?: remember {
         mutableStateOf(SignupState.Idle)
@@ -78,11 +83,34 @@ fun SignupScreen(
             }
         }
     }
+    LaunchedEffect(Unit) {
+        viewModel?.showAllBackupFailedDialog?.collect { show ->
+            if (show) {
+                Toast.makeText(context, com.windscribe.vpn.R.string.failed_network_alert, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
     AppBackground {
         SignupCompactLayout(navController, signupState, viewModel)
         val showProgressBar = signupState is SignupState.Registering
         val message = (signupState as? SignupState.Registering)?.message ?: ""
         AppProgressBar(showProgressBar, message = message)
+        if (signupState is SignupState.Captcha) {
+            CaptchaDebugDialog(
+                (signupState as SignupState.Captcha).request, onCancel = {
+                    viewModel?.dismissCaptcha()
+                },
+                onSolutionSubmit = { t1, t2 ->
+                    Log.i("LoginScreen", "onSolutionSubmit: $t1, $t2")
+                    viewModel?.onCaptchaSolutionReceived(
+                        CaptchaSolution(
+                            t1,
+                            t2,
+                            (signupState as SignupState.Captcha).request.secureToken
+                        )
+                    )
+                })
+        }
     }
 }
 
@@ -99,7 +127,7 @@ private fun SignupCompactLayout(
             .imePadding()
             .padding(horizontal = 16.dp)
     ) {
-        NavBar(stringResource(if (viewModel?.isAccountClaim == false) R.string.text_sign_up else R.string.sign_up)) {
+        NavBar(stringResource(if (viewModel?.isAccountClaim == false) com.windscribe.vpn.R.string.text_sign_up else com.windscribe.vpn.R.string.sign_up)) {
             navController.popBackStack()
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -113,15 +141,15 @@ private fun SignupCompactLayout(
             Spacer(modifier = Modifier.height(24.dp))
             SignupPasswordTextField(signupState, viewModel)
             Spacer(modifier = Modifier.height(8.dp))
-            Description(stringResource(R.string.password_requirement))
+            Description(stringResource(com.windscribe.vpn.R.string.password_requirement))
             Spacer(modifier = Modifier.height(16.dp))
             SignupEmailTextField(signupState, viewModel)
             Spacer(modifier = Modifier.height(8.dp))
-            Description(stringResource(R.string.email_description))
+            Description(stringResource(com.windscribe.vpn.R.string.email_description))
             if (viewModel?.isAccountClaim == false) {
                 Spacer(modifier = Modifier.height(16.dp))
                 VoucherTextField(viewModel)
-                ExpandMenu(stringResource(R.string.referred_by_someone)) {
+                ExpandMenu(stringResource(com.windscribe.vpn.R.string.referred_by_someone)) {
                     ReferralFeatures()
                     Spacer(modifier = Modifier.height(8.dp))
                     ReferralUsernameTextField(viewModel)
@@ -136,7 +164,7 @@ private fun SignupCompactLayout(
             Spacer(modifier = Modifier.height(8.dp))
             if (viewModel?.isAccountClaim == true) {
                 TextButton(
-                    stringResource(R.string.set_up_later),
+                    stringResource(com.windscribe.vpn.R.string.set_up_later),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .navigationBarsPadding()
@@ -151,8 +179,9 @@ private fun SignupCompactLayout(
 
 @Composable
 private fun SignupPasswordTextField(signupState: SignupState, viewModel: SignupViewModel? = null) {
-    AuthTextField(hint = stringResource(R.string.password),
-        placeHolder = stringResource(R.string.enter_password),
+    AuthTextField(
+        hint = stringResource(com.windscribe.vpn.R.string.password),
+        placeHolder = stringResource(com.windscribe.vpn.R.string.enter_password),
         isError = isError(signupState, AuthInputFields.Password),
         modifier = Modifier.fillMaxWidth(),
         isPassword = true,
@@ -196,7 +225,7 @@ private fun ExpandMenu(text: String, content: @Composable () -> Unit = {}) {
             )
             Image(
                 painter = painterResource(id = R.drawable.ic_expand),
-                contentDescription = stringResource(id = R.string.image_description),
+                contentDescription = stringResource(id = com.windscribe.vpn.R.string.image_description),
                 modifier = Modifier
                     .size(32.dp)
                     .rotate(rotation)
@@ -216,7 +245,8 @@ private fun ExpandMenu(text: String, content: @Composable () -> Unit = {}) {
 
 @Composable
 private fun VoucherTextField(viewModel: SignupViewModel?) {
-    AuthTextField(hint = stringResource(R.string.voucher_code) + " " + stringResource(R.string.optional),
+    AuthTextField(
+        hint = stringResource(com.windscribe.vpn.R.string.voucher_code) + " " + stringResource(com.windscribe.vpn.R.string.optional),
         isError = false,
         modifier = Modifier.fillMaxWidth(),
         onValueChange = {
@@ -226,8 +256,9 @@ private fun VoucherTextField(viewModel: SignupViewModel?) {
 
 @Composable
 private fun SignupUsernameTextField(signupState: SignupState, viewModel: SignupViewModel? = null) {
-    AuthTextField(hint = stringResource(R.string.username),
-        placeHolder = stringResource(R.string.enter_password),
+    AuthTextField(
+        hint = stringResource(com.windscribe.vpn.R.string.username),
+        placeHolder = stringResource(com.windscribe.vpn.R.string.enter_password),
         isError = isError(signupState, AuthInputFields.Username),
         modifier = Modifier.fillMaxWidth(),
         onValueChange = {
@@ -241,8 +272,9 @@ private fun isError(signupState: SignupState, field: AuthInputFields): Boolean {
 
 @Composable
 private fun SignupEmailTextField(signupState: SignupState, viewModel: SignupViewModel? = null) {
-    AuthTextField(hint = stringResource(R.string.email) + " " + stringResource(R.string.optional),
-        placeHolder = stringResource(R.string.enter_email),
+    AuthTextField(
+        hint = stringResource(com.windscribe.vpn.R.string.email) + " " + stringResource(com.windscribe.vpn.R.string.optional),
+        placeHolder = stringResource(com.windscribe.vpn.R.string.enter_email),
         isError = isError(signupState, AuthInputFields.Email),
         modifier = Modifier.fillMaxWidth(),
         onValueChange = {
@@ -252,7 +284,8 @@ private fun SignupEmailTextField(signupState: SignupState, viewModel: SignupView
 
 @Composable
 private fun ReferralUsernameTextField(viewModel: SignupViewModel?) {
-    AuthTextField(hint = stringResource(R.string.referral_username),
+    AuthTextField(
+        hint = stringResource(com.windscribe.vpn.R.string.referral_username),
         isError = false,
         modifier = Modifier.fillMaxWidth(),
         onValueChange = {
@@ -263,9 +296,9 @@ private fun ReferralUsernameTextField(viewModel: SignupViewModel?) {
 @Composable
 private fun ReferralFeatures() {
     Column {
-        ReferralFeature(stringResource(R.string.first_reason_to_use_referral))
+        ReferralFeature(stringResource(com.windscribe.vpn.R.string.first_reason_to_use_referral))
         Spacer(modifier = Modifier.height(16.dp))
-        ReferralFeature(stringResource(R.string.if_you_go_pro_they_ll_go_pro_too))
+        ReferralFeature(stringResource(com.windscribe.vpn.R.string.if_you_go_pro_they_ll_go_pro_too))
     }
 }
 
@@ -297,7 +330,7 @@ private fun SignupHeroButton(viewModel: SignupViewModel? = null) {
         mutableStateOf(false)
     }
     NextButton(
-        text = stringResource(R.string.next), enabled = isButtonEnabled, onClick = {
+        text = stringResource(com.windscribe.vpn.R.string.next), enabled = isButtonEnabled, onClick = {
             keyboardController?.hide()
             viewModel?.signupButtonClick()
         }, modifier = Modifier

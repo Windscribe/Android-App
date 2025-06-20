@@ -1,7 +1,6 @@
 package com.windscribe.mobile.ui.preferences.robert
 
 import PreferencesNavBar
-import android.R.id.message
 import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -33,18 +32,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.windscribe.mobile.ui.common.AppProgressBar
 import com.windscribe.mobile.ui.common.DescriptionWithLearnMore
 import com.windscribe.mobile.ui.common.PreferenceBackground
-import com.windscribe.mobile.ui.common.ScreenDescription
+import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.common.openUrl
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.PreviewWithNav
@@ -108,7 +104,7 @@ fun RobertScreen(viewModel: RobertViewModel? = null) {
             Spacer(modifier = Modifier.height(16.dp))
             ManageCustomRule(viewModel)
         }
-        AppProgressBar(showProgress, "")
+        PreferenceProgressBar(showProgress)
         HandleGoto(viewModel)
     }
 }

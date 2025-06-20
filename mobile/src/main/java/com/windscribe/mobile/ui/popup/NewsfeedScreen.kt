@@ -87,7 +87,7 @@ fun NewsfeedScreen(viewModel: NewsfeedViewmodel? = null) {
                 .padding(horizontal = 16.dp)
                 .statusBarsPadding()
         ) {
-            NavBar(stringResource(R.string.news_feed)) {
+            NavBar(stringResource(com.windscribe.vpn.R.string.news_feed)) {
                 navController.popBackStack()
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -145,7 +145,7 @@ private fun Title() {
     val navController = LocalNavController.current
     val interactionSource = MutableInteractionSource()
     Row(modifier = Modifier.padding(16.dp)) {
-        Text(stringResource(R.string.news_feed), style = font18, color = AppColors.white)
+        Text(stringResource(com.windscribe.vpn.R.string.news_feed), style = font18, color = AppColors.white)
         Spacer(modifier = Modifier.weight(1f))
         Image(
             painter = painterResource(id = R.drawable.ic_close),

@@ -97,9 +97,9 @@ fun RequestLocationPermissions(
         PermissionDialogType.ForegroundLocation -> showDialog(
             DialogData(
                 R.drawable.ic_attention_icon,
-                stringResource(R.string.location_permission_required),
-                stringResource(R.string.foreground_location_permission_reason),
-                stringResource(R.string.grant_permission)
+                stringResource(com.windscribe.vpn.R.string.location_permission_required),
+                stringResource(com.windscribe.vpn.R.string.foreground_location_permission_reason),
+                stringResource(com.windscribe.vpn.R.string.grant_permission)
             )
         ) {
             permissionHelper.foregroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -108,9 +108,9 @@ fun RequestLocationPermissions(
         PermissionDialogType.BackgroundLocation -> showDialog(
             DialogData(
                 R.drawable.location_instruction_icon,
-                stringResource(R.string.allow_all_the_time_location_access_required),
-                stringResource(R.string.app_requires_background_location_permission),
-                stringResource(R.string.grant_permission)
+                stringResource(com.windscribe.vpn.R.string.allow_all_the_time_location_access_required),
+                stringResource(com.windscribe.vpn.R.string.app_requires_background_location_permission),
+                stringResource(com.windscribe.vpn.R.string.grant_permission)
             )
         ) {
             permissionHelper.backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
@@ -119,9 +119,9 @@ fun RequestLocationPermissions(
         PermissionDialogType.OpenSettings -> showDialog(
             DialogData(
                 R.drawable.ic_attention_icon,
-                stringResource(R.string.missing_location_permission),
-                stringResource(R.string.location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time),
-                stringResource(R.string.open_settings)
+                stringResource(com.windscribe.vpn.R.string.missing_location_permission),
+                stringResource(com.windscribe.vpn.R.string.location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time),
+                stringResource(com.windscribe.vpn.R.string.open_settings)
             )
         ) {
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {

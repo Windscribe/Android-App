@@ -19,15 +19,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.windscribe.mobile.dialogs.AccountStatusDialogData
-import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.ui.AppStartActivity
+import com.windscribe.mobile.ui.common.NextButton
+import com.windscribe.mobile.ui.common.TextButton
+import com.windscribe.mobile.ui.model.AccountStatusDialogData
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font24
-import com.windscribe.mobile.ui.common.NextButton
-import com.windscribe.mobile.ui.common.TextButton
+import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 
 
 @Composable

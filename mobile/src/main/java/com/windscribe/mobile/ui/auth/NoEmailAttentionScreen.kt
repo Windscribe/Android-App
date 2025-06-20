@@ -43,12 +43,12 @@ fun NoEmailAttentionScreen(
             Spacer(modifier = Modifier.weight(1f))
             Image(
                 painter = painterResource(id = R.drawable.ic_noemailprompticon),
-                contentDescription = stringResource(R.string.image_description),
+                contentDescription = stringResource(com.windscribe.vpn.R.string.image_description),
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
             Text(
-                text = stringResource(if (isPro) R.string.warning_no_email_pro_account else R.string.no_email_warning),
+                text = stringResource(if (isPro) com.windscribe.vpn.R.string.warning_no_email_pro_account else com.windscribe.vpn.R.string.no_email_warning),
                 style = font16,
                 color = AppColors.white.copy(alpha = 0.50f),
                 modifier = Modifier.padding(bottom = 24.dp)
@@ -56,13 +56,13 @@ fun NoEmailAttentionScreen(
             Spacer(modifier = Modifier.weight(1f))
             NextButtonLighter(
                 modifier = Modifier.padding(bottom = 16.dp),
-                text = stringResource(R.string.continue_without_email),
+                text = stringResource(com.windscribe.vpn.R.string.continue_without_email),
             ) {
                 onContinueWithoutEmail()
             }
             NextButtonLighter(
                 modifier = Modifier.padding(bottom = 16.dp),
-                text = stringResource(R.string.back),
+                text = stringResource(com.windscribe.vpn.R.string.back),
             ) {
                 navController.popBackStack()
             }

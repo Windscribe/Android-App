@@ -138,7 +138,7 @@ class RobertViewModelImpl(
                 is CallResult.Error -> {
                     _showProgress.value = false
                     if (result.code == NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA || result.code == NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API) {
-                        _goToState.emit(RobertGoToState.Toast(ToastMessage.Localized(R.string.no_internet)))
+                        _goToState.emit(RobertGoToState.Toast(ToastMessage.Localized(com.windscribe.vpn.R.string.no_internet)))
                     } else {
                         _goToState.emit(RobertGoToState.Toast(ToastMessage.Raw(result.errorMessage)))
                     }
@@ -160,13 +160,13 @@ class RobertViewModelImpl(
             when (result) {
                 is CallResult.Error -> {
                     _showProgress.value = false
-                    _goToState.emit(RobertGoToState.Toast(ToastMessage.Localized(R.string.failed_to_update_robert_rules)))
+                    _goToState.emit(RobertGoToState.Toast(ToastMessage.Localized(com.windscribe.vpn.R.string.failed_to_update_robert_rules)))
                     loadRobertFilters()
                 }
 
                 is CallResult.Success -> {
                     _showProgress.value = false
-                    _goToState.emit(RobertGoToState.Toast(ToastMessage.Localized(R.string.successfully_updated_robert_rules)))
+                    _goToState.emit(RobertGoToState.Toast(ToastMessage.Localized(com.windscribe.vpn.R.string.successfully_updated_robert_rules)))
                     appContext.workManager.updateRobertRules()
                     loadRobertFilters()
                 }

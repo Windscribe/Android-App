@@ -1,6 +1,5 @@
 package com.windscribe.mobile.ui.common
 
-import android.R.id.message
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,7 +25,7 @@ fun AppProgressBar(showProgressBar: Boolean, message: String) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
-                .background(AppColors.white.copy(alpha = 0.05f))
+                .background(AppColors.deepBlue.copy(alpha = 0.90f))
                 .fillMaxSize()
         ) {
             Spacer(modifier = Modifier.height(48.dp))

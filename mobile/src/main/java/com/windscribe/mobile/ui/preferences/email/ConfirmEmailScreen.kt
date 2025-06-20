@@ -72,7 +72,7 @@ fun ConfirmEmailScreen(viewModel: EmailViewModel? = null) {
                 colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primaryTextColor)
             )
             Text(
-                text = stringResource(id = com.windscribe.mobile.R.string.confirm_email),
+                text = stringResource(id = com.windscribe.vpn.R.string.confirm_email),
                 style = font24,
                 color = MaterialTheme.colorScheme.primaryTextColor,
                 modifier = Modifier
@@ -80,7 +80,7 @@ fun ConfirmEmailScreen(viewModel: EmailViewModel? = null) {
                     .fillMaxWidth()
             )
             Text(
-                text = stringResource(id = if (pro) com.windscribe.mobile.R.string.pro_reason_to_confirm else com.windscribe.mobile.R.string.free_reason_to_confirm),
+                text = stringResource(id = if (pro) com.windscribe.vpn.R.string.pro_reason_to_confirm else com.windscribe.vpn.R.string.free_reason_to_confirm),
                 style = font16,
                 color = MaterialTheme.colorScheme.preferencesSubtitleColor,
                 modifier = Modifier
@@ -88,7 +88,7 @@ fun ConfirmEmailScreen(viewModel: EmailViewModel? = null) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             NextButton(
-                text = stringResource(com.windscribe.mobile.R.string.resend_verification_email),
+                text = stringResource(com.windscribe.vpn.R.string.resend_verification_email),
                 enabled = true,
                 onClick = {
                     viewModel?.resendConfirmation()
@@ -104,7 +104,7 @@ fun ConfirmEmailScreen(viewModel: EmailViewModel? = null) {
                 }
             }) {
                 Text(
-                    stringResource(id = com.windscribe.mobile.R.string.change_email),
+                    stringResource(id = com.windscribe.vpn.R.string.change_email),
                     style = font16,
                     color = MaterialTheme.colorScheme.preferencesSubtitleColor
                 )
@@ -113,7 +113,7 @@ fun ConfirmEmailScreen(viewModel: EmailViewModel? = null) {
                 navController.popBackStack()
             }) {
                 Text(
-                    stringResource(id = com.windscribe.mobile.R.string.cancel),
+                    stringResource(id = com.windscribe.vpn.R.string.cancel),
                     style = font16,
                     color = MaterialTheme.colorScheme.preferencesSubtitleColor
                 )

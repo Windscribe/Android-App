@@ -2,7 +2,6 @@ package com.windscribe.mobile.ui.preferences.advance
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.windscribe.mobile.advance.AdvanceParamView
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import kotlinx.coroutines.Dispatchers

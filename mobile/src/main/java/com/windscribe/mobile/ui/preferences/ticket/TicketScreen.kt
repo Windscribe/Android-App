@@ -37,10 +37,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.windscribe.mobile.ui.common.AppProgressBar
 import com.windscribe.mobile.ui.common.DropDownNoDescription
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.PreferenceBackground
+import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.common.ScreenDescription
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
@@ -133,7 +133,7 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
             }
 
             if (submitTicketState is SubmitTicketState.Loading) {
-                AppProgressBar(true, "")
+                PreferenceProgressBar(true)
             }
             HandleState(viewModel)
         }

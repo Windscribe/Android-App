@@ -10,7 +10,6 @@ import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.view.View
 import com.windscribe.tv.R.color
-import com.windscribe.tv.R.string
 import com.windscribe.tv.serverlist.adapters.ServerAdapter
 import com.windscribe.tv.sort.ByLatency
 import com.windscribe.tv.sort.ByRegionName
@@ -295,7 +294,7 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.setProtocolAndPortInfo(Util.getProtocolLabel(interactor.getAppPreferenceInterface().selectedProtocol), interactor.getAppPreferenceInterface().selectedPort,false)
         selectedLocation?.let {
             windscribeView.startVpnConnectingAnimation(
-                interactor.getResourceString(string.ON),
+                interactor.getResourceString(com.windscribe.vpn.R.string.ON),
                 FlagIconResource.getFlag(it.countryCode),
                 interactor.getColorResource(color.colorDeepBlue),
                 interactor.getColorResource(color.colorNavyBlue),
@@ -316,7 +315,7 @@ class WindscribePresenterImpl @Inject constructor(
                         override fun onSuccess(location: LastSelectedLocation) {
                             selectedLocation = location
                             windscribeView.startVpnConnectingAnimation(
-                                interactor.getResourceString(string.on),
+                                interactor.getResourceString(com.windscribe.vpn.R.string.on),
                                 FlagIconResource.getFlag(location.countryCode),
                                 interactor.getColorResource(color.colorDeepBlue),
                                 interactor.getColorResource(color.colorNavyBlue),
@@ -356,7 +355,7 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.setIpAddress(ip.trim())
         logger.info("Connection with the server is established.")
         windscribeView.startVpnConnectedAnimation(
-            interactor.getResourceString(string.ON),
+            interactor.getResourceString(com.windscribe.vpn.R.string.ON),
             interactor.getColorResource(color.colorNavyBlue),
             interactor.getColorResource(color.colorPrimary),
             interactor.getColorResource(color.colorLightBlue),
@@ -659,7 +658,7 @@ class WindscribePresenterImpl @Inject constructor(
             }
         } else {
             logger.info("Selected location is null!")
-            windscribeView.showToast(interactor.getResourceString(string.select_location))
+            windscribeView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.select_location))
         }
     }
 
@@ -670,7 +669,7 @@ class WindscribePresenterImpl @Inject constructor(
         if (lastSelectedLocation != null) {
             val lowestPingId = interactor.getAppPreferenceInterface().lowestPingId
             if (lowestPingId == lastSelectedLocation.cityId) {
-                lastSelectedLocation.nodeName = interactor.getResourceString(string.best_location)
+                lastSelectedLocation.nodeName = interactor.getResourceString(com.windscribe.vpn.R.string.best_location)
             }
             windscribeView.updateLocationName(
                 lastSelectedLocation.nodeName,
@@ -714,7 +713,7 @@ class WindscribePresenterImpl @Inject constructor(
     private fun setUserStatus(user: User) {
         if (user.maxData != -1L) {
             user.dataLeft?.let {
-                val dataRemaining = interactor.getDataLeftString(string.data_left, it)
+                val dataRemaining = interactor.getDataLeftString(com.windscribe.vpn.R.string.data_left, it)
                 windscribeView.setupLayoutForFreeUser(
                     dataRemaining,
                     getDataRemainingColor(it, user.maxData)

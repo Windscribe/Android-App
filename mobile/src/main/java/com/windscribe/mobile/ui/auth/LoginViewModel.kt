@@ -63,7 +63,7 @@ class LoginViewModel @Inject constructor(
     private val _twoFactorEnabled = MutableStateFlow(false)
     val twoFactorEnabled: StateFlow<Boolean> = _twoFactorEnabled.asStateFlow()
 
-    private val _showAllBackupFailedDialog = MutableSharedFlow<Boolean>()
+    private val _showAllBackupFailedDialog = MutableSharedFlow<Boolean>(replay = 0)
     val showAllBackupFailedDialog: SharedFlow<Boolean> = _showAllBackupFailedDialog
 
     private var username = ""
@@ -110,7 +110,7 @@ class LoginViewModel @Inject constructor(
             if (!WindUtilities.isOnline()) {
                 logger.info("User is not connected to the internet.")
                 _loginButtonEnabled.emit(true)
-                updateState(LoginState.Error(AuthError.LocalizedInputError(R.string.no_internet)))
+                updateState(LoginState.Error(AuthError.LocalizedInputError(com.windscribe.vpn.R.string.no_internet)))
                 return@launch
             }
 
@@ -132,21 +132,13 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private fun saveCaptcha(captchaRequest: CaptchaRequest) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val gson = Gson()
-            val data = gson.toJson(captchaRequest)
-            preferenceHelper.saveResponseStringData("captcha", data)
-        }
-    }
-
     private suspend fun loginWithCaptcha(captchaSolution: CaptchaSolution) {
         val trailX = captchaSolution.trail["x"]?.toFloatArray() ?: floatArrayOf()
         val trailY = captchaSolution.trail["y"]?.toFloatArray() ?: floatArrayOf()
         val result = apiCallManager.logUserIn(
-            username,
-            password,
-            twoFactorCode,
+            username.trim(),
+            password.trim(),
+            twoFactorCode.trim(),
             captchaSolution.token,
             "${captchaSolution.leftOffset}",
             trailX,
@@ -201,14 +193,13 @@ class LoginViewModel @Inject constructor(
                 captcha.slider,
                 authToken.token
             )
-            saveCaptcha(request)
             updateState(LoginState.Captcha(request))
         } else {
             val result =
                 apiCallManager.logUserIn(
-                    username,
-                    password,
-                    twoFactorCode,
+                    username.trim(),
+                    password.trim(),
+                    twoFactorCode.trim(),
                     token,
                     null,
                     floatArrayOf(),
@@ -281,7 +272,7 @@ class LoginViewModel @Inject constructor(
             }
 
             ApiFailure.NoNetwork -> {
-                updateState(LoginState.Error(AuthError.LocalizedInputError(R.string.no_internet)))
+                updateState(LoginState.Error(AuthError.LocalizedInputError(com.windscribe.vpn.R.string.no_internet)))
             }
         }
     }

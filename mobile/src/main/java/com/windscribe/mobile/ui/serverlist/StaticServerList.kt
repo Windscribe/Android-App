@@ -97,8 +97,8 @@ fun StaticIPServerList(viewModel: ServerViewModel, connectionViewModel: Connecti
                 val list = (state as ListState.Success).data
                 if (list.isEmpty()) {
                     AddButtonWithDetails(
-                        R.string.add_static_ip,
-                        R.string.no_static_ip,
+                        com.windscribe.vpn.R.string.add_static_ip,
+                        com.windscribe.vpn.R.string.no_static_ip,
                         R.drawable.ic_location_static
                     ) {
                         activity.openUrl(NetworkKeyConstants.URL_ADD_STATIC_IP)
@@ -110,7 +110,7 @@ fun StaticIPServerList(viewModel: ServerViewModel, connectionViewModel: Connecti
                             .nestedScroll(pullToRefreshState.nestedScrollConnection)
                     ) {
                         Text(
-                            text = stringResource(R.string.static_ip),
+                            text = stringResource(com.windscribe.vpn.R.string.static_ip),
                             style = font12,
                             color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(0.70f),
                             modifier = Modifier.padding(start = 8.dp, top = 16.dp)
@@ -123,7 +123,7 @@ fun StaticIPServerList(viewModel: ServerViewModel, connectionViewModel: Connecti
                         }
                         Spacer(modifier = Modifier.weight(1f))
                         val deviceName = list.first().staticItem.deviceName
-                        AddButton(R.string.add_static_ip, deviceName) {
+                        AddButton(com.windscribe.vpn.R.string.add_static_ip, deviceName) {
                             activity.openUrl(NetworkKeyConstants.URL_ADD_STATIC_IP)
                         }
                     }

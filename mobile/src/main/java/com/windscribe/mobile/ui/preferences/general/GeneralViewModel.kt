@@ -25,6 +25,9 @@ abstract class GeneralViewModel : ViewModel() {
     abstract val isHapticEnabled: StateFlow<Boolean>
     abstract fun onHapticToggleButtonClicked()
 
+    abstract fun onLocationLoadItemClicked()
+    abstract val isLocationLoadEnabled: StateFlow<Boolean>
+
     abstract val isNotificationStatEnabled: StateFlow<Boolean>
     abstract fun onNotificationStatEnabledClick()
     abstract val versionName: String
@@ -67,6 +70,16 @@ class GeneralViewModelImpl(
         }
     }
 
+    private val _isLocationLoadEnabled = MutableStateFlow(preferenceHelper.isShowLocationHealthEnabled)
+    override val isLocationLoadEnabled: StateFlow<Boolean> = _isLocationLoadEnabled
+    override fun onLocationLoadItemClicked() {
+        viewModelScope.launch {
+            val updatedValue = !_isLocationLoadEnabled.value
+            preferenceHelper.isShowLocationHealthEnabled = updatedValue
+            _isLocationLoadEnabled.value = updatedValue
+        }
+    }
+
     private val _isHapticEnabled = MutableStateFlow(preferenceHelper.isHapticFeedbackEnabled)
     override val isHapticEnabled: StateFlow<Boolean> = _isHapticEnabled
 
@@ -86,5 +99,5 @@ class GeneralViewModelImpl(
     }
 
     override val versionName: String
-        get() = "${WindUtilities.getVersionName()}.${WindUtilities.getVersionCode()}"
+        get() = "v${WindUtilities.getVersionName()}"
 }

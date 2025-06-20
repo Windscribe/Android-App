@@ -58,9 +58,9 @@ fun NetworkOptionsScreen(viewModel: NetworkOptionsViewModel? = null) {
             }
             Spacer(modifier = Modifier.height(20.dp))
             SwitchItemView(
-                title = com.windscribe.mobile.R.string.auto_secure_new_networks,
-                icon = com.windscribe.mobile.R.drawable.ic_auto_secure_icon,
-                description = com.windscribe.mobile.R.string.auto_secure_new_networks_description,
+                title = R.string.auto_secure_new_networks,
+                icon = com.windscribe.mobile.R.drawable.ic_wifi,
+                description = R.string.auto_secure_new_networks_description,
                 autoSecureEnabled,
                 onSelect = {
                     viewModel?.onAutoSecureChanged()

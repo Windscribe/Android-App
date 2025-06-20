@@ -56,14 +56,14 @@ fun ConnectionChangeScreen(appStartActivityViewModel: AppStartActivityViewModel?
         R.drawable.ic_change_protocol
     }
     val title = if (protocolFailed) {
-        stringResource(R.string.connection_failure)
+        stringResource(com.windscribe.vpn.R.string.connection_failure)
     } else {
-        stringResource(R.string.protocol_change)
+        stringResource(com.windscribe.vpn.R.string.protocol_change)
     }
     val description = if (protocolFailed) {
-        stringResource(R.string.the_protocol_you_ve_chosen_has_failed_to_connect_windscribe_will_attempt_to_reconnect_using_the_first_protocol_below)
+        stringResource(com.windscribe.vpn.R.string.the_protocol_you_ve_chosen_has_failed_to_connect_windscribe_will_attempt_to_reconnect_using_the_first_protocol_below)
     } else {
-        stringResource(R.string.protocol_change_description)
+        stringResource(com.windscribe.vpn.R.string.protocol_change_description)
     }
     var countdown by remember { mutableIntStateOf(10) }
     LaunchedEffect(protocolFailed) {
@@ -135,7 +135,7 @@ fun ConnectionChangeScreen(appStartActivityViewModel: AppStartActivityViewModel?
                 navController.popBackStack()
             }) {
                 Text(
-                    stringResource(R.string.cancel),
+                    stringResource(com.windscribe.vpn.R.string.cancel),
                     style = font16,
                     color = AppColors.white
                 )
@@ -151,25 +151,25 @@ fun ConnectionChangeScreenPreview() {
         val protocol1 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_IKev2,
             PreferencesKeyConstants.DEFAULT_IKEV2_PORT,
-            stringResource(R.string.iKEV2_description),
+            stringResource(com.windscribe.vpn.R.string.iKEV2_description),
             ProtocolConnectionStatus.Connected
         )
         val protocol2 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_UDP,
             PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT,
-            stringResource(R.string.Udp_description),
+            stringResource(com.windscribe.vpn.R.string.Udp_description),
             ProtocolConnectionStatus.NextUp
         )
         val protocol3 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_TCP,
             PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT,
-            stringResource(R.string.Tcp_description),
+            stringResource(com.windscribe.vpn.R.string.Tcp_description),
             ProtocolConnectionStatus.Failed
         )
         val protocol4 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_WS_TUNNEL,
             PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT,
-            stringResource(R.string.WSTunnel_description),
+            stringResource(com.windscribe.vpn.R.string.WSTunnel_description),
             ProtocolConnectionStatus.Disconnected
         )
         val protocols = listOf(protocol1, protocol2, protocol3, protocol4)

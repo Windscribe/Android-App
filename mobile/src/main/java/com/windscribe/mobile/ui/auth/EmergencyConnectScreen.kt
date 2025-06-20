@@ -1,9 +1,11 @@
 package com.windscribe.mobile.ui.auth
 
+import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -15,6 +17,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,19 +27,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
-import com.windscribe.mobile.ui.nav.LocalNavController
-import com.windscribe.mobile.ui.nav.NavigationStack
-import com.windscribe.mobile.ui.nav.Screen
+import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.AppBackground
 import com.windscribe.mobile.ui.common.NextButton
-import com.windscribe.mobile.ui.auth.EmergencyConnectViewModal
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
-import com.windscribe.mobile.welcome.state.EmergencyConnectUIState
+import com.windscribe.mobile.ui.home.HandleToast
+import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font24
@@ -60,7 +59,8 @@ fun EmergencyConnectScreen(viewModel: EmergencyConnectViewModal? = null) {
         Column(
             modifier = Modifier
                 .widthIn(min = 325.dp, max = 373.dp)
-                .padding(16.dp).align(Alignment.Center),
+                .padding(16.dp)
+                .align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -82,14 +82,27 @@ fun EmergencyConnectScreen(viewModel: EmergencyConnectViewModal? = null) {
             Spacer(modifier = Modifier.height(16.dp))
             EmergencyConnectCancelButton()
         }
+        HandleToast(viewModel)
+    }
+}
+
+@Composable
+private fun HandleToast(viewModel: EmergencyConnectViewModal?) {
+    if (viewModel == null) return
+    val error by viewModel.error.collectAsState(initial = "")
+    val activity = LocalNavController.current.context as AppStartActivity
+    LaunchedEffect(error) {
+        if (error.isNotEmpty()) {
+            Toast.makeText(activity, error, Toast.LENGTH_LONG).show()
+        }
     }
 }
 
 @Composable
 fun EmergencyConnectButton(uiState: EmergencyConnectUIState, onClick: () -> Unit) {
     val buttonText = when (uiState) {
-        EmergencyConnectUIState.Disconnected -> stringResource(id = R.string.connect)
-        else -> stringResource(id = R.string.disconnect)
+        EmergencyConnectUIState.Disconnected -> stringResource(id = com.windscribe.vpn.R.string.connect)
+        else -> stringResource(id = com.windscribe.vpn.R.string.disconnect)
     }
     NextButton(modifier = Modifier.padding(), buttonText, enabled = true, onClick = onClick)
 }
@@ -124,7 +137,7 @@ fun EmergencyConnectHeroIcon() {
 @Composable
 fun EmergencyConnectTitle() {
     Text(
-        text = stringResource(id = R.string.emergency_connect),
+        text = stringResource(id = com.windscribe.vpn.R.string.emergency_connect),
         style = font24,
         textAlign = TextAlign.Center,
         color = AppColors.white
@@ -134,8 +147,8 @@ fun EmergencyConnectTitle() {
 @Composable
 fun EmergencyConnectDescription(uiState: EmergencyConnectUIState) {
     val descriptionText = when (uiState) {
-        EmergencyConnectUIState.Disconnected -> stringResource(id = R.string.emergency_connect_description)
-        EmergencyConnectUIState.Connected -> stringResource(id = R.string.emergency_connected_description)
+        EmergencyConnectUIState.Disconnected -> stringResource(id = com.windscribe.vpn.R.string.emergency_connect_description)
+        EmergencyConnectUIState.Connected -> stringResource(id = com.windscribe.vpn.R.string.emergency_connected_description)
         EmergencyConnectUIState.Connecting -> ""
     }
     if (descriptionText.isEmpty()) return
@@ -173,7 +186,7 @@ fun EmergencyConnectCancelButton() {
         navController.popBackStack()
     }) {
         Text(
-            text = stringResource(id = R.string.cancel),
+            text = stringResource(id = com.windscribe.vpn.R.string.cancel),
             style = font16,
             color = AppColors.white.copy(alpha = 0.50f)
         )

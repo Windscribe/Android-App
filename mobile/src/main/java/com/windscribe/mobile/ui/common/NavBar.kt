@@ -40,7 +40,7 @@ fun NavBar(
     ) {
         Image(
             painter = painterResource(id = R.drawable.arrow_left),
-            contentDescription = stringResource(id = R.string.image_description),
+            contentDescription = stringResource(id = com.windscribe.vpn.R.string.image_description),
             colorFilter = ColorFilter.tint(AppColors.white),
             modifier = Modifier
                 .size(24.dp)
@@ -79,7 +79,7 @@ fun PreferencesNavBar(
     ) {
         Image(
             painter = painterResource(id = R.drawable.arrow_left),
-            contentDescription = stringResource(id = R.string.image_description),
+            contentDescription = stringResource(id = com.windscribe.vpn.R.string.image_description),
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor),
             modifier = Modifier
                 .size(24.dp)

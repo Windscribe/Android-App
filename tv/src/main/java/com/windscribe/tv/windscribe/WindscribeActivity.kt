@@ -166,7 +166,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
     override fun onLogout() {
         finish()
         val intent = WelcomeActivity.getStartIntent(this)
-        intent.putExtra(ERROR_TAG, string.you_ve_been_banned)
+        intent.putExtra(ERROR_TAG, com.windscribe.vpn.R.string.you_ve_been_banned)
         startActivity(intent)
     }
 
@@ -207,7 +207,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
                         R.drawable.ic_connecting_status_bg,
                         theme
                     )
-                    binding.connectionStatus.text = getString(R.string.ON)
+                    binding.connectionStatus.text = getString(com.windscribe.vpn.R.string.ON)
                     binding.connectionStatus.setTextColor(resources.getColor(R.color.colorLightBlue))
                     binding.protocolDividerView.setBackgroundColor(resources.getColor(R.color.colorWhite20))
                     binding.protocolText.setTextColor(resources.getColor(R.color.colorLightBlue))
@@ -220,7 +220,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
                         R.drawable.ic_connected_status_bg,
                         theme
                     )
-                    binding.connectionStatus.text = getString(R.string.ON)
+                    binding.connectionStatus.text = getString(com.windscribe.vpn.R.string.ON)
                     binding.connectionStatus.setTextColor(resources.getColor(R.color.sea_green))
                     binding.protocolDividerView.setBackgroundColor(resources.getColor(R.color.colorWhite20))
                     binding.protocolText.setTextColor(resources.getColor(R.color.sea_green))
@@ -233,7 +233,7 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
                         R.drawable.ic_disconnected_status_bg,
                         theme
                     )
-                    binding.connectionStatus.text = getString(R.string.OFF)
+                    binding.connectionStatus.text = getString(com.windscribe.vpn.R.string.OFF)
                     binding.connectionStatus.setTextColor(resources.getColor(R.color.colorWhite))
                     binding.protocolDividerView.setBackgroundColor(resources.getColor(R.color.colorWhite20))
                     binding.protocolText.setTextColor(resources.getColor(R.color.colorWhite50))

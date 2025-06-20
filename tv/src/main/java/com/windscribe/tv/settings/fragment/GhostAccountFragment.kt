@@ -53,13 +53,13 @@ class GhostAccountFragment : Fragment {
         super.onViewCreated(view, savedInstanceState)
         listener?.onFragmentReady(this)
         if (proUser) {
-            binding.label.text = getString(R.string.ghost_account_claim)
+            binding.label.text = getString(com.windscribe.vpn.R.string.ghost_account_claim)
             binding.claimAccount.visibility = View.VISIBLE
             binding.login.visibility = View.GONE
             binding.signUp.visibility = View.GONE
             binding.claimAccount.requestFocus()
         } else {
-            binding.label.text = getString(R.string.ghost_account_sign_up)
+            binding.label.text = getString(com.windscribe.vpn.R.string.ghost_account_sign_up)
             binding.claimAccount.visibility = View.GONE
             binding.login.visibility = View.VISIBLE
             binding.signUp.visibility = View.VISIBLE

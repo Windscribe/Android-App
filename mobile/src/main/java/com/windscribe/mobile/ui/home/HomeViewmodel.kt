@@ -48,6 +48,7 @@ abstract class HomeViewmodel : ViewModel() {
     abstract val goto: SharedFlow<HomeGoto>
     abstract val userState: StateFlow<UserState>
     abstract val hapticFeedbackEnabled: StateFlow<Boolean>
+    abstract val showLocationLoad: StateFlow<Boolean>
     abstract fun onMainMenuClick()
 }
 
@@ -63,6 +64,8 @@ class HomeViewmodelImpl(
     override val userState: StateFlow<UserState> = _userState
     private val _hapticFeedbackEnabled = MutableStateFlow(preferences.isHapticFeedbackEnabled)
     override val hapticFeedbackEnabled: StateFlow<Boolean> = _hapticFeedbackEnabled
+    private val _showLocationLoad = MutableStateFlow(preferences.isShowLocationHealthEnabled)
+    override val showLocationLoad: StateFlow<Boolean> = _showLocationLoad
     private var preferenceChangeListener: OnTrayPreferenceChangeListener? = null
     private val logger = LoggerFactory.getLogger("basic")
 
@@ -95,6 +98,7 @@ class HomeViewmodelImpl(
             preferenceChangeListener = OnTrayPreferenceChangeListener {
                 viewModelScope.launch(Dispatchers.IO) {
                     _hapticFeedbackEnabled.emit(preferences.isHapticFeedbackEnabled)
+                    _showLocationLoad.emit(preferences.isShowLocationHealthEnabled)
                 }
             }
             preferences.addObserver(preferenceChangeListener!!)

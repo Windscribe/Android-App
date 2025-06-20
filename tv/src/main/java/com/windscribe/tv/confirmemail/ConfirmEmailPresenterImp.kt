@@ -30,7 +30,7 @@ class ConfirmEmailPresenterImp @Inject constructor(
                 == UserStatusConstants.USER_STATUS_PREMIUM
             )
         val reasonForConfirmEmail = interactor
-            .getResourceString(if (proUser) R.string.pro_reason_to_confirm else R.string.free_reason_to_confirm)
+            .getResourceString(if (proUser) com.windscribe.vpn.R.string.pro_reason_to_confirm else com.windscribe.vpn.R.string.free_reason_to_confirm)
         confirmEmailView.setReasonToConfirmEmail(reasonForConfirmEmail)
     }
 

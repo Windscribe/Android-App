@@ -43,8 +43,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.windscribe.mobile.ui.AppStartActivity
-import com.windscribe.mobile.ui.common.AppProgressBar
 import com.windscribe.mobile.ui.common.PreferenceBackground
+import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.common.openUrl
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.PreviewWithNav
@@ -94,7 +94,7 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
             Spacer(modifier = Modifier.height(14.dp))
             LazyLogin(viewModel)
         }
-        AppProgressBar(showProgressBar = showProgress, message = "")
+        PreferenceProgressBar(showProgressBar = showProgress)
         HandleGoto(viewModel)
         HandleAlertState(viewModel)
     }

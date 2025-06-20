@@ -86,14 +86,14 @@ private fun CenterSection() {
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = stringResource(R.string.under_maintenance),
+            text = stringResource(com.windscribe.vpn.R.string.under_maintenance),
             style = font24,
             color = MaterialTheme.colorScheme.primaryTextColor,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(32.dp))
         Text(
-            text = stringResource(R.string.check_status_description),
+            text = stringResource(com.windscribe.vpn.R.string.check_status_description),
             style = font16,
             color = MaterialTheme.colorScheme.primaryTextColor,
             textAlign = TextAlign.Center,
@@ -113,7 +113,7 @@ private fun BottomSection() {
             .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        NextButton(Modifier, text = stringResource(R.string.check_status), true) {
+        NextButton(Modifier, text = stringResource(com.windscribe.vpn.R.string.check_status), true) {
             activity?.openUrl(NetworkKeyConstants.NODE_STATUS_URL)
             navController.popBackStack()
         }
@@ -125,7 +125,7 @@ private fun BottomSection() {
                 contentColor = MaterialTheme.colorScheme.primaryTextColor,
             ),
         ) {
-            Text(stringResource(R.string.back), style = font16, textAlign = TextAlign.Start)
+            Text(stringResource(com.windscribe.vpn.R.string.back), style = font16, textAlign = TextAlign.Start)
         }
     }
 }

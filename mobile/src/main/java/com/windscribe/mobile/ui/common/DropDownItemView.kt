@@ -140,9 +140,9 @@ fun DropDownItemView(
 private fun DropDownItemPreview() {
     PreviewWithNav {
         DropDownItemView(
-            title = R.string.app_background,
+            title = com.windscribe.vpn.R.string.app_background,
             icon = R.drawable.ic_apple,
-            description = R.string.appearance_description,
+            description = com.windscribe.vpn.R.string.appearance_description,
             items = emptyList(),
             "",
             onSelect = {}

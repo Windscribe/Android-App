@@ -47,7 +47,7 @@ class SignUpFragment : Fragment(), WelcomeActivityCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (isAccountSetUpLayout) {
-            binding.title.text = getString(R.string.account_set_up)
+            binding.title.text = getString(com.windscribe.vpn.R.string.account_set_up)
             binding.forgotPassword.visibility = View.GONE
         }
         binding.loginSignUpContainer.requestFocus()

@@ -14,8 +14,12 @@ class GoogleSignInManagerImpl(val context: Context) : GoogleSignInManager() {
     private val logger = LoggerFactory.getLogger("sso")
 
     init {
+        var clientId = BuildConfig.WEB_CLIENT_ID
+        if (clientId.isEmpty()) {
+            clientId = "com.windscribe.vpn"
+        }
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(BuildConfig.WEB_CLIENT_ID)
+            .requestIdToken(clientId)
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(context, gso)

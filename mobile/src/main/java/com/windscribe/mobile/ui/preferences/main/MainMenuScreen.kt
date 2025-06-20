@@ -28,8 +28,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.windscribe.mobile.ui.common.AppProgressBar
 import com.windscribe.mobile.ui.common.PreferenceBackground
+import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.nav.LocalNavController
@@ -102,7 +102,7 @@ fun MainMenuScreen(viewModel: MainMenuViewModel? = null) {
             Spacer(modifier = Modifier.height(16.dp))
             LogoutItem(viewModel)
         }
-        AppProgressBar(showProgress, message = stringResource(com.windscribe.mobile.R.string.please_wait))
+        PreferenceProgressBar(showProgress)
     }
 }
 

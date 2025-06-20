@@ -38,6 +38,7 @@ abstract class AppStartViewModel : ViewModel() {
     abstract val loggedIn: Boolean
     abstract val signInIntent: Intent?
     abstract fun clearLoginState()
+    abstract fun onSignIntentLaunch()
 }
 
 class AppStartViewModelImpl @Inject constructor(
@@ -151,6 +152,12 @@ class AppStartViewModelImpl @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    override fun onSignIntentLaunch() {
+        viewModelScope.launch {
+            _loginState.emit(SsoLoginState.LoggingIn("Logging in"))
         }
     }
 }

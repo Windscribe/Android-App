@@ -141,7 +141,7 @@ fun CaptchaDebugView(
                         Modifier
                             .height(backgroundSize.value.height.toDp())
                             .width(backgroundSize.value.width.toDp())
-                    },
+                    }.background(color = Color.Transparent, shape = RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.FillBounds
                 )
             }

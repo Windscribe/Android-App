@@ -71,8 +71,8 @@ fun AddButtonWithDetails(
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun AddButtonPreview() {
     AddButtonWithDetails(
-        title = R.string.add_static_ip,
-        description = R.string.no_static_ip,
+        title = com.windscribe.vpn.R.string.add_static_ip,
+        description = com.windscribe.vpn.R.string.no_static_ip,
         icon = R.drawable.ic_location_static
     ) {
 

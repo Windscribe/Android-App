@@ -77,14 +77,13 @@ fun LoginScreen(
             }
         }
     }
-    val showBackupFailed by viewModel?.showAllBackupFailedDialog?.collectAsState(initial = false)
-        ?: remember { mutableStateOf(false) }
-    LaunchedEffect(showBackupFailed) {
-        if (showBackupFailed) {
-            Toast.makeText(context, R.string.failed_network_alert, Toast.LENGTH_SHORT).show()
+    LaunchedEffect(Unit) {
+        viewModel?.showAllBackupFailedDialog?.collect { show ->
+            if (show) {
+                Toast.makeText(context, com.windscribe.vpn.R.string.failed_network_alert, Toast.LENGTH_SHORT).show()
+            }
         }
     }
-
     AppBackground {
         LoginCompactLayout(navController, loginState, viewModel)
         val showProgressBar = loginState is LoginState.LoggingIn
@@ -121,7 +120,7 @@ fun LoginCompactLayout(
             .imePadding(),
         verticalArrangement = Arrangement.Top
     ) {
-        NavBar(stringResource(R.string.login)) {
+        NavBar(stringResource(com.windscribe.vpn.R.string.login)) {
             navController.popBackStack()
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -159,8 +158,8 @@ private fun isError(loginState: LoginState, field: AuthInputFields): Boolean {
 @Composable
 fun LoginPasswordTextField(loginState: LoginState, viewModel: LoginViewModel? = null) {
     AuthTextField(
-        hint = stringResource(R.string.password),
-        placeHolder = stringResource(R.string.enter_password),
+        hint = stringResource(com.windscribe.vpn.R.string.password),
+        placeHolder = stringResource(com.windscribe.vpn.R.string.enter_password),
         isError = isError(loginState, AuthInputFields.Password),
         modifier = Modifier.fillMaxWidth(),
         isPassword = true,
@@ -172,7 +171,7 @@ fun LoginPasswordTextField(loginState: LoginState, viewModel: LoginViewModel? = 
 @Composable
 fun LoginTwoFactorTextField(loginState: LoginState, viewModel: LoginViewModel? = null) {
     AuthTextField(
-        hint = stringResource(R.string.two_fa),
+        hint = stringResource(com.windscribe.vpn.R.string.two_fa),
         isError = isError(loginState, AuthInputFields.TwoFactor),
         modifier = Modifier.fillMaxWidth(),
         onValueChange = {
@@ -186,8 +185,8 @@ fun LoginTwoFactorTextField(loginState: LoginState, viewModel: LoginViewModel? =
 @Composable
 fun LoginUsernameTextField(loginState: LoginState, viewModel: LoginViewModel? = null) {
     AuthTextField(
-        hint = stringResource(R.string.username),
-        placeHolder = stringResource(R.string.enter_username),
+        hint = stringResource(com.windscribe.vpn.R.string.username),
+        placeHolder = stringResource(com.windscribe.vpn.R.string.enter_username),
         isError = isError(loginState, AuthInputFields.Username),
         modifier = Modifier.fillMaxWidth(),
         onValueChange = {
@@ -202,7 +201,7 @@ fun LoginHeroButton(viewModel: LoginViewModel? = null) {
         mutableStateOf(false)
     }
     NextButton(
-        text = stringResource(R.string.next), enabled = isButtonEnabled, onClick = {
+        text = stringResource(com.windscribe.vpn.R.string.next), enabled = isButtonEnabled, onClick = {
             keyboardController?.hide()
             viewModel?.loginButtonClick()
         }, modifier = Modifier
@@ -233,11 +232,11 @@ private fun AppTextButton(text: String, onClick: () -> Unit) {
 fun ActionSheet(viewModel: LoginViewModel? = null) {
     val context = LocalContext.current
     Row {
-        AppTextButton(text = stringResource(R.string.two_fa)) {
+        AppTextButton(text = stringResource(com.windscribe.vpn.R.string.two_fa)) {
             viewModel?.onTwoFactorHintClicked()
         }
         Spacer(modifier = Modifier.weight(1f))
-        AppTextButton(text = stringResource(R.string.forgot_password)) {
+        AppTextButton(text = stringResource(com.windscribe.vpn.R.string.forgot_password)) {
             val url =
                 NetworkKeyConstants.getWebsiteLink(NetworkKeyConstants.URL_FORGOT_PASSWORD)
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))

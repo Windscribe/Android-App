@@ -18,7 +18,6 @@ import androidx.navigation.NavController
 import com.windscribe.mobile.R
 import com.windscribe.mobile.di.ComposeComponent
 import com.windscribe.mobile.di.DaggerComposeComponent
-import com.windscribe.mobile.mainmenu.MainMenuActivity
 import com.windscribe.mobile.ui.helper.PermissionHelper
 import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.mobile.ui.nav.Screen

@@ -3,12 +3,12 @@ package com.windscribe.mobile.ui.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.windscribe.mobile.welcome.state.EmergencyConnectUIState
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -16,6 +16,11 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
+enum class EmergencyConnectUIState {
+    Connecting,
+    Connected,
+    Disconnected
+}
 class EmergencyConnectViewModal @Inject constructor(
     private val scope: CoroutineScope,
     private val windVpnController: WindVpnController,
@@ -27,6 +32,7 @@ class EmergencyConnectViewModal @Inject constructor(
     private var _connectionProgressText = MutableStateFlow("Resolving e-connect domain..")
     val connectionProgressText: StateFlow<String> = _connectionProgressText
     private var connectingJob: Job? = null
+    val error = MutableSharedFlow<String>(replay = 0)
 
     init {
         observeConnectionState()
@@ -73,6 +79,7 @@ class EmergencyConnectViewModal @Inject constructor(
             }.onFailure {
                 logger.error("Failure to connect using emergency vpn profiles: $it")
                 _uiState.emit(EmergencyConnectUIState.Disconnected)
+                error.emit(it.message ?: "Failed to connect using emergency vpn profile.")
             }
         }
     }

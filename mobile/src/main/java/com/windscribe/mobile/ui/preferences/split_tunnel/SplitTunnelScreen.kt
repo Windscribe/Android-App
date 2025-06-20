@@ -49,7 +49,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
-import com.windscribe.mobile.ui.common.AppProgressBar
 import com.windscribe.mobile.ui.common.CustomDropDown
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.PreferenceProgressBar
@@ -154,9 +153,9 @@ private fun Mode(viewModel: SplitTunnelViewModel?) {
         ?: remember { mutableStateOf(false) }
     Column {
         SwitchItemView(
-            title = com.windscribe.mobile.R.string.split_tunneling,
+            title = R.string.split_tunneling,
             icon = com.windscribe.mobile.R.drawable.ic_split_routing,
-            description = com.windscribe.mobile.R.string.split_tunneling_feature,
+            description = com.windscribe.vpn.R.string.split_tunneling_feature,
             splitTunnelEnabled,
             shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
             onSelect = {

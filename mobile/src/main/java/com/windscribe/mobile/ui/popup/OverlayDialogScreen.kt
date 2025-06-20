@@ -100,7 +100,7 @@ fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = 
 
             TextButton(onClick = { appStartActivityViewModel?.dialogCallback?.onDismiss() }) {
                 Text(
-                    text = stringResource(R.string.cancel),
+                    text = stringResource(com.windscribe.vpn.R.string.cancel),
                     style = font16,
                     color = theme(R.attr.wdPrimaryColor)
                 )

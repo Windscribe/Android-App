@@ -36,7 +36,7 @@ class DetailsPresenterImp(
 
     override fun init(regionId: Int) {
         logger.debug("Loading detail view for group.")
-        detailView.setState(LoadState.Loading, 0, R.string.load_loading)
+        detailView.setState(LoadState.Loading, 0, com.windscribe.vpn.R.string.load_loading)
         val cities: MutableList<City> = ArrayList()
         val serverListData = ServerListData()
         val oneTimeCompositeDisposable = CompositeDisposable()
@@ -59,7 +59,7 @@ class DetailsPresenterImp(
                 .subscribeWith(object : DisposableSingleObserver<List<Favourite>>() {
                     override fun onError(e: Throwable) {
                         logger.debug("Error loading group view.")
-                        detailView.setState(LoadState.Error, 0, R.string.load_error)
+                        detailView.setState(LoadState.Error, 0, com.windscribe.vpn.R.string.load_error)
                         if (!oneTimeCompositeDisposable.isDisposed) {
                             oneTimeCompositeDisposable.dispose()
                         }
@@ -85,7 +85,7 @@ class DetailsPresenterImp(
                             detailView.setState(LoadState.Loaded, 0, 0)
                             logger.debug("Successfully loaded detail view.")
                         } else {
-                            detailView.setState(LoadState.NoResult, 0, R.string.load_nothing_found)
+                            detailView.setState(LoadState.NoResult, 0, com.windscribe.vpn.R.string.load_nothing_found)
                             logger.debug("No nodes found under this group.")
                         }
                         if (!oneTimeCompositeDisposable.isDisposed) {
@@ -137,7 +137,7 @@ class DetailsPresenterImp(
 
                     override fun onSuccess(favourites: List<Favourite>) {
                         logger.debug("Removed from favourites.")
-                        detailView.showToast(interactor.getResourceString(R.string.remove_from_favourites))
+                        detailView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.remove_from_favourites))
                         detailViewAdapter?.setFavourites(favourites)
                     }
                 }))
@@ -157,7 +157,7 @@ class DetailsPresenterImp(
                 }
 
                 override fun onSuccess(favourites: List<Favourite>) {
-                    detailView.showToast(interactor.getResourceString(R.string.added_to_favourites))
+                    detailView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.added_to_favourites))
                     detailViewAdapter?.setFavourites(favourites)
                 }
             })

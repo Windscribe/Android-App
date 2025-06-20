@@ -58,7 +58,7 @@ class GeneralFragment : Fragment() {
     }
 
     fun resetTextResources() {
-        binding.titleLanguage.setText(R.string.preferred_language)
+        binding.titleLanguage.setText(com.windscribe.vpn.R.string.preferred_language)
     }
 
     fun setLanguageAdapter(savedLanguage: String, languages: Array<String>) {

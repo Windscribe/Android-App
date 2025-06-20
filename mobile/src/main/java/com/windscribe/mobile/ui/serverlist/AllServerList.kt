@@ -74,7 +74,9 @@ import com.windscribe.mobile.ui.theme.expandedServerItemTextColor
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font9
+import com.windscribe.mobile.ui.theme.isDark
 import com.windscribe.mobile.ui.theme.serverItemTextColor
+import com.windscribe.mobile.ui.theme.serverListBackgroundColor
 import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.commonutils.FlagIconResource
@@ -130,7 +132,13 @@ fun AllServerList(
                     LazyColumn(state = lazyListState, modifier = Modifier.weight(1f)) {
                         item {
                             Spacer(modifier = Modifier.height(8.dp))
-                            bestLocation?.let { BestLocation(it, connectionViewModel) }
+                            bestLocation?.let {
+                                BestLocation(
+                                    it,
+                                    connectionViewModel,
+                                    homeViewmodel
+                                )
+                            }
                         }
                         items(list, key = { it.id }) { item ->
                             ExpandableListItem(
@@ -177,17 +185,18 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = AppColors.midnightNavy)
+                    .background(color = MaterialTheme.colorScheme.serverListBackgroundColor)
+                    .clickable {
+                        activity.startActivity(UpgradeActivity.getStartIntent(activity))
+                    }
                     .border(
                         width = 1.dp,
-                        color = AppColors.white.copy(alpha = 0.05f),
+                        color = MaterialTheme.colorScheme.expandedServerItemTextColor.copy(alpha = 0.05f),
                         shape = RoundedCornerShape(8.dp)
                     )
                     .padding(12.dp)
             ) {
-                Row(modifier = Modifier.clickable {
-                    activity.startActivity(UpgradeActivity.getStartIntent(activity))
-                }) {
+                Row {
                     Box(
                         modifier = Modifier
                             .size(40.dp)
@@ -230,13 +239,13 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
                         Text(
-                            stringResource(R.string.unblock_full_access),
+                            stringResource(com.windscribe.vpn.R.string.unblock_full_access),
                             style = font16.copy(fontSize = 15.sp),
-                            color = AppColors.white,
+                            color = MaterialTheme.colorScheme.expandedServerItemTextColor,
                         )
                         Spacer(modifier = Modifier.width(2.dp))
                         Text(
-                            stringResource(R.string.go_pro_for_unlimited_everything),
+                            stringResource(com.windscribe.vpn.R.string.go_pro_for_unlimited_everything),
                             style = font12,
                             color = AppColors.cyberBlue.copy(alpha = 0.7f),
                         )
@@ -269,23 +278,15 @@ fun LocationCount(viewModel: ServerViewModel) {
 }
 
 @Composable
-@Preview(showBackground = true)
-private fun SplitBorderCirclePreview() {
-    SplitBorderCircle(10.0f, Color.Red, Color.Green, R.drawable.it_small, true)
-}
-
-@Composable
 fun SplitBorderCircle(
     firstSectionAngle: Float,
     firstColor: Color,
     secondColor: Color,
     flagRes: Int,
-    pro: Boolean = false
+    pro: Boolean = false,
+    showLocationLoad: Boolean = false
 ) {
-    Box(
-        modifier = Modifier
-            .size(24.dp)
-    ) {
+    Box(modifier = Modifier.size(24.dp)) {
         Image(
             painter = painterResource(id = flagRes),
             contentDescription = "Flag",
@@ -294,13 +295,9 @@ fun SplitBorderCircle(
                 .align(Alignment.Center),
             colorFilter = if (flagRes == R.drawable.ic_dc) ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor) else null
         )
-        Canvas(
-            modifier = Modifier
-                .size(24.dp)
-
-        ) {
+        Canvas(modifier = Modifier.size(24.dp)) {
             val strokeWidth = 1.dp.toPx()
-            if (firstSectionAngle == 0f) return@Canvas
+            if (firstSectionAngle == 0f || showLocationLoad == false) return@Canvas
             drawArc(
                 color = firstColor,
                 startAngle = 160f, // Start from top
@@ -323,7 +320,7 @@ fun SplitBorderCircle(
         }
         if (pro) {
             Image(
-                painter = painterResource(id = R.drawable.pro_mask),
+                painter = painterResource(if (MaterialTheme.colorScheme.isDark) R.drawable.pro_mask else R.drawable.pro_mask_light),
                 contentDescription = "Flag",
                 modifier = Modifier
                     .align(Alignment.CenterStart)
@@ -335,10 +332,15 @@ fun SplitBorderCircle(
 }
 
 @Composable
-private fun BestLocation(item: ServerListItem, connectionViewModel: ConnectionViewmodel) {
+private fun BestLocation(
+    item: ServerListItem,
+    connectionViewModel: ConnectionViewmodel,
+    homeViewmodel: HomeViewmodel
+) {
     val health = averageHealth(item)
     val color = colorResource(healthColor(health))
     val angle = (health / 100f) * 360f
+    val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
@@ -358,11 +360,12 @@ private fun BestLocation(item: ServerListItem, connectionViewModel: ConnectionVi
                 angle,
                 color,
                 MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.20f),
-                FlagIconResource.getSmallFlag(item.region.countryCode)
+                FlagIconResource.getSmallFlag(item.region.countryCode),
+                showLocationLoad = showLocationLoad
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = stringResource(R.string.best_location),
+                text = stringResource(com.windscribe.vpn.R.string.best_location),
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 modifier = Modifier.weight(1f),
                 color = MaterialTheme.colorScheme.serverItemTextColor,
@@ -394,6 +397,7 @@ private fun ExpandableListItem(
     val color = colorResource(healthColor(health))
     val angle = (health / 100f) * 360f
     val userState by homeViewmodel.userState.collectAsState()
+    val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxWidth()
@@ -411,7 +415,8 @@ private fun ExpandableListItem(
                 color,
                 MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.20f),
                 FlagIconResource.getSmallFlag(item.region.countryCode),
-                userState !is UserState.Pro && item.region.premium == 1
+                userState !is UserState.Pro && item.region.premium == 1,
+                showLocationLoad
             )
             Spacer(modifier = Modifier.size(16.dp))
             Text(
@@ -471,6 +476,7 @@ private fun ServerListItemView(
 ) {
     val userState by homeViewmodel.userState.collectAsState()
     val favouriteState by viewModel.favouriteListState.collectAsState()
+    val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     var isFavorite = false
     if (favouriteState is ListState.Success) {
         isFavorite = (favouriteState as ListState.Success).data.any { it.city.id == item.id }
@@ -497,7 +503,7 @@ private fun ServerListItemView(
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        ServerListIcon(item, userState, angle, color)
+        ServerListIcon(item, userState, angle, color, showLocationLoad)
         Spacer(modifier = Modifier.width(8.dp))
         ServerNodeName("${item.nodeName} ${item.nickName}", Modifier.weight(1f))
         if (item.linkSpeed == "10000") {

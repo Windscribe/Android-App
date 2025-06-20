@@ -1,6 +1,7 @@
 package com.windscribe.mobile.ui.preferences.connection
 
 import PreferencesNavBar
+import android.R.attr.description
 import android.content.Intent
 import android.widget.Toast
 import androidx.annotation.DrawableRes
@@ -124,9 +125,9 @@ fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
                 AlwaysOnVPN()
                 Spacer(modifier = Modifier.height(16.dp))
                 SwitchItemView(
-                    title = com.windscribe.mobile.R.string.auto_connect,
+                    title = R.string.auto_connect,
                     icon = com.windscribe.mobile.R.drawable.auto_connect,
-                    description = com.windscribe.mobile.R.string.auto_connect_explainer,
+                    description = R.string.auto_connect_explainer,
                     autoConnect,
                     onSelect = { viewModel?.onAutoConnectToggleClicked() }
                 )
@@ -138,26 +139,26 @@ fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
                 CustomDNS(viewModel)
                 Spacer(modifier = Modifier.height(16.dp))
                 SwitchItemView(
-                    title = com.windscribe.mobile.R.string.lan_by_pass,
+                    title = R.string.lan_by_pass,
                     icon = com.windscribe.mobile.R.drawable.ic_lan_icon,
-                    description = com.windscribe.mobile.R.string.allow_lan_description,
+                    description = R.string.allow_lan_description,
                     allowLan,
                     explainer = FeatureExplainer.ALLOW_LAN,
                     onSelect = { viewModel?.onAllowLanToggleClicked() }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 SwitchItemView(
-                    title = com.windscribe.mobile.R.string.start_on_boot,
+                    title = R.string.start_on_boot,
                     icon = com.windscribe.mobile.R.drawable.ic_auto_connect_boot,
-                    description = com.windscribe.mobile.R.string.auto_connect_on_boot_description,
+                    description = R.string.auto_connect_on_boot_description,
                     startOnBoot,
                     onSelect = { viewModel?.onStartOnBootToggleClicked() }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 SwitchItemView(
-                    title = com.windscribe.mobile.R.string.gps_spoofing,
+                    title = R.string.gps_spoofing,
                     icon = com.windscribe.mobile.R.drawable.ic_gps_spoof_icon,
-                    description = com.windscribe.mobile.R.string.gps_spoofing_description,
+                    description = R.string.gps_spoofing_description,
                     gpsSpoofing,
                     explainer = FeatureExplainer.GPS_SPOOFING,
                     onSelect = {
@@ -175,9 +176,9 @@ fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
                 DecoyTrafficMode(viewModel)
                 Spacer(modifier = Modifier.height(16.dp))
                 SwitchItemView(
-                    title = com.windscribe.mobile.R.string.anti_censorship,
+                    title = R.string.anti_censorship,
                     icon = com.windscribe.mobile.R.drawable.ic_anti_censorship_icon,
-                    description = com.windscribe.mobile.R.string.anti_censorship_explainer,
+                    description = R.string.anti_censorship_explainer,
                     antiCensorship,
                     explainer = FeatureExplainer.CIRCUMVENT_CENSORSHIP,
                     onSelect = { viewModel?.onAntiCensorshipToggleClicked() }
@@ -206,9 +207,9 @@ private fun DecoyTrafficMode(viewModel: ConnectionViewModel?) {
         ?: remember { mutableStateOf("") }
     Column {
         SwitchItemView(
-            title = com.windscribe.mobile.R.string.decoy_traffic,
+            title = R.string.decoy_traffic,
             icon = com.windscribe.mobile.R.drawable.ic_decoy_icon,
-            description = com.windscribe.mobile.R.string.decoy_caution_description,
+            description = R.string.decoy_caution_description,
             decoyTraffic,
             shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
             explainer = FeatureExplainer.DECOY_TRAFFIC,

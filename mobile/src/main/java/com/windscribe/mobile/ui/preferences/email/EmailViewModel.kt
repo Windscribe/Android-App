@@ -55,7 +55,7 @@ class EmailViewModelImpl(
     override fun addEmail() {
         viewModelScope.launch(Dispatchers.IO) {
             if (email.isNotEmpty() && !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                _error.emit(ToastMessage.Localized(R.string.invalid_email_format))
+                _error.emit(ToastMessage.Localized(com.windscribe.vpn.R.string.invalid_email_format))
                 return@launch
             }
             _error.emit(null)
