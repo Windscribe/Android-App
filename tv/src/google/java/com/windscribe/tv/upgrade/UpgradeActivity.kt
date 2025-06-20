@@ -306,7 +306,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         }
         googleBillingManager.onProductConsumeSuccess?.observe(this) { purchase: Purchase ->
             logger.info("Product consumption successful...")
-            showToast(resources.getString(R.string.purchase_successful))
+            showToast(resources.getString(com.windscribe.vpn.R.string.purchase_successful))
             presenter.onPurchaseConsumed(purchase)
         }
         googleBillingManager.onProductConsumeFailure?.observe(

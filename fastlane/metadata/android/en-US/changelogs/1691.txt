@@ -1,0 +1,5 @@
+v3.90(Mobile)
+* Added fresh UI.
+* Added Captcha to counter abuse.
+* Upgraded gradle to 8.6
+* Upgrade target SDK to 35
