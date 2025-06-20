@@ -38,6 +38,7 @@ import com.android.billingclient.api.QueryProductDetailsParams;
 import com.google.common.collect.ImmutableList;
 import com.windscribe.mobile.R;
 import com.windscribe.mobile.databinding.ActivityUpgradeBinding;
+import com.windscribe.mobile.di.ActivityModule;
 import com.windscribe.mobile.utils.UiUtil;
 import com.windscribe.vpn.api.response.PushNotificationAction;
 import com.windscribe.vpn.billing.AmazonBillingManager;
@@ -53,6 +54,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Locale;
+
+import javax.inject.Inject;
+
 import kotlin.Pair;
 
 public class UpgradeActivity extends BaseActivity
@@ -60,11 +64,11 @@ public class UpgradeActivity extends BaseActivity
 
     private static final String TAG = "billing";
     private final Logger logger = LoggerFactory.getLogger(TAG);
-   // @Inject
+    @Inject
     UpgradePresenter presenter;
-  //  @Inject
+    @Inject
     AmazonBillingManager amazonBillingManager;
-  //  @Inject
+    @Inject
     GoogleBillingManager googleBillingManager;
     private ActivityUpgradeBinding binding = null;
     private boolean billingProcessFinished = false;
@@ -81,7 +85,7 @@ public class UpgradeActivity extends BaseActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-      //  setActivityModule(new ActivityModule(this, this)).inject(this);
+        setActivityModule(new ActivityModule(this, this)).inject(this);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_upgrade);
         setContentLayout(false);
         addClickListeners();

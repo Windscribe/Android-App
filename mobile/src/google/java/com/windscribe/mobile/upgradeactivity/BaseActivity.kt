@@ -12,6 +12,8 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.windscribe.mobile.R
+import com.windscribe.mobile.di.ActivityComponent
+import com.windscribe.mobile.di.ActivityModule
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import java.util.Locale
@@ -70,13 +72,13 @@ abstract class BaseActivity : AppCompatActivity() {
         }
     }
 
-//    protected fun setActivityModule(activityModule: ActivityModule?): ActivityComponent {
-//        return com.windscribe.mobile.di.DaggerActivityComponent.builder().activityModule(activityModule)
-//            .applicationComponent(
-//                appContext
-//                    .applicationComponent
-//            ).build()
-//    }
+    protected fun setActivityModule(activityModule: ActivityModule?): ActivityComponent {
+        return com.windscribe.mobile.di.DaggerActivityComponent.builder().activityModule(activityModule)
+            .applicationComponent(
+                appContext
+                    .applicationComponent
+            ).build()
+    }
 
     protected fun setContentLayout(setTheme: Boolean = true) {
         if (setTheme) {
