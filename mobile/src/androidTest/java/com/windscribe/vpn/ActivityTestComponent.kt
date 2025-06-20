@@ -3,8 +3,8 @@
  */
 package com.windscribe.vpn
 
-import com.windscribe.mobile.di.PerActivity
 import com.windscribe.vpn.di.ApplicationComponent
+import com.windscribe.vpn.di.PerActivity
 import com.windscribe.vpn.tests.BaseTest
 import dagger.Component
 

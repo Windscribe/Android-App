@@ -65,29 +65,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.windscribe.mobile.R
-import com.windscribe.mobile.connectionsettings.ConnectionSettingsActivity
-import com.windscribe.mobile.dialogs.AccountStatusDialogData
-import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.ui.AppStartActivity
+import com.windscribe.mobile.ui.common.AppConnectButton
+import com.windscribe.mobile.ui.common.LocationImage
+import com.windscribe.mobile.ui.connection.ConnectionUIState
+import com.windscribe.mobile.ui.connection.ConnectionViewmodel
+import com.windscribe.mobile.ui.connection.LocationInfoState
+import com.windscribe.mobile.ui.connection.ToastMessage
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
+import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.helper.hapticClickable
+import com.windscribe.mobile.ui.model.AccountStatusDialogData
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
+import com.windscribe.mobile.ui.serverlist.ConfigViewmodel
 import com.windscribe.mobile.ui.serverlist.SearchServerList
+import com.windscribe.mobile.ui.serverlist.ServerViewModel
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.font26
 import com.windscribe.mobile.ui.theme.font9
-import com.windscribe.mobile.ui.common.AppConnectButton
-import com.windscribe.mobile.ui.common.LocationImage
-import com.windscribe.mobile.ui.serverlist.ConfigViewmodel
-import com.windscribe.mobile.ui.connection.ConnectionUIState
-import com.windscribe.mobile.ui.connection.ConnectionViewmodel
-import com.windscribe.mobile.ui.connection.LocationInfoState
-import com.windscribe.mobile.ui.serverlist.ServerViewModel
-import com.windscribe.mobile.ui.connection.ToastMessage
-import com.windscribe.mobile.ui.helper.MultiDevicePreview
-import com.windscribe.mobile.ui.helper.PreviewWithNav
+import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.backend.Util
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
@@ -275,13 +274,7 @@ private fun ConnectionStatusSheet(
                 painter = painterResource(if (state is ConnectionUIState.Connected) R.drawable.ic_anti_censorship_enabled else R.drawable.ic_anti_censorship_disabled),
                 contentDescription = null,
                 modifier = Modifier
-                    .size(24.dp)
-                    .clickable(
-                        antiCensorshipProtocolInteractionSource,
-                        indication = rememberRipple(bounded = false, color = AppColors.white)
-                    ) {
-                        activity.startActivity(ConnectionSettingsActivity.getStartIntent(activity))
-                    },
+                    .size(24.dp),
                 contentScale = ContentScale.Inside,
                 colorFilter = ColorFilter.tint(containerColor)
             )

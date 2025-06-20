@@ -96,7 +96,6 @@ public class UpgradePresenterImpl implements UpgradePresenter {
     private List<BillingPlanResponse.BillingPlans> mobileBillingPlans = new ArrayList<>();
     private BillingPlanResponse.OverriddenPlans overriddenPlans = null;
 
-    @Inject
     public UpgradePresenterImpl(UpgradeView mUpgradeView, ActivityInteractor activityInteractor) {
         this.mUpgradeView = mUpgradeView;
         this.mUpgradeInteractor = activityInteractor;

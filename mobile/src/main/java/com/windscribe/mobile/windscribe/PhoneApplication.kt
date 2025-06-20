@@ -4,6 +4,7 @@
 package com.windscribe.mobile.windscribe
 
 import android.content.Intent
+import androidx.compose.ui.input.key.Key.Companion.W
 import com.windscribe.mobile.R
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.ui.AppStartActivity
@@ -14,6 +15,7 @@ import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.FragmentType
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import kotlin.jvm.java
 
 class PhoneApplication : Windscribe(), ApplicationInterface {
     override fun onCreate() {
@@ -23,7 +25,7 @@ class PhoneApplication : Windscribe(), ApplicationInterface {
     }
 
     override val homeIntent: Intent
-        get() = Intent(appContext, WindscribeActivity::class.java)
+        get() = Intent(appContext, AppStartActivity::class.java)
     override val splashIntent: Intent
         get() = Intent(appContext, AppStartActivity::class.java)
     override val upgradeIntent: Intent

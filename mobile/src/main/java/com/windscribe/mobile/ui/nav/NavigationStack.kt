@@ -12,11 +12,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.windscribe.mobile.dialogs.AccountStatusDialogData
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.auth.AppStartScreen
 import com.windscribe.mobile.ui.auth.AppStartViewModel
@@ -32,20 +30,20 @@ import com.windscribe.mobile.ui.connection.ConnectionChangeScreen
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.connection.DebugLogSentScreen
 import com.windscribe.mobile.ui.connection.SetupPreferredProtocolScreen
+import com.windscribe.mobile.ui.home.HomeScreen
+import com.windscribe.mobile.ui.home.HomeViewmodel
+import com.windscribe.mobile.ui.model.AccountStatusDialogData
 import com.windscribe.mobile.ui.popup.AccountStatusScreen
 import com.windscribe.mobile.ui.popup.EditCustomConfigScreen
-import com.windscribe.mobile.ui.popup.LocationUnderMaintenanceScreen
-import com.windscribe.mobile.ui.popup.NewsfeedScreen
-import com.windscribe.mobile.ui.popup.OverlayDialogScreen
-import com.windscribe.mobile.ui.popup.PowerWhitelistScreen
-import com.windscribe.mobile.ui.popup.ShareLinkScreen
-import com.windscribe.mobile.ui.home.*
-import com.windscribe.mobile.ui.preferences.main.MainMenuScreen
-import com.windscribe.mobile.ui.preferences.main.MainMenuViewModel
 import com.windscribe.mobile.ui.popup.EditCustomConfigViewmodel
 import com.windscribe.mobile.ui.popup.ExtraDataUseWarningScreen
+import com.windscribe.mobile.ui.popup.LocationUnderMaintenanceScreen
+import com.windscribe.mobile.ui.popup.NewsfeedScreen
 import com.windscribe.mobile.ui.popup.NewsfeedViewmodel
+import com.windscribe.mobile.ui.popup.OverlayDialogScreen
+import com.windscribe.mobile.ui.popup.PowerWhitelistScreen
 import com.windscribe.mobile.ui.popup.PowerWhitelistViewmodel
+import com.windscribe.mobile.ui.popup.ShareLinkScreen
 import com.windscribe.mobile.ui.popup.SharedLinkViewmodel
 import com.windscribe.mobile.ui.preferences.about.AboutScreen
 import com.windscribe.mobile.ui.preferences.account.AccountScreen
@@ -60,17 +58,19 @@ import com.windscribe.mobile.ui.preferences.email.AddEmailScreen
 import com.windscribe.mobile.ui.preferences.email.ConfirmEmailScreen
 import com.windscribe.mobile.ui.preferences.email.EmailViewModel
 import com.windscribe.mobile.ui.preferences.general.GeneralScreen
-import com.windscribe.mobile.ui.preferences.help.HelpScreen
-import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelScreen
-import com.windscribe.mobile.ui.preferences.robert.RobertScreen
 import com.windscribe.mobile.ui.preferences.general.GeneralViewModel
 import com.windscribe.mobile.ui.preferences.gps_spoofing.GpsSpoofing
+import com.windscribe.mobile.ui.preferences.help.HelpScreen
 import com.windscribe.mobile.ui.preferences.help.HelpViewModel
 import com.windscribe.mobile.ui.preferences.lipstick.LipstickViewmodel
+import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelScreen
+import com.windscribe.mobile.ui.preferences.main.MainMenuScreen
+import com.windscribe.mobile.ui.preferences.main.MainMenuViewModel
 import com.windscribe.mobile.ui.preferences.network_details.NetworkDetailScreen
 import com.windscribe.mobile.ui.preferences.network_details.NetworkDetailViewModel
 import com.windscribe.mobile.ui.preferences.network_options.NetworkOptionsScreen
 import com.windscribe.mobile.ui.preferences.network_options.NetworkOptionsViewModel
+import com.windscribe.mobile.ui.preferences.robert.RobertScreen
 import com.windscribe.mobile.ui.preferences.robert.RobertViewModel
 import com.windscribe.mobile.ui.preferences.split_tunnel.SplitTunnelScreen
 import com.windscribe.mobile.ui.preferences.split_tunnel.SplitTunnelViewModel
@@ -78,7 +78,6 @@ import com.windscribe.mobile.ui.preferences.ticket.TicketScreen
 import com.windscribe.mobile.ui.preferences.ticket.TicketViewModel
 import com.windscribe.mobile.ui.serverlist.ConfigViewmodel
 import com.windscribe.mobile.ui.serverlist.ServerViewModel
-import kotlin.jvm.java
 
 val LocalNavController = staticCompositionLocalOf<NavController> {
     error("No NavController provided")

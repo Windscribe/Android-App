@@ -3,7 +3,6 @@ package com.windscribe.mobile.ui.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.windscribe.mobile.welcome.state.EmergencyConnectUIState
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -17,6 +16,11 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
+enum class EmergencyConnectUIState {
+    Connecting,
+    Connected,
+    Disconnected
+}
 class EmergencyConnectViewModal @Inject constructor(
     private val scope: CoroutineScope,
     private val windVpnController: WindVpnController,
