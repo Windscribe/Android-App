@@ -197,6 +197,7 @@ class ConnectionViewmodelImpl @Inject constructor(
         fetchBestLocation()
         fetchUserPreferences()
         handleConnectionSoundsState()
+        observeCustomLocationNameChanges()
     }
 
     private fun fetchNewsfeedCount() {
@@ -242,6 +243,14 @@ class ConnectionViewmodelImpl @Inject constructor(
                         lastLocationState.value = null
                         fetchConnectionState()
                     }
+            }
+        }
+    }
+
+    private fun observeCustomLocationNameChanges() {
+        viewModelScope.launch(Dispatchers.IO) {
+            serverListRepository.customLocationNameChange.collectLatest {
+                fetchLastLocation()
             }
         }
     }

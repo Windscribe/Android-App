@@ -61,24 +61,19 @@ class ServerListRepository @Inject constructor(
     private val logger = LoggerFactory.getLogger("data")
     private var _events = MutableSharedFlow<List<RegionAndCities>>(replay = 1)
     val regions: SharedFlow<List<RegionAndCities>> = _events
-    private var _locationUIInvalidation = MutableSharedFlow<Boolean>(replay = 1)
-    val locationUIInvalidation = _locationUIInvalidation
     private var _locationJsonToExport = MutableStateFlow("")
     val locationJsonToExport: StateFlow<String> = _locationJsonToExport
     private val _customCities = MutableStateFlow<List<CustomCity>>(listOf())
     private val customCities: StateFlow<List<CustomCity>> = _customCities
     private val _customRegions = MutableStateFlow<List<CustomRegion>>(listOf())
     private val customRegions: StateFlow<List<CustomRegion>> = _customRegions
+    private val _customLocationNameChange = MutableSharedFlow<Boolean>()
+    val customLocationNameChange: SharedFlow<Boolean> = _customLocationNameChange
+
     var globalServerList = true
 
     init {
         load()
-    }
-
-    fun invalidateServerListUI() {
-        scope.launch {
-            _locationUIInvalidation.emit(true)
-        }
     }
 
     fun load() {
@@ -229,6 +224,9 @@ class ServerListRepository @Inject constructor(
 
     private fun loadCustomLocationsJson() {
         try {
+            scope.launch {
+                _customLocationNameChange.emit(false)
+            }
             val fileInputStream: FileInputStream = appContext.openFileInput("locations.json")
             val jsonString = fileInputStream.bufferedReader().use { it.readText() }
             val type = object : TypeToken<CustomLocationsData>() {}.type
@@ -237,11 +235,15 @@ class ServerListRepository @Inject constructor(
                 customLocationsData.locations.map { it.cities }.reduce { t1, t2 -> t1 + t2 }
             _customCities.value = cities
             _customRegions.value = customLocationsData.locations
+            scope.launch {
+                _customLocationNameChange.emit(true)
+            }
         } catch (e: IOException) {
             _customCities.value = listOf()
-            //  logger.error("$$$ Error reading or writing file", e)
+            _customRegions.value = listOf()
         } catch (e: FileNotFoundException) {
             _customCities.value = listOf()
+            _customRegions.value = listOf()
         }
     }
 
