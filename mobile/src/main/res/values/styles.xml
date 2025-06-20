@@ -1,8 +1,4 @@
-<!--
-  ~ Copyright (c) 2021 Windscribe Limited.
-  -->
-
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!--App Theme -->
     <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
@@ -202,27 +198,6 @@
         <item name="postSplashScreenTheme">@style/AppTheme</item>
     </style>
 
-    <style name="StyleNeonGreen" parent="ThemeOverlay.AppCompat.Light">
-        <item name="colorAccent">@color/colorNeonGreen</item>
-    </style>
-
-    <style name="StyleDeepBlueShadow" parent="ThemeOverlay.AppCompat.Light">
-        <item name="colorAccent">@color/colorDeepBlue40</item>
-    </style>
-
-    <!-- Button styles -->
-    <style name="BaseButtonStyle" parent="Widget.AppCompat.Button.Colored">
-        <item name="android:layout_width">@dimen/reg_150dp</item>
-        <item name="android:layout_height">@dimen/reg_50dp</item>
-    </style>
-
-    <style name="ButtonStyle" parent="BaseButtonStyle">
-        <item name="android:background">@color/colorBlue</item>
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:layout_gravity">bottom|end</item>
-    </style>
-
     <style name="Theme.Transparent" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:backgroundDimEnabled">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
@@ -257,27 +232,8 @@
         <item name="android:background">?attr/containerBackground</item>
     </style>
 
-    <style name="ScrollableContainer">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">0dp</item>
-        <item name="android:background">?attr/containerBackground</item>
-        <item name="android:layout_marginTop">@dimen/reg_24dp</item>
-    </style>
-
     <style name="OverlayContainer" parent="MatchMatchContainer">
         <item name="android:background">?attr/overlayContainerBackground</item>
-    </style>
-
-    <style name="ConstraintWrapContainer">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-    </style>
-
-    <style name="CardContainer">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_margin">@dimen/margin_16</item>
-        <item name="android:background">@drawable/card_container_background</item>
     </style>
 
     <style name="navArrowButton" parent="WrapWrapContainer">
@@ -297,86 +253,6 @@
         <item name="android:gravity">center</item>
     </style>
 
-    <style name="InputHintText" parent="WrapWrapContainer">
-        <item name="android:textSize">@dimen/text_size_16</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:layout_marginTop">@dimen/margin_24</item>
-        <item name="android:textColor">@color/colorWhite50</item>
-        <item name="android:layout_marginStart">@dimen/margin_32</item>
-        <item name="fontFamily">@font/ibm_plex_sans_bold</item>
-    </style>
-
-    <style name="InputSubHintText" parent="WrapWrapContainer">
-        <item name="android:textSize">@dimen/text_size_16</item>
-        <item name="android:textColor">@color/colorWhite50</item>
-        <item name="android:layout_marginStart">@dimen/margin_8</item>
-        <item name="fontFamily">@font/ibm_plex_sans_bold</item>
-    </style>
-
-    <style name="InputBox" parent="MatchWrapContainer">
-        <item name="android:textSize">@dimen/text_size_16</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">?attr/inputTextColor</item>
-        <item name="android:layout_marginTop">@dimen/margin_8</item>
-        <item name="android:layout_marginStart">@dimen/margin_16</item>
-        <item name="android:layout_marginEnd">@dimen/margin_16</item>
-        <item name="android:paddingStart">@dimen/padding_16</item>
-        <item name="android:paddingTop">@dimen/padding_14</item>
-        <item name="android:paddingEnd">@dimen/padding_16</item>
-        <item name="android:paddingBottom">@dimen/padding_14</item>
-        <item name="android:background">@drawable/input_box_selector</item>
-        <item name="android:inputType">textNoSuggestions</item>
-        <item name="android:textColorHint">@color/colorWhite</item>
-        <item name="fontFamily">@font/ibm_plex_sans_regular</item>
-        <item name="android:minHeight">@dimen/reg_48dp</item>
-        <item name="android:singleLine">true</item>
-    </style>
-
-    <style name="InputErrorIcon" parent="WrapWrapContainer">
-        <item name="android:layout_marginStart">@dimen/margin_16</item>
-        <item name="android:layout_marginEnd">@dimen/margin_16</item>
-        <item name="android:src">@drawable/ic_input_error_icon</item>
-        <item name="android:visibility">gone</item>
-    </style>
-
-    <style name="InputVisibilityIcon" parent="WrapWrapContainer">
-        <item name="android:layout_marginEnd">@dimen/margin_8</item>
-        <item name="android:button">@drawable/visibility_toggle_background</item>
-    </style>
-
-
-    <style name="InputDescription" parent="WrapWrapContainer">
-        <item name="android:textSize">@dimen/text_size_12</item>
-        <item name="android:textStyle">normal</item>
-        <item name="android:layout_marginTop">@dimen/margin_8</item>
-        <item name="android:textColor">?attr/inputDescriptionColor</item>
-        <item name="android:layout_marginStart">@dimen/margin_32</item>
-        <item name="android:layout_marginEnd">@dimen/margin_16</item>
-        <item name="android:layout_width">0dp</item>
-        <item name="android:gravity">left</item>
-        <item name="fontFamily">@font/ibm_plex_sans_regular</item>
-    </style>
-
-    <style name="OverlayInputDescription" parent="InputDescription">
-        <item name="android:layout_marginTop">0dp</item>
-        <item name="fontFamily">@font/ibm_plex_sans_regular</item>
-        <item name="android:textColor">@color/colorWhite50</item>
-        <item name="android:textSize">@dimen/text_size_12</item>
-    </style>
-
-    <style name="ForgotPassword" parent="WrapWrapContainer">
-        <item name="android:textSize">@dimen/text_size_16</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:layout_marginTop">@dimen/margin_8</item>
-        <item name="android:padding">@dimen/padding_8</item>
-        <item name="android:textColor">@color/colorWhite50</item>
-        <item name="android:layout_marginStart">@dimen/margin_16</item>
-        <item name="android:layout_marginEnd">@dimen/margin_16</item>
-        <item name="fontFamily">@font/ibm_plex_sans_regular</item>
-        <item name="android:background">@drawable/ripple_square</item>
-        <item name="android:textAllCaps">false</item>
-    </style>
-
     <style name="NextButton" parent="MatchWrapContainer">
         <item name="android:minHeight">@dimen/reg_48dp</item>
         <item name="android:layout_marginStart">@dimen/margin_24</item>
@@ -393,10 +269,6 @@
         <item name="android:background">@drawable/next_button_ripple</item>
     </style>
 
-    <style name="NextButtonWarning" parent="NextButton">
-        <item name="android:background">@drawable/next_button_warning_ripple</item>
-    </style>
-
     <style name="WarningActionButton" parent="NextButton">
         <item name="android:background">@drawable/warning_action_ripple</item>
         <item name="android:layout_marginBottom">@dimen/margin_16</item>
@@ -404,72 +276,6 @@
         <item name="android:textColor">?attr/wdPrimaryColor</item>
         <item name="android:textStyle">normal</item>
         <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
-    </style>
-
-    <style name="NextToPremiumButton" parent="NextButton">
-        <item name="android:layout_marginBottom">@dimen/margin_8</item>
-    </style>
-
-    <style name="AddConfigButton" parent="NextButton">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:enabled">true</item>
-        <item name="android:text">@string/add_vpn_config</item>
-        <item name="android:paddingStart">@dimen/padding_32</item>
-        <item name="android:paddingEnd">@dimen/padding_32</item>
-        <item name="android:visibility">gone</item>
-        <item name="android:layout_marginTop">@dimen/margin_24</item>
-    </style>
-
-    <style name="PageDescription" parent="ConstraintWrapContainer">
-        <item name="android:layout_marginStart">@dimen/margin_54</item>
-        <item name="android:layout_marginEnd">@dimen/margin_54</item>
-        <item name="android:layout_marginTop">@dimen/margin_24</item>
-        <item name="android:textColor">@color/colorWhite50</item>
-        <item name="android:textSize">@dimen/text_size_14</item>
-        <item name="android:gravity">center_horizontal</item>
-        <item name="android:layout_gravity">center</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
-    </style>
-
-    <style name="RobertPageDescription" parent="PageDescription">
-        <item name="android:layout_marginStart">0dp</item>
-        <item name="android:layout_marginEnd">0dp</item>
-        <item name="android:layout_marginTop">0dp</item>
-        <item name="android:textColor">?attr/wdSecondaryColor</item>
-        <item name="android:textSize">@dimen/text_size_12</item>
-        <item name="android:gravity">start</item>
-        <item name="fontFamily">@font/ibm_plex_sans_regular</item>
-    </style>
-
-    <style name="PlansHeading" parent="WrapWrapContainer">
-        <item name="android:textColor">@color/colorWhite</item>
-        <item name="android:textSize">@dimen/text_size_24</item>
-        <item name="fontFamily">@font/ibm_plex_sans_bold</item>
-        <item name="android:layout_marginStart">@dimen/margin_16</item>
-        <item name="android:layout_marginTop">@dimen/margin_16</item>
-    </style>
-
-    <style name="SubHeading" parent="WrapWrapContainer">
-        <item name="android:textColor">@color/colorWhite50</item>
-        <item name="android:textSize">@dimen/text_size_12</item>
-        <item name="android:letterSpacing">0.2</item>
-        <item name="textAllCaps">true</item>
-        <item name="android:layout_marginTop">@dimen/margin_8</item>
-        <item name="fontFamily">@font/ibm_plex_sans_bold</item>
-        <item name="android:layout_marginStart">@dimen/margin_16</item>
-    </style>
-
-    <style name="PlansTerms" parent="WrapWrapContainer">
-        <item name="android:textColor">@color/colorWhite50</item>
-        <item name="android:textSize">@dimen/text_size_8</item>
-        <item name="android:letterSpacing">0.0</item>
-        <item name="android:layout_marginTop">@dimen/margin_16</item>
-        <item name="fontFamily">@font/ibm_plex_sans_regular</item>
-    </style>
-
-    <style name="RadioOptionContainer" parent="MatchWrapContainer">
-        <item name="android:orientation">horizontal</item>
-        <item name="android:layout_marginTop">@dimen/margin_16</item>
     </style>
 
     <style name="RadioOption" parent="WrapWrapContainer">
@@ -491,53 +297,6 @@
         <item name="android:importantForAccessibility">no</item>
     </style>
 
-    <style name="InfoIcon" parent="IconStyle">
-        <item name="android:src">@drawable/ic_info_icon</item>
-        <item name="android:padding">@dimen/padding_8</item>
-        <item name="android:background">@drawable/ripple_round</item>
-        <item name="android:importantForAccessibility">no</item>
-    </style>
-
-    <style name="BenefitText" parent="WrapWrapContainer">
-        <item name="android:layout_marginStart">@dimen/margin_8</item>
-        <item name="android:textSize">@dimen/text_size_14</item>
-        <item name="android:textColor">@color/colorWhite</item>
-        <item name="android:letterSpacing">0.0</item>
-        <item name="fontFamily">@font/ibm_plex_sans_regular</item>
-    </style>
-
-    <style name="divider">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">@dimen/reg_2dp</item>
-        <item name="android:background">?attr/preferenceDividerColor</item>
-        <item name="android:layout_marginTop">@dimen/margin_8</item>
-        <item name="android:contentDescription">@null</item>
-        <item name="android:importantForAccessibility">no</item>
-    </style>
-
-    <style name="PreferenceDivider" parent="divider">
-        <item name="android:layout_marginTop">0dp</item>
-        <item name="android:layout_marginBottom">@dimen/margin_16</item>
-        <item name="android:layout_marginStart">@dimen/margin_24</item>
-        <item name="android:contentDescription">@string/image_description</item>
-    </style>
-
-    <style name="Logo">
-        <item name="android:src">@drawable/ic_logo</item>
-        <item name="android:contentDescription">@null</item>
-        <item name="android:layout_width">@dimen/reg_56dp</item>
-        <item name="android:layout_height">@dimen/reg_56dp</item>
-    </style>
-
-    <style name="LogoText" parent="WrapWrapContainer">
-        <item name="android:text">Keep Your \nSecrets.</item>
-        <item name="android:gravity">center</item>
-        <item name="android:textColor">@color/colorWhite</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
-        <item name="android:textSize">32sp</item>
-
-    </style>
-
     <style name="NoBackgroundButtonBold" parent="WrapWrapContainer">
         <item name="android:textSize">@dimen/text_size_16</item>
         <item name="fontFamily">@font/ibm_plex_sans_bold</item>
@@ -548,13 +307,6 @@
         <item name="android:paddingBottom">@dimen/padding_8</item>
         <item name="android:paddingTop">@dimen/padding_8</item>
         <item name="android:clickable">true</item>
-    </style>
-
-    <style name="NoBackgroundButton" parent="NoBackgroundButtonBold">
-        <item name="android:textSize">@dimen/text_size_14</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
-        <item name="android:layout_marginBottom">0dp</item>
-        <item name="android:clickable">false</item>
     </style>
 
     <style name="ProgressBar" parent="WrapWrapContainer">
@@ -573,12 +325,6 @@
         <item name="android:lineSpacingExtra">1sp</item>
     </style>
 
-    <style name="PlansTermsClickable" parent="PlansTerms">
-        <item name="android:textSize">@dimen/text_size_10</item>
-        <item name="android:layout_margin">0dp</item>
-    </style>
-
-
     <style name="WarningIcon" parent="WrapWrapContainer">
         <item name="android:src">@drawable/ic_noemailprompticon</item>
         <item name="android:layout_marginBottom">@dimen/margin_24</item>
@@ -594,19 +340,6 @@
         <item name="android:layout_marginBottom">@dimen/margin_24</item>
     </style>
 
-    <style name="WarningTitle">
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_width">0dp</item>
-        <item name="android:textSize">@dimen/text_size_24</item>
-        <item name="android:textColor">?attr/warningTitleColor</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
-        <item name="android:layout_marginBottom">@dimen/margin_24</item>
-        <item name="android:gravity">center_horizontal</item>
-        <item name="android:layout_marginTop">@dimen/margin_16</item>
-        <item name="android:layout_marginStart">@dimen/padding_32</item>
-        <item name="android:layout_marginEnd">@dimen/padding_32</item>
-    </style>
-
     <style name="ForwardArrowIcon" parent="WrapWrapContainer">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">@dimen/reg_16dp</item>
@@ -615,29 +348,6 @@
         <item name="android:scaleType">fitEnd</item>
         <item name="android:src">@drawable/ic_forward_arrow_settings</item>
         <item name="android:contentDescription">@string/image_description</item>
-    </style>
-
-    <style name="RightIconFullOpacity" parent="LinkArrowIcon">
-        <item name="preferenceForwardArrowColor">?attr/wdPrimaryColor</item>
-    </style>
-
-    <style name="LinkArrowIcon" parent="WrapWrapContainer">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">@dimen/reg_16dp</item>
-        <item name="android:layout_marginEnd">@dimen/margin_16</item>
-        <item name="android:layout_marginRight">@dimen/margin_16</item>
-        <item name="android:scaleType">fitEnd</item>
-        <item name="android:src">@drawable/link_arrow_icon</item>
-        <item name="android:contentDescription">@string/image_description</item>
-    </style>
-
-    <style name="ExplainIcon" parent="LinkArrowIcon">
-        <item name="android:src">@drawable/ic_explain_me</item>
-        <item name="android:background">@drawable/ripple_round</item>
-        <item name="android:padding">@dimen/padding_8</item>
-        <item name="android:layout_marginEnd">@dimen/margin_8</item>
-        <item name="android:layout_marginRight">@dimen/margin_8</item>
-        <item name="android:layout_height">wrap_content</item>
     </style>
 
     <style name="MenuItemLabel" parent="WrapWrapContainer">
@@ -660,12 +370,6 @@
         <item name="android:textColor">@color/colorWhite80</item>
     </style>
 
-    <style name="MenuItemLabelNoStartMargin" parent="MenuItemLabel">
-        <item name="android:layout_marginStart">0dp</item>
-        <item name="android:layout_marginLeft">0dp</item>
-        <item name="android:includeFontPadding">false</item>
-    </style>
-
     <style name="MenuItemContainer">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">@dimen/reg_48dp</item>
@@ -674,384 +378,9 @@
         <item name="android:focusable">true</item>
     </style>
 
-
-    <style name="tool_tip_dialog" parent="android:Theme.Material.Dialog.Alert">
-        <item name="android:textColorPrimary">?attr/toolTipDialogTextColor</item>
-        <item name="android:colorAccent">?attr/toolTipDialogTextColor</item>
-        <item name="android:colorBackground">?attr/toolTipDialogBackgroundColor</item>
-        <item name="android:textAllCaps">false</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
-        <item name="android:layout_gravity">center</item>
-        <item name="android:gravity">left</item>
-    </style>
-
-    <style name="alert_dialog_theme" parent="android:Theme.Dialog">
-        <item name="android:windowBackground">?attr/toolTipDialogBackgroundColor</item>
-        <item name="android:textColor">?attr/toolTipDialogTextColor</item>
-        <item name="android:textColorPrimary">?attr/toolTipDialogTextColor</item>
-        <item name="android:colorAccent">?attr/toolTipDialogTextColor</item>
-        <item name="android:buttonStyle">@style/dialog_button</item>
-        <item name="android:useDefaultMargins">false</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
-        <item name="android:gravity">start|center_vertical</item>
-    </style>
-
     <style name="dialog_button" parent="TextAppearance.AppCompat.Button">
         <item name="android:textColor">?attr/toolTipDialogTextColor</item>
         <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
-    </style>
-
-    <style name="MenuItemLabelTwo" parent="WrapWrapContainer">
-        <item name="android:paddingStart">@dimen/padding_8</item>
-        <item name="android:paddingTop">@dimen/reg_16dp</item>
-        <item name="android:paddingBottom">@dimen/reg_16dp</item>
-        <item name="android:textColor">?attr/preferenceItemLabelTwoColor</item>
-        <item name="android:textSize">16sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:lines">1</item>
-        <item name="android:gravity"> start|center_vertical</item>
-        <item name="android:ellipsize">end</item>
-        <item name="android:paddingEnd">@dimen/padding_48</item>
-    </style>
-
-    <style name="MenuItemLabelThree" parent="WrapWrapContainer">
-        <item name="android:gravity">center</item>
-        <item name="android:paddingStart">@dimen/padding_8</item>
-        <item name="android:paddingLeft">@dimen/padding_8</item>
-        <item name="android:paddingTop">@dimen/reg_12dp</item>
-        <item name="android:paddingEnd">@dimen/padding_8</item>
-        <item name="android:paddingRight">@dimen/padding_8</item>
-        <item name="android:paddingBottom">@dimen/reg_12dp</item>
-        <item name="android:textColor">?attr/preferenceItemLabelThreeColor</item>
-        <item name="android:textSize">16sp</item>
-        <item name="android:includeFontPadding">false</item>
-    </style>
-
-    <style name="MenuDropDownIcon">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginEnd">@dimen/margin_16</item>
-        <item name="android:paddingTop">12dp</item>
-        <item name="android:paddingBottom">12dp</item>
-        <item name="android:rotationY">@integer/rtl_support_auto_mirror_flip</item>
-        <item name="android:scaleType">fitEnd</item>
-        <item name="android:src">@drawable/ic_cm_icon</item>
-    </style>
-
-    <style name="MenuToggle">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginEnd">@dimen/margin_16</item>
-        <item name="android:paddingTop">12dp</item>
-        <item name="android:paddingBottom">12dp</item>
-        <item name="android:scaleType">fitEnd</item>
-        <item name="android:src">@drawable/ic_toggle_button_off</item>
-    </style>
-
-    <style name="MenuSpinner">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">1dp</item>
-        <item name="android:layout_marginEnd">@dimen/reg_8dp</item>
-        <item name="android:background">@android:color/transparent</item>
-        <item name="android:spinnerMode">dropdown</item>
-        <item name="android:popupBackground">@drawable/spinner_popup_background</item>
-    </style>
-
-    <style name="MenuItemTitle" parent="WrapWrapContainer">
-        <item name="android:fontFamily">@font/ibm_font_family</item>
-        <item name="android:gravity">center</item>
-        <item name="android:textColor">?attr/preferenceItemTitleColor</item>
-        <item name="android:textSize">13sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:text">@string/info</item>
-    </style>
-
-    <style name="MenuItemLabelFour">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginEnd">@dimen/margin_16</item>
-        <item name="android:fontFamily">@font/ibm_font_family</item>
-        <item name="android:gravity">center</item>
-        <item name="android:text">--</item>
-        <item name="android:textColor">?attr/preferenceItemLabelFiveColor</item>
-        <item name="android:textSize">16sp</item>
-    </style>
-
-    <style name="MenuItemLabelHalfOpacity" parent="MenuItemLabelFour">
-        <item name="android:textColor">?attr/wdSecondaryColor</item>
-    </style>
-
-
-    <style name="MenuItemLabelFive" parent="WrapWrapContainer">
-        <item name="android:layout_marginTop">@dimen/margin_16</item>
-        <item name="android:fontFamily">@font/ibm_font_family</item>
-        <item name="android:gravity">center</item>
-        <item name="android:textColor">?attr/preferenceItemLabelFiveColor</item>
-        <item name="android:textSize">16sp</item>
-        <item name="android:textStyle">bold</item>
-    </style>
-
-
-    <style name="ExpandableChildLabelText" parent="WrapWrapContainer">
-        <item name="android:fontFamily">@font/ibm_font_family</item>
-        <item name="android:gravity">center</item>
-        <item name="android:textColor">?attr/preferenceItemLabelFiveColor</item>
-        <item name="android:textSize">16sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:layout_marginTop">0dp</item>
-        <item name="android:text">@string/username</item>
-        <item name="android:includeFontPadding">false</item>
-        <item name="android:layout_marginStart">@dimen/margin_16</item>
-        <item name="android:layout_height">@dimen/reg_48dp</item>
-    </style>
-
-
-    <style name="preferenceRoundedBackground" parent="ConstraintWrapContainer">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:background">@drawable/preferences_rounded_corner_background</item>
-        <item name="android:layout_marginTop">@dimen/margin_16</item>
-        <item name="android:layout_marginEnd">@dimen/margin_16</item>
-        <item name="android:layout_marginStart">@dimen/margin_16</item>
-        <item name="android:layout_marginBottom">@dimen/margin_16</item>
-        <item name="android:paddingStart">@dimen/padding_16</item>
-        <item name="android:paddingTop">@dimen/padding_16</item>
-        <item name="android:paddingBottom">@dimen/padding_16</item>
-    </style>
-
-    <style name="preferenceRoundCornerButton" parent="ConstraintWrapContainer">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">@dimen/reg_48dp</item>
-        <item name="android:background">@drawable/preferences_rounded_corner_background</item>
-        <item name="android:layout_marginTop">@dimen/margin_16</item>
-        <item name="android:layout_marginEnd">@dimen/margin_16</item>
-        <item name="android:layout_marginStart">@dimen/margin_16</item>
-        <item name="android:paddingStart">@dimen/padding_16</item>
-        <item name="android:paddingBottom">@dimen/padding_14</item>
-        <item name="android:paddingTop">@dimen/padding_14</item>
-    </style>
-
-    <style name="preferenceRoundCornerButtonLabel">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">0dp</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
-        <item name="android:includeFontPadding">false</item>
-        <item name="android:textColor">?attr/preferenceItemLabelColor</item>
-        <item name="android:textSize">@dimen/text_size_16</item>
-        <item name="android:textStyle">bold</item>
-    </style>
-
-    <style name="preferenceRoundedBackgroundLowTopMargin" parent="preferenceRoundedBackground">
-        <item name="android:layout_marginTop">16dp</item>
-        <item name="android:layout_marginBottom">0dp</item>
-        <item name="android:paddingTop">10dp</item>
-        <item name="android:paddingBottom">10dp</item>
-    </style>
-
-    <style name="MenuAttentionContainer">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:background">@drawable/attention_container_background</item>
-    </style>
-
-    <style name="MenuAttentionLabel" parent="WrapWrapContainer">
-        <item name="android:layout_marginStart">@dimen/margin_16</item>
-        <item name="android:layout_marginEnd">@dimen/margin_16</item>
-        <item name="android:layout_marginTop">@dimen/margin_16</item>
-        <item name="android:layout_marginBottom">@dimen/margin_16</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
-        <item name="android:gravity">center</item>
-        <item name="android:textColor">?attr/wdWarningColor</item>
-        <item name="android:textSize">14sp</item>
-    </style>
-
-    <style name="SmallProgressCircle">
-        <item name="android:layout_width">@dimen/reg_24dp</item>
-        <item name="android:layout_height">@dimen/reg_24dp</item>
-        <item name="android:layout_marginEnd">@dimen/margin_16</item>
-        <item name="android:indeterminateTint">?attr/wdSecondaryColor</item>
-        <item name="android:visibility">gone</item>
-    </style>
-
-    <style name="DebugScrollView">
-        <item name="android:scrollbarSize">2dp</item>
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">0dp</item>
-        <item name="android:layout_marginStart">@dimen/padding_16</item>
-        <item name="android:layout_marginTop">@dimen/padding_16</item>
-        <item name="android:layout_marginEnd">@dimen/padding_16</item>
-        <item name="android:layout_marginBottom">@dimen/padding_16</item>
-        <item name="android:scrollbarThumbVertical">@android:color/white</item>
-    </style>
-
-    <style name="DebugTextStyle">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
-        <item name="android:textColor">?attr/debugViewTextColor</item>
-        <item name="android:gravity">bottom</item>
-        <item name="android:textSize">@dimen/text_size_12</item>
-    </style>
-
-
-    <style name="RecycleViewContainer">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">0dp</item>
-        <item name="android:scrollbars">none</item>
-    </style>
-
-    <style name="NothingToShowView">
-        <item name="android:src">@drawable/ic_no_fav_icon</item>
-        <item name="android:layout_width">@dimen/reg_40dp</item>
-        <item name="android:layout_height">@dimen/reg_40dp</item>
-        <item name="android:tint">?attr/pingBarColor</item>
-        <item name="android:visibility">gone</item>
-    </style>
-
-    <style name="AdapterLoadErrorView">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:fontFamily">@font/ibm_font_family</item>
-        <item name="android:gravity">center</item>
-        <item name="android:textColor">?attr/nodeListGroupTextColor</item>
-        <item name="android:textSize">@dimen/text_size_16</item>
-        <item name="android:visibility">gone</item>
-        <item name="fontFamily">@font/ibm_plex_sans_regular</item>
-        <item name="android:layout_marginStart">@dimen/margin_24</item>
-        <item name="android:layout_marginEnd">@dimen/margin_24</item>
-    </style>
-
-    <style name="SquareAddButtonView">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">@dimen/reg_48dp</item>
-        <item name="android:clickable">true</item>
-        <item name="android:textColor">?attr/nodeListGroupTextColor</item>
-        <item name="android:focusable">true</item>
-        <item name="android:gravity">center_vertical|end</item>
-        <item name="android:text">@string/add_profile</item>
-        <item name="android:paddingEnd">@dimen/reg_16dp</item>
-        <item name="android:paddingStart">@dimen/reg_16dp</item>
-        <item name="android:visibility">gone</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
-        <item name="android:background">?attr/serverListSearchView</item>
-        <item name="android:drawableTint" tools:targetApi="m">?attr/nodeListGroupTextColor</item>
-        <item name="android:drawablePadding">8dp</item>
-        <item name="android:drawableEnd">@drawable/ic_forward_arrow_settings</item>
-        <item name="android:rotationY">@integer/rtl_support_auto_mirror_flip</item>
-        <item name="android:scaleType">fitCenter</item>
-    </style>
-
-    <style name="DeviceNameView">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">@dimen/reg_48dp</item>
-        <item name="android:clickable">true</item>
-        <item name="android:textColor">?attr/navigationStripColor</item>
-        <item name="android:focusable">true</item>
-        <item name="android:gravity">center_vertical|end</item>
-        <item name="android:text">Device Name</item>
-        <item name="android:paddingEnd">@dimen/reg_16dp</item>
-        <item name="android:paddingStart">@dimen/reg_16dp</item>
-        <item name="android:visibility">gone</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
-    </style>
-
-    <style name="ReloadButtonView">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginStart">@dimen/margin_16</item>
-        <item name="android:layout_marginEnd">@dimen/margin_16</item>
-        <item name="android:layout_marginBottom">@dimen/margin_32</item>
-        <item name="android:background">?attr/normalButtonStateDrawable</item>
-        <item name="android:clickable">true</item>
-        <item name="android:textColor">?attr/nodeListGroupTextColorSelected</item>
-        <item name="android:focusable">true</item>
-        <item name="android:gravity">center</item>
-        <item name="android:paddingTop">@dimen/reg_10dp</item>
-        <item name="android:paddingBottom">@dimen/reg_10dp</item>
-        <item name="android:textSize">16sp</item>
-        <item name="android:visibility">gone</item>
-    </style>
-
-    <style name="FeatureText">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">@dimen/margin_8</item>
-        <item name="android:text">@string/feature2</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
-        <item name="android:textColor">@color/colorWhite50</item>
-        <item name="android:textSize">@dimen/text_size_16</item>
-    </style>
-
-    <style name="MenuActionTitle">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:textSize">16sp</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
-        <item name="android:textColor">?attr/preferenceItemActionColor</item>
-        <item name="android:includeFontPadding">false</item>
-        <item name="layout_goneMarginStart">@dimen/padding_14</item>
-    </style>
-
-    <style name="MenuActionTitleIcon">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-    </style>
-
-    <style name="MenuActionDivider" parent="divider">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">2dp</item>
-        <item name="android:layout_marginTop">@dimen/padding_14</item>
-    </style>
-
-    <style name="MenuActionDescription">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">4dp</item>
-        <item name="android:textColor">?preferenceItemActionColor</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
-        <item name="android:textSize">@dimen/text_size_12</item>
-        <item name="android:gravity">left|center_vertical</item>
-    </style>
-
-    <style name="RequiredLabel">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:textColor">?attr/requiredLabelColor</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
-        <item name="android:textSize">@dimen/text_size_16</item>
-        <item name="android:text">@string/required</item>
-        <item name="android:includeFontPadding">false</item>
-        <item name="android:layout_marginStart">4dp</item>
-        <item name="android:layout_marginEnd">@dimen/margin_16</item>
-    </style>
-
-    <style name="padding">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:paddingStart">@dimen/padding_8</item>
-        <item name="android:paddingEnd">@dimen/padding_8</item>
-        <item name="android:paddingTop">@dimen/reg_12dp</item>
-        <item name="android:paddingBottom">@dimen/reg_12dp</item>
-        <item name="android:layout_marginEnd">@dimen/padding_16</item>
-        <item name="android:gravity">center</item>
-        <item name="android:fontFamily">@font/ibm_font_family</item>
-        <item name="android:textColor">?attr/menuItemTabLabelColor</item>
-    </style>
-
-    <style name="MenuItemTabLabel" parent="padding">
-        <item name="android:gravity">top</item>
-        <item name="android:textSize">@dimen/text_size_16</item>
-    </style>
-
-    <style name="MenuItemSpinnerLabel" parent="padding">
-        <item name="android:includeFontPadding">false</item>
-    </style>
-
-    <style name="transparentEditableText" parent="padding">
-        <item name="android:background">@android:color/transparent</item>
-        <item name="android:minWidth">@dimen/reg_60dp</item>
-        <item name="android:textColorHint">?attr/wdPrimaryColor</item>
-        <item name="android:includeFontPadding">false</item>
     </style>
 
     <style name="OverlayAlert" parent="Theme.AppCompat.Dialog">

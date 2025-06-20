@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-  ~ Copyright (c) 2021 Windscribe Limited.
-  -->
-
-<resources>
-    <integer name="rtl_support_auto_mirror_flip">0</integer>
-</resources>
