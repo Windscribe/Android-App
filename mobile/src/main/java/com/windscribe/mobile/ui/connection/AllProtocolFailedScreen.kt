@@ -57,20 +57,20 @@ fun AllProtocolFailedScreen(appStartActivityViewModel: AppStartActivityViewModel
                 colorFilter = ColorFilter.tint(AppColors.white)
             )
             Text(
-                text = stringResource(R.string.this_network_hates_us),
+                text = stringResource(com.windscribe.vpn.R.string.this_network_hates_us),
                 style = font24,
                 color = AppColors.white,
                 textAlign = TextAlign.Center
             )
             Text(
-                text = stringResource(R.string.well_we_gave_it_our_best_shot_we_just_couldn_t_connect_you_on_this_network_send_us_your_debug_log_so_we_can_figure_out_what_happened),
+                text = stringResource(com.windscribe.vpn.R.string.well_we_gave_it_our_best_shot_we_just_couldn_t_connect_you_on_this_network_send_us_your_debug_log_so_we_can_figure_out_what_happened),
                 style = font16,
                 color = AppColors.white,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
             Spacer(modifier = Modifier.padding(top = 24.dp))
-            NextButton(Modifier, text = stringResource(R.string.send_debug_log), true) {
+            NextButton(Modifier, text = stringResource(com.windscribe.vpn.R.string.send_debug_log), true) {
                 appStartActivityViewModel?.autoConnectionModeCallback?.onSendLogClicked()
                 navController.popBackStack()
             }
@@ -79,7 +79,7 @@ fun AllProtocolFailedScreen(appStartActivityViewModel: AppStartActivityViewModel
                 navController.popBackStack()
             }) {
                 Text(
-                    stringResource(R.string.cancel),
+                    stringResource(com.windscribe.vpn.R.string.cancel),
                     style = font16,
                     color =AppColors.white
                 )

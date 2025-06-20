@@ -99,7 +99,7 @@ class SignupViewModel @Inject constructor(
             viewModelScope.launch {
                 _signupButtonEnabled.emit(true)
                 updateState(
-                    SignupState.Error(AuthError.LocalizedInputError(R.string.no_internet))
+                    SignupState.Error(AuthError.LocalizedInputError(com.windscribe.vpn.R.string.no_internet))
                 )
             }
             return
@@ -108,7 +108,7 @@ class SignupViewModel @Inject constructor(
             updateState(
                 SignupState.Error(
                     AuthError.LocalizedInputError(
-                        R.string.username_empty,
+                        com.windscribe.vpn.R.string.username_empty,
                         listOf(AuthInputFields.Username)
                     )
                 )
@@ -119,7 +119,7 @@ class SignupViewModel @Inject constructor(
             updateState(
                 SignupState.Error(
                     AuthError.LocalizedInputError(
-                        R.string.password_too_short,
+                        com.windscribe.vpn.R.string.password_too_short,
                         listOf(AuthInputFields.Password)
                     )
                 )
@@ -131,7 +131,7 @@ class SignupViewModel @Inject constructor(
             updateState(
                 SignupState.Error(
                     AuthError.LocalizedInputError(
-                        R.string.password_requirement,
+                        com.windscribe.vpn.R.string.password_requirement,
                         listOf(AuthInputFields.Password)
                     )
                 )
@@ -142,7 +142,7 @@ class SignupViewModel @Inject constructor(
             updateState(
                 SignupState.Error(
                     AuthError.LocalizedInputError(
-                        R.string.invalid_email_format,
+                        com.windscribe.vpn.R.string.invalid_email_format,
                         listOf(AuthInputFields.Email)
                     )
                 )
@@ -302,7 +302,7 @@ class SignupViewModel @Inject constructor(
             }
 
             ApiFailure.NoNetwork -> {
-                updateState(SignupState.Error(AuthError.LocalizedInputError(R.string.no_internet)))
+                updateState(SignupState.Error(AuthError.LocalizedInputError(com.windscribe.vpn.R.string.no_internet)))
             }
         }
     }

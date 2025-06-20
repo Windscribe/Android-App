@@ -60,20 +60,20 @@ fun SetupPreferredProtocolScreen(appStartActivityViewModel: AppStartActivityView
                 colorFilter = ColorFilter.tint(AppColors.white)
             )
             Text(
-                text = stringResource(R.string.set_this_protocol_as_preferred, Util.getProtocolLabel(proto!!.protocol)),
+                text = stringResource(com.windscribe.vpn.R.string.set_this_protocol_as_preferred, Util.getProtocolLabel(proto!!.protocol)),
                 style = font24,
                 color = AppColors.white,
                 textAlign = TextAlign.Center
             )
             Text(
-                text = stringResource(R.string.windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions),
+                text = stringResource(com.windscribe.vpn.R.string.windscribe_will_always_use_this_protocol_to_connect_on_this_network_in_the_future_to_avoid_any_interruptions),
                 style = font16,
                 color = AppColors.white,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
             Spacer(modifier = Modifier.padding(top = 24.dp))
-            NextButton(Modifier, text = stringResource(R.string.set_as_preferred), true) {
+            NextButton(Modifier, text = stringResource(com.windscribe.vpn.R.string.set_as_preferred), true) {
                 appStartActivityViewModel.autoConnectionModeCallback?.onSetAsPreferredClicked()
                 navController.popBackStack()
             }
@@ -82,7 +82,7 @@ fun SetupPreferredProtocolScreen(appStartActivityViewModel: AppStartActivityView
                 navController.popBackStack()
             }) {
                 Text(
-                    stringResource(R.string.cancel),
+                    stringResource(com.windscribe.vpn.R.string.cancel),
                     style = font16,
                     color = AppColors.white
                 )

@@ -114,17 +114,17 @@ private fun SwitchItemViewPreview() {
         ) {
             Spacer(Modifier.height(62.dp))
             SwitchItemView(
-                title = R.string.app_background,
+                title = com.windscribe.vpn.R.string.app_background,
                 icon = R.drawable.ic_apple,
-                description = R.string.appearance_description,
+                description = com.windscribe.vpn.R.string.appearance_description,
                 false,
                 onSelect = {}
             )
             Spacer(Modifier.height(16.dp))
             SwitchItemView(
-                title = R.string.app_background,
+                title = com.windscribe.vpn.R.string.app_background,
                 icon = R.drawable.ic_apple,
-                description = R.string.appearance_description,
+                description = com.windscribe.vpn.R.string.appearance_description,
                 true,
                 onSelect = {}
             )

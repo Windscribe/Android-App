@@ -68,7 +68,7 @@ fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Ho
         val hideIp = remember { mutableStateOf(false) }
 
         Text(
-            text = networkInfo.name ?: stringResource(R.string.unknown),
+            text = networkInfo.name ?: stringResource(com.windscribe.vpn.R.string.unknown),
             style = font16.copy(fontWeight = FontWeight.Medium),
             color = AppColors.white,
             modifier = Modifier

@@ -101,8 +101,8 @@ private fun HandleToast(viewModel: EmergencyConnectViewModal?) {
 @Composable
 fun EmergencyConnectButton(uiState: EmergencyConnectUIState, onClick: () -> Unit) {
     val buttonText = when (uiState) {
-        EmergencyConnectUIState.Disconnected -> stringResource(id = R.string.connect)
-        else -> stringResource(id = R.string.disconnect)
+        EmergencyConnectUIState.Disconnected -> stringResource(id = com.windscribe.vpn.R.string.connect)
+        else -> stringResource(id = com.windscribe.vpn.R.string.disconnect)
     }
     NextButton(modifier = Modifier.padding(), buttonText, enabled = true, onClick = onClick)
 }
@@ -137,7 +137,7 @@ fun EmergencyConnectHeroIcon() {
 @Composable
 fun EmergencyConnectTitle() {
     Text(
-        text = stringResource(id = R.string.emergency_connect),
+        text = stringResource(id = com.windscribe.vpn.R.string.emergency_connect),
         style = font24,
         textAlign = TextAlign.Center,
         color = AppColors.white
@@ -147,8 +147,8 @@ fun EmergencyConnectTitle() {
 @Composable
 fun EmergencyConnectDescription(uiState: EmergencyConnectUIState) {
     val descriptionText = when (uiState) {
-        EmergencyConnectUIState.Disconnected -> stringResource(id = R.string.emergency_connect_description)
-        EmergencyConnectUIState.Connected -> stringResource(id = R.string.emergency_connected_description)
+        EmergencyConnectUIState.Disconnected -> stringResource(id = com.windscribe.vpn.R.string.emergency_connect_description)
+        EmergencyConnectUIState.Connected -> stringResource(id = com.windscribe.vpn.R.string.emergency_connected_description)
         EmergencyConnectUIState.Connecting -> ""
     }
     if (descriptionText.isEmpty()) return
@@ -186,7 +186,7 @@ fun EmergencyConnectCancelButton() {
         navController.popBackStack()
     }) {
         Text(
-            text = stringResource(id = R.string.cancel),
+            text = stringResource(id = com.windscribe.vpn.R.string.cancel),
             style = font16,
             color = AppColors.white.copy(alpha = 0.50f)
         )

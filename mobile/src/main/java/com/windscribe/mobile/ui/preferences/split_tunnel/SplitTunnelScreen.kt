@@ -153,9 +153,9 @@ private fun Mode(viewModel: SplitTunnelViewModel?) {
         ?: remember { mutableStateOf(false) }
     Column {
         SwitchItemView(
-            title = com.windscribe.mobile.R.string.split_tunneling,
+            title = R.string.split_tunneling,
             icon = com.windscribe.mobile.R.drawable.ic_split_routing,
-            description = com.windscribe.mobile.R.string.split_tunneling_feature,
+            description = com.windscribe.vpn.R.string.split_tunneling_feature,
             splitTunnelEnabled,
             shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
             onSelect = {

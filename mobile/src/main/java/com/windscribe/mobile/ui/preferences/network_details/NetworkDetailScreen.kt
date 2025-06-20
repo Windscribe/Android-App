@@ -58,9 +58,9 @@ fun NetworkDetailScreen(viewModel: NetworkDetailViewModel? = null) {
             }
             Spacer(modifier = Modifier.height(20.dp))
             SwitchItemView(
-                title = com.windscribe.mobile.R.string.auto_secure,
+                title = R.string.auto_secure,
                 icon = com.windscribe.mobile.R.drawable.ic_wifi,
-                description = com.windscribe.mobile.R.string.auto_secure_description,
+                description = R.string.auto_secure_description,
                 networkDetail!!.isAutoSecureOn,
                 onSelect = {
                     viewModel?.onAutoSecureChanged()
@@ -127,7 +127,7 @@ private fun Header(viewModel: NetworkDetailViewModel?, networkDetail: NetworkInf
             )
             Spacer(modifier = Modifier.padding(8.dp))
             Text(
-                stringResource(com.windscribe.mobile.R.string.preferred_protocol),
+                stringResource(R.string.preferred_protocol),
                 style = font16,
                 color = MaterialTheme.colorScheme.primaryTextColor
             )
@@ -151,7 +151,7 @@ private fun Header(viewModel: NetworkDetailViewModel?, networkDetail: NetworkInf
             }
         }
         Spacer(modifier = Modifier.padding(8.dp))
-        Description(stringResource(com.windscribe.mobile.R.string.preferred_protocol_description))
+        Description(stringResource(R.string.preferred_protocol_description))
     }
 }
 

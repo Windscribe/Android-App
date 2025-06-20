@@ -226,14 +226,14 @@ class AccountViewModelImpl(
                 is CallResult.Success<ClaimVoucherCodeResponse> -> {
                     logger.debug("Claimed voucher code: {}", result.data)
                     if (result.data.isClaimed) {
-                        _alertState.emit(AlertState.Success(ToastMessage.Localized(R.string.voucher_code_is_applied)))
+                        _alertState.emit(AlertState.Success(ToastMessage.Localized(com.windscribe.vpn.R.string.voucher_code_is_applied)))
                         workManager.updateSession()
                     } else if (result.data.emailRequired == true) {
-                        _alertState.emit(AlertState.Error(ToastMessage.Localized(R.string.confirmed_email_required)))
+                        _alertState.emit(AlertState.Error(ToastMessage.Localized(com.windscribe.vpn.R.string.confirmed_email_required)))
                     } else if (result.data.isUsed) {
-                        _alertState.emit(AlertState.Error(ToastMessage.Localized(R.string.voucher_code_used_already)))
+                        _alertState.emit(AlertState.Error(ToastMessage.Localized(com.windscribe.vpn.R.string.voucher_code_used_already)))
                     } else {
-                        _alertState.emit(AlertState.Error(ToastMessage.Localized(R.string.voucher_code_is_invalid)))
+                        _alertState.emit(AlertState.Error(ToastMessage.Localized(com.windscribe.vpn.R.string.voucher_code_is_invalid)))
                     }
                 }
             }

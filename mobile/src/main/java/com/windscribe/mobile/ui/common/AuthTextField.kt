@@ -69,7 +69,7 @@ fun AuthTextField(
             if (isError) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_input_error_icon),
-                    contentDescription = stringResource(id = R.string.username),
+                    contentDescription = stringResource(id = com.windscribe.vpn.R.string.username),
                     tint = Color.Red,
                 )
             }
@@ -123,10 +123,7 @@ fun AuthTextField(
                                 painter = painterResource(
                                     id = if (passwordVisible) R.drawable.ic_hide_password else R.drawable.ic_show_password
                                 ),
-                                contentDescription = if (passwordVisible)
-                                    stringResource(id = R.string.password)
-                                else
-                                    stringResource(id = R.string.show_password),
+                                stringResource(id = com.windscribe.vpn.R.string.password),
                                 tint = AppColors.white.copy(alpha = 0.50f)
                             )
                         }

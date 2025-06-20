@@ -51,15 +51,15 @@ fun RenameLocations(viewmodel: LipstickViewmodel? = null) {
     Column{
         Header()
         Spacer(modifier = Modifier.height(1.dp))
-        Section(R.string.export_locations, "Export server list file.") {
+        Section(com.windscribe.vpn.R.string.export_locations, "Export server list file.") {
             exportPickerLauncher.launch("locations.json")
         }
         Spacer(modifier = Modifier.height(1.dp))
-        Section(R.string.import_locations, "Import server list file.") {
+        Section(com.windscribe.vpn.R.string.import_locations, "Import server list file.") {
             importPickerLauncher.launch(arrayOf("*/*"))
         }
         Spacer(modifier = Modifier.height(1.dp))
-        Section(R.string.reset, "Reset custom server list file.", shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)) {
+        Section(com.windscribe.vpn.R.string.reset, "Reset custom server list file.", shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)) {
             viewmodel?.onResetClick()
         }
     }
@@ -79,13 +79,13 @@ private fun Header() {
             )
             Spacer(modifier = Modifier.padding(8.dp))
             Text(
-                stringResource(R.string.renamed_location),
+                stringResource(com.windscribe.vpn.R.string.renamed_location),
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.primaryTextColor
             )
         }
         Spacer(modifier = Modifier.padding(8.dp))
-        Description(stringResource(R.string.renamed_location_description))
+        Description(stringResource(com.windscribe.vpn.R.string.renamed_location_description))
     }
 }
 

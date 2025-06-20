@@ -73,7 +73,7 @@ fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
             Image(painter = painterResource(R.drawable.ic_appearance), contentDescription = null)
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = stringResource(R.string.theme),
+                text = stringResource(com.windscribe.vpn.R.string.theme),
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.primaryTextColor
             )
@@ -125,7 +125,7 @@ fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
             }
         }
         Spacer(modifier = Modifier.height(13.5.dp))
-        Description(stringResource(R.string.appearance_description))
+        Description(stringResource(com.windscribe.vpn.R.string.appearance_description))
     }
 }
 

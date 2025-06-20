@@ -124,8 +124,8 @@ private fun SuccessView(
     Box(modifier = Modifier.fillMaxSize()) {
         if (list.isEmpty()) {
             AddButtonWithDetails(
-                R.string.add_vpn_config,
-                R.string.no_custom_configs,
+                com.windscribe.vpn.R.string.add_vpn_config,
+                com.windscribe.vpn.R.string.no_custom_configs,
                 R.drawable.ic_location_config
             ) {
                 filePickerLauncher.launch(arrayOf("*/*"))
@@ -135,7 +135,7 @@ private fun SuccessView(
                 .fillMaxSize()
                 .nestedScroll(pullToRefreshState.nestedScrollConnection)) {
                 Text(
-                    text = stringResource(R.string.custom_configs),
+                    text = stringResource(com.windscribe.vpn.R.string.custom_configs),
                     style = font12,
                     color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f),
                     modifier = Modifier.padding(start = 16.dp, top = 16.dp)
@@ -147,7 +147,7 @@ private fun SuccessView(
                     }
                 }
                 Spacer(modifier = Modifier.weight(1.0f))
-                AddButton(R.string.add_vpn_config) {
+                AddButton(com.windscribe.vpn.R.string.add_vpn_config) {
                     filePickerLauncher.launch(arrayOf("*/*"))
                 }
             }

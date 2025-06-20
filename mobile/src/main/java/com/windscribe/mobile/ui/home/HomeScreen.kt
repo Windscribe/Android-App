@@ -121,13 +121,13 @@ private fun HandleGotoAction(goto: HomeGoto?) {
     when (goto) {
         HomeGoto.Banned -> {
             val bannedData = AccountStatusDialogData(
-                title = stringResource(R.string.you_ve_been_banned),
+                title = stringResource(com.windscribe.vpn.R.string.you_ve_been_banned),
                 icon = R.drawable.garry_angry,
-                description = stringResource(R.string.you_ve_violated_our_terms),
+                description = stringResource(com.windscribe.vpn.R.string.you_ve_violated_our_terms),
                 showSkipButton = false,
                 skipText = "",
                 showUpgradeButton = true,
-                upgradeText = stringResource(R.string.ok),
+                upgradeText = stringResource(com.windscribe.vpn.R.string.ok),
                 bannedLayout = true
             )
             navigateWithData(navController, Screen.AccountStatus.route, bannedData)
@@ -135,13 +135,13 @@ private fun HandleGotoAction(goto: HomeGoto?) {
 
         is HomeGoto.Expired -> {
             val expireData = AccountStatusDialogData(
-                title = stringResource(R.string.you_re_out_of_data),
+                title = stringResource(com.windscribe.vpn.R.string.you_re_out_of_data),
                 icon = R.drawable.garry_nodata,
-                description = stringResource(R.string.upgrade_to_stay_protected, goto.date),
+                description = stringResource(com.windscribe.vpn.R.string.upgrade_to_stay_protected, goto.date),
                 showSkipButton = true,
-                skipText = stringResource(R.string.upgrade_later),
+                skipText = stringResource(com.windscribe.vpn.R.string.upgrade_later),
                 showUpgradeButton = true,
-                upgradeText = stringResource(R.string.upgrade),
+                upgradeText = stringResource(com.windscribe.vpn.R.string.upgrade),
             )
             navigateWithData(navController, Screen.AccountStatus.route, expireData)
         }

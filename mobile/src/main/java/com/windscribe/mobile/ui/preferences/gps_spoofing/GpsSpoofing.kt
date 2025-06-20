@@ -95,9 +95,9 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
         GpsStep.Start -> {
             Dialog(
                 icon = R.drawable.ic_network_security_feature_icon,
-                title = R.string.gps_spoofing,
-                description = R.string.gps_spoofing_explain,
-                action = R.string.let_s_do_it,
+                title = com.windscribe.vpn.R.string.gps_spoofing,
+                description = com.windscribe.vpn.R.string.gps_spoofing_explain,
+                action = com.windscribe.vpn.R.string.let_s_do_it,
                 onAccept = { currentStep = GpsStep.UnlockDevMode },
                 onCancel = { navController.popBackStack() }
             )
@@ -106,8 +106,8 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
         GpsStep.UnlockDevMode -> {
             Dialog(
                 icon = R.drawable.ic_network_security_feature_icon,
-                title = R.string.unlock_developer_mode,
-                description = R.string.unlock_developer_mode_explain,
+                title = com.windscribe.vpn.R.string.unlock_developer_mode,
+                description = com.windscribe.vpn.R.string.unlock_developer_mode_explain,
                 onAccept = {
                     if (isDevModeOn(context)) {
                         currentStep = GpsStep.AddToMockSettings
@@ -123,7 +123,7 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
                         }
                     }
                 },
-                action = if (isDevModeOn(context)) R.string.next else R.string.open_settings,
+                action = if (isDevModeOn(context)) com.windscribe.vpn.R.string.next else com.windscribe.vpn.R.string.open_settings,
                 onCancel = { navController.popBackStack() }
             )
         }
@@ -131,8 +131,8 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
         GpsStep.AddToMockSettings -> {
             Dialog(
                 icon = R.drawable.ic_network_security_feature_icon,
-                title = R.string.add_to_mock_location,
-                description = R.string.add_to_mock_location_explain,
+                title = com.windscribe.vpn.R.string.add_to_mock_location,
+                description = com.windscribe.vpn.R.string.add_to_mock_location_explain,
                 onAccept = {
                     if (isAppSelectedInMockLocationList(context)) {
                         currentStep = GpsStep.Success
@@ -152,7 +152,7 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
                         }
                     }
                 },
-                action = if (isAppSelectedInMockLocationList(context)) R.string.next else R.string.open_settings,
+                action = if (isAppSelectedInMockLocationList(context)) com.windscribe.vpn.R.string.next else com.windscribe.vpn.R.string.open_settings,
                 onCancel = { navController.popBackStack() }
             )
         }
@@ -160,9 +160,9 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
         GpsStep.Success -> {
             Dialog(
                 icon = R.drawable.ic_success_bg,
-                title = R.string.you_are_done,
-                description = R.string.gps_spoofing_success,
-                action = R.string.close,
+                title = com.windscribe.vpn.R.string.you_are_done,
+                description = com.windscribe.vpn.R.string.gps_spoofing_success,
+                action = com.windscribe.vpn.R.string.close,
                 hideCancel = true,
                 backgroundColor = AppColors.neonGreen.copy(alpha = 0.25f),
                 onAccept = {
@@ -178,9 +178,9 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
         GpsStep.Error -> {
             Dialog(
                 icon = R.drawable.ic_exmark,
-                title = R.string.gps_spoofing_not_set,
-                description = R.string.gps_spoofing_error,
-                action = R.string.close,
+                title = com.windscribe.vpn.R.string.gps_spoofing_not_set,
+                description = com.windscribe.vpn.R.string.gps_spoofing_error,
+                action = com.windscribe.vpn.R.string.close,
                 hideCancel = true,
                 backgroundColor = AppColors.yellow.copy(alpha = 0.25f),
                 onAccept = {
@@ -197,9 +197,9 @@ fun GpsSpoofing(viewModel: AppStartActivityViewModel? = null) {
 @Composable
 private fun Dialog(
     icon: Int = R.drawable.ic_network_security_feature_icon,
-    title: Int = R.string.unlock_developer_mode,
+    title: Int = com.windscribe.vpn.R.string.unlock_developer_mode,
     description: Int,
-    action: Int = R.string.open_settings,
+    action: Int = com.windscribe.vpn.R.string.open_settings,
     hideCancel: Boolean = false,
     backgroundColor: Color = Color.Transparent,
     onAccept: () -> Unit,
@@ -254,7 +254,7 @@ private fun Dialog(
                     onCancel()
                 }) {
                     Text(
-                        stringResource(id = R.string.close),
+                        stringResource(id = com.windscribe.vpn.R.string.close),
                         style = font16,
                         color = MaterialTheme.colorScheme.preferencesSubtitleColor
                     )

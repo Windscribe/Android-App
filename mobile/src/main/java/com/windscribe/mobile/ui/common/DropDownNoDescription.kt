@@ -123,7 +123,7 @@ fun DropDownNoDescription(
 private fun DropDownNoDescriptionPreview() {
     PreviewWithNav {
         DropDownNoDescription(
-            title = R.string.app_background,
+            title = com.windscribe.vpn.R.string.app_background,
             items = emptyList(),
             "",
             onSelect = {}

@@ -73,13 +73,13 @@ private fun Header() {
             )
             Spacer(modifier = Modifier.padding(8.dp))
             Text(
-                stringResource(R.string.sound_notifications),
+                stringResource(com.windscribe.vpn.R.string.sound_notifications),
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.primaryTextColor
             )
         }
         Spacer(modifier = Modifier.padding(8.dp))
-        Description(stringResource(R.string.sound_notifications_description))
+        Description(stringResource(com.windscribe.vpn.R.string.sound_notifications_description))
     }
 }
 
@@ -96,8 +96,8 @@ private fun WhenDisconnectedSection(viewmodel: LipstickViewmodel?) {
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? -> uri?.let { viewmodel?.loadDisconnectedCustomSound(context, it) } }
     DropdownSection(
-        title = stringResource(R.string.when_disconnected),
-        displayValue = stringResource(item?.value?.title ?: R.string.None),
+        title = stringResource(com.windscribe.vpn.R.string.when_disconnected),
+        displayValue = stringResource(item?.value?.title ?: com.windscribe.vpn.R.string.None),
         isDropdownExpanded = expandedMain,
         onDropdownClick = { expandedMain.value = !expandedMain.value },
         dropdownItems = LookAndFeelHelper.getSoundOptions(),
@@ -176,8 +176,8 @@ private fun WhenConnectedSection(viewmodel: LipstickViewmodel?) {
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? -> uri?.let { viewmodel?.loadConnectedCustomSound(context, it) } }
     DropdownSection(
-        title = stringResource(R.string.when_connected),
-        displayValue = stringResource(item?.value?.title ?: R.string.None),
+        title = stringResource(com.windscribe.vpn.R.string.when_connected),
+        displayValue = stringResource(item?.value?.title ?: com.windscribe.vpn.R.string.None),
         isDropdownExpanded = expandedMain,
         onDropdownClick = { expandedMain.value = !expandedMain.value },
         dropdownItems = LookAndFeelHelper.getSoundOptions(),

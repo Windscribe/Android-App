@@ -98,7 +98,6 @@ dependencies {
     implementation project(path: ':base')
     //Kapt
     kapt "com.github.bumptech.glide:compiler:$glide"
-    kapt "com.jakewharton:butterknife-compiler:$butterknife"
     kapt "androidx.room:room-compiler:$room"
     kapt "com.google.dagger:dagger-compiler:$dagger"
     kaptAndroidTest("com.google.dagger:dagger-compiler:$dagger")

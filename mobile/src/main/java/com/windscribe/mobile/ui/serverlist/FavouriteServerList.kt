@@ -86,10 +86,10 @@ fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionVie
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f))
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(stringResource(R.string.no_favourites), style = font16, color = MaterialTheme.colorScheme.serverListSecondaryColor)
+                        Text(stringResource(com.windscribe.vpn.R.string.no_favourites), style = font16, color = MaterialTheme.colorScheme.serverListSecondaryColor)
                     }
                 }
-                AddButtonWithDetails(null, R.string.no_favourites, R.drawable.ic_location_fav) { }
+                AddButtonWithDetails(null, com.windscribe.vpn.R.string.no_favourites, R.drawable.ic_location_fav) { }
             } else {
                 val isRefreshing by viewModel.refreshState.collectAsState()
 
@@ -107,7 +107,7 @@ fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionVie
                 Box {
                     Column(Modifier.fillMaxSize().nestedScroll(pullToRefreshState.nestedScrollConnection)) {
                         Text(
-                            text = stringResource(R.string.favourite),
+                            text = stringResource(com.windscribe.vpn.R.string.favourite),
                             style = font12,
                             color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f),
                             modifier = Modifier.padding(start = 8.dp, top = 16.dp)

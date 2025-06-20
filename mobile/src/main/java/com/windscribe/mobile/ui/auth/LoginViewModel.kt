@@ -110,7 +110,7 @@ class LoginViewModel @Inject constructor(
             if (!WindUtilities.isOnline()) {
                 logger.info("User is not connected to the internet.")
                 _loginButtonEnabled.emit(true)
-                updateState(LoginState.Error(AuthError.LocalizedInputError(R.string.no_internet)))
+                updateState(LoginState.Error(AuthError.LocalizedInputError(com.windscribe.vpn.R.string.no_internet)))
                 return@launch
             }
 
@@ -272,7 +272,7 @@ class LoginViewModel @Inject constructor(
             }
 
             ApiFailure.NoNetwork -> {
-                updateState(LoginState.Error(AuthError.LocalizedInputError(R.string.no_internet)))
+                updateState(LoginState.Error(AuthError.LocalizedInputError(com.windscribe.vpn.R.string.no_internet)))
             }
         }
     }

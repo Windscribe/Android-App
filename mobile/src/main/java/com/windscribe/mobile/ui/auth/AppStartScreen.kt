@@ -256,7 +256,7 @@ private fun GoogleButton(viewModel: AppStartViewModel?) {
             )
             Spacer(modifier = Modifier.width(10.dp))
             Text(
-                text = stringResource(R.string.continue_with_google),
+                text = stringResource(com.windscribe.vpn.R.string.continue_with_google),
                 style = font18.copy(fontWeight = FontWeight.Medium),
                 color = AppColors.black,
             )
@@ -288,7 +288,7 @@ private fun LoginButton() {
         shape = RoundedCornerShape(24.dp),
     ) {
         Text(
-            text = stringResource(R.string.login),
+            text = stringResource(com.windscribe.vpn.R.string.login),
             style = font18.copy(fontWeight = FontWeight.Medium),
             color = AppColors.white
         )
@@ -312,7 +312,7 @@ fun EmergencyConnectButton(isConnected: Boolean) {
 private fun SignupButton() {
     val navController = LocalNavController.current
     Text(
-        text = stringResource(R.string.text_sign_up),
+        text = stringResource(com.windscribe.vpn.R.string.text_sign_up),
         style = font16.copy(fontWeight = FontWeight.Medium),
         color = Color(0xFF838D9B),
         modifier = Modifier.clickable {

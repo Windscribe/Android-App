@@ -51,15 +51,15 @@ fun GeneralScreen(viewModel: GeneralViewModel? = null) {
     }
     PreferenceBackground {
         Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
-            PreferencesNavBar(title = stringResource(R.string.general)) {
+            PreferencesNavBar(title = stringResource(com.windscribe.vpn.R.string.general)) {
                 navController.popBackStack()
             }
             Spacer(modifier = Modifier.height(20.dp))
 
             DropDownItemView(
-                title = R.string.sort_by,
+                title = com.windscribe.vpn.R.string.sort_by,
                 icon = R.drawable.ic_sort_location,
-                description = R.string.location_order_description,
+                description = com.windscribe.vpn.R.string.location_order_description,
                 items = viewModel?.orderByItems ?: emptyList(),
                 selectedItemKey = viewModel?.selectedOrderBy ?: "",
                 onSelect = { viewModel?.onOrderByItemSelected(it) }
@@ -68,35 +68,35 @@ fun GeneralScreen(viewModel: GeneralViewModel? = null) {
             Spacer(modifier = Modifier.height(14.dp))
 
             DropDownItemView(
-                title = R.string.preferred_language,
+                title = com.windscribe.vpn.R.string.preferred_language,
                 icon = R.drawable.ic_language,
-                description = R.string.language_description,
+                description = com.windscribe.vpn.R.string.language_description,
                 items = viewModel?.languageItems ?: emptyList(),
                 selectedItemKey = viewModel?.selectedLanguage ?: "",
                 onSelect = { viewModel?.onLanguageItemSelected(it) }
             )
             Spacer(modifier = Modifier.height(14.dp))
             SwitchItemView(
-                R.string.show_location_health,
+                com.windscribe.vpn.R.string.show_location_health,
                 R.drawable.ic_location_load,
-                R.string.location_load_description,
+                com.windscribe.vpn.R.string.location_load_description,
                 isLocationLoadEnabled
             ) {
                 viewModel?.onLocationLoadItemClicked()
             }
             Spacer(modifier = Modifier.height(14.dp))
             SwitchItemView(
-                title = R.string.notifications,
+                title = com.windscribe.vpn.R.string.notifications,
                 icon = R.drawable.ic_notification_stats,
-                description = R.string.notification_stats_description,
+                description = com.windscribe.vpn.R.string.notification_stats_description,
                 isNotificationStatEnabled,
                 onSelect = { viewModel?.onNotificationStatEnabledClick() }
             )
             Spacer(modifier = Modifier.height(14.dp))
             SwitchItemView(
-                title = R.string.haptic_setting_label,
+                title = com.windscribe.vpn.R.string.haptic_setting_label,
                 icon = R.drawable.ic_haptic,
-                description = R.string.haptic_feedback_description,
+                description = com.windscribe.vpn.R.string.haptic_feedback_description,
                 isHapticEnabled,
                 onSelect = { viewModel?.onHapticToggleButtonClicked() }
             )
@@ -117,7 +117,7 @@ private fun VersionName(viewModel: GeneralViewModel?) {
             .padding(start = 14.dp, top = 14.dp, end = 14.dp, bottom = 14.dp),
     ) {
         Text(
-            text = stringResource(R.string.version),
+            text = stringResource(com.windscribe.vpn.R.string.version),
             style = font16.copy(
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.primaryTextColor

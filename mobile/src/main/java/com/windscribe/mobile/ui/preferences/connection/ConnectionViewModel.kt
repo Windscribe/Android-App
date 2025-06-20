@@ -396,13 +396,13 @@ class ConnectionViewModelImpl(
     override fun onAutoDetectClicked() {
         viewModelScope.launch {
             if (vpnManagerStateManager.isVPNConnected()) {
-                _toastMessage.emit(ToastMessage.Localized(R.string.disconnect_from_vpn))
+                _toastMessage.emit(ToastMessage.Localized(com.windscribe.vpn.R.string.disconnect_from_vpn))
                 return@launch
             }
             val manager = appContext
                 .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             if (manager.activeNetworkInfo == null || manager.activeNetworkInfo?.isConnected != true) {
-                _toastMessage.emit(ToastMessage.Localized(R.string.no_network_detected))
+                _toastMessage.emit(ToastMessage.Localized(com.windscribe.vpn.R.string.no_network_detected))
                 return@launch
             }
             _autoDetecting.emit(true)

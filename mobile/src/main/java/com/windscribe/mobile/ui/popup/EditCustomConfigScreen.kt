@@ -95,8 +95,8 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
                 colorFilter = ColorFilter.tint(AppColors.white),
             )
             Text(
-                text = stringResource(id = R.string.edit_config_file),
-                fontFamily = FontFamily(Font(R.font.ibm_font_family)),
+                text = stringResource(id = com.windscribe.vpn.R.string.edit_config_file),
+                fontFamily = FontFamily(Font(com.windscribe.vpn.R.font.ibm_font_family)),
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
                 color = Color.White,
@@ -109,7 +109,7 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
             CustomTextField(
                 onValueChange = { viewmodel?.onNameChange(it) },
                 modifier = Modifier.fillMaxWidth(),
-                hint = stringResource(R.string.config_title),
+                hint = stringResource(com.windscribe.vpn.R.string.config_title),
                 value = name
             )
             if (isOpenVPN) {
@@ -117,14 +117,14 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
                 CustomTextField(
                     onValueChange = { viewmodel?.onUsernameChange(it) },
                     modifier = Modifier.fillMaxWidth(),
-                    hint = stringResource(R.string.username),
+                    hint = stringResource(com.windscribe.vpn.R.string.username),
                     value = username
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 CustomTextField(
                     onValueChange = { viewmodel?.onPasswordChange(it) },
                     modifier = Modifier.fillMaxWidth(),
-                    hint = stringResource(R.string.password),
+                    hint = stringResource(com.windscribe.vpn.R.string.password),
                     value = password
                 )
                 Spacer(modifier = Modifier.height(24.dp))
@@ -145,7 +145,7 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
                 }
             }
             NextButton(
-                text = stringResource(if (connect) R.string.connect else R.string.update),
+                text = stringResource(if (connect) com.windscribe.vpn.R.string.connect else com.windscribe.vpn.R.string.update),
                 enabled = true,
                 onClick = {
                     viewmodel?.onSaveClick()

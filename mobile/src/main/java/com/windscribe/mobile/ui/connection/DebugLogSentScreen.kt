@@ -58,14 +58,14 @@ fun DebugLogSentScreen(appStartActivityViewModel: AppStartActivityViewModel? = n
                     .padding(top = 8.dp),
             )
             Text(
-                text = stringResource(R.string.your_debug_log_has_been_received_please_contact_support_if_you_want_assistance_with_this_issue),
+                text = stringResource(com.windscribe.vpn.R.string.your_debug_log_has_been_received_please_contact_support_if_you_want_assistance_with_this_issue),
                 style = font16,
                 color = AppColors.white,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 24.dp)
             )
             Spacer(modifier = Modifier.padding(top = 24.dp))
-            NextButton(Modifier, text = stringResource(R.string.contact_support), true) {
+            NextButton(Modifier, text = stringResource(com.windscribe.vpn.R.string.contact_support), true) {
                 context.openUrl(NetworkKeyConstants.URL_HELP_ME)
                 appStartActivityViewModel?.autoConnectionModeCallback?.onContactSupportClick()
                 navController.popBackStack()
@@ -75,7 +75,7 @@ fun DebugLogSentScreen(appStartActivityViewModel: AppStartActivityViewModel? = n
                 navController.popBackStack()
             }) {
                 Text(
-                    stringResource(R.string.cancel),
+                    stringResource(com.windscribe.vpn.R.string.cancel),
                     style = font16,
                     color = AppColors.white
                 )

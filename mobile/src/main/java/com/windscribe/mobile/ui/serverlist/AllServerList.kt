@@ -239,13 +239,13 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
                         Text(
-                            stringResource(R.string.unblock_full_access),
+                            stringResource(com.windscribe.vpn.R.string.unblock_full_access),
                             style = font16.copy(fontSize = 15.sp),
                             color = MaterialTheme.colorScheme.expandedServerItemTextColor,
                         )
                         Spacer(modifier = Modifier.width(2.dp))
                         Text(
-                            stringResource(R.string.go_pro_for_unlimited_everything),
+                            stringResource(com.windscribe.vpn.R.string.go_pro_for_unlimited_everything),
                             style = font12,
                             color = AppColors.cyberBlue.copy(alpha = 0.7f),
                         )
@@ -365,7 +365,7 @@ private fun BestLocation(
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = stringResource(R.string.best_location),
+                text = stringResource(com.windscribe.vpn.R.string.best_location),
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 modifier = Modifier.weight(1f),
                 color = MaterialTheme.colorScheme.serverItemTextColor,

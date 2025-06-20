@@ -308,7 +308,7 @@ private fun SearchListNavigation(viewModel: ServerViewModel, homeViewmodel: Home
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
             )
             Text(
-                stringResource(R.string.clear),
+                stringResource(com.windscribe.vpn.R.string.clear),
                 style = font16,
                 color = AppColors.cyberBlue.copy(0.7f),
                 modifier = Modifier

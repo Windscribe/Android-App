@@ -9,11 +9,11 @@ import androidx.compose.ui.unit.sp
 import com.windscribe.mobile.R
 
 private val IbmPlex = FontFamily(
-    Font(R.font.ibm_plex_sans_light, FontWeight.W300),//w300
-    Font(R.font.ibm_plex_sans_regular, FontWeight.Normal),//w400
-    Font(R.font.ibm_plex_sans_medium, FontWeight.Medium),//w500
-    Font(R.font.ibm_plex_sans_semi_bold, FontWeight.SemiBold),//w600
-    Font(R.font.ibm_plex_sans_bold, FontWeight.Bold),//w700
+    Font(com.windscribe.vpn.R.font.ibm_plex_sans_light, FontWeight.W300),//w300
+    Font(com.windscribe.vpn.R.font.ibm_plex_sans_regular, FontWeight.Normal),//w400
+    Font(com.windscribe.vpn.R.font.ibm_plex_sans_medium, FontWeight.Medium),//w500
+    Font(com.windscribe.vpn.R.font.ibm_plex_sans_semi_bold, FontWeight.SemiBold),//w600
+    Font(com.windscribe.vpn.R.font.ibm_plex_sans_bold, FontWeight.Bold),//w700
 )
 val font9 = TextStyle(
     fontSize = 9.sp,
