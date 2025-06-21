@@ -33,6 +33,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -484,7 +485,7 @@ private fun IPMenuItem(icon: Int, contentDescription: String, onClick: () -> Uni
             .size(24.dp)
             .clickable(
                 interactionSource = interactionSource,
-                indication = rememberRipple(bounded = false, color = AppColors.white),
+                indication = ripple(bounded = false, color = AppColors.white),
                 onClick = onClick
             )
     )
@@ -601,7 +602,7 @@ private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Home
                 contentDescription = null,
                 modifier = Modifier.clickable(
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = rememberRipple(
+                    indication = ripple(
                         bounded = false,
                         radius = 16.dp,
                         color = AppColors.white

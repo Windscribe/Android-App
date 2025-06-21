@@ -4,10 +4,13 @@
 
 package com.windscribe.vpn.serverlist.entity;
 
+import androidx.annotation.Keep;
+
 import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup;
 
 import java.util.List;
 
+@Keep
 public class Group extends ExpandableGroup<City> {
 
     private final int latencyAverage;

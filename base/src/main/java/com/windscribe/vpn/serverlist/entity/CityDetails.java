@@ -4,10 +4,11 @@
 
 package com.windscribe.vpn.serverlist.entity;
 
+import androidx.annotation.Keep;
 import androidx.room.Embedded;
 import androidx.room.Relation;
 
-@SuppressWarnings("unused")
+@Keep
 public class CityDetails {
 
     @Embedded

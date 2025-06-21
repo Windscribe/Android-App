@@ -3,6 +3,7 @@ package com.windscribe.vpn.model
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.encoding.encoders.Base64
 
 data class OpenVPNConnectionInfo(
     val serverConfig: String,
@@ -13,7 +14,7 @@ data class OpenVPNConnectionInfo(
     val password: String
 ) {
     val base64EncodedServerConfig =
-        String(com.windscribe.vpn.encoding.encoders.Base64.encode(serverConfig.toByteArray()))
+        String(Base64.encode(serverConfig.toByteArray()))
 
     fun getProtocolInformation(): ProtocolInformation {
         var protocol = PreferencesKeyConstants.PROTO_TCP

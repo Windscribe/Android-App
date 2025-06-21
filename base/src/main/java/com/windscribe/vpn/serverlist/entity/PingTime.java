@@ -4,13 +4,14 @@
 
 package com.windscribe.vpn.serverlist.entity;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
-@SuppressWarnings("unused")
+@Keep
 @Entity
 public class PingTime {
 

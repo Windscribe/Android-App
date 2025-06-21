@@ -4,9 +4,11 @@
 
 package com.windscribe.vpn.serverlist.entity;
 
+import androidx.annotation.Keep;
 import androidx.room.Embedded;
 import androidx.room.Relation;
 
+@Keep
 public class CityAndRegion {
 
     @Embedded

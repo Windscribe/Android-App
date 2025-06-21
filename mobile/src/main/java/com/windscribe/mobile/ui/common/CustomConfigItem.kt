@@ -4,7 +4,10 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -22,6 +25,7 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -30,14 +34,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.nav.LocalNavController
@@ -54,6 +63,7 @@ import com.windscribe.mobile.ui.theme.serverListBackgroundColor
 import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.vpn.commonutils.WindUtilities
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 @Composable
@@ -61,12 +71,8 @@ fun CustomConfigItem(
     item: ConfigListItem,
     viewModel: ServerViewModel,
     connectionViewModel: ConnectionViewmodel,
-    configViewmodel: ConfigViewmodel
+    configViewmodel: ConfigViewmodel,
 ) {
-    val coroutineScope = rememberCoroutineScope()
-    val offsetX = remember { Animatable(0f) }
-    val swipeThreshold = with(LocalDensity.current) { 64.dp.toPx() }
-
     val iconSize = 48.dp
     val latencyState by viewModel.latencyListState.collectAsState()
     val latency by rememberUpdatedState(
@@ -78,45 +84,64 @@ fun CustomConfigItem(
     val interactionSource = remember { MutableInteractionSource() }
     val editInteractionSource = remember { MutableInteractionSource() }
     val deleteInteractionSource = remember { MutableInteractionSource() }
+    val coroutineScope = rememberCoroutineScope()
+    val offsetX = remember { Animatable(0f) }
+    val iconSizePx = with(LocalDensity.current) { 48.dp.toPx() }
+    val swipeThreshold = with(LocalDensity.current) { 64.dp.toPx() }
 
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(
+                available: Offset,
+                source: NestedScrollSource
+            ): Offset {
+                val delta = available.x
+                if (abs(delta) > abs(available.y)) {
+                    coroutineScope.launch {
+                        val newOffset = (offsetX.value + delta).coerceIn(-2 * iconSizePx, 0f)
+                        offsetX.snapTo(newOffset)
+                    }
+                    // Consume horizontal drag
+                    return Offset(x = delta, y = 0f)
+                }
+                return Offset.Zero
+            }
+
+            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+                val targetOffset = if (offsetX.value < -swipeThreshold) {
+                    -2 * iconSizePx
+                } else {
+                    0f
+                }
+                offsetX.animateTo(targetOffset)
+                return super.onPostFling(consumed, available)
+            }
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(48.dp)
-            .pointerInput(Unit) {
-                detectDragGestures(
-                    onDrag = { change, dragAmount ->
-                        change.consume()
-                        coroutineScope.launch {
-                            val newOffset =
-                                (offsetX.value + dragAmount.x).coerceIn(-2 * iconSize.toPx(), 0f)
-                            offsetX.snapTo(newOffset)
-                        }
-                    },
-                    onDragEnd = {
-                        coroutineScope.launch {
-                            val targetOffset = if (offsetX.value < -swipeThreshold) {
-                                // Snap open (show actions)
-                                -2 * iconSize.toPx()
-                            } else {
-                                // Snap back closed
-                                0f
-                            }
-                            offsetX.animateTo(targetOffset)
-                        }
-                    },
-                    onDragCancel = {
-                        coroutineScope.launch {
-                            val targetOffset = if (offsetX.value < -swipeThreshold) {
-                                -2 * iconSize.toPx()
-                            } else {
-                                0f
-                            }
-                            offsetX.animateTo(targetOffset)
-                        }
+            .nestedScroll(nestedScrollConnection)
+            .draggable(
+                orientation = Orientation.Horizontal,
+                state = rememberDraggableState { delta ->
+                    coroutineScope.launch {
+                        val newOffset = (offsetX.value + delta).coerceIn(-2 * iconSizePx, 0f)
+                        offsetX.snapTo(newOffset)
                     }
-                )
-            }
+                },
+                onDragStopped = {
+                    coroutineScope.launch {
+                        val targetOffset = if (offsetX.value < -swipeThreshold) {
+                            -2 * iconSizePx
+                        } else {
+                            0f
+                        }
+                        offsetX.animateTo(targetOffset)
+                    }
+                }
+            )
     ) {
         // Background actions
         val navController = LocalNavController.current
@@ -126,7 +151,7 @@ fun CustomConfigItem(
                     .size(48.dp)
                     .clickable(
                         interactionSource = editInteractionSource,
-                        indication = rememberRipple(
+                        indication = ripple(
                             bounded = true,
                             color = MaterialTheme.colorScheme.serverListSecondaryColor
                         )
@@ -152,7 +177,7 @@ fun CustomConfigItem(
                     .size(48.dp)
                     .clickable(
                         interactionSource = deleteInteractionSource,
-                        indication = rememberRipple(
+                        indication = ripple(
                             bounded = true,
                             color = MaterialTheme.colorScheme.serverListSecondaryColor
                         )
@@ -178,7 +203,7 @@ fun CustomConfigItem(
                 .height(48.dp)
                 .clickable(
                     interactionSource,
-                    indication = rememberRipple(
+                    indication = ripple(
                         bounded = true,
                         color = MaterialTheme.colorScheme.serverListSecondaryColor
                     )

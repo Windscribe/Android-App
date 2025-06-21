@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.serverlist
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -16,6 +17,7 @@ import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.Region
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -353,14 +355,14 @@ class ServerViewModelImpl(
     }
 
     override fun toggleFavorite(city: City) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val state = favouriteListState.value
             if (state is ListState.Success) {
                 val isFavorite = state.data.any { it.city.id == city.id }
                 if (isFavorite) {
                     favouriteRepository.remove(city.id)
                 } else {
-                    favouriteRepository.add(city)
+                    favouriteRepository.add(city).getOrNull()
                 }
             }
         }

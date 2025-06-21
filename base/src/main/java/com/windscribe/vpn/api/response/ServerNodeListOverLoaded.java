@@ -8,12 +8,14 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.SparseArray;
 
+import androidx.annotation.Keep;
+
 import java.util.List;
 
 /**
  * Created by Mustafizur on 2017-11-28.
  */
-
+@Keep
 public class ServerNodeListOverLoaded implements Parcelable {
 
     public static final Creator<ServerNodeListOverLoaded> CREATOR = new Creator<ServerNodeListOverLoaded>() {

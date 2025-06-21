@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
@@ -20,9 +23,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,28 +56,21 @@ import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.theme.expandedServerItemTextColor
 import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.vpn.constants.NetworkKeyConstants
-import com.windscribe.vpn.constants.NetworkKeyConstants.getWebsiteLink
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import kotlin.collections.set
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StaticIPServerList(viewModel: ServerViewModel, connectionViewModel: ConnectionViewmodel, pullToRefreshState: PullToRefreshState = rememberPullToRefreshState()) {
+fun StaticIPServerList(
+    viewModel: ServerViewModel,
+    connectionViewModel: ConnectionViewmodel
+) {
     val state by viewModel.staticListState.collectAsState()
     val activity = LocalContext.current as AppStartActivity
     val scrollState = rememberScrollState()
     val isRefreshing by viewModel.refreshState.collectAsState()
 
-    LaunchedEffect(pullToRefreshState.isRefreshing) {
-        if (pullToRefreshState.isRefreshing) {
-            viewModel.refresh(ServerListType.Static)
-        }
-    }
-
-    LaunchedEffect(isRefreshing) {
-        if (!isRefreshing && pullToRefreshState.isRefreshing) {
-            pullToRefreshState.endRefresh()
-        }
-    }
 
     when (state) {
         is ListState.Loading -> {
@@ -85,16 +80,20 @@ fun StaticIPServerList(viewModel: ServerViewModel, connectionViewModel: Connecti
         is ListState.Error -> {
             Box(modifier = Modifier.fillMaxSize()) {
                 Text(
-                    "Error loading static ip list.",
+                    "Error loading static IP list.",
                     style = font16,
-                    color =MaterialTheme.colorScheme.serverListSecondaryColor
+                    color = MaterialTheme.colorScheme.serverListSecondaryColor
                 )
             }
         }
 
         is ListState.Success -> {
-            Box(modifier = Modifier.fillMaxSize()) {
-                val list = (state as ListState.Success).data
+            val list = (state as ListState.Success).data
+            val lazyListState = rememberLazyListState()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
                 if (list.isEmpty()) {
                     AddButtonWithDetails(
                         com.windscribe.vpn.R.string.add_static_ip,
@@ -105,20 +104,28 @@ fun StaticIPServerList(viewModel: ServerViewModel, connectionViewModel: Connecti
                     }
                 } else {
                     Column(
-                        Modifier
+                        modifier = Modifier
                             .fillMaxSize()
-                            .nestedScroll(pullToRefreshState.nestedScrollConnection)
+                            .verticalScroll(scrollState)
                     ) {
                         Text(
                             text = stringResource(com.windscribe.vpn.R.string.static_ip),
                             style = font12,
-                            color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(0.70f),
+                            color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.7f),
                             modifier = Modifier.padding(start = 8.dp, top = 16.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Column(modifier = Modifier.verticalScroll(scrollState)) {
-                            list.forEach { item ->
-                                ListItemView(item, viewModel, connectionViewModel)
+                        PullToRefreshBox(
+                            isRefreshing = isRefreshing,
+                            onRefresh = {
+                                viewModel.refresh(ServerListType.Static)
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            LazyColumn(state = lazyListState) {
+                                items(list, key = { it.id }) { item ->
+                                    ListItemView(item, viewModel, connectionViewModel)
+                                }
                             }
                         }
                         Spacer(modifier = Modifier.weight(1f))
@@ -127,12 +134,6 @@ fun StaticIPServerList(viewModel: ServerViewModel, connectionViewModel: Connecti
                             activity.openUrl(NetworkKeyConstants.URL_ADD_STATIC_IP)
                         }
                     }
-                    PullToRefreshContainer(
-                        state = pullToRefreshState,
-                        modifier = Modifier.align(Alignment.TopCenter),
-                        containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.serverListSecondaryColor
-                    )
                 }
             }
         }
@@ -163,7 +164,7 @@ private fun ListItemView(
             .height(48.dp)
             .clickable(
                 interactionSource,
-                indication = rememberRipple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)
+                indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)
             ) {
                 connectionViewModel.onStaticIpClick(item.staticItem)
             }

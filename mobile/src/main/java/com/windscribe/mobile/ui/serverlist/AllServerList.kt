@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.serverlist
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -28,9 +29,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -87,31 +89,19 @@ import com.windscribe.vpn.serverlist.entity.City
 fun AllServerList(
     viewModel: ServerViewModel,
     connectionViewModel: ConnectionViewmodel,
-    homeViewmodel: HomeViewmodel,
-    pullToRefreshState: PullToRefreshState = rememberPullToRefreshState()
+    homeViewmodel: HomeViewmodel
 ) {
     val state by viewModel.serverListState.collectAsState()
     val expandedStates = remember { mutableStateMapOf<String, Boolean>() }
     val bestLocation by connectionViewModel.bestLocation.collectAsState()
     val isRefreshing by viewModel.refreshState.collectAsState()
 
-    LaunchedEffect(pullToRefreshState.isRefreshing) {
-        if (pullToRefreshState.isRefreshing) {
-            viewModel.refresh(ServerListType.All)
-        }
-    }
 
-    LaunchedEffect(isRefreshing) {
-        if (!isRefreshing && pullToRefreshState.isRefreshing) {
-            pullToRefreshState.endRefresh()
-        }
-    }
     Box {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 0.dp)
-                .nestedScroll(pullToRefreshState.nestedScrollConnection),
+                .padding(top = 0.dp),
             verticalArrangement = Arrangement.Top
 
         ) {
@@ -129,38 +119,40 @@ fun AllServerList(
                     HandleScrollHaptic(lazyListState, homeViewmodel)
                     LocationCount(viewModel)
                     val list = (state as ListState.Success).data
-                    LazyColumn(state = lazyListState, modifier = Modifier.weight(1f)) {
-                        item {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            bestLocation?.let {
-                                BestLocation(
-                                    it,
+                    PullToRefreshBox(
+                        isRefreshing = isRefreshing,
+                        onRefresh = {
+                            viewModel.refresh(ServerListType.All)
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        LazyColumn(state = lazyListState) {
+                            item {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                bestLocation?.let {
+                                    BestLocation(
+                                        it,
+                                        connectionViewModel,
+                                        homeViewmodel
+                                    )
+                                }
+                            }
+                            items(list, key = { it.id }) { item ->
+                                ExpandableListItem(
+                                    viewModel,
                                     connectionViewModel,
-                                    homeViewmodel
+                                    homeViewmodel,
+                                    item,
+                                    expanded = expandedStates[item.region.name] == true,
+                                    onExpandChange = { expandedStates[item.region.name] = it }
                                 )
                             }
-                        }
-                        items(list, key = { it.id }) { item ->
-                            ExpandableListItem(
-                                viewModel,
-                                connectionViewModel,
-                                homeViewmodel,
-                                item,
-                                expanded = expandedStates[item.region.name] == true,
-                                onExpandChange = { expandedStates[item.region.name] = it }
-                            )
                         }
                     }
                     UpgradeBar(homeViewmodel)
                 }
             }
         }
-        PullToRefreshContainer(
-            state = pullToRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter),
-            containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.serverListSecondaryColor
-        )
     }
 }
 
@@ -447,7 +439,7 @@ private fun ExpandableListItem(
                     .padding(8.dp)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = rememberRipple(
+                        indication = ripple(
                             bounded = false,
                             radius = 16.dp,
                             color = MaterialTheme.colorScheme.expandedServerItemTextColor
@@ -496,7 +488,7 @@ private fun ServerListItemView(
             .height(48.dp)
             .clickable(
                 interactionSource,
-                indication = rememberRipple(bounded = true, color = AppColors.white)
+                indication = ripple(bounded = true, color = AppColors.white)
             ) {
                 connectionViewModel.onCityClick(item)
             }

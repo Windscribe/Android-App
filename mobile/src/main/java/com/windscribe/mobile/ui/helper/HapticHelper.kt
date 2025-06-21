@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -55,7 +56,7 @@ fun Modifier.hapticClickable(
     this.then(
         Modifier.clickable(
             interactionSource = interactionSource,
-            indication = rememberRipple(bounded = false, color = Color.White),
+            indication = ripple(bounded = false, color = Color.White),
             enabled = enabled
         ) {
             if (hapticEnabled) {

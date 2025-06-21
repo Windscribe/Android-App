@@ -7,6 +7,7 @@ package com.windscribe.vpn.serverlist.entity;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
@@ -22,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@SuppressWarnings("unused")
+@Keep
 @Entity(tableName = "City")
 public class City implements Parcelable {
 

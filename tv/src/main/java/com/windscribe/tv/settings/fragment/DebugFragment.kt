@@ -8,18 +8,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.leanback.widget.VerticalGridView
-import butterknife.BindView
-import butterknife.ButterKnife
-import com.windscribe.tv.R
 import com.windscribe.tv.adapter.DebugViewAdapter
 import com.windscribe.tv.databinding.FragmentDebugBinding
 import com.windscribe.tv.listeners.SettingsFragmentListener
 import com.windscribe.tv.settings.SettingActivity
-import java.lang.ClassCastException
 
 class DebugFragment : Fragment() {
     private lateinit var binding: FragmentDebugBinding

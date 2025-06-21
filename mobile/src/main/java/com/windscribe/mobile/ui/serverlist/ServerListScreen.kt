@@ -44,7 +44,7 @@ fun ServerListScreen(
     val pagerState = rememberPagerState(
         initialPage = 0,
         initialPageOffsetFraction = 0.0f,
-        pageCount = { 4 }
+        pageCount = { 4 },
     )
     LaunchedEffect(selectedType) {
         pagerState.animateScrollToPage(selectedType.toPageIndex())
@@ -62,7 +62,7 @@ fun ServerListScreen(
             verticalArrangement = Arrangement.Top
         ) {
             HorizontalPager(
-                beyondBoundsPageCount = 4,
+                beyondViewportPageCount = 4,
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
             ) { pageIndex ->

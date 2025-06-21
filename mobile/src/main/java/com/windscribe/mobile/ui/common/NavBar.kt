@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +47,7 @@ fun NavBar(
                 .size(24.dp)
                 .clickable(
                     interactionSource = interactionSource,
-                    indication = rememberRipple(bounded = false, color = AppColors.white),
+                    indication = ripple(bounded = false, color = AppColors.white),
                     onClick = onNavClick
                 )
                 .padding(4.dp)
@@ -85,7 +86,7 @@ fun PreferencesNavBar(
                 .size(24.dp)
                 .clickable(
                     interactionSource = interactionSource,
-                    indication = rememberRipple(bounded = false, color = MaterialTheme.colorScheme.primaryTextColor),
+                    indication = ripple(bounded = false, color = MaterialTheme.colorScheme.primaryTextColor),
                     onClick = onNavClick
                 )
                 .padding(4.dp)

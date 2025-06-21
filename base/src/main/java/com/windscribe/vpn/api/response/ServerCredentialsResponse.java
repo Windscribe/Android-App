@@ -4,6 +4,8 @@
 
 package com.windscribe.vpn.api.response;
 
+import androidx.annotation.Keep;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -13,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
  * Created by Mustafizur on 2017-11-30.
  */
 
+@Keep
 public class ServerCredentialsResponse {
 
     @SerializedName("password")

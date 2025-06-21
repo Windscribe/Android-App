@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.serverlist.entity;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.Embedded;
@@ -14,6 +15,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.windscribe.vpn.api.response.ServerCredentialsResponse;
 
+@Keep
 @Entity(tableName = "StaticRegion")
 public class StaticRegion {
 

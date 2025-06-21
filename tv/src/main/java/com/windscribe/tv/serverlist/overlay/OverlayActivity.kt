@@ -15,8 +15,6 @@ import androidx.fragment.app.Fragment
 import androidx.transition.AutoTransition
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
-import butterknife.OnClick
-import butterknife.OnFocusChange
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.databinding.ActivityOverlayBinding
@@ -32,7 +30,6 @@ import com.windscribe.tv.serverlist.fragments.StaticIpFragment
 import com.windscribe.tv.serverlist.fragments.WindOverlayFragment
 import com.windscribe.tv.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.state.PreferenceChangeObserver
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 

@@ -93,9 +93,9 @@ class NetworkDetailViewModelImpl(
             _selectedProtocol.value = networkDetail.value?.protocol ?: ""
             _selectedPort.value = networkDetail.value?.port ?: ""
         }
-        portMapItems.first {
+        portMapItems.firstOrNull() {
             it.protoItem.proto == networkDetail.value?.protocol
-        }.ports.let {
+        }?.ports?.let {
             _ports.value = it.map { DropDownStringItem(it, it) }
         }
     }

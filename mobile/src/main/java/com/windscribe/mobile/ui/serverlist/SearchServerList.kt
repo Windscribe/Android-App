@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -171,7 +172,7 @@ private fun ExpandableListItem(
                     .padding(8.dp)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = rememberRipple(
+                        indication = ripple(
                             bounded = false,
                             radius = 16.dp,
                             color = MaterialTheme.colorScheme.serverListSecondaryColor
@@ -220,7 +221,7 @@ private fun ServerListItemView(
             .height(48.dp)
             .clickable(
                 interactionSource,
-                indication = rememberRipple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)
+                indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)
             ) {
                 viewModel.toggleSearch()
                 connectionViewModel.onCityClick(item)
@@ -321,7 +322,7 @@ private fun SearchListNavigation(viewModel: ServerViewModel, homeViewmodel: Home
                 contentDescription = "Search",
                 modifier = Modifier.clickable(
                     interactionSource = interactionSource,
-                    indication = rememberRipple(bounded = false, color = MaterialTheme.colorScheme.serverListSecondaryColor)
+                    indication = ripple(bounded = false, color = MaterialTheme.colorScheme.serverListSecondaryColor)
                 ) {
                     viewModel.toggleSearch()
                 },

@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -23,29 +25,34 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
-import com.windscribe.mobile.ui.theme.AppColors
-import com.windscribe.mobile.ui.theme.font12
-import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.common.AddButton
 import com.windscribe.mobile.ui.common.AddButtonWithDetails
 import com.windscribe.mobile.ui.common.CustomConfigItem
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
+import com.windscribe.mobile.ui.theme.AppColors
+import com.windscribe.mobile.ui.theme.font12
+import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.serverListSecondaryColor
+import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +74,6 @@ fun ConfigServerList(
         is ListState.Error -> ErrorView(filePickerLauncher)
         is ListState.Success -> SuccessView(
             (state as ListState.Success).data,
-            scrollState,
             filePickerLauncher,
             viewModel,
             connectionViewModel,
@@ -101,26 +107,13 @@ private fun ErrorView(filePickerLauncher: ManagedActivityResultLauncher<Array<St
 @Composable
 private fun SuccessView(
     list: List<ConfigListItem>,
-    scrollState: ScrollState,
     filePickerLauncher: ManagedActivityResultLauncher<Array<String>, Uri?>,
     viewModel: ServerViewModel,
     connectionViewModel: ConnectionViewmodel,
     configViewmodel: ConfigViewmodel,
-    pullToRefreshState: PullToRefreshState = rememberPullToRefreshState()
 ) {
     val isRefreshing by viewModel.refreshState.collectAsState()
-
-    LaunchedEffect(pullToRefreshState.isRefreshing) {
-        if (pullToRefreshState.isRefreshing) {
-            viewModel.refresh(ServerListType.Config)
-        }
-    }
-
-    LaunchedEffect(isRefreshing) {
-        if (!isRefreshing && pullToRefreshState.isRefreshing) {
-            pullToRefreshState.endRefresh()
-        }
-    }
+    val lazyListState = rememberLazyListState()
     Box(modifier = Modifier.fillMaxSize()) {
         if (list.isEmpty()) {
             AddButtonWithDetails(
@@ -132,8 +125,7 @@ private fun SuccessView(
             }
         } else {
             Column(Modifier
-                .fillMaxSize()
-                .nestedScroll(pullToRefreshState.nestedScrollConnection)) {
+                .fillMaxSize()) {
                 Text(
                     text = stringResource(com.windscribe.vpn.R.string.custom_configs),
                     style = font12,
@@ -141,22 +133,23 @@ private fun SuccessView(
                     modifier = Modifier.padding(start = 16.dp, top = 16.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                LazyColumn(modifier = Modifier.weight(1f)) {
-                    items(list, key = { it.id }) { item ->
-                        CustomConfigItem(item, viewModel, connectionViewModel, configViewmodel)
+                PullToRefreshBox(
+                    isRefreshing = isRefreshing,
+                    onRefresh = {
+                        viewModel.refresh(ServerListType.Config)
+                    },
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
+                        items(list, key = { it.id }) { item ->
+                            CustomConfigItem(item, viewModel, connectionViewModel, configViewmodel)
+                        }
                     }
                 }
-                Spacer(modifier = Modifier.weight(1.0f))
                 AddButton(com.windscribe.vpn.R.string.add_vpn_config) {
                     filePickerLauncher.launch(arrayOf("*/*"))
                 }
             }
-            PullToRefreshContainer(
-                state = pullToRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter),
-                containerColor = Color.Transparent,
-                contentColor = Color.White
-            )
         }
     }
 }

@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.api.response;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 
 import com.google.gson.annotations.Expose;
@@ -12,7 +13,7 @@ import com.google.gson.annotations.SerializedName;
 /**
  * Created by Mustafizur on 2017-09-16.
  */
-
+@Keep
 public class ApiErrorResponse {
 
     @SerializedName("errorCode")

@@ -15,7 +15,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -89,18 +91,27 @@ fun AdvanceScreen(viewModel: AdvanceViewModel? = null) {
                             )
                         },
                         textStyle = font12.copy(textAlign = TextAlign.Start),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            containerColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                            focusedBorderColor = Color.Transparent,
-                            unfocusedBorderColor = Color.Transparent,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = MaterialTheme.colorScheme.primaryTextColor,
+                            disabledContainerColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
                             disabledBorderColor = Color.Transparent,
-                            errorBorderColor = Color.Transparent,
-                            focusedTextColor = MaterialTheme.colorScheme.primaryTextColor,
-                            unfocusedTextColor = MaterialTheme.colorScheme.primaryTextColor,
-                            cursorColor = MaterialTheme.colorScheme.primaryTextColor,
+                            disabledLabelColor = MaterialTheme.colorScheme.primaryTextColor,
                             disabledPlaceholderColor = MaterialTheme.colorScheme.primaryTextColor,
+                            errorBorderColor = Color.Transparent,
+                            errorContainerColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                            errorCursorColor = MaterialTheme.colorScheme.primaryTextColor,
+                            errorLabelColor = MaterialTheme.colorScheme.primaryTextColor,
+                            errorLeadingIconColor = MaterialTheme.colorScheme.primaryTextColor,
+                            errorPlaceholderColor = MaterialTheme.colorScheme.primaryTextColor,
+                            errorTrailingIconColor = MaterialTheme.colorScheme.primaryTextColor,
+                            focusedLabelColor = MaterialTheme.colorScheme.primaryTextColor,
+                            focusedLeadingIconColor = MaterialTheme.colorScheme.primaryTextColor,
                             focusedPlaceholderColor = MaterialTheme.colorScheme.primaryTextColor,
-                            unfocusedPlaceholderColor = MaterialTheme.colorScheme.primaryTextColor
+                            focusedTrailingIconColor = MaterialTheme.colorScheme.primaryTextColor,
+                            unfocusedLabelColor = MaterialTheme.colorScheme.primaryTextColor,
+                            unfocusedLeadingIconColor = MaterialTheme.colorScheme.primaryTextColor,
+                            unfocusedPlaceholderColor = MaterialTheme.colorScheme.primaryTextColor,
+                            unfocusedTrailingIconColor = MaterialTheme.colorScheme.primaryTextColor,
                         )
                     )
                     Spacer(modifier = Modifier.height(16.dp))

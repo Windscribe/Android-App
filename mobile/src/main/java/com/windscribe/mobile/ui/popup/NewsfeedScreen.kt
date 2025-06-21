@@ -28,6 +28,7 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -152,7 +153,7 @@ private fun Title() {
             contentDescription = null,
             modifier = Modifier.clickable(
                 interactionSource = interactionSource,
-                indication = rememberRipple(bounded = false, color = AppColors.white)
+                indication = ripple(bounded = false, color = AppColors.white)
             ) { navController.popBackStack() }
         )
     }
@@ -219,7 +220,7 @@ private fun NotificationItem(
             modifier = Modifier
                 .clickable(
                     interactionSource = interactionSource,
-                    indication = rememberRipple(bounded = true, color = AppColors.white)
+                    indication = ripple(bounded = true, color = AppColors.white)
                 ) {
                     expanded.value = !expanded.value
                 }

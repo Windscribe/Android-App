@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.serverlist.entity;
 
+import androidx.annotation.Keep;
 import androidx.room.Embedded;
 import androidx.room.Ignore;
 import androidx.room.Relation;
@@ -11,6 +12,7 @@ import androidx.room.Relation;
 import java.util.List;
 import java.util.Objects;
 
+@Keep
 public class RegionAndCities {
 
     @Relation(parentColumn = "region_id", entityColumn = "region_id", entity = City.class)

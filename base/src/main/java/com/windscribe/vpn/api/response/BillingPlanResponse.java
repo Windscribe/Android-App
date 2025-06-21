@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.api.response;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -16,7 +17,7 @@ import java.util.List;
  * Created by Mustafizur on 2018-01-16.
  */
 
-@SuppressWarnings("unused")
+@Keep
 public class BillingPlanResponse {
 
     @SerializedName("plans")
@@ -44,12 +45,14 @@ public class BillingPlanResponse {
         return version;
     }
 
+    @Keep
     public static class OverriddenPlans {
         @SerializedName("ru")
         @Expose
         public SpecialPlan russianPlan;
     }
 
+    @Keep
     public static class SpecialPlan {
         @SerializedName("pro_monthly")
         @Expose
@@ -60,6 +63,7 @@ public class BillingPlanResponse {
         public String proYearly;
     }
 
+    @Keep
     public static class BillingPlans {
 
         @SerializedName("discount")

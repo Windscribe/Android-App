@@ -5,10 +5,12 @@
 package com.windscribe.vpn.api.response;
 
 
+import androidx.annotation.Keep;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-@SuppressWarnings("unused")
+@Keep
 public class ItemPurchased {
 
     @SerializedName("orderId")

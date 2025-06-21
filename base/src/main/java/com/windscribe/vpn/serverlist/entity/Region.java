@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.serverlist.entity;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
@@ -17,7 +18,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-@SuppressWarnings("unused")
+@Keep
 @Entity(tableName = "Region", indices = {@Index(value = {"region_id"},
         unique = true)})
 public class Region {

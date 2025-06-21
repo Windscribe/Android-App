@@ -24,6 +24,7 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.ripple
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -231,7 +232,7 @@ private fun ExpandMenu(text: String, content: @Composable () -> Unit = {}) {
                     .rotate(rotation)
                     .clickable(
                         interactionSource = interactionSource,
-                        indication = rememberRipple(bounded = false, color = Color.White),
+                        indication = ripple(bounded = false, color = Color.White),
                         onClick = { expanded.value = !expanded.value }
                     ),
                 colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.50f))

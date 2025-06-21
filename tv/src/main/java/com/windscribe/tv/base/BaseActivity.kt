@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import butterknife.ButterKnife
 import com.windscribe.tv.di.ActivityComponent
 import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.di.DaggerActivityComponent
@@ -33,7 +32,6 @@ abstract class BaseActivity : AppCompatActivity() {
         coldLoad.set(true)
         updateLanguage()
         setContentView(layoutID)
-        ButterKnife.bind(this)
     }
 
     protected fun onActivityLaunch() {
