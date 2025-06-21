@@ -5,7 +5,7 @@
     >
 
     <application
-        android:name=".windscribe.PhoneApplication"
+        android:name=".PhoneApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ws_launcher"
         android:roundIcon="@mipmap/ws_launcher_round"

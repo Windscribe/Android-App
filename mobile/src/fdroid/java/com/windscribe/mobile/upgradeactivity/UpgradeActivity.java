@@ -7,13 +7,12 @@ package com.windscribe.mobile.upgradeactivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
-import com.windscribe.mobile.R;
-import com.windscribe.mobile.base.BaseActivity;
-import com.windscribe.mobile.dialogs.ErrorDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 
-public class UpgradeActivity extends BaseActivity {
+public class UpgradeActivity extends AppCompatActivity {
 
     public static Intent getStartIntent(Context context) {
         return new Intent(context, UpgradeActivity.class);
@@ -22,6 +21,7 @@ public class UpgradeActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ErrorDialog.show(this, getString(R.string.billing_unavailable), null, true);
+        Toast.makeText(this, getString(com.windscribe.vpn.R.string.billing_unavailable), Toast.LENGTH_SHORT).show();
+        finish();
     }
 }

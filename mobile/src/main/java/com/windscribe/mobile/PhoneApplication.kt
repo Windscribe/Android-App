@@ -1,23 +1,16 @@
-/*
- * Copyright (c) 2021 Windscribe Limited.
- */
-package com.windscribe.mobile.windscribe
+package com.windscribe.mobile
 
 import android.content.Intent
-import androidx.compose.ui.input.key.Key.Companion.W
-import com.windscribe.mobile.R
-import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.nav.Screen
+import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.Windscribe
-import com.windscribe.vpn.Windscribe.ApplicationInterface
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.FragmentType
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.constants.PreferencesKeyConstants
-import kotlin.jvm.java
 
-class PhoneApplication : Windscribe(), ApplicationInterface {
+class PhoneApplication : Windscribe(), Windscribe.ApplicationInterface {
     override fun onCreate() {
         applicationInterface = this
         super.onCreate()
