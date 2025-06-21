@@ -36,21 +36,9 @@ object Ext {
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
     suspend fun <T> Single<T>.toResult(): Result<T> {
         return runCatching {
-            withContext(Dispatchers.IO) {
-                await() as T
-            }
-        }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    suspend fun Completable.toResult(): Result<*> {
-        return runCatching {
-            withContext(Dispatchers.IO) {
-                await()
-            }
+            await()
         }
     }
 
@@ -61,12 +49,6 @@ object Ext {
         } catch (e: Exception) {
             false
         }
-    }
-
-    fun getFakeTrafficVolumeOptions(): Array<String> {
-        return FakeTrafficVolume.values().map {
-            it.name
-        }.toTypedArray()
     }
 
     fun CoroutineScope.launchPeriodicAsync(
@@ -82,7 +64,4 @@ object Ext {
             action()
         }
     }
-
-    fun Context.toPx(dp: Float): Float =
-        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics)
 }
