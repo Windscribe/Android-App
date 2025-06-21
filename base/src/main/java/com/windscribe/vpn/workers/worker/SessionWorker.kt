@@ -125,11 +125,16 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
 
     private fun handleAccountStatusChange(user: User) {
         logger.info("User account status: ${user.accountStatus} is VPN Connected: ${vpnStateManager.isVPNConnected()}")
-        if (user.accountStatus != User.AccountStatus.Okay) {
-            if (vpnStateManager.isVPNConnected()) {
-                logger.info("Disconnecting...")
-                vpnController.disconnectAsync()
-            }
+        val shouldDisconnect = when (user.accountStatus) {
+            User.AccountStatus.Banned -> vpnStateManager.isVPNConnected()
+            User.AccountStatus.Expired -> vpnStateManager.isVPNConnected() && !preferencesHelper.isConnectingToConfiguredLocation()
+            else -> false
+        }
+        if (shouldDisconnect) {
+            logger.info("Disconnecting...")
+            vpnController.disconnectAsync()
+        }
+        if (user.accountStatus == User.AccountStatus.Banned || user.accountStatus == User.AccountStatus.Expired) {
             wgConfigRepository.deleteKeys()
             preferencesHelper.globalUserConnectionPreference = false
         }
