@@ -4,6 +4,7 @@
 package com.windscribe.vpn.repository
 
 import android.content.Context
+import androidx.annotation.Keep
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -38,13 +39,17 @@ import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Keep
 data class CustomCity(
     val id: Int,
     val name: String,
     val nick: String
 )
 
+@Keep
 data class CustomRegion(val id: Int, val country: String, val cities: List<CustomCity>)
+
+@Keep
 data class CustomLocationsData(val locations: List<CustomRegion>)
 
 @Singleton
