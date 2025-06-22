@@ -3,7 +3,14 @@
  */
 package com.windscribe.mobile.di
 
+import androidx.appcompat.app.AppCompatActivity
 import dagger.Module
 
 @Module
-open class ActivityModule {}
+open class ActivityModule {
+    private var activity: AppCompatActivity
+
+    constructor(mActivity: AppCompatActivity) {
+        this.activity = mActivity
+    }
+}

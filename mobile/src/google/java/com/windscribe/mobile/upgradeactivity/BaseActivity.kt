@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.windscribe.mobile.R
 import com.windscribe.mobile.di.ActivityComponent
 import com.windscribe.mobile.di.ActivityModule
-import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
@@ -42,7 +42,7 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     open fun setTheme(context: Context) {
-        val savedThem = appContext.preference.selectedTheme
+        val savedThem = Windscribe.Companion.appContext.preference.selectedTheme
         if (savedThem == PreferencesKeyConstants.DARK_THEME) {
             context.setTheme(R.style.DarkTheme)
         } else {
@@ -73,9 +73,10 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     protected fun setActivityModule(activityModule: ActivityModule?): ActivityComponent {
-        return com.windscribe.mobile.di.DaggerActivityComponent.builder().activityModule(activityModule)
+        return com.windscribe.mobile.di.DaggerActivityComponent.builder()
+            .activityModule(activityModule)
             .applicationComponent(
-                appContext
+                Windscribe.Companion.appContext
                     .applicationComponent
             ).build()
     }
@@ -89,11 +90,11 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     fun setLanguage() {
-        val newLocale = appContext.getSavedLocale()
+        val newLocale = Windscribe.Companion.appContext.getSavedLocale()
         Locale.setDefault(newLocale)
         val config = Configuration()
         config.locale = newLocale
-        appContext.resources.updateConfiguration(config, baseContext.resources.displayMetrics)
+        Windscribe.Companion.appContext.resources.updateConfiguration(config, baseContext.resources.displayMetrics)
         resources.updateConfiguration(config, baseContext.resources.displayMetrics)
     }
 }

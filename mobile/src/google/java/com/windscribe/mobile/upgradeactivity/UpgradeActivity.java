@@ -39,7 +39,6 @@ import com.google.common.collect.ImmutableList;
 import com.windscribe.mobile.R;
 import com.windscribe.mobile.databinding.ActivityUpgradeBinding;
 import com.windscribe.mobile.di.ActivityModule;
-import com.windscribe.mobile.ui.AppStartActivity;
 import com.windscribe.mobile.utils.UiUtil;
 import com.windscribe.vpn.api.response.PushNotificationAction;
 import com.windscribe.vpn.billing.AmazonBillingManager;
