@@ -57,7 +57,7 @@ import com.windscribe.vpn.api.response.QueryType
 fun TicketScreen(viewModel: TicketViewModel? = null) {
     val navController = LocalNavController.current
     val selectedKey by remember { mutableStateOf(QueryType.Account) }
-    val queryTypes = QueryType.values().map {
+    val queryTypes = QueryType.entries.map {
         DropDownStringItem(it.name, it.name)
     }
     val submitTicketState by viewModel?.submitTicketState?.collectAsState()
@@ -114,7 +114,8 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
                 TextField(
                     hint = stringResource(R.string.what_is_the_issue),
                     modifier = Modifier
-                        .fillMaxWidth().height(120.dp),
+                        .fillMaxWidth()
+                        .height(120.dp),
                     singleLine = false,
                     height = 120.dp,
                     onValueChange = { viewModel?.onMessageChanged(it) }
@@ -131,12 +132,11 @@ fun TicketScreen(viewModel: TicketViewModel? = null) {
 
                 Spacer(modifier = Modifier.height(32.dp))
             }
-
-            if (submitTicketState is SubmitTicketState.Loading) {
-                PreferenceProgressBar(true)
-            }
-            HandleState(viewModel)
         }
+        if (submitTicketState is SubmitTicketState.Loading) {
+            PreferenceProgressBar(true)
+        }
+        HandleState(viewModel)
     }
 }
 

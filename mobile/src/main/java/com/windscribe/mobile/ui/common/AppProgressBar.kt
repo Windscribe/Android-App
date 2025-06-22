@@ -1,6 +1,7 @@
 package com.windscribe.mobile.ui.common
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
+import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
 @Composable
@@ -47,8 +49,9 @@ fun PreferenceProgressBar(showProgressBar: Boolean) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f))
+                .background(MaterialTheme.colorScheme.preferencesBackgroundColor.copy(alpha = 0.70f))
                 .fillMaxSize()
+                .clickable {}
         ) {
             CircularProgressIndicator(
                 modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.primaryTextColor
