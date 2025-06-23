@@ -120,9 +120,4 @@ class AppStartActivity : AppCompatActivity() {
         appContext.resources.updateConfiguration(config, baseContext.resources.displayMetrics)
         resources.updateConfiguration(config, baseContext.resources.displayMetrics)
     }
-
-    fun reloadApp() {
-        TaskStackBuilder.create(this).addNextIntent(Intent(this, AppStartActivity::class.java))
-            .addNextIntentWithParentStack(intent).startActivities()
-    }
 }

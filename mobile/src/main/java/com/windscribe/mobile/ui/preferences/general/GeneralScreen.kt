@@ -46,7 +46,7 @@ fun GeneralScreen(viewModel: GeneralViewModel? = null) {
         ?: remember { mutableStateOf(false) }
     LaunchedEffect(reloadAppState?.value) {
         if (reloadAppState?.value == true) {
-            activity?.reloadApp()
+            activity?.recreate()
         }
     }
     PreferenceBackground {

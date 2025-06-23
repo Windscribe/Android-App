@@ -108,7 +108,7 @@ fun AppTheme(lipstickViewmodel: LipstickViewmodel?) {
                             onClick = {
                                 expanded.value = false
                                 lipstickViewmodel?.onThemeItemSelected(it)
-                                activity?.reloadApp()
+                                activity?.recreate()
                             },
                             text = {
                                 Text(
