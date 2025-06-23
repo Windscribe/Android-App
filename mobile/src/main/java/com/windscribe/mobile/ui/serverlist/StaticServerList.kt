@@ -128,7 +128,6 @@ fun StaticIPServerList(
                                 }
                             }
                         }
-                        Spacer(modifier = Modifier.weight(1f))
                         val deviceName = list.first().staticItem.deviceName
                         AddButton(com.windscribe.vpn.R.string.add_static_ip, deviceName) {
                             activity.openUrl(NetworkKeyConstants.URL_ADD_STATIC_IP)

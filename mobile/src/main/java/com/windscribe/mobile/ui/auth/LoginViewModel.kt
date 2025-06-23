@@ -191,7 +191,7 @@ class LoginViewModel @Inject constructor(
                 captcha.background,
                 captcha.top,
                 captcha.slider,
-                authToken.token
+                token
             )
             updateState(LoginState.Captcha(request))
         } else {
