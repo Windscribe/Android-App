@@ -116,7 +116,7 @@ class NetworkDetailViewModelImpl(
                     }
                     val vpnActive = vpnConnectionStateManager.isVPNActive()
                     when {
-                        networkInfo?.isAutoSecureOn == true && !vpnActive -> {
+                        networkInfo?.isAutoSecureOn == true && !vpnActive && preferencesHelper.globalUserConnectionPreference -> {
                             vpnController.connectAsync()
                         }
                         networkInfo?.isAutoSecureOn == false && vpnActive -> {

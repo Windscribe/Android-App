@@ -537,6 +537,7 @@ class ConnectionViewmodelImpl @Inject constructor(
         val currentState = connectionUIState.value
         val selectedLocation = lastLocationState.value ?: return
         if (currentState !is ConnectionUIState.Disconnected) {
+            preferences.globalUserConnectionPreference = false
             vpnController.disconnectAsync()
             return
         }
