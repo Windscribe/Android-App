@@ -48,7 +48,7 @@ fun AddButtonWithDetails(
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverItemTextColor)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text(stringResource(description), style = font16, color = AppColors.white.copy(alpha = 0.70f))
+            Text(stringResource(description), style = font16, color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f))
             title?.let {
                 Button(
                     onClick,
@@ -56,8 +56,8 @@ fun AddButtonWithDetails(
                         .align(Alignment.CenterHorizontally)
                         .padding(top = 16.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = AppColors.white.copy(alpha = 0.10f),
-                        contentColor = AppColors.white
+                        containerColor = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.10f),
+                        contentColor = MaterialTheme.colorScheme.serverListSecondaryColor
                     )
                 ) {
                     Text(stringResource(title), style = font16)
