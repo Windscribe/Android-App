@@ -20,7 +20,7 @@ class FavouriteRepository @Inject constructor(
         load()
     }
 
-    private fun load() {
+    fun load() {
         scope.launch {
             localDbInterface.getFavourites().collect { favourites ->
                 val favouriteCityList = favourites.mapNotNull { fav ->

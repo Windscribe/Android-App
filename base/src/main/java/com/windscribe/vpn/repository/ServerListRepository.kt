@@ -22,6 +22,7 @@ import dagger.Lazy
 import io.reactivex.Completable
 import io.reactivex.Single
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -61,7 +62,8 @@ class ServerListRepository @Inject constructor(
     private val userRepository: Lazy<UserRepository>,
     private val appLifeCycleObserver: AppLifeCycleObserver,
     private val advanceParameterRepository: AdvanceParameterRepository,
-    private val preferenceHelper: PreferencesHelper
+    private val preferenceHelper: PreferencesHelper,
+    private val favouriteRepository: FavouriteRepository
 ) {
     private val logger = LoggerFactory.getLogger("data")
     private var _events = MutableSharedFlow<List<RegionAndCities>>(replay = 1)
@@ -69,11 +71,9 @@ class ServerListRepository @Inject constructor(
     private var _locationJsonToExport = MutableStateFlow("")
     val locationJsonToExport: StateFlow<String> = _locationJsonToExport
     private val _customCities = MutableStateFlow<List<CustomCity>>(listOf())
-    private val customCities: StateFlow<List<CustomCity>> = _customCities
+    val customCities: StateFlow<List<CustomCity>> = _customCities
     private val _customRegions = MutableStateFlow<List<CustomRegion>>(listOf())
-    private val customRegions: StateFlow<List<CustomRegion>> = _customRegions
-    private val _customLocationNameChange = MutableSharedFlow<Boolean>()
-    val customLocationNameChange: SharedFlow<Boolean> = _customLocationNameChange
+    val customRegions: StateFlow<List<CustomRegion>> = _customRegions
 
     var globalServerList = true
 
@@ -229,9 +229,6 @@ class ServerListRepository @Inject constructor(
 
     private fun loadCustomLocationsJson() {
         try {
-            scope.launch {
-                _customLocationNameChange.emit(false)
-            }
             val fileInputStream: FileInputStream = appContext.openFileInput("locations.json")
             val jsonString = fileInputStream.bufferedReader().use { it.readText() }
             val type = object : TypeToken<CustomLocationsData>() {}.type
@@ -241,14 +238,16 @@ class ServerListRepository @Inject constructor(
             _customCities.value = cities
             _customRegions.value = customLocationsData.locations
             scope.launch {
-                _customLocationNameChange.emit(true)
+                _events.emit(localDbInterface.allRegion.await())
+                favouriteRepository.load()
             }
-        } catch (e: IOException) {
+        } catch (ignored: Exception) {
             _customCities.value = listOf()
             _customRegions.value = listOf()
-        } catch (e: FileNotFoundException) {
-            _customCities.value = listOf()
-            _customRegions.value = listOf()
+            scope.launch {
+                _events.emit(localDbInterface.allRegion.await())
+                favouriteRepository.load()
+            }
         }
     }
 

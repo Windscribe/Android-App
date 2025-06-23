@@ -45,12 +45,14 @@ import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
 import org.slf4j.LoggerFactory
@@ -247,11 +249,17 @@ class ConnectionViewmodelImpl @Inject constructor(
         }
     }
 
+    @OptIn(FlowPreview::class)
     private fun observeCustomLocationNameChanges() {
         viewModelScope.launch(Dispatchers.IO) {
-            serverListRepository.customLocationNameChange.collectLatest {
-                fetchLastLocation()
-            }
+            combine(
+                serverListRepository.customRegions,
+                serverListRepository.customCities
+            ) { _, _ -> }
+                .debounce(100)
+                .collectLatest {
+                    fetchLastLocation()
+                }
         }
     }
 

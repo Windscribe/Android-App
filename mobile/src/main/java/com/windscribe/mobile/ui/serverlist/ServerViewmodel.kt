@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
@@ -31,6 +32,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
 import java.util.Locale
+import kotlin.collections.map
 
 data class ServerListItem(val id: Int, val region: Region, val cities: List<City>)
 data class FavouriteListItem(val id: Int, val city: City)
@@ -149,12 +151,6 @@ class ServerViewModelImpl(
             }
             preferencesHelper.addObserver(preferenceChangeListener!!)
         }
-        viewModelScope.launch {
-            serverRepository.customLocationNameChange.collectLatest {
-                fetchServerList()
-                fetchFavouriteList()
-            }
-        }
     }
 
     private fun fetchServerList() {
@@ -165,16 +161,15 @@ class ServerViewModelImpl(
                 if (regions.isNotEmpty()) {
                     preferencesHelper.migrationRequired = false
                 }
-
                 regions
                     .map { region ->
                         ServerListItem(
                             id = region.region.id,
                             region = region.region,
-                            cities = region.cities.sortCities().updateCityNames()
+                            cities = region.cities.updateCityNames().sortCities()
                         )
                     }
-                    .sortRegions().updateRegionNames()
+                    .updateRegionNames().sortRegions()
             },
             errorMessage = "Failed to load servers"
         )
@@ -292,7 +287,7 @@ class ServerViewModelImpl(
             stateFlow = _favouriteListState,
             repositoryFlow = favouriteRepository.favourites,
             transform = { favourites ->
-                favourites.sortCities().map { FavouriteListItem(it.id, it) }
+                favourites.updateCityNames().sortCities().map { FavouriteListItem(it.id, it) }
             },
             errorMessage = "Failed to load favourites"
         )
@@ -337,7 +332,8 @@ class ServerViewModelImpl(
                 .map { transform(it) }
                 .catch { e -> stateFlow.value = ListState.Error("$errorMessage: ${e.message}") }
                 .collect { result ->
-                    stateFlow.value = ListState.Success(result)
+                    Log.d("ServerViewModelImpl", "Received result: $result")
+                    stateFlow.value = ListState.Success(result.toList())
                 }
         }
     }

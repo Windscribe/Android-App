@@ -409,7 +409,8 @@ open class BaseApplicationModule {
         userRepository: Lazy<UserRepository>,
         appLifeCycleObserver: AppLifeCycleObserver,
         advanceParameterRepository: AdvanceParameterRepository,
-        preferencesHelper: PreferencesHelper
+        preferencesHelper: PreferencesHelper,
+        favouriteRepository: FavouriteRepository
     ): ServerListRepository {
         return ServerListRepository(
             scope,
@@ -419,7 +420,8 @@ open class BaseApplicationModule {
             userRepository,
             appLifeCycleObserver,
             advanceParameterRepository,
-            preferencesHelper
+            preferencesHelper,
+            favouriteRepository
         )
     }
 
