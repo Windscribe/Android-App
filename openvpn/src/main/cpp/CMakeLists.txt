@@ -32,6 +32,7 @@ if (NOT ${OPENVPN3OSSL} OR ${OPENVPN2MBED})
 endif ()
 
 add_library(ovpnutil SHARED ovpnutil/jniglue.c ovpnutil/scan_ifs.c)
+target_link_options(ovpnutil PRIVATE "-Wl,-z,max-page-size=16384")
 target_compile_definitions(ovpnutil PRIVATE -DTARGET_ARCH_ABI=\"${ANDROID_ABI}\"
         -DOPENVPN2_GIT_REVISION=\"${OPENVPN2_GIT}\"
         -DOPENVPN3_GIT_REVISION=\"${OPENVPN3_GIT}\"
@@ -127,6 +128,7 @@ set(openvpn_srcs
 PREPEND(openvpn_srcs_with_path "openvpn" ${openvpn_srcs})
 
 add_library(openvpn SHARED ${openvpn_srcs_with_path})
+target_link_options(openvpn PRIVATE "-Wl,-z,max-page-size=16384")
 
 target_include_directories(openvpn PRIVATE
         openvpn-config
@@ -157,9 +159,11 @@ else ()
 endif ()
 
 add_executable(libovpnexec.so minivpn/minivpn.c)
+target_link_options(libovpnexec.so PRIVATE "-Wl,-z,max-page-size=16384")
 target_link_libraries(libovpnexec.so PRIVATE openvpn)
 
 add_executable(pie_openvpn.${ANDROID_ABI} minivpn/minivpn.c)
+target_link_options(pie_openvpn.${ANDROID_ABI} PRIVATE "-Wl,-z,max-page-size=16384")
 target_compile_options(pie_openvpn.${ANDROID_ABI} PRIVATE -fPIE)
 target_link_libraries(pie_openvpn.${ANDROID_ABI} PRIVATE openvpn -fPIE -pie)
 
