@@ -111,6 +111,7 @@ object FlagIconResource {
             flagIcon["NG"] = R.drawable.ng
             flagIcon["PY"] = R.drawable.py
             flagIcon["UY"] = R.drawable.uy
+            flagIcon["SV"] = R.drawable.sv
             return flagIcon
         }
 
@@ -208,6 +209,7 @@ object FlagIconResource {
             flagIcon["NG"] = R.drawable.ng_small
             flagIcon["PY"] = R.drawable.py_small
             flagIcon["UY"] = R.drawable.uy_small
+            flagIcon["SV"] = R.drawable.sv_small
 
             return flagIcon
         }
