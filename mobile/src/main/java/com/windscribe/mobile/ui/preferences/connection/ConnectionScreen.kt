@@ -205,13 +205,18 @@ private fun DecoyTrafficMode(viewModel: ConnectionViewModel?) {
     }
     val potentialDataUse by viewModel?.potentialDataUse?.collectAsState()
         ?: remember { mutableStateOf("") }
+    val shape = if (decoyTraffic) {
+        RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+    } else {
+        RoundedCornerShape(size = 12.dp)
+    }
     Column {
         SwitchItemView(
             title = R.string.decoy_traffic,
             icon = com.windscribe.mobile.R.drawable.ic_decoy_icon,
             description = R.string.decoy_caution_description,
             decoyTraffic,
-            shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
+            shape = shape,
             explainer = FeatureExplainer.DECOY_TRAFFIC,
             onSelect = {
                 if (decoyTraffic.not()) {
@@ -221,37 +226,39 @@ private fun DecoyTrafficMode(viewModel: ConnectionViewModel?) {
                 }
             }
         )
-        Spacer(modifier = Modifier.height(1.dp))
-        CustomDropDown(
-            R.string.fake_traffic_volume,
-            multipliers,
-            multiplier.toString(),
-            shape = RoundedCornerShape(0.dp),
-        ) {
-            viewModel?.onFakeTrafficVolumeSelected(it)
-        }
-        Spacer(modifier = Modifier.height(1.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .background(
-                    MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                    shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
+        if (decoyTraffic) {
+            Spacer(modifier = Modifier.height(1.dp))
+            CustomDropDown(
+                R.string.fake_traffic_volume,
+                multipliers,
+                multiplier.toString(),
+                shape = RoundedCornerShape(0.dp),
+            ) {
+                viewModel?.onFakeTrafficVolumeSelected(it)
+            }
+            Spacer(modifier = Modifier.height(1.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .background(
+                        MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                        shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
+                    )
+                    .padding(14.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.potential_data_use),
+                    style = font16.copy(fontWeight = FontWeight.Medium),
+                    color = MaterialTheme.colorScheme.primaryTextColor
                 )
-                .padding(14.dp)
-                .fillMaxWidth()
-        ) {
-            Text(
-                text = stringResource(R.string.potential_data_use),
-                style = font16.copy(fontWeight = FontWeight.Medium),
-                color = MaterialTheme.colorScheme.primaryTextColor
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = potentialDataUse,
-                style = font16,
-                color = MaterialTheme.colorScheme.preferencesSubtitleColor
-            )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = potentialDataUse,
+                    style = font16,
+                    color = MaterialTheme.colorScheme.preferencesSubtitleColor
+                )
+            }
         }
     }
 }
