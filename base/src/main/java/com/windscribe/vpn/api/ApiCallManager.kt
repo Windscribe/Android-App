@@ -520,18 +520,18 @@ open class ApiCallManager @Inject constructor(
         }
     }
 
-    override fun authTokenLogin(): Single<GenericResponseClass<AuthToken?, ApiErrorResponse?>> {
+    override fun authTokenLogin(useAsciiCaptcha: Boolean): Single<GenericResponseClass<AuthToken?, ApiErrorResponse?>> {
         return Single.create { sub ->
-            val callback = wsNetServerAPI.authTokenLogin() { code, json ->
+            val callback = wsNetServerAPI.authTokenLogin(useAsciiCaptcha) { code, json ->
                 buildResponse(sub, code, json, AuthToken::class.java)
             }
             sub.setCancellable { callback.cancel() }
         }
     }
 
-    override fun authTokenSignup(): Single<GenericResponseClass<AuthToken?, ApiErrorResponse?>> {
+    override fun authTokenSignup(useAsciiCaptcha: Boolean): Single<GenericResponseClass<AuthToken?, ApiErrorResponse?>> {
         return Single.create { sub ->
-            val callback = wsNetServerAPI.authTokenSignup() { code, json ->
+            val callback = wsNetServerAPI.authTokenSignup(useAsciiCaptcha) { code, json ->
                 buildResponse(sub, code, json, AuthToken::class.java)
             }
             sub.setCancellable { callback.cancel() }

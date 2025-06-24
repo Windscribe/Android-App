@@ -47,6 +47,6 @@ interface IApiCallManager {
         sizeToReceive: String?
     ): Single<GenericResponseClass<String?, ApiErrorResponse?>>
     fun sso(provider: String, token: String): Single<GenericResponseClass<SsoResponse?, ApiErrorResponse?>>
-    fun authTokenSignup(): Single<GenericResponseClass<AuthToken?, ApiErrorResponse?>>
-    fun authTokenLogin(): Single<GenericResponseClass<AuthToken?, ApiErrorResponse?>>
+    fun authTokenSignup(useAsciiCaptcha: Boolean): Single<GenericResponseClass<AuthToken?, ApiErrorResponse?>>
+    fun authTokenLogin(useAsciiCaptcha: Boolean): Single<GenericResponseClass<AuthToken?, ApiErrorResponse?>>
 }
