@@ -479,22 +479,22 @@ class ConnectionViewmodelImpl @Inject constructor(
 
 
     private fun buildLocationInfo(): LocationInfoState {
-        val lastSelectedLocation = lastLocationState.value
-        return if (lastSelectedLocation == null) {
-            LocationInfoState.Unavailable
-        } else {
-            val countryCode = lastSelectedLocation.countryCode ?: ""
-            LocationInfoState.Success(
-                LocationInfo(
-                    countryCode,
-                    serverListRepository.getCustomCityName(lastSelectedLocation.cityId)
-                        ?: lastSelectedLocation.nodeName,
-                    serverListRepository.getCustomCityNickName(lastSelectedLocation.cityId)
-                        ?: lastSelectedLocation.nickName,
-                    getLocationBackground(countryCode)
-                )
-            )
+        var location = lastLocationState.value
+        if (location == null || location.cityId != locationRepository.selectedCity.value) {
+            location = Util.getLastSelectedLocation(appContext)
+            lastLocationState.value = location
         }
+        if (location == null) return LocationInfoState.Unavailable
+        val cityId = location.cityId
+        val countryCode = location.countryCode.orEmpty()
+        return LocationInfoState.Success(
+            LocationInfo(
+                countryCode,
+                serverListRepository.getCustomCityName(cityId) ?: location.nodeName,
+                serverListRepository.getCustomCityNickName(cityId) ?: location.nickName,
+                getLocationBackground(countryCode)
+            )
+        )
     }
 
     private fun getLocationBackground(countryCode: String): LocationBackground {
@@ -509,7 +509,9 @@ class ConnectionViewmodelImpl @Inject constructor(
             2 -> {
                 val index =
                     if (isConnected) preferences.connectedBundleBackgroundOption else preferences.disconnectedBundleBackgroundOption
-                LocationBackground.Wallpaper(bundledBackgrounds[index] ?: com.windscribe.vpn.R.mipmap.square)
+                LocationBackground.Wallpaper(
+                    bundledBackgrounds[index] ?: com.windscribe.vpn.R.mipmap.square
+                )
             }
 
             3 -> LocationBackground.Flag(R.drawable.dummy_flag)

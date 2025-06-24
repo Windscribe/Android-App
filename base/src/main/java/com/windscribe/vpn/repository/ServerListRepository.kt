@@ -185,6 +185,7 @@ class ServerListRepository @Inject constructor(
             .andThen(Completable.fromAction {
                 preferenceChangeObserver.postCityServerChange()
                 load()
+                favouriteRepository.load()
             })
     }
 
