@@ -17,10 +17,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithContent
@@ -46,6 +48,7 @@ import com.windscribe.mobile.ui.connection.ConnectionUIState
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.connection.LocationBackground
 import com.windscribe.mobile.ui.connection.LocationInfoState
+import com.windscribe.mobile.ui.helper.calculateImageDimensions
 import com.windscribe.mobile.ui.home.HomeViewmodel
 import com.windscribe.mobile.ui.home.NetworkInfoSheet
 import com.windscribe.mobile.ui.theme.AppColors
@@ -57,12 +60,7 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
     val locationBackground =
         (connectionState.locationInfo as? LocationInfoState.Success)?.locationInfo?.locationBackground
     val resource = locationBackground?.resource ?: com.windscribe.vpn.R.drawable.dummy_flag
-    val isLandscape = LocalConfiguration.current.orientation == ORIENTATION_LANDSCAPE
-    var flagHeight =
-        if (isLandscape) LocalConfiguration.current.screenWidthDp * 0.30 else LocalConfiguration.current.screenHeightDp * 0.30
-    if (flagHeight < 273.0) {
-       flagHeight = 273.0
-    }
+    val imageDimen = calculateImageDimensions()
     Box {
         AnimatedContent(
             targetState = resource,
@@ -78,9 +76,9 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
         ) { targetCountryCode ->
             Box(
                 modifier = Modifier
-                    .height(flagHeight.dp)
+                    .height(imageDimen.height)
+                    .fillMaxSize()
                     .alpha(if (locationBackground is LocationBackground.Wallpaper || locationBackground is LocationBackground.Custom) 1.0f else 0.30f)
-                    .fillMaxWidth()
                     .graphicsLayer(alpha = 1.0f)
                     .drawWithContent {
                         drawContent()
@@ -164,8 +162,10 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
                         painter = painterResource(id = imageDrawable),
                         contentDescription = null,
                         modifier = Modifier
-                            .fillMaxSize(),
-                        contentScale = ContentScale.FillBounds
+                            .width(imageDimen.width)
+                            .height(imageDimen.height)
+                            .align(Alignment.Center),
+                        contentScale = ContentScale.Crop
                     )
                 }
                 if (connectionState is ConnectionUIState.Connected) {
