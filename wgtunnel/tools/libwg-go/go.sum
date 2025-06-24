@@ -40,8 +40,8 @@ cloud.google.com/go/storage v1.14.0/go.mod h1:GrKmX003DSIwi9o29oFT7YDnHYwZoctc3f
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/Control-D-Inc/ctrld v1.4.3 h1:GVfNXaNH2IhttB3bgz3qkO+QzOrtzF8HQCRTcueqt7o=
-github.com/Control-D-Inc/ctrld v1.4.3/go.mod h1:A733qIzK+87TjoaykG7bS72qFl7IA3NiuADsElkWDGA=
+github.com/Control-D-Inc/ctrld v1.4.4 h1:UVY0N9/H2uqWTiLoG4lh5APoTCHyCHixMJc48d3p3OU=
+github.com/Control-D-Inc/ctrld v1.4.4/go.mod h1:A733qIzK+87TjoaykG7bS72qFl7IA3NiuADsElkWDGA=
 github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=
 github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
 github.com/Windscribe/wireguard v1.0.3 h1:8CKOCJZW8R5f+UcdIyz6U0yVMIRXLDJ6F8xinsCbzoo=

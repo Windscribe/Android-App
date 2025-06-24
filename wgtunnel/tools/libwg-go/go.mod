@@ -13,7 +13,7 @@ replace github.com/rs/zerolog => github.com/Windscribe/zerolog v0.0.0-2024120613
 replace github.com/gorilla/websocket => github.com/Windscribe/wstunnel/websocket v0.0.0-20250204211052-c191d6e13771
 
 require (
-	github.com/Control-D-Inc/ctrld v1.4.3
+	github.com/Control-D-Inc/ctrld v1.4.4
 	github.com/Windscribe/wstunnel v1.0.2-0.20250204211052-c191d6e13771
 	github.com/spf13/cobra v1.8.1
 	golang.org/x/sys v0.31.0
