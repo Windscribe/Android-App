@@ -196,7 +196,7 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
     }
 
     override fun onStaticOverlayReady() {
-        presenter.staticIpViewReady()
+        activityScope { presenter.staticIpViewReady() }
     }
 
     override fun onStaticSelected(regionID: Int, userNameEncoded: String, passwordEncoded: String) {

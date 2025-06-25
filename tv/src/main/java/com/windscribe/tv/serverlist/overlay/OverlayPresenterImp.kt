@@ -257,9 +257,11 @@ class OverlayPresenterImp @Inject constructor(
         resetFavouriteAdapter()
     }
 
-    override fun staticIpViewReady() {
+    override suspend fun staticIpViewReady() {
         logger.debug("Static view ready.")
-        interactor.getStaticListUpdater().load()
+        interactor.getStaticListUpdater().regions.collectLatest {
+            resetStaticAdapter(it.toMutableList())
+        }
     }
 
     override suspend fun windLocationViewReady() {
@@ -306,7 +308,7 @@ class OverlayPresenterImp @Inject constructor(
                 .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(object : DisposableSingleObserver<ServerListData>(){
                         override fun onSuccess(t: ServerListData) {
-                            if (regions.size > 0) {
+                            if (regions.isNotEmpty()) {
                                 overlayView.setState(
                                                 LoadState.Loaded,
                                                 R.drawable.ic_static_ip,
