@@ -30,7 +30,7 @@ fun LatencyIcon(latency: Int) {
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverItemTextColor)
         )
         Text(
-            text = "$latency",
+            text = if (latency > 0) "$latency" else "--",
             style = font9,
             color = MaterialTheme.colorScheme.serverItemTextColor
         )
