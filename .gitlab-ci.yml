@@ -215,7 +215,7 @@ BuildStrongswan:
     - export strongswanLibsDst="$PWD/strongswan/libs"
     - export OUT_DIR="$PWD/strongswan-src/src/frontends/android/app/src/main/jni/openssl"
     - pushd $OPENSSL_SRC
-    - ./strongswan-src/src/frontends/android/openssl/compile.sh
+    - $CI_PROJECT_DIR/strongswan-src/src/frontends/android/openssl/compile.sh
     - popd
     - cd $CI_PROJECT_DIR
     - cd tools
