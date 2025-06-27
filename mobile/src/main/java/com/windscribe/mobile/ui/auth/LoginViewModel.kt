@@ -188,9 +188,9 @@ class LoginViewModel @Inject constructor(
         if (captcha != null) {
             logger.info("Received captcha: ${captcha.top}")
             val request = CaptchaRequest(
-                captcha.background,
-                captcha.top,
-                captcha.slider,
+                captcha.background!!,
+                captcha.top!!,
+                captcha.slider!!,
                 token
             )
             updateState(LoginState.Captcha(request))

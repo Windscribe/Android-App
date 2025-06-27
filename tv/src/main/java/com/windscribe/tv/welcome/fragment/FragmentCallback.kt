@@ -15,12 +15,16 @@ interface FragmentCallback {
     fun onContinueWithOutAccountClick()
     fun onForgotPasswordClick()
     fun onGenerateCodeClick()
-    fun onLoginButtonClick(username: String, password: String, twoFa: String?)
+    fun onLoginButtonClick(username: String, password: String, twoFa: String?, secureToken: String?, captcha: String?)
+    fun onAuthLoginClick(username: String, password: String)
+    fun onAuthSignUpClick()
     fun onLoginClick()
     fun onSignUpButtonClick(
         username: String,
         password: String,
         email: String?,
-        ignoreEmptyEmail: Boolean
+        ignoreEmptyEmail: Boolean,
+        secureToken: String?,
+        captcha: String?
     )
 }

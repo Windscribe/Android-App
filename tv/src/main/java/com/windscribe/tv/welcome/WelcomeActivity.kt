@@ -4,6 +4,7 @@
 package com.windscribe.tv.welcome
 
 import android.Manifest
+import android.R.attr.fragment
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -27,6 +28,7 @@ import com.windscribe.tv.customview.ProgressFragment
 import com.windscribe.tv.databinding.ActivityWelcomeBinding
 import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.email.AddEmailActivity
+import com.windscribe.tv.welcome.fragment.CaptchaFragment
 import com.windscribe.tv.welcome.fragment.ForgotPasswordFragment
 import com.windscribe.tv.welcome.fragment.FragmentCallback
 import com.windscribe.tv.welcome.fragment.LoginFragment
@@ -173,8 +175,8 @@ class WelcomeActivity :
         presenter.onGenerateCodeClick()
     }
 
-    override fun onLoginButtonClick(username: String, password: String, twoFa: String?) {
-        presenter.startLoginProcess(username, password, twoFa)
+    override fun onLoginButtonClick(username: String, password: String, twoFa: String?, secureToken: String?, captcha: String?) {
+        presenter.startLoginProcess(username, password, twoFa, secureToken, captcha)
     }
 
     override fun onLoginClick() {
@@ -190,9 +192,11 @@ class WelcomeActivity :
         username: String,
         password: String,
         email: String?,
-        ignoreEmptyEmail: Boolean
+        ignoreEmptyEmail: Boolean,
+        secureToken: String?,
+        captcha: String?
     ) {
-        presenter.startSignUpProcess(username, password, email, ignoreEmptyEmail)
+        presenter.startSignUpProcess(username, password, email, ignoreEmptyEmail, secureToken, captcha)
     }
 
     override fun prepareUiForApiCallFinished() {
@@ -314,6 +318,29 @@ class WelcomeActivity :
         fragment.enterTransition =
             Slide(direction).addTarget(R.id.welcome_container)
         replaceFragment(fragment, false)
+    }
+
+    override fun onAuthLoginClick(username: String, password: String) {
+       presenter.onAuthLoginClick(username, password)
+    }
+
+    override fun captchaReceived(username: String, password: String, secureToken: String, captchaArt: String) {
+        val fragment: Fragment = CaptchaFragment()
+        val bundle = Bundle()
+        bundle.putString("username", username)
+        bundle.putString("password", password)
+        bundle.putString("secureToken", secureToken)
+        bundle.putString("captchaArt", captchaArt)
+        fragment.arguments = bundle
+        val direction = GravityCompat
+            .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
+        fragment.enterTransition =
+            Slide(direction).addTarget(R.id.welcome_container)
+        replaceFragment(fragment, true)
+    }
+
+    override fun onAuthSignUpClick() {
+
     }
 
     private fun permissionGranted(): Boolean {
