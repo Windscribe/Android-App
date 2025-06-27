@@ -205,20 +205,32 @@ BuildStrongswan:
     - mkdir -p /tmp/openssl-src && cd /tmp/openssl-src
     - wget https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1t.tar.gz
     - tar -xzf OpenSSL_1_1_1t.tar.gz
-    - export OpenSSL="$PWD/openssl-OpenSSL_1_1_1t"
+    - export OPENSSL_SRC="$PWD/openssl-OpenSSL_1_1_1t"
 
   script:
-    - ls $OpenSSL
     - cd $CI_PROJECT_DIR
     - rm -rf strongswan-src
     - git clone --branch android-2.5.5 https://github.com/strongswan/strongswan.git strongswan-src
+    - cp -a "$OPENSSL_SRC/." "$CI_PROJECT_DIR/strongswan-src/src/frontends/android/openssl/"
     - export strongswanLibsSrc="$PWD/strongswan-src/src/frontends/android/app/src/main/libs/*"
     - export strongswanLibsDst="$PWD/strongswan/libs"
+    - export OUT_DIR="$PWD/strongswan-src/src/frontends/android/app/src/main/jni/openssl"
+    - cd $CI_PROJECT_DIR/strongswan-src/src/frontends/android/openssl
+    - ./compile.sh
+    - echo "LOCAL_PATH := \$(call my-dir)" >"${OUT_DIR}/Android.mk"
+    - echo "include \$(CLEAR_VARS)" >>"${OUT_DIR}/Android.mk"
+    - echo "LOCAL_MODULE := libcrypto_static" >>"${OUT_DIR}/Android.mk"
+    - echo "LOCAL_SRC_FILES := \$(TARGET_ARCH_ABI)/libcrypto.a" >>"${OUT_DIR}/Android.mk"
+    - echo "LOCAL_EXPORT_C_INCLUDES := \$(LOCAL_PATH)/include" >>"${OUT_DIR}/Android.mk"
+    - echo "include \$(PREBUILT_STATIC_LIBRARY)" >>"${OUT_DIR}/Android.mk"
+    - cd $CI_PROJECT_DIR/strongswan-src
+    - ./autogen.sh > config.log
+    - ./configure --disable-defaults > config.log
+    - make dist -j $(nproc) > config.log
+    - rm config.log
+    - popd
     - cd $CI_PROJECT_DIR
-    - cd tools
-    - chmod +x build_strongswan.sh
-    - ./build_strongswan.sh
-    - cd ../strongswan-src/src/frontends/android
+    - cd strongswan-src/src/frontends/android
     - sed -i 's|ndkVersion ".*"|ndkVersion "23.2.8568313"|g' app/build.gradle
     - ./gradlew assembleRelease
   artifacts:
