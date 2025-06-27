@@ -218,3 +218,7 @@ BuildStrongswan:
     - cd ../strongswan-src/src/frontends/android/app
     - gradle assembleRelease
     - cp -r $strongswanLibsSrc $strongswanLibsDst
+  artifacts:
+    paths:
+      - strongswan/libs
+    expire_in: 1 week
