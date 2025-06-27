@@ -97,7 +97,7 @@ UploadToNexusPublic:
     - echo "$signKey" | base64 -d -i > $SIGN_KEY_PATH
     - export GRADLE_USER_HOME=$(pwd)/.gradle
     - chmod +x ./gradlew
-    - extras ndk -n 23.2.8568313 -c 3.22.1
+    - extras ndk -n 27.2.12479018 -c 3.22.1
     - extras fastlane
     - apk --no-cache add swig
     - fastlane updateBuildVersion
@@ -129,7 +129,7 @@ UploadToNexusPublic:
     - echo "$signKey" | base64 -d -i > $SIGN_KEY_PATH
     - export GRADLE_USER_HOME=$(pwd)/.gradle
     - chmod +x ./gradlew
-    - extras ndk -n 23.2.8568313 -c 3.22.1
+    - extras ndk -n 27.2.12479018 -c 3.22.1
     - extras fastlane
     - apk --no-cache add swig
     - fastlane keepBuildVersion
