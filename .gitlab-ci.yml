@@ -235,8 +235,8 @@ BuildStrongswan:
     - sed -i '/arguments '\''-j'\'' \+ Runtime\.runtime\.availableProcessors()/a\        arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"' app/build.gradle
     - ./gradlew assembleRelease
     # Copy binaries for download
-    - mkdir -p artifacts
-    - zip -r artifacts/strongswan-libs.zip strongswan-src/src/frontends/android/app/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib
+    - mkdir -p $CI_PROJECT_DIR/artifacts
+    - zip -r $CI_PROJECT_DIR/artifacts/strongswan-libs.zip app/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib
   artifacts:
     paths:
       - $CI_PROJECT_DIR/artifacts/strongswan-libs.zip
