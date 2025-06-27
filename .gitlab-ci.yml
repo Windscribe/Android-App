@@ -162,3 +162,82 @@ Slack:
   before_script:
     - extras fastlane
     - apk --no-cache add curl
+
+BuildStrongswan:
+  stage: Deploy
+  when: manual
+  image: ubuntu:22.04
+
+  before_script:
+    - apt-get update
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y locales build-essential automake bison flex gettext gperf libtool pkg-config swig jq curl zip unzip tar cmake git perl golang-go ninja-build openjdk-17-jdk wget zlib1g-dev
+    # Set env vars
+    - locale-gen en_US.UTF-8
+    - export LANG=en_US.UTF-8
+    - export LC_ALL=en_US.UTF-8
+    - export ROOT_DIR=$(pwd)
+    - export GRADLE_USER_HOME=$(pwd)/.gradle
+    - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+    - export PATH=$JAVA_HOME/bin:$PATH
+
+    # Create Android SDK dir
+    - mkdir -p /opt/android-sdk/cmdline-tools
+    - cd /opt/android-sdk
+    - wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
+    - unzip tools.zip -d cmdline-tools
+    - mv cmdline-tools/cmdline-tools cmdline-tools/latest
+    - export ANDROID_SDK_ROOT=/opt/android-sdk
+    - export ANDROID_HOME=$ANDROID_SDK_ROOT
+    - export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
+
+    # Accept licenses & install SDK/NDK
+    - echo "📦 Checking if sdkmanager works..."
+    - which sdkmanager
+    - sdkmanager --version
+    - sdkmanager --list
+    - yes | sdkmanager --licenses || true
+    - sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;$SS_NDK_VERSION"
+
+    # Set NDK env var
+    - export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/$SS_NDK_VERSION
+    - export ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/$SS_NDK_VERSION
+
+    # Build OpenSSL
+    - mkdir -p /tmp/openssl-src && cd /tmp/openssl-src
+    - wget https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1t.tar.gz
+    - tar -xzf OpenSSL_1_1_1t.tar.gz
+    - export OPENSSL_SRC="$PWD/openssl-OpenSSL_1_1_1t"
+
+  script:
+    - cd $CI_PROJECT_DIR
+    - rm -rf strongswan-src
+    - git clone --branch $SS_BRANCH $SS_REMOTE strongswan-src
+    # Build Openssl static lib.
+    - cp -a "$OPENSSL_SRC/." "$CI_PROJECT_DIR/strongswan-src/src/frontends/android/openssl/"
+    - export OUT_DIR="$PWD/strongswan-src/src/frontends/android/app/src/main/jni/openssl"
+    - cd $CI_PROJECT_DIR/strongswan-src/src/frontends/android/openssl
+    - ./compile.sh
+    - echo "LOCAL_PATH := \$(call my-dir)" >"${OUT_DIR}/Android.mk"
+    - echo "include \$(CLEAR_VARS)" >>"${OUT_DIR}/Android.mk"
+    - echo "LOCAL_MODULE := libcrypto_static" >>"${OUT_DIR}/Android.mk"
+    - echo "LOCAL_SRC_FILES := \$(TARGET_ARCH_ABI)/libcrypto.a" >>"${OUT_DIR}/Android.mk"
+    - echo "LOCAL_EXPORT_C_INCLUDES := \$(LOCAL_PATH)/include" >>"${OUT_DIR}/Android.mk"
+    - echo "include \$(PREBUILT_STATIC_LIBRARY)" >>"${OUT_DIR}/Android.mk"
+    # Build Strongswan.
+    - cd $CI_PROJECT_DIR/strongswan-src
+    - ./autogen.sh > config.log
+    - ./configure --disable-defaults > config.log
+    - make dist -j $(nproc) > config.log
+    - rm config.log
+    # Build App.
+    - cd $CI_PROJECT_DIR
+    - cd strongswan-src/src/frontends/android
+    - sed -i '/arguments '\''-j'\'' \+ Runtime\.runtime\.availableProcessors()/a\        arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"' app/build.gradle
+    - ./gradlew assembleRelease
+    # Copy binaries for download
+    - mkdir -p $CI_PROJECT_DIR/artifacts
+    - zip -r $CI_PROJECT_DIR/artifacts/strongswan-libs.zip app/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/artifacts/strongswan-libs.zip
+    expire_in: 1 week
