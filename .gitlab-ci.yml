@@ -167,7 +167,7 @@ BuildStrongswan:
   stage: Deploy
   script:
     - apk -U upgrade
-    - apk add automake bison flex gettext gperf libtool make pkg-config swig jq curl zip unzip tar cmake git musl-dev cmake perl golang ninja-build
+    - apk add automake bison flex gettext gperf libtool make pkg-config swig jq curl zip unzip tar cmake git musl-dev cmake perl ninja-build
     - export GRADLE_USER_HOME=$(pwd)/.gradle
     - chmod +x ./gradlew
     - extras ndk -n 23.2.8568313 -c 3.22.1
