@@ -165,43 +165,34 @@ Slack:
 
 BuildStrongswan:
   stage: Deploy
-  image: ubuntu:22.04  # ✅ Use Ubuntu LTS
+  image: ubuntu:22.04
 
   before_script:
     - apt-get update
-    - DEBIAN_FRONTEND=noninteractive apt-get install -y locales gradle libssl-dev build-essential automake bison flex gettext gperf libtool pkg-config swig jq curl zip unzip tar cmake git perl golang-go ninja-build openjdk-17-jdk wget zlib1g-dev
-    # Set env vars
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y locales build-essential automake bison flex gettext libtool pkg-config swig curl zip unzip tar cmake git perl golang-go ninja-build openjdk-17-jdk wget zlib1g-dev
     - locale-gen en_US.UTF-8
-    - export LANG=en_US.UTF-8
-    - export LC_ALL=en_US.UTF-8
-    - export ROOT_DIR=$(pwd)
-    - export GRADLE_USER_HOME=$(pwd)/.gradle
+    - export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
     - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
     - export PATH=$JAVA_HOME/bin:$PATH
 
-    # Create Android SDK dir
+    # Setup Android SDK command line tools
     - mkdir -p /opt/android-sdk/cmdline-tools
     - cd /opt/android-sdk
     - wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
     - unzip tools.zip -d cmdline-tools
     - mv cmdline-tools/cmdline-tools cmdline-tools/latest
     - export ANDROID_SDK_ROOT=/opt/android-sdk
-    - export ANDROID_HOME=$ANDROID_SDK_ROOT
     - export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
 
-    # Accept licenses & install SDK/NDK
-    - echo "📦 Checking if sdkmanager works..."
-    - which sdkmanager
-    - sdkmanager --version
-    - sdkmanager --list
+    # Accept licenses and install SDK, NDK, build tools, and platform
     - yes | sdkmanager --licenses || true
     - sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;23.2.8568313"
 
-    # Set NDK env var
+    # Set NDK environment variables
     - export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/23.2.8568313
     - export ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/23.2.8568313
 
-    # Build OpenSSL
+    # Download OpenSSL source
     - mkdir -p /tmp/openssl-src && cd /tmp/openssl-src
     - wget https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1t.tar.gz
     - tar -xzf OpenSSL_1_1_1t.tar.gz
@@ -211,20 +202,18 @@ BuildStrongswan:
     - cd $CI_PROJECT_DIR
     - rm -rf strongswan-src
     - git clone --branch 5.9.14 https://github.com/strongswan/strongswan.git strongswan-src
-    - export strongswanLibsSrc="$PWD/strongswan-src/src/frontends/android/app/src/main/libs/*"
-    - export strongswanLibsDst="$PWD/strongswan/libs"
     - export OUT_DIR="$PWD/strongswan-src/src/frontends/android/app/src/main/jni/openssl"
+    - chmod +x $OPENSSL_SRC/../android/openssl/compile.sh
     - pushd $OPENSSL_SRC
     - $CI_PROJECT_DIR/strongswan-src/src/frontends/android/openssl/compile.sh
     - popd
-    - cd $CI_PROJECT_DIR
-    - cd tools
-    - chmod +x build_strongswan.sh
-    - ./build_strongswan.sh
-    - cd ../strongswan-src/src/frontends/android/app
-    - gradle assembleRelease
-    - cp -r $strongswanLibsSrc $strongswanLibsDst
+    - chmod +x strongswan-src/src/frontends/android/build_strongswan.sh
+    - ./strongswan-src/src/frontends/android/build_strongswan.sh
+    - cd strongswan-src/src/frontends/android/app
+    - chmod +x ./gradlew
+    - ./gradlew assembleRelease
+
   artifacts:
     paths:
-      - strongswan/libs
+      - $CI_PROJECT_DIR
     expire_in: 1 week
