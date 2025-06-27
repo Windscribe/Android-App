@@ -191,7 +191,7 @@ BuildStrongswan:
     - which sdkmanager
     - sdkmanager --version
     - sdkmanager --list
-    - sdkmanager -sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;23.2.8568313"
+    - sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;23.2.8568313"
 
     # Set NDK env var
     - export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/23.2.8568313
