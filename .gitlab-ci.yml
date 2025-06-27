@@ -186,11 +186,11 @@ BuildStrongswan:
     - export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
 
     # Accept licenses & install SDK/NDK
-    - yes | sdkmanager --licenses
     - echo "📦 Checking if sdkmanager works..."
     - which sdkmanager
     - sdkmanager --version
     - sdkmanager --list
+    - yes | sdkmanager --licenses
     - sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;23.2.8568313"
 
     # Set NDK env var
