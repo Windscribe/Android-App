@@ -169,7 +169,7 @@ BuildStrongswan:
 
   before_script:
     - apt-get update
-    - DEBIAN_FRONTEND=noninteractive apt-get install -y locales build-essential automake bison flex gettext libtool pkg-config swig curl zip unzip tar cmake git perl golang-go ninja-build openjdk-17-jdk wget zlib1g-dev
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y locales jq build-essential automake bison flex gettext libtool pkg-config swig curl zip unzip tar cmake git perl golang-go ninja-build openjdk-17-jdk wget zlib1g-dev
     - locale-gen en_US.UTF-8
     - export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
     - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
