@@ -210,7 +210,7 @@ BuildStrongswan:
   script:
     - cd $CI_PROJECT_DIR
     - rm -rf strongswan-src
-    - git clone --branch 5.9.14 https://github.com/strongswan/strongswan.git strongswan-src
+    - git clone --branch 5.9.13 https://github.com/strongswan/strongswan.git strongswan-src
     - export strongswanLibsSrc="$PWD/strongswan-src/src/frontends/android/app/src/main/libs/*"
     - export strongswanLibsDst="$PWD/strongswan/libs"
     - export OUT_DIR="$PWD/strongswan-src/src/frontends/android/app/src/main/jni/openssl"
