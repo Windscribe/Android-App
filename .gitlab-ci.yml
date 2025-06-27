@@ -225,5 +225,5 @@ BuildStrongswan:
     - ./gradlew assembleRelease
   artifacts:
     paths:
-      - $CI_PROJECT_DIR
+      - $CI_PROJECT_DIR/strongswan-src/src/frontends/android
     expire_in: 1 week
