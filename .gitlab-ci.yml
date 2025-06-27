@@ -232,6 +232,7 @@ BuildStrongswan:
     # Build App.
     - cd $CI_PROJECT_DIR
     - cd strongswan-src/src/frontends/android
+    - sed -i '/arguments '\''-j'\'' \+ Runtime\.runtime\.availableProcessors()/a\        arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"' app/build.gradle
     - ./gradlew assembleRelease
   artifacts:
     paths:
