@@ -169,7 +169,7 @@ BuildStrongswan:
 
   before_script:
     - apt-get update
-    - DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential automake bison flex gettext gperf libtool pkg-config swig jq curl zip unzip tar cmake git perl golang-go ninja-build openjdk-17-jdk wget
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential automake bison flex gettext gperf libtool pkg-config swig jq curl zip unzip tar cmake git perl golang-go ninja-build openjdk-17-jdk wget zlib1g-dev
     # Set env vars
     - export GRADLE_USER_HOME=$(pwd)/.gradle
     - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
