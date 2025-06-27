@@ -208,7 +208,6 @@ BuildStrongswan:
     - export PKG_CONFIG_PATH=$OpenSSL/lib/pkgconfig:$PKG_CONFIG_PATH
 
   script:
-    - mkdir -p "$PWD/strongswan-src/src/frontends/android/app/libs"
     - rm -rf strongswan-src
     - git clone --branch 5.9.11 https://github.com/strongswan/strongswan.git strongswan-src
     - export strongswanLibsSrc="$PWD/strongswan-src/src/frontends/android/app/src/main/libs/*"
