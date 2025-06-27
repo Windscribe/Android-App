@@ -187,7 +187,7 @@ BuildStrongswan:
 
     # Accept licenses & install SDK/NDK
     - yes | sdkmanager --licenses
-    - sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;23.2.8568313"
+    - sdkmanager -sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;23.2.8568313"
 
     # Set NDK env var
     - export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/23.2.8568313
@@ -205,18 +205,9 @@ BuildStrongswan:
   script:
     - git clone --branch 5.9.11 https://github.com/strongswan/strongswan.git strongswan-src
     - cd strongswan-src/src/frontends/android/app
-
-    # Patch build.gradle to use env-based NDK path
     - sed -i 's|${android.ndkDirectory}/ndk-build|${System.env.ANDROID_NDK_HOME}/ndk-build|g' build.gradle
-
-    # Patch aarch64 handling in Android.mk if needed
-    - sed -i 's|host_arch=`uname -m`|host_arch=`uname -m`; if [ "$host_arch" = "aarch64" ]; then host_arch="arm64"; fi|g' src/main/jni/Android.mk
-
-    # Write local.properties for Gradle
     - echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
     - echo "ndk.dir=$ANDROID_NDK_HOME" >> local.properties
-
-    # Build
     - cd ..
     - chmod +x ./gradlew
     - ./gradlew assembleRelease --no-daemon
