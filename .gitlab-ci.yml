@@ -219,7 +219,6 @@ BuildStrongswan:
     - popd
     - cd $CI_PROJECT_DIR
     - cd tools
-    - export YACC=bison
     - chmod +x build_strongswan.sh
     - ./build_strongswan.sh
     - cd ../strongswan-src/src/frontends/android
