@@ -199,6 +199,7 @@ BuildStrongswan:
 
     # Set NDK env var
     - export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/23.2.8568313
+    - export ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/23.2.8568313
 
     # Build OpenSSL
     - mkdir -p /tmp/openssl-src && cd /tmp/openssl-src
