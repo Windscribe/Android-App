@@ -171,6 +171,7 @@ BuildStrongswan:
     - apt-get update
     - DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential automake bison flex gettext gperf libtool pkg-config swig jq curl zip unzip tar cmake git perl golang-go ninja-build openjdk-17-jdk wget zlib1g-dev
     # Set env vars
+    - export ROOT_DIR=$(pwd)
     - export GRADLE_USER_HOME=$(pwd)/.gradle
     - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
     - export PATH=$JAVA_HOME/bin:$PATH
@@ -207,11 +208,13 @@ BuildStrongswan:
     - export PKG_CONFIG_PATH=$OpenSSL/lib/pkgconfig:$PKG_CONFIG_PATH
 
   script:
+    - rm -rf strongswan-src
     - git clone --branch 5.9.11 https://github.com/strongswan/strongswan.git strongswan-src
-    - cd strongswan-src/src/frontends/android/app
-    - sed -i 's|${android.ndkDirectory}/ndk-build|${System.env.ANDROID_NDK_HOME}/ndk-build|g' build.gradle
-    - echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-    - echo "ndk.dir=$ANDROID_NDK_HOME" >> local.properties
-    - cd ..
-    - chmod +x ./gradlew
-    - ./gradlew assembleRelease --no-daemon
+    - export strongswanLibsSrc="$PWD/strongswan-src/src/frontends/android/app/src/main/libs/*"
+    - export strongswanLibsDst="$PWD/strongswan/libs"
+    - cd tools
+    - chmod +x build_strongswan.sh
+    - ./build_strongswan.sh
+    - cd ../strongswan-src/src/frontends/android/app
+    - gradle assembleRelease
+    - cp -r $strongswanLibsSrc $strongswanLibsDst
