@@ -221,7 +221,7 @@ BuildStrongswan:
     - cd tools
     - chmod +x build_strongswan.sh
     - ./build_strongswan.sh
-    - cd ../strongswan-src/src/frontends/android/app
+    - cd ../strongswan-src/src/frontends/android
     - ./gradlew assembleRelease
   artifacts:
     paths:
