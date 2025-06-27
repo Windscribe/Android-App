@@ -187,6 +187,10 @@ BuildStrongswan:
 
     # Accept licenses & install SDK/NDK
     - yes | sdkmanager --licenses
+    - echo "📦 Checking if sdkmanager works..."
+    - which sdkmanager
+    - sdkmanager --version
+    - sdkmanager --list
     - sdkmanager -sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;23.2.8568313"
 
     # Set NDK env var
