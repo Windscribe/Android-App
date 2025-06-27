@@ -196,12 +196,15 @@ BuildStrongswan:
     - sdkmanager --list
     - yes | sdkmanager --licenses || true
     - sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;23.2.8568313"
+
     # Set NDK env var
     - export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/23.2.8568313
+
     # Build OpenSSL
-    - export OpenSSL=/usr
-    - export LD_LIBRARY_PATH=$OpenSSL/lib:$LD_LIBRARY_PATH
-    - export PKG_CONFIG_PATH=$OpenSSL/lib/pkgconfig:$PKG_CONFIG_PATH
+    - mkdir -p /tmp/openssl-src && cd /tmp/openssl-src
+    - wget https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1t.tar.gz
+    - tar -xzf OpenSSL_1_1_1t.tar.gz
+    - export OPENSSL_SRC="$PWD/openssl-OpenSSL_1_1_1t"
 
   script:
     - cd $CI_PROJECT_DIR
@@ -209,6 +212,8 @@ BuildStrongswan:
     - git clone --branch 5.9.14 https://github.com/strongswan/strongswan.git strongswan-src
     - export strongswanLibsSrc="$PWD/strongswan-src/src/frontends/android/app/src/main/libs/*"
     - export strongswanLibsDst="$PWD/strongswan/libs"
+    - export OUT_DIR="$PWD/strongswan-src/src/frontends/android/app/src/main/jni/openssl"
+    - ./strongswan-src/src/frontends/android/openssl/compile.sh
     - cd tools
     - chmod +x build_strongswan.sh
     - ./build_strongswan.sh
