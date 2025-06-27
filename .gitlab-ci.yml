@@ -162,3 +162,25 @@ Slack:
   before_script:
     - extras fastlane
     - apk --no-cache add curl
+
+BuildStrongswan:
+  stage: Deploy
+  script:
+    - apk -U upgrade
+    - apk add apt-get install -y automake bison flex gettext gperf libtool make pkg-config swig jq curl zip unzip tar cmake git musl-dev cmake perl golang ninja-build
+    - export GRADLE_USER_HOME=$(pwd)/.gradle
+    - chmod +x ./gradlew
+    - extras ndk -n 23.2.8568313 -c 3.22.1
+    - export ANDROID_NDK=$(ls -d $ANDROID_SDK_ROOT/ndk/*/ | head -n 1)
+    - mkdir -p /tmp/openssl-src
+    - cd /tmp/openssl-src
+    - wget https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1t.tar.gz
+    - tar -xzf OpenSSL_1_1_1t.tar.gz
+    - cd openssl-OpenSSL_1_1_1t
+    - ./config --prefix=/opt/OpenSSL --openssldir=/opt/OpenSSL shared zlib
+    - make -j"$(nproc)" && make install
+    - export OpenSSL="/opt/OpenSSL"
+    - rm -rf /tmp/openssl-src
+    - git clone --branch 5.9.14 https://github.com/strongswan/strongswan.git strongswan-src
+    - cd strongswan-src/src/frontends/android/app
+    - gradle assembleRelease
