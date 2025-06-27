@@ -232,7 +232,6 @@ BuildStrongswan:
     # Build App.
     - cd $CI_PROJECT_DIR
     - cd strongswan-src/src/frontends/android
-    - sed -i 's|ndkVersion ".*"|ndkVersion "$SS_NDK_VERSION"|g' app/build.gradle
     - ./gradlew assembleRelease
   artifacts:
     paths:
