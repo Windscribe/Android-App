@@ -40,3 +40,4 @@ cd $strongswanRoot
 ./configure --disable-defaults > config.log
 make dist -j $(nproc) > config.log
 rm config.log
+ls $strongswanLibsSrc

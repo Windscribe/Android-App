@@ -217,7 +217,11 @@ BuildStrongswan:
     - pushd $OPENSSL_SRC
     - $CI_PROJECT_DIR/strongswan-src/src/frontends/android/openssl/compile.sh
     - popd
-    - cd $CI_PROJECT_DIR/strongswan-src/src/frontends/android
+    - cd $CI_PROJECT_DIR
+    - cd tools
+    - chmod +x build_strongswan.sh
+    - ./build_strongswan.sh
+    - cd ../strongswan-src/src/frontends/android
     - sed -i 's|ndkVersion ".*"|ndkVersion "23.2.8568313"|g' app/build.gradle
     - ./gradlew assembleRelease
   artifacts:
