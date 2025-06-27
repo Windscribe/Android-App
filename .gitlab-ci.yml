@@ -169,8 +169,11 @@ BuildStrongswan:
 
   before_script:
     - apt-get update
-    - DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential automake bison flex gettext gperf libtool pkg-config swig jq curl zip unzip tar cmake git perl golang-go ninja-build openjdk-17-jdk wget zlib1g-dev
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y locales build-essential automake bison flex gettext gperf libtool pkg-config swig jq curl zip unzip tar cmake git perl golang-go ninja-build openjdk-17-jdk wget zlib1g-dev
     # Set env vars
+    - locale-gen en_US.UTF-8
+    - export LANG=en_US.UTF-8
+    - export LC_ALL=en_US.UTF-8
     - export ROOT_DIR=$(pwd)
     - export GRADLE_USER_HOME=$(pwd)/.gradle
     - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
@@ -214,11 +217,10 @@ BuildStrongswan:
     - export strongswanLibsSrc="$PWD/strongswan-src/src/frontends/android/app/src/main/libs/*"
     - export strongswanLibsDst="$PWD/strongswan/libs"
     - cd tools
-    - ls
     - chmod +x build_strongswan.sh
     - ./build_strongswan.sh
-    - cd ../strongswan-src/src/frontends/android/app
-    - gradle assembleRelease
+    - cd ../strongswan-src/src/frontends/android
+    - ./gradlew assembleRelease
     - cp -r $strongswanLibsSrc $strongswanLibsDst
   artifacts:
     paths:
