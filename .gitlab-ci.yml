@@ -195,11 +195,11 @@ BuildStrongswan:
     - sdkmanager --version
     - sdkmanager --list
     - yes | sdkmanager --licenses || true
-    - sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;26.1.10909125"
+    - sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;23.2.8568313"
 
     # Set NDK env var
-    - export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/26.1.10909125
-    - export ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/26.1.10909125
+    - export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/23.2.8568313
+    - export ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/23.2.8568313
 
     # Build OpenSSL
     - mkdir -p /tmp/openssl-src && cd /tmp/openssl-src
@@ -223,6 +223,7 @@ BuildStrongswan:
     - chmod +x build_strongswan.sh
     - ./build_strongswan.sh
     - cd ../strongswan-src/src/frontends/android
+    - sed -i 's|ndkVersion ".*"|ndkVersion "23.2.8568313"|g' app/build.gradle
     - ./gradlew assembleRelease
   artifacts:
     paths:
