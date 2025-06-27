@@ -91,7 +91,7 @@ class SignUpFragment : Fragment(), WelcomeActivityCallback {
             } else {
                 fragmentCallBack?.onSignUpButtonClick(
                     binding.usernameEdit.text.toString(),
-                    binding.passwordEdit.text.toString(), "", true
+                    binding.passwordEdit.text.toString(), "", true, null, null
                 )
             }
         }
