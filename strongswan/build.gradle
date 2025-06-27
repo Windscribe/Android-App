@@ -5,7 +5,7 @@ plugins {
 android {
     namespace 'org.strongswan.android'
     compileSdk 34
-    ndkVersion "23.2.8568313"
+    ndkVersion "27.2.12479018"
 
     defaultConfig {
         minSdk 21
