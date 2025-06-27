@@ -217,6 +217,7 @@ BuildStrongswan:
     - pushd $OPENSSL_SRC
     - ./strongswan-src/src/frontends/android/openssl/compile.sh
     - popd
+    - cd $CI_PROJECT_DIR
     - cd tools
     - chmod +x build_strongswan.sh
     - ./build_strongswan.sh
