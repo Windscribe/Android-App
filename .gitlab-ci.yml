@@ -228,7 +228,6 @@ BuildStrongswan:
     - ./configure --disable-defaults > config.log
     - make dist -j $(nproc) > config.log
     - rm config.log
-    - popd
     - cd $CI_PROJECT_DIR
     - cd strongswan-src/src/frontends/android
     - sed -i 's|ndkVersion ".*"|ndkVersion "23.2.8568313"|g' app/build.gradle
