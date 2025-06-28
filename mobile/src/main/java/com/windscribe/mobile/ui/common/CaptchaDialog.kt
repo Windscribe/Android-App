@@ -172,7 +172,7 @@ fun CaptchaDebugView(
                                 onDragEnd = {
                                     dragJob?.cancel()
                                     dragJob = coroutineScope.launch {
-                                        delay(100)
+                                        delay(700)
                                         submit()
                                     }
                                 },
