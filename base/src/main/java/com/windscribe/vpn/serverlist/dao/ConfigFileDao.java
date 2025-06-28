@@ -48,5 +48,6 @@ abstract public class ConfigFileDao {
     @Query("Select Max(primary_key) from ConfigFile")
     public abstract Integer getMaxPrimaryKeySync();
 
-
+    @Query("Delete from ConfigFile")
+    public abstract void clean();
 }

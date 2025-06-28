@@ -28,5 +28,6 @@ public interface PopupNotificationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertPopupNotification(PopupNotificationTable popupNotificationTable);
 
-
+    @Query("Delete from notification_table")
+    public abstract void clean();
 }

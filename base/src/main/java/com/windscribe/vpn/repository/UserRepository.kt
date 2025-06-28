@@ -165,6 +165,7 @@ class UserRepository(
             WindUtilities.deleteProfileCompletely(appContext).await()
             autoConnectionManager.reset()
             preferenceHelper.clearAllData()
+            localDbInterface.clearAllTables()
             appContext.activeActivity?.let {
                 val intent = appContext.applicationInterface.welcomeIntent
                 intent.addFlags(

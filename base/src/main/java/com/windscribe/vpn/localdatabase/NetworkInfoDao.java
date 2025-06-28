@@ -48,4 +48,6 @@ public abstract class NetworkInfoDao {
 
     @Query("Delete from Network_Info where networkName=:networkName")
     public abstract int deleteNetworkSync(String networkName);
+    @Query("Delete from network_info")
+    public abstract void clean();
 }

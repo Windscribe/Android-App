@@ -85,7 +85,15 @@ class LocalDatabaseImpl @Inject constructor(
     }
 
     override fun clearAllTables() {
-        appContext.windscribeDatabase.clearAllTables()
+        userStatusDao.clean()
+        popupNotificationDao.clean()
+        regionDao.clean()
+        cityDao.clean()
+        configFileDao.clean()
+        staticRegionsDao.clean()
+        networkInfoDao.clean()
+        serverStatusDao.clean()
+        windNotificationDao.clean()
     }
 
     override fun delete(favourite: Favourite) {

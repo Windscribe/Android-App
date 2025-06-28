@@ -50,4 +50,6 @@ abstract public class CityDao {
 
     @Query("Select gps from City where region_id=:regionId limit 1")
     public abstract Single<String> getCordsByRegionId(int regionId);
+    @Query("Delete from City")
+    public abstract void clean();
 }

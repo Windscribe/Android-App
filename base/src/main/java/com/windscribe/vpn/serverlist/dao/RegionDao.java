@@ -33,4 +33,7 @@ abstract public class RegionDao {
 
     @Query("Select * from Region where country_code = :countryCode limit 1")
     public abstract Single<Region> getRegionByCountryCode(String countryCode);
+
+    @Query("Delete from Region")
+    public abstract void clean();
 }
