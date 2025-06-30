@@ -887,14 +887,16 @@ open class BaseApplicationModule {
         scope: CoroutineScope,
         vpnConnectionStateManager: VPNConnectionStateManager,
         locationRepository: LocationRepository,
-        localDbInterface: LocalDbInterface
+        localDbInterface: LocalDbInterface,
+        serverListRepository: ServerListRepository
     ): DynamicShortcutManager {
         return DynamicShortcutManager(
             app,
             scope,
             vpnConnectionStateManager,
             locationRepository,
-            localDbInterface
+            localDbInterface,
+            serverListRepository
         )
     }
 
