@@ -1,6 +1,5 @@
 package com.windscribe.mobile.ui.helper
 
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
@@ -31,6 +30,6 @@ class PermissionHelper(val activity: AppStartActivity) {
     }
 
     fun shouldShowRationale(permission: String): Boolean {
-        return ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
+        return true
     }
 }

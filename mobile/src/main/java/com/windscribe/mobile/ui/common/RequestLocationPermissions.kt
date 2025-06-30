@@ -61,8 +61,7 @@ fun RequestLocationPermissions(
                 }
             }
 
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-                    !permissionHelper.isGranted(Manifest.permission.ACCESS_BACKGROUND_LOCATION) -> {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !permissionHelper.isGranted(Manifest.permission.ACCESS_BACKGROUND_LOCATION) -> {
                 if (permissionHelper.shouldShowRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
                     permissionDialogType.value = PermissionDialogType.BackgroundLocation
                 } else {
@@ -94,18 +93,7 @@ fun RequestLocationPermissions(
     }
 
     when (permissionDialogType.value) {
-        PermissionDialogType.ForegroundLocation -> showDialog(
-            DialogData(
-                R.drawable.ic_attention_icon,
-                stringResource(com.windscribe.vpn.R.string.location_permission_required),
-                stringResource(com.windscribe.vpn.R.string.foreground_location_permission_reason),
-                stringResource(com.windscribe.vpn.R.string.grant_permission)
-            )
-        ) {
-            permissionHelper.foregroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-
-        PermissionDialogType.BackgroundLocation -> showDialog(
+        PermissionDialogType.ForegroundLocation, PermissionDialogType.BackgroundLocation -> showDialog(
             DialogData(
                 R.drawable.location_instruction_icon,
                 stringResource(com.windscribe.vpn.R.string.allow_all_the_time_location_access_required),
@@ -113,7 +101,13 @@ fun RequestLocationPermissions(
                 stringResource(com.windscribe.vpn.R.string.grant_permission)
             )
         ) {
-            permissionHelper.backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            if (permissionDialogType.value == PermissionDialogType.ForegroundLocation) {
+                permissionHelper.foregroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }
+            if (permissionDialogType.value == PermissionDialogType.BackgroundLocation) {
+                permissionHelper.backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            }
+            permissionHelper.foregroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
 
         PermissionDialogType.OpenSettings -> showDialog(
