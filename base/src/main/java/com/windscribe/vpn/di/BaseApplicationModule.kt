@@ -545,6 +545,7 @@ open class BaseApplicationModule {
         vpnConnectionStateManager: VPNConnectionStateManager,
         scope: CoroutineScope,
         trafficCounter: TrafficCounter,
+        serverListRepository: ServerListRepository,
         interactor: ServiceInteractor
     ): WindNotificationBuilder {
         return WindNotificationBuilder(
@@ -553,6 +554,7 @@ open class BaseApplicationModule {
             vpnConnectionStateManager,
             trafficCounter,
             scope,
+            serverListRepository,
             interactor
         )
     }

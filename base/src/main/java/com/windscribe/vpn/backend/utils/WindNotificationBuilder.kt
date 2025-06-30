@@ -25,6 +25,7 @@ import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState.Status
 import com.windscribe.vpn.backend.VPNState.Status.*
 import com.windscribe.vpn.constants.NotificationConstants
+import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.services.DisconnectService
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
@@ -41,6 +42,7 @@ class WindNotificationBuilder @Inject constructor(
         private val vpnConnectionStateManager: VPNConnectionStateManager,
         private val trafficCounter: TrafficCounter,
         val scope: CoroutineScope,
+        val serverListRepository: ServerListRepository,
         private val interactor: ServiceInteractor
 ) {
 
@@ -106,7 +108,7 @@ class WindNotificationBuilder @Inject constructor(
         get() {
             return try {
                 Util.getLastSelectedLocation(Windscribe.appContext)?.let {
-                    String.format("%s - %s", it.nodeName, it.nickName)
+                    String.format("%s - %s",serverListRepository.getCustomCityName(it.cityId) ?: it.nodeName, serverListRepository.getCustomCityNickName(it.cityId) ?: it.nickName)
                 }
             } catch (e: Exception) {
                 null
