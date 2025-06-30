@@ -24,6 +24,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +34,8 @@ import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
+import com.windscribe.mobile.ui.helper.hapticClickable
+import com.windscribe.mobile.ui.home.HomeViewmodel
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.theme.AppColors
@@ -41,7 +45,7 @@ import com.windscribe.vpn.R
 
 
 @Composable
-fun MainMenuScreen(viewModel: MainMenuViewModel? = null) {
+fun MainMenuScreen(viewModel: MainMenuViewModel? = null, homeViewModel: HomeViewmodel? = null) {
     val navController = LocalNavController.current
     val showProgress by viewModel?.showProgress?.collectAsState() ?: remember { mutableStateOf(false) }
     PreferenceBackground {
@@ -53,51 +57,59 @@ fun MainMenuScreen(viewModel: MainMenuViewModel? = null) {
             MainMenuItem(
                 R.string.general,
                 com.windscribe.mobile.R.drawable.ic_preferences_icon,
-                Screen.General.route
+                Screen.General.route,
+                homeViewModel
             )
             Spacer(modifier = Modifier.height(16.dp))
             MainMenuItem(
                 R.string.my_account,
                 com.windscribe.mobile.R.drawable.ic_myaccount_icon,
-                Screen.Account.route
+                Screen.Account.route,
+                homeViewModel
             )
             Spacer(modifier = Modifier.height(16.dp))
             MainMenuItem(
                 R.string.connection,
                 com.windscribe.mobile.R.drawable.ic_connection_icon,
-                Screen.Connection.route
+                Screen.Connection.route,
+                homeViewModel
             )
             Spacer(modifier = Modifier.height(16.dp))
             MainMenuItem(
                 R.string.robert,
                 com.windscribe.mobile.R.drawable.ic_robert,
-                Screen.Robert.route
+                Screen.Robert.route,
+                homeViewModel
             )
             if (viewModel?.showReferData == true) {
                 Spacer(modifier = Modifier.height(16.dp))
                 MainMenuItem(
                     R.string.refer_for_data,
                     com.windscribe.mobile.R.drawable.ic_favourite,
-                    Screen.ShareLink.route
+                    Screen.ShareLink.route,
+                    homeViewModel
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
             MainMenuItem(
                 R.string.look_and_feel,
                 com.windscribe.mobile.R.drawable.ic_feel,
-                Screen.LookAndFeel.route
+                Screen.LookAndFeel.route,
+                homeViewModel
             )
             Spacer(modifier = Modifier.height(16.dp))
             MainMenuItem(
                 R.string.help_me,
                 com.windscribe.mobile.R.drawable.ic_helpme_icon,
-                Screen.HelpMe.route
+                Screen.HelpMe.route,
+                homeViewModel
             )
             Spacer(modifier = Modifier.height(16.dp))
             MainMenuItem(
                 R.string.about_us,
                 com.windscribe.mobile.R.drawable.ic_about,
-                Screen.About.route
+                Screen.About.route,
+                homeViewModel
             )
             Spacer(modifier = Modifier.height(16.dp))
             LogoutItem(viewModel)
@@ -111,8 +123,11 @@ private fun MainMenuItem(
     @StringRes title: Int,
     @DrawableRes icon: Int,
     nextRoute: String,
+    viewModel: HomeViewmodel?
 ) {
     val navController = LocalNavController.current
+    val hapticFeedback = LocalHapticFeedback.current
+    val hapticFeedbackEnabled by viewModel?.hapticFeedbackEnabled?.collectAsState() ?: remember { mutableStateOf(false) }
     Row(
         Modifier
             .fillMaxWidth()
@@ -122,6 +137,9 @@ private fun MainMenuItem(
                 shape = RoundedCornerShape(size = 12.dp)
             )
             .clickable {
+                if (hapticFeedbackEnabled) {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                }
                 navController.navigate(nextRoute)
             }
             .padding(start = 14.dp, end = 14.dp),
@@ -152,7 +170,9 @@ private fun MainMenuItem(
 }
 
 @Composable
-private fun LogoutItem(viewModel: MainMenuViewModel?) {
+private fun LogoutItem(viewModel: MainMenuViewModel?, homeViewmodel: HomeViewmodel? = null) {
+    val hapticFeedback = LocalHapticFeedback.current
+    val hapticFeedbackEnabled by homeViewmodel?.hapticFeedbackEnabled?.collectAsState() ?: remember { mutableStateOf(false) }
     Row(
         Modifier
             .fillMaxWidth()
@@ -162,6 +182,9 @@ private fun LogoutItem(viewModel: MainMenuViewModel?) {
                 shape = RoundedCornerShape(size = 12.dp)
             )
             .clickable {
+                if (hapticFeedbackEnabled) {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                }
                 viewModel?.logout()
             }.padding(start = 14.dp, end = 14.dp),
         verticalAlignment = Alignment.CenterVertically,

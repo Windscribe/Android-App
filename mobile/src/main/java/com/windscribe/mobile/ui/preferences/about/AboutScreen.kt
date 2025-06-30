@@ -30,6 +30,7 @@ import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.openUrl
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
+import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.primaryTextColor
@@ -79,7 +80,7 @@ private fun AboutItem(
                 color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
                 shape = RoundedCornerShape(size = 12.dp)
             )
-            .clickable {
+            .hapticClickable {
                 activity?.openUrl(path)
             }
             .padding(start = 14.dp, end = 14.dp)

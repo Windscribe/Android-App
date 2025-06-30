@@ -1,6 +1,5 @@
 package com.windscribe.mobile.ui.serverlist
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -24,17 +23,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -48,14 +43,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.windscribe.mobile.R
@@ -160,6 +155,8 @@ fun AllServerList(
 fun UpgradeBar(viewModel: HomeViewmodel?) {
     val activity = LocalContext.current as AppStartActivity
     val userState by viewModel?.userState?.collectAsState() ?: return
+    val hapticFeedbackEnabled by viewModel.hapticFeedbackEnabled.collectAsState()
+    val haptic = LocalHapticFeedback.current
     if (userState is UserState.Free) {
         val angle = (userState as UserState.Free).dataLeftAngle
         val textColor = if (angle <= 0) {
@@ -179,6 +176,7 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
                     .fillMaxWidth()
                     .background(color = MaterialTheme.colorScheme.serverListBackgroundColor)
                     .clickable {
+                        if (hapticFeedbackEnabled) haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                         activity.startActivity(UpgradeActivity.getStartIntent(activity))
                     }
                     .border(

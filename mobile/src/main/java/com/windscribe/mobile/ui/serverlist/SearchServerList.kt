@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -261,8 +260,6 @@ private fun ProgressIndicator() {
 private fun SearchListNavigation(viewModel: ServerViewModel, homeViewmodel: HomeViewmodel) {
     val query by viewModel.searchKeyword.collectAsState()
     val isHapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
-    val interactionSource =
-        remember { MutableInteractionSource() }
    val stroke = MaterialTheme.colorScheme.serverListSecondaryColor.copy(0.10f)
     Box(
         modifier = Modifier
@@ -287,7 +284,7 @@ private fun SearchListNavigation(viewModel: ServerViewModel, homeViewmodel: Home
             Image(
                 painter = painterResource(R.drawable.ic_location_search),
                 contentDescription = "Search",
-                modifier = Modifier.Companion.hapticClickable(hapticEnabled = isHapticEnabled) {
+                modifier = Modifier.Companion.hapticClickable() {
                     viewModel.toggleSearch()
                 },
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f))
@@ -314,16 +311,13 @@ private fun SearchListNavigation(viewModel: ServerViewModel, homeViewmodel: Home
                 color = AppColors.cyberBlue.copy(0.7f),
                 modifier = Modifier
                     .padding(8.dp)
-                    .clickable {
+                    .hapticClickable() {
                         viewModel.onQueryTextChange("")
                     })
             Image(
                 painter = painterResource(R.drawable.ic_search_location_close),
                 contentDescription = "Search",
-                modifier = Modifier.clickable(
-                    interactionSource = interactionSource,
-                    indication = ripple(bounded = false, color = MaterialTheme.colorScheme.serverListSecondaryColor)
-                ) {
+                modifier = Modifier.hapticClickable() {
                     viewModel.toggleSearch()
                 },
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor)

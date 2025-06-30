@@ -1,5 +1,4 @@
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -86,7 +85,7 @@ fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Ho
             colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.70f)),
             modifier = Modifier
                 .size(24.dp)
-                .hapticClickable(hapticEnabled = hapticEnabled) { showPermissionRequest = true },
+                .hapticClickable() { showPermissionRequest = true },
             contentScale = ContentScale.None
         )
     }

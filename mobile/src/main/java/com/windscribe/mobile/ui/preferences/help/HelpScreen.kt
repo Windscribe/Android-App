@@ -39,6 +39,7 @@ import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.openUrl
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
+import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Route
 import com.windscribe.mobile.ui.nav.Screen
@@ -181,7 +182,7 @@ private fun CommunityRow(
         modifier = Modifier
             .fillMaxWidth()
             .background(backgroundColor, shape = shape)
-            .clickable { onClick() }
+            .hapticClickable { onClick() }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -227,7 +228,7 @@ private fun DebugView() {
                     alpha = 0.05f
                 ), shape = RoundedCornerShape(size = 12.dp)
             )
-            .clickable {
+            .hapticClickable {
                 navController.navigate(Screen.Debug.route)
             }
             .padding(vertical = 14.dp, horizontal = 14.dp),
@@ -275,7 +276,7 @@ private fun DebugSend(viewModel: HelpViewModel? = null) {
                     alpha = 0.05f
                 ), shape = RoundedCornerShape(size = 12.dp)
             )
-            .clickable {
+            .hapticClickable {
                 if (state is SendLogState.Idle) {
                     viewModel?.sendLogClicked()
                 }
@@ -345,7 +346,7 @@ private fun HelpItem(
                 color = MaterialTheme.colorScheme.primaryTextColor.copy(
                     alpha = 0.05f
                 ), shape = RoundedCornerShape(size = 12.dp)
-            ).clickable {
+            ).hapticClickable {
                 if (route is Route.Nav) {
                     val route = route.screen.route
                     navController.navigate(route)

@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -305,7 +304,7 @@ private fun ConnectionStatusSheet(
             contentDescription = null,
             modifier = Modifier
                 .size(24.dp)
-                .hapticClickable(hapticEnabled = isHapticEnabled) {
+                .hapticClickable() {
                     connectionViewmodel.onProtocolChangeClick()
                 },
             contentScale = ContentScale.None,
@@ -600,14 +599,7 @@ private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Home
             Image(
                 painter = painterResource(R.drawable.ic_ham_button),
                 contentDescription = null,
-                modifier = Modifier.clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = ripple(
-                        bounded = false,
-                        radius = 16.dp,
-                        color = AppColors.white
-                    )
-                ) {
+                modifier = Modifier.hapticClickable() {
                     homeViewmodel.onMainMenuClick()
                 }
             )

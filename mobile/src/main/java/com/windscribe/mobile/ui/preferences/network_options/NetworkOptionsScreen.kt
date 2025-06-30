@@ -32,6 +32,7 @@ import com.windscribe.mobile.ui.common.ScreenDescription
 import com.windscribe.mobile.ui.common.SwitchItemView
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
+import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.theme.font12
@@ -101,7 +102,7 @@ private fun Network(networkInfo: NetworkInfo) {
                 color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
                 shape = RoundedCornerShape(12.dp)
             )
-            .clickable {
+            .hapticClickable {
                 navController.currentBackStackEntry?.savedStateHandle?.set(
                     "network_name",
                     networkInfo.networkName

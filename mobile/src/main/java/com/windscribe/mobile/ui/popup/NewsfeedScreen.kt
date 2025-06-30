@@ -10,8 +10,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,15 +18,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,11 +33,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,19 +45,20 @@ import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.ActionButtonLighter
 import com.windscribe.mobile.ui.common.AppBackground
 import com.windscribe.mobile.ui.common.AppProgressBar
+import com.windscribe.mobile.ui.helper.hapticClickable
+import com.windscribe.mobile.ui.home.HomeViewmodel
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font14
 import com.windscribe.mobile.ui.theme.font16
-import com.windscribe.mobile.ui.theme.font18
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
 
 @Composable
-fun NewsfeedScreen(viewModel: NewsfeedViewmodel? = null) {
+fun NewsfeedScreen(viewModel: NewsfeedViewmodel? = null, homeViewmodel: HomeViewmodel? = null) {
     val context = LocalContext.current
     val goToRoute by viewModel?.goTo?.collectAsState()
         ?: remember { mutableStateOf(GoToRoute.None) }
@@ -95,7 +88,7 @@ fun NewsfeedScreen(viewModel: NewsfeedViewmodel? = null) {
             if (state is NewsfeedState.Success) {
                 NotificationList(
                     (state as NewsfeedState.Success).itemToExpand,
-                    (state as NewsfeedState.Success).newsfeed, viewModel
+                    (state as NewsfeedState.Success).newsfeed, viewModel, homeViewmodel
                 )
             } else if (state is NewsfeedState.Error) {
                 Text((state as NewsfeedState.Error).message, style = font14, color = Color.White)
@@ -140,30 +133,12 @@ private fun openUpgradeScreen(
     viewModel?.clearGoToRoute()
 }
 
-@SuppressLint("UnrememberedMutableInteractionSource")
-@Composable
-private fun Title() {
-    val navController = LocalNavController.current
-    val interactionSource = MutableInteractionSource()
-    Row(modifier = Modifier.padding(16.dp)) {
-        Text(stringResource(com.windscribe.vpn.R.string.news_feed), style = font18, color = AppColors.white)
-        Spacer(modifier = Modifier.weight(1f))
-        Image(
-            painter = painterResource(id = R.drawable.ic_close),
-            contentDescription = null,
-            modifier = Modifier.clickable(
-                interactionSource = interactionSource,
-                indication = ripple(bounded = false, color = AppColors.white)
-            ) { navController.popBackStack() }
-        )
-    }
-}
-
 @Composable
 private fun NotificationList(
     itemToExpand: Int,
     list: List<NewsfeedItem>,
-    viewModel: NewsfeedViewmodel?
+    viewModel: NewsfeedViewmodel?,
+    homeViewmodel: HomeViewmodel?
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -180,7 +155,8 @@ private fun NotificationList(
                 notification,
                 index == 0,
                 index == list.lastIndex,
-                viewModel
+                viewModel,
+                homeViewmodel
             )
             if (index != list.lastIndex) HorizontalDivider(color = AppColors.charcoalBlue)
         }
@@ -194,14 +170,15 @@ private fun NotificationItem(
     notification: NewsfeedItem,
     isFirst: Boolean,
     isLast: Boolean,
-    viewModel: NewsfeedViewmodel?
+    viewModel: NewsfeedViewmodel?,
+    homeViewmodel: HomeViewmodel?
 ) {
     val expanded = remember { mutableStateOf(notification.id == itemToExpand) }
     val rotationAngle by animateFloatAsState(
         targetValue = if (expanded.value) 180f else 0f,
         animationSpec = tween(durationMillis = 300) // Smooth 300ms animation
     )
-    val interactionSource = MutableInteractionSource()
+    val hapticFeedbackEnabled by homeViewmodel?.hapticFeedbackEnabled?.collectAsState() ?: remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(
         topStart = if (isFirst) 9.dp else 0.dp,
         topEnd = if (isFirst) 9.dp else 0.dp,
@@ -218,10 +195,7 @@ private fun NotificationItem(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = ripple(bounded = true, color = AppColors.white)
-                ) {
+                .hapticClickable() {
                     expanded.value = !expanded.value
                 }
                 .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp)
@@ -241,7 +215,7 @@ private fun NotificationItem(
                 alpha = if (expanded.value) 1f else 0.4f,
                 modifier = Modifier
                     .rotate(rotationAngle)
-                    .clickable { expanded.value = !expanded.value }
+                    .hapticClickable() { expanded.value = !expanded.value }
             )
         }
         Text(

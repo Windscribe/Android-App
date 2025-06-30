@@ -33,7 +33,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -48,6 +50,7 @@ import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.common.openUrl
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.PreviewWithNav
+import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.theme.AppColors
@@ -166,6 +169,9 @@ private fun TextFieldDialog(
     onSubmit: (String) -> Unit
 ) {
     val text = remember { mutableStateOf("") }
+    val activity = LocalContext.current as? AppStartActivity
+    val hapticFeedbackEnabled by activity?.viewmodel?.hapticFeedback?.collectAsState() ?: remember { mutableStateOf(false) }
+    val hapticFeedback = LocalHapticFeedback.current
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(12.dp),
@@ -209,7 +215,12 @@ private fun TextFieldDialog(
                 Row {
                     Spacer(modifier = Modifier.weight(1.0f))
                     Button(
-                        onClick = onDismiss,
+                        onClick = {
+                            if (hapticFeedbackEnabled) {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.Reject)
+                            }
+                            onDismiss()
+                        },
                         colors = ButtonColors(
                             containerColor = Color.Transparent,
                             contentColor = MaterialTheme.colorScheme.preferencesBackgroundColor.copy(
@@ -229,6 +240,9 @@ private fun TextFieldDialog(
                     }
                     Button(
                         onClick = {
+                            if (hapticFeedbackEnabled) {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                            }
                             onDismiss()
                             onSubmit(text.value)
                         },
@@ -570,7 +584,7 @@ private fun ActionButton(
                 color = backgroundColor,
                 shape = RoundedCornerShape(size = 12.dp)
             )
-            .clickable {
+            .hapticClickable {
                 onClick()
             }
             .padding(vertical = 14.dp, horizontal = 14.dp)
@@ -596,7 +610,7 @@ private fun VoucherCode(viewModel: AccountViewModel?) {
                     alpha = 0.05f
                 ), shape = RoundedCornerShape(size = 12.dp)
             )
-            .clickable {
+            .hapticClickable {
                 viewModel?.onVoucherCodeClicked()
             }
             .padding(vertical = 14.dp, horizontal = 14.dp)
@@ -636,7 +650,7 @@ private fun LazyLogin(viewModel: AccountViewModel?) {
                     alpha = 0.05f
                 ), shape = RoundedCornerShape(size = 12.dp)
             )
-            .clickable {
+            .hapticClickable {
                 viewModel?.onLazyLoginClicked()
             }
             .padding(vertical = 14.dp, horizontal = 14.dp)

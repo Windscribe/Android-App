@@ -62,6 +62,7 @@ import com.windscribe.mobile.ui.common.SwitchItemView
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
+import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.model.DropDownStringItem
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
@@ -280,7 +281,7 @@ private fun ConnectionItem(title: Int, screen: Screen) {
                     alpha = 0.05f
                 ), shape = RoundedCornerShape(size = 12.dp)
             )
-            .clickable {
+            .hapticClickable {
                 if (screen == Screen.NetworkOptions) {
                     showPermissionRequest = true
                 } else {
@@ -796,7 +797,7 @@ private fun AlwaysOnVPN() {
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = stringResource(R.string.always_on),
-                style = font16.copy(fontWeight = FontWeight.Medium),
+                style = font16.copy(fontWeight = FontWeight.Medium, textAlign = TextAlign.Start),
                 color = MaterialTheme.colorScheme.primaryTextColor,
                 modifier = Modifier.weight(1f),
                 maxLines = 1

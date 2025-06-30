@@ -147,7 +147,7 @@ fun ServerListNavigation(
                 Image(
                     painter = painterResource(if (isSelected) tab.filledIcon else tab.unfilledIcon),
                     contentDescription = null,
-                    modifier = Modifier.Companion.hapticClickable(hapticEnabled = isHapticEnabled) {
+                    modifier = Modifier.Companion.hapticClickable() {
                         onTabSelected(index)
                     },
                     colorFilter = ColorFilter.tint(
@@ -165,7 +165,7 @@ fun ServerListNavigation(
             Image(
                 painter = painterResource(R.drawable.ic_location_search),
                 contentDescription = null,
-                modifier = Modifier.hapticClickable(hapticEnabled = isHapticEnabled) {
+                modifier = Modifier.hapticClickable() {
                     viewModel.toggleSearch()
                 },
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f))

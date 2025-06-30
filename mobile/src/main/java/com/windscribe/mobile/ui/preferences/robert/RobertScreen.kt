@@ -44,6 +44,7 @@ import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.common.openUrl
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.PreviewWithNav
+import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font12
@@ -256,7 +257,7 @@ private fun ManageCustomRule(viewModel: RobertViewModel? = null) {
                 color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
                 shape = RoundedCornerShape(size = 12.dp)
             )
-            .clickable {
+            .hapticClickable {
                 viewModel?.onManageRulesClick()
             }
             .padding(vertical = 14.dp, horizontal = 14.dp)

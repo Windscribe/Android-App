@@ -124,8 +124,9 @@ private fun NavGraphBuilder.addNavigationScreens() {
     }, exitTransition = {
         slideOutHorizontally(targetOffsetX = { it })
     }) {
+        val homeViewModel  = getViewModel(HomeViewmodel::class.java)
         ViewModelRoute(NewsfeedViewmodel::class.java) {
-            NewsfeedScreen(it)
+            NewsfeedScreen(it, homeViewModel)
         }
     }
     composable(route = Screen.MainMenu.route, enterTransition = {
@@ -133,8 +134,9 @@ private fun NavGraphBuilder.addNavigationScreens() {
     }, exitTransition = {
         slideOutHorizontally(targetOffsetX = { it })
     }) {
+        val homeViewModel  = getViewModel(HomeViewmodel::class.java)
         ViewModelRoute(MainMenuViewModel::class.java) {
-            MainMenuScreen(it)
+            MainMenuScreen(it, homeViewModel)
         }
     }
     composable(route = Screen.General.route, enterTransition = {

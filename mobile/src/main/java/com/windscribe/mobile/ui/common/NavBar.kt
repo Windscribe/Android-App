@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
@@ -20,6 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.helper.hapticClickable
+import com.windscribe.mobile.ui.helper.hapticClickableRipple
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font18
 import com.windscribe.mobile.ui.theme.font24
@@ -72,7 +73,6 @@ fun PreferencesNavBar(
     title: String,
     onNavClick: () -> Unit
 ) {
-    val interactionSource = MutableInteractionSource()
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -84,11 +84,7 @@ fun PreferencesNavBar(
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor),
             modifier = Modifier
                 .size(24.dp)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = ripple(bounded = false, color = MaterialTheme.colorScheme.primaryTextColor),
-                    onClick = onNavClick
-                )
+                .hapticClickableRipple(onClick = onNavClick)
                 .padding(4.dp)
                 .align(Alignment.CenterStart)
         )

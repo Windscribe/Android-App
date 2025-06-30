@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.Description
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
+import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.primaryTextColor
 
@@ -94,7 +95,7 @@ private fun Section(title: Int, description: String, shape: RoundedCornerShape =
     Row(modifier =  Modifier.background(
         MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
         shape = shape
-    ).clickable { onClick() }.padding(16.dp)) {
+    ).hapticClickable { onClick() }.padding(16.dp)) {
         Text(
             stringResource(title),
             style = font16.copy(fontWeight = FontWeight.Medium),

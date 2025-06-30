@@ -18,6 +18,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.ui.serverlist.AllServerList
 import com.windscribe.mobile.ui.serverlist.ConfigServerList
@@ -46,6 +48,8 @@ fun ServerListScreen(
         initialPageOffsetFraction = 0.0f,
         pageCount = { 4 },
     )
+    val hapticFeedback by homeViewmodel.hapticFeedbackEnabled.collectAsState()
+    val haptic = LocalHapticFeedback.current
     LaunchedEffect(selectedType) {
         pagerState.animateScrollToPage(selectedType.toPageIndex())
     }
@@ -64,8 +68,11 @@ fun ServerListScreen(
             HorizontalPager(
                 beyondViewportPageCount = 4,
                 state = pagerState,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             ) { pageIndex ->
+                if (hapticFeedback) {
+                    haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                }
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.TopStart
