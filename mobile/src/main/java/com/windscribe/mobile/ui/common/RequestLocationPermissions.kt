@@ -52,7 +52,7 @@ fun RequestLocationPermissions(
 
         when {
             !permissionHelper.isGranted(Manifest.permission.ACCESS_FINE_LOCATION) -> {
-                if (permissionHelper.shouldShowRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                if (permissionHelper.shouldShowRationale()) {
                     permissionDialogType.value = PermissionDialogType.ForegroundLocation
                 } else {
                     permissionHelper.foregroundLocationPermissionLauncher.launch(
@@ -62,7 +62,7 @@ fun RequestLocationPermissions(
             }
 
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !permissionHelper.isGranted(Manifest.permission.ACCESS_BACKGROUND_LOCATION) -> {
-                if (permissionHelper.shouldShowRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+                if (permissionHelper.shouldShowRationale()) {
                     permissionDialogType.value = PermissionDialogType.BackgroundLocation
                 } else {
                     permissionHelper.backgroundLocationPermissionLauncher.launch(

@@ -29,7 +29,7 @@ class PermissionHelper(val activity: AppStartActivity) {
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
     }
 
-    fun shouldShowRationale(permission: String): Boolean {
+    fun shouldShowRationale(): Boolean {
         return true
     }
 }
