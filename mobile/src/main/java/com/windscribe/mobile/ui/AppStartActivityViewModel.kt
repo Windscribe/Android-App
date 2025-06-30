@@ -2,12 +2,12 @@ package com.windscribe.mobile.ui
 
 import androidx.annotation.DrawableRes
 import androidx.lifecycle.ViewModel
-import com.windscribe.mobile.ui.helper.onChanged
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
 
 abstract class DialogCallback {
     abstract fun onDismiss()
@@ -45,10 +45,12 @@ class AppStartActivityViewModelImpl(val preferencesHelper: PreferencesHelper) :
     private var _hapticFeedback = MutableStateFlow(preferencesHelper.isHapticFeedbackEnabled)
     override val hapticFeedback: StateFlow<Boolean> = _hapticFeedback
 
+    private val trayPreferenceChangeListener = OnTrayPreferenceChangeListener {
+        _hapticFeedback.value = preferencesHelper.isHapticFeedbackEnabled
+    }
+
     init {
-        preferencesHelper.onChanged(this) {
-            _hapticFeedback.value = preferencesHelper.isHapticFeedbackEnabled
-        }
+        preferencesHelper.addObserver(trayPreferenceChangeListener)
     }
 
     override fun setConnectionCallback(
@@ -72,5 +74,10 @@ class AppStartActivityViewModelImpl(val preferencesHelper: PreferencesHelper) :
 
     override fun enableGpsSpoofing() {
         preferencesHelper.setGpsSpoofing(true)
+    }
+
+    override fun onCleared() {
+        preferencesHelper.removeObserver(trayPreferenceChangeListener)
+        super.onCleared()
     }
 }

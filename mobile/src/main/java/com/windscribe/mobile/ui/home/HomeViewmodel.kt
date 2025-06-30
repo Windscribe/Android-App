@@ -5,7 +5,6 @@ import android.os.Build
 import android.os.PowerManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.windscribe.mobile.ui.helper.onChanged
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.model.User
@@ -67,6 +66,11 @@ class HomeViewmodelImpl(
     override val hapticFeedbackEnabled: StateFlow<Boolean> = _hapticFeedbackEnabled
     private val _showLocationLoad = MutableStateFlow(preferences.isShowLocationHealthEnabled)
     override val showLocationLoad: StateFlow<Boolean> = _showLocationLoad
+
+    private val trayPreferenceChangeListener = OnTrayPreferenceChangeListener {
+        _hapticFeedbackEnabled.value = preferences.isHapticFeedbackEnabled
+        _showLocationLoad.value = preferences.isShowLocationHealthEnabled
+    }
     private val logger = LoggerFactory.getLogger("basic")
 
     init {
@@ -94,10 +98,7 @@ class HomeViewmodelImpl(
     }
 
     private fun fetchUserPreferences() {
-        preferences.onChanged(this) {
-            _hapticFeedbackEnabled.value = preferences.isHapticFeedbackEnabled
-            _showLocationLoad.value = preferences.isShowLocationHealthEnabled
-        }
+        preferences.addObserver(trayPreferenceChangeListener)
     }
 
     private fun fetchUserState() {
@@ -159,5 +160,10 @@ class HomeViewmodelImpl(
         viewModelScope.launch {
             _goto.emit(HomeGoto.MainMenu)
         }
+    }
+
+    override fun onCleared() {
+        preferences.removeObserver(trayPreferenceChangeListener)
+        super.onCleared()
     }
 }
