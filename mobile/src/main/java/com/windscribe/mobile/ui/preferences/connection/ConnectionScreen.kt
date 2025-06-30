@@ -797,14 +797,17 @@ private fun AlwaysOnVPN() {
             Text(
                 text = stringResource(R.string.always_on),
                 style = font16.copy(fontWeight = FontWeight.Medium),
-                color = MaterialTheme.colorScheme.primaryTextColor
+                color = MaterialTheme.colorScheme.primaryTextColor,
+                modifier = Modifier.weight(1f),
+                maxLines = 1
             )
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = stringResource(R.string.open_settings),
                 style = font14.copy(fontWeight = FontWeight.Normal),
                 color = MaterialTheme.colorScheme.preferencesSubtitleColor,
                 textAlign = TextAlign.Start,
+                maxLines = 1,
                 modifier = Modifier.clickable {
                     val intent = Intent("android.net.vpn.SETTINGS")
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK

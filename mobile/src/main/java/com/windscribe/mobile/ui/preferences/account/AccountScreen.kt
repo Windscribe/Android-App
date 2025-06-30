@@ -388,17 +388,21 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
                             stringResource(R.string.confirm_your_email),
                             style = font14.copy(
                                 color = Color.Black,
-                                fontWeight = FontWeight.Medium
+                                fontWeight = FontWeight.Medium,
+                                textAlign = TextAlign.Start
                             ),
-                            maxLines = 1
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
                         )
-                        Spacer(modifier = Modifier.weight(1f))
+                        Spacer(modifier = Modifier.width(16.dp))
                         Text(
                             stringResource(R.string.resend),
                             style = font16.copy(
                                 color = Color.Black,
                                 fontWeight = FontWeight.SemiBold
                             ),
+                            maxLines = 1,
                         )
                     }
                 }
