@@ -191,6 +191,7 @@ private fun TextFieldDialog(
     var textFieldValue by remember { mutableStateOf(TextFieldValue("")) }
     LaunchedEffect(textFieldValue.text) {
         if (isLazyLogin && textFieldValue.text.replace("-", "").length == 8) {
+            onDismiss()
             onSubmit(textFieldValue.text)
         }
     }
