@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -42,11 +43,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.window.Dialog
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.PreferenceBackground
@@ -82,7 +87,9 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
             PreferencesNavBar(stringResource(R.string.my_account)) {
                 navController.popBackStack()
             }
-            Column(Modifier.navigationBarsPadding().verticalScroll(scrollState)) {
+            Column(Modifier
+                .navigationBarsPadding()
+                .verticalScroll(scrollState)) {
                 Spacer(modifier = Modifier.height(20.dp))
                 AccountInfo(viewModel)
                 Spacer(modifier = Modifier.height(14.dp))
@@ -167,19 +174,27 @@ private fun HandleAlertState(viewModel: AccountViewModel?) {
             viewModel?.onDialogDismiss()
         }, onSubmit = {
             viewModel?.onEnterLazyLoginCode(it)
-        })
+        }, true)
     }
 }
 
 @Composable
 private fun TextFieldDialog(
     onDismiss: () -> Unit,
-    onSubmit: (String) -> Unit
+    onSubmit: (String) -> Unit,
+    isLazyLogin: Boolean = false
 ) {
-    val text = remember { mutableStateOf("") }
     val activity = LocalContext.current as? AppStartActivity
-    val hapticFeedbackEnabled by activity?.viewmodel?.hapticFeedback?.collectAsState() ?: remember { mutableStateOf(false) }
+    val hapticFeedbackEnabled by activity?.viewmodel?.hapticFeedback?.collectAsState()
+        ?: remember { mutableStateOf(false) }
     val hapticFeedback = LocalHapticFeedback.current
+    var textFieldValue by remember { mutableStateOf(TextFieldValue("")) }
+    LaunchedEffect(textFieldValue.text) {
+        if (isLazyLogin && textFieldValue.text.replace("-", "").length == 8) {
+            onSubmit(textFieldValue.text)
+        }
+    }
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(12.dp),
@@ -193,9 +208,28 @@ private fun TextFieldDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 TextField(
-                    value = text.value,
-                    onValueChange = {
-                        text.value = it
+                    value = textFieldValue,
+                    onValueChange = { input ->
+                        if (isLazyLogin) {
+                            val clean = input.text
+                                .uppercase()
+                                .replace("-", "")
+                                .take(8)
+
+                            val formatted = if (clean.length > 4)
+                                "${clean.substring(0, 4)}-${clean.substring(4)}"
+                            else clean
+                            textFieldValue = if (formatted != textFieldValue.text) {
+                                TextFieldValue(
+                                    text = formatted,
+                                    selection = TextRange(formatted.length)
+                                )
+                            } else {
+                                input
+                            }
+                        } else {
+                            textFieldValue = input
+                        }
                     },
                     colors = TextFieldDefaults.colors().copy(
                         focusedContainerColor = MaterialTheme.colorScheme.primaryTextColor,
@@ -219,6 +253,10 @@ private fun TextFieldDialog(
                         color = MaterialTheme.colorScheme.preferencesBackgroundColor,
                         textAlign = TextAlign.Start
                     ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        capitalization = KeyboardCapitalization.Characters
+                    ),
+                    maxLines = 1,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Row {
@@ -253,7 +291,7 @@ private fun TextFieldDialog(
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                             }
                             onDismiss()
-                            onSubmit(text.value)
+                            onSubmit(textFieldValue.text)
                         },
                         colors = ButtonColors(
                             containerColor = Color.Transparent,
