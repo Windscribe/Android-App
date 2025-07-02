@@ -2,6 +2,7 @@ package com.windscribe.mobile.ui.serverlist
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -49,7 +50,6 @@ fun ServerListNavigation(
     homeViewmodel: HomeViewmodel,
     onTabSelected: (Int) -> Unit
 ) {
-    val isHapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
     val selectedType by viewModel.selectedServerListType.collectAsState()
     val serverTabs = listOf(
         ServerTabIcon(
@@ -147,7 +147,7 @@ fun ServerListNavigation(
                 Image(
                     painter = painterResource(if (isSelected) tab.filledIcon else tab.unfilledIcon),
                     contentDescription = null,
-                    modifier = Modifier.Companion.hapticClickable() {
+                    modifier = Modifier.Companion.clickable {
                         onTabSelected(index)
                     },
                     colorFilter = ColorFilter.tint(

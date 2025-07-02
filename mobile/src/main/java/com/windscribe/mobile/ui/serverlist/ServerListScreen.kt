@@ -51,6 +51,9 @@ fun ServerListScreen(
     val hapticFeedback by homeViewmodel.hapticFeedbackEnabled.collectAsState()
     val haptic = LocalHapticFeedback.current
     LaunchedEffect(selectedType) {
+        if (hapticFeedback) {
+            haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
+        }
         pagerState.animateScrollToPage(selectedType.toPageIndex())
     }
     LaunchedEffect(pagerState.targetPage) {
@@ -70,9 +73,6 @@ fun ServerListScreen(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
             ) { pageIndex ->
-                if (hapticFeedback) {
-                    haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
-                }
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.TopStart
