@@ -1,8 +1,8 @@
 module golang.zx2c4.com/wireguard/android
 
-go 1.23.0
+go 1.24.0
 
-toolchain go1.23.2
+toolchain go1.24.4
 
 replace golang.zx2c4.com/wireguard => github.com/Windscribe/wireguard v1.0.3
 
@@ -13,10 +13,10 @@ replace github.com/rs/zerolog => github.com/Windscribe/zerolog v0.0.0-2024120613
 replace github.com/gorilla/websocket => github.com/Windscribe/wstunnel/websocket v0.0.0-20250204211052-c191d6e13771
 
 require (
-	github.com/Control-D-Inc/ctrld v1.4.4
+	github.com/Control-D-Inc/ctrld v1.4.5-0.20250702155021-4f4055147fdf
 	github.com/Windscribe/wstunnel v1.0.2-0.20250204211052-c191d6e13771
 	github.com/spf13/cobra v1.8.1
-	golang.org/x/sys v0.31.0
+	golang.org/x/sys v0.32.0
 	golang.zx2c4.com/wireguard v0.0.0-00010101000000-000000000000
 )
 
