@@ -58,6 +58,7 @@ import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.theme.AppColors
+import com.windscribe.mobile.ui.theme.backgroundColor
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font14
 import com.windscribe.mobile.ui.theme.font16
@@ -202,7 +203,8 @@ private fun TextFieldDialog(
                         disabledContainerColor = MaterialTheme.colorScheme.primaryTextColor,
                         focusedTextColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
                         unfocusedTextColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
-                        disabledTextColor = MaterialTheme.colorScheme.preferencesBackgroundColor
+                        disabledTextColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
+                        cursorColor = MaterialTheme.colorScheme.backgroundColor,
                     ),
                     placeholder = {
                         Text(

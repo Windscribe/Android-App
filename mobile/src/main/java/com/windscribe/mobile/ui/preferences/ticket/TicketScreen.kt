@@ -221,7 +221,7 @@ private fun TextField(
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
                     errorIndicatorColor = Color.Transparent,
-                    cursorColor = AppColors.white,
+                    cursorColor = MaterialTheme.colorScheme.primaryTextColor,
                     disabledIndicatorColor = Color.Transparent,
                 ),
                 visualTransformation = VisualTransformation.None,
