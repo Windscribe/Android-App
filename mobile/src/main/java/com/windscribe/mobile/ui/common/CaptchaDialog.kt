@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.windscribe.mobile.ui.auth.CaptchaRequest
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font12
@@ -73,7 +74,7 @@ fun CaptchaDebugDialog(
     onCancel: () -> Unit,
     onSolutionSubmit: (Float, Map<String, List<Float>>) -> Unit
 ) {
-    Dialog(onDismissRequest = onCancel) {
+    Dialog(onDismissRequest = onCancel, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = AppColors.charcoalBlue,
