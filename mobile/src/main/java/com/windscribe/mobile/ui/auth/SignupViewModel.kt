@@ -126,7 +126,7 @@ class SignupViewModel @Inject constructor(
             )
             return
         }
-        val passwordRegex = Regex("^(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9]+$")
+        val passwordRegex = Regex("^(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9!@#\$%^&*()_+\\-={}\\[\\]:;\"'<>,.?/`~|\\\\]+$")
         if (!password.matches(passwordRegex)) {
             updateState(
                 SignupState.Error(
