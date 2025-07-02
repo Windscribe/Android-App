@@ -49,12 +49,14 @@ import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
 import com.windscribe.vpn.constants.NetworkKeyConstants
+import kotlinx.coroutines.flow.collectLatest
 
 
 @Composable
 fun HelpScreen(viewModel: HelpViewModel? = null) {
     val navController = LocalNavController.current
     val scrollState = rememberScrollState()
+    val isUserPro by viewModel?.isUserPro?.collectAsState() ?: remember { mutableStateOf(false) }
     PreferenceBackground {
         Column(
             modifier = Modifier
@@ -80,13 +82,15 @@ fun HelpScreen(viewModel: HelpViewModel? = null) {
                 com.windscribe.mobile.R.drawable.ic_garry,
                 Route.Web(NetworkKeyConstants.URL_GARRY),
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            HelpItem(
-                R.string.contact_humans,
-                R.string.contact_humans_description,
-                com.windscribe.mobile.R.drawable.ic_ticket,
-                Route.Nav(Screen.Ticket),
-            )
+            if (isUserPro) {
+                Spacer(modifier = Modifier.height(16.dp))
+                HelpItem(
+                    R.string.contact_humans,
+                    R.string.contact_humans_description,
+                    com.windscribe.mobile.R.drawable.ic_ticket,
+                    Route.Nav(Screen.Ticket),
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
             CommunitySupport()
             Spacer(modifier = Modifier.height(16.dp))
@@ -346,7 +350,8 @@ private fun HelpItem(
                 color = MaterialTheme.colorScheme.primaryTextColor.copy(
                     alpha = 0.05f
                 ), shape = RoundedCornerShape(size = 12.dp)
-            ).hapticClickable {
+            )
+            .hapticClickable {
                 if (route is Route.Nav) {
                     val route = route.screen.route
                     navController.navigate(route)

@@ -20,6 +20,7 @@ import com.windscribe.vpn.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.File
@@ -30,7 +31,9 @@ abstract class HelpViewModel : ViewModel() {
     abstract val showProgress: StateFlow<Boolean>
     abstract val sendLogState: StateFlow<SendLogState>
     abstract fun sendLogClicked()
+    abstract val isUserPro: StateFlow<Boolean>
 }
+
 sealed class SendLogState {
     object Idle : SendLogState()
     object Loading : SendLogState()
@@ -47,6 +50,16 @@ class HelpViewModelImpl(
     override val showProgress: StateFlow<Boolean> = _showProgress
     private val _sendLogState = MutableStateFlow<SendLogState>(SendLogState.Idle)
     override val sendLogState: StateFlow<SendLogState> = _sendLogState
+    private val _isUserPro = MutableStateFlow(false)
+    override val isUserPro: StateFlow<Boolean> = _isUserPro
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            userRepository.userInfo.collectLatest {
+                _isUserPro.emit(it.isPro)
+            }
+        }
+    }
 
     override fun sendLogClicked() {
         viewModelScope.launch(Dispatchers.IO) {
