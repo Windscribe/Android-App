@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.PowerManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.model.User
@@ -30,6 +31,7 @@ sealed class HomeGoto {
     object LocationMaintenance : HomeGoto()
     data class EditCustomConfig(val id: Int, val connect: Boolean) : HomeGoto()
     object MainMenu: HomeGoto()
+    object None: HomeGoto()
 }
 
 sealed class UserState() {
@@ -50,6 +52,7 @@ abstract class HomeViewmodel : ViewModel() {
     abstract val hapticFeedbackEnabled: StateFlow<Boolean>
     abstract val showLocationLoad: StateFlow<Boolean>
     abstract fun onMainMenuClick()
+    abstract fun onGoToHandled()
 }
 
 class HomeViewmodelImpl(
@@ -58,7 +61,7 @@ class HomeViewmodelImpl(
     private val preferences: PreferencesHelper
 ) : HomeViewmodel() {
 
-    private val _goto = MutableSharedFlow<HomeGoto>(extraBufferCapacity = 1)
+    private val _goto = MutableSharedFlow<HomeGoto>(replay = 0)
     override val goto: SharedFlow<HomeGoto> = _goto
     private val _userState = MutableStateFlow<UserState>(UserState.Loading)
     override val userState: StateFlow<UserState> = _userState
@@ -164,6 +167,15 @@ class HomeViewmodelImpl(
 
     override fun onCleared() {
         preferences.removeObserver(trayPreferenceChangeListener)
+        viewModelScope.launch {
+            _goto.emit(HomeGoto.None)
+        }
         super.onCleared()
+    }
+
+    override fun onGoToHandled() {
+        viewModelScope.launch {
+            _goto.emit(HomeGoto.None)
+        }
     }
 }

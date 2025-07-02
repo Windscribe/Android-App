@@ -13,6 +13,7 @@ import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.bundledBa
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.getSoundFile
 import com.windscribe.mobile.ui.common.isEnabled
 import com.windscribe.mobile.ui.home.HomeGoto
+import com.windscribe.mobile.ui.home.HomeScreen
 import com.windscribe.mobile.ui.serverlist.ServerListItem
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -144,6 +145,7 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract val toastMessage: StateFlow<ToastMessage>
     abstract fun clearToast()
     abstract fun onProtocolChangeClick()
+    abstract fun onGoToHandled()
 }
 
 class ConnectionViewmodelImpl @Inject constructor(
@@ -178,7 +180,7 @@ class ConnectionViewmodelImpl @Inject constructor(
     override val isAntiCensorshipEnabled: StateFlow<Boolean> = _isAntiCensorshipEnabled
     private val _isPreferredProtocolEnabled = MutableStateFlow(false)
     override val isPreferredProtocolEnabled: StateFlow<Boolean> = _isPreferredProtocolEnabled
-    private val _goto = MutableSharedFlow<HomeGoto>(extraBufferCapacity = 1)
+    private val _goto = MutableSharedFlow<HomeGoto>(replay = 0)
     override val goto: SharedFlow<HomeGoto> = _goto
     private val _newFeedCount = MutableStateFlow(0)
     override val newFeedCount: StateFlow<Int> = _newFeedCount
@@ -751,9 +753,19 @@ class ConnectionViewmodelImpl @Inject constructor(
         }
     }
 
+    override fun onGoToHandled() {
+        viewModelScope.launch {
+            _goto.emit(HomeGoto.None)
+            _toastMessage.emit(ToastMessage.None)
+        }
+    }
+
     override fun onCleared() {
         networkInfoManager.removeNetworkInfoListener(networkListener!!)
         preferences.removeObserver(preferenceChangeListener!!)
+        viewModelScope.launch {
+            _goto.emit(HomeGoto.None)
+        }
         super.onCleared()
     }
 }

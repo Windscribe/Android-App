@@ -110,14 +110,19 @@ fun HomeScreen(
 fun HandleGoto(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
     val connectionGoto by connectionViewmodel.goto.collectAsState(initial = null)
     val homeGoto by homeViewmodel.goto.collectAsState(initial = null)
-    HandleGotoAction(goto = connectionGoto)
-    HandleGotoAction(goto = homeGoto)
+    HandleGotoAction(goto = connectionGoto, homeViewmodel, connectionViewmodel)
+    HandleGotoAction(goto = homeGoto, homeViewmodel, connectionViewmodel)
 }
 
 @Composable
-private fun HandleGotoAction(goto: HomeGoto?) {
+private fun HandleGotoAction(
+    goto: HomeGoto?,
+    homeViewmodel: HomeViewmodel,
+    connectionViewmodel: ConnectionViewmodel
+) {
     val context = LocalContext.current
     val navController = LocalNavController.current
+    var didNavigate = false
     when (goto) {
         HomeGoto.Banned -> {
             val bannedData = AccountStatusDialogData(
@@ -131,33 +136,64 @@ private fun HandleGotoAction(goto: HomeGoto?) {
                 bannedLayout = true
             )
             navigateWithData(navController, Screen.AccountStatus.route, bannedData)
+            didNavigate = true
         }
 
         is HomeGoto.Expired -> {
             val expireData = AccountStatusDialogData(
                 title = stringResource(com.windscribe.vpn.R.string.you_re_out_of_data),
                 icon = R.drawable.garry_nodata,
-                description = stringResource(com.windscribe.vpn.R.string.upgrade_to_stay_protected, goto.date),
+                description = stringResource(
+                    com.windscribe.vpn.R.string.upgrade_to_stay_protected,
+                    goto.date
+                ),
                 showSkipButton = true,
                 skipText = stringResource(com.windscribe.vpn.R.string.upgrade_later),
                 showUpgradeButton = true,
                 upgradeText = stringResource(com.windscribe.vpn.R.string.upgrade),
             )
             navigateWithData(navController, Screen.AccountStatus.route, expireData)
+            didNavigate = true
         }
 
         is HomeGoto.EditCustomConfig -> {
             navController.currentBackStackEntry?.savedStateHandle?.set("config_id", goto.id)
             navController.currentBackStackEntry?.savedStateHandle?.set("connect", goto.connect)
             navController.navigate(Screen.EditCustomConfig.route)
+            didNavigate = true
         }
 
-        is HomeGoto.Upgrade -> context.startActivity(UpgradeActivity.getStartIntent(context))
-        HomeGoto.PowerWhitelist -> navController.navigate(Screen.PowerWhitelist.route)
-        HomeGoto.ShareAppLink -> navController.navigate(Screen.ShareLink.route)
-        HomeGoto.LocationMaintenance -> navController.navigate(Screen.LocationUnderMaintenance.route)
-        HomeGoto.MainMenu -> navController.navigate(Screen.MainMenu.route)
-        null -> Unit
+        is HomeGoto.Upgrade -> {
+            context.startActivity(UpgradeActivity.getStartIntent(context))
+            didNavigate = true
+        }
+
+        HomeGoto.PowerWhitelist -> {
+            navController.navigate(Screen.PowerWhitelist.route)
+            didNavigate = true
+        }
+
+        HomeGoto.ShareAppLink -> {
+            navController.navigate(Screen.ShareLink.route)
+            didNavigate = true
+        }
+
+        HomeGoto.LocationMaintenance -> {
+            navController.navigate(Screen.LocationUnderMaintenance.route)
+            didNavigate = true
+        }
+
+        HomeGoto.MainMenu -> {
+            navController.navigate(Screen.MainMenu.route)
+            didNavigate = true
+        }
+
+        HomeGoto.None -> {}
+        null -> {}
+    }
+    if (didNavigate) {
+        connectionViewmodel.onGoToHandled()
+        homeViewmodel.onGoToHandled()
     }
 }
 
@@ -348,7 +384,13 @@ internal fun BoxScope.NetworkInfoSheet(
     val showContextMenu by connectionViewmodel.ipContextMenuState.collectAsState()
     val isHapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
     val hideIp = remember { mutableStateOf(false) }
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.align(Alignment.BottomCenter).offset(y = (-66).dp).padding(end = 12.dp)) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .offset(y = (-66).dp)
+            .padding(end = 12.dp)
+    ) {
         NetworkNameSheet(connectionViewmodel, homeViewmodel)
         Row(
             modifier = Modifier
