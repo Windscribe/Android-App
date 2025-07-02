@@ -75,5 +75,5 @@ end
 
  desc "Build Signed Apks for all modules."
  lane :buildReleaseApk do
-  buildAndSign(task:"clean mobile:assemble tv:assemble")
+  buildAndSign(task:"mobile:assemble tv:assemble")
  end
