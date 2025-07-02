@@ -31,9 +31,10 @@ UploadToPlayStoreInternalChannel:
   cache:
     key: "${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}"
     paths:
-      - ${CI_PROJECT_DIR}/openvpn
-      - ${CI_PROJECT_DIR}/wgtunnel
-      - ${CI_PROJECT_DIR}/strongswan
+      - .gradle/
+      - ~/.gradle/
+      - mobile/build/
+      - tv/build/
 
   artifacts:
     reports:
