@@ -5,16 +5,20 @@ import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
@@ -71,31 +75,34 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
     val navController = LocalNavController.current
     val showProgress by viewModel?.showProgress?.collectAsState()
         ?: remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
     PreferenceBackground {
         Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
             PreferencesNavBar(stringResource(R.string.my_account)) {
                 navController.popBackStack()
             }
-            Spacer(modifier = Modifier.height(20.dp))
-            AccountInfo(viewModel)
-            Spacer(modifier = Modifier.height(14.dp))
-            PlanInfo(viewModel)
-            Spacer(modifier = Modifier.height(14.dp))
-            ActionButton(stringResource(R.string.edit_account)) {
-                viewModel?.onManageAccountClicked()
-            }
-            Spacer(modifier = Modifier.height(14.dp))
-            Text(
-                stringResource(R.string.other),
-                style = font12.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.preferencesSubtitleColor
+            Column(Modifier.navigationBarsPadding().verticalScroll(scrollState)) {
+                Spacer(modifier = Modifier.height(20.dp))
+                AccountInfo(viewModel)
+                Spacer(modifier = Modifier.height(14.dp))
+                PlanInfo(viewModel)
+                Spacer(modifier = Modifier.height(14.dp))
+                ActionButton(stringResource(R.string.edit_account)) {
+                    viewModel?.onManageAccountClicked()
+                }
+                Spacer(modifier = Modifier.height(14.dp))
+                Text(
+                    stringResource(R.string.other),
+                    style = font12.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.preferencesSubtitleColor
+                    )
                 )
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            VoucherCode(viewModel)
-            Spacer(modifier = Modifier.height(14.dp))
-            LazyLogin(viewModel)
+                Spacer(modifier = Modifier.height(8.dp))
+                VoucherCode(viewModel)
+                Spacer(modifier = Modifier.height(14.dp))
+                LazyLogin(viewModel)
+            }
         }
         PreferenceProgressBar(showProgressBar = showProgress)
         HandleGoto(viewModel)
