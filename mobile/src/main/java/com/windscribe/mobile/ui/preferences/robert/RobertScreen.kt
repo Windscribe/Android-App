@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -69,7 +70,7 @@ fun RobertScreen(viewModel: RobertViewModel? = null) {
         ?: remember { mutableStateOf(false) }
     PreferenceBackground {
         Column(
-            modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp),
+            modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp).navigationBarsPadding(),
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
         ) {
             PreferencesNavBar(stringResource(R.string.robert)) {
@@ -98,7 +99,7 @@ fun RobertScreen(viewModel: RobertViewModel? = null) {
                 is RobertFilterState.Success -> {
                     val filters = (state as RobertFilterState.Success).filters
                     key(filters.hashCode()) {
-                        Filters(filters, viewModel)
+                        Filters(filters, viewModel, Modifier.weight(1.0f))
                     }
                 }
             }
@@ -166,7 +167,7 @@ private fun HandleGoto(viewModel: RobertViewModel?) {
 }
 
 @Composable
-private fun Filters(filters: List<RobertFilter>, viewModel: RobertViewModel?) {
+private fun Filters(filters: List<RobertFilter>, viewModel: RobertViewModel?, modifier: Modifier = Modifier) {
     var iconMap = mapOf(
         Pair("malware", com.windscribe.mobile.R.drawable.ic_malware),
         Pair("ads", com.windscribe.mobile.R.drawable.ic_ads),
@@ -177,7 +178,7 @@ private fun Filters(filters: List<RobertFilter>, viewModel: RobertViewModel?) {
         Pair("competitors", com.windscribe.mobile.R.drawable.ic_other_vpn),
         Pair("cryptominers", com.windscribe.mobile.R.drawable.ic_crypto)
     )
-    LazyColumn {
+    LazyColumn(modifier = modifier) {
         items(filters.size) { index ->
             Spacer(modifier = Modifier.height(8.dp))
             Row(
