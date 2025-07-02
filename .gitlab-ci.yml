@@ -28,6 +28,12 @@ UploadToPlayStoreInternalChannel:
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
     - export DIRECTORY=${VERSION_NAME}
     - fastlane publishToInternal
+  cache:
+    key: "${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - ${CI_PROJECT_DIR}/openvpn
+      - ${CI_PROJECT_DIR}/wgtunnel
+      - ${CI_PROJECT_DIR}/strongswan
 
   artifacts:
     reports:
