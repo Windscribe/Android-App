@@ -31,9 +31,8 @@ UploadToPlayStoreInternalChannel:
   cache:
     key: "${CI_PROJECT_NAME}"
     paths:
-      - ~/.gradle/caches
-      - ~/.gradle/wrapper
-      - .android
+      - $GRADLE_USER_HOME/caches
+      - $GRADLE_USER_HOME/wrapper
       - openvpn/.cxx
       - openvpn/build/intermediates/cmake
       - wgtunnel/.cxx
