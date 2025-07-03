@@ -29,12 +29,11 @@ UploadToPlayStoreInternalChannel:
     - export DIRECTORY=${VERSION_NAME}
     - fastlane publishToInternal
   cache:
-    key: "${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}"
+    key: "${CI_PROJECT_NAME}"
     paths:
-      - .gradle/
-      - ~/.gradle/
-      - mobile/build/
-      - tv/build/
+      - ~/.gradle/caches
+      - ~/.gradle/wrapper
+      - .android
 
   artifacts:
     reports:
