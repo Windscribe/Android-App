@@ -555,7 +555,7 @@ last chosen location.</string>
     <string name="unblock_full_access">Unlock full access to Windscribe</string>
     <string name="go_pro_for_unlimited_everything">Go Pro for unlimited everything</string>
     <string name="custom_configs">Custom Configs</string>
-    <string name="slide_puzzle_piece_into_place">Slide puzzle piece into place</string>
+    <string name="slide_puzzle_piece_into_place">Drag left puzzle piece into place</string>
     <string name="complete_puzzle_to_continue">Complete Puzzle to continue"</string>
     <string name="none">None</string>
     <string name="free">Free</string>

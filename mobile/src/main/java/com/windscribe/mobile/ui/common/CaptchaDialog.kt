@@ -32,12 +32,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -74,10 +77,14 @@ fun CaptchaDebugDialog(
     onCancel: () -> Unit,
     onSolutionSubmit: (Float, Map<String, List<Float>>) -> Unit
 ) {
-    Dialog(onDismissRequest = onCancel, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+    Dialog(
+        onDismissRequest = onCancel,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = AppColors.charcoalBlue,
+            modifier = Modifier.padding(16.dp),
             border = BorderStroke(1.dp, AppColors.white.copy(alpha = 0.05f)),
             tonalElevation = 8.dp,
         ) {
@@ -122,19 +129,30 @@ fun CaptchaDebugView(
 
     var dragJob: Job? = remember { null }
     val coroutineScope = remember { CoroutineScope(Dispatchers.Main) }
+    val shape = RoundedCornerShape(8.dp)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier.padding(top = 24.dp, start = 24.dp, end = 24.dp)
+        modifier = Modifier.padding(top = 24.dp, start = 24.dp, end = 24.dp, bottom = 16.dp)
     ) {
         Text(
             stringResource(com.windscribe.vpn.R.string.complete_puzzle_to_continue),
             color = Color.White,
-            style = font18
+            style = font18.copy(fontWeight = FontWeight.Medium)
         )
         Spacer(modifier = Modifier.height(24.dp))
         Box {
-            Box {
+            Box(
+                modifier = Modifier
+                    .border(
+                        width = 1.dp,
+                        color = AppColors.white.copy(alpha = 0.05f),
+                        shape = shape
+                    )
+                    .clip(shape)
+                    .background(Color.Transparent)
+                    .padding(1.dp)
+            ) {
                 Image(
                     bitmap = backgroundBitmap,
                     contentDescription = "Captcha Background",
@@ -142,7 +160,7 @@ fun CaptchaDebugView(
                         Modifier
                             .height(backgroundSize.value.height.toDp())
                             .width(backgroundSize.value.width.toDp())
-                    }.background(color = Color.Transparent, shape = RoundedCornerShape(12.dp)),
+                    },
                     contentScale = ContentScale.FillBounds
                 )
             }
@@ -192,7 +210,7 @@ fun CaptchaDebugView(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -206,12 +224,13 @@ fun CaptchaDebugView(
         ) {
             Text(
                 stringResource(com.windscribe.vpn.R.string.slide_puzzle_piece_into_place),
-                style = font12,
+                style = font12.copy(fontWeight = FontWeight.Normal),
                 textAlign = TextAlign.Center,
                 color = AppColors.white.copy(alpha = 0.50f),
                 modifier = Modifier.align(Alignment.Center)
             )
         }
+        Spacer(modifier = Modifier.height(16.dp))
         TextButton(stringResource(id = com.windscribe.vpn.R.string.cancel), onClick = {
             onCancel()
         })

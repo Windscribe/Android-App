@@ -18,7 +18,7 @@ fun AppBackground(content: @Composable BoxScope.() -> Unit) {
         .fillMaxSize()
         .focusable()
         .clickable {}
-        .background(AppColors.deepBlue)
+        .background(AppColors.charcoalBlue)
         .focusable(true)) {
         content()
     }
