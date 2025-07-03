@@ -1,0 +1,5 @@
+v3.90(TV)
+* Several minor performance and stability enhancements
+* Upgraded gradle to 8.6
+* Upgraded target SDK to 35
+* Upgraded WSNet to 2.16.5
