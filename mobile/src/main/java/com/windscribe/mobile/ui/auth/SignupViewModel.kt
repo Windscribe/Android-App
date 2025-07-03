@@ -343,5 +343,11 @@ class SignupViewModel @Inject constructor(
             _signupState.emit(state)
         }
     }
+
+    fun clearDialog() {
+        viewModelScope.launch {
+            _showAllBackupFailedDialog.emit(false)
+        }
+    }
 }
 

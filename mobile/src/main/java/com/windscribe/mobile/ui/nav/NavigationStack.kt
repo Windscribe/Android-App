@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -34,6 +35,7 @@ import com.windscribe.mobile.ui.home.HomeScreen
 import com.windscribe.mobile.ui.home.HomeViewmodel
 import com.windscribe.mobile.ui.model.AccountStatusDialogData
 import com.windscribe.mobile.ui.popup.AccountStatusScreen
+import com.windscribe.mobile.ui.popup.AllProtocolFailedDialogScreen
 import com.windscribe.mobile.ui.popup.EditCustomConfigScreen
 import com.windscribe.mobile.ui.popup.EditCustomConfigViewmodel
 import com.windscribe.mobile.ui.popup.ExtraDataUseWarningScreen
@@ -124,7 +126,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
     }, exitTransition = {
         slideOutHorizontally(targetOffsetX = { it })
     }) {
-        val homeViewModel  = getViewModel(HomeViewmodel::class.java)
+        val homeViewModel = getViewModel(HomeViewmodel::class.java)
         ViewModelRoute(NewsfeedViewmodel::class.java) {
             NewsfeedScreen(it, homeViewModel)
         }
@@ -134,7 +136,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
     }, exitTransition = {
         slideOutHorizontally(targetOffsetX = { it })
     }) {
-        val homeViewModel  = getViewModel(HomeViewmodel::class.java)
+        val homeViewModel = getViewModel(HomeViewmodel::class.java)
         ViewModelRoute(MainMenuViewModel::class.java) {
             MainMenuScreen(it, homeViewModel)
         }
@@ -307,6 +309,9 @@ private fun NavGraphBuilder.addNavigationScreens() {
     composable(route = Screen.OverlayDialog.route) {
         val activity = LocalContext.current as AppStartActivity
         OverlayDialogScreen(appStartActivityViewModel = activity.viewmodel)
+    }
+    composable(route = Screen.AllProtocolFailedDialog.route) {
+        AllProtocolFailedDialogScreen()
     }
     composable(route = Screen.ExtraDataUseWarning.route) {
         val activity = LocalContext.current as AppStartActivity

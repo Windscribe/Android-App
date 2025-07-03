@@ -37,4 +37,6 @@ sealed class Screen(val route: String) {
     object GpsSpoofing: Screen("gps_spoofing")
     object AddEmail: Screen("add_email")
     object ConfirmEmail: Screen("confirm_email")
+    
+    object AllProtocolFailedDialog: Screen("all_protocol_failed_dialog")
 }

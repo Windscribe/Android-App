@@ -87,7 +87,8 @@ fun SignupScreen(
     LaunchedEffect(Unit) {
         viewModel?.showAllBackupFailedDialog?.collect { show ->
             if (show) {
-                Toast.makeText(context, com.windscribe.vpn.R.string.failed_network_alert, Toast.LENGTH_SHORT).show()
+                navController.navigate(Screen.AllProtocolFailedDialog.route)
+                viewModel.clearDialog()
             }
         }
     }

@@ -64,6 +64,7 @@ class LoginViewModel @Inject constructor(
     val twoFactorEnabled: StateFlow<Boolean> = _twoFactorEnabled.asStateFlow()
 
     private val _showAllBackupFailedDialog = MutableSharedFlow<Boolean>(replay = 0)
+
     val showAllBackupFailedDialog: SharedFlow<Boolean> = _showAllBackupFailedDialog
 
     private var username = ""
@@ -308,6 +309,12 @@ class LoginViewModel @Inject constructor(
     private fun updateState(state: LoginState) {
         viewModelScope.launch {
             _loginState.emit(state)
+        }
+    }
+
+    fun clearDialog() {
+        viewModelScope.launch {
+            _showAllBackupFailedDialog.emit(false)
         }
     }
 }
