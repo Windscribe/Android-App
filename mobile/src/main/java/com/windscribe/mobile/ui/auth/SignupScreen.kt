@@ -259,7 +259,7 @@ private fun VoucherTextField(viewModel: SignupViewModel?) {
 private fun SignupUsernameTextField(signupState: SignupState, viewModel: SignupViewModel? = null) {
     AuthTextField(
         hint = stringResource(com.windscribe.vpn.R.string.username),
-        placeHolder = stringResource(com.windscribe.vpn.R.string.enter_password),
+        placeHolder = stringResource(com.windscribe.vpn.R.string.enter_username),
         isError = isError(signupState, AuthInputFields.Username),
         modifier = Modifier.fillMaxWidth(),
         onValueChange = {
