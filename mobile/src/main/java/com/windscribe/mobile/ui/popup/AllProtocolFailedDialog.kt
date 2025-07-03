@@ -83,7 +83,7 @@ fun AllProtocolFailedDialogScreen() {
             )
 
             Text(
-                text = stringResource(com.windscribe.vpn.R.string.this_network_hates_us),
+                text = stringResource(com.windscribe.vpn.R.string.failed_network_title),
                 style = font24,
                 color = Color.White,
                 textAlign = TextAlign.Center,
@@ -91,7 +91,7 @@ fun AllProtocolFailedDialogScreen() {
             )
 
             Text(
-                text = stringResource(com.windscribe.vpn.R.string.well_we_gave_it_our_best_shot_we_just_couldn_t_connect_you_on_this_network_send_us_your_debug_log_so_we_can_figure_out_what_happened),
+                text = stringResource(com.windscribe.vpn.R.string.failed_network_alert),
                 style = font16,
                 color = Color.White,
                 textAlign = TextAlign.Center,
