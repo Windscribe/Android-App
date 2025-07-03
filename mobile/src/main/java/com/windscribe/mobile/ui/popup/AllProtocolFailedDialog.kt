@@ -104,14 +104,14 @@ fun AllProtocolFailedDialogScreen() {
                 modifier = Modifier.width(400.dp),
                 text = stringResource(com.windscribe.vpn.R.string.export_log),
                 enabled = true,
-                onClick = { exportLog(navController.context) }
+                onClick = { exportLog(navController.context, navController) }
             )
             Spacer(modifier = Modifier.height(16.dp))
             NextButton(
                 modifier = Modifier.width(400.dp),
                 text = stringResource(com.windscribe.vpn.R.string.contact_support),
                 enabled = true,
-                onClick = { contactSupport(navController.context) }
+                onClick = { contactSupport(navController.context, navController) }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -127,7 +127,7 @@ fun AllProtocolFailedDialogScreen() {
     }
 }
 
-fun contactSupport(context: Context, navController: NavController? = null) {
+fun contactSupport(context: Context, navController: NavController) {
     val emailIntent = Intent(Intent.ACTION_SEND).apply {
         type = "message/rfc822"
         putExtra(Intent.EXTRA_EMAIL, arrayOf("helpdesk@windscribe.com"))
@@ -151,7 +151,7 @@ fun contactSupport(context: Context, navController: NavController? = null) {
     navController?.popBackStack()
 }
 
-fun exportLog(context: Context, navController: NavController? = null) {
+fun exportLog(context: Context, navController: NavController) {
     val logFile = File(appContext.cacheDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME)
     if (logFile.exists()) {
         val fileUri: Uri = FileProvider.getUriForFile(
@@ -169,7 +169,7 @@ fun exportLog(context: Context, navController: NavController? = null) {
             context.startActivity(chooser)
         }
     }
-    navController?.popBackStack()
+    navController.popBackStack()
 }
 
 @Composable
