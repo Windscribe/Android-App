@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.api.response;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -12,7 +13,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-@SuppressWarnings("unused")
+@Keep
 public class PortMapResponse {
 
     @SerializedName("portmap")
@@ -44,6 +45,7 @@ public class PortMapResponse {
                 '}';
     }
 
+    @Keep
     public static class PortMap {
 
         @SerializedName("legacy_ports")
@@ -96,6 +98,7 @@ public class PortMapResponse {
         }
     }
 
+    @Keep
     public static class Suggested {
 
         @SerializedName("port")

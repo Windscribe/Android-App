@@ -1,8 +1,10 @@
 package com.windscribe.vpn.api.response
 
+import androidx.annotation.Keep
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
+@Keep
 data class ClaimVoucherCodeResponse(
     @SerializedName("voucher_claimed") @Expose
     var isClaimed: Boolean,

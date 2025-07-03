@@ -335,7 +335,7 @@ class SettingsPresenterImp @Inject constructor(
 
     override fun onSendDebugClicked() {
         logger.info("Preparing debug file...")
-        settingView.showProgress(settingView.getResourceString(R.string.sending_debug_log))
+        settingView.showProgress(settingView.getResourceString(com.windscribe.vpn.R.string.sending_debug_log))
         interactor.getCompositeDisposable().add(
                 Single.fromCallable { interactor.getEncodedLog() }
                         .flatMap { encodedLog: String ->
@@ -352,7 +352,7 @@ class SettingsPresenterImp @Inject constructor(
                                                         WindError.instance.convertThrowableToString(e)
                                         )
                                         settingView.showToast(
-                                                interactor.getResourceString(R.string.log_submission_failed)
+                                                interactor.getResourceString(com.windscribe.vpn.R.string.log_submission_failed)
                                         )
                                         settingView.hideProgress()
                                     }
@@ -363,7 +363,7 @@ class SettingsPresenterImp @Inject constructor(
                                         settingView.hideProgress()
                                         if (appLogSubmissionResponse.dataClass?.isSuccessful == true) {
                                             settingView.showToast(
-                                                    interactor.getResourceString(R.string.app_log_submitted)
+                                                    interactor.getResourceString(com.windscribe.vpn.R.string.app_log_submitted)
                                             )
                                         } else if (appLogSubmissionResponse.errorClass != null) {
                                             appLogSubmissionResponse.errorClass?.let {
@@ -375,7 +375,7 @@ class SettingsPresenterImp @Inject constructor(
                                             }
                                         } else {
                                             settingView.showToast(
-                                                    interactor.getResourceString(R.string.log_submission_failed)
+                                                    interactor.getResourceString(com.windscribe.vpn.R.string.log_submission_failed)
                                             )
                                         }
                                     }
@@ -407,7 +407,7 @@ class SettingsPresenterImp @Inject constructor(
     }
 
     override fun onUpgradeClicked(textViewText: String) {
-        if (interactor.getResourceString(R.string.upgrade_case_normal) == textViewText) {
+        if (interactor.getResourceString(com.windscribe.vpn.R.string.upgrade_case_normal) == textViewText) {
             // User is free user.. goto upgrade activity
             logger.info("Showing upgrade dialog to the user...")
             settingView.openUpgradeActivity()
@@ -448,32 +448,32 @@ class SettingsPresenterImp @Inject constructor(
         if (user.isPro) {
             setExpiryOrResetDate(true, user.expiryDate)
             settingView.setPlanName(
-                    interactor.getResourceString(R.string.unlimited_data)
+                    interactor.getResourceString(com.windscribe.vpn.R.string.unlimited_data)
             )
             settingView.setupLayoutForPremiumUser(
-                    interactor.getResourceString(R.string.plan_pro)
+                    interactor.getResourceString(com.windscribe.vpn.R.string.plan_pro)
             )
         } else if (user.isAlaCarteUnlimitedPlan) {
             setExpiryOrResetDate(true, user.expiryDate)
             settingView.setPlanName(
-                    interactor.getResourceString(R.string.unlimited_data)
+                    interactor.getResourceString(com.windscribe.vpn.R.string.unlimited_data)
             )
             settingView.setupLayoutForPremiumUser(
-                    interactor.getResourceString(R.string.a_la_carte_unlimited_plan)
+                    interactor.getResourceString(com.windscribe.vpn.R.string.a_la_carte_unlimited_plan)
             )
         } else {
             settingView.setupLayoutForFreeUser(
-                    interactor.getResourceString(R.string.upgrade_case_normal)
+                    interactor.getResourceString(com.windscribe.vpn.R.string.upgrade_case_normal)
             )
             setExpiryOrResetDate(false, user.resetDate)
             if (user.maxData == -1L) {
                 settingView.setPlanName(
-                        interactor.getResourceString(R.string.unlimited_data)
+                        interactor.getResourceString(com.windscribe.vpn.R.string.unlimited_data)
                 )
             } else {
                 val maxTrafficData: Long = user.maxData / UserStatusConstants.GB_DATA
                 settingView.setPlanName(
-                        maxTrafficData.toString() + interactor.getResourceString(R.string.gb_per_month)
+                        maxTrafficData.toString() + interactor.getResourceString(com.windscribe.vpn.R.string.gb_per_month)
                 )
             }
         }
@@ -524,7 +524,7 @@ class SettingsPresenterImp @Inject constructor(
     }
 
     override fun setupLayoutForDebugTab() {
-        settingView.setDebugLogProgress(interactor.getResourceString(R.string.loading), "")
+        settingView.setDebugLogProgress(interactor.getResourceString(com.windscribe.vpn.R.string.loading), "")
         interactor.getCompositeDisposable()
                 .add(Single.fromCallable { interactor.getPartialLog() }.subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -547,9 +547,9 @@ class SettingsPresenterImp @Inject constructor(
         settingView.setupLanguageAdapter(savedLanguage, interactor.getLanguageList())
         val savedSort = interactor.getAppPreferenceInterface().selection
         settingView.setupSortAdapter(
-                interactor.getStringArray(R.array.order_list),
+                interactor.getStringArray(com.windscribe.vpn.R.array.order_list),
                 savedSort,
-                interactor.getStringArray(R.array.order_list_keys)
+                interactor.getStringArray(com.windscribe.vpn.R.array.order_list_keys)
         )
     }
 
@@ -557,10 +557,10 @@ class SettingsPresenterImp @Inject constructor(
         val mUserStatus = interactor.getAppPreferenceInterface().userStatus
         logger.info("Showing layout based on current user status...[status]: $mUserStatus")
         if (mUserStatus == UserStatusConstants.USER_STATUS_PREMIUM) {
-            settingView.setupLayoutForPremiumUser(interactor.getResourceString(R.string.plan_pro))
+            settingView.setupLayoutForPremiumUser(interactor.getResourceString(com.windscribe.vpn.R.string.plan_pro))
         } else {
             // Get User Session Data... if not present call and save session
-            settingView.setupLayoutForFreeUser(interactor.getResourceString(R.string.upgrade_case_normal))
+            settingView.setupLayoutForFreeUser(interactor.getResourceString(com.windscribe.vpn.R.string.upgrade_case_normal))
         }
     }
 
@@ -712,13 +712,13 @@ class SettingsPresenterImp @Inject constructor(
                         c.add(Calendar.DATE, 30)
                         val nextResetDate = c.time
                         settingView.setResetDate(
-                                interactor.getResourceString(R.string.reset_date),
+                                interactor.getResourceString(com.windscribe.vpn.R.string.reset_date),
                                 formatter.format(nextResetDate)
                         )
                     } else {
                         val nextResetDate = c.time
                         settingView.setResetDate(
-                                interactor.getResourceString(R.string.expiry_date),
+                                interactor.getResourceString(com.windscribe.vpn.R.string.expiry_date),
                                 formatter.format(nextResetDate)
                         )
                     }
@@ -772,7 +772,7 @@ class SettingsPresenterImp @Inject constructor(
     }
 
     private fun setupAppListAdapter() {
-        settingView.showProgress(interactor.getResourceString(R.string.loading))
+        settingView.showProgress(interactor.getResourceString(com.windscribe.vpn.R.string.loading))
         interactor.getCompositeDisposable()
                 .add(
                         interactor.getAppPreferenceInterface().installedApps

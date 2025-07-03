@@ -96,7 +96,6 @@ public class UpgradePresenterImpl implements UpgradePresenter {
     private List<BillingPlanResponse.BillingPlans> mobileBillingPlans = new ArrayList<>();
     private BillingPlanResponse.OverriddenPlans overriddenPlans = null;
 
-    @Inject
     public UpgradePresenterImpl(UpgradeView mUpgradeView, ActivityInteractor activityInteractor) {
         this.mUpgradeView = mUpgradeView;
         this.mUpgradeInteractor = activityInteractor;
@@ -246,7 +245,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
         } else {
             presenterLog.debug("sku returned null! This should not happen... Notify user to retry...");
             mUpgradeView.showToast(
-                    Windscribe.getAppContext().getResources().getString(R.string.unable_to_process_request));
+                    Windscribe.getAppContext().getResources().getString(com.windscribe.vpn.R.string.unable_to_process_request));
         }
     }
 
@@ -359,7 +358,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
                 if (mUpgradeView != null) {
                     presenterLog.info("User cancelled the purchase...");
                     mUpgradeView.showToast(
-                            Windscribe.getAppContext().getResources().getString(R.string.purchase_cancelled));
+                            Windscribe.getAppContext().getResources().getString(com.windscribe.vpn.R.string.purchase_cancelled));
                     mUpgradeView.onPurchaseCancelled();
                 }
                 break;
@@ -441,59 +440,59 @@ public class UpgradePresenterImpl implements UpgradePresenter {
             case BILLING_UNAVAILABLE:
                 presenterLog.debug("Billing unavailable for the device. Response code: " + responseCode);
                 return Windscribe.getAppContext()
-                        .getResources().getString(R.string.billing_unavailable);
+                        .getResources().getString(com.windscribe.vpn.R.string.billing_unavailable);
 
             case ITEM_UNAVAILABLE:
                 presenterLog.debug("Item user requested is not available. Response code: " + responseCode);
                 return Windscribe.getAppContext()
-                        .getResources().getString(R.string.item_unavailable);
+                        .getResources().getString(com.windscribe.vpn.R.string.item_unavailable);
 
             case SERVICE_UNAVAILABLE:
                 presenterLog
                         .debug("Billing service unavailable, user may not be connected to a network. Response Code: "
                                 + responseCode);
                 return Windscribe.getAppContext()
-                        .getResources().getString(R.string.billing_service_unavailable);
+                        .getResources().getString(com.windscribe.vpn.R.string.billing_service_unavailable);
 
             case ERROR:
                 presenterLog
                         .info("Fatal error during api call, user most likely lost network connection during the process or pressed the "
                                 +
                                 "button while not connected to internet. Response Code: " + responseCode);
-                return Windscribe.getAppContext().getResources().getString(R.string.play_store_generic_api_error);
+                return Windscribe.getAppContext().getResources().getString(com.windscribe.vpn.R.string.play_store_generic_api_error);
 
             case FEATURE_NOT_SUPPORTED:
                 presenterLog.debug("Requested feature is not supported by Play Store on the current device." +
                         "Response Code: " + responseCode);
-                return Windscribe.getAppContext().getResources().getString(R.string.fatal_error);
+                return Windscribe.getAppContext().getResources().getString(com.windscribe.vpn.R.string.fatal_error);
 
             case ITEM_ALREADY_OWNED:
                 presenterLog.debug("Item already owned. Unknown error will be shown to user... Response code: "
                         + responseCode);
-                return Windscribe.getAppContext().getResources().getString(R.string.unknown_billing_error);
+                return Windscribe.getAppContext().getResources().getString(com.windscribe.vpn.R.string.unknown_billing_error);
 
             case ITEM_NOT_OWNED:
                 presenterLog.debug("Item not owned. Unknown error will be shown to user... Response code: "
                         + responseCode);
-                return Windscribe.getAppContext().getResources().getString(R.string.unknown_billing_error);
+                return Windscribe.getAppContext().getResources().getString(com.windscribe.vpn.R.string.unknown_billing_error);
 
             case DEVELOPER_ERROR:
                 presenterLog
                         .debug("Developer error. We probably failed to provide valid data to the api... Response code: "
                                 + responseCode);
-                return Windscribe.getAppContext().getResources().getString(R.string.unknown_billing_error);
+                return Windscribe.getAppContext().getResources().getString(com.windscribe.vpn.R.string.unknown_billing_error);
             case PLAY_STORE_UPDATE:
                 presenterLog.debug("Play store is updating in the background. Need to try later... Response code: "
                         + responseCode);
-                return Windscribe.getAppContext().getResources().getString(R.string.play_store_updating);
+                return Windscribe.getAppContext().getResources().getString(com.windscribe.vpn.R.string.play_store_updating);
             case PURCHASED_ITEM_NULL:
                 presenterLog
                         .debug("User purchased the item but purchase list returned null.\n User will be shown unknown error."
                                 +
                                 " Support please look for the token in the log. Response code: " + responseCode);
-                Windscribe.getAppContext().getResources().getString(R.string.unknown_billing_error);
+                Windscribe.getAppContext().getResources().getString(com.windscribe.vpn.R.string.unknown_billing_error);
         }
-        return Windscribe.getAppContext().getResources().getString(R.string.unknown_billing_error);
+        return Windscribe.getAppContext().getResources().getString(com.windscribe.vpn.R.string.unknown_billing_error);
     }
 
     private Single<UserSessionResponse> getUserSession() {

@@ -5,6 +5,7 @@
 package com.windscribe.vpn.serverlist.entity;
 
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -13,7 +14,7 @@ import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
 
-@SuppressWarnings("unused")
+@Keep
 @Entity(tableName = "ConfigFile")
 public class ConfigFile implements Serializable {
 

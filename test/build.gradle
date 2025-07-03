@@ -39,7 +39,7 @@ dependencies {
     implementation "androidx.test.ext:junit-ktx:$extJUnitVersion"
     implementation "androidx.test:runner:$runnerVersion"
     implementation 'androidx.test.ext:truth:' + rootProject.extTruthVersion
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesCore"
     implementation "androidx.test.espresso:espresso-core:$espressoVersion"
     implementation "androidx.test.espresso:espresso-intents:$espressoVersion"
     implementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"

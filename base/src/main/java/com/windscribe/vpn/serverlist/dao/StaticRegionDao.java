@@ -43,4 +43,7 @@ abstract public class StaticRegionDao {
 
     @Insert(onConflict = REPLACE)
     abstract CompletableSource insert(List<StaticRegion> staticRegions);
+
+    @Query("Delete from StaticRegion")
+    public abstract void clean();
 }

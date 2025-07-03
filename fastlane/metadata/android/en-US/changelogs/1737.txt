@@ -1,0 +1,11 @@
+v3.90(Mobile)
+* Redesigned app UI.
+* Added support for login with apple account.
+* Added two-stage login with CAPTCHA
+* Support for custom wallpapers and custom sounds for connecting and disconnecting
+* Users can now rename location names for personalization
+* Improved date formatting for notifications
+* Several minor performance and stability enhancements
+* Upgraded gradle to 8.6
+* Upgraded target SDK to 35
+* Upgraded WSNet to 2.16.5

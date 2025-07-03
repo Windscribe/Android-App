@@ -54,10 +54,10 @@ class DeviceStateService : JobIntentWorkAroundService() {
             compositeDisposable.clear()
             val networkInfo = WindUtilities.getUnderLayNetworkInfo()
             if (networkInfo != null) {
-                logger.debug("Network: ${networkInfo.detailedState} | VPN: ${vpnConnectionStateManager.state.value.status.name}")
+                logger.info("Network: ${networkInfo.detailedState} | VPN: ${vpnConnectionStateManager.state.value.status.name}")
             }
             if (networkInfo != null && networkInfo.isConnected && vpnConnectionStateManager.isVPNActive()) {
-                logger.debug("New network detected. VPN is connected. Checking for SSID.")
+                logger.info("New network detected. VPN is connected. Checking for SSID.")
                 getNetworkName()
             }
         }
@@ -77,20 +77,20 @@ class DeviceStateService : JobIntentWorkAroundService() {
         compositeDisposable.add(
                 interactor.getNetwork(networkName)
                         .onErrorResumeNext {
-                            logger.debug("Saving $networkName(SSID) to database.")
+                            logger.info("Saving $networkName(SSID) to database.")
                             interactor.addNetworkToKnown(networkName).flatMap { interactor.getNetwork(networkName) }
                         }.subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.io())
                         .subscribe({
                             resetConnectState(it)
                         }, {
-                            logger.debug("Ignore: no network information for network name: $networkName")
+                            logger.info("Ignore: no network information for network name: $networkName")
                             interactor.compositeDisposable.dispose()
                         }))
     }
 
     private fun resetConnectState(networkInfo: NetworkInfo) {
-        logger.debug("SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelisted network: ${preferencesHelper.whiteListedNetwork} | Connect Intent: ${preferencesHelper.globalUserConnectionPreference}")
+        logger.info("SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelisted network: ${preferencesHelper.whiteListedNetwork} | Connect Intent: ${preferencesHelper.globalUserConnectionPreference}")
         if (networkInfo.isAutoSecureOn.not() && preferencesHelper.whiteListedNetwork != networkInfo.networkName && vpnConnectionStateManager.state.value.status == VPNState.Status.Connected) {
             logger.debug("${networkInfo.networkName} is unsecured. Starting network whitelist service.")
             vpnController.disconnectAsync(true)

@@ -1,5 +1,6 @@
 package com.windscribe.vpn.repository
 
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.AdvanceParamKeys.FORCE_NODE
 import com.windscribe.vpn.constants.AdvanceParamKeys.SERVER_LIST_COUNTRY_OVERRIDE
@@ -9,6 +10,7 @@ import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_START_DELAY
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_TEST_ATTEMPTS
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_TEST_RETRY_DELAY
 import com.windscribe.vpn.constants.AdvanceParamKeys.USE_ICMP_PINGS
+import com.windscribe.vpn.constants.PreferencesKeyConstants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,9 +26,13 @@ interface AdvanceParameterRepository {
     fun getTunnelTestRetryDelay(): Long?
     fun getTunnelTestAttempts(): Long?
     fun pingType(): Int
+    fun getDebugFilePath(): String
 }
 
-class AdvanceParameterRepositoryImpl(val scope: CoroutineScope, val preferencesHelper: PreferencesHelper) : AdvanceParameterRepository {
+class AdvanceParameterRepositoryImpl(
+    val scope: CoroutineScope,
+    val preferencesHelper: PreferencesHelper
+) : AdvanceParameterRepository {
     private val _params = MutableStateFlow(mapOf<String, String>())
     val params: StateFlow<Map<String, String>> = _params
 
@@ -69,7 +75,7 @@ class AdvanceParameterRepositoryImpl(val scope: CoroutineScope, val preferencesH
     }
 
     override fun pingType(): Int {
-        val useIcmp =  params.value[USE_ICMP_PINGS]?.toBoolean()
+        val useIcmp = params.value[USE_ICMP_PINGS]?.toBoolean()
         return if (useIcmp == true) {
             1
         } else {
@@ -79,7 +85,8 @@ class AdvanceParameterRepositoryImpl(val scope: CoroutineScope, val preferencesH
 
     private fun mapTextToAdvanceParams(text: String): HashMap<String, String> {
         val map = HashMap<String, String>()
-        if (text.isNotEmpty() && text.split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray().isNotEmpty()) {
+        if (text.isNotEmpty() && text.split("\n".toRegex()).dropLastWhile { it.isEmpty() }
+                .toTypedArray().isNotEmpty()) {
             val lines = text.split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             for (line in lines) {
                 val kv = line.split("=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
@@ -89,5 +96,15 @@ class AdvanceParameterRepositoryImpl(val scope: CoroutineScope, val preferencesH
             }
         }
         return map
+    }
+
+    override fun getDebugFilePath(): String {
+        return if (showStrongSwanLog()) {
+            "${appContext.filesDir}/charon.log"
+        } else if (showWgLog()) {
+            "${appContext.filesDir}/wireguard_log.txt"
+        } else {
+            appContext.cacheDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
+        }
     }
 }

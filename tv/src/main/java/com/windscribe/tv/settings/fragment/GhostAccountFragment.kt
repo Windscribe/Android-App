@@ -8,34 +8,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
-import butterknife.OnFocusChange
 import com.windscribe.tv.R
+import com.windscribe.tv.databinding.FragmentGhostAccountBinding
 import com.windscribe.tv.listeners.SettingsFragmentListener
 import com.windscribe.tv.settings.SettingActivity
 import java.lang.ClassCastException
 
 class GhostAccountFragment : Fragment {
-    @JvmField
-    @BindView(R.id.claimAccount)
-    var claimAccountButton: Button? = null
-
-    @JvmField
-    @BindView(R.id.label)
-    var labelView: TextView? = null
-
-    @JvmField
-    @BindView(R.id.login)
-    var loginButton: Button? = null
-
-    @JvmField
-    @BindView(R.id.sign_up)
-    var signUpButton: Button? = null
+    private lateinit var binding: FragmentGhostAccountBinding
     private var listener: SettingsFragmentListener? = null
     private var proUser = false
 
@@ -62,69 +44,52 @@ class GhostAccountFragment : Fragment {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_ghost_account, container, false)
-        ButterKnife.bind(this, view)
-        return view
+    ): View {
+        binding = FragmentGhostAccountBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         listener?.onFragmentReady(this)
         if (proUser) {
-            labelView?.text = getString(R.string.ghost_account_claim)
-            claimAccountButton?.visibility = View.VISIBLE
-            loginButton?.visibility = View.GONE
-            signUpButton?.visibility = View.GONE
-            claimAccountButton?.requestFocus()
+            binding.label.text = getString(com.windscribe.vpn.R.string.ghost_account_claim)
+            binding.claimAccount.visibility = View.VISIBLE
+            binding.login.visibility = View.GONE
+            binding.signUp.visibility = View.GONE
+            binding.claimAccount.requestFocus()
         } else {
-            labelView?.text = getString(R.string.ghost_account_sign_up)
-            claimAccountButton?.visibility = View.GONE
-            loginButton?.visibility = View.VISIBLE
-            signUpButton?.visibility = View.VISIBLE
-            signUpButton?.requestFocus()
+            binding.label.text = getString(com.windscribe.vpn.R.string.ghost_account_sign_up)
+            binding.claimAccount.visibility = View.GONE
+            binding.login.visibility = View.VISIBLE
+            binding.signUp.visibility = View.VISIBLE
+            binding.signUp.requestFocus()
+        }
+        addFocusListener()
+        addClickListener()
+    }
+
+    private fun addFocusListener() {
+        val focusChangeListener = View.OnFocusChangeListener { view, hasFocus ->
+            val color = if (hasFocus) R.color.colorWhite else R.color.colorWhite50
+            (view as? TextView)?.setTextColor(resources.getColor(color))
+        }
+        with(binding) {
+            claimAccount.onFocusChangeListener = focusChangeListener
+            login.onFocusChangeListener = focusChangeListener
+            signUp.onFocusChangeListener = focusChangeListener
         }
     }
 
-    @OnClick(R.id.claimAccount)
-    fun onClaimAccountClick() {
-        listener?.onSignUpClick()
-    }
-
-    @OnFocusChange(R.id.claimAccount)
-    fun onFocusChangeToClaimAccount() {
-        if (claimAccountButton?.hasFocus() == true) {
-            claimAccountButton?.setTextColor(resources.getColor(R.color.colorWhite))
-        } else {
-            claimAccountButton?.setTextColor(resources.getColor(R.color.colorWhite50))
+    private fun addClickListener() {
+        binding.claimAccount.setOnClickListener {
+            listener?.onSignUpClick()
         }
-    }
-
-    @OnFocusChange(R.id.login)
-    fun onFocusChangeToLogin() {
-        if (loginButton?.hasFocus() == true) {
-            loginButton?.setTextColor(resources.getColor(R.color.colorWhite))
-        } else {
-            loginButton?.setTextColor(resources.getColor(R.color.colorWhite50))
+        binding.login.setOnClickListener {
+            listener?.onLoginClick()
         }
-    }
-
-    @OnFocusChange(R.id.sign_up)
-    fun onFocusChangeToSignUp() {
-        if (signUpButton?.hasFocus() == true) {
-            signUpButton?.setTextColor(resources.getColor(R.color.colorWhite))
-        } else {
-            signUpButton?.setTextColor(resources.getColor(R.color.colorWhite50))
+        binding.signUp.setOnClickListener {
+            listener?.onSignUpClick()
         }
-    }
-
-    @OnClick(R.id.login)
-    fun onLoginClick() {
-        listener?.onLoginClick()
-    }
-
-    @OnClick(R.id.sign_up)
-    fun onSignUpClick() {
-        listener?.onSignUpClick()
     }
 }

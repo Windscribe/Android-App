@@ -4,12 +4,13 @@
 
 package com.windscribe.vpn.api.response;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-@SuppressWarnings("unused")
+@Keep
 public class XPressLoginCodeResponse {
 
     @SerializedName("sig")

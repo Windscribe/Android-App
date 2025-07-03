@@ -6,16 +6,14 @@ package com.windscribe.tv.serverlist.detail
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.leanback.widget.VerticalGridView
-import butterknife.BindView
+import androidx.databinding.DataBindingUtil
 import com.bumptech.glide.Glide
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
+import com.windscribe.tv.databinding.ActivityDetailBinding
 import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.disconnectalert.DisconnectActivity.Companion.getIntent
 import com.windscribe.tv.serverlist.adapters.DetailViewAdapter
@@ -26,25 +24,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 class DetailActivity : BaseActivity(), DetailView {
-    @JvmField
-    @BindView(R.id.detailCount)
-    var detailCount: TextView? = null
-
-    @JvmField
-    @BindView(R.id.detailTitle)
-    var detailTitle: TextView? = null
-
-    @JvmField
-    @BindView(R.id.detailRecycleView)
-    var detailViewRecycleView: VerticalGridView? = null
-
-    @JvmField
-    @BindView(R.id.imageBackground)
-    var imageBackground: ImageView? = null
-
-    @JvmField
-    @BindView(R.id.state_layout)
-    var stateLayout: TextView? = null
+    private lateinit var binding: ActivityDetailBinding
 
     @Inject
     lateinit var presenter: DetailPresenter
@@ -54,8 +34,9 @@ class DetailActivity : BaseActivity(), DetailView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
-        setContentLayout(R.layout.activity_detail)
-        detailViewRecycleView?.setNumColumns(1)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_detail)
+        onActivityLaunch()
+        binding.detailRecycleView.setNumColumns(1)
         if (intent != null) {
             fragmentTag = intent.getStringExtra("fragment_tag")?.toInt() ?: 1
             presenter.init(intent.getIntExtra(SELECTED_ID, -1))
@@ -78,7 +59,7 @@ class DetailActivity : BaseActivity(), DetailView {
         appContext.startActivity(
             getIntent(
                 appContext,
-                getString(R.string.node_under_construction_text),
+                getString(com.windscribe.vpn.R.string.node_under_construction_text),
                 "Alert"
             )
         )
@@ -94,18 +75,18 @@ class DetailActivity : BaseActivity(), DetailView {
     }
 
     override fun setCount(count: String) {
-        detailCount?.text = count
+        binding.detailCount.text = count
     }
 
     override fun setCountryFlagBackground(flagIconResource: Int) {
         Glide.with(this@DetailActivity)
             .load(ContextCompat.getDrawable(this, flagIconResource))
             .dontAnimate()
-            .into(imageBackground!!)
+            .into(binding.imageBackground)
     }
 
     override fun setDetailAdapter(detailAdapter: DetailViewAdapter) {
-        detailViewRecycleView?.adapter = detailAdapter
+        binding.detailRecycleView.adapter = detailAdapter
     }
 
     override fun setState(state: LoadState, stateDrawable: Int, stateText: Int) {
@@ -115,20 +96,22 @@ class DetailActivity : BaseActivity(), DetailView {
             R.drawable.ic_flix_icon
         }
         when (state) {
-            LoadState.Loaded -> stateLayout?.visibility = View.GONE
+            LoadState.Loaded -> binding.stateLayout.visibility = View.GONE
             LoadState.NoResult, LoadState.Error, LoadState.Loading -> {
-                stateLayout?.visibility = View.VISIBLE
-                stateLayout?.text = getString(stateText)
-                stateLayout?.setCompoundDrawablesWithIntrinsicBounds(
+                binding.stateLayout.visibility = View.VISIBLE
+                binding.stateLayout.text = getString(stateText)
+                binding.stateLayout.setCompoundDrawablesWithIntrinsicBounds(
                     null,
-                    ResourcesCompat.getDrawable(resources, selectedStateListDrawable, theme), null, null
+                    ResourcesCompat.getDrawable(resources, selectedStateListDrawable, theme),
+                    null,
+                    null
                 )
             }
         }
     }
 
     override fun setTitle(text: String) {
-        detailTitle?.text = text
+        binding.detailTitle.text = text
     }
 
     override fun showToast(text: String) {

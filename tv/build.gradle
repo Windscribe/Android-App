@@ -11,7 +11,7 @@ apply from: "$rootDir/depedencycheck.gradle"
 
 android {
     namespace 'com.windscribe.tv'
-    ndkVersion "23.0.7599858"
+    ndkVersion "27.2.12479018"
     bundle {
         language {
             enableSplit = false
@@ -19,6 +19,7 @@ android {
     }
     buildFeatures {
         buildConfig = true
+        dataBinding = true
     }
 
     compileSdkVersion rootProject.appCompiledSdk
@@ -26,8 +27,8 @@ android {
         applicationId rootProject.AppId
         minSdkVersion rootProject.appMinSdk
         targetSdkVersion rootProject.appTargetSdk
-        versionName System.getenv().getOrDefault("VERSION_NAME", "3.82")
-        versionCode 1648
+        versionName System.getenv().getOrDefault("VERSION_NAME", "3.90")
+        versionCode 1738
         vectorDrawables.useSupportLibrary = true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -90,6 +91,5 @@ dependencies {
     annotationProcessor "androidx.room:room-compiler:$room"
     //Kapt
     kapt "androidx.room:room-compiler:$room"
-    kapt "com.jakewharton:butterknife-compiler:$butterknife"
     kapt "com.google.dagger:dagger-compiler:$dagger"
 }

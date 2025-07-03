@@ -381,7 +381,6 @@
     <string name="location_order_description">स्थान सूची को वर्णमाला, भूगोल या विलंबता के आरोही क्रम में व्यवस्थित करें।</string>
     <string name="latency_display_description">विलंबता को सिग्नल शक्ति सलाखों के रूप में या मिलीसेकंड में प्रदर्शित करें।</string>
     <string name="language_description">विंडस्क्राइब को समर्थित भाषाओं में स्थानीयकृत करें।</string>
-    <string name="app_background_description">इन-ऐप कनेक्शन स्क्रीन को अनुकूलित करें।</string>
     <string name="notification_stats_description">अधिसूचना में ट्रैफ़िक आँकड़े दिखाएँ.</string>
     <string name="location_load_description">स्थान लोड को पट्टी के रूप में प्रदर्शित करें. पट्टी जितनी छोटी होगी, स्थान पर भार उतना ही कम होगा (स्थान की कुल क्षमता के संबंध में)।</string>
     <string name="haptic_feedback_description">उपयोगकर्ता क्रियाओं के लिए भौतिक प्रतिक्रियाएं (कंपन)</string>
@@ -510,4 +509,25 @@
     <string name="follow_us_on_x">हमें X पर फॉलो करें</string>
     <string name="charged_every_month">हर महीने चार्ज किया जाता है</string>
     <string name="charged_every_12_months">हर 12 महीने में चार्ज किया जाता है</string>
+    <string name="look_and_feel">रूप और अनुभव</string>
+    <string name="when_disconnected">डिसकनेक्ट होने पर</string>
+    <string name="when_connected">कनेक्ट होने पर</string>
+    <string name="aspect_ratio">आस्पेक्ट अनुपात</string>
+    <string name="fill">भरें</string>
+    <string name="scale">स्केल</string>
+    <string name="tile">टाइल</string>
+    <string name="bundle">बंडल</string>
+    <string name="None">कोई नहीं</string>
+    <string name="sound_notifications">ध्वनि सूचनाएँ</string>
+    <string name="app_background_description">मुख्य ऐप स्क्रीन की पृष्ठभूमि को अनुकूलित करें।</string>
+    <string name="sound_notifications_description">कनेक्शन घटनाओं के दौरान बजने वाली ध्वनियों का चयन करें।</string>
+    <string name="renamed_location">स्थान का नाम बदलें</string>
+    <string name="renamed_location_description">स्थान के नाम अपनी पसंद के अनुसार बदलें।</string>
+    <string name="export_locations">निर्यात करें</string>
+    <string name="import_locations">आयात करें</string>
+    <string name="reset">रीसेट करें</string>
+    <string name="no_static_ip">कोई स्थायी IP नहीं</string>
+    <string name="unblock_full_access">Windscribe की पूर्ण पहुँच अनलॉक करें</string>
+    <string name="go_pro_for_unlimited_everything">अनलिमिटेड सुविधाओं के लिए प्रो वर्ज़न लें</string>
+    <string name="custom_configs">कस्टम कॉन्फ़िगरेशन</string>
 </resources>

@@ -18,14 +18,19 @@ import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.Lazy
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.rx2.await
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.slf4j.LoggerFactory
-import java.util.*
+import java.util.UUID
 import javax.inject.Singleton
 
 @Singleton
@@ -91,7 +96,7 @@ class AutoConnectionManager(
         listOfProtocols.clear()
         listOfProtocols = reloadProtocols()
         updateNextInLineProtocol()
-        logger.debug("{}", listOfProtocols)
+        logger.info("{}", listOfProtocols)
     }
 
     fun stop() {
@@ -189,8 +194,10 @@ class AutoConnectionManager(
                 stop()
             } else {
                 logger.debug("Engaging auto connect.")
-                listOfProtocols.firstOrNull { it.protocol == interactor.preferenceHelper.selectedProtocol }?.type =
-                    ProtocolConnectionStatus.Connected
+                if (vpnConnectionStateManager.get().state.value.status == VPNState.Status.Connected) {
+                    listOfProtocols.firstOrNull { it.protocol == interactor.preferenceHelper.selectedProtocol }?.type =
+                        ProtocolConnectionStatus.Connected
+                }
                 engageConnectionChangeMode()
             }
         }
@@ -210,6 +217,8 @@ class AutoConnectionManager(
             setupManualProtocol(
                 interactor.preferenceHelper.savedProtocol, appSupportedProtocolOrder
             )
+        } else {
+            manualProtocol = null
         }
         networkInfoManager.networkInfo?.let {
             setupPreferredProtocol(it, appSupportedProtocolOrder)
@@ -231,7 +240,7 @@ class AutoConnectionManager(
         val protocolLog =
             "Last known: ${lastKnownProtocolInformation ?: ""} Preferred: ${preferredProtocol ?: ""} Manual: ${manualProtocol ?: ""}"
         if (protocolLog != lastProtocolLog) {
-            logger.debug(protocolLog)
+            logger.info(protocolLog)
         }
         lastProtocolLog = protocolLog
         return appSupportedProtocolOrder
@@ -324,13 +333,10 @@ class AutoConnectionManager(
                 listOfProtocols.removeAt(index)
                 listOfProtocols.add(0, connectedProtocol)
             }
-            showConnectionChangeDialog(
-                listOfProtocols,
-                retry = { engageAutomaticMode() })
-        } else {
-            logger.debug("Showing all protocol failed dialog.")
-            showAllProtocolFailedDialog()
         }
+        showConnectionChangeDialog(
+            listOfProtocols,
+            retry = { engageAutomaticMode() })
     }
 
     private fun showAllProtocolFailedDialog() {
@@ -379,6 +385,7 @@ class AutoConnectionManager(
             it is DialogFragment
         } as? DialogFragment
         dialog?.dismiss()
+        appContext.applicationInterface.cancelDialog()
     }
 
     private fun contactSupport() {
@@ -577,13 +584,13 @@ class AutoConnectionManager(
                 }
             })
         if (launched.not()) {
-            logger.debug("App is in background. existing auto connect.")
+            logger.info("App is in background. existing auto connect.")
             stop()
         }
     }
 
     fun setSelectedProtocol(protocolInformation: ProtocolInformation) {
-        logger.debug("Trying to connect: $protocolInformation")
+        logger.info("Trying to connect: $protocolInformation")
         scope.launch {
             interactor.preferenceHelper.selectedProtocol = protocolInformation.protocol
             interactor.preferenceHelper.selectedPort = protocolInformation.port

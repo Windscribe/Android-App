@@ -4,7 +4,9 @@
 
 package com.windscribe.vpn.api.response;
 
-@SuppressWarnings("unused")
+import androidx.annotation.Keep;
+
+@Keep
 public enum QueryType {
     Account(1),
     Technical(2),

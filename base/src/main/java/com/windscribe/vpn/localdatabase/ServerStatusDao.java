@@ -23,5 +23,7 @@ public interface ServerStatusDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertOrUpdateStatus(ServerStatusUpdateTable serverStatusUpdateTable);
 
+    @Query("Delete from server_status_update")
+    abstract void clean();
 
 }

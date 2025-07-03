@@ -3,11 +3,24 @@
  */
 package com.windscribe.vpn.localdatabase
 
-import com.windscribe.vpn.localdatabase.tables.*
-import com.windscribe.vpn.serverlist.entity.*
+import com.windscribe.vpn.localdatabase.tables.NetworkInfo
+import com.windscribe.vpn.localdatabase.tables.PingTestResults
+import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
+import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
+import com.windscribe.vpn.localdatabase.tables.UserStatusTable
+import com.windscribe.vpn.localdatabase.tables.WindNotification
+import com.windscribe.vpn.serverlist.entity.City
+import com.windscribe.vpn.serverlist.entity.CityAndRegion
+import com.windscribe.vpn.serverlist.entity.ConfigFile
+import com.windscribe.vpn.serverlist.entity.Favourite
+import com.windscribe.vpn.serverlist.entity.PingTime
+import com.windscribe.vpn.serverlist.entity.Region
+import com.windscribe.vpn.serverlist.entity.RegionAndCities
+import com.windscribe.vpn.serverlist.entity.StaticRegion
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Single
+import kotlinx.coroutines.flow.Flow
 
 interface LocalDbInterface {
     fun addConfig(configFile: ConfigFile): Completable
@@ -20,12 +33,14 @@ interface LocalDbInterface {
     fun addToRegions(regions: List<Region>): Completable
     fun clearAllTables()
     fun delete(favourite: Favourite)
+    suspend fun deleteFavourite(id: Int)
     fun delete(id: Int): Completable
     fun deleteAllCities(): Completable
     fun deleteNetwork(networkName: String): Single<Int>
     fun getAllCities(id: Int): Single<List<City>>
     val allConfigs: Single<List<ConfigFile>>
     val allNetworksWithUpdate: Flowable<List<NetworkInfo>>
+    val allNetworks: Flow<List<NetworkInfo>>
     val allPingTimes: Single<List<PingTime>>
     val allPings: Single<List<PingTestResults>>
     val allRegion: Single<List<RegionAndCities>>
@@ -63,4 +78,14 @@ interface LocalDbInterface {
     fun updateNetwork(networkInfo: NetworkInfo): Single<Int>
     fun updateUserStatus(userStatusTable: UserStatusTable?): Completable
     fun getCityAndRegion(cityId: Int): CityAndRegion
+    fun getConfigs(): Flow<List<ConfigFile>>
+    fun getFavourites(): Flow<List<Favourite>>
+    suspend fun getCityByIDAsync(cityID: Int): City
+    fun getLatency(): Flow<List<PingTime>>
+    fun getMaxPrimaryKey(): Int
+    fun addConfigSync(configFile: ConfigFile)
+    fun getPopupNotificationsAsFlow(userName: String): Flow<List<PopupNotificationTable>>
+    fun deleteCustomConfig(id: Int)
+    suspend fun updateNetworkSync(networkInfo: NetworkInfo): Int
+    suspend fun deleteNetworkSync(networkName: String): Int
 }

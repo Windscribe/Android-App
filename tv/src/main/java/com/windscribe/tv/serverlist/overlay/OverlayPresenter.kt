@@ -8,7 +8,7 @@ interface OverlayPresenter {
     suspend fun observeStaticRegions()
     suspend fun observeAllLocations()
     fun favouriteViewReady()
-    fun staticIpViewReady()
+    suspend fun staticIpViewReady()
     suspend fun allLocationViewReady()
     suspend fun windLocationViewReady()
     suspend fun observeLatencyChange()

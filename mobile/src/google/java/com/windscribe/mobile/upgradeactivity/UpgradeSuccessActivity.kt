@@ -3,9 +3,7 @@ package com.windscribe.mobile.upgradeactivity
 import android.os.Bundle
 import androidx.databinding.DataBindingUtil
 import com.windscribe.mobile.R
-import com.windscribe.mobile.base.BaseActivity
 import com.windscribe.mobile.databinding.ActivityUpgradeSuccessBinding
-import com.windscribe.mobile.welcome.WelcomeActivity.Companion.getStartIntent
 import com.windscribe.vpn.constants.NetworkKeyConstants
 
 class UpgradeSuccessActivity: BaseActivity() {
@@ -24,7 +22,7 @@ class UpgradeSuccessActivity: BaseActivity() {
         }
         binding.startUsingPro.setOnClickListener {
             if (intent.getBooleanExtra("isGhostAccount", false)) {
-                val startIntent = getStartIntent(this)
+                val startIntent = UpgradeActivity.getStartIntent(this)
                 startIntent.putExtra("startFragmentName", "AccountSetUp")
                 startActivity(startIntent)
                 finish()
@@ -44,6 +42,5 @@ class UpgradeSuccessActivity: BaseActivity() {
         binding.x.onClick {
             openURLInBrowser(NetworkKeyConstants.URL_X)
         }
-
     }
 }

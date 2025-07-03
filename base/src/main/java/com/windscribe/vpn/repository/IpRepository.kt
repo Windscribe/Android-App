@@ -3,7 +3,9 @@ package com.windscribe.vpn.repository
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.GetMyIpResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.backend.Util.getModifiedIpAddress
 import com.windscribe.vpn.backend.VPNState
+import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.Ext.toResult
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.PreferencesKeyConstants
@@ -12,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx2.await
 import org.slf4j.LoggerFactory
 
 class IpRepository(
@@ -42,20 +45,16 @@ class IpRepository(
         scope.launch {
             _state.emit(RepositoryState.Loading())
             if (WindUtilities.isOnline()) {
-                apiCallManagerV2.checkConnectivityAndIpAddress().toResult().onSuccess {
-                    when (val result = it.callResult<GetMyIpResponse>()) {
-                        is CallResult.Error -> loadIpFromStorage()
-                        is CallResult.Success -> {
-                            val ipAddress = getModifiedIpAddress(result.data.userIp.trim())
-                            preferenceHelper.saveResponseStringData(
-                                PreferencesKeyConstants.USER_IP, ipAddress
-                            )
-                            _state.emit(RepositoryState.Success(ipAddress))
-                        }
+                val result = apiCallManagerV2.checkConnectivityAndIpAddress().result<GetMyIpResponse>()
+                when (result) {
+                    is CallResult.Error -> loadIpFromStorage()
+                    is CallResult.Success -> {
+                        val ipAddress = getModifiedIpAddress(result.data.userIp.trim())
+                        preferenceHelper.saveResponseStringData(
+                            PreferencesKeyConstants.USER_IP, ipAddress
+                        )
+                        _state.emit(RepositoryState.Success(ipAddress))
                     }
-                }.onFailure {
-                    logger.error("Failed to get Ip.", it)
-                    loadIpFromStorage()
                 }
             } else {
                 loadIpFromStorage()

@@ -3,11 +3,11 @@ project.ext {
     AppName = "Windscribe"
     AppId = "com.windscribe.vpn"
     appMinSdk = 21
-    appTargetSdk = 34
-    appCompiledSdk = 34
-    appBuildTool = "34.0.0"
-    appVersionCode = 1647
-    appVersionName = "3.82"
+    appTargetSdk = 35
+    appCompiledSdk = 35
+    appBuildTool = "35.0.0"
+    appVersionCode = 1737
+    appVersionName = "3.90"
     java = "17"
 }
 
@@ -18,21 +18,21 @@ buildscript {
     ext.appCompat = "1.6.1"
     ext.navigation = "2.5.3"
     ext.archLifecycle = '2.6.1'
-    ext.coroutines_version = '1.6.0'
-    ext.coroutinesCore = "1.6.4"
+    ext.coroutines_version = '1.7.3'
+    ext.coroutinesCore = "1.7.3"
     //Kotlin
-    ext.kotlin = "1.8.0"
+    ext.kotlin = "2.0.0"
     ext.ktx_core = "1.9.0"
     ext.desugarJdk = "2.0.3"
-    ext.kotlin_std_lib = "1.8.10"
+    ext.kotlin_std_lib = "2.0.0"
     //Feature
     ext.retrofit = "2.9.0"
     ext.fireBase = "23.1.2"
     ext.butterknife = "10.2.3"
     ext.glide = "4.11.0"
     ext.epoxyVersion = "4.6.3"
-    ext.dagger = "2.34"
-    ext.room = '2.5.1'
+    ext.dagger = "2.51"
+    ext.room = '2.6.0'
     ext.work_manager = "2.8.1"
     //Test
     ext.JUnit = "4.13.2"
@@ -49,9 +49,9 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.2'
-        classpath 'org.owasp:dependency-check-gradle:6.2.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin"
+        classpath 'com.android.tools.build:gradle:8.6.1'
+        classpath 'org.owasp:dependency-check-gradle:8.4.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0"
     }
 }
 

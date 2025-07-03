@@ -9,35 +9,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
-import androidx.leanback.widget.HorizontalGridView
-import butterknife.BindView
-import butterknife.ButterKnife
-import com.windscribe.tv.R
 import com.windscribe.tv.adapter.MenuAdapter
 import com.windscribe.tv.adapter.MenuAdapter.MenuItemSelectListener
+import com.windscribe.tv.databinding.FragmentGeneralBinding
 import com.windscribe.tv.listeners.SettingsFragmentListener
 import com.windscribe.tv.settings.SettingActivity
 
 class GeneralFragment : Fragment() {
-    @JvmField
-    @BindView(R.id.languageList)
-    var languageView: HorizontalGridView? = null
-
-    @JvmField
-    @BindView(R.id.generalParent)
-    var mainLayout: ConstraintLayout? = null
-
-    @JvmField
-    @BindView(R.id.sortList)
-    var sortView: HorizontalGridView? = null
-
-    @JvmField
-    @BindView(R.id.titleLanguage)
-    var titleLanguageTextView: TextView? = null
+    private lateinit var binding: FragmentGeneralBinding
     private var listener: SettingsFragmentListener? = null
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -56,10 +37,9 @@ class GeneralFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_general, container, false)
-        ButterKnife.bind(this, view)
-        return view
+    ): View {
+        binding = FragmentGeneralBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -68,11 +48,11 @@ class GeneralFragment : Fragment() {
     }
 
     fun checkViewVisibility(scrollView: NestedScrollView) {
-        listener?.onContainerHidden(!isViewVisible(scrollView, languageView))
+        listener?.onContainerHidden(!isViewVisible(scrollView, binding.languageList))
     }
 
     fun resetTextResources() {
-        titleLanguageTextView?.setText(R.string.preferred_language)
+        binding.titleLanguage.setText(com.windscribe.vpn.R.string.preferred_language)
     }
 
     fun setLanguageAdapter(savedLanguage: String, languages: Array<String>) {
@@ -84,9 +64,9 @@ class GeneralFragment : Fragment() {
                 )
             }
         })
-        languageView?.setNumRows(1)
-        languageView?.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT)
-        languageView?.adapter = languageAdapter
+        binding.languageList.setNumRows(1)
+        binding.languageList.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT)
+        binding.languageList.adapter = languageAdapter
     }
 
     fun setSortAdapter(localiseItems: Array<String>, selectedKey: String, keys: Array<String>) {
@@ -100,9 +80,9 @@ class GeneralFragment : Fragment() {
                 }
             }
         })
-        sortView?.setNumRows(1)
-        sortView?.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT)
-        sortView?.adapter = sortAdapter
+        binding.sortList.setNumRows(1)
+        binding.sortList.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT)
+        binding.sortList.adapter = sortAdapter
     }
 
     private fun isViewVisible(scrollView: NestedScrollView, view: View?): Boolean {

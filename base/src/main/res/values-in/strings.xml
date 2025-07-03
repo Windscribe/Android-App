@@ -381,7 +381,6 @@ Lokasi terakhir yang dipilih.</string>
     <string name="location_order_description">Susun daftar lokasi dalam urutan naik alfabet, geografi, atau latensi.</string>
     <string name="latency_display_description">Menampilkan latensi sebagai bilah kekuatan sinyal atau dalam milidetik.</string>
     <string name="language_description">Melokalkan Windscribe ke bahasa yang didukung.</string>
-    <string name="app_background_description">Sesuaikan layar koneksi dalam aplikasi.</string>
     <string name="notification_stats_description">Tampilkan statistik lalu lintas di notifikasi.</string>
     <string name="location_load_description">Menampilkan beban lokasi sebagai bilah. Semakin pendek bar, semakin rendah beban di lokasi (sehubungan dengan kapasitas total lokasi).</string>
     <string name="haptic_feedback_description">Respons fisik (Getaran) terhadap tindakan pengguna</string>
@@ -510,4 +509,25 @@ Lokasi terakhir yang dipilih.</string>
     <string name="follow_us_on_x">Ikuti kami di X</string>
     <string name="charged_every_month">dikenakan biaya setiap bulan</string>
     <string name="charged_every_12_months">dikenakan biaya setiap 12 bulan</string>
+    <string name="look_and_feel">Tampilan &amp; Nuansa</string>
+    <string name="when_disconnected">Saat Terputus</string>
+    <string name="when_connected">Saat Terhubung</string>
+    <string name="aspect_ratio">Rasio Aspek</string>
+    <string name="fill">Isi</string>
+    <string name="scale">Skala</string>
+    <string name="tile">Ubin</string>
+    <string name="bundle">Bundel</string>
+    <string name="None">Tidak Ada</string>
+    <string name="sound_notifications">Notifikasi Suara</string>
+    <string name="app_background_description">Sesuaikan latar belakang layar utama aplikasi.</string>
+    <string name="sound_notifications_description">Pilih suara untuk diputar saat peristiwa koneksi terjadi.</string>
+    <string name="renamed_location">Ganti Nama Lokasi</string>
+    <string name="renamed_location_description">Ubah nama lokasi sesuai keinginan Anda.</string>
+    <string name="export_locations">Ekspor</string>
+    <string name="import_locations">Impor</string>
+    <string name="reset">Atur Ulang</string>
+    <string name="no_static_ip">Tanpa IP Statis</string>
+    <string name="unblock_full_access">Buka akses penuh ke Windscribe</string>
+    <string name="go_pro_for_unlimited_everything">Naik ke Pro untuk akses tak terbatas</string>
+    <string name="custom_configs">Konfigurasi Kustom</string>
 </resources>

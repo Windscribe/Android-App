@@ -4,6 +4,7 @@
 package com.windscribe.tv.welcome
 
 import android.Manifest
+import android.R.attr.fragment
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -12,21 +13,22 @@ import android.os.Bundle
 import android.transition.Slide
 import android.view.Gravity
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GravityCompat
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
-import butterknife.BindView
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.customview.ErrorFragment
 import com.windscribe.tv.customview.ProgressFragment
+import com.windscribe.tv.databinding.ActivityWelcomeBinding
 import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.email.AddEmailActivity
+import com.windscribe.tv.welcome.fragment.CaptchaFragment
 import com.windscribe.tv.welcome.fragment.ForgotPasswordFragment
 import com.windscribe.tv.welcome.fragment.FragmentCallback
 import com.windscribe.tv.welcome.fragment.LoginFragment
@@ -45,17 +47,17 @@ class WelcomeActivity :
     FragmentCallback,
     WelcomeView,
     FragmentManager.OnBackStackChangedListener {
-    @JvmField
-    @BindView(R.id.image)
-    var backgroundImageView: ImageView? = null
 
     @Inject
     lateinit var presenter: WelcomePresenter
 
+    private lateinit var binding: ActivityWelcomeBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
-        setContentLayout(R.layout.activity_welcome)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_welcome)
+        onActivityLaunch()
         registerFragmentChangeListener()
         addStartFragment()
     }
@@ -152,8 +154,7 @@ class WelcomeActivity :
     override fun onBackStackChanged() {
         val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
         if (fragment != null) {
-            backgroundImageView?.alpha =
-                if (fragment is LoginFragment) 0.5f else 1.0f
+            binding.image.alpha = if (fragment is LoginFragment) 0.5f else 1.0f
         }
     }
 
@@ -174,8 +175,8 @@ class WelcomeActivity :
         presenter.onGenerateCodeClick()
     }
 
-    override fun onLoginButtonClick(username: String, password: String, twoFa: String?) {
-        presenter.startLoginProcess(username, password, twoFa)
+    override fun onLoginButtonClick(username: String, password: String, twoFa: String?, secureToken: String?, captcha: String?) {
+        presenter.startLoginProcess(username, password, twoFa, secureToken, captcha)
     }
 
     override fun onLoginClick() {
@@ -191,9 +192,11 @@ class WelcomeActivity :
         username: String,
         password: String,
         email: String?,
-        ignoreEmptyEmail: Boolean
+        ignoreEmptyEmail: Boolean,
+        secureToken: String?,
+        captcha: String?
     ) {
-        presenter.startSignUpProcess(username, password, email, ignoreEmptyEmail)
+        presenter.startSignUpProcess(username, password, email, ignoreEmptyEmail, secureToken, captcha)
     }
 
     override fun prepareUiForApiCallFinished() {
@@ -317,12 +320,35 @@ class WelcomeActivity :
         replaceFragment(fragment, false)
     }
 
+    override fun onAuthLoginClick(username: String, password: String) {
+       presenter.onAuthLoginClick(username, password)
+    }
+
+    override fun captchaReceived(username: String, password: String, secureToken: String, captchaArt: String) {
+        val fragment: Fragment = CaptchaFragment()
+        val bundle = Bundle()
+        bundle.putString("username", username)
+        bundle.putString("password", password)
+        bundle.putString("secureToken", secureToken)
+        bundle.putString("captchaArt", captchaArt)
+        fragment.arguments = bundle
+        val direction = GravityCompat
+            .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
+        fragment.enterTransition =
+            Slide(direction).addTarget(R.id.welcome_container)
+        replaceFragment(fragment, true)
+    }
+
+    override fun onAuthSignUpClick() {
+
+    }
+
     private fun permissionGranted(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             (
-                checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED
-                )
+                    checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            == PackageManager.PERMISSION_GRANTED
+                    )
         } else {
             true
         }

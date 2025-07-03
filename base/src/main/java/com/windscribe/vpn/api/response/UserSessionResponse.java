@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.api.response;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 
 import com.google.gson.annotations.Expose;
@@ -15,7 +16,7 @@ import java.util.List;
  * Created by Mustafizur on 2017-11-24.
  */
 
-@SuppressWarnings("unused")
+@Keep
 public class UserSessionResponse {
 
     @SerializedName("alc")

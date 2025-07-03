@@ -1,56 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2021 Windscribe Limited.
   -->
+<layout>
 
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorDeepBlue96">
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorDeepBlue96">
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/reg_24dp"
-        android:fontFamily="@font/ibm_plex_sans_bold"
-        android:textColor="@color/colorWhite25"
-        android:textSize="@dimen/text_size_48"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/reg_24dp"
+            android:fontFamily="@font/ibm_plex_sans_bold"
+            android:textColor="@color/colorWhite25"
+            android:textSize="@dimen/text_size_48"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/disconnect_alert_content"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:alpha=".40"
-        android:fontFamily="@font/ibm_plex_sans_regular"
-        android:gravity="start"
-        android:paddingLeft="100dp"
-        android:paddingRight="100dp"
-        android:text="@string/disconnect_alert_no_network"
-        android:textColor="@color/colorWhite"
-        android:textSize="@dimen/text_size_21"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        <TextView
+            android:id="@+id/disconnect_alert_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:alpha=".40"
+            android:fontFamily="@font/ibm_plex_sans_regular"
+            android:gravity="start"
+            android:paddingLeft="100dp"
+            android:paddingRight="100dp"
+            android:text="@string/disconnect_alert_no_network"
+            android:textColor="@color/colorWhite"
+            android:textSize="@dimen/text_size_21"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
 
-        />
+            />
 
-    <Button
-        android:id="@+id/disconnect_alert_ok"
-        android:layout_width="200dp"
-        android:layout_height="@dimen/reg_56"
-        android:layout_marginTop="@dimen/reg_24dp"
-        android:background="@drawable/login_main_btn_background"
-        android:fontFamily="@font/ibm_plex_sans_bold"
-        android:text="@string/text_ok"
-        android:textColor="@color/colorWhite"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/disconnect_alert_content" />
+        <Button
+            android:id="@+id/disconnect_alert_ok"
+            android:layout_width="200dp"
+            android:layout_height="@dimen/reg_56"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:background="@drawable/login_main_btn_background"
+            android:fontFamily="@font/ibm_plex_sans_bold"
+            android:text="@string/text_ok"
+            android:textColor="@color/colorWhite"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/disconnect_alert_content" />
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

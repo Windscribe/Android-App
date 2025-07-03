@@ -4,149 +4,53 @@
 package com.windscribe.mobile.di
 
 import androidx.appcompat.app.AppCompatActivity
-import com.windscribe.mobile.about.AboutView
-import com.windscribe.mobile.account.AccountView
-import com.windscribe.mobile.confirmemail.ConfirmEmailView
-import com.windscribe.mobile.connectionsettings.ConnectionSettingsView
-import com.windscribe.mobile.debug.DebugView
-import com.windscribe.mobile.email.AddEmailView
-import com.windscribe.mobile.generalsettings.GeneralSettingsView
-import com.windscribe.mobile.gpsspoofing.GpsSpoofingSettingView
-import com.windscribe.mobile.help.HelpView
-import com.windscribe.mobile.mainmenu.MainMenuView
-import com.windscribe.mobile.networksecurity.NetworkSecurityView
-import com.windscribe.mobile.networksecurity.networkdetails.NetworkDetailView
-import com.windscribe.mobile.newsfeedactivity.NewsFeedView
-import com.windscribe.mobile.robert.RobertSettingsView
-import com.windscribe.mobile.splash.SplashView
-import com.windscribe.mobile.splittunneling.SplitTunnelingView
-import com.windscribe.mobile.ticket.SendTicketView
+import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.lifecycleScope
 import com.windscribe.mobile.upgradeactivity.UpgradePresenter
 import com.windscribe.mobile.upgradeactivity.UpgradePresenterImpl
 import com.windscribe.mobile.upgradeactivity.UpgradeView
-import com.windscribe.mobile.welcome.WelcomeView
-import com.windscribe.mobile.windscribe.WindscribeView
-import com.windscribe.mobile.advance.AdvanceParamView
 import com.windscribe.vpn.ActivityInteractor
+import com.windscribe.vpn.ActivityInteractorImpl
+import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.autoconnection.AutoConnectionManager
+import com.windscribe.vpn.backend.TrafficCounter
+import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.decoytraffic.DecoyTrafficController
+import com.windscribe.vpn.di.PerActivity
+import com.windscribe.vpn.localdatabase.LocalDbInterface
+import com.windscribe.vpn.repository.AdvanceParameterRepository
+import com.windscribe.vpn.repository.ConnectionDataRepository
+import com.windscribe.vpn.repository.LatencyRepository
+import com.windscribe.vpn.repository.LocationRepository
+import com.windscribe.vpn.repository.NotificationRepository
+import com.windscribe.vpn.repository.ServerListRepository
+import com.windscribe.vpn.repository.StaticIpRepository
+import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.services.FirebaseManager
+import com.windscribe.vpn.services.ReceiptValidator
+import com.windscribe.vpn.state.NetworkInfoManager
+import com.windscribe.vpn.state.PreferenceChangeObserver
+import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.windscribe.vpn.workers.WindScribeWorkManager
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.CoroutineScope
 
 @Module
-open class ActivityModule : BaseActivityModule {
-    private lateinit var upgradeView: UpgradeView
-    constructor()
-    constructor(activity: AppCompatActivity) {
-        this.activity = activity
-    }
+open class ActivityModule {
+    private var upgradeView: UpgradeView
+    private var activity: AppCompatActivity
 
-    constructor(mActivity: AppCompatActivity, robertSettingsView: RobertSettingsView) {
-        this.activity = mActivity
-        this.robertSettingsView = robertSettingsView
-    }
-
-    constructor(mActivity: AppCompatActivity, confirmEmailView: ConfirmEmailView) {
-        this.activity = mActivity
-        this.confirmEmailView = confirmEmailView
-    }
-
-    constructor(mActivity: AppCompatActivity, helpView: HelpView) {
-        this.activity = mActivity
-        this.helpView = helpView
-    }
-
-    constructor(mActivity: AppCompatActivity, sendTicketView: SendTicketView) {
-        this.activity = mActivity
-        this.sendTicketView = sendTicketView
-    }
-
-    constructor(activity: AppCompatActivity, welcomeView: WelcomeView) {
-        this.activity = activity
-        this.welcomeView = welcomeView
-    }
-
-    constructor(mActivity: AppCompatActivity, splashView: SplashView) {
-        this.activity = mActivity
-        this.splashView = splashView
-    }
-
-    constructor(mActivity: AppCompatActivity, windscribeView: WindscribeView) {
-        this.activity = mActivity
-        this.windscribeView = windscribeView
-    }
-
-    constructor(mActivity: AppCompatActivity, networkDetailView: NetworkDetailView) {
-        this.activity = mActivity
-        this.networkDetailView = networkDetailView
-    }
-
-    constructor(mActivity: AppCompatActivity, mainMenuView: MainMenuView) {
-        this.activity = mActivity
-        this.mainMenuView = mainMenuView
-    }
-
-    constructor(mActivity: AppCompatActivity, generalSettingsView: GeneralSettingsView) {
-        this.activity = mActivity
-        this.generalSettingsView = generalSettingsView
-    }
-
-    constructor(mActivity: AppCompatActivity, networkSecurityView: NetworkSecurityView) {
-        this.activity = mActivity
-        this.networkSecurityView = networkSecurityView
-    }
-
-    constructor(mActivity: AppCompatActivity, accountView: AccountView) {
-        this.activity = mActivity
-        this.accountView = accountView
-    }
-
-    constructor(mActivity: AppCompatActivity, newsFeedView: NewsFeedView) {
-        this.activity = mActivity
-        this.newsFeedView = newsFeedView
-    }
-
-    constructor(mActivity: AppCompatActivity, emailView: AddEmailView) {
-        this.activity = mActivity
-        this.emailView = emailView
-    }
-
-    constructor(mActivity: AppCompatActivity, connectionSettingsView: ConnectionSettingsView) {
-        this.activity = mActivity
-        this.connectionSettingsView = connectionSettingsView
-    }
-
-    constructor(mActivity: AppCompatActivity, splitTunnelingView: SplitTunnelingView) {
-        this.activity = mActivity
-        this.splitTunnelingView = splitTunnelingView
-    }
-
-    constructor(mActivity: AppCompatActivity, gpsSpoofingSettingView: GpsSpoofingSettingView) {
-        this.activity = mActivity
-        this.gpsSpoofingSettingView = gpsSpoofingSettingView
-    }
-
-    constructor(mActivity: AppCompatActivity, debugView: DebugView) {
-        this.activity = mActivity
-        this.debugView = debugView
-    }
-
-    constructor(mActivity: AppCompatActivity, aboutView: AboutView) {
-        this.activity = mActivity
-        this.aboutView = aboutView
-    }
     constructor(mActivity: AppCompatActivity, upgradeView: UpgradeView) {
         this.activity = mActivity
         this.upgradeView = upgradeView
     }
 
-    constructor(mActivity: AppCompatActivity, advanceParamView: AdvanceParamView) {
-        this.activity = mActivity
-        this.advanceParamView = advanceParamView
-    }
-
     @Provides
     @PerActivity
     fun provideUpgradePresenter(
-            activityInteractor: ActivityInteractor
+        activityInteractor: ActivityInteractor
     ): UpgradePresenter {
         return UpgradePresenterImpl(upgradeView, activityInteractor)
     }
@@ -154,5 +58,62 @@ open class ActivityModule : BaseActivityModule {
     @Provides
     fun provideUpgradeView(): UpgradeView {
         return upgradeView
+    }
+
+    @Provides
+    fun providesActivityScope(): LifecycleCoroutineScope {
+        return activity.lifecycleScope
+    }
+
+    @Provides
+    @PerActivity
+    fun provideActivityInteractor(
+        activityScope: LifecycleCoroutineScope,
+        coroutineScope: CoroutineScope,
+        prefHelper: PreferencesHelper,
+        apiCallManager: IApiCallManager,
+        localDbInterface: LocalDbInterface,
+        vpnConnectionStateManager: VPNConnectionStateManager,
+        userRepository: UserRepository,
+        networkInfoManager: NetworkInfoManager,
+        locationRepository: LocationRepository,
+        vpnController: WindVpnController,
+        connectionDataRepository: ConnectionDataRepository,
+        serverListRepository: ServerListRepository,
+        staticListUpdate: StaticIpRepository,
+        preferenceChangeObserver: PreferenceChangeObserver,
+        notificationRepository: NotificationRepository,
+        workManager: WindScribeWorkManager,
+        decoyTrafficController: DecoyTrafficController,
+        trafficCounter: TrafficCounter,
+        autoConnectionManager: AutoConnectionManager,
+        latencyRepository: LatencyRepository,
+        receiptValidator: ReceiptValidator,
+        firebaseManager: FirebaseManager,
+        advanceParameterRepository: AdvanceParameterRepository
+    ): ActivityInteractor {
+        return ActivityInteractorImpl(
+            activityScope,
+            coroutineScope,
+            prefHelper,
+            apiCallManager,
+            localDbInterface,
+            vpnConnectionStateManager,
+            userRepository,
+            networkInfoManager,
+            locationRepository,
+            vpnController,
+            connectionDataRepository,
+            serverListRepository,
+            staticListUpdate,
+            preferenceChangeObserver,
+            notificationRepository,
+            workManager,
+            decoyTrafficController,
+            trafficCounter,
+            autoConnectionManager, latencyRepository, receiptValidator,
+            firebaseManager,
+            advanceParameterRepository
+        )
     }
 }

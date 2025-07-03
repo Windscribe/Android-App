@@ -29,5 +29,7 @@ public interface UserStatusDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable update(UserStatusTable userStatusTable);
 
+    @Query("Delete from user_account_info")
+    abstract void clean();
 
 }

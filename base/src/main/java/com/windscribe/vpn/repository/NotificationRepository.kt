@@ -6,10 +6,12 @@ package com.windscribe.vpn.repository
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
-import com.windscribe.vpn.constants.ApiConstants.PCP_ID
+import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
+import com.windscribe.vpn.localdatabase.tables.WindNotification
 import io.reactivex.Completable
+import kotlinx.coroutines.rx2.await
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -48,5 +50,10 @@ class NotificationRepository @Inject constructor(
                     Completable.fromAction {}
                 }
             }
+    }
+
+    suspend fun getNotifications(): List<WindNotification> {
+        update().result()
+        return localDbInterface.windNotifications.await() ?: emptyList()
     }
 }

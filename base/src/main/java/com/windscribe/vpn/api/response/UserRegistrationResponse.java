@@ -4,6 +4,8 @@
 
 package com.windscribe.vpn.api.response;
 
+import androidx.annotation.Keep;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -11,7 +13,7 @@ import com.google.gson.annotations.SerializedName;
  * Created by Mustafizur on 2017-09-08.
  */
 
-@SuppressWarnings("unused")
+@Keep
 public class UserRegistrationResponse {
 
     @SerializedName("billing_plan_id")

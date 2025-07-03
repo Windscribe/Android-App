@@ -6,7 +6,9 @@ package com.windscribe.vpn.api.response;
 
 import android.graphics.drawable.Drawable;
 
-@SuppressWarnings("unused")
+import androidx.annotation.Keep;
+
+@Keep
 public class InstalledAppsData implements Comparable<InstalledAppsData> {
 
     private Drawable appIconDrawable;

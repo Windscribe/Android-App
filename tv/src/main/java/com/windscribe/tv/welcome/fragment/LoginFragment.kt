@@ -3,7 +3,6 @@
  */
 package com.windscribe.tv.welcome.fragment
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
@@ -12,64 +11,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
-import androidx.appcompat.widget.AppCompatCheckBox
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
-import butterknife.*
 import com.windscribe.tv.R
+import com.windscribe.tv.databinding.FragmentLoginBinding
 
 class LoginFragment : Fragment(), WelcomeActivityCallback {
-    @JvmField
-    @SuppressLint("NonConstantResourceId")
-    @BindView(R.id.back)
-    var backButton: TextView? = null
 
-    @JvmField
-    @SuppressLint("NonConstantResourceId")
-    @BindView(R.id.error)
-    var errorView: TextView? = null
-
-    @JvmField
-    @SuppressLint("NonConstantResourceId")
-    @BindView(R.id.forgotPassword)
-    var forgotPasswordButton: TextView? = null
-
-    @JvmField
-    @SuppressLint("NonConstantResourceId")
-    @BindView(R.id.generate_code)
-    var generateCode: Button? = null
-
-    @JvmField
-    @SuppressLint("NonConstantResourceId")
-    @BindView(R.id.login_sign_up)
-    var loginButton: TextView? = null
-
-    @JvmField
-    @SuppressLint("NonConstantResourceId")
-    @BindView(R.id.username_container)
-    var loginUsernameContainer: ConstraintLayout? = null
-
-    @JvmField
-    @SuppressLint("NonConstantResourceId")
-    @BindView(R.id.password_edit)
-    var passwordEditText: EditText? = null
-
-    @JvmField
-    @SuppressLint("NonConstantResourceId")
-    @BindView(R.id.username_edit)
-    var usernameEditText: EditText? = null
-
-    @JvmField
-    @SuppressLint("NonConstantResourceId")
-    @BindView(R.id.secret_code)
-    var secretCode: TextView? = null
-
-    @JvmField
-    @SuppressLint("NonConstantResourceId")
-    @BindView(R.id.show_password)
-    var showPasswordView: AppCompatCheckBox? = null
+    private lateinit var generateCode: Button
+    private lateinit var secretCode: TextView
+    private lateinit var binding: FragmentLoginBinding
     private var callBack: FragmentCallback? = null
     override fun onAttach(context: Context) {
         if (activity is FragmentCallback) {
@@ -79,175 +30,128 @@ class LoginFragment : Fragment(), WelcomeActivityCallback {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_login, container, false)
-        ButterKnife.bind(this, view)
-        return view
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentLoginBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        loginUsernameContainer?.requestFocus()
-        passwordEditText?.transformationMethod = PasswordTransformationMethod()
-        showPasswordView?.isChecked = false
+        generateCode = view.findViewById(R.id.generate_code)
+        secretCode = view.findViewById(R.id.secret_code)
+        binding.loginSignUpContainer.requestFocus()
+        binding.passwordEdit.transformationMethod = PasswordTransformationMethod()
+        binding.showPassword.isChecked = false
+        addFocusListeners()
+        addClickListeners()
         clearInputErrors()
+    }
+
+    private fun addFocusListeners() {
+        arrayOf(binding.usernameEdit, binding.passwordEdit).forEach {
+            it.setOnFocusChangeListener { _, _ ->
+                clearInputErrors()
+            }
+        }
+        arrayOf(
+            binding.back,
+            binding.forgotPassword,
+            binding.passwordContainer,
+            binding.showPassword,
+            binding.usernameContainer,
+            binding.loginSignUp,
+            generateCode
+        ).forEach {
+            it.setOnFocusChangeListener { _, _ ->
+                resetButtonTextColor()
+            }
+        }
+    }
+
+    private fun addClickListeners() {
+        binding.back.setOnClickListener {
+            callBack?.onBackButtonPressed()
+        }
+        binding.forgotPassword.setOnClickListener {
+            callBack?.onForgotPasswordClick()
+        }
+        generateCode.setOnClickListener {
+            callBack?.onGenerateCodeClick()
+        }
+        binding.loginSignUp.setOnClickListener {
+            callBack?.onLoginButtonClick(binding.usernameEdit.text.toString(), binding.passwordEdit.text.toString(), null, null, null)
+        }
+        binding.passwordContainer.setOnClickListener {
+            binding.showPassword.visibility = View.VISIBLE
+            binding.passwordEdit.visibility = View.VISIBLE
+            binding.passwordEdit.requestFocus()
+        }
+        binding.showPassword.setOnClickListener {
+            if (binding.showPassword.isChecked) {
+                binding.passwordEdit.transformationMethod = null
+            } else {
+                binding.passwordEdit.transformationMethod = PasswordTransformationMethod()
+            }
+            binding.passwordEdit.setSelection(binding.passwordEdit.text?.length ?: 0)
+        }
+        binding.usernameContainer.setOnClickListener {
+            binding.usernameEdit.visibility = View.VISIBLE
+            binding.usernameEdit.requestFocus()
+        }
     }
 
     override fun clearInputErrors() {
-        errorView?.visibility = View.INVISIBLE
-        errorView?.text = ""
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnTextChanged(R.id.username_edit, R.id.password_edit)
-    fun onInputTextChanged() {
-        clearInputErrors()
+        binding.error.visibility = View.INVISIBLE
+        binding.error.text = ""
     }
 
     override fun setLoginError(error: String) {
-        errorView?.visibility = View.VISIBLE
-        errorView?.text = error
+        binding.error.visibility = View.VISIBLE
+        binding.error.text = error
     }
 
     override fun setPasswordError(error: String) {
-        errorView?.visibility = View.VISIBLE
-        errorView?.text = error
+        binding.error.visibility = View.VISIBLE
+        binding.error.text = error
     }
 
     override fun setSecretCode(code: String) {
         if (code.isEmpty()) {
-            secretCode?.text = code
-            secretCode?.visibility = View.GONE
-            generateCode?.visibility = View.VISIBLE
-            generateCode?.requestFocus()
+            secretCode.text = code
+            secretCode.visibility = View.GONE
+            generateCode.visibility = View.VISIBLE
+            generateCode.requestFocus()
         } else {
-            generateCode?.visibility = View.GONE
-            secretCode?.visibility = View.VISIBLE
-            secretCode?.text = code
+            generateCode.visibility = View.GONE
+            secretCode.visibility = View.VISIBLE
+            secretCode.text = code
         }
     }
 
     override fun setUsernameError(error: String) {
-        errorView?.visibility = View.VISIBLE
-        errorView?.text = error
-    }
+        binding.error.visibility = View.VISIBLE
+        binding.error.text = error
 
-    @SuppressLint("NonConstantResourceId")
-    @OnClick(R.id.back)
-    fun onBackButtonClick() {
-        callBack?.onBackButtonPressed()
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnFocusChange(R.id.back)
-    fun onFocusChangeToBack() {
-        resetButtonTextColor()
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnFocusChange(R.id.forgotPassword)
-    fun onFocusChangeToForgotPassword() {
-        resetButtonTextColor()
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnFocusChange(R.id.password_container)
-    fun onFocusChangeToPasswordContainer() {
-        resetButtonTextColor()
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnFocusChange(R.id.show_password)
-    fun onFocusChangeToShowPassword() {
-        resetButtonTextColor()
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnFocusChange(R.id.username_container)
-    fun onFocusChangeToUsernameContainer() {
-        resetButtonTextColor()
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnFocusChange(R.id.generate_code)
-    fun onFocusGenerateCodeButton() {
-        resetButtonTextColor()
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnFocusChange(R.id.login_sign_up)
-    fun onFocusLoginButton() {
-        resetButtonTextColor()
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnClick(R.id.forgotPassword)
-    fun onForgotPasswordButtonClick() {
-        callBack?.onForgotPasswordClick()
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnClick(R.id.generate_code)
-    fun onGenerateCodeClick() {
-        callBack?.onGenerateCodeClick()
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnClick(R.id.login_sign_up)
-    fun onLoginButtonClick() {
-        callBack?.onLoginButtonClick(usernameEditText?.text.toString(), passwordEditText?.text.toString(), "")
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnClick(R.id.password_container)
-    fun onPasswordContainerClick() {
-        showPasswordView?.visibility = View.VISIBLE
-        passwordEditText?.visibility = View.VISIBLE
-        passwordEditText?.requestFocus()
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnClick(R.id.show_password)
-    fun onShowPasswordButtonClick() {
-        passwordEditText?.let {
-            if (showPasswordView?.isChecked == true) {
-                it.transformationMethod = null
-            } else {
-                it.transformationMethod = PasswordTransformationMethod()
-            }
-            it.setSelection(it.text.length)
-        }
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @OnClick(R.id.username_container)
-    fun onUsernameContainerClick() {
-        usernameEditText?.visibility = View.VISIBLE
-        usernameEditText?.requestFocus()
     }
 
     private fun resetButtonTextColor() {
         val normalColor = requireActivity().resources.getColor(R.color.colorWhite50)
         val focusColor = requireActivity().resources.getColor(R.color.colorWhite)
-        loginButton?.setTextColor(
-            if (loginButton?.hasFocus() == true) requireActivity().resources.getColor(R.color.colorWhite) else requireActivity().resources.getColor(
+        binding.loginSignUp.setTextColor(
+            if (binding.loginSignUp.hasFocus()) requireActivity().resources.getColor(R.color.colorWhite) else requireActivity().resources.getColor(
                 R.color.colorWhite50
             )
         )
-        generateCode?.setTextColor(
-            if (generateCode?.hasFocus() == true) requireActivity().resources.getColor(R.color.colorWhite) else requireActivity().resources.getColor(
+        generateCode.setTextColor(
+            if (generateCode.hasFocus()) requireActivity().resources.getColor(R.color.colorWhite) else requireActivity().resources.getColor(
                 R.color.colorWhite50
             )
         )
-        backButton?.setTextColor(if (backButton?.hasFocus() == true) focusColor else normalColor)
-        forgotPasswordButton?.setTextColor(if (forgotPasswordButton?.hasFocus() == true) focusColor else normalColor)
-        showPasswordView?.let {
-            it.setTextColor(if (it.hasFocus()) focusColor else normalColor)
-            it.buttonTintList =
-                ColorStateList.valueOf(if (it.hasFocus()) focusColor else normalColor)
-        }
+        binding.back.setTextColor(if (binding.back.hasFocus()) focusColor else normalColor)
+        binding.forgotPassword.setTextColor(if (binding.forgotPassword.hasFocus()) focusColor else normalColor)
+        binding.showPassword.setTextColor(if (binding.showPassword.hasFocus()) focusColor else normalColor)
+        binding.showPassword.buttonTintList =
+            ColorStateList.valueOf(if (binding.showPassword.hasFocus()) focusColor else normalColor)
     }
 }

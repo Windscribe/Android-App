@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+<layout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/login_sign_up_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:focusable="false">
+
+        <include layout="@layout/keep_secrets_layout" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/right_container"
+            android:layout_width="368dp"
+            android:layout_height="match_parent"
+            android:background="@color/colorDeepBlue90"
+            android:paddingBottom="21dp"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:id="@+id/error"
+                style="@style/errorView"
+                android:background="@color/colorRed20"
+                android:visibility="invisible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#000000"
+                android:padding="16dp"
+                android:id="@+id/asciiScroll"
+                app:layout_constraintTop_toBottomOf="@id/error"
+                android:scrollbars="horizontal">
+
+                <TextView
+                    android:id="@+id/asciiView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="24sp"
+                    android:typeface="monospace"
+                    android:lineSpacingExtra="8dp"
+                    android:textColor="#00FF00"
+                    android:textAlignment="viewStart"
+                    android:textIsSelectable="true" />
+            </HorizontalScrollView>
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/captcha_solution"
+                style="@style/Input_EditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="40dp"
+                android:layout_marginEnd="40dp"
+                android:layout_marginTop="@dimen/reg_24dp"
+                android:focusable="true"
+                android:hint="Enter code here"
+                android:background="@drawable/input_focused"
+                android:padding="12dp"
+                android:gravity="center"
+                android:imeOptions="actionDone"
+                android:inputType="text"
+                android:textColor="@color/colorWhite"
+                android:textColorHint="@color/colorWhite50"
+                android:textCursorDrawable="@drawable/color_cursor"
+                app:layout_constraintStart_toStartOf="@id/asciiScroll"
+                app:layout_constraintTop_toBottomOf="@id/asciiScroll" />
+
+            <Button
+                android:id="@+id/login_sign_up"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/reg_56"
+                android:layout_marginStart="@dimen/reg_40dp"
+                android:layout_marginTop="@dimen/reg_40dp"
+                android:layout_marginEnd="@dimen/reg_40dp"
+                android:background="@drawable/login_main_btn_background"
+                android:fontFamily="@font/ibm_plex_sans_bold"
+                android:text="@string/text_login"
+                android:textColor="@color/colorWhite"
+                android:textSize="@dimen/text_size_16"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/captcha_solution" />
+
+            <TextView
+                android:id="@+id/back"
+                style="@style/LabelButton"
+                android:layout_width="wrap_content"
+                android:layout_marginStart="@dimen/reg_40dp"
+                android:layout_marginEnd="@dimen/reg_40dp"
+                android:text="@string/back_uppercase"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

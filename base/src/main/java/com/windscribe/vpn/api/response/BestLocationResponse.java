@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.api.response;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 
 import com.google.gson.annotations.Expose;
@@ -13,7 +14,7 @@ import com.google.gson.annotations.SerializedName;
  * Created by Mustafizur on 2017-09-08.
  */
 
-@SuppressWarnings("unused")
+@Keep
 public class BestLocationResponse {
 
     @SerializedName("city_name")

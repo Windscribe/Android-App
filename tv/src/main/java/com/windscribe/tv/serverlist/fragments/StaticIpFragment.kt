@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.windscribe.tv.serverlist.overlay.OverlayListener
 import androidx.leanback.widget.VerticalGridView
-import butterknife.ButterKnife
 import com.windscribe.tv.R
 import com.windscribe.tv.serverlist.adapters.StaticIpAdapter
 
@@ -29,7 +28,6 @@ class StaticIpFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_static_ip, container, false)
-        ButterKnife.bind(this, view)
         return view
     }
 

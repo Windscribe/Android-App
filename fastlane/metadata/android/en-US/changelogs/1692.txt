@@ -1,0 +1,3 @@
+v3.90(TV)
+* Upgraded gradle to 8.6
+* Upgrade target SDK to 35

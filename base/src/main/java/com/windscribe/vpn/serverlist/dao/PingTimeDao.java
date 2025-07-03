@@ -17,6 +17,7 @@ import java.util.List;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import kotlinx.coroutines.flow.Flow;
 
 @Dao
 abstract public class PingTimeDao {
@@ -28,6 +29,9 @@ abstract public class PingTimeDao {
 
     @Query("Select * from PingTime")
     public abstract Single<List<PingTime>> getAllPings();
+
+    @Query("Select * from PingTime")
+    public abstract Flow<List<PingTime>> getAllPingsAsStateFlow();
 
     @Query("Select ping_id from PingTime where ping_time =:pingTime and isPro=:pro")
     public abstract Single<Integer> getFreePingIdFromTime(boolean pro, int pingTime);

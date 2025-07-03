@@ -37,11 +37,8 @@ import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.QueryProductDetailsParams;
 import com.google.common.collect.ImmutableList;
 import com.windscribe.mobile.R;
-import com.windscribe.mobile.base.BaseActivity;
 import com.windscribe.mobile.databinding.ActivityUpgradeBinding;
 import com.windscribe.mobile.di.ActivityModule;
-import com.windscribe.mobile.dialogs.ErrorDialog;
-import com.windscribe.mobile.dialogs.ProgressDialog;
 import com.windscribe.mobile.utils.UiUtil;
 import com.windscribe.vpn.api.response.PushNotificationAction;
 import com.windscribe.vpn.billing.AmazonBillingManager;
@@ -227,7 +224,7 @@ public class UpgradeActivity extends BaseActivity
                     String currency = exchangeRateWithCurrency.getFirst();
                     SpannableString originalPriceSpan = new SpannableString(currency + " " + formattedPrice);
                     originalPriceSpan.setSpan(new StrikethroughSpan(), 0, originalPriceSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    binding.yearlyBilled.setText(TextUtils.concat(originalPriceSpan, " ", yearlyPrice, " ", getString(R.string.charged_every_12_months)));
+                    binding.yearlyBilled.setText(TextUtils.concat(originalPriceSpan, " ", yearlyPrice, " ", getString(com.windscribe.vpn.R.string.charged_every_12_months)));
                 } catch (NumberFormatException ignored) {
                 }
             }
@@ -271,13 +268,13 @@ public class UpgradeActivity extends BaseActivity
                     String currency = exchangeRateWithCurrency.getFirst();
                     SpannableString originalPriceSpan = new SpannableString(currency + " " + formattedPrice);
                     originalPriceSpan.setSpan(new StrikethroughSpan(), 0, originalPriceSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    binding.monthlyBilled.setText(TextUtils.concat(originalPriceSpan, " ", monthlyPrice, " ", getString(R.string.charged_every_month)));
+                    binding.monthlyBilled.setText(TextUtils.concat(originalPriceSpan, " ", monthlyPrice, " ", getString(com.windscribe.vpn.R.string.charged_every_month)));
 
                 } catch (NumberFormatException ignored) {
                 }
             }
         } else {
-            binding.monthlyBilled.setText(getString(R.string.billed_monthly));
+            binding.monthlyBilled.setText(getString(com.windscribe.vpn.R.string.billed_monthly));
         }
     }
 
@@ -286,7 +283,7 @@ public class UpgradeActivity extends BaseActivity
         if (yearlyPriceWithCurrency != null) {
             double monthlyPrice = yearlyPriceWithCurrency.getSecond() / 12;
             String monthly = String.format(Locale.getDefault(), "%s %.2f", yearlyPriceWithCurrency.getFirst(), monthlyPrice);
-            binding.yearlyBilled.setText(getString(R.string.monthly_billed, monthly));
+            binding.yearlyBilled.setText(getString(com.windscribe.vpn.R.string.monthly_billed, monthly));
 
             if (monthlySku != null) {
                 Pair<String, Double> monthlyPriceWithCurrency = UiUtil.INSTANCE.getPriceWithCurrency(plans.getPrice(monthlySku));
@@ -298,13 +295,13 @@ public class UpgradeActivity extends BaseActivity
                 }
             }
         } else {
-            binding.yearlyBilled.setText(getString(R.string.yearly_billed));
+            binding.yearlyBilled.setText(getString(com.windscribe.vpn.R.string.yearly_billed));
         }
     }
 
     private void setTermAndPolicyText() {
-        String appName = getString(R.string.app_name);
-        String termAndPolicyText = getString(R.string.terms_policy_en);
+        String appName = getString(com.windscribe.vpn.R.string.app_name);
+        String termAndPolicyText = getString(com.windscribe.vpn.R.string.terms_policy_en);
         String fullText = appName + " " + termAndPolicyText;
         Spannable spannable = new SpannableString(fullText);
         int spanStart = fullText.length() - termAndPolicyText.length();
@@ -539,7 +536,7 @@ public class UpgradeActivity extends BaseActivity
 
         googleBillingManager.onProductConsumeSuccess.observe(this, purchase -> {
             logger.info("Product consumption successful...");
-            showToast(getResources().getString(R.string.purchase_successful));
+            showToast(getResources().getString(com.windscribe.vpn.R.string.purchase_successful));
             presenter.onPurchaseConsumed(purchase);
         });
 

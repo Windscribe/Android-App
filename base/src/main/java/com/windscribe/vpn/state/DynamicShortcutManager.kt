@@ -17,6 +17,7 @@ import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.LocationRepository
+import com.windscribe.vpn.repository.ServerListRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
@@ -28,7 +29,7 @@ import org.slf4j.LoggerFactory
 enum class LocationTypeInt() {
     City, Static, Custom
 }
-class DynamicShortcutManager(private val context: Context, private val scope: CoroutineScope, private val vpnStateManager: VPNConnectionStateManager, private val locationRepository: LocationRepository, private val db: LocalDbInterface) {
+class DynamicShortcutManager(private val context: Context, private val scope: CoroutineScope, private val vpnStateManager: VPNConnectionStateManager, private val locationRepository: LocationRepository, private val db: LocalDbInterface, private val serverListRepository: ServerListRepository) {
     companion object {
         const val QUICK_CONNECT_ID = "ws_quick_connect"
         const val QUICK_CONNECT_ACTION = "ws_quick_connect_action"
@@ -105,8 +106,8 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
                 return db.getCityAndRegionByID(id).map { cityAndRegion ->
                     Pair(LastSelectedLocation(
                             cityAndRegion.city.id,
-                            cityAndRegion.city.nodeName,
-                            cityAndRegion.city.nickName,
+                            serverListRepository.getCustomCityName(cityAndRegion.city.id) ?: cityAndRegion.city.nodeName,
+                            serverListRepository.getCustomCityNickName(cityAndRegion.city.id) ?: cityAndRegion.city.nickName,
                             cityAndRegion.region.countryCode,
                     ), LocationTypeInt.City)
                 }.toResult()

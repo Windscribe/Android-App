@@ -3,9 +3,11 @@
  */
 package com.windscribe.vpn.api.response
 
+import androidx.annotation.Keep
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.repository.CallResult
 
+@Keep
 class GenericResponseClass<D, E>(val dataClass: D?, val errorClass: E?) {
 
     fun <T> callResult(): CallResult<T> {

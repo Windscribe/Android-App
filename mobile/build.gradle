@@ -5,13 +5,14 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'kotlin-kapt'
+    id 'org.jetbrains.kotlin.plugin.compose' version "2.0.0"
 }
 apply from: "$rootDir/config/config.gradle"
 apply from: "$rootDir/depedencycheck.gradle"
 
 android {
     namespace 'com.windscribe.mobile'
-    ndkVersion "23.0.7599858"
+    ndkVersion "27.2.12479018"
     bundle {
         language {
             enableSplit = false
@@ -27,8 +28,8 @@ android {
         applicationId rootProject.AppId
         minSdkVersion rootProject.appMinSdk
         targetSdkVersion rootProject.appTargetSdk
-        versionName System.getenv().getOrDefault("VERSION_NAME", "3.82")
-        versionCode 1647
+        versionName System.getenv().getOrDefault("VERSION_NAME", "3.90")
+        versionCode 1737
         vectorDrawables.useSupportLibrary = true
 
         testInstrumentationRunner "com.windscribe.vpn.CustomRunner"
@@ -60,6 +61,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        compose true
     }
     lint {
         abortOnError false
@@ -93,8 +95,6 @@ dependencies {
     //Core Module
     implementation project(path: ':base')
     //Kapt
-    kapt "com.github.bumptech.glide:compiler:$glide"
-    kapt "com.jakewharton:butterknife-compiler:$butterknife"
     kapt "androidx.room:room-compiler:$room"
     kapt "com.google.dagger:dagger-compiler:$dagger"
     kaptAndroidTest("com.google.dagger:dagger-compiler:$dagger")
@@ -104,4 +104,21 @@ dependencies {
     implementation "androidx.test.espresso:espresso-intents:3.5.1"
     implementation 'androidx.test.uiautomator:uiautomator:2.2.0'
     implementation "androidx.core:core-splashscreen:1.0.1"
+    //Compose
+    implementation("androidx.activity:activity-ktx:1.9.0")
+    Dependency composeBom = platform('androidx.compose:compose-bom:2025.06.00')
+    implementation composeBom
+    testImplementation composeBom
+    androidTestImplementation composeBom
+    implementation ("androidx.compose.ui:ui")
+    implementation ("androidx.compose.ui:ui-tooling-preview")
+    implementation ("androidx.activity:activity-compose")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material3:material3-window-size-class")
+    debugImplementation ("androidx.compose.ui:ui-tooling")
+    testImplementation ("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation ("androidx.compose.ui:ui-test")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation 'androidx.compose.material3:material3-adaptive-android:1.0.0-alpha06'
+    implementation("io.coil-kt:coil-compose:2.4.0")
 }

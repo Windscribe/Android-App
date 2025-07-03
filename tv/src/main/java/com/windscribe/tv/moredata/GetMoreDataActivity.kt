@@ -6,60 +6,48 @@ package com.windscribe.tv.moredata
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import butterknife.BindView
-import butterknife.ButterKnife
-import butterknife.OnClick
-import butterknife.OnFocusChange
+import androidx.databinding.DataBindingUtil
 import com.windscribe.tv.R
+import com.windscribe.tv.databinding.ActivityGetMoreDataBinding
 import com.windscribe.tv.upgrade.UpgradeActivity
 import com.windscribe.tv.welcome.WelcomeActivity
 
 class GetMoreDataActivity : AppCompatActivity() {
-    @JvmField
-    @BindView(R.id.get_more_data)
-    var getMoreDataBtn: Button? = null
 
-    @JvmField
-    @BindView(R.id.get_pro)
-    var getProBtn: Button? = null
+    private lateinit var binding: ActivityGetMoreDataBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_get_more_data)
-        ButterKnife.bind(this)
-        getProBtn?.requestFocus()
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_get_more_data)
+        setupUI()
     }
 
-    @OnClick(R.id.get_more_data)
-    fun moreDataClick() {
-        val startIntent = WelcomeActivity.getStartIntent(this)
-        startIntent.putExtra("startFragmentName", "AccountSetUp")
-        startActivity(startIntent)
-    }
-
-    @OnClick(R.id.get_pro)
-    fun proClick() {
-        startActivity(UpgradeActivity.getStartIntent(this))
-    }
-
-    @OnFocusChange(R.id.get_more_data)
-    fun onFocusChangeToGetMoreData() {
-        if (getMoreDataBtn?.hasFocus() == true) {
-            getMoreDataBtn?.setTextColor(resources.getColor(R.color.colorWhite))
-        } else {
-            getMoreDataBtn?.setTextColor(resources.getColor(R.color.colorWhite50))
+    private fun setupUI() {
+        binding.getMoreData.requestFocus()
+        binding.getMoreData.setOnClickListener {
+            val startIntent = WelcomeActivity.getStartIntent(this)
+            startIntent.putExtra("startFragmentName", "AccountSetUp")
+            startActivity(startIntent)
         }
-    }
-
-    @OnFocusChange(R.id.get_pro)
-    fun onFocusChangeToGetPro() {
-        if (getProBtn?.hasFocus() == true) {
-            getProBtn?.setTextColor(resources.getColor(R.color.colorWhite))
-        } else {
-            getProBtn?.setTextColor(resources.getColor(R.color.colorWhite50))
+        binding.getPro.setOnClickListener {
+            startActivity(UpgradeActivity.getStartIntent(this))
         }
+        binding.getMoreData.setOnFocusChangeListener { _, _ ->
+            if (binding.getMoreData.hasFocus()) {
+                binding.getMoreData.setTextColor(resources.getColor(R.color.colorWhite))
+            } else {
+                binding.getMoreData.setTextColor(resources.getColor(R.color.colorWhite50))
+            }
+        }
+        binding.getPro.setOnFocusChangeListener { _, _ ->
+            if (binding.getPro.hasFocus()) {
+                binding.getPro.setTextColor(resources.getColor(R.color.colorWhite))
+            } else {
+                binding.getPro.setTextColor(resources.getColor(R.color.colorWhite50))
+            }
+        }
+
     }
 
     companion object {

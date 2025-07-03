@@ -41,7 +41,7 @@ class FavouriteAdapter(
             if (pingTime == -1) {
                 latencyView.text = ""
             } else {
-                latencyView.text = latencyView.resources.getString(R.string.ping_time, pingTime)
+                latencyView.text = latencyView.resources.getString(com.windscribe.vpn.R.string.ping_time, pingTime)
             }
             if (isPremiumUser) {
                 btnFav.visibility = View.VISIBLE
@@ -85,18 +85,18 @@ class FavouriteAdapter(
                     View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
                         selectedBackground(hasFocus)
                         if (!serverListData.isProUser && city.pro == 1) {
-                            setHighlightText(appContext.getString(R.string.upgrade), hasFocus)
+                            setHighlightText(appContext.getString(com.windscribe.vpn.R.string.upgrade), hasFocus)
                         } else if (!city.nodesAvailable()) {
-                            setHighlightText(appContext.getString(R.string.unavailable), hasFocus)
+                            setHighlightText(appContext.getString(com.windscribe.vpn.R.string.unavailable), hasFocus)
                         } else {
-                            setHighlightText(appContext.getString(R.string.connect), hasFocus)
+                            setHighlightText(appContext.getString(com.windscribe.vpn.R.string.connect), hasFocus)
                         }
                     }
                 btnFav.onFocusChangeListener =
                     View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
                         selectedBackground(hasFocus)
                         setHighlightText(
-                            appContext.getString(R.string.remove_it_from_favourites),
+                            appContext.getString(com.windscribe.vpn.R.string.remove_it_from_favourites),
                             hasFocus
                         )
                     }

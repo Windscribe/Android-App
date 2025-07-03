@@ -4,13 +4,33 @@
 package com.windscribe.vpn.localdatabase
 
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.localdatabase.tables.*
-import com.windscribe.vpn.serverlist.dao.*
-import com.windscribe.vpn.serverlist.entity.*
+import com.windscribe.vpn.localdatabase.tables.NetworkInfo
+import com.windscribe.vpn.localdatabase.tables.PingTestResults
+import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
+import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
+import com.windscribe.vpn.localdatabase.tables.UserStatusTable
+import com.windscribe.vpn.localdatabase.tables.WindNotification
+import com.windscribe.vpn.serverlist.dao.CityAndRegionDao
+import com.windscribe.vpn.serverlist.dao.CityDao
+import com.windscribe.vpn.serverlist.dao.ConfigFileDao
+import com.windscribe.vpn.serverlist.dao.FavouriteDao
+import com.windscribe.vpn.serverlist.dao.PingTimeDao
+import com.windscribe.vpn.serverlist.dao.RegionAndCitiesDao
+import com.windscribe.vpn.serverlist.dao.RegionDao
+import com.windscribe.vpn.serverlist.dao.StaticRegionDao
+import com.windscribe.vpn.serverlist.entity.City
+import com.windscribe.vpn.serverlist.entity.CityAndRegion
+import com.windscribe.vpn.serverlist.entity.ConfigFile
+import com.windscribe.vpn.serverlist.entity.Favourite
+import com.windscribe.vpn.serverlist.entity.PingTime
+import com.windscribe.vpn.serverlist.entity.Region
+import com.windscribe.vpn.serverlist.entity.RegionAndCities
+import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Single
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -65,11 +85,23 @@ class LocalDatabaseImpl @Inject constructor(
     }
 
     override fun clearAllTables() {
-        appContext.windscribeDatabase.clearAllTables()
+        userStatusDao.clean()
+        popupNotificationDao.clean()
+        regionDao.clean()
+        cityDao.clean()
+        configFileDao.clean()
+        staticRegionsDao.clean()
+        networkInfoDao.clean()
+        serverStatusDao.clean()
+        windNotificationDao.clean()
     }
 
     override fun delete(favourite: Favourite) {
         favouriteDao.delete(favourite)
+    }
+
+    override suspend fun deleteFavourite(id: Int) {
+        favouriteDao.deleteFavourite(id)
     }
 
     override fun delete(id: Int): Completable {
@@ -165,6 +197,10 @@ class LocalDatabaseImpl @Inject constructor(
         return popupNotificationDao.getPopupNotification(userName)
     }
 
+    override fun getPopupNotificationsAsFlow(userName: String): Flow<List<PopupNotificationTable>> {
+        return popupNotificationDao.getPopupNotificationAsFlow(userName)
+    }
+
     override fun getRegion(id: Int): Single<RegionAndCities> {
         return regionAndCitiesDao.getRegion(id)
     }
@@ -222,5 +258,44 @@ class LocalDatabaseImpl @Inject constructor(
 
     override fun getCityAndRegion(cityId: Int): CityAndRegion {
         return cityAndRegionDao.getCityAndRegion(cityId)
+    }
+
+    override fun getConfigs(): Flow<List<ConfigFile>> {
+        return configFileDao.allConfigsAsFlow
+    }
+
+    override fun getFavourites(): Flow<List<Favourite>> {
+        return favouriteDao.favouritesAsFlow
+    }
+
+    override suspend fun getCityByIDAsync(cityID: Int): City {
+        return cityDao.getCityByIDAsync(cityID)
+    }
+
+    override fun getLatency(): Flow<List<PingTime>> {
+        return pingTimeDao.allPingsAsStateFlow
+    }
+
+    override fun getMaxPrimaryKey(): Int {
+        return configFileDao.maxPrimaryKeySync
+    }
+
+    override fun addConfigSync(configFile: ConfigFile) {
+        configFileDao.addConfigSync(configFile)
+    }
+
+    override fun deleteCustomConfig(id: Int) {
+        configFileDao.deleteCustomConfig(id)
+    }
+
+    override val allNetworks: Flow<List<NetworkInfo>>
+        get() = networkInfoDao.allNetworks()
+
+    override suspend fun updateNetworkSync(networkInfo: NetworkInfo): Int {
+        return networkInfoDao.updateNetworkSync(networkInfo)
+    }
+
+    override suspend fun deleteNetworkSync(networkName: String): Int {
+        return networkInfoDao.deleteNetworkSync(networkName)
     }
 }

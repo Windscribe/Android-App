@@ -1,74 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2021 Windscribe Limited.
   -->
+<layout>
 
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorDeepBlue96"
-    android:fillViewport="true"
-    android:focusable="false">
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorDeepBlue96"
+        android:fillViewport="true"
+        android:focusable="false">
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline25"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent=".25" />
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline25"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent=".25" />
 
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline75"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent=".75" />
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline75"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent=".75" />
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/reg_24dp"
-        android:fontFamily="@font/ibm_plex_sans_bold"
-        android:text="@string/get_more_data"
-        android:textColor="@color/colorWhite25"
-        android:textSize="@dimen/text_size_48"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/reg_24dp"
+            android:fontFamily="@font/ibm_plex_sans_bold"
+            android:text="@string/get_more_data"
+            android:textColor="@color/colorWhite25"
+            android:textSize="@dimen/text_size_48"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/label"
-        style="@style/ButtonLabel"
-        android:layout_width="0dp"
-        android:layout_marginTop="112dp"
-        android:gravity="center"
-        android:text="@string/reason_to_get_more_data"
-        android:textSize="21sp"
-        app:layout_constraintEnd_toEndOf="@id/guideline75"
-        app:layout_constraintStart_toStartOf="@id/guideline25"
-        app:layout_constraintTop_toBottomOf="@id/title" />
+        <TextView
+            android:id="@+id/label"
+            style="@style/ButtonLabel"
+            android:layout_width="0dp"
+            android:layout_marginTop="112dp"
+            android:gravity="center"
+            android:text="@string/reason_to_get_more_data"
+            android:textSize="21sp"
+            app:layout_constraintEnd_toEndOf="@id/guideline75"
+            app:layout_constraintStart_toStartOf="@id/guideline25"
+            app:layout_constraintTop_toBottomOf="@id/title" />
 
-    <Button
-        android:id="@+id/get_more_data"
-        style="@style/LargeRoundedButton"
-        android:layout_marginStart="@dimen/reg_40dp"
-        android:layout_marginTop="@dimen/reg_40dp"
-        android:layout_marginEnd="@dimen/reg_40dp"
-        android:text="@string/sign_up_to_get_10"
-        app:layout_constraintEnd_toEndOf="@id/label"
-        app:layout_constraintStart_toStartOf="@id/label"
-        app:layout_constraintTop_toBottomOf="@id/label" />
+        <Button
+            android:id="@+id/get_more_data"
+            style="@style/LargeRoundedButton"
+            android:layout_marginStart="@dimen/reg_40dp"
+            android:layout_marginTop="@dimen/reg_40dp"
+            android:layout_marginEnd="@dimen/reg_40dp"
+            android:text="@string/sign_up_to_get_10"
+            app:layout_constraintEnd_toEndOf="@id/label"
+            app:layout_constraintStart_toStartOf="@id/label"
+            app:layout_constraintTop_toBottomOf="@id/label" />
 
-    <Button
-        android:id="@+id/get_pro"
-        style="@style/LargeRoundedButton"
-        android:layout_marginStart="@dimen/reg_40dp"
-        android:layout_marginTop="@dimen/reg_24dp"
-        android:layout_marginEnd="@dimen/reg_40dp"
-        android:text="@string/get_pro"
-        app:layout_constraintEnd_toEndOf="@id/label"
-        app:layout_constraintStart_toStartOf="@id/label"
-        app:layout_constraintTop_toBottomOf="@id/get_more_data" />
+        <Button
+            android:id="@+id/get_pro"
+            style="@style/LargeRoundedButton"
+            android:layout_marginStart="@dimen/reg_40dp"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:layout_marginEnd="@dimen/reg_40dp"
+            android:text="@string/get_pro"
+            app:layout_constraintEnd_toEndOf="@id/label"
+            app:layout_constraintStart_toStartOf="@id/label"
+            app:layout_constraintTop_toBottomOf="@id/get_more_data" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

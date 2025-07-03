@@ -27,25 +27,23 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
-        logger.info("Received cloud message from: " + remoteMessage.from)
         if (remoteMessage.notification != null) {
-            logger.info("Message Notification Body: " + remoteMessage.notification?.body)
+            logger.info("Message: " + remoteMessage.notification?.body + " Payload: " + remoteMessage.data)
         }
         val payload = remoteMessage.data
         if (payload.containsKey("type")) {
             when (payload["type"]) {
-                ACCOUNT_DOWNGRADE -> {
+                USER_DOWNGRADED -> {
                     logger.info("Received Account downgrade notification, scheduling service task...")
                     appContext.workManager.updateSession()
                 }
-                ACCOUNT_EXPIRED -> {
+                USER_EXPIRED -> {
                     logger.info("Received Account expired notification, scheduling service task...")
-                    appContext.workManager.updateSession()
-                }
-                FORCE_DISCONNECT -> {
-                    logger.info("Received Force disconnect notification , stopping VPN Services.")
                     with(vpnController) {
-                        scope.launch { disconnectAsync() }
+                        scope.launch {
+                            disconnectAsync()
+                            appContext.workManager.updateSession()
+                        }
                     }
                 }
                 PROMO -> {
@@ -83,9 +81,8 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
 
     companion object {
 
-        const val ACCOUNT_DOWNGRADE = "account_downgrade"
-        const val ACCOUNT_EXPIRED = "account_expired"
-        const val FORCE_DISCONNECT = "force_disconnect"
+        const val USER_DOWNGRADED = "user_downgraded"
+        const val USER_EXPIRED = "user_expired"
         const val PROMO = "promo"
     }
 }

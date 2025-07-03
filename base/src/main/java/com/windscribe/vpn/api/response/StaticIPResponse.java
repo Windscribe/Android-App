@@ -4,13 +4,15 @@
 
 package com.windscribe.vpn.api.response;
 
+import androidx.annotation.Keep;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.windscribe.vpn.serverlist.entity.StaticRegion;
 
 import java.util.List;
 
-@SuppressWarnings("unused")
+@Keep
 public class StaticIPResponse {
 
     @SerializedName("static_ips")

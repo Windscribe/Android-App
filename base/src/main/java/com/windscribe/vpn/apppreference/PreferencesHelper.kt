@@ -3,14 +3,14 @@
  */
 package com.windscribe.vpn.apppreference
 
-import com.windscribe.vpn.api.response.NewsFeedNotification
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.WgLocalParams
 import io.reactivex.Single
-import java.util.*
+import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
+import java.util.Date
 import javax.inject.Singleton
 
 @Singleton
@@ -149,4 +149,19 @@ interface PreferencesHelper {
     fun getDefaultNetworkInfo(networkName: String): NetworkInfo
     fun isSuggested(): Boolean
     var locationHash: String?
+    fun addObserver(listener: OnTrayPreferenceChangeListener)
+    fun removeObserver(listener: OnTrayPreferenceChangeListener)
+    var whenDisconnectedBackgroundOption: Int
+    var whenConnectedBackgroundOption: Int
+    var backgroundAspectRatioOption: Int
+    var disconnectedBundleBackgroundOption: Int
+    var connectedBundleBackgroundOption: Int
+    var customDisconnectedBackground: String?
+    var customConnectedBackground: String?
+    var whenDisconnectedSoundOption: Int
+    var whenConnectedSoundOption: Int
+    var disconnectedBundleSoundOption: Int
+    var connectedBundleSoundOption: Int
+    var customDisconnectedSound: String?
+    var customConnectedSound: String?
 }

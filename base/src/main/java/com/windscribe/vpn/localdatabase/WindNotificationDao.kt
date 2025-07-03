@@ -20,4 +20,7 @@ interface WindNotificationDao {
 
     @Query("Select * from WindNotification order by date DESC")
     fun getWindNotifications(): Single<List<WindNotification>>
+
+    @Query("Delete from WindNotification")
+    abstract fun clean()
 }

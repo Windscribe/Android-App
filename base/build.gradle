@@ -5,7 +5,11 @@ apply from: "$rootDir/config/config.gradle"
 apply from: "$rootDir/depedencycheck.gradle"
 
 android {
+<<<<<<< HEAD
     ndkVersion "23.0.7599858"
+=======
+    ndkVersion "27.2.12479018"
+>>>>>>> origin/develop
     compileOptions {
         sourceCompatibility rootProject.java
         targetCompatibility rootProject.java
@@ -54,10 +58,17 @@ android {
                 def version = details.requested.version
                 def versionData = version.split('-')
                 if (versionData.contains('jre')) {
+<<<<<<< HEAD
                     details.useVersion "30.1.1-jre"
                 }
                 if (versionData.contains('android')) {
                     details.useVersion "30.1.1-android"
+=======
+                    details.useVersion "32.1.2-jre"
+                }
+                if (versionData.contains('android')) {
+                    details.useVersion "32.1.2-android"
+>>>>>>> origin/develop
                 }
             }
             if (details.requested.group == 'junit') {
@@ -99,7 +110,11 @@ dependencies {
     api project(path: ':wgtunnel')
     //Rxjava
     api 'io.reactivex.rxjava2:rxandroid:2.1.1'
+<<<<<<< HEAD
     api 'io.reactivex.rxjava2:rxjava:2.2.13'
+=======
+    api 'io.reactivex.rxjava2:rxjava:2.2.19'
+>>>>>>> origin/develop
     //Retrofit
     implementation "com.squareup.retrofit2:retrofit:$retrofit"
     api "com.squareup.retrofit2:converter-gson:$retrofit"
@@ -107,7 +122,11 @@ dependencies {
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
     //Okhttp
     implementation 'com.squareup.okhttp3:logging-interceptor:4.2.2'
+<<<<<<< HEAD
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+=======
+    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
+>>>>>>> origin/develop
     api 'com.squareup.okhttp3:mockwebserver:4.9.3'
     //Logging
     api 'org.slf4j:slf4j-api:1.7.36'
@@ -117,6 +136,10 @@ dependencies {
     }
     //Room
     api "androidx.room:room-rxjava2:$room"
+<<<<<<< HEAD
+=======
+    api "androidx.room:room-ktx:$room"
+>>>>>>> origin/develop
     api "androidx.room:room-runtime:$room"
     kapt "androidx.room:room-compiler:$room"
     implementation "androidx.room:room-testing:$room"
@@ -139,18 +162,26 @@ dependencies {
     kapt "com.github.bumptech.glide:compiler:$glide"
     api 'commons-io:commons-io:2.11.0'
     api 'com.github.thoughtbot.expandable-recycler-view:expandablerecyclerview:v1.3'
+<<<<<<< HEAD
     api 'com.jakewharton:butterknife:10.2.0'
     kapt 'com.jakewharton:butterknife-compiler:10.2.3'
     api 'com.google.guava:guava:30.1.1-android'
+=======
+    api 'com.google.guava:guava:32.1.2-android'
+>>>>>>> origin/develop
     api 'com.github.GCX-HCI:tray:v0.12.0'
     implementation 'org.isomorphism:token-bucket:1.6'
     // Test
     testImplementation "junit:junit:$JUnit"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testImplementation 'org.junit.jupiter:junit-jupiter'
+<<<<<<< HEAD
     // ECH Conscrypt
     implementation 'info.guardianproject.conscrypt:conscrypt-android:2.6.alpha1638179154.job1828169525'
     implementation 'commons-io:commons-io:2.11.0'
+=======
+    implementation 'commons-io:commons-io:2.13.0'
+>>>>>>> origin/develop
     implementation 'commons-net:commons-net:3.6'
     // Google only dependencies
     googleApi "com.google.firebase:firebase-messaging:$fireBase"
@@ -159,4 +190,8 @@ dependencies {
     googleApi 'com.android.billingclient:billing:7.0.0'
     googleApi "com.google.android.gms:play-services-appset:16.0.2"
     googleApi 'com.google.android.play:review-ktx:2.0.1'
+<<<<<<< HEAD
+=======
+    googleApi 'com.google.android.gms:play-services-auth:20.4.1'
+>>>>>>> origin/develop
 }

@@ -42,9 +42,14 @@ abstract public class CityDao {
     @Query("Select * from City where city_id=:id")
     public abstract Single<City> getCityByID(int id);
 
+    @Query("Select * from City where city_id=:id")
+    public abstract City getCityByIDAsync(int id);
+
     @Query("Select * from City where city_id in (:ids)")
     public abstract Single<List<City>> getCityByID(int[] ids);
 
     @Query("Select gps from City where region_id=:regionId limit 1")
     public abstract Single<String> getCordsByRegionId(int regionId);
+    @Query("Delete from City")
+    public abstract void clean();
 }

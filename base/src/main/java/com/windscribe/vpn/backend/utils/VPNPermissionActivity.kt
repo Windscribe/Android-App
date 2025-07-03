@@ -109,7 +109,7 @@ class VPNPermissionActivity : Activity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == START_VPN_PROFILE) {
             if (resultCode == RESULT_OK) {
-                logger.debug("User granted VPN Permission.")
+                logger.info("User granted VPN Permission.")
                 if (isNotificationsEnabled()) {
                     vpnBackendHolder.connect(protocolInformation, connectionId)
                     finish()
@@ -124,7 +124,7 @@ class VPNPermissionActivity : Activity() {
                     }
                 }
             } else if (resultCode == RESULT_CANCELED) {
-                logger.debug("User denied VPN permission.")
+                logger.info("User denied VPN permission.")
                 showErrorDialog(this,
                     "Windscribe requires VPN permission to configure VPN. " +
                             "Sometimes you may see this error if another VPN app is configured as 'Always on VPN'. " +

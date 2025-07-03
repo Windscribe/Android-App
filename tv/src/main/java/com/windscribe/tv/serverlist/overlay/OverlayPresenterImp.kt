@@ -59,11 +59,11 @@ class OverlayPresenterImp @Inject constructor(
         if (state == FavouriteState.Favourite) {
             logger.debug("Removed from favourites")
             removeFromFavourite(city.getId())
-            overlayView.showToast(interactor.getResourceString(R.string.remove_from_favourites))
+            overlayView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.remove_from_favourites))
         } else {
             addToFav(city.getId())
             logger.debug("Added to favourites")
-            overlayView.showToast(interactor.getResourceString(R.string.added_to_favourites))
+            overlayView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.added_to_favourites))
         }
     }
 
@@ -107,7 +107,7 @@ class OverlayPresenterImp @Inject constructor(
     }
 
     private fun resetAllAdapter(regions: MutableList<RegionAndCities>) {
-        overlayView.setState(LoadState.Loading, R.drawable.ic_all_icon, R.string.load_loading, 1)
+        overlayView.setState(LoadState.Loading, R.drawable.ic_all_icon, com.windscribe.vpn.R.string.load_loading, 1)
         val dataDetails = ServerListData()
         val oneTimeCompositeDisposable = CompositeDisposable()
         oneTimeCompositeDisposable.add(
@@ -144,7 +144,7 @@ class OverlayPresenterImp @Inject constructor(
                         overlayView.setState(
                             LoadState.Error,
                             R.drawable.ic_all_icon,
-                            R.string.load_error,
+                            com.windscribe.vpn.R.string.load_error,
                             1
                         )
                         logger.debug("Error loading all nodes.")
@@ -169,7 +169,7 @@ class OverlayPresenterImp @Inject constructor(
                                 .setState(
                                     LoadState.NoResult,
                                     R.drawable.ic_all_icon,
-                                    R.string.load_nothing_found,
+                                    com.windscribe.vpn.R.string.load_nothing_found,
                                     1
                                 )
                             logger.debug("No nodes found.")
@@ -187,7 +187,7 @@ class OverlayPresenterImp @Inject constructor(
         overlayView.setState(
             LoadState.Loading,
             R.drawable.ic_fav_nav_icon,
-            R.string.load_loading,
+            com.windscribe.vpn.R.string.load_loading,
             2
         )
         val dataDetails = ServerListData()
@@ -211,7 +211,7 @@ class OverlayPresenterImp @Inject constructor(
                     override fun onError(e: Throwable) {
                         overlayView.setState(
                             LoadState.NoResult, R.drawable.ic_fav_nav_icon,
-                            R.string.load_nothing_found, 2
+                            com.windscribe.vpn.R.string.load_nothing_found, 2
                         )
                         logger.debug("No favourite nodes found.")
                     }
@@ -237,7 +237,7 @@ class OverlayPresenterImp @Inject constructor(
                             overlayView.setState(
                                 LoadState.NoResult,
                                 R.drawable.ic_fav_nav_icon,
-                                R.string.load_nothing_found,
+                                com.windscribe.vpn.R.string.load_nothing_found,
                                 2
                             )
                             logger.debug("No favourite nodes found.")
@@ -257,9 +257,11 @@ class OverlayPresenterImp @Inject constructor(
         resetFavouriteAdapter()
     }
 
-    override fun staticIpViewReady() {
+    override suspend fun staticIpViewReady() {
         logger.debug("Static view ready.")
-        interactor.getStaticListUpdater().load()
+        interactor.getStaticListUpdater().regions.collectLatest {
+            resetStaticAdapter(it.toMutableList())
+        }
     }
 
     override suspend fun windLocationViewReady() {
@@ -288,7 +290,7 @@ class OverlayPresenterImp @Inject constructor(
         overlayView.setState(
             LoadState.Loading,
             R.drawable.ic_static_ip,
-            R.string.load_loading,
+            com.windscribe.vpn.R.string.load_loading,
             4
         )
         val serverListData = ServerListData()
@@ -306,11 +308,11 @@ class OverlayPresenterImp @Inject constructor(
                 .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(object : DisposableSingleObserver<ServerListData>(){
                         override fun onSuccess(t: ServerListData) {
-                            if (regions.size > 0) {
+                            if (regions.isNotEmpty()) {
                                 overlayView.setState(
                                                 LoadState.Loaded,
                                                 R.drawable.ic_static_ip,
-                                                R.string.load_nothing_found,
+                                    com.windscribe.vpn.R.string.load_nothing_found,
                                                 4
                                         )
                                 staticIpAdapter = StaticIpAdapter(regions, serverListData, this@OverlayPresenterImp)
@@ -318,7 +320,7 @@ class OverlayPresenterImp @Inject constructor(
                             } else {
                                 overlayView.setState(
                                         LoadState.NoResult, R.drawable.ic_static_ip,
-                                        R.string.load_nothing_found, 4
+                                    com.windscribe.vpn.R.string.load_nothing_found, 4
                                 )
                                 logger.debug("No static ips found.")
                             }
@@ -328,7 +330,7 @@ class OverlayPresenterImp @Inject constructor(
                             overlayView.setState(
                                     LoadState.Error,
                                     R.drawable.ic_static_ip,
-                                    R.string.load_error,
+                                com.windscribe.vpn.R.string.load_error,
                                     4
                             )
                             logger.debug("Error loading static ips.")
@@ -342,7 +344,7 @@ class OverlayPresenterImp @Inject constructor(
         overlayView.setState(
             LoadState.Loading,
             R.drawable.ic_flix_icon,
-            R.string.load_loading,
+            com.windscribe.vpn.R.string.load_loading,
             3
         )
         val dataDetails = ServerListData()
@@ -379,7 +381,7 @@ class OverlayPresenterImp @Inject constructor(
                         overlayView.setState(
                             LoadState.Error,
                             R.drawable.ic_flix_icon,
-                            R.string.load_error,
+                            com.windscribe.vpn.R.string.load_error,
                             3
                         )
                         logger.debug("Error loading wind nodes.")
@@ -403,7 +405,7 @@ class OverlayPresenterImp @Inject constructor(
                         } else {
                             overlayView.setState(
                                 LoadState.NoResult, R.drawable.ic_flix_icon,
-                                R.string.load_nothing_found, 3
+                                com.windscribe.vpn.R.string.load_nothing_found, 3
                             )
                             logger.debug("No wind nodes found.")
                         }

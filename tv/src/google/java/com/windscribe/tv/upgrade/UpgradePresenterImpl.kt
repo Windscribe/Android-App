@@ -332,7 +332,7 @@ class UpgradePresenterImpl @Inject constructor(
                 setPurchaseFlowState(PurchaseState.FINISHED)
                 logger.info("User cancelled the purchase...")
                 upgradeView.showToast(
-                    appContext.resources.getString(R.string.purchase_cancelled)
+                    appContext.resources.getString(com.windscribe.vpn.R.string.purchase_cancelled)
                 )
                 upgradeView.onPurchaseCancelled()
             }
@@ -458,12 +458,12 @@ class UpgradePresenterImpl @Inject constructor(
             BillingResponseCode.BILLING_UNAVAILABLE -> {
                 logger.debug("Billing unavailable for the device. Response code: $responseCode")
                 return appContext
-                    .resources.getString(R.string.billing_unavailable)
+                    .resources.getString(com.windscribe.vpn.R.string.billing_unavailable)
             }
             BillingResponseCode.ITEM_UNAVAILABLE -> {
                 logger.debug("Item user requested is not available. Response code: $responseCode")
                 return appContext
-                    .resources.getString(R.string.item_unavailable)
+                    .resources.getString(com.windscribe.vpn.R.string.item_unavailable)
             }
             BillingResponseCode.SERVICE_UNAVAILABLE -> {
                 logger
@@ -472,7 +472,7 @@ class UpgradePresenterImpl @Inject constructor(
                             responseCode
                     )
                 return appContext
-                    .resources.getString(R.string.billing_service_unavailable)
+                    .resources.getString(com.windscribe.vpn.R.string.billing_service_unavailable)
             }
             BillingResponseCode.ERROR -> {
                 logger
@@ -480,28 +480,28 @@ class UpgradePresenterImpl @Inject constructor(
                         "Fatal error during api call, user most likely lost network connection during the process or pressed the " +
                             "button while not connected to internet. Response Code: " + responseCode
                     )
-                return appContext.resources.getString(R.string.fatal_error)
+                return appContext.resources.getString(com.windscribe.vpn.R.string.fatal_error)
             }
             BillingResponseCode.FEATURE_NOT_SUPPORTED -> {
                 logger.debug(
                     "Requested feature is not supported by Play Store on the current device." +
                         "Response Code: " + responseCode
                 )
-                return appContext.resources.getString(R.string.fatal_error)
+                return appContext.resources.getString(com.windscribe.vpn.R.string.fatal_error)
             }
             BillingResponseCode.ITEM_ALREADY_OWNED -> {
                 logger.debug(
                     "Item already owned. Unknown error will be shown to user... Response code: " +
                         responseCode
                 )
-                return appContext.resources.getString(R.string.unknown_billing_error)
+                return appContext.resources.getString(com.windscribe.vpn.R.string.unknown_billing_error)
             }
             BillingResponseCode.ITEM_NOT_OWNED -> {
                 logger.debug(
                     "Item not owned. Unknown error will be shown to user... Response code: " +
                         responseCode
                 )
-                return appContext.resources.getString(R.string.unknown_billing_error)
+                return appContext.resources.getString(com.windscribe.vpn.R.string.unknown_billing_error)
             }
             BillingResponseCode.DEVELOPER_ERROR -> {
                 logger
@@ -509,24 +509,24 @@ class UpgradePresenterImpl @Inject constructor(
                         "Developer error. We probably failed to provide valid data to the api... Response code: " +
                             responseCode
                     )
-                return appContext.resources.getString(R.string.unknown_billing_error)
+                return appContext.resources.getString(com.windscribe.vpn.R.string.unknown_billing_error)
             }
             PLAY_STORE_UPDATE -> {
                 logger.debug(
                     "Play store is updating in the background. Need to try later... Response code: " +
                         responseCode
                 )
-                return appContext.resources.getString(R.string.play_store_updating)
+                return appContext.resources.getString(com.windscribe.vpn.R.string.play_store_updating)
             }
             PURCHASED_ITEM_NULL -> {
                 logger.debug(
                         """User purchased the item but purchase list returned null.
  User will be shown unknown error. Support please look for the token in the log. Response code: $responseCode"""
                     )
-                appContext.resources.getString(R.string.unknown_billing_error)
+                appContext.resources.getString(com.windscribe.vpn.R.string.unknown_billing_error)
             }
         }
-        return appContext.resources.getString(R.string.unknown_billing_error)
+        return appContext.resources.getString(com.windscribe.vpn.R.string.unknown_billing_error)
     }
 
     private fun <D, E> parse(

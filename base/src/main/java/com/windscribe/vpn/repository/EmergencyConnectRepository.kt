@@ -41,7 +41,7 @@ class EmergencyConnectRepositoryImpl(private val emergencyConnect: WSNetEmergenc
                     cont.resume(configs)
                 }
                 cont.invokeOnCancellation {
-                    runCatching { callback.cancel() }
+                    callback.cancel()
                 }
             }
         }

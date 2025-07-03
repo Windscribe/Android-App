@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.serverlist.entity;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.Ignore;
@@ -11,7 +12,7 @@ import androidx.room.Ignore;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-@SuppressWarnings("unused")
+@Keep
 public class Node {
 
     @SerializedName("force_disconnect")
@@ -45,6 +46,14 @@ public class Node {
 
     public Node() {
 
+    }
+
+    public Node(String hostname, String ip, String ip2, String ip3, int weight, int forceDisconnect){
+        this.hostname = hostname;
+        this.ip = ip;
+        this.ip2 = ip2;
+        this.ip3 = ip3;
+        this.weight = weight;
     }
 
     @Override
