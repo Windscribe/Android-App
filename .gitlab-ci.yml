@@ -28,15 +28,6 @@ UploadToPlayStoreInternalChannel:
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
     - export DIRECTORY=${VERSION_NAME}
     - fastlane publishToInternal
-  cache:
-    key: "${CI_PROJECT_NAME}"
-    paths:
-      - $GRADLE_USER_HOME/caches
-      - $GRADLE_USER_HOME/wrapper
-      - openvpn/.cxx
-      - openvpn/build/intermediates/cmake
-      - wgtunnel/.cxx
-      - wgtunnel/build/intermediates/cmake
 
   artifacts:
     reports:
