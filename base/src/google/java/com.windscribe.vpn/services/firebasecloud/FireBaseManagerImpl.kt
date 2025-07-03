@@ -34,7 +34,6 @@ class FireBaseManagerImpl(private val context: Windscribe): FirebaseManager {
                 .setApplicationId(BuildConfig.APP_ID)
                 .setProjectId(BuildConfig.PROJECT_ID)
                 .setApiKey(BuildConfig.API_KEY)
-                .setApplicationId("com.windscribe.vpn")
                 .build())
     }
 
