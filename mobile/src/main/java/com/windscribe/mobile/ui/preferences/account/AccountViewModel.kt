@@ -178,11 +178,7 @@ class AccountViewModelImpl(
         }
     }
 
-    private val successMessage =
-        """
-    Sweet, you should be
-    all good to go now.
-    """
+    private val successMessage = "Sweet, you should be all good to go now."
 
     override fun onEnterLazyLoginCode(code: String) {
         viewModelScope.launch(Dispatchers.IO) {
