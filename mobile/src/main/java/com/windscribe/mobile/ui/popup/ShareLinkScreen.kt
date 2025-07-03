@@ -61,7 +61,7 @@ fun ShareLinkScreen(viewmodel: SharedLinkViewmodel?) {
             Spacer(modifier = Modifier.weight(1.0f))
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
-                    .widthIn(max = 400.dp)
+                    .widthIn(max = 560.dp)
                     .padding(horizontal = 32.dp)
             ) {
                 Image(

@@ -88,7 +88,7 @@ fun ConnectionChangeScreen(appStartActivityViewModel: AppStartActivityViewModel?
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(horizontal = 32.dp)
-                .width(400.dp)
+                .width(560.dp)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -120,7 +120,7 @@ fun ConnectionChangeScreen(appStartActivityViewModel: AppStartActivityViewModel?
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(400.dp)
+                    .weight(1.0f, fill = false)
             ) {
                 items(appStartActivityViewModel?.protocolInformationList ?: emptyList()) { protocol ->
                     ProtocolItemView(timeleft = countdown, protocol, onSelected = {

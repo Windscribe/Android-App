@@ -45,7 +45,7 @@ fun DebugLogSentScreen(appStartActivityViewModel: AppStartActivityViewModel? = n
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(horizontal = 32.dp)
-                .width(400.dp)
+                .width(560.dp)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
