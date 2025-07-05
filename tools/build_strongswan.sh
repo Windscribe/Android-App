@@ -51,7 +51,7 @@ cd "$APP_DIR"
 sed -i '/arguments '\''-j'\'' \+ Runtime\.runtime\.availableProcessors()/a\        arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"' build.gradle
 
 echo "===> Building release APK..."
-gradle assembleRelease
+./../.gradlew assembleRelease
 
 echo "===> Copying output libs to: $STRONGSWAN_LIBS_DST"
 mkdir -p "$STRONGSWAN_LIBS_DST"
