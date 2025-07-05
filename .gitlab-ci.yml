@@ -180,6 +180,13 @@ BuildStrongswan:
     - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
     - export PATH=$JAVA_HOME/bin:$PATH
 
+    # Install Gradle
+    - GRADLE_VERSION=8.7
+    - wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip
+    - unzip gradle-${GRADLE_VERSION}-bin.zip -d /opt/gradle
+    - export PATH="/opt/gradle/gradle-${GRADLE_VERSION}/bin:$PATH"
+    - gradle --version
+
     # Create Android SDK dir
     - mkdir -p /opt/android-sdk/cmdline-tools
     - cd /opt/android-sdk
@@ -209,34 +216,13 @@ BuildStrongswan:
     - export OPENSSL_SRC="$PWD/openssl-OpenSSL_1_1_1t"
 
   script:
-    - cd $CI_PROJECT_DIR
+    - cd "$CI_PROJECT_DIR"
     - rm -rf strongswan-src
-    - git clone --branch $SS_BRANCH $SS_REMOTE strongswan-src
-    # Build Openssl static lib.
-    - cp -a "$OPENSSL_SRC/." "$CI_PROJECT_DIR/strongswan-src/src/frontends/android/openssl/"
-    - export OUT_DIR="$PWD/strongswan-src/src/frontends/android/app/src/main/jni/openssl"
-    - cd $CI_PROJECT_DIR/strongswan-src/src/frontends/android/openssl
-    - ./compile.sh
-    - echo "LOCAL_PATH := \$(call my-dir)" >"${OUT_DIR}/Android.mk"
-    - echo "include \$(CLEAR_VARS)" >>"${OUT_DIR}/Android.mk"
-    - echo "LOCAL_MODULE := libcrypto_static" >>"${OUT_DIR}/Android.mk"
-    - echo "LOCAL_SRC_FILES := \$(TARGET_ARCH_ABI)/libcrypto.a" >>"${OUT_DIR}/Android.mk"
-    - echo "LOCAL_EXPORT_C_INCLUDES := \$(LOCAL_PATH)/include" >>"${OUT_DIR}/Android.mk"
-    - echo "include \$(PREBUILT_STATIC_LIBRARY)" >>"${OUT_DIR}/Android.mk"
-    # Build Strongswan.
-    - cd $CI_PROJECT_DIR/strongswan-src
-    - ./autogen.sh > config.log
-    - ./configure --disable-defaults > config.log
-    - make dist -j $(nproc) > config.log
-    - rm config.log
-    # Build App.
-    - cd $CI_PROJECT_DIR
-    - cd strongswan-src/src/frontends/android
-    - sed -i '/arguments '\''-j'\'' \+ Runtime\.runtime\.availableProcessors()/a\        arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"' app/build.gradle
-    - ./gradlew assembleRelease
-    # Copy binaries for download
-    - mkdir -p $CI_PROJECT_DIR/artifacts
-    - zip -r $CI_PROJECT_DIR/artifacts/strongswan-libs.zip app/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib
+    - git clone --branch "$SS_BRANCH" "$SS_REMOTE" strongswan-src
+    - chmod +x ./tools/build_strongswan.sh
+    - ./tools/build_strongswan.sh "$CI_PROJECT_DIR/strongswan-src" "$OPENSSL_SRC" "$CI_PROJECT_DIR/artifacts"
+    - cd "$CI_PROJECT_DIR/artifacts"
+    - zip -r strongswan-libs.zip .
   artifacts:
     paths:
       - $CI_PROJECT_DIR/artifacts/strongswan-libs.zip
