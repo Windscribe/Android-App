@@ -180,6 +180,13 @@ BuildStrongswan:
     - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
     - export PATH=$JAVA_HOME/bin:$PATH
 
+    # Install Gradle
+    - GRADLE_VERSION=8.5
+    - wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip
+    - unzip gradle-${GRADLE_VERSION}-bin.zip -d /opt/gradle
+    - export PATH="/opt/gradle/gradle-${GRADLE_VERSION}/bin:$PATH"
+    - gradle --version
+
     # Create Android SDK dir
     - mkdir -p /opt/android-sdk/cmdline-tools
     - cd /opt/android-sdk
