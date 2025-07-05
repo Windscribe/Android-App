@@ -213,6 +213,7 @@ BuildStrongswan:
     - rm -rf strongswan-src
     - git clone --branch "$SS_BRANCH" "$SS_REMOTE" strongswan-src
     - mkdir -p "$CI_PROJECT_DIR/artifacts"
+    - chmod +x ./tools/build_strongswan.sh
     - ./tools/build_strongswan.sh "$CI_PROJECT_DIR/strongswan-src" "$OPENSSL_SRC" "$CI_PROJECT_DIR/artifacts"
     - cd "$CI_PROJECT_DIR/artifacts"
     - zip -r strongswan-libs.zip .
