@@ -181,7 +181,7 @@ BuildStrongswan:
     - export PATH=$JAVA_HOME/bin:$PATH
 
     # Install Gradle
-    - GRADLE_VERSION=8.5
+    - GRADLE_VERSION=8.7
     - wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip
     - unzip gradle-${GRADLE_VERSION}-bin.zip -d /opt/gradle
     - export PATH="/opt/gradle/gradle-${GRADLE_VERSION}/bin:$PATH"
