@@ -22,8 +22,6 @@ OUT_DIR="$STRONGSWAN_DIR/src/frontends/android/app/src/main/jni/openssl"
 APP_DIR="$STRONGSWAN_DIR/src/frontends/android/app"
 
 echo "===> Copying OpenSSL sources..."
-rm -rf "$ANDROID_OPENSSL_DIR"
-mkdir -p "$ANDROID_OPENSSL_DIR"
 cp -a "$OPENSSL_SRC/." "$ANDROID_OPENSSL_DIR/"
 
 echo "===> Compiling OpenSSL..."
