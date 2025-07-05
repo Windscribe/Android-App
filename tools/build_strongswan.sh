@@ -55,6 +55,6 @@ gradle assembleRelease
 
 echo "===> Copying output libs to: $STRONGSWAN_LIBS_DST"
 mkdir -p "$STRONGSWAN_LIBS_DST"
-cp -r "$ANDROID_OPENSSL_DIR"/lib/* "$STRONGSWAN_LIBS_DST/"
+cp -r "$APP_DIR"/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib/* "$STRONGSWAN_LIBS_DST/"
 
 echo "✅ Build completed successfully."
