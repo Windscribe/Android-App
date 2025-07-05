@@ -18,7 +18,7 @@ STRONGSWAN_LIBS_DST="$3"
 
 # === Derived Paths ===
 ANDROID_OPENSSL_DIR="$STRONGSWAN_DIR/src/frontends/android/openssl"
-OUT_DIR="$STRONGSWAN_DIR/src/frontends/android/app/src/main/jni/openssl"
+export OUT_DIR="$STRONGSWAN_DIR/src/frontends/android/app/src/main/jni/openssl"
 APP_DIR="$STRONGSWAN_DIR/src/frontends/android/app"
 
 echo "===> Copying OpenSSL sources..."
