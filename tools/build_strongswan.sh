@@ -1,42 +1,62 @@
-strongswanLibsSrc="$PWD/../strongswan-src/src/frontends/android/app/src/main/libs/*"
-strongswanLibsDst="$PWD/../strongswan/libs"
-mkdir -p $strongswanLibsDst
-strongswanRoot="$PWD/../strongswan-src"
-cd $strongswanRoot
-lib="$PWD/src/frontends/android/app/src/main/jni/openssl"
-PATH=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
-pushd $OpenSSL
-CC=armv7a-linux-androideabi16-clang ./Configure android-arm no-shared no-ssl3 no-engine no-dso no-asm no-hw no-comp no-stdio -fPIC -DOPENSSL_PIC -D__ANDROID_API__=16 -ffast-math -O3 -funroll-loops
-make -j $(nproc) > config.log
-mkdir -p "${lib}/armeabi-v7a"
-cp libcrypto.a ${lib}/armeabi-v7a/
-make distclean
-CC=aarch64-linux-android21-clang ./Configure android-arm64 no-shared no-ssl3 no-engine no-dso no-asm no-hw no-comp no-stdio -fPIC -DOPENSSL_PIC -D__ANDROID_API__=21 -ffast-math -O3 -funroll-loops
-make -j $(nproc) > config.log
-mkdir -p "${lib}/arm64-v8a"
-cp libcrypto.a ${lib}/arm64-v8a/
-make distclean
-CC=i686-linux-android16-clang ./Configure android-x86 no-shared no-ssl3 no-engine no-dso no-asm no-hw no-comp no-stdio -fPIC -DOPENSSL_PIC -D__ANDROID_API__=16 -ffast-math -O3 -funroll-loops
-make -j $(nproc) > config.log
-mkdir -p "${lib}/x86"
-cp libcrypto.a ${lib}/x86/
-make distclean
-CC=x86_64-linux-android21-clang ./Configure android-x86_64 no-shared no-ssl3 no-engine no-dso no-asm no-hw no-comp no-stdio -fPIC -DOPENSSL_PIC -D__ANDROID_API__=21 -ffast-math -O3 -funroll-loops
-make -j $(nproc) > config.log
-mkdir -p "${lib}/x86_64"
-cp libcrypto.a ${lib}/x86_64/
-cp -R include/ ${lib}/
-make distclean
-rm config.log
-popd
-echo "LOCAL_PATH := \$(call my-dir)" >"${lib}/Android.mk"
-echo "include \$(CLEAR_VARS)" >>"${lib}/Android.mk"
-echo "LOCAL_MODULE := libcrypto_static" >>"${lib}/Android.mk"
-echo "LOCAL_SRC_FILES := \$(TARGET_ARCH_ABI)/libcrypto.a" >>"${lib}/Android.mk"
-echo "LOCAL_EXPORT_C_INCLUDES := \$(LOCAL_PATH)/include" >>"${lib}/Android.mk"
-echo "include \$(PREBUILT_STATIC_LIBRARY)" >>"${lib}/Android.mk"
-cd $strongswanRoot
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# === Usage ===
+# ./build_strongswan.sh /path/to/strongswan-src /path/to/openssl /path/to/output-libs
+# ================================
+
+if [ "$#" -ne 3 ]; then
+    echo "Usage: $0 <strongswan-dir> <openssl-dir> <strongswan-libs-dst>"
+    exit 1
+fi
+
+# === Parameters ===
+STRONGSWAN_DIR="$1"
+OPENSSL_SRC="$2"
+STRONGSWAN_LIBS_DST="$3"
+
+# === Derived Paths ===
+ANDROID_OPENSSL_DIR="$STRONGSWAN_DIR/src/frontends/android/openssl"
+OUT_DIR="$STRONGSWAN_DIR/src/frontends/android/app/src/main/jni/openssl"
+APP_DIR="$STRONGSWAN_DIR/src/frontends/android/app"
+
+echo "===> Copying OpenSSL sources..."
+rm -rf "$ANDROID_OPENSSL_DIR"
+mkdir -p "$ANDROID_OPENSSL_DIR"
+cp -a "$OPENSSL_SRC/." "$ANDROID_OPENSSL_DIR/"
+
+echo "===> Compiling OpenSSL..."
+cd "$ANDROID_OPENSSL_DIR"
+./compile.sh
+
+echo "===> Generating Android.mk for libcrypto_static..."
+mkdir -p "$OUT_DIR"
+cat <<EOF > "${OUT_DIR}/Android.mk"
+LOCAL_PATH := \$(call my-dir)
+include \$(CLEAR_VARS)
+LOCAL_MODULE := libcrypto_static
+LOCAL_SRC_FILES := \$(TARGET_ARCH_ABI)/libcrypto.a
+LOCAL_EXPORT_C_INCLUDES := \$(LOCAL_PATH)/include
+include \$(PREBUILT_STATIC_LIBRARY)
+EOF
+
+echo "===> Building Strongswan..."
+cd "$STRONGSWAN_DIR"
 ./autogen.sh > config.log
-./configure --disable-defaults > config.log
-make dist -j $(nproc) > config.log
+./configure --disable-defaults >> config.log
+make dist -j "$(nproc)" >> config.log
 rm config.log
+
+echo "===> Updating Gradle build config..."
+cd "$APP_DIR"
+sed -i '/arguments '\''-j'\'' \+ Runtime\.runtime\.availableProcessors()/a\        arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"' build.gradle
+
+echo "===> Building release APK..."
+gradle assembleRelease
+
+echo "===> Copying output libs to: $STRONGSWAN_LIBS_DST"
+mkdir -p "$STRONGSWAN_LIBS_DST"
+cp -r "$ANDROID_OPENSSL_DIR"/lib/* "$STRONGSWAN_LIBS_DST/"
+
+echo "✅ Build completed successfully."
