@@ -36,6 +36,7 @@
         android:contentDescription="@null"
         android:src="@drawable/off_button"
         android:tag="off"
+        android:stateListAnimator="@animator/button_press_cyberpunk"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
