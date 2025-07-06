@@ -207,7 +207,7 @@
             android:layout_marginBottom="@dimen/reg_16dp"
             android:background="@drawable/icon_round_background"
             android:gravity="center"
-            android:textColor="@color/colorDeepBlue"
+            android:textColor="@color/cyberpunk_primary_dark"
             android:textSize="9sp"
             android:textStyle="bold"
             android:visibility="invisible"
@@ -390,6 +390,7 @@
                 android:layout_height="2dp"
                 android:layout_marginTop="46dp"
                 android:contentDescription="@null"
+                android:background="?attr/dividerHorizontalColor"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />

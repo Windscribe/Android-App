@@ -527,4 +527,9 @@
         <item name="android:paddingBottom">@dimen/padding_16</item>
     </style>
 
+    <!-- Style for ProgressBar in WindscribeActivity -->
+    <style name="StyleDeepBlueShadow" parent="Widget.AppCompat.ProgressBar">
+        <item name="android:indeterminateTint">?attr/progressBarTint</item>
+    </style>
+
 </resources>
