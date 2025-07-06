@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="0dp"
+        android:layout_marginStart="@dimen/margin_16"
+        android:layout_marginEnd="@dimen/margin_16"
+        >
+
+        <ImageView
+            android:id="@+id/top_background"
+            android:background="@drawable/top_corner_rounded_background"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/container"
+            />
+
+        <ImageView
+            android:id="@+id/bottom_background"
+            android:background="@drawable/bottom_corner_rounded_background_with_padding"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/container"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
+
+        <ImageView
+            android:id="@+id/clip_corner_background"
+            android:layout_width="match_parent"
+            android:layout_height="14dp"
+            android:layout_marginStart="@dimen/reg_2dp"
+            android:layout_marginEnd="@dimen/reg_2dp"
+            android:background="@drawable/bottom_corner_rounded_background"
+            app:layout_constraintStart_toStartOf="@id/container"
+            app:layout_constraintTop_toBottomOf="@id/container"
+            />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/container"
+            android:layout_height="34dp"
+            android:layout_width="match_parent"
+            android:layout_marginTop="0dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="0dp"
+            android:paddingTop="@dimen/padding_14"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            >
+
+            <ImageView
+                android:id="@+id/left_icon"
+                style="@style/MenuActionTitleIcon"
+                tools:reference="LeftIcon"
+                android:layout_marginStart="@dimen/margin_16"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/title"
+                style="@style/MenuActionTitle"
+                app:layout_goneMarginStart="16dp"
+                android:layout_marginStart="16dp"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Title"
+                app:layout_constraintStart_toEndOf="@id/left_icon"
+                android:includeFontPadding="false" />
+
+            <ImageView
+                android:id="@+id/right_icon"
+                style="@style/ForwardArrowIcon"
+                android:layout_marginRight="11dp"
+                android:layout_marginEnd="11dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:layout_marginTop="@dimen/reg_14dp"
+            android:id="@+id/description"
+            style="@style/MenuActionDescription"
+            android:layout_marginStart="@dimen/margin_16"
+            android:layout_marginEnd="@dimen/margin_16"
+            android:paddingBottom="@dimen/padding_14"
+            android:paddingTop="@dimen/padding_14"
+            android:layout_width="0dp"
+            android:includeFontPadding="false"
+            tools:text="Description"
+            app:layout_constraintStart_toStartOf="@id/container"
+            app:layout_constraintEnd_toEndOf="@id/container"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/container" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</merge>

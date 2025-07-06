@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/fragment_share_app_link"
+    style="@style/OverlayContainer">
+
+    <ImageButton
+        android:id="@+id/shareAppNavButton"
+        style="@style/navArrowButton"
+        android:layout_marginTop="@dimen/reg_20dp"
+        android:contentDescription="@string/image_description"
+        android:scaleType="fitCenter"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/shareAppNavButton"
+        app:layout_constraintWidth_max="350dp"
+        app:layout_constraintWidth_percent=".83">
+
+        <Button
+            android:id="@+id/shareAppLinkButton"
+            style="@style/DialogPrimaryButton"
+            android:text="@string/share_invite_link"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/second_referral_description" />
+
+        <ImageView
+            android:id="@+id/first_referral_description_prefix"
+            style="@style/ForwardArrowIcon"
+            android:layout_width="@dimen/reg_16dp"
+            android:layout_height="@dimen/reg_16dp"
+            android:layout_marginStart="@dimen/margin_16"
+            android:layout_marginTop="@dimen/margin_32"
+            android:src="@drawable/ic_check"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/shareAppTitle"
+            app:tint="@color/colorNeonGreen" />
+
+        <ImageView
+            android:id="@+id/second_referral_description_prefix"
+            style="@style/ForwardArrowIcon"
+            android:layout_width="@dimen/reg_16dp"
+            android:layout_height="@dimen/reg_16dp"
+            android:layout_marginStart="@dimen/margin_16"
+            android:layout_marginTop="@dimen/margin_16"
+            android:includeFontPadding="false"
+            android:src="@drawable/ic_check"
+            android:text="-"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/first_referral_description"
+            app:tint="@color/colorNeonGreen" />
+
+        <ImageView
+            android:id="@+id/shareAppIcon"
+            style="@style/IconStyle"
+            android:src="@drawable/ic_share_favourite"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/shareAppTitle"
+            style="@style/DialogTitle"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:text="@string/share_windscribe_with_a_friend"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/shareAppIcon" />
+
+        <TextView
+            android:id="@+id/second_referral_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin_16"
+            android:layout_marginEnd="@dimen/margin_16"
+            android:fontFamily="@font/ibm_plex_sans_regular"
+            android:includeFontPadding="false"
+            android:text="@string/if_they_go_pro_you_ll_go_pro_to"
+            android:textColor="?attr/wdSecondaryColor"
+            android:textSize="@dimen/text_size_12"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/first_referral_description_prefix"
+            app:layout_constraintTop_toTopOf="@id/second_referral_description_prefix" />
+
+        <TextView
+            android:id="@+id/first_referral_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin_16"
+            android:layout_marginEnd="@dimen/margin_16"
+            android:fontFamily="@font/ibm_plex_sans_regular"
+            android:includeFontPadding="false"
+            android:text="@string/first_reason_to_use_share"
+            android:textColor="?attr/wdSecondaryColor"
+            android:textSize="@dimen/text_size_12"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/first_referral_description_prefix"
+            app:layout_constraintTop_toTopOf="@id/first_referral_description_prefix" />
+
+        <TextView
+            android:id="@+id/shareAppExplainer"
+            style="@style/DialogExplainer"
+            android:layout_width="0dp"
+            android:layout_marginStart="@dimen/margin_32"
+            android:layout_marginTop="@dimen/margin_48"
+            android:layout_marginEnd="@dimen/margin_32"
+            android:text="@string/referee_must_provide_your_username_at_sign_up_and_confirm_their_email_in_order_for_the_benefits_above_to_apply_to_your_account"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/shareAppLinkButton" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

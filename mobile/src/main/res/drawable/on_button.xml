@@ -6,7 +6,7 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:bottom="8dp"
-        android:drawable="@drawable/ic_on_button"
+        android:drawable="@drawable/cyberpunk_button_on"
         android:left="8dp"
         android:right="8dp"
         android:top="8dp" />

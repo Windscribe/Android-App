@@ -4,6 +4,6 @@
   -->
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="?attr/wdPrimaryColor10" />
+    <solid android:color="?attr/wdWarningColor" /> <!-- Changed to full warning color -->
     <corners android:radius="@dimen/reg_28dp" />
 </shape>

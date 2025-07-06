@@ -5,6 +5,6 @@
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <solid android:color="#2d2c1e" />
+    <solid android:color="@color/cyberpunk_secondary_dark" />
     <corners android:radius="22dp" />
 </shape>

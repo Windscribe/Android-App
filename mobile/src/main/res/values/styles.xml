@@ -1,8 +1,76 @@
 <resources>
-    <!--App Theme -->
+    <!--Cyberpunk App Theme -->
     <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorBlack</item>
+        <item name="colorPrimary">@color/cyberpunk_accent_pink</item>
+        <item name="colorPrimaryDark">@color/cyberpunk_primary_dark</item> <!-- For status bar, etc. -->
+        <item name="colorAccent">@color/cyberpunk_accent_cyan</item> <!-- General accent color -->
+        <item name="android:windowBackground">@color/cyberpunk_primary_dark</item> <!-- App background -->
+        <item name="android:textColor">@color/cyberpunk_text_light</item> <!-- Default text color -->
+        <item name="android:fontFamily">@font/space_mono_family</item> <!-- Default app font -->
+
+        <item name="android:windowActivityTransitions">true</item>
+        <item name="android:windowEnterTransition">@android:transition/slide_left</item>
+        <item name="android:windowExitTransition">@android:transition/slide_right</item>
+        <item name="android:windowSharedElementEnterTransition">@android:transition/fade</item>
+        <item name="android:windowSharedElementExitTransition">@android:transition/fade</item>
+        <item name="android:statusBarColor">@color/cyberpunk_primary_dark</item> <!-- Status bar color -->
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:navigationBarColor">@color/cyberpunk_primary_dark</item> <!-- Navigation bar color -->
+
+        <!-- Cyberpunk specific attributes -->
+        <item name="warningTitleColor">@color/cyberpunk_accent_yellow</item>
+        <item name="overlayContainerBackground">@color/cyberpunk_secondary_dark</item> <!-- e.g. modals, dialogs -->
+        <item name="progressTextColor">@color/cyberpunk_text_light</item>
+        <item name="progressBarTint">@color/cyberpunk_accent_cyan</item>
+        <item name="pageDescriptionTextColor">@color/cyberpunk_text_light</item>
+        <item name="serverListUnderMaintenanceIconColor">@color/cyberpunk_accent_yellow</item>
+        <item name="toolTipDialogBackgroundColor">@color/cyberpunk_secondary_dark</item>
+        <item name="toolTipDialogTextColor">@color/cyberpunk_text_light</item>
+        <item name="menu_edit_background">@color/cyberpunk_secondary_dark</item>
+        <item name="overlayDialogBackgroundColor">#CC200020</item> <!-- 80% alpha of primary dark -->
+        <item name="wdSecondaryColor">@color/cyberpunk_text_light</item> <!-- secondary text/icons -->
+        <item name="wdPrimaryColor">@color/cyberpunk_accent_pink</item> <!-- primary text/icons or highlights -->
+        <item name="wdPrimaryColor10">#1AFF00FF</item> <!-- 10% alpha pink -->
+        <item name="wdPrimaryInvertedColor">@color/cyberpunk_primary_dark</item>
+        <item name="wdSecondaryInvertedColor">#80200020</item> <!-- 50% alpha primary dark -->
+        <item name="preferencesRoundedBackgroundColor">@color/cyberpunk_secondary_dark</item>
+        <item name="wdPrimaryColor25">#40FF00FF</item> <!-- 25% alpha pink -->
+        <item name="wdActionColor">@color/cyberpunk_accent_cyan</item> <!-- Main action buttons -->
+        <item name="wdActionColor10">#1A00FFFF</item> <!-- 10% alpha cyan -->
+        <item name="wdActionColor25">#4000FFFF</item> <!-- 25% alpha cyan -->
+        <item name="wdActionColor50">#8000FFFF</item> <!-- 50% alpha cyan -->
+        <item name="wdWarningColor">@color/cyberpunk_accent_yellow</item> <!-- Warning messages/icons -->
+        <item name="wdWarningColor10">#1AFFFF00</item> <!-- 10% alpha yellow -->
+        <item name="wdWarningColor50">#80FFFF00</item> <!-- 50% alpha yellow -->
+        <item name="iconRippleColor">#4D00FFFF</item> <!-- 30% alpha of cyberpunk_accent_cyan -->
+        <item name="navigationStripColor">@color/cyberpunk_accent_cyan</item>
+        <item name="notificationBackground">@color/cyberpunk_secondary_dark</item>
+        <item name="preferenceIconColor">@color/cyberpunk_accent_cyan</item>
+        <item name="dropDownIconColor">@color/cyberpunk_accent_cyan</item>
+        <item name="serverListSearchView">@color/cyberpunk_secondary_dark</item>
+        <item name="inputTextHintColor">#B3E0E0E0</item> <!-- 70% alpha cyberpunk_text_light -->
+        <item name="inputTextColor">@color/cyberpunk_text_light</item>
+        <item name="inputDescriptionColor">#B3E0E0E0</item> <!-- 70% alpha cyberpunk_text_light -->
+        <item name="inputBoxBackground">@color/cyberpunk_secondary_dark</item>
+        <!-- For list items -->
+        <item name="nodeListGroupTextColor">@color/cyberpunk_text_light</item>
+        <item name="nodeStrengthTextColor">@color/cyberpunk_accent_pink</item>
+        <item name="dividerHorizontalColor">@color/cyberpunk_glow_cyan</item>
+        <item name="alphaBlueDrawable">@drawable/cyberpunk_alpha_blue_background</item>
+    </style>
+
+    <!-- Dark theme (Now inherits from the new AppTheme, effectively becoming the Cyberpunk theme) -->
+    <style name="DarkTheme" parent="AppTheme">
+    </style>
+
+    <!--Light Theme (Kept for now, but will not be cyberpunk. Could be removed or redesigned later) -->
+    <style name="LightTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="colorPrimary">@color/colorBlue</item>
+        <item name="colorPrimaryDark">@color/colorBlueDark</item>
+        <item name="colorAccent">@color/colorOrange</item>
+        <item name="android:windowBackground">@color/colorWhite</item>
+        <item name="android:textColor">@color/colorBlack</item>
         <item name="android:windowActivityTransitions">true</item>
         <item name="android:windowEnterTransition">@android:transition/slide_left</item>
         <item name="android:windowExitTransition">@android:transition/slide_right</item>
@@ -11,41 +79,7 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
-        <item name="android:navigationBarColor">@color/colorDeepBlue</item>
-    </style>
-
-    <!-- Dark theme -->
-    <style name="DarkTheme" parent="AppTheme">
-        <item name="warningTitleColor">@color/colorWhite</item>
-        <item name="overlayContainerBackground">@color/colorDeepBlue95</item>
-        <item name="progressTextColor">@color/colorWhite50</item>
-        <item name="progressBarTint">@color/colorWhite</item>
-        <item name="pageDescriptionTextColor">@color/colorWhite</item>
-        <item name="serverListUnderMaintenanceIconColor">@color/colorWhite</item>
-        <item name="toolTipDialogBackgroundColor">@color/colorDeepBlue</item>
-        <item name="toolTipDialogTextColor">@color/colorWhite</item>
-        <item name="menu_edit_background">@color/colorWhite5</item>
-        <item name="overlayDialogBackgroundColor">@color/colorDeepBlue80</item>
-        <item name="wdSecondaryColor">@color/colorWhite50</item>
-        <item name="wdPrimaryColor">@color/colorWhite</item>
-        <item name="colorAccent">@color/colorWhite</item>
-        <item name="wdPrimaryColor10">@color/colorWhite10</item>
-        <item name="wdPrimaryInvertedColor">@color/colorDeepBlue</item>
-        <item name="wdSecondaryInvertedColor">@color/colorDeepBlue50</item>
-        <item name="preferencesRoundedBackgroundColor">@color/colorWhite8</item>
-        <item name="wdPrimaryColor25">@color/colorWhite25</item>
-        <item name="wdActionColor">@color/colorNeonGreen</item>
-        <item name="wdActionColor10">@color/colorNeonGreen10</item>
-        <item name="wdActionColor25">@color/colorNeonGreen25</item>
-        <item name="wdActionColor50">@color/colorNeonGreen50</item>
-        <item name="wdWarningColor">@color/colorYellow</item>
-        <item name="wdWarningColor10">@color/colorYellow10</item>
-        <item name="wdWarningColor50">@color/colorYellow50</item>
-
-    </style>
-
-    <!--Light Theme -->
-    <style name="LightTheme" parent="AppTheme">
+        <item name="android:navigationBarColor">@color/colorWhite</item>
         <item name="warningTitleColor">@color/colorDeepBlue</item>
         <item name="overlayContainerBackground">@color/colorWhite95</item>
         <item name="progressTextColor">@color/colorDeepBlue50</item>
@@ -58,7 +92,6 @@
         <item name="overlayDialogBackgroundColor">@color/colorWhite80</item>
         <item name="wdSecondaryColor">@color/colorDeepBlue50</item>
         <item name="wdPrimaryColor">@color/colorDeepBlue</item>
-        <item name="colorAccent">@color/colorDeepBlue</item>
         <item name="wdPrimaryColor10">@color/colorDeepBlue10</item>
         <item name="wdPrimaryInvertedColor">@color/colorWhite</item>
         <item name="preferencesRoundedBackgroundColor">@color/colorDeepBlue8</item>
@@ -74,7 +107,7 @@
     </style>
 
     <style name="AppTheme.WindLauncher" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/colorDeepBlue</item>
+        <item name="windowSplashScreenBackground">@color/cyberpunk_primary_dark</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_static</item>
         <item name="windowSplashScreenAnimationDuration">1025</item>
         <item name="postSplashScreenTheme">@style/AppTheme</item>
@@ -91,9 +124,8 @@
 
     <style name="FullScreenDialog" parent="Theme.Transparent" />
 
-
     <style name="FullScreenWithNoStatusBar" parent="FullScreenDialog">
-        <item name="android:statusBarColor">@color/colorDeepBlue95</item>
+        <item name="android:statusBarColor">@color/cyberpunk_primary_dark</item>
     </style>
 
     <style name="WrapWrapContainer">
@@ -111,11 +143,11 @@
         <item name="android:layout_height">match_parent</item>
         <item name="android:focusableInTouchMode">true</item>
         <item name="android:fitsSystemWindows">false</item>
-        <item name="android:background">@color/colorDeepBlue95</item>
+        <item name="android:background">?android:attr/windowBackground</item>
     </style>
 
     <style name="OverlayContainer" parent="MatchMatchContainer">
-        <item name="android:background">@color/colorDeepBlue95</item>
+        <item name="android:background">?overlayContainerBackground</item>
     </style>
 
     <style name="navArrowButton" parent="WrapWrapContainer">
@@ -130,8 +162,8 @@
     <style name="titleText" parent="WrapWrapContainer">
         <item name="android:textSize">@dimen/text_size_24</item>
         <item name="android:textStyle">bold</item>
-        <item name="fontFamily">@font/ibm_plex_sans_bold</item>
-        <item name="android:textColor">@color/colorWhite</item>
+        <item name="fontFamily">@font/space_mono_bold</item>
+        <item name="android:textColor">@color/cyberpunk_text_light</item>
         <item name="android:gravity">center</item>
     </style>
 
@@ -147,7 +179,7 @@
         <item name="android:paddingBottom">@dimen/padding_14</item>
         <item name="android:enabled">false</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="fontFamily">@font/space_mono_bold</item>
         <item name="android:background">@drawable/next_button_ripple</item>
     </style>
 
@@ -155,9 +187,9 @@
         <item name="android:background">@drawable/warning_action_ripple</item>
         <item name="android:layout_marginBottom">@dimen/margin_16</item>
         <item name="android:enabled">true</item>
-        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:textColor">@color/cyberpunk_text_light</item>
         <item name="android:textStyle">normal</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="fontFamily">@font/space_mono_regular</item>
     </style>
 
     <style name="RadioOption" parent="WrapWrapContainer">
@@ -168,8 +200,8 @@
         <item name="android:paddingStart">@dimen/margin_8</item>
         <item name="android:paddingEnd">@dimen/margin_8</item>
         <item name="android:textSize">@dimen/text_size_16</item>
-        <item name="android:textColor">@color/colorWhite50</item>
-        <item name="fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="android:textColor">@color/cyberpunk_text_light</item>
+        <item name="fontFamily">@font/space_mono_bold</item>
     </style>
 
     <style name="IconStyle" parent="WrapWrapContainer">
@@ -181,8 +213,8 @@
 
     <style name="NoBackgroundButtonBold" parent="WrapWrapContainer">
         <item name="android:textSize">@dimen/text_size_16</item>
-        <item name="fontFamily">@font/ibm_plex_sans_bold</item>
-        <item name="android:textColor">@color/colorWhite50</item>
+        <item name="fontFamily">@font/space_mono_bold</item>
+        <item name="android:textColor">@color/cyberpunk_accent_cyan</item>
         <item name="android:background">@drawable/ripple_square</item>
         <item name="android:layout_marginBottom">@dimen/margin_16</item>
         <item name="android:textAllCaps">false</item>
@@ -193,13 +225,12 @@
 
     <style name="ProgressBar" parent="WrapWrapContainer">
         <item name="android:indeterminateTint">?progressBarTint</item>
-
     </style>
 
     <style name="ProgressText" parent="WrapWrapContainer">
         <item name="android:layout_gravity">center</item>
         <item name="android:textColor">?progressTextColor</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="fontFamily">@font/space_mono_regular</item>
         <item name="android:textSize">@dimen/text_size_16</item>
         <item name="android:layout_marginTop">@dimen/reg_8dp</item>
         <item name="android:paddingEnd">@dimen/padding_16</item>
@@ -217,8 +248,8 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_width">0dp</item>
         <item name="android:textSize">@dimen/text_size_16</item>
-        <item name="android:textColor">@color/colorWhite50</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:textColor">@color/cyberpunk_accent_yellow</item>
+        <item name="fontFamily">@font/space_mono_regular</item>
         <item name="android:layout_marginBottom">@dimen/margin_24</item>
     </style>
 
@@ -237,19 +268,19 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginStart">@dimen/margin_16</item>
         <item name="android:layout_marginLeft">@dimen/margin_16</item>
-        <item name="android:fontFamily">@font/ibm_font_family</item>
+        <item name="fontFamily">@font/space_mono_bold</item>
         <item name="android:gravity">left|top</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:textColor">@color/colorWhite50</item>
+        <item name="android:textColor">@color/cyberpunk_text_light</item>
         <item name="android:textSize">@dimen/text_size_16</item>
         <item name="android:textStyle">bold</item>
     </style>
 
     <style name="CommunityLinkLabel" parent="MenuItemLabel">
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="fontFamily">@font/space_mono_regular</item>
         <item name="android:textSize">@dimen/text_size_14</item>
         <item name="android:gravity">left|center</item>
-        <item name="android:textColor">@color/colorWhite80</item>
+        <item name="android:textColor">@color/cyberpunk_text_light</item>
     </style>
 
     <style name="MenuItemContainer">
@@ -261,16 +292,16 @@
     </style>
 
     <style name="dialog_button" parent="TextAppearance.AppCompat.Button">
-        <item name="android:textColor">@color/colorWhite</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="android:textColor">@color/cyberpunk_accent_pink</item>
+        <item name="fontFamily">@font/space_mono_bold</item>
     </style>
 
     <style name="OverlayAlert" parent="Theme.AppCompat.Dialog">
-        <item name="android:background">@color/darkGray</item>
-        <item name="android:textColorPrimary">@color/colorWhite</item>
-        <item name="android:colorAccent">@color/colorWhite</item>
+        <item name="android:background">@color/cyberpunk_secondary_dark</item>
+        <item name="android:textColorPrimary">@color/cyberpunk_text_light</item>
+        <item name="colorAccent">@color/cyberpunk_accent_cyan</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="fontFamily">@font/space_mono_bold</item>
         <item name="android:windowMinWidthMajor">90%</item>
         <item name="android:windowMinWidthMinor">90%</item>
     </style>
@@ -287,13 +318,12 @@
         <item name="android:src">@drawable/ic_modal_close_button</item>
     </style>
 
-
     <style name="DialogTitle">
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_width">0dp</item>
         <item name="android:textSize">@dimen/text_size_24</item>
-        <item name="android:textColor">@color/colorWhite</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_bold</item>
+        <item name="android:textColor">@color/cyberpunk_accent_pink</item>
+        <item name="fontFamily">@font/space_mono_bold</item>
         <item name="android:gravity">center_horizontal</item>
         <item name="android:layout_marginTop">@dimen/margin_32</item>
         <item name="android:layout_marginStart">@dimen/reg_68dp</item>
@@ -304,8 +334,8 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_width">0dp</item>
         <item name="android:textSize">@dimen/text_size_16</item>
-        <item name="android:textColor">@color/colorWhite50</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:textColor">@color/cyberpunk_text_light</item>
+        <item name="fontFamily">@font/space_mono_regular</item>
         <item name="android:layout_marginStart">@dimen/reg_68dp</item>
         <item name="android:layout_marginEnd">@dimen/reg_68dp</item>
         <item name="android:layout_marginTop">@dimen/margin_16</item>
@@ -325,41 +355,110 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">@dimen/text_size_12</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:textColor">@color/colorWhite50</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:textColor">@color/cyberpunk_text_light</item>
+        <item name="fontFamily">@font/space_mono_regular</item>
     </style>
 
-
-    <!-- OpenVPN -->
     <style name="blinkt.dialog" parent="android:Theme.DeviceDefault.Light.Dialog" />
 
-    <!-- Style for Title TextView -->
     <style name="FeatureTitleText">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginStart">@dimen/margin_16</item>
         <item name="android:layout_marginTop">@dimen/margin_24</item>
         <item name="android:layout_marginEnd">@dimen/margin_16</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_medium</item>
+        <item name="fontFamily">@font/space_mono_bold</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:textColor">@color/cyberpunk_text_light</item>
         <item name="android:textSize">@dimen/text_size_14</item>
     </style>
 
-    <!-- Style for Subtitle TextView -->
     <style name="FeatureSubtitleText">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginStart">@dimen/margin_16</item>
         <item name="android:layout_marginTop">4dp</item>
         <item name="android:layout_marginEnd">@dimen/margin_16</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="fontFamily">@font/space_mono_regular</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:textColor">@color/colorWhite50</item>
+        <item name="android:textColor">@color/cyberpunk_text_light</item>
         <item name="android:textSize">@dimen/text_size_12</item>
     </style>
 
-    <!-- Style for ImageView -->
+    <style name="MenuActionDescription" parent="WrapWrapContainer">
+        <item name="fontFamily">@font/space_mono_regular</item>
+        <item name="android:textColor">?attr/wdSecondaryColor</item>
+        <item name="android:textSize">@dimen/text_size_12</item>
+    </style>
+
+    <style name="MenuActionTitle" parent="WrapWrapContainer">
+        <item name="fontFamily">@font/space_mono_bold</item>
+        <item name="android:textColor">?attr/wdPrimaryColor</item>
+        <item name="android:textSize">@dimen/text_size_14</item>
+    </style>
+
+    <!-- Input field styles -->
+    <style name="InputHintText" parent="WrapWrapContainer">
+        <item name="android:textColor">?attr/inputTextHintColor</item>
+        <item name="fontFamily">@font/space_mono_regular</item>
+        <item name="android:textSize">@dimen/text_size_12</item>
+        <item name="android:layout_marginStart">@dimen/margin_24</item>
+        <item name="android:layout_marginEnd">@dimen/margin_24</item>
+        <item name="android:layout_marginTop">@dimen/margin_24</item>
+        <item name="android:layout_marginBottom">@dimen/margin_8</item>
+    </style>
+
+    <style name="InputErrorIcon" parent="WrapWrapContainer">
+        <item name="android:src">@drawable/ic_error</item>
+        <item name="android:visibility">gone</item>
+        <item name="android:layout_marginEnd">@dimen/margin_24</item>
+        <item name="android:tint">@color/cyberpunk_accent_yellow</item>
+    </style>
+
+    <style name="InputBox" parent="MatchWrapContainer">
+        <item name="android:background">@drawable/input_box_background</item>
+        <item name="fontFamily">@font/space_mono_bold</item>
+        <item name="android:textColor">?attr/inputTextColor</item>
+        <item name="android:textCursorDrawable">@drawable/cursor_background</item>
+        <item name="android:textSize">@dimen/text_size_16</item>
+        <item name="android:layout_marginStart">@dimen/margin_24</item>
+        <item name="android:layout_marginEnd">@dimen/margin_24</item>
+        <item name="android:paddingStart">@dimen/padding_16</item>
+        <item name="android:paddingEnd">@dimen/padding_16</item>
+        <item name="android:paddingTop">@dimen/padding_14</item>
+        <item name="android:paddingBottom">@dimen/padding_14</item>
+        <item name="android:inputType">textNoSuggestions</item>
+        <item name="android:imeOptions">actionNext</item>
+    </style>
+
+    <style name="InputVisibilityIcon">
+        <item name="android:button">@drawable/password_visibility_toggle</item>
+        <item name="android:padding">@dimen/padding_8</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="InputDescription" parent="WrapWrapContainer">
+        <item name="fontFamily">@font/space_mono_regular</item>
+        <item name="android:textColor">?attr/inputDescriptionColor</item>
+        <item name="android:textSize">@dimen/text_size_12</item>
+        <item name="android:layout_marginStart">@dimen/margin_24</item>
+        <item name="android:layout_marginEnd">@dimen/margin_24</item>
+        <item name="android:layout_marginTop">@dimen/margin_8</item>
+    </style>
+
+    <style name="ForgotPassword">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="fontFamily">@font/space_mono_regular</item>
+        <item name="android:textColor">?attr/wdPrimaryColor</item> <!-- This is cyberpunk_accent_pink -->
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">@dimen/margin_24</item>
+        <item name="android:layout_marginTop">@dimen/margin_12</item>
+        <item name="android:padding">@dimen/padding_4</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
     <style name="FeatureImage">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -367,7 +466,6 @@
         <item name="android:src">@drawable/ic_star</item>
     </style>
 
-    <!-- Common container style -->
     <style name="PlanContainerStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">142dp</item>
@@ -377,23 +475,21 @@
         <item name="android:padding">@dimen/padding_8</item>
     </style>
 
-    <!-- Common title style -->
     <style name="PlanTitleStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textColor">@color/colorWhite</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:textColor">@color/cyberpunk_text_light</item>
+        <item name="fontFamily">@font/space_mono_regular</item>
         <item name="android:textSize">@dimen/text_size_14</item>
         <item name="android:layout_marginTop">@dimen/margin_24</item>
         <item name="android:layout_marginStart">@dimen/margin_24</item>
     </style>
 
-    <!-- Common price style -->
     <style name="PlanPriceStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textColor">@color/colorWhite</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_semi_bold</item>
+        <item name="android:textColor">@color/cyberpunk_accent_yellow</item>
+        <item name="fontFamily">@font/space_mono_bold</item>
         <item name="android:textSize">20sp</item>
         <item name="android:layout_marginTop">2dp</item>
         <item name="android:layout_marginStart">@dimen/margin_24</item>
@@ -402,8 +498,8 @@
     <style name="PlanDiscountStyle">
         <item name="android:layout_width">34dp</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textColor">@color/colorDeepNavy</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_semi_bold</item>
+        <item name="android:textColor">@color/cyberpunk_primary_dark</item>
+        <item name="fontFamily">@font/space_mono_bold</item>
         <item name="android:textSize">10sp</item>
         <item name="android:layout_marginStart">@dimen/margin_8</item>
     </style>
@@ -411,8 +507,8 @@
     <style name="PromoDiscountStyle" parent="PlanDiscountStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textColor">@color/colorBlack</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_semi_bold</item>
+        <item name="android:textColor">@color/cyberpunk_primary_dark</item>
+        <item name="fontFamily">@font/space_mono_bold</item>
         <item name="android:textSize">12sp</item>
         <item name="android:layout_marginStart">0dp</item>
         <item name="android:layout_marginEnd">@dimen/margin_32</item>
@@ -420,16 +516,20 @@
         <item name="android:textAllCaps">true</item>
     </style>
 
-    <!-- Common billed description style -->
     <style name="PlanBilledStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textColor">@color/colorWhite</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:textColor">@color/cyberpunk_text_light</item>
+        <item name="fontFamily">@font/space_mono_regular</item>
         <item name="android:textSize">14sp</item>
         <item name="android:layout_marginTop">@dimen/margin_16</item>
         <item name="android:layout_marginStart">@dimen/margin_24</item>
         <item name="android:paddingBottom">@dimen/padding_16</item>
+    </style>
+
+    <!-- Style for ProgressBar in WindscribeActivity -->
+    <style name="StyleDeepBlueShadow" parent="Widget.AppCompat.ProgressBar">
+        <item name="android:indeterminateTint">?attr/progressBarTint</item>
     </style>
 
 </resources>

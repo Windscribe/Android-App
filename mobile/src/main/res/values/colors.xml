@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Copyright (c) 2021 Windscribe Limited.
-  -->
+-->
 <resources>
+
+    <!-- Cyberpunk Theme Colors -->
+    <color name="cyberpunk_primary_dark">#200020</color> <!-- Very dark desaturated purple -->
+    <color name="cyberpunk_secondary_dark">#303040</color> <!-- Slightly lighter dark blue/grey -->
+    <color name="cyberpunk_accent_pink">#FF00FF</color> <!-- Neon Pink -->
+    <color name="cyberpunk_accent_cyan">#00FFFF</color> <!-- Neon Cyan -->
+    <color name="cyberpunk_accent_yellow">#FFFF00</color> <!-- Neon Yellow -->
+    <color name="cyberpunk_text_light">#E0E0E0</color> <!-- Light grey/off-white for text -->
+    <color name="cyberpunk_glow_pink">#800080</color> <!-- Darker pink for glow/shadow -->
+    <color name="cyberpunk_glow_cyan">#008080</color> <!-- Darker cyan for glow/shadow -->
+
+    <!-- Original Colors (keeping them for reference or if needed) -->
     <!-- Deep Blue -->
     <color name="colorDeepBlue0">#00020D1C</color>
     <color name="colorDeepBlue5">#0D020D1C</color>
@@ -30,7 +42,7 @@
     <color name="colorWhite95">#F2FFFFFF</color>
     <color name="colorWhite">#FFFFFF</color>
     <!-- Pink -->
-    <color name="colorOrange">#f28b00</color>
+    <color name="colorOrange">#f28b00</color> <!-- Note: Original name was colorOrange, likely used as a pink/accent -->
     <color name="colorOrange10">#1AF28900</color>
     <color name="colorOrange50">#80F28900</color>
     <!-- Yellow -->
@@ -58,17 +70,17 @@
     <!-- Red -->
     <color name="colorRed">#FF3B3B</color>
     <!-- Others -->
-    <color name="colorPrimary">#006aff</color>
-    <color name="colorFlagGradient">#202e59</color>
-    <color name="colorFlagGradient50">#80202E59</color>
-    <color name="connectedHeaderColor">#012E6E</color>
-    <color name="disconnectedHeaderColor">#28323c</color>
-    <color name="darkGray">#343434</color>
+    <color name="colorPrimary">@color/cyberpunk_accent_pink</color> <!-- Mapped to new accent -->
+    <color name="colorFlagGradient">@color/cyberpunk_secondary_dark</color>
+    <color name="colorFlagGradient50">#80303040</color> <!-- 50% alpha of cyberpunk_secondary_dark -->
+    <color name="connectedHeaderColor">@color/cyberpunk_glow_cyan</color> <!-- Example: using glow for connected state -->
+    <color name="disconnectedHeaderColor">@color/cyberpunk_secondary_dark</color>
+    <color name="darkGray">@color/cyberpunk_secondary_dark</color> <!-- Remapping darkGray -->
     <!--Dead code Requires more refactor-->
-    <color name="colorBackgroundDark">#0e1927</color>
+    <color name="colorBackgroundDark">@color/cyberpunk_primary_dark</color> <!-- Mapped to new primary dark -->
     <!-- Upgrade view v2 -->
-    <color name="colorDeepNavy">#090E19</color>
-    <color name="colorDeepNavy80">#CC090E19</color>
+    <color name="colorDeepNavy">@color/cyberpunk_primary_dark</color>
+    <color name="colorDeepNavy80">#CC200020</color> <!-- 80% alpha of cyberpunk_primary_dark -->
     <color name="colorPowderBlue0">#00C3E5EE</color>
     <color name="colorPowderBlue14">#24C3E5EE</color>
     <color name="colorPowderBlue">#C3E5EE</color>

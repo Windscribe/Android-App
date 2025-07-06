@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/login_container"
+    style="@style/MatchMatchContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <include layout="@layout/nav_bar" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_78"
+        style="@style/WrapWrapContainer"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.78" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_98"
+        style="@style/WrapWrapContainer"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.98" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/margin_24"
+        app:layout_constraintBottom_toTopOf="@+id/guide_78"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nav_bar">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/inputContainer"
+            style="@style/MatchWrapContainer">
+
+            <TextView
+                android:id="@+id/username_hint"
+                style="@style/InputHintText"
+                android:layout_marginTop="0dp"
+                android:labelFor="@id/username"
+                android:text="@string/username"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/username_error"
+                style="@style/InputErrorIcon"
+                android:contentDescription="@string/username"
+                app:layout_constraintBottom_toBottomOf="@id/username_hint"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/username_hint" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/username"
+                style="@style/InputBox"
+                android:autofillHints="username"
+                android:contentDescription="@string/username"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/username_hint" />
+
+
+            <TextView
+                android:id="@+id/password_hint"
+                style="@style/InputHintText"
+                android:labelFor="@id/password"
+                android:text="@string/password"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/username" />
+
+            <ImageView
+                android:id="@+id/password_error"
+                style="@style/InputErrorIcon"
+                android:contentDescription="@string/password"
+                app:layout_constraintBottom_toBottomOf="@id/password_hint"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/password_hint" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/password"
+                style="@style/InputBox"
+                android:autofillHints="password"
+                android:contentDescription="@string/password"
+                android:inputType="textPassword"
+                android:paddingEnd="@dimen/padding_48"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/password_hint"
+                tools:ignore="RtlSymmetry" />
+
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/password_visibility_toggle"
+                style="@style/InputVisibilityIcon"
+                android:contentDescription="@string/password"
+                android:layout_marginEnd="@dimen/margin_16"
+                app:layout_constraintBottom_toBottomOf="@id/password"
+                app:layout_constraintEnd_toEndOf="@id/password"
+                app:layout_constraintTop_toTopOf="@id/password" />
+
+            <TextView
+                android:id="@+id/two_fa_hint"
+                style="@style/InputHintText"
+                android:labelFor="@id/two_fa"
+                android:text="@string/two_fa"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/password" />
+
+            <ImageView
+                android:id="@+id/two_fa_error"
+                style="@style/InputErrorIcon"
+                android:contentDescription="@string/two_fa"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/two_fa_hint"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/two_fa_hint" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/two_fa"
+                style="@style/InputBox"
+                android:contentDescription="@string/two_fa"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/two_fa_hint" />
+
+            <TextView
+                android:id="@+id/two_fa_description"
+                style="@style/InputDescription"
+                android:text="@string/two_fa_description"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/two_fa" />
+
+            <Button
+                android:id="@+id/twoFaToggle"
+                style="@style/ForgotPassword"
+                android:fontFamily="@font/space_mono_bold"
+                android:text="@string/two_fa"
+                android:layout_width="0dp"
+                android:gravity="center_vertical|left"
+                app:layout_constraintEnd_toStartOf="@+id/forgot_password"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/two_fa_description" />
+
+            <Button
+                android:id="@+id/forgot_password"
+                style="@style/ForgotPassword"
+                android:text="@string/forgot_password"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/two_fa_description" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+    <Button
+        android:id="@+id/loginButton"
+        style="@style/NextButton"
+        app:layout_constraintBottom_toTopOf="@id/guide_98"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

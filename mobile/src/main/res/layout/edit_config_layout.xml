@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/cl_request_container"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorDeepBlue90"
+    android:clickable="true"
+    android:elevation="5dp"
+    android:focusable="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/reg_32dp"
+        android:layout_marginStart="@dimen/reg_32dp"
+        android:layout_marginTop="@dimen/margin_48"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/request_alert_icon"
+            style="@style/IconStyle"
+            android:src="@drawable/ic_network_security_feature_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/request_alert_title"
+            style="@style/DialogTitle"
+            android:text="@string/edit_config_file"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/request_alert_icon" />
+
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/padding_32"
+            android:layout_marginLeft="@dimen/padding_32"
+            android:layout_marginRight="@dimen/padding_32"
+            android:layout_marginStart="@dimen/padding_32"
+            android:layout_marginTop="@dimen/padding_32"
+            android:background="@android:color/transparent"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="start|center_vertical"
+            android:hint="@string/config_title"
+            android:lines="1"
+            android:includeFontPadding="false"
+            android:inputType="text"
+            android:padding="@dimen/reg_8dp"
+            android:textColor="@color/colorWhite50"
+            android:textColorHint="@color/colorWhite"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/request_alert_title" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:background="?attr/dividerHorizontalColor"
+            android:contentDescription="@string/image_description"
+            android:layout_marginTop="@dimen/margin_8"
+            app:layout_constraintEnd_toEndOf="@id/name"
+            app:layout_constraintStart_toStartOf="@id/name"
+            app:layout_constraintTop_toBottomOf="@id/name" />
+
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/username"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/padding_32"
+            android:layout_marginLeft="@dimen/padding_32"
+            android:layout_marginRight="@dimen/padding_32"
+            android:layout_marginStart="@dimen/padding_32"
+            android:layout_marginTop="@dimen/reg_16dp"
+            android:background="@android:color/transparent"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="start|center_vertical"
+            android:hint="@string/username"
+            android:includeFontPadding="false"
+            android:inputType="text"
+            android:padding="@dimen/reg_8dp"
+            android:textColor="@color/colorWhite50"
+            android:textColorHint="@color/colorWhite"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/name" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:background="?attr/dividerHorizontalColor"
+            android:contentDescription="@string/image_description"
+            android:layout_marginTop="@dimen/margin_8"
+            app:layout_constraintEnd_toEndOf="@id/username"
+            app:layout_constraintStart_toStartOf="@id/username"
+            app:layout_constraintTop_toBottomOf="@id/username" />
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/password"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/padding_32"
+            android:layout_marginLeft="@dimen/padding_32"
+            android:layout_marginRight="@dimen/padding_32"
+            android:layout_marginStart="@dimen/padding_32"
+            android:background="@android:color/transparent"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="start|center_vertical"
+            android:hint="@string/password"
+            android:includeFontPadding="false"
+            android:inputType="textPassword"
+            android:padding="@dimen/reg_8dp"
+            android:layout_marginTop="@dimen/reg_16dp"
+            android:textColor="@color/colorWhite50"
+            android:textColorHint="@color/colorWhite"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/username" />
+
+        <ImageView
+            android:id="@+id/password_divider"
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:background="?attr/dividerHorizontalColor"
+            android:contentDescription="@string/image_description"
+            android:layout_marginTop="@dimen/margin_8"
+            app:layout_constraintEnd_toEndOf="@id/password"
+            app:layout_constraintStart_toStartOf="@id/password"
+            app:layout_constraintTop_toBottomOf="@id/password" />
+
+
+        <TextView
+            android:id="@+id/save_credentials_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/padding_32"
+            android:layout_marginLeft="@dimen/padding_32"
+            android:layout_marginRight="@dimen/padding_32"
+            android:layout_marginStart="@dimen/padding_32"
+            android:layout_marginTop="@dimen/padding_16"
+            android:background="@android:color/transparent"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="start|center_vertical"
+            android:includeFontPadding="false"
+            android:text="@string/save_credentials"
+            android:textColor="@color/colorWhite"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/password_divider" />
+
+
+        <ImageView
+            android:id="@+id/remember_check"
+            android:layout_width="@dimen/reg_32dp"
+            android:layout_height="@dimen/reg_32dp"
+            android:layout_marginEnd="@dimen/reg_32dp"
+            android:contentDescription="@string/image_description"
+            android:padding="@dimen/reg_8dp"
+            android:src="@drawable/ic_checkmark_on"
+            app:layout_constraintBottom_toBottomOf="@id/save_credentials_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/save_credentials_label" />
+
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:layout_marginTop="@dimen/reg_16dp"
+            android:background="?attr/dividerHorizontalColor"
+            android:contentDescription="@string/image_description"
+            app:layout_constraintEnd_toEndOf="@id/password"
+            app:layout_constraintStart_toStartOf="@id/password"
+            app:layout_constraintTop_toBottomOf="@id/save_credentials_label" />
+
+        <TextView
+            android:id="@+id/request_alert_ok"
+            style="@style/DialogPrimaryButton"
+            android:text="@string/update"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/save_credentials_label" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <ImageView
+        style="@style/ModelCloseIcon"
+        android:id="@+id/request_alert_cancel"
+        android:background="@drawable/close_icon_with_background"
+        android:contentDescription="@string/image_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

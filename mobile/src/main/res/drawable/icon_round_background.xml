@@ -5,7 +5,7 @@
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <solid android:color="@color/colorNeonGreen" />
+    <solid android:color="@color/cyberpunk_accent_yellow" />
     <size
         android:width="14dp"
         android:height="14dp" />

@@ -1,0 +1,23 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/cyberpunk_primary_dark" />
+
+    <item>
+        <rotate android:fromDegrees="45" android:pivotX="50%" android:pivotY="50%">
+            <shape android:shape="line">
+                <stroke android:width="800dp" android:color="#1A00FFFF" /> <!-- 10% alpha cyan, very thick to span across -->
+            </shape>
+        </rotate>
+    </item>
+    <item>
+        <rotate android:fromDegrees="-45" android:pivotX="50%" android:pivotY="50%">
+            <shape android:shape="line">
+                <stroke android:width="800dp" android:color="#1A00FFFF" /> <!-- 10% alpha cyan -->
+            </shape>
+        </rotate>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <stroke android:width="2dp" android:color="#0D00FFFF" /> <!-- 5% alpha cyan border -->
+        </shape>
+    </item>
+</layer-list>

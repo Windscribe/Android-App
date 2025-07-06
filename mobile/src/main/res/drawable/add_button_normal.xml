@@ -13,5 +13,5 @@
         android:topRightRadius="@dimen/padding_32" />
     <stroke
         android:width="2dp"
-        android:color="@color/colorDeepBlue95" />
+        android:color="@color/cyberpunk_accent_cyan" />
 </shape>

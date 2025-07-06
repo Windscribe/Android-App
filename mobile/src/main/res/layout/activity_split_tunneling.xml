@@ -1,0 +1,194 @@
+<!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/cl_split_tunnel_settings"
+    style="@style/MatchMatchContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/margin_16"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <include layout="@layout/nav_bar" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/nav_bar"
+            android:layout_marginTop="@dimen/margin_16"
+            android:layout_marginStart="@dimen/reg_16dp"
+            android:background="@drawable/preference_rounded_stroke_background"
+            >
+            <TextView
+                style="@style/MenuActionDescription"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/ibm_font_family"
+                android:gravity="center_vertical|left"
+                android:includeFontPadding="false"
+                android:text="@string/split_tunneling_feature"
+                android:textAlignment="viewStart"
+                android:textSize="12sp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/learn_more"
+                android:id="@+id/page_description"
+                />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/ExplainIcon"
+                android:layout_marginEnd="0dp"
+                android:layout_marginRight="0dp"
+                android:id="@+id/learn_more"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/page_description"
+                app:layout_constraintBottom_toBottomOf="@id/page_description"
+                />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.windscribe.mobile.custom_view.preferences.ExpandableToggleView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_top_bar"
+        android:id="@+id/cl_switch"
+        app:ExpandableToggleShowRightIcon="false"
+        app:ExpandableToggleViewDescription="@string/feature_tunnel_mode_exclusive"
+        app:ExpandableToggleViewLeftIcon="@drawable/ic_split_routing"
+        app:ExpandableToggleViewChildType="SplitTunnelMode"
+        android:layout_marginTop="@dimen/margin_16"
+        app:ExpandableToggleViewTitle="@string/split_tunneling"
+        app:ExpandableToggleHideExplainViewOnCollapse="true"
+        />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_app_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:layout_marginStart="@dimen/margin_16"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_switch"
+        >
+
+
+        <TextView
+            android:id="@+id/tv_apps_label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/margin_16"
+            android:layout_marginStart="@dimen/padding_8"
+            android:layout_marginTop="@dimen/margin_16"
+            android:fontFamily="@font/ibm_font_family"
+            android:gravity="center_vertical|start"
+            android:includeFontPadding="false"
+            android:letterSpacing="0.2"
+            android:text="@string/apps"
+            android:textAlignment="viewStart"
+            android:textColor="?attr/wdSecondaryColor"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_apps_label"
+            app:layout_constraintBottom_toBottomOf="@id/recycler_view_app_list"
+            android:background="@drawable/preferences_rounded_corner_background"
+            android:layout_marginTop="@dimen/reg_16dp"
+            />
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/searchView"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:paddingEnd="@dimen/reg_48dp"
+            android:layout_marginTop="@dimen/reg_24dp"
+            app:submitBackground="@android:color/transparent"
+            app:queryBackground="@android:color/transparent"
+            android:visibility="invisible"
+            app:closeIcon="@null"
+            android:hint="@string/search"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_apps_label"
+            app:searchIcon="@drawable/ic_search_icon" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/clear_icon"
+            android:layout_width="@dimen/reg_32dp"
+            android:layout_height="@dimen/reg_32dp"
+            android:padding="@dimen/reg_8dp"
+            android:visibility="invisible"
+            android:background="@drawable/ripple_round"
+            app:layout_constraintBottom_toBottomOf="@id/minimize_icon"
+            app:layout_constraintEnd_toStartOf="@id/minimize_icon"
+            app:layout_constraintTop_toTopOf="@id/minimize_icon"
+            app:srcCompat="@drawable/ic_clear_icon" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/minimize_icon"
+            android:layout_width="@dimen/reg_32dp"
+            android:layout_height="@dimen/reg_32dp"
+            android:layout_marginEnd="@dimen/reg_8dp"
+            android:padding="@dimen/reg_8dp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="@id/searchView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/searchView"
+            app:srcCompat="@drawable/ic_close_white" />
+
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_app_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="@dimen/reg_16dp"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/reg_16dp"
+            android:layout_marginTop="@dimen/margin_8"
+            android:scrollbars="none"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/searchView" />
+
+        <ProgressBar
+            android:id="@+id/progress"
+            style="@style/ProgressBar"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
