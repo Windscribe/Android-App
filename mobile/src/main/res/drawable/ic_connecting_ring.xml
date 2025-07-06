@@ -8,7 +8,7 @@
     android:viewportHeight="96"
     android:viewportWidth="96">
     <path
-        android:fillColor="#A0FEDA"
+        android:fillColor="@color/cyberpunk_accent_cyan"
         android:fillType="nonZero"
         android:pathData="M91.955,50h4.004C94.911,75.582 73.84,96 48,96 22.16,96 1.09,75.582 0.04,50h4.005C5.09,73.372 24.37,92 48,92s42.91,-18.628 43.955,-42zM91.955,46C90.91,22.628 71.63,4 48,4S5.09,22.628 4.045,46L0.04,46C1.089,20.418 22.16,0 48,0c25.84,0 46.91,20.418 47.96,46h-4.005z" />
 </vector>

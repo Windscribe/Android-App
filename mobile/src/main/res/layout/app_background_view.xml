@@ -78,6 +78,8 @@
             <TextView
                 android:id="@+id/label"
                 style="@style/MenuItemLabelTwo"
+                android:fontFamily="@font/space_mono_regular"
+                android:textColor="@color/cyberpunk_text_light"
                 android:layout_width="0dp"
                 android:text="@string/app_background"
                 android:paddingStart="@dimen/padding_16"
@@ -104,6 +106,8 @@
             <TextView
                 android:id="@+id/current"
                 style="@style/MenuItemLabelThree"
+                android:fontFamily="@font/space_mono_regular"
+                android:textColor="@color/cyberpunk_text_light"
                 android:paddingBottom="0dp"
                 android:paddingTop="0dp"
                 tools:text="Custom"

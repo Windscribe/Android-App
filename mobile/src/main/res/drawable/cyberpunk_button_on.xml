@@ -1,0 +1,30 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80">
+
+    <!-- Glowing Background (slightly larger, blurred if possible, here just a larger circle) -->
+    <path
+        android:fillColor="@color/cyberpunk_accent_cyan"
+        android:pathData="M40,2 A38,38 0 1,1 39.9,2 Z"
+        android:alpha="0.3"/>
+
+    <!-- Main button circle (filled with accent) -->
+    <path
+        android:fillColor="@color/cyberpunk_accent_cyan"
+        android:pathData="M40,5 A35,35 0 1,1 39.9,5 Z" />
+
+    <!-- Outer stroke (brighter) -->
+     <path
+        android:strokeColor="@color/cyberpunk_text_light"
+        android:strokeWidth="1.5"
+        android:pathData="M40,5 A35,35 0 1,1 39.9,5 Z" />
+
+    <!-- Power Symbol (contrasting color, e.g., primary dark) -->
+    <path
+        android:strokeColor="@color/cyberpunk_primary_dark"
+        android:strokeWidth="3.5"
+        android:pathData="M40,22 V38 M30,30 A12,12 0 1 1 50,30"
+        android:strokeLineCap="round"/>
+</vector>

@@ -10,7 +10,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:background="@color/colorDeepBlue"
+    android:background="@drawable/cyberpunk_main_background"
     android:fitsSystemWindows="false"
     android:focusable="true"
     android:focusableInTouchMode="true"
@@ -80,6 +80,7 @@
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/flag"
+            android:visibility="gone"
             android:alpha="0.8"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -194,7 +195,7 @@
             android:focusable="true"
             android:foregroundGravity="center"
             android:scaleType="fitCenter"
-            android:src="@drawable/ws_logo"
+            android:src="@drawable/mogavpn_logo"
             app:layout_constraintBottom_toBottomOf="@id/img_hamburger_menu"
             app:layout_constraintStart_toEndOf="@id/img_hamburger_menu"
             app:layout_constraintTop_toTopOf="@id/img_hamburger_menu" />
@@ -222,41 +223,53 @@
     <!--Connection Gradient on connection state change-->
 
     <!--Flag and its gradient-->
-    <TextView
-        android:id="@+id/tv_connected_city_name"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_city_info_panel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/margin_16"
-        android:layout_marginTop="2dp"
-        android:fontFamily="@font/ibm_font_family"
-        android:gravity="center_vertical|start"
-        android:includeFontPadding="false"
-        android:lines="1"
-        android:maxLength="16"
-        android:textAlignment="viewStart"
-        android:textColor="@color/colorWhite"
-        android:textSize="32sp"
-        android:textStyle="bold"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:layout_marginTop="8dp"
+        android:padding="@dimen/padding_8"
+        android:background="@drawable/cyberpunk_infopanel_background"
+        app:layout_constraintTop_toBottomOf="@id/connection_state_layout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/connection_state_layout" />
+        app:layout_constraintEnd_toStartOf="@+id/connect_button_layout">
 
-    <!--Top tool bar-->
-    <TextView
-        android:id="@+id/tv_connected_city_nick_name"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_16"
-        android:layout_marginTop="@dimen/reg_8dp"
-        android:paddingEnd="@dimen/padding_8"
-        android:fontFamily="@font/ibm_font_family"
-        android:gravity="bottom|start"
-        android:textAlignment="viewStart"
-        android:textColor="@color/colorWhite"
-        android:textSize="24sp"
-        android:maxLines="2"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_connected_city_name" />
+        <TextView
+            android:id="@+id/tv_connected_city_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/space_mono_bold"
+            android:gravity="center_vertical|start"
+            android:includeFontPadding="false"
+            android:lines="1"
+            android:maxLength="20"
+            android:textAlignment="viewStart"
+            android:textColor="?android:attr/textColor"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <TextView
+            android:id="@+id/tv_connected_city_nick_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="@font/space_mono_regular"
+            android:gravity="top|start"
+            android:textAlignment="viewStart"
+            android:textColor="?android:attr/textColor"
+            android:textSize="20sp"
+            android:maxLines="2"
+            app:layout_constraintTop_toBottomOf="@+id/tv_connected_city_name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!--Connect Button-->
     <include layout="@layout/connect_button_layout" />

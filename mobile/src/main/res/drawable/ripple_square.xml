@@ -4,10 +4,10 @@
   -->
 
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="@color/colorWhite15">
+    android:color="#2600FFFF"> <!-- 15% alpha cyberpunk_accent_cyan -->
     <item android:id="@android:id/mask">
         <shape android:shape="rectangle">
-            <solid android:color="@color/colorWhite15" />
+            <solid android:color="#2600FFFF" /> <!-- 15% alpha cyberpunk_accent_cyan -->
             <corners android:radius="2dp" />
             <padding
                 android:bottom="2dp"

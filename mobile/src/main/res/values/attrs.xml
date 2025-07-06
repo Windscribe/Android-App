@@ -83,6 +83,10 @@
         <attr name="wdWarningColor" format="color" />
         <attr name="wdWarningColor10" format="color" />
         <attr name="wdWarningColor50" format="color" />
+        <!-- Added for login form styling -->
+        <attr name="inputTextHintColor" format="color" />
+        <attr name="inputTextColor" format="color" />
+        <attr name="inputDescriptionColor" format="color" />
     </declare-styleable>
     <!--Icons -->
     <declare-styleable name="DrawableIcon">

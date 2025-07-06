@@ -1,0 +1,25 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80">
+
+    <!-- Main button circle -->
+    <path
+        android:fillColor="@color/cyberpunk_secondary_dark"
+        android:pathData="M40,5 A35,35 0 1,1 39.9,5 Z" />
+
+    <!-- Subtle outer stroke -->
+    <path
+        android:strokeColor="@color/cyberpunk_glow_cyan"
+        android:strokeWidth="1.5"
+        android:pathData="M40,5 A35,35 0 1,1 39.9,5 Z" />
+
+    <!-- Power Symbol Outline (dimmed) -->
+    <path
+        android:strokeColor="@color/cyberpunk_text_light"
+        android:strokeAlpha="0.6"
+        android:strokeWidth="3"
+        android:pathData="M40,22 V38 M30,30 A12,12 0 1 1 50,30"
+        android:strokeLineCap="round"/>
+</vector>

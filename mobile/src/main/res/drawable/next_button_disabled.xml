@@ -7,6 +7,6 @@
     <solid android:color="@android:color/transparent" />
     <stroke
         android:width="@dimen/reg_2dp"
-        android:color="?attr/wdPrimaryColor10" />
+        android:color="#80E0E0E0" /> <!-- 50% alpha of cyberpunk_text_light -->
     <corners android:radius="@dimen/reg_24dp" />
 </shape>

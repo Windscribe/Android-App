@@ -135,7 +135,7 @@
             <Button
                 android:id="@+id/twoFaToggle"
                 style="@style/ForgotPassword"
-                android:fontFamily="@font/ibm_plex_sans_bold"
+                android:fontFamily="@font/space_mono_bold"
                 android:text="@string/two_fa"
                 android:layout_width="0dp"
                 android:gravity="center_vertical|left"

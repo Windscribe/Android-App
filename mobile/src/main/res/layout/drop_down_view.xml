@@ -76,6 +76,8 @@
             <TextView
                 android:id="@+id/label"
                 style="@style/MenuItemLabelTwo"
+                android:fontFamily="@font/space_mono_regular"
+                android:textColor="@color/cyberpunk_text_light"
                 android:text="@string/sort_by"
                 android:paddingStart="@dimen/padding_16"
                 android:layout_marginTop="0dp"
@@ -102,6 +104,8 @@
             <TextView
                 android:id="@+id/current"
                 style="@style/MenuItemLabelThree"
+                android:fontFamily="@font/space_mono_regular"
+                android:textColor="@color/cyberpunk_text_light"
                 android:paddingBottom="0dp"
                 android:paddingTop="0dp"
                 tools:text="Geography"
