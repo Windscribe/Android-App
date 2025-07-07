@@ -302,22 +302,29 @@ class AutoConnectionManager(
     }
 
     private fun engageAutomaticMode() {
-        listOfProtocols.sortBy {
-            it.type
-        }
-        val disconnectedProtocolList =
-            listOfProtocols.filter { it.type == ProtocolConnectionStatus.Disconnected }
-        if (disconnectedProtocolList.isNotEmpty()) {
-            disconnectedProtocolList[0].type = ProtocolConnectionStatus.NextUp
-            disconnectedProtocolList[0].autoConnectTimeLeft = 10
-            showConnectionFailureDialog(
-                listOfProtocols,
-                retry = { engageAutomaticMode() })
-        } else {
-            logger.debug("Showing all protocol failed dialog.")
-            lastKnownProtocolInformation = null
-            reset()
-            showAllProtocolFailedDialog()
+        synchronized(listOfProtocols) {
+            listOfProtocols.sortBy {
+                it.type
+            }
+
+            val disconnectedProtocolList =
+                listOfProtocols.filter { it.type == ProtocolConnectionStatus.Disconnected }
+
+            if (disconnectedProtocolList.isNotEmpty()) {
+                val first = disconnectedProtocolList[0]
+                first.type = ProtocolConnectionStatus.NextUp
+                first.autoConnectTimeLeft = 10
+
+                showConnectionFailureDialog(
+                    listOfProtocols,
+                    retry = { engageAutomaticMode() }
+                )
+            } else {
+                logger.debug("Showing all protocol failed dialog.")
+                lastKnownProtocolInformation = null
+                reset()
+                showAllProtocolFailedDialog()
+            }
         }
     }
 
