@@ -16,6 +16,11 @@ fun getStatusBarHeight(): Dp {
     val insets = WindowInsets.statusBars.asPaddingValues()
     return insets.calculateTopPadding()
 }
+
+@Composable
+fun getHeaderHeight(): Dp {
+    return getStatusBarHeight() + 60.dp
+}
 @Composable
 fun calculateImageDimensions(): ImageDimensions {
     val config = LocalConfiguration.current
@@ -25,7 +30,7 @@ fun calculateImageDimensions(): ImageDimensions {
     val screenWidth = screenWidthDp.dp
     val screenHeight = screenHeightDp.dp
 
-    val minHeight = 242.dp + getStatusBarHeight()
+    val minHeight = 233.dp + getStatusBarHeight()
     val maxHeight = screenHeight * 0.45f
 
     // Determine dynamic height

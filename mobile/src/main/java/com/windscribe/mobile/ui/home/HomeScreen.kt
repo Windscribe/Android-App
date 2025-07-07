@@ -79,6 +79,7 @@ import com.windscribe.mobile.ui.connection.LocationInfoState
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
+import com.windscribe.mobile.ui.helper.getHeaderHeight
 import com.windscribe.mobile.ui.helper.getStatusBarHeight
 import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.model.AccountStatusDialogData
@@ -597,7 +598,7 @@ private fun ConnectedBackground(connectionViewmodel: ConnectionViewmodel?) {
 @Composable
 private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
     val navController = LocalNavController.current
-    val height = getStatusBarHeight() + 69.dp
+    val height = getHeaderHeight()
     Box(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
