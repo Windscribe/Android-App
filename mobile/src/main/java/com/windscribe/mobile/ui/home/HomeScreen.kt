@@ -3,6 +3,7 @@ package com.windscribe.mobile.ui.home
 import NetworkNameSheet
 import ServerListScreen
 import android.annotation.SuppressLint
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
@@ -21,6 +22,8 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,6 +31,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -60,6 +64,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -74,6 +79,7 @@ import com.windscribe.mobile.ui.connection.LocationInfoState
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
+import com.windscribe.mobile.ui.helper.getStatusBarHeight
 import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.model.AccountStatusDialogData
 import com.windscribe.mobile.ui.nav.LocalNavController
@@ -587,20 +593,22 @@ private fun ConnectedBackground(connectionViewmodel: ConnectionViewmodel?) {
 
 }
 
+
 @Composable
 private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
     val navController = LocalNavController.current
+    val height = getStatusBarHeight() + 69.dp
     Box(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
-                .height(100.dp)
+                .height(height)
                 .fillMaxWidth()
                 .clipToBounds()
         ) {
 
             Box(
                 modifier = Modifier
-                    .height(100.dp)
+                    .height(height)
                     .weight(1.0f)
                     .zIndex(0f)
                     .background(AppColors.midnightNavy.copy(alpha = 0.03f))
@@ -618,7 +626,7 @@ private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Home
             // Second Image (Right, fixed width and overlapping)
             Box(
                 modifier = Modifier
-                    .height(100.dp)
+                    .height(height)
                     .width(163.dp)
                     .zIndex(1f)
                     .clip(RectangleShape)

@@ -1,5 +1,8 @@
 package com.windscribe.mobile.ui.helper
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
@@ -9,6 +12,11 @@ import androidx.compose.ui.unit.min
 data class ImageDimensions(val width: Dp, val height: Dp)
 
 @Composable
+fun getStatusBarHeight(): Dp {
+    val insets = WindowInsets.statusBars.asPaddingValues()
+    return insets.calculateTopPadding()
+}
+@Composable
 fun calculateImageDimensions(): ImageDimensions {
     val config = LocalConfiguration.current
     val screenWidthDp = config.screenWidthDp
@@ -17,7 +25,7 @@ fun calculateImageDimensions(): ImageDimensions {
     val screenWidth = screenWidthDp.dp
     val screenHeight = screenHeightDp.dp
 
-    val minHeight = 273.dp
+    val minHeight = 242.dp + getStatusBarHeight()
     val maxHeight = screenHeight * 0.45f
 
     // Determine dynamic height
