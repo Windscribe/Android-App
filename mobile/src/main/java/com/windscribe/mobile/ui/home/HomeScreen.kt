@@ -389,8 +389,7 @@ internal fun BoxScope.NetworkInfoSheet(
 ) {
     val ip by connectionViewmodel.ipState.collectAsState()
     val showContextMenu by connectionViewmodel.ipContextMenuState.collectAsState()
-    val isHapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
-    val hideIp = remember { mutableStateOf(false) }
+    val hideIp by homeViewmodel.hideIp.collectAsState()
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -414,10 +413,10 @@ internal fun BoxScope.NetworkInfoSheet(
                     style = font16.copy(fontWeight = FontWeight.Medium),
                     color = AppColors.white.copy(alpha = 0.70f), modifier = Modifier
                         .clickable {
-                            hideIp.value = !hideIp.value
+                            homeViewmodel.onHideIpClick()
                         }
                         .graphicsLayer {
-                            renderEffect = if (hideIp.value) {
+                            renderEffect = if (hideIp) {
                                 BlurEffect(15f, 15f)
                             } else {
                                 null

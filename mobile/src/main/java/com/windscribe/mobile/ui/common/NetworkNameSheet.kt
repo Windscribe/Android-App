@@ -52,11 +52,11 @@ private fun isLocationEnabled(context: Context): Boolean {
         true
     }
 }
+
 @Composable
 fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
     val activity = LocalContext.current as AppStartActivity
     val networkInfo by connectionViewmodel.networkInfoState.collectAsState()
-    val hapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
     var showPermissionRequest by remember { mutableStateOf(false) }
     val navController = LocalNavController.current
     if (showPermissionRequest) {
@@ -68,7 +68,11 @@ fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Ho
             )
             if (networkInfo is NetworkInfoState.Unknown) {
                 if (!isLocationEnabled(activity)) {
-                    Toast.makeText(activity, "Enable location services to access network name & restart app.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        activity,
+                        "Enable location services to access network name & restart app.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     return@RequestLocationPermissions
                 }
                 Toast.makeText(activity, "Unable to get network name.", Toast.LENGTH_SHORT).show()
@@ -89,7 +93,7 @@ fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Ho
             modifier = Modifier.padding(start = 12.dp)
         )
 
-        val hideIp = remember { mutableStateOf(false) }
+        val hideNetworkName by homeViewmodel.hideNetworkName.collectAsState()
 
         Text(
             text = networkInfo.name ?: stringResource(com.windscribe.vpn.R.string.unknown),
@@ -99,9 +103,9 @@ fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Ho
                 .alpha(0.7f)
                 .padding(start = 4.dp)
                 .graphicsLayer {
-                    renderEffect = if (hideIp.value) BlurEffect(15f, 15f) else null
+                    renderEffect = if (hideNetworkName) BlurEffect(15f, 15f) else null
                 }
-                .clickable { hideIp.value = !hideIp.value }
+                .clickable { homeViewmodel.onHideNetworkNameClick() }
         )
 
         Image(

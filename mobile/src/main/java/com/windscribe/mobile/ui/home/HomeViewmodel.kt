@@ -30,8 +30,8 @@ sealed class HomeGoto {
     object ShareAppLink : HomeGoto()
     object LocationMaintenance : HomeGoto()
     data class EditCustomConfig(val id: Int, val connect: Boolean) : HomeGoto()
-    object MainMenu: HomeGoto()
-    object None: HomeGoto()
+    object MainMenu : HomeGoto()
+    object None : HomeGoto()
 }
 
 sealed class UserState() {
@@ -51,8 +51,14 @@ abstract class HomeViewmodel : ViewModel() {
     abstract val userState: StateFlow<UserState>
     abstract val hapticFeedbackEnabled: StateFlow<Boolean>
     abstract val showLocationLoad: StateFlow<Boolean>
+    abstract val hideIp: StateFlow<Boolean>
+    abstract val hideNetworkName: StateFlow<Boolean>
     abstract fun onMainMenuClick()
     abstract fun onGoToHandled()
+
+    abstract fun onHideIpClick()
+
+    abstract fun onHideNetworkNameClick()
 }
 
 class HomeViewmodelImpl(
@@ -69,6 +75,10 @@ class HomeViewmodelImpl(
     override val hapticFeedbackEnabled: StateFlow<Boolean> = _hapticFeedbackEnabled
     private val _showLocationLoad = MutableStateFlow(preferences.isShowLocationHealthEnabled)
     override val showLocationLoad: StateFlow<Boolean> = _showLocationLoad
+    private val _hideIp = MutableStateFlow(false)
+    override val hideIp: StateFlow<Boolean> = _hideIp
+    private val _hideNetworkName = MutableStateFlow(false)
+    override val hideNetworkName: StateFlow<Boolean> = _hideNetworkName
 
     private val trayPreferenceChangeListener = OnTrayPreferenceChangeListener {
         _hapticFeedbackEnabled.value = preferences.isHapticFeedbackEnabled
@@ -163,6 +173,14 @@ class HomeViewmodelImpl(
         viewModelScope.launch {
             _goto.emit(HomeGoto.MainMenu)
         }
+    }
+
+    override fun onHideIpClick() {
+        _hideIp.value = !_hideIp.value
+    }
+
+    override fun onHideNetworkNameClick() {
+        _hideNetworkName.value = !_hideNetworkName.value
     }
 
     override fun onCleared() {
