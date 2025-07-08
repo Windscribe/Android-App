@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -76,8 +77,7 @@ class AppStartActivity : AppCompatActivity() {
     }
 
     fun Context.isTablet(): Boolean {
-        return (resources.configuration.screenLayout and
-                Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE
+        return resources.configuration.screenWidthDp >= 600
     }
 
     private fun handleIntent(intent: Intent?) {
