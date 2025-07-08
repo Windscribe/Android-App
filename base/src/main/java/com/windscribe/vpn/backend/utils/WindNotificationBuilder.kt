@@ -10,6 +10,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
+import android.os.Build
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import androidx.annotation.RequiresApi
@@ -130,12 +131,16 @@ class WindNotificationBuilder @Inject constructor(
         notificationBuilder.addAction(action)
         // Launch App on Notification click.
         val contentIntent = Windscribe.appContext.applicationInterface.splashIntent
-        contentIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-        val pendingIntent = PendingIntent
-                .getActivity(
-                        Windscribe.appContext, 0, contentIntent,
-                        if (VERSION.SDK_INT >= VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
-                )
+        contentIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        val pendingIntent = PendingIntent.getActivity(
+            Windscribe.appContext,
+            0,
+            contentIntent,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            else
+                PendingIntent.FLAG_UPDATE_CURRENT
+        )
         notificationBuilder.setContentIntent(pendingIntent)
     }
 
