@@ -80,6 +80,7 @@ abstract class AccountViewModel : ViewModel() {
     abstract val showProgress: StateFlow<Boolean>
     abstract val accountState: StateFlow<AccountState>
     abstract val alertState: StateFlow<AlertState>
+    abstract val isGhostAccount: StateFlow<Boolean>
     open val goTo: SharedFlow<AccountGoTo> = MutableSharedFlow(replay = 0)
     open fun onManageAccountClicked() {}
     open fun onLazyLoginClicked() {}
@@ -102,6 +103,8 @@ class AccountViewModelImpl(
     private val _goTo: MutableSharedFlow<AccountGoTo> = MutableSharedFlow(replay = 0)
     override val goTo: SharedFlow<AccountGoTo> = _goTo
     private val logger = LoggerFactory.getLogger("basic")
+    private val _isGhostAccount = MutableStateFlow(false)
+    override val isGhostAccount: StateFlow<Boolean> = _isGhostAccount
 
 
     init {
@@ -111,6 +114,7 @@ class AccountViewModelImpl(
     private fun loadAccountInfo() {
         viewModelScope.launch(Dispatchers.IO) {
             userRepository.userInfo.collect {
+                _isGhostAccount.value = it.isGhost
                 val emailState = when (it.emailStatus) {
                     User.EmailStatus.NoEmail -> NoEmail
                     User.EmailStatus.EmailProvided -> UnconfirmedEmail(it.email ?: "")

@@ -6,10 +6,12 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -54,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.window.Dialog
 import com.windscribe.mobile.ui.AppStartActivity
+import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.common.openUrl
@@ -81,11 +84,20 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
     val navController = LocalNavController.current
     val showProgress by viewModel?.showProgress?.collectAsState()
         ?: remember { mutableStateOf(false) }
+    val isGhostAccount by viewModel?.isGhostAccount?.collectAsState() ?: remember {
+        mutableStateOf(
+            false
+        )
+    }
     val scrollState = rememberScrollState()
     PreferenceBackground {
         Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
             PreferencesNavBar(stringResource(R.string.my_account)) {
                 navController.popBackStack()
+            }
+            if (isGhostAccount) {
+                GhostAccountState()
+                return@Column
             }
             Column(Modifier
                 .navigationBarsPadding()
@@ -115,6 +127,35 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
         PreferenceProgressBar(showProgressBar = showProgress)
         HandleGoto(viewModel)
         HandleAlertState(viewModel)
+    }
+}
+
+@Composable
+private fun GhostAccountState() {
+    val navController = LocalNavController.current
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Spacer(modifier = Modifier.weight(1.0f))
+        NextButton(
+            modifier = Modifier,
+            text = stringResource(R.string.login),
+            enabled = true
+        ) {
+            navController.navigate(Screen.Login.route)
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        NextButton(
+            modifier = Modifier,
+            text = stringResource(R.string.account_set_up),
+            enabled = true
+        ) {
+            navController.currentBackStackEntry?.savedStateHandle?.set("isAccountClaim", true)
+            navController.navigate(Screen.Signup.route)
+        }
+        Spacer(modifier = Modifier.weight(1.0f))
     }
 }
 
@@ -758,6 +799,7 @@ private fun AccountScreenPreview(accountState: AccountState) {
             override val showProgress: StateFlow<Boolean> = MutableStateFlow(false)
             override val accountState: StateFlow<AccountState> = MutableStateFlow(accountState)
             override val alertState: StateFlow<AlertState> = MutableStateFlow(AlertState.None)
+            override val isGhostAccount: StateFlow<Boolean> = MutableStateFlow(false)
         }
         AccountScreen(viewModel)
     }
