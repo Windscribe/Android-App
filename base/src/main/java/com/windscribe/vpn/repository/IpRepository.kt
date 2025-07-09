@@ -3,18 +3,16 @@ package com.windscribe.vpn.repository
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.GetMyIpResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
-import com.windscribe.vpn.backend.Util.getModifiedIpAddress
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.commonutils.Ext.result
-import com.windscribe.vpn.commonutils.Ext.toResult
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.await
 import org.slf4j.LoggerFactory
 
 class IpRepository(
@@ -35,6 +33,7 @@ class IpRepository(
                     loadIpFromStorage()
                 }
                 if (it.status == VPNState.Status.Disconnected) {
+                    delay(1000)
                     update()
                 }
             }
