@@ -33,7 +33,7 @@ class IpRepository(
                     loadIpFromStorage()
                 }
                 if (it.status == VPNState.Status.Disconnected) {
-                    delay(1000)
+                    delay(500)
                     update()
                 }
             }
