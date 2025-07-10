@@ -42,6 +42,55 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./gradlew bundleFdroidRelease    # Build F-Droid AAB
 ```
 
+### Building Specific Modules
+```bash
+# Mobile App
+./gradlew :mobile:assembleGoogleDebug    # Build mobile debug APK
+./gradlew :mobile:assembleGoogleRelease  # Build mobile release APK
+
+# TV App  
+./gradlew :tv:assembleGoogleDebug        # Build TV debug APK
+./gradlew :tv:assembleGoogleRelease      # Build TV release APK
+```
+
+### Install and Launch Apps
+
+#### Mobile App
+```bash
+# Build and install mobile app
+./gradlew :mobile:assembleGoogleDebug
+"$ANDROID_HOME/platform-tools/adb" install -r mobile/build/outputs/apk/google/debug/mobile-google-debug.apk
+
+# Launch mobile app
+"$ANDROID_HOME/platform-tools/adb" shell am start -n com.windscribe.vpn/com.windscribe.mobile.ui.AppStartActivity
+```
+
+#### TV App
+```bash
+# Build and install TV app
+./gradlew :tv:assembleGoogleDebug
+"$ANDROID_HOME/platform-tools/adb" install -r tv/build/outputs/apk/google/debug/tv-google-debug.apk
+
+# Launch TV app
+"$ANDROID_HOME/platform-tools/adb" shell am start -n com.windscribe.vpn/com.windscribe.tv.splash.SplashActivity
+```
+
+#### ADB Commands
+```bash
+# Check connected devices
+"$ANDROID_HOME/platform-tools/adb" devices
+
+# Target specific device (if multiple connected)
+"$ANDROID_HOME/platform-tools/adb" -s emulator-5554 install -r app.apk
+"$ANDROID_HOME/platform-tools/adb" -s emulator-5554 shell am start -n package/activity
+
+# Check if app is running
+"$ANDROID_HOME/platform-tools/adb" shell ps | grep windscribe
+
+# View logs
+"$ANDROID_HOME/platform-tools/adb" logcat -s "vpn" -v time
+```
+
 ### Testing
 ```bash
 ./gradlew test                   # Run unit tests
