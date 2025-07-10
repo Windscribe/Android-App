@@ -83,7 +83,7 @@ class VPNProfileCreator @Inject constructor(
             "172.32.0.0/11", "172.64.0.0/10", "172.128.0.0/9", "173.0.0.0/8", "174.0.0.0/7",
             "176.0.0.0/4", "192.0.0.0/9", "192.128.0.0/11", "192.160.0.0/13", "192.169.0.0/16",
             "192.170.0.0/15", "192.172.0.0/14", "192.176.0.0/12", "192.192.0.0/10",
-            "193.0.0.0/8", "194.0.0.0/7", "196.0.0.0/6", "200.0.0.0/5", "208.0.0.0/4", "10.255.255.0/24","::0/0"
+            "193.0.0.0/8", "194.0.0.0/7", "196.0.0.0/6", "200.0.0.0/5", "208.0.0.0/4", "::0/0", "10.255.255.0/24"
     )
 
     fun createIkEV2Profile(
@@ -412,8 +412,15 @@ class VPNProfileCreator @Inject constructor(
 
         val reader: Reader = StringReader(configFile.content)
         val bufferedReader = BufferedReader(reader)
-        val config: Config = bufferedReader.use {
-            Config.parse(bufferedReader)
+        val config: Config = try {
+            bufferedReader.use {
+                Config.parse(bufferedReader)
+            }
+        } catch (e: Exception) {
+            logger.error("Full WireGuard config parse exception: ${e.javaClass.simpleName}: ${e.message}")
+            logger.error("Stack trace: ${e.stackTrace.joinToString("\n")}")
+            logger.error("Config content: ${configFile.content}")
+            throw e
         }
         interFaceBuilder.parsePrivateKey(config.getInterface().keyPair.privateKey.toBase64())
         interFaceBuilder.addAddresses(config.getInterface().addresses)
@@ -426,10 +433,16 @@ class VPNProfileCreator @Inject constructor(
         } else {
             interFaceBuilder.addDnsServers(config.getInterface().dnsServers)
         }
-        val configWithSettings = Config.Builder()
-                .addPeers(config.peers)
+        val configWithSettings = try {
+            val modifiedPeers = createModifiedPeersForLanBypass(config.peers)
+            Config.Builder()
+                .addPeers(modifiedPeers)
                 .setInterface(interFaceBuilder.build())
                 .build()
+        } catch (e: Exception) {
+            logger.error("Exception creating config with LAN bypass: ${e.javaClass.simpleName}: ${e.message}")
+            throw e
+        }
         val lastSelectedLocation =
                 LastSelectedLocation(configFile.getPrimaryKey(), nickName = configFile.name)
         saveSelectedLocation(lastSelectedLocation)
@@ -576,6 +589,96 @@ class VPNProfileCreator @Inject constructor(
         return builder.build()
     }
 
+    private fun createModifiedPeersForLanBypass(originalPeers: List<Peer>): List<Peer> {
+        return if (preferencesHelper.lanByPass) {
+            originalPeers.mapIndexed { index, peer ->
+                try {
+                    val builder = Peer.Builder()
+                    builder.parsePublicKey(peer.publicKey.toBase64())
+                    
+                    // Handle endpoint safely - extract value from Optional
+                    val endpointStr = try {
+                        if (peer.endpoint != null && peer.endpoint.isPresent) {
+                            val endpoint = peer.endpoint.orElse(null)
+                            if (endpoint != null) {
+                                "${endpoint.host}:${endpoint.port}"
+                            } else {
+                                ""
+                            }
+                        } else {
+                            ""
+                        }
+                    } catch (e: Exception) {
+                        ""
+                    }
+                    if (endpointStr.isNotEmpty()) {
+                        builder.parseEndpoint(endpointStr)
+                    }
+                    
+                    // Handle persistent keepalive - check if present first
+                    val keepalive = try {
+                        if (peer.persistentKeepalive != null && peer.persistentKeepalive.isPresent) {
+                            peer.persistentKeepalive.orElse(0)
+                        } else {
+                            0
+                        }
+                    } catch (e: Exception) {
+                        0
+                    }
+                    builder.setPersistentKeepalive(keepalive)
+                    
+                    // Format allowedIPs properly - separate IPv4 and IPv6
+                    val allowedIpsString = peer.allowedIps.joinToString(", ")
+                    val dnsRoutes = ""
+                    
+                    // Split IPv4 and IPv6, only modify IPv4 part
+                    val ipParts = allowedIpsString.split(",").map { it.trim() }
+                    val ipv4Parts = ipParts.filter { !it.contains(":") }
+                    val ipv6Parts = ipParts.filter { it.contains(":") }
+                    
+                    // Only modify IPv4 part for LAN bypass - use IPv4-only function
+                    val modifiedIpv4 = if (ipv4Parts.isNotEmpty()) {
+                        modifyAllowedIpsIPv4Only(ipv4Parts.joinToString(", "), dnsRoutes)
+                    } else {
+                        ""
+                    }
+                    
+                    // Combine modified IPv4 with original IPv6 - clean up trailing commas
+                    val finalAllowedIps = if (modifiedIpv4.isNotEmpty() && ipv6Parts.isNotEmpty()) {
+                        "${modifiedIpv4.trim(' ', ',')}, ${ipv6Parts.joinToString(", ")}"
+                    } else if (modifiedIpv4.isNotEmpty()) {
+                        modifiedIpv4.trim(' ', ',')
+                    } else if (ipv6Parts.isNotEmpty()) {
+                        ipv6Parts.joinToString(", ")
+                    } else {
+                        allowedIpsString
+                    }
+                    
+                    builder.parseAllowedIPs(finalAllowedIps)
+                    
+                    // Handle pre-shared key if present - safely check Optional
+                    try {
+                        if (peer.preSharedKey != null && peer.preSharedKey.isPresent) {
+                            val key = peer.preSharedKey.orElse(null)
+                            if (key != null) {
+                                builder.parsePreSharedKey(key.toBase64())
+                            }
+                        }
+                    } catch (e: Exception) {
+                        // No pre-shared key present, which is valid
+                    }
+                    
+                    builder.build()
+                } catch (e: Exception) {
+                    logger.error("Exception building peer $index: ${e.javaClass.simpleName}: ${e.message}")
+                    throw e
+                }
+            }
+        } else {
+            originalPeers
+        }
+    }
+
     private fun getIkev2Credentials(): Pair<String, String> {
         val serverCredentials = getServerCredentials(true)
         val mUsername: String
@@ -705,6 +808,34 @@ class VPNProfileCreator @Inject constructor(
 
     private fun modifyAllowedIps(allowedIps: String, dnsRoutes: String): String {
         val ipv4PublicNetworks = HashSet(listOf(*publicIpV4Array))
+        val ipv4Wildcard = "0.0.0.0/0"
+        val allNetworks = HashSet(listOf(ipv4Wildcard))
+        val input: Collection<String> = HashSet(listOf(*Attribute.split(allowedIps)))
+        val outputSize = input.size - allNetworks.size + ipv4PublicNetworks.size
+        val output: MutableCollection<String?> = LinkedHashSet(outputSize)
+        var replaced = false
+        for (network in input) {
+            if (allNetworks.contains(network)) {
+                if (!replaced) {
+                    for (replacement in ipv4PublicNetworks) {
+                        if (!output.contains(replacement)) {
+                            output.add(replacement)
+                        }
+                    }
+                    replaced = true
+                }
+            } else if (!output.contains(network)) {
+                output.add(network)
+            }
+        }
+        output.addAll(listOf(*Attribute.split(dnsRoutes)))
+        return Attribute.join(output)
+    }
+
+    private fun modifyAllowedIpsIPv4Only(allowedIps: String, dnsRoutes: String): String {
+        // Create IPv4-only array by filtering out IPv6 addresses
+        val ipv4OnlyNetworks = publicIpV4Array.filter { !it.contains(":") }.toTypedArray()
+        val ipv4PublicNetworks = HashSet(listOf(*ipv4OnlyNetworks))
         val ipv4Wildcard = "0.0.0.0/0"
         val allNetworks = HashSet(listOf(ipv4Wildcard))
         val input: Collection<String> = HashSet(listOf(*Attribute.split(allowedIps)))
