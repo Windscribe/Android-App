@@ -17,7 +17,7 @@ interface FragmentCallback {
     fun onGenerateCodeClick()
     fun onLoginButtonClick(username: String, password: String, twoFa: String?, secureToken: String?, captcha: String?)
     fun onAuthLoginClick(username: String, password: String)
-    fun onAuthSignUpClick()
+    fun onAuthSignUpClick(username: String, password: String, email: String?)
     fun onLoginClick()
     fun onSignUpButtonClick(
         username: String,

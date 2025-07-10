@@ -234,6 +234,54 @@ class WelcomePresenterImpl @Inject constructor(
         }
     }
 
+    override fun onAuthSignUpClick(username: String, password: String, email: String?) {
+        isRegistration = true
+        welcomeView.hideSoftKeyboard()
+        if (validateLoginInputs(username, password, email ?: "", false)) {
+            logger.info("Requesting auth signup token.")
+            welcomeView.prepareUiForApiCallStart()
+            interactor.getCompositeDisposable().add(
+                interactor.getApiCallManager()
+                    .authTokenSignup(true)
+                    .doOnSubscribe { welcomeView.updateCurrentProcess("Preparing signup...") }
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(
+                        object :
+                            DisposableSingleObserver<GenericResponseClass<AuthToken?, ApiErrorResponse?>?>() {
+                            override fun onError(e: Throwable) {
+                                logger.error("Auth signup token: {}", e.message)
+                                onLoginFailed()
+                            }
+
+                            override fun onSuccess(
+                                response: GenericResponseClass<AuthToken?, ApiErrorResponse?>
+                            ) {
+                                response.dataClass?.let {
+                                    if (it.captcha != null) {
+                                        val captchaArt = it.captcha!!.asciiArt!!
+                                        logger.info("Signup captcha received: $captchaArt")
+                                        welcomeView.prepareUiForApiCallFinished()
+                                        welcomeView.captchaReceived(
+                                            username,
+                                            password,
+                                            it.token,
+                                            captchaArt
+                                        )
+                                    } else {
+                                        logger.info("Starting signup without captcha")
+                                        startSignUpProcess(username, password, email, true, it.token, null)
+                                    }
+                                } ?: response.errorClass?.let {
+                                    logger.error("Signup: {}", it)
+                                    onLoginResponseError(it, username, password)
+                                }
+                            }
+                        })
+            )
+        }
+    }
+
     override fun startLoginProcess(
         username: String,
         password: String,
@@ -312,8 +360,8 @@ class WelcomePresenterImpl @Inject constructor(
                         null,
                         email,
                         "",
-                        null,
-                        null,
+                        secureToken,
+                        captcha,
                         floatArrayOf(),
                         floatArrayOf()
                     )

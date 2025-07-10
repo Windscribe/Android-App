@@ -339,8 +339,8 @@ class WelcomeActivity :
         replaceFragment(fragment, true)
     }
 
-    override fun onAuthSignUpClick() {
-
+    override fun onAuthSignUpClick(username: String, password: String, email: String?) {
+        presenter.onAuthSignUpClick(username, password, email)
     }
 
     private fun permissionGranted(): Boolean {

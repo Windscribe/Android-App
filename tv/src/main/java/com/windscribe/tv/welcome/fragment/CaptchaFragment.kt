@@ -4,6 +4,10 @@
 package com.windscribe.tv.welcome.fragment
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -47,6 +51,37 @@ class CaptchaFragment : Fragment(),  WelcomeActivityCallback {
         return null
     }
 
+    private fun createAsciiArtBitmap(text: String): Bitmap {
+        val paint = Paint().apply {
+            typeface = Typeface.MONOSPACE
+            textSize = 24f
+            color = Color.GREEN
+            isAntiAlias = false
+        }
+        
+        val lines = text.split("\n")
+        val maxWidth = lines.maxOfOrNull { paint.measureText(it) }?.toInt() ?: 0
+        val lineHeight = paint.fontMetrics.let { it.bottom - it.top }
+        val totalHeight = (lineHeight * lines.size).toInt()
+        
+        val bitmap = Bitmap.createBitmap(
+            maxWidth + 20, 
+            totalHeight + 20, 
+            Bitmap.Config.ARGB_8888
+        )
+        
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(Color.BLACK)
+        
+        var y = -paint.fontMetrics.top + 10
+        for (line in lines) {
+            canvas.drawText(line, 10f, y, paint)
+            y += lineHeight
+        }
+        
+        return bitmap
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         username = arguments?.getString("username")
@@ -54,8 +89,10 @@ class CaptchaFragment : Fragment(),  WelcomeActivityCallback {
         val captchaArt = arguments?.getString("captchaArt")
         val captchaText = decodeBase64ToArt(captchaArt!!)
         val token = arguments?.getString("secureToken")
-        binding.asciiView.text = captchaText
-        binding.asciiView.typeface = Typeface.MONOSPACE
+        captchaText?.let { text ->
+            val bitmap = createAsciiArtBitmap(text)
+            binding.asciiView.setImageBitmap(bitmap)
+        }
         binding.back.setOnClickListener {
             fragmentCallBack?.onBackButtonPressed()
         }
