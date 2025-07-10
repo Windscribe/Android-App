@@ -29,22 +29,14 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#000000"
-                android:padding="16dp"
-                android:id="@+id/asciiScroll"
+            <ImageView
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/error"
-                android:scrollbars="horizontal">
-
-                <ImageView
-                    android:id="@+id/asciiView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:scaleType="matrix"
-                    android:contentDescription="ASCII Captcha" />
-            </HorizontalScrollView>
+                android:id="@+id/asciiView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="ASCII Captcha" />
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/captcha_solution"
@@ -64,8 +56,8 @@
                 android:textColor="@color/colorWhite"
                 android:textColorHint="@color/colorWhite50"
                 android:textCursorDrawable="@drawable/color_cursor"
-                app:layout_constraintStart_toStartOf="@id/asciiScroll"
-                app:layout_constraintTop_toBottomOf="@id/asciiScroll" />
+                app:layout_constraintStart_toStartOf="@id/asciiView"
+                app:layout_constraintTop_toBottomOf="@id/asciiView" />
 
             <Button
                 android:id="@+id/login_sign_up"

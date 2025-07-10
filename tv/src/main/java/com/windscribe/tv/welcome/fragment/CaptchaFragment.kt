@@ -54,31 +54,38 @@ class CaptchaFragment : Fragment(),  WelcomeActivityCallback {
     private fun createAsciiArtBitmap(text: String): Bitmap {
         val paint = Paint().apply {
             typeface = Typeface.MONOSPACE
-            textSize = 24f
-            color = Color.GREEN
+            textSize = 16f
+            color = Color.WHITE
             isAntiAlias = false
+            letterSpacing = 0.05f
         }
+        val lines = text.split("\n").filter { it.isNotEmpty() }
+        val testRect = android.graphics.Rect()
+        paint.getTextBounds("█", 0, 1, testRect)
+        val charWidth = testRect.width().toFloat()
+        val charHeight = testRect.height().toFloat()
         
-        val lines = text.split("\n")
-        val maxWidth = lines.maxOfOrNull { paint.measureText(it) }?.toInt() ?: 0
-        val lineHeight = paint.fontMetrics.let { it.bottom - it.top }
-        val totalHeight = (lineHeight * lines.size).toInt()
+        val maxLineLength = lines.maxOfOrNull { it.length } ?: 0
+        val calculatedWidth = (charWidth * maxLineLength * 1.1f).toInt()  // Add 10% buffer
         
+        // Use actual character height for line spacing
+        val lineSpacing = charHeight * 1.2f  // 20% extra for line spacing
+        val totalHeight = (lineSpacing * lines.size).toInt()
+        
+        // Generous padding for TV display
+        val padding = 80
         val bitmap = Bitmap.createBitmap(
-            maxWidth + 20, 
-            totalHeight + 20, 
+            calculatedWidth + padding, 
+            totalHeight + padding, 
             Bitmap.Config.ARGB_8888
         )
-        
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.BLACK)
-        
-        var y = -paint.fontMetrics.top + 10
+        var y = charHeight + (padding / 2)
         for (line in lines) {
-            canvas.drawText(line, 10f, y, paint)
-            y += lineHeight
+            canvas.drawText(line, (padding / 2).toFloat(), y, paint)
+            y += lineSpacing
         }
-        
         return bitmap
     }
 
