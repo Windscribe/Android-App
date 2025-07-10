@@ -80,7 +80,7 @@ class LoginFragment : Fragment(), WelcomeActivityCallback {
             callBack?.onGenerateCodeClick()
         }
         binding.loginSignUp.setOnClickListener {
-            callBack?.onLoginButtonClick(binding.usernameEdit.text.toString(), binding.passwordEdit.text.toString(), null, null, null)
+            callBack?.onAuthLoginClick(binding.usernameEdit.text.toString(), binding.passwordEdit.text.toString())
         }
         binding.passwordContainer.setOnClickListener {
             binding.showPassword.visibility = View.VISIBLE

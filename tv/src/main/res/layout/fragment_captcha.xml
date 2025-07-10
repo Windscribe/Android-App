@@ -38,16 +38,12 @@
                 app:layout_constraintTop_toBottomOf="@id/error"
                 android:scrollbars="horizontal">
 
-                <TextView
+                <ImageView
                     android:id="@+id/asciiView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="24sp"
-                    android:typeface="monospace"
-                    android:lineSpacingExtra="8dp"
-                    android:textColor="#00FF00"
-                    android:textAlignment="viewStart"
-                    android:textIsSelectable="true" />
+                    android:scaleType="matrix"
+                    android:contentDescription="ASCII Captcha" />
             </HorizontalScrollView>
 
             <androidx.appcompat.widget.AppCompatEditText

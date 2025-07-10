@@ -27,4 +27,5 @@ interface WelcomePresenter {
     )
 
     fun onAuthLoginClick(username: String, password: String)
+    fun onAuthSignUpClick(username: String, password: String, email: String?)
 }
