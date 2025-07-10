@@ -646,6 +646,7 @@ class ConnectionViewmodelImpl @Inject constructor(
             showToast(com.windscribe.vpn.R.string.protocol_change_is_not_available_for_custom_config)
         } else {
             appScope.launch {
+                preferences.globalUserConnectionPreference = true
                 autoConnectionManager.changeProtocolInForeground()
             }
         }
