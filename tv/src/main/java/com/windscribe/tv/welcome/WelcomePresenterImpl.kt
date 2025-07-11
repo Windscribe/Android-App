@@ -139,53 +139,6 @@ class WelcomePresenterImpl @Inject constructor(
         }
     }
 
-    override fun startGhostAccountSetup() {
-        welcomeView.prepareUiForApiCallStart()
-        welcomeView.updateCurrentProcess("Signing In")
-        interactor.getCompositeDisposable().add(
-            interactor.getApiCallManager().getReg()
-                .flatMap(Function<GenericResponseClass<RegToken?, ApiErrorResponse?>, SingleSource<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>> label@{ regToken: GenericResponseClass<RegToken?, ApiErrorResponse?> ->
-                    regToken.dataClass?.let {
-                        return@label interactor.getApiCallManager().signUpUsingToken(it.token)
-                    } ?: regToken.errorClass?.let {
-                        throw Exception(it.errorMessage)
-                    } ?: kotlin.run {
-                        throw Exception("Unknown Error")
-                    }
-                }).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(
-                    object :
-                        DisposableSingleObserver<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>() {
-                        override fun onError(e: Throwable) {
-                            welcomeView.prepareUiForApiCallFinished()
-                            logger.error("Ghost account: {}", e.message)
-                            if (e is IOException) {
-                                welcomeView.showError("Unable to reach server. Check your network connection.")
-                            } else {
-                                welcomeView.goToSignUp()
-                            }
-                        }
-
-                        override fun onSuccess(
-                            response: GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>
-                        ) {
-                            response.dataClass?.let {
-                                interactor.getAppPreferenceInterface().sessionHash =
-                                    it.sessionAuthHash
-                                interactor.getFireBaseManager().getFirebaseToken { token ->
-                                    prepareLoginRegistrationDashboard(token)
-                                }
-                            } ?: response.errorClass?.let {
-                                logger.error("Ghost account: {}", it)
-                                welcomeView.prepareUiForApiCallFinished()
-                                welcomeView.goToSignUp()
-                            }
-                        }
-                    })
-        )
-    }
-
     override fun onAuthLoginClick(username: String, password: String) {
         isRegistration = false
         welcomeView.hideSoftKeyboard()
@@ -270,7 +223,14 @@ class WelcomePresenterImpl @Inject constructor(
                                         )
                                     } else {
                                         logger.info("Starting signup without captcha")
-                                        startSignUpProcess(username, password, email, true, it.token, null)
+                                        startSignUpProcess(
+                                            username,
+                                            password,
+                                            email,
+                                            true,
+                                            it.token,
+                                            null
+                                        )
                                     }
                                 } ?: response.errorClass?.let {
                                     logger.error("Signup: {}", it)
@@ -498,12 +458,15 @@ class WelcomePresenterImpl @Inject constructor(
             NetworkErrorCodes.ERROR_2FA_REQUIRED -> {
                 welcomeView.setTwoFaRequired(username, password)
             }
+
             NetworkErrorCodes.ERROR_INVALID_2FA -> {
                 welcomeView.setTwoFaError(errorMessage)
             }
+
             NetworkErrorCodes.ERROR_USER_NAME_ALREADY_TAKEN, NetworkErrorCodes.ERROR_USER_NAME_ALREADY_IN_USE -> {
                 welcomeView.setUsernameError(errorMessage)
             }
+
             else -> {
                 welcomeView.setLoginRegistrationError(errorMessage)
             }
@@ -516,70 +479,70 @@ class WelcomePresenterImpl @Inject constructor(
         interactor.getCompositeDisposable()
             .add(
                 interactor.getApiCallManager().getSessionGeneric(firebaseToken)
-                .flatMapCompletable { sessionResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> ->
-                    Completable.fromSingle(Single.fromCallable {
-                        sessionResponse.dataClass?.let {
-                            if (interactor.getAppPreferenceInterface()
-                                    .getDeviceUUID() == null
-                            ) {
-                                logger.debug("No device id is found for the current user, generating and saving UUID")
-                                interactor.getAppPreferenceInterface()
-                                    .setDeviceUUID(UUID.randomUUID().toString())
+                    .flatMapCompletable { sessionResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> ->
+                        Completable.fromSingle(Single.fromCallable {
+                            sessionResponse.dataClass?.let {
+                                if (interactor.getAppPreferenceInterface()
+                                        .getDeviceUUID() == null
+                                ) {
+                                    logger.debug("No device id is found for the current user, generating and saving UUID")
+                                    interactor.getAppPreferenceInterface()
+                                        .setDeviceUUID(UUID.randomUUID().toString())
+                                }
+                                interactor.getUserRepository().reload(sessionResponse.dataClass)
                             }
-                            interactor.getUserRepository().reload(sessionResponse.dataClass)
-                        }
-                        true
-                    })
-                }
-                .doOnComplete {
-                    welcomeView.updateCurrentProcess(
-                        interactor.getResourceString(
-                            com.windscribe.vpn.R.string.getting_server_credentials
-                        )
-                    )
-                }
-                .andThen(interactor.getConnectionDataUpdater().update())
-                .doOnComplete {
-                    welcomeView.updateCurrentProcess(
-                        interactor.getResourceString(
-                            com.windscribe.vpn.R.string.getting_server_list
-                        )
-                    )
-                }
-                .andThen(interactor.getServerListUpdater().update())
-                .andThen(updateStaticIps())
-                .andThen(Completable.fromAction {
-                    interactor.getPreferenceChangeObserver().postCityServerChange()
-                })
-                .andThen(interactor.updateUserData())
-                .onErrorResumeNext { throwable: Throwable ->
-                    logger.error("Prepare data: {}", throwable.message)
-                    Completable.fromAction {
-                        interactor.getPreferenceChangeObserver().postCityServerChange()
+                            true
+                        })
                     }
-                        .andThen(interactor.updateUserData())
-                }.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableCompletableObserver() {
-                    override fun onComplete() {
-                        interactor.getWorkManager().onAppStart()
-                        interactor.getWorkManager().onAppMovedToForeground()
-                        interactor.getWorkManager().updateNodeLatencies()
-                        if (isRegistration) {
-                            welcomeView.gotoAddEmailActivity(
-                                interactor.getAppPreferenceInterface().userStatus
-                                        == UserStatusConstants.USER_STATUS_PREMIUM
+                    .doOnComplete {
+                        welcomeView.updateCurrentProcess(
+                            interactor.getResourceString(
+                                com.windscribe.vpn.R.string.getting_server_credentials
                             )
-                        } else {
-                            welcomeView.gotoHomeActivity()
+                        )
+                    }
+                    .andThen(interactor.getConnectionDataUpdater().update())
+                    .doOnComplete {
+                        welcomeView.updateCurrentProcess(
+                            interactor.getResourceString(
+                                com.windscribe.vpn.R.string.getting_server_list
+                            )
+                        )
+                    }
+                    .andThen(interactor.getServerListUpdater().update())
+                    .andThen(updateStaticIps())
+                    .andThen(Completable.fromAction {
+                        interactor.getPreferenceChangeObserver().postCityServerChange()
+                    })
+                    .andThen(interactor.updateUserData())
+                    .onErrorResumeNext { throwable: Throwable ->
+                        logger.error("Prepare data: {}", throwable.message)
+                        Completable.fromAction {
+                            interactor.getPreferenceChangeObserver().postCityServerChange()
                         }
-                    }
+                            .andThen(interactor.updateUserData())
+                    }.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(object : DisposableCompletableObserver() {
+                        override fun onComplete() {
+                            interactor.getWorkManager().onAppStart()
+                            interactor.getWorkManager().onAppMovedToForeground()
+                            interactor.getWorkManager().updateNodeLatencies()
+                            if (isRegistration) {
+                                welcomeView.gotoAddEmailActivity(
+                                    interactor.getAppPreferenceInterface().userStatus
+                                            == UserStatusConstants.USER_STATUS_PREMIUM
+                                )
+                            } else {
+                                welcomeView.gotoHomeActivity()
+                            }
+                        }
 
-                    override fun onError(e: Throwable) {
-                        welcomeView.prepareUiForApiCallFinished()
-                        logger.error("Prepare data: {}", e.message)
-                    }
-                })
+                        override fun onError(e: Throwable) {
+                            welcomeView.prepareUiForApiCallFinished()
+                            logger.error("Prepare data: {}", e.message)
+                        }
+                    })
             )
     }
 

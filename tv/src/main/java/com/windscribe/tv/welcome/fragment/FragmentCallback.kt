@@ -12,10 +12,17 @@ interface FragmentCallback {
     )
 
     fun onBackButtonPressed()
-    fun onContinueWithOutAccountClick()
+    fun onGetStartedClick()
     fun onForgotPasswordClick()
     fun onGenerateCodeClick()
-    fun onLoginButtonClick(username: String, password: String, twoFa: String?, secureToken: String?, captcha: String?)
+    fun onLoginButtonClick(
+        username: String,
+        password: String,
+        twoFa: String?,
+        secureToken: String?,
+        captcha: String?
+    )
+
     fun onAuthLoginClick(username: String, password: String)
     fun onAuthSignUpClick(username: String, password: String, email: String?)
     fun onLoginClick()

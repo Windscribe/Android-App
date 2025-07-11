@@ -44,7 +44,7 @@ class WelcomeFragment : Fragment() {
             fragmentCallback?.onLoginClick()
         }
         binding.continueWithoutAccount.setOnClickListener {
-            fragmentCallback?.onContinueWithOutAccountClick()
+            fragmentCallback?.onGetStartedClick()
         }
     }
 

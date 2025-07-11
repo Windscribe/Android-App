@@ -158,8 +158,13 @@ class WelcomeActivity :
         }
     }
 
-    override fun onContinueWithOutAccountClick() {
-        presenter.startGhostAccountSetup()
+    override fun onGetStartedClick() {
+        val signUpFragment = SignUpFragment()
+        val direction = GravityCompat
+            .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
+        signUpFragment.enterTransition = Slide(direction)
+            .addTarget(R.id.login_sign_up_container)
+        replaceFragment(signUpFragment, true)
     }
 
     override fun onForgotPasswordClick() {
@@ -175,7 +180,13 @@ class WelcomeActivity :
         presenter.onGenerateCodeClick()
     }
 
-    override fun onLoginButtonClick(username: String, password: String, twoFa: String?, secureToken: String?, captcha: String?) {
+    override fun onLoginButtonClick(
+        username: String,
+        password: String,
+        twoFa: String?,
+        secureToken: String?,
+        captcha: String?
+    ) {
         presenter.startLoginProcess(username, password, twoFa, secureToken, captcha)
     }
 
@@ -196,7 +207,14 @@ class WelcomeActivity :
         secureToken: String?,
         captcha: String?
     ) {
-        presenter.startSignUpProcess(username, password, email, ignoreEmptyEmail, secureToken, captcha)
+        presenter.startSignUpProcess(
+            username,
+            password,
+            email,
+            ignoreEmptyEmail,
+            secureToken,
+            captcha
+        )
     }
 
     override fun prepareUiForApiCallFinished() {
@@ -321,10 +339,15 @@ class WelcomeActivity :
     }
 
     override fun onAuthLoginClick(username: String, password: String) {
-       presenter.onAuthLoginClick(username, password)
+        presenter.onAuthLoginClick(username, password)
     }
 
-    override fun captchaReceived(username: String, password: String, secureToken: String, captchaArt: String) {
+    override fun captchaReceived(
+        username: String,
+        password: String,
+        secureToken: String,
+        captchaArt: String
+    ) {
         val fragment: Fragment = CaptchaFragment()
         val bundle = Bundle()
         bundle.putString("username", username)

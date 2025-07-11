@@ -3,7 +3,6 @@
  */
 package com.windscribe.vpn.api
 
-import android.R.attr.password
 import com.windscribe.vpn.api.response.AddEmailResponse
 import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.api.response.AuthToken
@@ -127,15 +126,6 @@ open class ApiCallManager @Inject constructor(
                 arrayOf("wstunnel")
             ) { code, json ->
                 buildResponse(sub, code, json, PortMapResponse::class.java)
-            }
-            sub.setCancellable { callback.cancel() }
-        }
-    }
-
-    override fun getReg(): Single<GenericResponseClass<RegToken?, ApiErrorResponse?>> {
-        return Single.create { sub ->
-            val callback = wsNetServerAPI.regToken { code, json ->
-                buildResponse(sub, code, json, RegToken::class.java)
             }
             sub.setCancellable { callback.cancel() }
         }

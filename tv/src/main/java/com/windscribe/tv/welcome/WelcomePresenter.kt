@@ -14,8 +14,6 @@ interface WelcomePresenter {
         email: String?,
         ignoreEmptyEmail: Boolean
     )
-
-    fun startGhostAccountSetup()
     fun startLoginProcess(username: String, password: String, twoFa: String?, secureToken: String?, captcha: String?)
     fun startSignUpProcess(
         username: String,
