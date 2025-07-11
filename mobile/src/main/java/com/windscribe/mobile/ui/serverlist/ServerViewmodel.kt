@@ -99,7 +99,13 @@ class ServerViewModelImpl(
     private val _searchListState = MutableStateFlow<ListState<ServerListItem>>(ListState.Loading)
     override val searchListState: StateFlow<ListState<ServerListItem>> = _searchListState
 
-    private val _selectedServerListType = MutableStateFlow(ServerListType.All)
+    private val _selectedServerListType = MutableStateFlow(when (preferencesHelper.lastSelectedTabIndex) {
+        0 -> ServerListType.All
+        1 -> ServerListType.Fav
+        2 -> ServerListType.Static
+        3 -> ServerListType.Config
+        else -> ServerListType.All
+    })
     override val selectedServerListType: StateFlow<ServerListType> = _selectedServerListType
 
 
@@ -347,6 +353,12 @@ class ServerViewModelImpl(
     }
 
     override fun setSelectedType(type: ServerListType) {
+        preferencesHelper.saveLastSelectedServerTabIndex(when (type) {
+            ServerListType.All -> 0
+            ServerListType.Fav -> 1
+            ServerListType.Static -> 2
+            ServerListType.Config -> 3
+        })
         _selectedServerListType.value = type
     }
 
