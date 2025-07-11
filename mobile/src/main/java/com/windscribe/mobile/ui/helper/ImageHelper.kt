@@ -22,15 +22,17 @@ fun getHeaderHeight(): Dp {
     return getStatusBarHeight() + 60.dp
 }
 @Composable
-fun calculateImageDimensions(): ImageDimensions {
+fun calculateImageDimensions(isSingleLineLocationName: Boolean): ImageDimensions {
     val config = LocalConfiguration.current
     val screenWidthDp = config.screenWidthDp
     val screenHeightDp = config.screenHeightDp
-
     val screenWidth = screenWidthDp.dp
     val screenHeight = screenHeightDp.dp
-
-    val minHeight = 233.dp + getStatusBarHeight()
+    var minImageHeight = 233.dp
+    if (!isSingleLineLocationName) {
+        minImageHeight = 275.dp
+    }
+    val minHeight = minImageHeight + getStatusBarHeight()
     val maxHeight = screenHeight * 0.45f
 
     // Determine dynamic height

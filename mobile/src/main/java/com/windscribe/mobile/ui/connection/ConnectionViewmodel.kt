@@ -143,9 +143,11 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract fun onFavouriteIpClick()
     abstract fun setContextMenuState(state: Boolean)
     abstract val toastMessage: StateFlow<ToastMessage>
+    abstract val isSingleLineLocationName: StateFlow<Boolean>
     abstract fun clearToast()
     abstract fun onProtocolChangeClick()
     abstract fun onGoToHandled()
+    abstract fun setIsSingleLineLocationName(singleLine: Boolean)
 }
 
 class ConnectionViewmodelImpl @Inject constructor(
@@ -190,6 +192,8 @@ class ConnectionViewmodelImpl @Inject constructor(
     private var networkListener: NetworkInfoListener? = null
     private val _aspectRatio = MutableStateFlow(1)
     override val aspectRatio: StateFlow<Int> = _aspectRatio
+    private val _isSingleLineLocationName = MutableStateFlow(true)
+    override val isSingleLineLocationName: StateFlow<Boolean> = _isSingleLineLocationName
     private var mediaPlayer: MediaPlayer? = null
     private val logger = LoggerFactory.getLogger("ConnectionViewmodel")
 
@@ -758,6 +762,12 @@ class ConnectionViewmodelImpl @Inject constructor(
         viewModelScope.launch {
             _goto.emit(HomeGoto.None)
             _toastMessage.emit(ToastMessage.None)
+        }
+    }
+
+    override fun setIsSingleLineLocationName(singleLine: Boolean) {
+        viewModelScope.launch {
+            _isSingleLineLocationName.emit(singleLine)
         }
     }
 

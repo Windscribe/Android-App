@@ -2,6 +2,7 @@ package com.windscribe.mobile.ui.home
 
 import NetworkNameSheet
 import ServerListScreen
+import android.R.attr.maxWidth
 import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
@@ -58,7 +59,9 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -67,12 +70,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.AppConnectButton
 import com.windscribe.mobile.ui.common.LocationImage
+import com.windscribe.mobile.ui.common.fitsInOneLine
 import com.windscribe.mobile.ui.connection.ConnectionUIState
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.connection.LocationInfoState
@@ -363,21 +368,46 @@ private fun LocationName(connectionViewmodel: ConnectionViewmodel) {
     val locationInfo = (state.locationInfo as? LocationInfoState.Success)?.locationInfo
     val nodeName = locationInfo?.nodeName ?: ""
     val nickname = locationInfo?.nickName ?: ""
-    Row {
-        Text(
-            text = nodeName,
-            style = font26,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(start = 12.dp)
-        )
-        Text(
-            text = " $nickname",
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            style = font26.copy(fontWeight = FontWeight.Normal),
-            modifier = Modifier.padding(end = 12.dp)
-        )
+    val density = LocalDensity.current
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp
+    val maxWidthPx = with(density) { screenWidthDp.dp.toPx() }
+    val isSingleLine = fitsInOneLine("$nodeName $nickname", 26.0f, maxWidthPx, density)
+    connectionViewmodel.setIsSingleLineLocationName(isSingleLine)
+    if (isSingleLine) {
+        Row {
+            Text(
+                text = nodeName,
+                style = font26.copy(textAlign = TextAlign.Start),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(start = 12.dp)
+            )
+            Text(
+                text = " $nickname",
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = font26.copy(fontWeight = FontWeight.Normal, textAlign = TextAlign.Start),
+                modifier = Modifier.padding(end = 12.dp)
+            )
+        }
+    } else {
+        Column {
+            Text(
+                text = nodeName,
+                style = font26.copy(textAlign = TextAlign.Start),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp)
+            )
+            Text(
+                text = nickname,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = font26.copy(fontWeight = FontWeight.Normal, textAlign = TextAlign.Start),
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp)
+            )
+        }
     }
 }
 

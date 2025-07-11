@@ -138,7 +138,7 @@ private fun SuccessView(
                     onRefresh = {
                         viewModel.refresh(ServerListType.Config)
                     },
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.weight(1.0f)
                 ) {
                     LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
                         items(list, key = { it.id }) { item ->

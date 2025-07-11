@@ -3,7 +3,10 @@ package com.windscribe.mobile.ui.common
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.text.TextPaint
 import android.widget.Toast
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.sp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.serverlist.ServerListItem
 import com.windscribe.vpn.constants.NetworkKeyConstants
@@ -60,4 +63,13 @@ fun Context.openUrl(path: String) {
     } else {
         Toast.makeText(this, "No browser found", Toast.LENGTH_SHORT).show()
     }
+}
+
+fun fitsInOneLine(text: String, fontSizeSp: Float, maxWidthPx: Float, density: Density): Boolean {
+    val paint = TextPaint().apply {
+        isAntiAlias = true
+        textSize = with(density) { fontSizeSp.sp.toPx() }
+    }
+    val textWidth = paint.measureText(text)
+    return textWidth <= maxWidthPx
 }

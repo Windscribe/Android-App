@@ -60,7 +60,8 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
     val locationBackground =
         (connectionState.locationInfo as? LocationInfoState.Success)?.locationInfo?.locationBackground
     val resource = locationBackground?.resource ?: com.windscribe.vpn.R.drawable.dummy_flag
-    val imageDimen = calculateImageDimensions()
+    val isSingleLineLocationName by connectionViewmodel.isSingleLineLocationName.collectAsState()
+    val imageDimen = calculateImageDimensions(isSingleLineLocationName)
     Box {
         AnimatedContent(
             targetState = resource,
