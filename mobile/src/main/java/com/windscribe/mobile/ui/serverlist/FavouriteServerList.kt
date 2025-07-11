@@ -47,9 +47,11 @@ import com.windscribe.mobile.ui.common.healthColor
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.helper.HandleScrollHaptic
 import com.windscribe.mobile.ui.home.HomeViewmodel
+import com.windscribe.mobile.ui.home.UserState
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.serverListSecondaryColor
+import com.windscribe.vpn.commonutils.FlagIconResource
 import kotlin.collections.set
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -145,7 +147,14 @@ private fun ListItemView(
             }.padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        ServerListIcon(item.city, userState, angle, color, showLocationLoad)
+        SplitBorderCircle(
+            angle,
+            color,
+            MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.20f),
+            FlagIconResource.getSmallFlag(item.countryCode),
+            userState !is UserState.Pro && item.city.pro == 1,
+            showLocationLoad
+        )
         Spacer(modifier = Modifier.width(8.dp))
         ServerNodeName("${item.city.nodeName} ${item.city.nickName}", Modifier.weight(1f))
         if (item.city.linkSpeed == "10000") {

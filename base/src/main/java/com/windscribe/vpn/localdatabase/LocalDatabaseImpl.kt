@@ -3,6 +3,7 @@
  */
 package com.windscribe.vpn.localdatabase
 
+import android.database.sqlite.SQLiteException
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.localdatabase.tables.PingTestResults
@@ -258,6 +259,14 @@ class LocalDatabaseImpl @Inject constructor(
 
     override fun getCityAndRegion(cityId: Int): CityAndRegion {
         return cityAndRegionDao.getCityAndRegion(cityId)
+    }
+
+    override fun getCountryCode(cityId: Int): String {
+        return try {
+            cityAndRegionDao.getCityAndRegion(cityId).region.countryCode
+        } catch (ignored: SQLiteException) {
+            ""
+        }
     }
 
     override fun getConfigs(): Flow<List<ConfigFile>> {

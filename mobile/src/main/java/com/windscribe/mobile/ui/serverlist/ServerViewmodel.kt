@@ -35,7 +35,7 @@ import java.util.Locale
 import kotlin.collections.map
 
 data class ServerListItem(val id: Int, val region: Region, val cities: List<City>)
-data class FavouriteListItem(val id: Int, val city: City)
+data class FavouriteListItem(val id: Int, val city: City, val countryCode: String)
 data class StaticListItem(val id: Int, val staticItem: StaticRegion)
 data class ConfigListItem(val id: Int, val config: ConfigFile)
 data class LatencyListItem(val id: Int, val time: Int)
@@ -289,14 +289,19 @@ class ServerViewModelImpl(
     }
 
     private fun fetchFavouriteList() {
-        fetchData(
-            stateFlow = _favouriteListState,
-            repositoryFlow = favouriteRepository.favourites,
-            transform = { favourites ->
-                favourites.updateCityNames().sortCities().map { FavouriteListItem(it.id, it) }
-            },
-            errorMessage = "Failed to load favourites"
-        )
+        viewModelScope.launch(Dispatchers.IO) {
+            favouriteRepository.favourites.map { favourites ->
+                favourites.updateCityNames().sortCities().map { city ->
+                    FavouriteListItem(
+                        city.id,
+                        city,
+                        localDbInterface.getCountryCode(city.id)
+                    )
+                }
+            }.collect {
+                _favouriteListState.value = ListState.Success(it)
+            }
+        }
     }
 
     private fun fetchStaticList() {
