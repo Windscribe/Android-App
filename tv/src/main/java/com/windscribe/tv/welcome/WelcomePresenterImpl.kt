@@ -351,7 +351,6 @@ class WelcomePresenterImpl @Inject constructor(
                 return
             }
             logger.info("Trying to sign up with provided credentials...")
-            welcomeView.prepareUiForApiCallStart()
             interactor.getCompositeDisposable().add(
                 interactor.getApiCallManager()
                     .signUserIn(
