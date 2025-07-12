@@ -155,6 +155,6 @@ dependencies {
     implementation files("$projectDir/src/main/libs/wsnet.aar")
     googleApi 'com.android.billingclient:billing:7.0.0'
     googleApi "com.google.android.gms:play-services-appset:16.0.2"
-    googleApi 'com.google.android.play:review-ktx:2.0.1'
+    googleApi 'com.google.android.play:review-ktx:2.0.2'
     googleApi 'com.google.android.gms:play-services-auth:20.4.1'
 }

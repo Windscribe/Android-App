@@ -24,10 +24,6 @@ class WindscribeReviewManagerImpl(
     private val reviewManager = ReviewManagerFactory.create(context)
     private val logger = LoggerFactory.getLogger("state")
     override fun handleAppReview() {
-        // TV does not not In build review popup.
-        if (appContext.applicationInterface.isTV) {
-            return
-        }
         scope.launch {
             userRepository.userInfo.collectLatest {
                 delay(3000)
