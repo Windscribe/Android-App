@@ -12,7 +12,8 @@
         android:supportsRtl="false"
         android:largeHeap="true"
         android:theme="@style/DarkTheme"
-        tools:targetApi="n">
+        android:enableOnBackInvokedCallback="true"
+        tools:targetApi="33">
         <activity
             android:name="com.windscribe.vpn.backend.utils.VPNPermissionActivity"
             android:autoRemoveFromRecents="true"
