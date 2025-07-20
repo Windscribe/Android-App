@@ -37,7 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -108,23 +108,51 @@ fun CaptchaDebugView(
     }
 
     val density = LocalDensity.current
-    val sliderPositionX = remember { mutableFloatStateOf(0f) }
-    val sliderPositionY = remember { mutableFloatStateOf(captcha.top.toFloat()) }
+    val configuration = LocalConfiguration.current
 
-    val initialY = remember { mutableStateOf(captcha.top.toFloat()) }
+    // Calculate available width: screen width - total padding (16dp + 24dp on each side = 80dp total)
+    val totalPaddingDp = 80.dp // 16dp (dialog) + 24dp (content) on each side
+    val screenWidthDp = configuration.screenWidthDp.dp
+    val availableWidthDp = screenWidthDp - totalPaddingDp
+    val availableWidthPx = with(density) { availableWidthDp.toPx() }
+    
+    // Calculate image sizing
+    val originalWidth = captchaBackground.width.toFloat()
+    val originalHeight = captchaBackground.height.toFloat()
+    val aspectRatio = originalWidth / originalHeight
+    
+    val (finalWidth, finalHeight, scaleFactor) = if (originalWidth > availableWidthPx) {
+        // Image is larger than available space, resize to fit
+        val newWidth = availableWidthPx
+        val newHeight = newWidth / aspectRatio
+        val scale = newWidth / originalWidth
+        Triple(newWidth.toInt(), newHeight.toInt(), scale)
+    } else {
+        // Image fits, use original size
+        Triple(originalWidth.toInt(), originalHeight.toInt(), 1f)
+    }
+    
+
+    // Initialize slider position with scaling applied
+    val sliderPositionX = remember { mutableFloatStateOf(0f) }
+    val sliderPositionY = remember { mutableFloatStateOf(captcha.top.toFloat() * scaleFactor) }
+    val initialY = remember { mutableFloatStateOf(captcha.top.toFloat()) }
     val dragHistory = remember { mutableStateListOf<Pair<Float, Float>>() }
 
-    val backgroundSize =
-        remember { mutableStateOf(IntSize(captchaBackground.width, captchaBackground.height)) }
+    val backgroundSize = remember { mutableStateOf(IntSize(finalWidth, finalHeight)) }
 
     val backgroundBitmap = captchaBackground.asImageBitmap()
     val sliderBitmap = slider.asImageBitmap()
+    val scaledSliderWidth = (slider.width * scaleFactor).toInt()
+    val scaledSliderHeight = (slider.height * scaleFactor).toInt()
+    
     fun submit() {
-        val finalXOffset = sliderPositionX.floatValue
-        val xPositions = dragHistory.map { it.first }
-        val yPositions = dragHistory.map { it.second }
+        // Convert scaled position back to original image coordinates for API
+        val originalXOffset = sliderPositionX.floatValue / scaleFactor
+        val xPositions = dragHistory.map { it.first / scaleFactor }
+        val yPositions = dragHistory.map { it.second / scaleFactor }
         val trail = mapOf("x" to xPositions, "y" to yPositions)
-        onSolutionSubmit(finalXOffset, trail)
+        onSolutionSubmit(originalXOffset, trail)
     }
 
     var dragJob: Job? = remember { null }
@@ -165,27 +193,27 @@ fun CaptchaDebugView(
                 )
             }
 
-            // Draggable slider in pixel space
+            // Draggable slider
             Box(
                 modifier = with(density) {
                     Modifier
-                        .offset(x = sliderPositionX.value.toDp(), y = sliderPositionY.value.toDp())
-                        .size(slider.width.toDp(), slider.height.toDp())
+                        .offset(x = sliderPositionX.floatValue.toDp(), y = sliderPositionY.floatValue.toDp())
+                        .size(scaledSliderWidth.toDp(), scaledSliderHeight.toDp())
                         .pointerInput(Unit) {
                             detectDragGestures(
                                 onDrag = { change, dragAmount ->
                                     change.consume()
-                                    val newX = (sliderPositionX.value + dragAmount.x).coerceIn(
+                                    val newX = (sliderPositionX.floatValue + dragAmount.x).coerceIn(
                                         0f,
-                                        backgroundSize.value.width - slider.width.toFloat()
+                                        backgroundSize.value.width - scaledSliderWidth.toFloat()
                                     )
-                                    val newY = (sliderPositionY.value + dragAmount.y).coerceIn(
+                                    val newY = (sliderPositionY.floatValue + dragAmount.y).coerceIn(
                                         0f,
-                                        backgroundSize.value.height - slider.height.toFloat()
+                                        backgroundSize.value.height - scaledSliderHeight.toFloat()
                                     )
-                                    dragHistory.add(Pair(newX, newY - initialY.value))
-                                    sliderPositionX.value = newX
-                                    sliderPositionY.value = newY
+                                    dragHistory.add(Pair(newX, newY - (initialY.floatValue * scaleFactor)))
+                                    sliderPositionX.floatValue = newX
+                                    sliderPositionY.floatValue = newY
                                     dragJob?.cancel()
                                 },
                                 onDragEnd = {
