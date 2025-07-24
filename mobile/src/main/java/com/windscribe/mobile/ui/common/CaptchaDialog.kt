@@ -211,7 +211,26 @@ fun CaptchaDebugView(
                                         0f,
                                         backgroundSize.value.height - scaledSliderHeight.toFloat()
                                     )
-                                    dragHistory.add(Pair(newX, newY - (initialY.floatValue * scaleFactor)))
+                                    val newPoint = Pair(newX, newY - (initialY.floatValue * scaleFactor))
+                                    
+                                    // Only add point if it's at least 0.5 pixels away from the last recorded point
+                                    val shouldRecord = if (dragHistory.isEmpty()) {
+                                        true
+                                    } else {
+                                        val lastPoint = dragHistory.last()
+                                        val distance = kotlin.math.sqrt(
+                                            (newPoint.first - lastPoint.first) * (newPoint.first - lastPoint.first) +
+                                            (newPoint.second - lastPoint.second) * (newPoint.second - lastPoint.second)
+                                        )
+                                        distance >= 0.5f
+                                    }
+                                    
+                                    if (shouldRecord) {
+                                        dragHistory.add(newPoint)
+                                        if (dragHistory.size > 50) {
+                                            dragHistory.removeAt(0)
+                                        }
+                                    }
                                     sliderPositionX.floatValue = newX
                                     sliderPositionY.floatValue = newY
                                     dragJob?.cancel()
