@@ -212,6 +212,9 @@ fun CaptchaDebugView(
                                         backgroundSize.value.height - scaledSliderHeight.toFloat()
                                     )
                                     dragHistory.add(Pair(newX, newY - (initialY.floatValue * scaleFactor)))
+                                    if (dragHistory.size > 50) {
+                                        dragHistory.removeAt(0)
+                                    }
                                     sliderPositionX.floatValue = newX
                                     sliderPositionY.floatValue = newY
                                     dragJob?.cancel()
