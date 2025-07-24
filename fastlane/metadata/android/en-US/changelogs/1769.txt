@@ -1,0 +1,4 @@
+v3.91(Mobile)
+* Fixed invalid captcha payload.
+* Fixed mobile not registering app install.
+* Several minor performance and stability enhancements
