@@ -44,8 +44,12 @@ class AppPreferenceHelper(
     private val securePreferences: SecurePreferences
 ) : PreferencesHelper {
     override fun clearAllData() {
+        val installation = getResponseString(PreferencesKeyConstants.NEW_INSTALLATION)
         preference.clear()
         securePreferences.clear()
+        if (PreferencesKeyConstants.I_OLD == installation) {
+           saveResponseStringData(PreferencesKeyConstants.NEW_INSTALLATION, PreferencesKeyConstants.I_OLD)
+        }
     }
 
     override fun clearOldSessionAuth() {

@@ -181,7 +181,7 @@ class ComposeModule {
                 } else if (modelClass.isAssignableFrom(EditCustomConfigViewmodel::class.java)) {
                     return EditCustomConfigViewmodelImpl(localDbInterface, windVpnController) as T
                 } else if (modelClass.isAssignableFrom(AppStartActivityViewModel::class.java)) {
-                    return AppStartActivityViewModelImpl(appPreferenceHelper) as T
+                    return AppStartActivityViewModelImpl(appPreferenceHelper, apiCallManager) as T
                 } else if (modelClass.isAssignableFrom(MainMenuViewModel::class.java)) {
                     return MainMenuViewModelImpl(userRepository) as T
                 } else if (modelClass.isAssignableFrom(GeneralViewModel::class.java)) {
