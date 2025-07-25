@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.autofill.ContentType
 import com.windscribe.mobile.ui.common.AuthTextField
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.PreferenceBackground
@@ -58,6 +59,7 @@ fun AddEmailScreen(viewModel: EmailViewModel? = null) {
             AuthTextField(
                 Modifier,
                 stringResource(com.windscribe.vpn.R.string.email),
+                autofillType = ContentType.EmailAddress,
                 onValueChange = {
                     viewModel?.onEmailChanged(it)
                 })

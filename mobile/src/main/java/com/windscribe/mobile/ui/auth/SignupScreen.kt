@@ -56,6 +56,7 @@ import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.common.AppBackground
 import com.windscribe.mobile.ui.common.AppProgressBar
+import androidx.compose.ui.autofill.ContentType
 import com.windscribe.mobile.ui.common.AuthTextField
 import com.windscribe.mobile.ui.common.CaptchaDebugDialog
 import com.windscribe.mobile.ui.common.NextButton
@@ -187,6 +188,7 @@ private fun SignupPasswordTextField(signupState: SignupState, viewModel: SignupV
         isError = isError(signupState, AuthInputFields.Password),
         modifier = Modifier.fillMaxWidth(),
         isPassword = true,
+        autofillType = ContentType.Password,
         onValueChange = {
             viewModel?.onPasswordChanged(it)
         })
@@ -263,6 +265,7 @@ private fun SignupUsernameTextField(signupState: SignupState, viewModel: SignupV
         placeHolder = stringResource(com.windscribe.vpn.R.string.enter_username),
         isError = isError(signupState, AuthInputFields.Username),
         modifier = Modifier.fillMaxWidth(),
+        autofillType = ContentType.Username,
         onValueChange = {
             viewModel?.onUsernameChanged(it)
         })
@@ -279,6 +282,7 @@ private fun SignupEmailTextField(signupState: SignupState, viewModel: SignupView
         placeHolder = stringResource(com.windscribe.vpn.R.string.enter_email),
         isError = isError(signupState, AuthInputFields.Email),
         modifier = Modifier.fillMaxWidth(),
+        autofillType = ContentType.EmailAddress,
         onValueChange = {
             viewModel?.onEmailChanged(it)
         })

@@ -46,6 +46,7 @@ import androidx.navigation.NavController
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.AppBackground
 import com.windscribe.mobile.ui.common.AppProgressBar
+import androidx.compose.ui.autofill.ContentType
 import com.windscribe.mobile.ui.common.AuthTextField
 import com.windscribe.mobile.ui.common.CaptchaDebugDialog
 import com.windscribe.mobile.ui.common.NextButton
@@ -164,6 +165,7 @@ fun LoginPasswordTextField(loginState: LoginState, viewModel: LoginViewModel? = 
         isError = isError(loginState, AuthInputFields.Password),
         modifier = Modifier.fillMaxWidth(),
         isPassword = true,
+        autofillType = ContentType.Password,
         onValueChange = {
             viewModel?.onPasswordChanged(it)
         })
@@ -190,6 +192,7 @@ fun LoginUsernameTextField(loginState: LoginState, viewModel: LoginViewModel? = 
         placeHolder = stringResource(com.windscribe.vpn.R.string.enter_username),
         isError = isError(loginState, AuthInputFields.Username),
         modifier = Modifier.fillMaxWidth(),
+        autofillType = ContentType.Username,
         onValueChange = {
             viewModel?.onUsernameChanged(it)
         })

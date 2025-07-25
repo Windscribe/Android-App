@@ -24,12 +24,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentDataType
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDataType
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -46,6 +52,7 @@ fun AuthTextField(
     placeHolder: String? = null,
     isError: Boolean = false,
     isPassword: Boolean = false,
+    autofillType: ContentType? = null,
     onValueChange: (String) -> Unit = {},
     onHintClick: () -> Unit = {}
 ) {
@@ -87,8 +94,9 @@ fun AuthTextField(
                 shape = RoundedCornerShape(9.dp),
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.None,
-                    autoCorrect = false,
-                    imeAction = ImeAction.Done
+                    autoCorrectEnabled = false,
+                    imeAction = ImeAction.Done,
+                    keyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Text
                 ),
                 placeholder = {
                     if (placeHolder != null) {
@@ -138,6 +146,19 @@ fun AuthTextField(
                             color = AppColors.red,
                             shape = RoundedCornerShape(9.dp)
                         ) else Modifier
+                    )
+                    .then(
+                        if (autofillType != null) {
+                            Modifier.semantics {
+                                contentType = autofillType
+                                contentDataType = ContentDataType.Text
+                            }
+                        } else if (isPassword) {
+                            Modifier.semantics {
+                                contentType = ContentType.Password
+                                contentDataType = ContentDataType.Text
+                            }
+                        } else Modifier
                     ),
                 textStyle = font16.copy(color = if (isError) AppColors.red else AppColors.white, textAlign = TextAlign.Start),
             )
