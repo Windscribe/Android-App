@@ -14,6 +14,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -36,7 +40,14 @@ import com.windscribe.vpn.backend.Util
 fun SetupPreferredProtocolScreen(appStartActivityViewModel: AppStartActivityViewModel? = null) {
     val navController = LocalNavController.current
     val proto = appStartActivityViewModel?.protocolInformation
-    if (proto == null) navController.popBackStack()
+    var isNavigating by remember { mutableStateOf(false) }
+    
+    if (proto == null) {
+        if (!isNavigating) {
+            navController.popBackStack()
+        }
+        return
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -60,7 +71,7 @@ fun SetupPreferredProtocolScreen(appStartActivityViewModel: AppStartActivityView
                 colorFilter = ColorFilter.tint(AppColors.white)
             )
             Text(
-                text = stringResource(com.windscribe.vpn.R.string.set_this_protocol_as_preferred, Util.getProtocolLabel(proto!!.protocol)),
+                text = stringResource(com.windscribe.vpn.R.string.set_this_protocol_as_preferred, Util.getProtocolLabel(proto.protocol)),
                 style = font24,
                 color = AppColors.white,
                 textAlign = TextAlign.Center
@@ -73,14 +84,23 @@ fun SetupPreferredProtocolScreen(appStartActivityViewModel: AppStartActivityView
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
             Spacer(modifier = Modifier.padding(top = 24.dp))
-            NextButton(Modifier, text = stringResource(com.windscribe.vpn.R.string.set_as_preferred), true) {
-                appStartActivityViewModel.autoConnectionModeCallback?.onSetAsPreferredClicked()
-                navController.popBackStack()
+            NextButton(Modifier, text = stringResource(com.windscribe.vpn.R.string.set_as_preferred), enabled = !isNavigating) {
+                if (!isNavigating) {
+                    isNavigating = true
+                    appStartActivityViewModel.autoConnectionModeCallback?.onSetAsPreferredClicked()
+                    navController.popBackStack()
+                }
             }
-            TextButton(onClick = {
-                appStartActivityViewModel.autoConnectionModeCallback?.onCancel()
-                navController.popBackStack()
-            }) {
+            TextButton(
+                onClick = {
+                    if (!isNavigating) {
+                        isNavigating = true
+                        appStartActivityViewModel.autoConnectionModeCallback?.onCancel()
+                        navController.popBackStack()
+                    }
+                },
+                enabled = !isNavigating
+            ) {
                 Text(
                     stringResource(com.windscribe.vpn.R.string.cancel),
                     style = font16,
