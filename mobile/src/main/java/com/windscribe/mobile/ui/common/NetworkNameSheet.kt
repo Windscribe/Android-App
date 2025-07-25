@@ -31,17 +31,15 @@ import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.RequestLocationPermissions
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.connection.NetworkInfoState
-import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.home.HomeViewmodel
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
-import com.windscribe.mobile.ui.preferences.robert.RobertGoToState
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 
 internal enum class PermissionDialogType {
-    ForegroundLocation, BackgroundLocation, OpenSettings, None
+    ForegroundLocation, BackgroundLocation, None
 }
 
 private fun isLocationEnabled(context: Context): Boolean {
@@ -75,7 +73,6 @@ fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Ho
                     ).show()
                     return@RequestLocationPermissions
                 }
-                Toast.makeText(activity, "Unable to get network name.", Toast.LENGTH_SHORT).show()
             } else {
                 navController.navigate(Screen.NetworkDetails.route)
             }

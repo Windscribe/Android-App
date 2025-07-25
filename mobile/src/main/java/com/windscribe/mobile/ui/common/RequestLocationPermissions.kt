@@ -26,13 +26,41 @@ fun RequestLocationPermissions(
     val navController = LocalNavController.current
     val permissionDialogType = remember { mutableStateOf(PermissionDialogType.None) }
     val permissionHelper = activity.permissionHelper
+    val showDialog = { data: DialogData, onConfirm: () -> Unit ->
+        val callback = object : DialogCallback() {
+            override fun onDismiss() {
+                permissionDialogType.value = PermissionDialogType.None
+                navController.popBackStack()
+            }
 
+            override fun onConfirm() {
+                permissionDialogType.value = PermissionDialogType.None
+                navController.popBackStack()
+                onConfirm()
+            }
+        }
+        activity.viewmodel.setDialogCallback(data, callback)
+        navController.navigate(Screen.OverlayDialog.route)
+    }
+    val missingPermissionData =  DialogData(
+        R.drawable.ic_attention_icon,
+        stringResource(com.windscribe.vpn.R.string.missing_location_permission),
+        stringResource(com.windscribe.vpn.R.string.location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time),
+        stringResource(com.windscribe.vpn.R.string.open_settings)
+    )
     LaunchedEffect(Unit) {
         permissionHelper.backgroundCallback = { granted ->
             if (granted) {
                 onGranted()
             } else {
-                permissionDialogType.value = PermissionDialogType.OpenSettings
+                showDialog(missingPermissionData) {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", activity.packageName, null)
+                    }
+                    intent.resolveActivity(activity.packageManager)?.let {
+                        activity.startActivity(intent)
+                    }
+                }
             }
         }
 
@@ -46,7 +74,14 @@ fun RequestLocationPermissions(
                     onGranted()
                 }
             } else {
-                permissionDialogType.value = PermissionDialogType.OpenSettings
+                showDialog(missingPermissionData) {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", activity.packageName, null)
+                    }
+                    intent.resolveActivity(activity.packageManager)?.let {
+                        activity.startActivity(intent)
+                    }
+                }
             }
         }
 
@@ -75,22 +110,7 @@ fun RequestLocationPermissions(
         }
     }
 
-    val showDialog = { data: DialogData, onConfirm: () -> Unit ->
-        val callback = object : DialogCallback() {
-            override fun onDismiss() {
-                permissionDialogType.value = PermissionDialogType.None
-                navController.popBackStack()
-            }
 
-            override fun onConfirm() {
-                permissionDialogType.value = PermissionDialogType.None
-                navController.popBackStack()
-                onConfirm()
-            }
-        }
-        activity.viewmodel.setDialogCallback(data, callback)
-        navController.navigate(Screen.OverlayDialog.route)
-    }
 
     when (permissionDialogType.value) {
         PermissionDialogType.ForegroundLocation, PermissionDialogType.BackgroundLocation -> showDialog(
@@ -108,22 +128,6 @@ fun RequestLocationPermissions(
                 permissionHelper.backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
             }
             permissionHelper.foregroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-
-        PermissionDialogType.OpenSettings -> showDialog(
-            DialogData(
-                R.drawable.ic_attention_icon,
-                stringResource(com.windscribe.vpn.R.string.missing_location_permission),
-                stringResource(com.windscribe.vpn.R.string.location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time),
-                stringResource(com.windscribe.vpn.R.string.open_settings)
-            )
-        ) {
-            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.fromParts("package", activity.packageName, null)
-            }
-            intent.resolveActivity(activity.packageManager)?.let {
-                activity.startActivity(intent)
-            }
         }
 
         else -> {}
