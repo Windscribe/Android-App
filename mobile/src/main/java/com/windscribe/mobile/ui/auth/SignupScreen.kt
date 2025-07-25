@@ -282,7 +282,7 @@ private fun SignupEmailTextField(signupState: SignupState, viewModel: SignupView
         placeHolder = stringResource(com.windscribe.vpn.R.string.enter_email),
         isError = isError(signupState, AuthInputFields.Email),
         modifier = Modifier.fillMaxWidth(),
-        autofillType = ContentType.EmailAddress,
+        autofillType = null,
         onValueChange = {
             viewModel?.onEmailChanged(it)
         })
