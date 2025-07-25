@@ -3,6 +3,7 @@ package com.windscribe.mobile.ui.preferences.advance
 import PreferencesNavBar
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -17,8 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -37,7 +37,6 @@ import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
-import com.windscribe.mobile.ui.home.HandleToast
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.primaryTextColor
@@ -112,17 +111,39 @@ fun AdvanceScreen(viewModel: AdvanceViewModel? = null) {
                             unfocusedLeadingIconColor = MaterialTheme.colorScheme.primaryTextColor,
                             unfocusedPlaceholderColor = MaterialTheme.colorScheme.primaryTextColor,
                             unfocusedTrailingIconColor = MaterialTheme.colorScheme.primaryTextColor,
+                            cursorColor = MaterialTheme.colorScheme.primaryTextColor,
+                            selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
+                                handleColor = MaterialTheme.colorScheme.primaryTextColor,
+                                backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.4f)
+                            )
                         )
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    NextButton(
-                        text = stringResource(R.string.save),
-                        enabled = true,
-                        onClick = {
-                            focusManager.clearFocus()
-                            viewModel?.saveAdvanceParams(params)
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        NextButton(
+                            text = stringResource(R.string.save),
+                            enabled = true,
+                            onClick = {
+                                focusManager.clearFocus()
+                                viewModel?.saveAdvanceParams(params)
+                            }
+                        )
+                        TextButton(
+                            onClick = {
+                                focusManager.clearFocus()
+                                viewModel?.clearAdvanceParams()
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(R.string.clear),
+                                color = MaterialTheme.colorScheme.primaryTextColor
+                            )
                         }
-                    )
+                    }
                 }
             }
         }
