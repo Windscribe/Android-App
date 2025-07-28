@@ -66,6 +66,7 @@ fun AppConnectButton(connectionViewmodel: ConnectionViewmodel) {
             }
 
             is ConnectionUIState.Connected -> {
+                val connectedState = state as ConnectionUIState.Connected
                 Image(
                     painter = painterResource(R.drawable.ic_on_button),
                     contentDescription = null,
@@ -76,7 +77,7 @@ fun AppConnectButton(connectionViewmodel: ConnectionViewmodel) {
                     contentScale = ContentScale.FillHeight
                 )
                 Image(
-                    painter = painterResource(R.drawable.ic_connected_ring),
+                    painter = painterResource(if (connectedState.connectedUsingSplitRouting) R.drawable.ic_connected_split_ring else R.drawable.ic_connected_ring),
                     contentDescription = null,
                     modifier = Modifier
                         .height(95.dp)

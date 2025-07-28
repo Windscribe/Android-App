@@ -106,7 +106,8 @@ sealed class ConnectionUIState {
 
     data class Connected(
         override val protocolInfo: ProtocolInformation,
-        override val locationInfo: LocationInfoState
+        override val locationInfo: LocationInfoState,
+        val connectedUsingSplitRouting: Boolean = false
     ) : ConnectionUIState()
 
     data class Disconnected(
@@ -363,7 +364,8 @@ class ConnectionViewmodelImpl @Inject constructor(
                 when (state.status) {
                     VPNState.Status.Connected -> ConnectionUIState.Connected(
                         protocolInfo,
-                        locationInfo
+                        locationInfo,
+                        preferences.lastConnectedUsingSplit
                     )
 
                     VPNState.Status.Connecting -> ConnectionUIState.Connecting(
