@@ -4,7 +4,7 @@ go 1.24.0
 
 toolchain go1.24.4
 
-replace golang.zx2c4.com/wireguard => github.com/Windscribe/wireguard v0.0.20250522
+replace golang.zx2c4.com/wireguard => github.com/Windscribe/wireguard v0.0.20250523-0.20250728222226-b33441abef7c
 
 replace github.com/mr-karan/doggo => github.com/Windscribe/doggo v0.0.0-20220919152748-2c118fc391f8
 

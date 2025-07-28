@@ -44,8 +44,8 @@ github.com/Control-D-Inc/ctrld v1.4.5-0.20250702155021-4f4055147fdf h1:vFMMhUalK
 github.com/Control-D-Inc/ctrld v1.4.5-0.20250702155021-4f4055147fdf/go.mod h1:A733qIzK+87TjoaykG7bS72qFl7IA3NiuADsElkWDGA=
 github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=
 github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
-github.com/Windscribe/wireguard v0.0.20250522 h1:GT+RbzsndFch4oVnhz5OMcAHe/bIww+7wLHXbH7HDc0=
-github.com/Windscribe/wireguard v0.0.20250522/go.mod h1:rpwXGsirqLqN2L0JDJQlwOboGHmptD5ZD6T2VmcqhTw=
+github.com/Windscribe/wireguard v0.0.20250523-0.20250728222226-b33441abef7c h1:9A70uTtS6dZiOpqwNi04bNS/dAkNDIsittUQ1XpdKsY=
+github.com/Windscribe/wireguard v0.0.20250523-0.20250728222226-b33441abef7c/go.mod h1:rpwXGsirqLqN2L0JDJQlwOboGHmptD5ZD6T2VmcqhTw=
 github.com/Windscribe/wstunnel v1.0.2-0.20250204211052-c191d6e13771 h1:iECpNyyoXxY6DWEqMVXEyPTb0KEa/nU/GKMFda++kzM=
 github.com/Windscribe/wstunnel v1.0.2-0.20250204211052-c191d6e13771/go.mod h1:Br1cd2+peGu39CTPsBF1d36AtYKbc8waBU2NQlss3Wg=
 github.com/Windscribe/wstunnel/websocket v0.0.0-20250204211052-c191d6e13771 h1:NBrYZFWQ+mccHvJg/eBgFGsU/3mgwkBFwI1J6j3dikQ=
