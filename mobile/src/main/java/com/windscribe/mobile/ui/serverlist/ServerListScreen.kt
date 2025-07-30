@@ -52,7 +52,7 @@ fun ServerListScreen(
     val haptic = LocalHapticFeedback.current
     LaunchedEffect(selectedType) {
         if (hapticFeedback) {
-            haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
+            haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
         }
         pagerState.animateScrollToPage(selectedType.toPageIndex())
     }

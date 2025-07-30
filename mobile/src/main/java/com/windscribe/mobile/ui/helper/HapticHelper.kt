@@ -40,7 +40,7 @@ fun HandleScrollHaptic(lazyListState: LazyListState, viewmodel: HomeViewmodel) {
             index * 1000 + offset
         }.collectLatest { currentPosition ->
             if (abs(currentPosition - lastOffset) >= scrollThreshold) {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                 lastOffset = currentPosition
             }
         }
