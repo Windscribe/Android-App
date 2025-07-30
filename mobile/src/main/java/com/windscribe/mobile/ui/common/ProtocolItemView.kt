@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,16 +33,18 @@ import com.windscribe.vpn.backend.Util
 @Composable
 fun ProtocolItemView(timeleft: Int = 0, procolInfo: ProtocolInformation, onSelected: () -> Unit = {}
 ) {
-    val color = if (procolInfo.type == ProtocolConnectionStatus.Connected || procolInfo.type == ProtocolConnectionStatus.NextUp) {
-        AppColors.neonGreen
+    val showBorder = procolInfo.type == ProtocolConnectionStatus.Connected || procolInfo.type == ProtocolConnectionStatus.NextUp
+    val color = AppColors.white
+    val borderColor = if (showBorder) {
+        AppColors.neonGreen.copy(alpha = 0.3f)
     } else {
-        AppColors.white
+        color.copy(alpha = 0.0f)
     }
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .border(width = 3.dp, color = color.copy(alpha = 0.5f), shape = RoundedCornerShape(8.dp))
+            .border(width = 1.dp ,color = borderColor, shape = RoundedCornerShape(8.dp))
+            .background(color.copy(alpha = 0.1f), shape = RoundedCornerShape(8.dp))
             .clickable{
                onSelected()
             }
@@ -68,13 +71,13 @@ fun ProtocolItemView(timeleft: Int = 0, procolInfo: ProtocolInformation, onSelec
             Spacer(modifier = Modifier.weight(1f))
             if (procolInfo.type == ProtocolConnectionStatus.Connected) {
                 Text(
-                    text = "Connected",
+                    text = "Connected to",
                     style = font12,
-                    color = color,
+                    color = borderColor.copy(1.0f),
                     modifier = Modifier
-                        .offset(x = (13).dp, y = (-11).dp)
-                        .background(color = color.copy(alpha = 0.10f), shape = RoundedCornerShape(topEnd = 6.dp, bottomStart = 6.dp))
-                        .padding(all = 8.dp)
+                        .offset(x = (15).dp, y = (-13).dp)
+                        .background(color = borderColor.copy(alpha = 0.10f), shape = RoundedCornerShape(topEnd = 6.dp, bottomStart = 6.dp))
+                        .padding(top = 6.dp, bottom = 6.dp, start = 24.dp, end = 24.dp)
                 )
             }
             if (procolInfo.type == ProtocolConnectionStatus.NextUp) {
@@ -84,7 +87,7 @@ fun ProtocolItemView(timeleft: Int = 0, procolInfo: ProtocolInformation, onSelec
                     color = color,
                     modifier = Modifier
                         .offset(x = (13).dp, y = (-11).dp)
-                        .background(color = color.copy(alpha = 0.10f), shape = RoundedCornerShape(topEnd = 6.dp, bottomStart = 6.dp))
+                        .background(color = borderColor.copy(alpha = 0.10f), shape = RoundedCornerShape(topEnd = 6.dp, bottomStart = 6.dp))
                         .padding(all = 8.dp)
                 )
             }
@@ -111,11 +114,12 @@ fun ProtocolItemView(timeleft: Int = 0, procolInfo: ProtocolInformation, onSelec
                 )
             } else if (procolInfo.type == ProtocolConnectionStatus.Disconnected) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_small_forward_arrow),
+                    painter = painterResource(R.drawable.ic_forward_arrow_white),
                     contentDescription = null,
                     tint = color,
                     modifier = Modifier
-                        .then(Modifier.size(24.dp)) // Optional
+                        .alpha(0.5f)
+                        .then(Modifier.size(16.dp)) // Optional
                 )
             } else if (procolInfo.type == ProtocolConnectionStatus.Failed && procolInfo.error.isNotBlank()) {
                 Text(

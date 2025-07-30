@@ -22,4 +22,5 @@ object AppColors {
     val yellow = Color(0xFEFEBC2E)
     val red = Color(0xFFF44336)
     val black = Color(0xFF000000)
+    val midnight = Color(0xFF020D1C)
 }

@@ -2,6 +2,7 @@ package com.windscribe.mobile.ui.connection
 
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,14 +10,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -79,20 +80,25 @@ fun ConnectionChangeScreen(appStartActivityViewModel: AppStartActivityViewModel?
             }
         }
     }
+    val scrollState: ScrollState = rememberScrollState()
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = AppColors.deepBlue)
+            .background(color = AppColors.midnight)
             .clickable(enabled = false) {}) {
         Column(
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(horizontal = 32.dp)
                 .width(560.dp)
+                .statusBarsPadding()
+                .verticalScroll(state = scrollState)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Spacer(modifier = Modifier.height(120.dp))
             Image(
                 painter = painterResource(icon),
                 contentDescription = null,
@@ -110,24 +116,16 @@ fun ConnectionChangeScreen(appStartActivityViewModel: AppStartActivityViewModel?
             Text(
                 text = description,
                 style = font16,
-                color = AppColors.white,
+                color = AppColors.white.copy(alpha = 0.5f),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
-            Spacer(modifier = Modifier.padding(top = 24.dp))
-            LazyColumn(
-                state = lazyListState,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1.0f, fill = false)
-            ) {
-                items(appStartActivityViewModel?.protocolInformationList ?: emptyList()) { protocol ->
-                    ProtocolItemView(timeleft = countdown, protocol, onSelected = {
-                        appStartActivityViewModel?.autoConnectionModeCallback?.onProtocolSelect(protocol)
-                        navController.popBackStack()
-                    })
-                }
+            Spacer(modifier = Modifier.padding(top = 8.dp))
+            for (i in appStartActivityViewModel?.protocolInformationList ?: emptyList()) {
+                ProtocolItemView(timeleft = countdown, i, onSelected = {
+                    appStartActivityViewModel?.autoConnectionModeCallback?.onProtocolSelect(i)
+                    navController.popBackStack()
+                })
             }
 
             TextButton(onClick = {
@@ -137,10 +135,26 @@ fun ConnectionChangeScreen(appStartActivityViewModel: AppStartActivityViewModel?
                 Text(
                     stringResource(com.windscribe.vpn.R.string.cancel),
                     style = font16,
-                    color = AppColors.white
+                    color = AppColors.white.copy(alpha = 0.5f)
                 )
             }
         }
+        
+        // Close button
+        Image(
+            painter = painterResource(R.drawable.close),
+            contentDescription = "Close",
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(24.dp)
+                .statusBarsPadding()
+                .size(32.dp)
+                .clickable {
+                    appStartActivityViewModel?.autoConnectionModeCallback?.onCancel()
+                    navController.popBackStack()
+                },
+            colorFilter = ColorFilter.tint(AppColors.white)
+        )
     }
 }
 
