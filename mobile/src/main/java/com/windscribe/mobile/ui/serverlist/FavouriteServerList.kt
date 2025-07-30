@@ -104,7 +104,7 @@ fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionVie
                             },
                             modifier = Modifier.weight(1f)
                         ) {
-                            LazyColumn(modifier = Modifier.fillMaxSize(), lazyListState) {
+                            LazyColumn(modifier = Modifier.fillMaxSize().padding(start = 8.dp), lazyListState) {
                                 items(list, key = { it.id }) { item ->
                                     ListItemView(item, viewModel, connectionViewmodel, homeViewmodel)
                                 }

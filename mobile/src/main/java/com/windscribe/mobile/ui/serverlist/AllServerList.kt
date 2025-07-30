@@ -331,41 +331,47 @@ fun SubLocationSplitBorderCircle(
     showLocationLoad: Boolean = false,
     iconModifier: Modifier
 ) {
+    val needsColorFilter = flagRes == R.drawable.ic_dc || flagRes == R.drawable.city_ten_gbps
+    val strokeWidth = 1.dp
+    
     Box(modifier = Modifier.size(24.dp)) {
         Image(
             painter = painterResource(id = flagRes),
-            contentDescription = "Flag",
-            modifier = iconModifier
-                .align(Alignment.Center),
-            colorFilter = if (flagRes == R.drawable.ic_dc || flagRes == R.drawable.city_ten_gbps) ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor) else null
+            contentDescription = null,
+            modifier = iconModifier.align(Alignment.Center),
+            colorFilter = if (needsColorFilter) ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor) else null
         )
-        Canvas(modifier = Modifier.size(24.dp)) {
-            val strokeWidth = 1.dp.toPx()
-            if (firstSectionAngle == 0f || !showLocationLoad) return@Canvas
-            drawArc(
-                color = firstColor,
-                startAngle = 160f, // Start from top
-                sweepAngle = firstSectionAngle,
-                useCenter = false,
-                style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
-                size = Size(size.width, size.height),
-                topLeft = Offset.Zero
-            )
+        
+        if (showLocationLoad && firstSectionAngle > 0f) {
+            Canvas(modifier = Modifier.size(24.dp)) {
+                val strokePx = strokeWidth.toPx()
+                val canvasSize = Size(size.width, size.height)
+                val strokeStyle = Stroke(width = strokePx, cap = StrokeCap.Butt)
+                
+                drawArc(
+                    color = firstColor,
+                    startAngle = 160f,
+                    sweepAngle = firstSectionAngle,
+                    useCenter = false,
+                    style = strokeStyle,
+                    size = canvasSize
+                )
 
-            drawArc(
-                color = secondColor,
-                startAngle = 160f + firstSectionAngle,
-                sweepAngle = 360f - firstSectionAngle,
-                useCenter = false,
-                style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
-                size = Size(size.width, size.height),
-                topLeft = Offset.Zero
-            )
+                drawArc(
+                    color = secondColor,
+                    startAngle = 160f + firstSectionAngle,
+                    sweepAngle = 360f - firstSectionAngle,
+                    useCenter = false,
+                    style = strokeStyle,
+                    size = canvasSize
+                )
+            }
         }
+        
         if (pro) {
             Image(
                 painter = painterResource(if (MaterialTheme.colorScheme.isDark) R.drawable.pro_mask else R.drawable.pro_mask_light),
-                contentDescription = "Flag",
+                contentDescription = null,
                 modifier = Modifier
                     .align(Alignment.CenterStart)
                     .size(16.dp)
