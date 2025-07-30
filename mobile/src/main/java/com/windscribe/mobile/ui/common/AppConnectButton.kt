@@ -19,7 +19,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
@@ -37,6 +39,12 @@ fun AppConnectButton(connectionViewmodel: ConnectionViewmodel) {
             repeatMode = RepeatMode.Restart
         ), label = "ringRotation"
     )
+    val haptics = LocalHapticFeedback.current
+    val shouldPlay by connectionViewmodel.shouldPlayHapticFeedback.collectAsState()
+    if (shouldPlay) {
+        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+        connectionViewmodel.onHapticFeedbackHandled()
+    }
     val state by connectionViewmodel.connectionUIState.collectAsState()
     Box(modifier = Modifier.size(95.dp).clickable {
         connectionViewmodel.onConnectButtonClick()
