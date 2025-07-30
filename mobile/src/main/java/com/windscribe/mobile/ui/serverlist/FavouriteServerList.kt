@@ -157,10 +157,6 @@ private fun ListItemView(
         )
         Spacer(modifier = Modifier.width(8.dp))
         ServerNodeName("${item.city.nodeName} ${item.city.nickName}", Modifier.weight(1f))
-        if (item.city.linkSpeed == "10000") {
-            TenGIcon()
-            Spacer(modifier = Modifier.width(12.dp))
-        }
         LatencyIcon(latency)
         Spacer(modifier = Modifier.width(12.dp))
         FavouriteIcon(true) {
