@@ -429,9 +429,7 @@ internal fun BoxScope.NetworkInfoSheet(
     ) {
         NetworkNameSheet(connectionViewmodel, homeViewmodel)
         Row(
-            modifier = Modifier
-                .weight(1.0f)
-                .padding(start = 12.dp, end = 8.dp),
+            modifier = Modifier.padding(start = 12.dp, end = 8.dp),
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
