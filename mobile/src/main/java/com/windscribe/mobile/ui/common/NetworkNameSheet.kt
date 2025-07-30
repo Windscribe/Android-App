@@ -4,7 +4,9 @@ import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
@@ -25,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.AppStartActivity
@@ -52,7 +55,7 @@ private fun isLocationEnabled(context: Context): Boolean {
 }
 
 @Composable
-fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
+fun RowScope.NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
     val activity = LocalContext.current as AppStartActivity
     val networkInfo by connectionViewmodel.networkInfoState.collectAsState()
     var showPermissionRequest by remember { mutableStateOf(false) }
@@ -78,7 +81,7 @@ fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Ho
             }
         }
     }
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement =Arrangement.Start , modifier = Modifier.weight(1.0f)) {
         Image(
             painter = painterResource(
                 if (networkInfo is NetworkInfoState.Unsecured)
@@ -96,9 +99,12 @@ fun NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Ho
             text = networkInfo.name ?: stringResource(com.windscribe.vpn.R.string.unknown),
             style = font16.copy(fontWeight = FontWeight.Medium),
             color = AppColors.white,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .alpha(0.7f)
                 .padding(start = 4.dp)
+                .weight(1.0f, fill = false)
                 .graphicsLayer {
                     renderEffect = if (hideNetworkName) BlurEffect(15f, 15f) else null
                 }

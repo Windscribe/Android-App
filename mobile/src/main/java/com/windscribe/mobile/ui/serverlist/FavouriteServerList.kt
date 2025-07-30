@@ -104,7 +104,7 @@ fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionVie
                             },
                             modifier = Modifier.weight(1f)
                         ) {
-                            LazyColumn(modifier = Modifier.fillMaxSize(), lazyListState) {
+                            LazyColumn(modifier = Modifier.fillMaxSize().padding(start = 8.dp), lazyListState) {
                                 items(list, key = { it.id }) { item ->
                                     ListItemView(item, viewModel, connectionViewmodel, homeViewmodel)
                                 }
@@ -157,10 +157,6 @@ private fun ListItemView(
         )
         Spacer(modifier = Modifier.width(8.dp))
         ServerNodeName("${item.city.nodeName} ${item.city.nickName}", Modifier.weight(1f))
-        if (item.city.linkSpeed == "10000") {
-            TenGIcon()
-            Spacer(modifier = Modifier.width(12.dp))
-        }
         LatencyIcon(latency)
         Spacer(modifier = Modifier.width(12.dp))
         FavouriteIcon(true) {

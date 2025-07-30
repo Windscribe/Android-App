@@ -13,7 +13,6 @@ import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.bundledBa
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.getSoundFile
 import com.windscribe.mobile.ui.common.isEnabled
 import com.windscribe.mobile.ui.home.HomeGoto
-import com.windscribe.mobile.ui.home.HomeScreen
 import com.windscribe.mobile.ui.serverlist.ServerListItem
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -145,10 +144,12 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract fun setContextMenuState(state: Boolean)
     abstract val toastMessage: StateFlow<ToastMessage>
     abstract val isSingleLineLocationName: StateFlow<Boolean>
+    abstract val shouldPlayHapticFeedback: StateFlow<Boolean>
     abstract fun clearToast()
     abstract fun onProtocolChangeClick()
     abstract fun onGoToHandled()
     abstract fun setIsSingleLineLocationName(singleLine: Boolean)
+    abstract fun onHapticFeedbackHandled()
 }
 
 class ConnectionViewmodelImpl @Inject constructor(
@@ -195,6 +196,8 @@ class ConnectionViewmodelImpl @Inject constructor(
     override val aspectRatio: StateFlow<Int> = _aspectRatio
     private val _isSingleLineLocationName = MutableStateFlow(true)
     override val isSingleLineLocationName: StateFlow<Boolean> = _isSingleLineLocationName
+    private val _shouldPlayHapticFeedback = MutableStateFlow(false)
+    override val shouldPlayHapticFeedback: StateFlow<Boolean> = _shouldPlayHapticFeedback
     private var mediaPlayer: MediaPlayer? = null
     private val logger = LoggerFactory.getLogger("ConnectionViewmodel")
 
@@ -206,6 +209,7 @@ class ConnectionViewmodelImpl @Inject constructor(
         fetchBestLocation()
         fetchUserPreferences()
         handleConnectionSoundsState()
+        handleConnectionHapticFeedback()
         observeCustomLocationNameChanges()
     }
 
@@ -485,6 +489,17 @@ class ConnectionViewmodelImpl @Inject constructor(
         }
     }
 
+    private fun handleConnectionHapticFeedback() {
+        viewModelScope.launch(Dispatchers.IO) {
+            vpnConnectionStateManager.state.collectLatest { state ->
+                if (state.status == VPNState.Status.Connected || state.status == VPNState.Status.Disconnected) {
+                    if (preferences.isHapticFeedbackEnabled) {
+                        _shouldPlayHapticFeedback.emit(true)
+                    }
+                }
+            }
+        }
+    }
 
     private fun buildLocationInfo(): LocationInfoState {
         var location = lastLocationState.value
@@ -770,6 +785,12 @@ class ConnectionViewmodelImpl @Inject constructor(
     override fun setIsSingleLineLocationName(singleLine: Boolean) {
         viewModelScope.launch {
             _isSingleLineLocationName.emit(singleLine)
+        }
+    }
+
+    override fun onHapticFeedbackHandled() {
+        viewModelScope.launch {
+            _shouldPlayHapticFeedback.emit(false)
         }
     }
 

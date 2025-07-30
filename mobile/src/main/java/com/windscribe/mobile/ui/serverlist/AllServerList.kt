@@ -287,7 +287,7 @@ fun SplitBorderCircle(
         )
         Canvas(modifier = Modifier.size(24.dp)) {
             val strokeWidth = 1.dp.toPx()
-            if (firstSectionAngle == 0f || showLocationLoad == false) return@Canvas
+            if (firstSectionAngle == 0f || !showLocationLoad) return@Canvas
             drawArc(
                 color = firstColor,
                 startAngle = 160f, // Start from top
@@ -312,6 +312,66 @@ fun SplitBorderCircle(
             Image(
                 painter = painterResource(if (MaterialTheme.colorScheme.isDark) R.drawable.pro_mask else R.drawable.pro_mask_light),
                 contentDescription = "Flag",
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .size(16.dp)
+                    .offset(x = (-6).dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun SubLocationSplitBorderCircle(
+    firstSectionAngle: Float,
+    firstColor: Color,
+    secondColor: Color,
+    flagRes: Int,
+    pro: Boolean = false,
+    showLocationLoad: Boolean = false,
+    iconModifier: Modifier
+) {
+    val needsColorFilter = flagRes == R.drawable.ic_dc || flagRes == R.drawable.city_ten_gbps
+    val strokeWidth = 1.dp
+    
+    Box(modifier = Modifier.size(24.dp)) {
+        Image(
+            painter = painterResource(id = flagRes),
+            contentDescription = null,
+            modifier = iconModifier.align(Alignment.Center),
+            colorFilter = if (needsColorFilter) ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor) else null
+        )
+        
+        if (showLocationLoad && firstSectionAngle > 0f) {
+            Canvas(modifier = Modifier.size(24.dp)) {
+                val strokePx = strokeWidth.toPx()
+                val canvasSize = Size(size.width, size.height)
+                val strokeStyle = Stroke(width = strokePx, cap = StrokeCap.Butt)
+                
+                drawArc(
+                    color = firstColor,
+                    startAngle = 160f,
+                    sweepAngle = firstSectionAngle,
+                    useCenter = false,
+                    style = strokeStyle,
+                    size = canvasSize
+                )
+
+                drawArc(
+                    color = secondColor,
+                    startAngle = 160f + firstSectionAngle,
+                    sweepAngle = 360f - firstSectionAngle,
+                    useCenter = false,
+                    style = strokeStyle,
+                    size = canvasSize
+                )
+            }
+        }
+        
+        if (pro) {
+            Image(
+                painter = painterResource(if (MaterialTheme.colorScheme.isDark) R.drawable.pro_mask else R.drawable.pro_mask_light),
+                contentDescription = null,
                 modifier = Modifier
                     .align(Alignment.CenterStart)
                     .size(16.dp)
@@ -496,10 +556,6 @@ private fun ServerListItemView(
         ServerListIcon(item, userState, angle, color, showLocationLoad)
         Spacer(modifier = Modifier.width(8.dp))
         ServerNodeName("${item.nodeName} ${item.nickName}", Modifier.weight(1f))
-        if (item.linkSpeed == "10000") {
-            TenGIcon()
-            Spacer(modifier = Modifier.width(12.dp))
-        }
         LatencyIcon(latency)
         Spacer(modifier = Modifier.width(12.dp))
         FavouriteIcon(isFavorite) {
