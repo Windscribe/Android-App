@@ -31,6 +31,7 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.constants.PreferencesKeyConstants.DARK_THEME
 import java.util.Locale
+import androidx.core.graphics.toColorInt
 
 class AppStartActivity : AppCompatActivity() {
     lateinit var di: ComposeComponent
@@ -57,9 +58,9 @@ class AppStartActivity : AppCompatActivity() {
             splashScreenView.remove()
         }
         val navigationBarStyle = if (isDark) {
-            SystemBarStyle.dark(Color.parseColor("#0B0F16"))
+            SystemBarStyle.dark("#0B0F16".toColorInt())
         } else {
-            SystemBarStyle.light(Color.parseColor("#FFFFFF"), Color.parseColor("#0B0F16"))
+            SystemBarStyle.light("#FFFFFF".toColorInt(), "#0B0F16".toColorInt())
         }
         enableEdgeToEdge(navigationBarStyle = navigationBarStyle)
 
