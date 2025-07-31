@@ -5,12 +5,15 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import android.graphics.Color
 import android.os.Bundle
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -53,8 +56,12 @@ class AppStartActivity : AppCompatActivity() {
         splashScreen.setOnExitAnimationListener { splashScreenView ->
             splashScreenView.remove()
         }
-
-        enableEdgeToEdge()
+        val navigationBarStyle = if (isDark) {
+            SystemBarStyle.dark(Color.parseColor("#0B0F16"))
+        } else {
+            SystemBarStyle.light(Color.parseColor("#FFFFFF"), Color.parseColor("#0B0F16"))
+        }
+        enableEdgeToEdge(navigationBarStyle = navigationBarStyle)
 
         super.onCreate(savedInstanceState)
         requestedOrientation = if (isTablet()) {
