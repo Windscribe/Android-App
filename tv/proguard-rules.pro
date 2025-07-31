@@ -5,11 +5,10 @@
 -keepattributes Exceptions
 -dontwarn okio.**
 
-# Butter-knife
--keep public class * implements butterknife.Unbinder { public <init>(**, android.view.View); }
--keep class butterknife.*
--keepclasseswithmembernames class * { @butterknife.* <methods>; }
--keepclasseswithmembernames class * { @butterknife.* <fields>; }
+# RxJava2 Call Adapter Factory for Retrofit
+-keep class retrofit2.adapter.rxjava2.** { *; }
+-keep class io.reactivex.** { *; }
+-dontwarn io.reactivex.**
 
 # Dagger
 -dontwarn com.google.errorprone.annotations.**
