@@ -98,7 +98,7 @@ fun ConnectionChangeScreen(appStartActivityViewModel: AppStartActivityViewModel?
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Spacer(modifier = Modifier.height(120.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             Image(
                 painter = painterResource(icon),
                 contentDescription = null,
