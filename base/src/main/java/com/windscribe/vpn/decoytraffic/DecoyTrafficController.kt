@@ -23,7 +23,7 @@ class DecoyTrafficController(val scope: CoroutineScope, val apiCallManager: IApi
     private var fakeTrafficVolume = 0
     private var sendTrafficRequestInProgress = false
     private var sendTrafficIntervalInSeconds = 1
-    private val logger = LoggerFactory.getLogger("decoy")
+    private val logger = LoggerFactory.getLogger("vpn")
     private var _events = MutableStateFlow(preferencesHelper.isDecoyTrafficOn)
     val state: StateFlow<Boolean> = _events
     private var fakeTraffic = preferencesHelper.fakeTrafficVolume
@@ -89,19 +89,15 @@ class DecoyTrafficController(val scope: CoroutineScope, val apiCallManager: IApi
     private suspend fun sendTraffic(data: String, dataToReceiveString: String?) {
         try {
             val url = "http://10.255.255.1:8085"
-            val result = apiCallManager.sendDecoyTraffic(url, data, dataToReceiveString).timeout(100, TimeUnit.SECONDS).result<String>()
-            sendTrafficRequestInProgress = when (result) {
+            sendTrafficRequestInProgress = when (apiCallManager.sendDecoyTraffic(url, data, dataToReceiveString).timeout(100, TimeUnit.SECONDS).result<String>()) {
                 is CallResult.Error -> {
-                    logger.debug("Error sending data: ${result.errorMessage}")
                     false
                 }
                 is CallResult.Success -> {
-                    logger.debug("Success sending data: ${result.data.substring(0, 100)}")
                     false
                 }
             }
         } catch (e: Exception) {
-            logger.debug("Failed to send data: $e")
             lastRequestSendTime = System.currentTimeMillis()
             sendTrafficRequestInProgress = false
             logger.debug(e.toString())
