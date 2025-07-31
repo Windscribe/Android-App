@@ -2,9 +2,8 @@ package com.windscribe.mobile.ui.home
 
 import NetworkNameSheet
 import ServerListScreen
-import android.R.attr.maxWidth
 import android.annotation.SuppressLint
-import android.util.Log
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
@@ -23,8 +22,6 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,7 +29,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,7 +39,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -67,10 +62,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.windscribe.mobile.R
@@ -85,7 +78,6 @@ import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.helper.getHeaderHeight
-import com.windscribe.mobile.ui.helper.getStatusBarHeight
 import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.model.AccountStatusDialogData
 import com.windscribe.mobile.ui.nav.LocalNavController
@@ -434,23 +426,37 @@ internal fun BoxScope.NetworkInfoSheet(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (!showContextMenu.first) {
-                Text(
-                    text = ip,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = font16.copy(fontWeight = FontWeight.Medium),
-                    color = AppColors.white.copy(alpha = 0.70f), modifier = Modifier
-                        .clickable {
-                            homeViewmodel.onHideIpClick()
-                        }
-                        .graphicsLayer {
-                            renderEffect = if (hideIp) {
-                                BlurEffect(15f, 15f)
-                            } else {
-                                null
+                Box(
+                    modifier = Modifier.clickable {
+                        homeViewmodel.onHideIpClick()
+                    }
+                ) {
+                    Text(
+                        text = ip,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = font16.copy(fontWeight = FontWeight.Medium),
+                        color = AppColors.white.copy(alpha = 0.70f),
+                        modifier = Modifier
+                            .graphicsLayer {
+                                renderEffect = if (hideIp && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                    BlurEffect(15f, 15f)
+                                } else null
                             }
-                        }
-                )
+                    )
+                    
+                    // Overlay box for Android 10 and below - only covers the text
+                    if (hideIp && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(
+                                    color = AppColors.midnightNavy.copy(alpha = 1.0f),
+                                    shape = RoundedCornerShape(2.dp)
+                                )
+                        )
+                    }
+                }
             }
 //            Image(
 //                painter = painterResource(R.drawable.ic_context),

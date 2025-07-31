@@ -3,12 +3,16 @@ import android.location.LocationManager
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,6 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
@@ -95,21 +100,39 @@ fun RowScope.NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeView
 
         val hideNetworkName by homeViewmodel.hideNetworkName.collectAsState()
 
-        Text(
-            text = networkInfo.name ?: stringResource(com.windscribe.vpn.R.string.unknown),
-            style = font16.copy(fontWeight = FontWeight.Medium),
-            color = AppColors.white,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+        Box(
             modifier = Modifier
-                .alpha(0.7f)
-                .padding(start = 4.dp)
                 .weight(1.0f, fill = false)
-                .graphicsLayer {
-                    renderEffect = if (hideNetworkName) BlurEffect(15f, 15f) else null
-                }
+                .padding(start = 4.dp)
                 .clickable { homeViewmodel.onHideNetworkNameClick() }
-        )
+        ) {
+            Text(
+                text = networkInfo.name ?: stringResource(com.windscribe.vpn.R.string.unknown),
+                style = font16.copy(fontWeight = FontWeight.Medium),
+                color = AppColors.white,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .alpha(0.7f)
+                    .graphicsLayer {
+                        renderEffect = if (hideNetworkName && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            BlurEffect(15f, 15f)
+                        } else null
+                    }
+            )
+            
+            // Overlay box for Android 10 and below - only covers the text
+            if (hideNetworkName && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(
+                            color = AppColors.midnightNavy.copy(alpha = 1.0f),
+                            shape = RoundedCornerShape(2.dp)
+                        )
+                )
+            }
+        }
 
         Image(
             painter = painterResource(R.drawable.arrow_right_small),
