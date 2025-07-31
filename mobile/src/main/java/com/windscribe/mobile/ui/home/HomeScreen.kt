@@ -631,6 +631,17 @@ private fun ConnectedBackground(connectionViewmodel: ConnectionViewmodel?) {
 @Composable
 private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
     val navController = LocalNavController.current
+    val state by connectionViewmodel.connectionUIState.collectAsState()
+    val headerColor = if (state is ConnectionUIState.Connected) {
+        AppColors.black.copy(0.10f)
+    } else {
+        AppColors.midnightNavy.copy(0.03f)
+    }
+    val headerAsset = if (state is ConnectionUIState.Connected) {
+        R.drawable.header_right
+    } else {
+        R.drawable.header_right_deep
+    }
     val height = getHeaderHeight()
     Box(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -645,7 +656,7 @@ private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Home
                     .height(height)
                     .weight(1.0f)
                     .zIndex(0f)
-                    .background(AppColors.midnightNavy.copy(alpha = 0.03f))
+                    .background(headerColor)
                     .drawBehind {
                         val strokeWidth = 1.dp.toPx() // Stroke thickness
                         drawLine(
@@ -666,7 +677,7 @@ private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Home
                     .clip(RectangleShape)
             ) {
                 Image(
-                    painter = painterResource(R.drawable.header_right),
+                    painter = painterResource(headerAsset),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.FillBounds

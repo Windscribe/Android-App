@@ -21,6 +21,8 @@ fun getStatusBarHeight(): Dp {
 fun getHeaderHeight(): Dp {
     return getStatusBarHeight() + 60.dp
 }
+
+val latencyArcStart = 180f
 @Composable
 fun calculateImageDimensions(isSingleLineLocationName: Boolean): ImageDimensions {
     val config = LocalConfiguration.current

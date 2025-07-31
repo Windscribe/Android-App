@@ -65,6 +65,7 @@ import com.windscribe.mobile.ui.common.averageHealth
 import com.windscribe.mobile.ui.common.healthColor
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.helper.HandleScrollHaptic
+import com.windscribe.mobile.ui.helper.latencyArcStart
 import com.windscribe.mobile.ui.home.HomeViewmodel
 import com.windscribe.mobile.ui.home.UserState
 import com.windscribe.mobile.ui.theme.AppColors
@@ -291,7 +292,7 @@ fun SplitBorderCircle(
             if (firstSectionAngle == 0f || !showLocationLoad) return@Canvas
             drawArc(
                 color = firstColor,
-                startAngle = 180f, // Start from top
+                startAngle = latencyArcStart, // Start from top
                 sweepAngle = firstSectionAngle,
                 useCenter = false,
                 style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
@@ -301,7 +302,7 @@ fun SplitBorderCircle(
 
             drawArc(
                 color = secondColor,
-                startAngle = 180f + firstSectionAngle,
+                startAngle = latencyArcStart + firstSectionAngle,
                 sweepAngle = 360f - firstSectionAngle,
                 useCenter = false,
                 style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
@@ -351,7 +352,7 @@ fun SubLocationSplitBorderCircle(
                 
                 drawArc(
                     color = firstColor,
-                    startAngle = 160f,
+                    startAngle = latencyArcStart,
                     sweepAngle = firstSectionAngle,
                     useCenter = false,
                     style = strokeStyle,
@@ -360,7 +361,7 @@ fun SubLocationSplitBorderCircle(
 
                 drawArc(
                     color = secondColor,
-                    startAngle = 160f + firstSectionAngle,
+                    startAngle = latencyArcStart + firstSectionAngle,
                     sweepAngle = 360f - firstSectionAngle,
                     useCenter = false,
                     style = strokeStyle,
