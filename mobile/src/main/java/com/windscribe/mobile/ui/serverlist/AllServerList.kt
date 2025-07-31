@@ -175,14 +175,14 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = MaterialTheme.colorScheme.serverListBackgroundColor)
+                    .background(color = AppColors.midnightNavy, shape = RoundedCornerShape(8.dp))
                     .clickable {
                         if (hapticFeedbackEnabled) haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                         activity.startActivity(UpgradeActivity.getStartIntent(activity))
                     }
                     .border(
                         width = 1.dp,
-                        color = MaterialTheme.colorScheme.expandedServerItemTextColor.copy(alpha = 0.05f),
+                        color = AppColors.white.copy(alpha = 0.1f),
                         shape = RoundedCornerShape(8.dp)
                     )
                     .padding(12.dp)
@@ -232,7 +232,7 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
                         Text(
                             stringResource(com.windscribe.vpn.R.string.unblock_full_access),
                             style = font16.copy(fontSize = 15.sp),
-                            color = MaterialTheme.colorScheme.expandedServerItemTextColor,
+                            color = AppColors.white,
                         )
                         Spacer(modifier = Modifier.width(2.dp))
                         Text(
