@@ -580,8 +580,12 @@ class ConnectionViewmodelImpl @Inject constructor(
                 }
 
                 SelectedLocationType.CityLocation -> {
-                    val location = localdb.getCityAndRegion(selectedLocation.cityId)
-                    onCityClick(location.city)
+                    try {
+                        val location = localdb.getCityAndRegion(selectedLocation.cityId)
+                        onCityClick(location.city)
+                    } catch (e: Exception) {
+                        showToast("Unable to find selected location in database. Update server list.")
+                    }
                 }
             }
         }
@@ -768,7 +772,11 @@ class ConnectionViewmodelImpl @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             locationRepository.bestLocation.toResult()
                 .onSuccess {
-                    _bestLocation.emit(ServerListItem(it.region.id, it.region, listOf(it.city)))
+                    try {
+                        _bestLocation.emit(ServerListItem(it.region.id, it.region, listOf(it.city)))
+                    }catch (ignored: Exception) {
+                        _bestLocation.emit(null)
+                    }
                 }.onFailure {
                     _bestLocation.emit(null)
                 }

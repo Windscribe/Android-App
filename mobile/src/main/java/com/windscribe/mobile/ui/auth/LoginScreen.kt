@@ -98,13 +98,15 @@ fun LoginScreen(
                 },
                 onSolutionSubmit = { t1, t2 ->
                     Log.i("LoginScreen", "onSolutionSubmit: $t1, $t2")
-                    viewModel?.onCaptchaSolutionReceived(
-                        CaptchaSolution(
-                            t1,
-                            t2,
-                            (loginState as LoginState.Captcha).request.secureToken
+                    if (loginState is LoginState.Captcha) {
+                        viewModel?.onCaptchaSolutionReceived(
+                            CaptchaSolution(
+                                t1,
+                                t2,
+                                (loginState as LoginState.Captcha).request.secureToken
+                            )
                         )
-                    )
+                    }
                 })
         }
     }

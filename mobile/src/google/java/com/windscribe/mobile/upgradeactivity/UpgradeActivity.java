@@ -123,7 +123,10 @@ public class UpgradeActivity extends BaseActivity
         binding.restoreBtn.setOnClickListener(v -> presenter.restorePurchase());
         binding.closeBtn.setOnClickListener(v -> finish());
         binding.subscribe.setOnClickListener(v -> {
-            String sku = v.getTag().toString();
+            if (plans == null) return;
+            Object tag = v.getTag();
+            if (tag == null) return;
+            String sku = tag.toString();
             if (plans instanceof GoogleProducts) {
                 ProductDetails productDetails = ((GoogleProducts) plans).getSkuDetails(sku);
                 buyGoogleProduct(productDetails);

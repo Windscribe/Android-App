@@ -82,16 +82,14 @@ class MockLocationManager(val context: Context, val scope: CoroutineScope, val v
 
         @JvmStatic
         fun isAppSelectedInMockLocationList(applicationContext: Context): Boolean {
-            return try {
+            return runCatching {
                 MockLocationProvider(
                     LocationManager.NETWORK_PROVIDER,
                     applicationContext
                 )
                 MockLocationProvider(LocationManager.GPS_PROVIDER, applicationContext)
                 true
-            } catch (e: SecurityException) {
-                false
-            }
+            }.getOrDefault(false)
         }
 
         @JvmStatic

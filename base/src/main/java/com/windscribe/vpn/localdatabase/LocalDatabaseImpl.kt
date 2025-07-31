@@ -262,11 +262,9 @@ class LocalDatabaseImpl @Inject constructor(
     }
 
     override fun getCountryCode(cityId: Int): String {
-        return try {
+        return runCatching {
             cityAndRegionDao.getCityAndRegion(cityId).region.countryCode
-        } catch (ignored: SQLiteException) {
-            ""
-        }
+        }.getOrDefault("")
     }
 
     override fun getConfigs(): Flow<List<ConfigFile>> {
