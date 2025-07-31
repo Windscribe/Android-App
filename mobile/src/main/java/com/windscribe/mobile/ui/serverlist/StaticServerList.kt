@@ -167,7 +167,7 @@ private fun ListItemView(
             ) {
                 connectionViewModel.onStaticIpClick(item.staticItem)
             }
-            .padding(horizontal = 8.dp),
+            .padding(start = 8.dp, end = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
