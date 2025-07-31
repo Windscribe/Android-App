@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.serverlist
 
+import android.R.attr.visible
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -448,6 +449,7 @@ private fun ExpandableListItem(
     val angle = (health / 100f) * 360f
     val userState by homeViewmodel.userState.collectAsState()
     val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
+    val interactionSource = remember { MutableInteractionSource() }
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxWidth()
@@ -456,7 +458,9 @@ private fun ExpandableListItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
-                .clickable { onExpandChange(!expanded) }
+                .clickable(interactionSource, indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)) {
+                    onExpandChange(!expanded)
+                }
                 .padding(start = 12.dp, end = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -546,7 +550,7 @@ private fun ServerListItemView(
             .height(48.dp)
             .clickable(
                 interactionSource,
-                indication = ripple(bounded = true, color = AppColors.white)
+                indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)
             ) {
                 connectionViewModel.onCityClick(item)
             }
