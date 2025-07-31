@@ -291,7 +291,7 @@ fun SplitBorderCircle(
             if (firstSectionAngle == 0f || !showLocationLoad) return@Canvas
             drawArc(
                 color = firstColor,
-                startAngle = 160f, // Start from top
+                startAngle = 180f, // Start from top
                 sweepAngle = firstSectionAngle,
                 useCenter = false,
                 style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
@@ -301,7 +301,7 @@ fun SplitBorderCircle(
 
             drawArc(
                 color = secondColor,
-                startAngle = 160f + firstSectionAngle,
+                startAngle = 180f + firstSectionAngle,
                 sweepAngle = 360f - firstSectionAngle,
                 useCenter = false,
                 style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
