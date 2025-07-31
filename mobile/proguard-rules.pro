@@ -5,6 +5,11 @@
 -keepattributes Exceptions
 -dontwarn okio.**
 
+# RxJava2 Call Adapter Factory for Retrofit
+-keep class retrofit2.adapter.rxjava2.** { *; }
+-keep class io.reactivex.** { *; }
+-dontwarn io.reactivex.**
+
 # Dagger
 -dontwarn com.google.errorprone.annotations.**
 
