@@ -3,7 +3,9 @@ package com.windscribe.mobile.ui.common
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.graphics.drawable.BitmapDrawable
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -169,20 +171,24 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
                         contentScale = ContentScale.Crop
                     )
                 }
-                if (connectionState is ConnectionUIState.Connected) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        AppColors.darkBlueAccent.copy(alpha = 1.0f),
-                                        Color.Transparent
-                                    )
+                val overlayAlpha by animateFloatAsState(
+                    targetValue = if (connectionState is ConnectionUIState.Connected) 1.0f else 0.0f,
+                    animationSpec = tween(durationMillis = 600),
+                    label = "overlay_alpha"
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .alpha(overlayAlpha)
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    AppColors.darkBlueAccent.copy(alpha = 1.0f),
+                                    Color.Transparent
                                 )
                             )
-                    )
-                }
+                        )
+                )
             }
         }
         NetworkInfoSheet(connectionViewmodel, homeViewmodel)
