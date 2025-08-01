@@ -3,17 +3,13 @@
     android:height="100dp"
     android:viewportWidth="127"
     android:viewportHeight="100">
-
-  <!-- Filled Path -->
   <path
-      android:pathData="M0,0H127V100H0V0Z"
+      android:pathData="M0,0H127V99H0V0Z"
       android:fillColor="#050A11"
       android:fillAlpha="0.3"/>
-
-  <!-- Stroked Path matching the full width -->
   <path
       android:strokeWidth="1"
-      android:pathData="M0,100H127"
+      android:pathData="M0,99.5H126"
       android:strokeAlpha="0.1"
       android:fillColor="#00000000"
       android:strokeColor="#ffffff"/>

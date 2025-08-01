@@ -639,12 +639,13 @@ private fun ConnectedBackground(connectionViewmodel: ConnectionViewmodel?) {
 private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
     val navController = LocalNavController.current
     val state by connectionViewmodel.connectionUIState.collectAsState()
-    val headerColor = if (state is ConnectionUIState.Connected) {
-        AppColors.black.copy(0.10f)
+    val leftHeaderAsset = if (state is ConnectionUIState.Connected) {
+        R.drawable.header_left
     } else {
-        AppColors.midnightNavy.copy(0.03f)
+        R.drawable.header_left_deep
     }
-    val headerAsset = if (state is ConnectionUIState.Connected) {
+
+    val rigtHeaderAsset = if (state is ConnectionUIState.Connected) {
         R.drawable.header_right
     } else {
         R.drawable.header_right_deep
@@ -658,33 +659,28 @@ private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Home
                 .clipToBounds()
         ) {
 
+            // Left
             Box(
                 modifier = Modifier
                     .height(height)
                     .weight(1.0f)
-                    .zIndex(0f)
-                    .background(headerColor)
-                    .drawBehind {
-                        val strokeWidth = 1.dp.toPx() // Stroke thickness
-                        drawLine(
-                            color = Color.White.copy(alpha = 0.10f), // Stroke color
-                            start = Offset(0f, size.height - strokeWidth / 2),
-                            end = Offset(size.width, size.height - strokeWidth / 2),
-                            strokeWidth = strokeWidth
-                        )
-                    }
-            )
+            ) {
+                Image(
+                    painter = painterResource(leftHeaderAsset),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.FillBounds
+                )
+            }
 
-            // Second Image (Right, fixed width and overlapping)
+            // Right
             Box(
                 modifier = Modifier
                     .height(height)
                     .width(163.dp)
-                    .zIndex(1f)
-                    .clip(RectangleShape)
             ) {
                 Image(
-                    painter = painterResource(headerAsset),
+                    painter = painterResource(rigtHeaderAsset),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.FillBounds
