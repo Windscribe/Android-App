@@ -81,7 +81,7 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
                 modifier = Modifier
                     .height(imageDimen.height)
                     .fillMaxSize()
-                    .alpha(if (locationBackground is LocationBackground.Wallpaper || locationBackground is LocationBackground.Custom) 1.0f else 0.30f)
+                    .alpha( 0.3f)
                     .graphicsLayer(alpha = 1.0f)
                     .drawWithContent {
                         drawContent()
