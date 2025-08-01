@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.Protocol
+import org.slf4j.LoggerFactory
 
 abstract class NetworkDetailViewModel : ViewModel() {
     abstract val showProgress: StateFlow<Boolean>
@@ -63,6 +63,7 @@ class NetworkDetailViewModelImpl(
     override val ports: StateFlow<List<DropDownStringItem>> = _ports
     private val portMapItems = mutableListOf<PortMapItem>()
     override val isMyNetwork = MutableStateFlow(false)
+    private val logger = LoggerFactory.getLogger("basic")
 
     init {
         loadNetworkDetails()
@@ -71,16 +72,21 @@ class NetworkDetailViewModelImpl(
 
     private fun loadPortMapItems() {
         viewModelScope.launch(Dispatchers.IO) {
+            logger.info("Loading portmap.")
             val portMapResult = getPortMap(api, preferencesHelper)
             if (portMapResult.isSuccess) {
                 val portMap = portMapResult.getOrNull()
                 portMap?.portmap?.map {
                     PortMapItem(ProtoItem(it.protocol, it.heading), it.ports, it.use)
                 }?.let {
-                    protocols
                     portMapItems.addAll(it)
                     buildProtocolInfo()
                 }
+                if (portMap == null) {
+                    logger.error("Portmap is null.")
+                }
+            } else {
+                logger.error("Portmap loading failed. ${portMapResult.exceptionOrNull()?.message}")
             }
         }
     }
@@ -92,11 +98,18 @@ class NetworkDetailViewModelImpl(
             _protocols.value = it
             _selectedProtocol.value = networkDetail.value?.protocol ?: ""
             _selectedPort.value = networkDetail.value?.port ?: ""
+            loadPorts()
         }
-        portMapItems.firstOrNull() {
-            it.protoItem.proto == networkDetail.value?.protocol
-        }?.ports?.let {
-            _ports.value = it.map { DropDownStringItem(it, it) }
+    }
+
+    private fun loadPorts() {
+        logger.info("Loading ports.")
+        portMapItems.firstOrNull { item ->
+            item.protoItem.proto == networkDetail.value?.protocol
+        }?.ports?.let { ports ->
+            _ports.value = ports.map { port -> DropDownStringItem(port, port) }
+        }?:run {
+            logger.error("Portmap item not found for protocol ${networkDetail.value?.protocol}")
         }
     }
 
@@ -178,16 +191,18 @@ class NetworkDetailViewModelImpl(
             val networkInfo = _networkDetail.value
             networkInfo?.let {
                 it.protocol = protocol.key
-                if (!isValidPort(it.protocol, it.port)) {
-                    it.port =
-                        portMapItems.first { it.protoItem.proto == protocol.key }.ports.first()
-                    _selectedPort.value = it.port
-                    _ports.value =
-                        portMapItems.first { it.protoItem.proto == protocol.key }.ports.map {
-                            DropDownStringItem(it, it)
-                        }
+                
+                // Always update ports list when protocol changes
+                val portMapItem = portMapItems.firstOrNull { item -> item.protoItem.proto == protocol.key }
+                val newPorts = portMapItem?.ports ?: emptyList()
+                _ports.value = newPorts.map { port -> DropDownStringItem(port, port) }
+                
+                // If current port is not valid for new protocol, select first available port
+                if (!isValidPort(it.protocol, it.port) && newPorts.isNotEmpty()) {
+                    it.port = newPorts.first()
                     _selectedPort.value = it.port
                 }
+                
                 withContext(Dispatchers.IO) {
                     localDbInterface.updateNetworkSync(it)
                 }
