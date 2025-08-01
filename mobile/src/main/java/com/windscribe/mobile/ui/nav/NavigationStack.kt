@@ -252,15 +252,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
             NetworkOptionsScreen(it)
         }
     }
-    composable(route = Screen.NetworkDetails.route, enterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }, exitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }, popExitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }, popEnterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }) {
+    composable(route = Screen.NetworkDetails.route) {
         val navController = LocalNavController.current
         val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
         val data = savedStateHandle?.get<String>("network_name")
