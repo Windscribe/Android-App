@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.nav
 
+import android.R.attr.data
 import android.os.Build
 import android.util.Log
 import androidx.compose.animation.slideInHorizontally
@@ -255,17 +256,19 @@ private fun NavGraphBuilder.addNavigationScreens() {
         slideInHorizontally(initialOffsetX = { -it })
     }, exitTransition = {
         slideOutHorizontally(targetOffsetX = { it })
+    }, popExitTransition = {
+        slideOutHorizontally(targetOffsetX = { it })
+    }, popEnterTransition = {
+        slideInHorizontally(initialOffsetX = { -it })
     }) {
+        val navController = LocalNavController.current
+        val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
+        val data = savedStateHandle?.get<String>("network_name")
         ViewModelRoute(NetworkDetailViewModel::class.java) {
-            val navController = LocalNavController.current
-            val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
-            val data = savedStateHandle?.get<String>("network_name")
-            if (data != null) {
-                LaunchedEffect(data) {
-                    it.setNetworkName(data)
-                }
-                NetworkDetailScreen(it)
+            data?.let { networkName ->
+                it.setNetworkName(networkName)
             }
+            NetworkDetailScreen(it)
         }
     }
     composable(route = Screen.ShareLink.route) {
