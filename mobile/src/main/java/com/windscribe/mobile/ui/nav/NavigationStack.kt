@@ -6,6 +6,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
@@ -259,8 +260,12 @@ private fun NavGraphBuilder.addNavigationScreens() {
             val navController = LocalNavController.current
             val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
             val data = savedStateHandle?.get<String>("network_name")
-            it.networkNetworkName = data
-            NetworkDetailScreen(it)
+            if (data != null) {
+                LaunchedEffect(data) {
+                    it.setNetworkName(data)
+                }
+                NetworkDetailScreen(it)
+            }
         }
     }
     composable(route = Screen.ShareLink.route) {

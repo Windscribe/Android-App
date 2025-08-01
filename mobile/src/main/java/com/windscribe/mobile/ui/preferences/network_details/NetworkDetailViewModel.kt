@@ -29,7 +29,7 @@ abstract class NetworkDetailViewModel : ViewModel() {
     abstract val selectedPort: StateFlow<String>
     abstract val protocols: StateFlow<List<DropDownStringItem>>
     abstract val ports: StateFlow<List<DropDownStringItem>>
-    abstract var networkNetworkName: String?
+    abstract fun setNetworkName(networkName: String)
     abstract fun onAutoSecureChanged()
     abstract fun onProtocolSelected(protocol: DropDownStringItem)
     abstract fun onPortSelected(port: DropDownStringItem)
@@ -52,7 +52,7 @@ class NetworkDetailViewModelImpl(
     override val showProgress: StateFlow<Boolean> = _showProgress
     private val _networkDetail = MutableStateFlow<NetworkInfo?>(null)
     override val networkDetail: StateFlow<NetworkInfo?> = _networkDetail
-    override var networkNetworkName: String? = null
+    private var selectedNetworkName: String? = null
     private val _selectedProtocol = MutableStateFlow("")
     override val selectedProtocol: StateFlow<String> = _selectedProtocol
     private val _selectedPort = MutableStateFlow("")
@@ -63,11 +63,18 @@ class NetworkDetailViewModelImpl(
     override val ports: StateFlow<List<DropDownStringItem>> = _ports
     private val portMapItems = mutableListOf<PortMapItem>()
     override val isMyNetwork = MutableStateFlow(false)
-    private val logger = LoggerFactory.getLogger("basic")
+    private val logger = LoggerFactory.getLogger("NetworkDetail")
+    private var portMapLoaded = false
 
-    init {
+
+    override fun setNetworkName(networkName: String) {
+        if (selectedNetworkName == networkName) {
+            logger.debug("Network name already set to: $networkName, skipping")
+            return
+        }
+        selectedNetworkName = networkName
+        logger.info("Setting network name: $networkName")
         loadNetworkDetails()
-        loadPortMapItems()
     }
 
     private fun loadPortMapItems() {
@@ -114,28 +121,47 @@ class NetworkDetailViewModelImpl(
     }
 
     private fun loadNetworkDetails() {
+        logger.info("Loading network details for network: $selectedNetworkName")
         viewModelScope.launch(Dispatchers.IO) {
             _showProgress.value = true
             localDbInterface.allNetworks
                 .distinctUntilChanged()
                 .collect { networkList ->
-                    val networkInfo = networkList.find { it.networkName == networkNetworkName }
+                    logger.debug("Received network list with ${networkList.size} networks")
+                    val networkInfo = networkList.find { it.networkName == selectedNetworkName}
+                    logger.debug("Found network info: ${networkInfo?.networkName}, protocol: ${networkInfo?.protocol}, port: ${networkInfo?.port}")
+                    
                     if (_networkDetail.value != networkInfo) {
+                        logger.info("Network detail changed, updating to: ${networkInfo?.networkName}")
                         _networkDetail.value = networkInfo
                     }
+                    
                     val isMine = networkInfo?.networkName == networkNetworkManager.networkInfo?.networkName
                     if (isMyNetwork.value != isMine) {
+                        logger.debug("isMyNetwork changed to: $isMine")
                         isMyNetwork.value = isMine
                     }
+                    
                     val vpnActive = vpnConnectionStateManager.isVPNActive()
+                    logger.debug("VPN active: $vpnActive, auto-secure: ${networkInfo?.isAutoSecureOn}, global pref: ${preferencesHelper.globalUserConnectionPreference}")
+                    
                     when {
                         networkInfo?.isAutoSecureOn == true && !vpnActive && preferencesHelper.globalUserConnectionPreference -> {
+                            logger.info("Auto-connecting VPN for secure network: ${networkInfo.networkName}")
                             vpnController.connectAsync()
                         }
                         networkInfo?.isAutoSecureOn == false && vpnActive -> {
+                            logger.info("Auto-disconnecting VPN for non-secure network: ${networkInfo.networkName}")
                             vpnController.disconnectAsync()
                         }
                     }
+                    
+                    // Load port map only once after we have network details
+                    if (!portMapLoaded) {
+                        portMapLoaded = true
+                        loadPortMapItems()
+                    }
+                    
                     _showProgress.value = false
                 }
         }
@@ -232,7 +258,7 @@ class NetworkDetailViewModelImpl(
     }
 
     override fun onCleared() {
-        networkNetworkManager.reload(false)
+        networkNetworkManager.reload(true)
         super.onCleared()
     }
 }
