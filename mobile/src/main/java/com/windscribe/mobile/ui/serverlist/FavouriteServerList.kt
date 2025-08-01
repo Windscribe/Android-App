@@ -46,6 +46,7 @@ import com.windscribe.mobile.ui.common.TenGIcon
 import com.windscribe.mobile.ui.common.healthColor
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.helper.HandleScrollHaptic
+import com.windscribe.mobile.ui.helper.miniumHealthStart
 import com.windscribe.mobile.ui.home.HomeViewmodel
 import com.windscribe.mobile.ui.home.UserState
 import com.windscribe.mobile.ui.theme.font12
@@ -125,8 +126,12 @@ private fun ListItemView(
     homeViewmodel: HomeViewmodel
 ) {
     val userState by homeViewmodel.userState.collectAsState()
-    val color = colorResource(healthColor(item.city.health))
-    val angle = (item.city.health / 100f) * 360f
+    var health = item.city.health
+    if (health < miniumHealthStart){
+        health = miniumHealthStart
+    }
+    val color = colorResource(healthColor(health))
+    val angle = (health / 100f) * 360f
     val latencyState by viewModel.latencyListState.collectAsState()
     val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     val latency by rememberUpdatedState(

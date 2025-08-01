@@ -66,6 +66,7 @@ import com.windscribe.mobile.ui.common.healthColor
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.helper.HandleScrollHaptic
 import com.windscribe.mobile.ui.helper.latencyArcStart
+import com.windscribe.mobile.ui.helper.miniumHealthStart
 import com.windscribe.mobile.ui.home.HomeViewmodel
 import com.windscribe.mobile.ui.home.UserState
 import com.windscribe.mobile.ui.theme.AppColors
@@ -389,7 +390,10 @@ private fun BestLocation(
     connectionViewModel: ConnectionViewmodel,
     homeViewmodel: HomeViewmodel
 ) {
-    val health = averageHealth(item)
+    var health = averageHealth(item)
+    if (health < miniumHealthStart){
+        health = miniumHealthStart
+    }
     val color = colorResource(healthColor(health))
     val angle = (health / 100f) * 360f
     val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
@@ -445,7 +449,10 @@ private fun ExpandableListItem(
     expanded: Boolean,
     onExpandChange: (Boolean) -> Unit
 ) {
-    val health = averageHealth(item)
+    var health = averageHealth(item)
+    if (health < miniumHealthStart){
+        health = miniumHealthStart
+    }
     val color = colorResource(healthColor(health))
     val angle = (health / 100f) * 360f
     val userState by homeViewmodel.userState.collectAsState()
@@ -536,8 +543,12 @@ private fun ServerListItemView(
     if (favouriteState is ListState.Success) {
         isFavorite = (favouriteState as ListState.Success).data.any { it.city.id == item.id }
     }
-    val color = colorResource(healthColor(item.health))
-    val angle = (item.health / 100f) * 360f
+    var health = item.health
+    if (health < miniumHealthStart){
+        health = miniumHealthStart
+    }
+    val color = colorResource(healthColor(health))
+    val angle = (health / 100f) * 360f
     val latencyState by viewModel.latencyListState.collectAsState()
     val latency by rememberUpdatedState(
         if (latencyState is ListState.Success) {
