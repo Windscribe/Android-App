@@ -1,0 +1,3 @@
+v3.92(TV)
+* Updated WireGuard backend for faster connection times.
+* Fixed various potential crashes.

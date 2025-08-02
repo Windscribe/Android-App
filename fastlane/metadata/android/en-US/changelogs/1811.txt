@@ -1,0 +1,15 @@
+v3.92(Mobile)
+* Added Clean option to advanced parameters.
+* Updated WireGuard backend for faster connection times.
+* Added haptic feedback to connect/disconnect actions.
+* Improved protocol change popup UI and scrolling behavior.
+* Added fallback display for IP/network blur when blur effects are unavailable.
+* Updated navigation bar color to better match the app theme.
+* Enhanced server list UI with minor updates.
+* Fixed double-clicking the protocol change cancel button causing an empty screen.
+* Fixed issue where the settings popup wouldn't show after denying location permission.
+* Fixed missing split routing icon on the connected ring.
+* Fixed haptic feedback not working on older devices.
+* Fixed long network names overlapping each other.
+* Fixed decoy traffic not working under specific conditions.
+* Fixed various potential crashes.
