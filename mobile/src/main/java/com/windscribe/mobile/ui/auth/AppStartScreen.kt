@@ -229,12 +229,16 @@ private fun GoogleButton(viewModel: AppStartViewModel?) {
     val activity = LocalContext.current as? AppStartActivity
     Button(
         onClick = {
-            if (signInIntent == null){
-                Toast.makeText(activity, "Google Signin not available.", Toast.LENGTH_SHORT).show()
-                return@Button
+            if (com.windscribe.mobile.BuildConfig.FLAVOR == "google") {
+                if (signInIntent == null){
+                    Toast.makeText(activity, "Google Signin not available.", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                viewModel.onSignIntentLaunch()
+                launcher.launch(signInIntent)
+            } else {
+                Toast.makeText(activity, "Google Sign-in not available in F-Droid version", Toast.LENGTH_SHORT).show()
             }
-            viewModel.onSignIntentLaunch()
-            launcher.launch(signInIntent)
         },
         Modifier
             .height(48.dp)
@@ -298,12 +302,17 @@ private fun LoginButton() {
 @Composable
 fun EmergencyConnectButton(isConnected: Boolean) {
     val navController = LocalNavController.current
+    val context = LocalContext.current
     Text(
         text = if (isConnected) "Emergency Connect On" else "Can’t Connect?",
         style = font18.copy(fontWeight = FontWeight.Medium),
         color = if (isConnected) Color(0xFF61FF8A) else Color(0xFF838D9B),
         modifier = Modifier.clickable {
-            navController.navigate(Screen.EmergencyConnect.route)
+            if (com.windscribe.mobile.BuildConfig.FLAVOR == "google") {
+                navController.navigate(Screen.EmergencyConnect.route)
+            } else {
+                Toast.makeText(context, "Emergency Connect not available in F-Droid version", Toast.LENGTH_SHORT).show()
+            }
         }
     )
 }
