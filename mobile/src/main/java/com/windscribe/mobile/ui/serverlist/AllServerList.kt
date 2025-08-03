@@ -261,8 +261,9 @@ fun UpgradeBar(viewModel: HomeViewmodel?) {
 fun LocationCount(viewModel: ServerViewModel) {
     val serverListState by viewModel.serverListState.collectAsState()
     if (serverListState is ListState.Success) {
+        val totalCities = (serverListState as ListState.Success).data.sumOf { it.cities.size }
         Text(
-            text = "All locations (${(serverListState as ListState.Success).data.count()})",
+            text = "All locations ($totalCities)",
             style = font12,
             color = MaterialTheme.colorScheme.serverItemTextColor,
             modifier = Modifier.padding(start = 8.dp, top = 16.dp)
