@@ -69,7 +69,11 @@ supply(
   skip_upload_metadata: true,
   skip_upload_images: true,
   skip_upload_screenshots: true,
-  aab_paths: Actions.lane_context[SharedValues::GRADLE_ALL_AAB_OUTPUT_PATHS]
+  aab_paths: Actions.lane_context[SharedValues::GRADLE_ALL_AAB_OUTPUT_PATHS],
+  mapping_paths: [
+    "mobile/build/outputs/mapping/googleRelease/mapping.txt",
+    "tv/build/outputs/mapping/googleRelease/mapping.txt"
+  ]
 )
 end
 
