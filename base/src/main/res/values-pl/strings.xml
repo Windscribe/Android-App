@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">Haptyczne sprzężenie zwrotne</string>
     <string name="version">Wersja</string>
     <string name="show_location_health">Obciążenie lokalizacji</string>
-    <string name="split_tunneling_feature">Wybieranie aplikacji, które mają zostać wykluczone lub dołączone do Windscribe po nawiązaniu połączenia</string>
+    <string name="split_tunneling_feature">Wybierz aplikacje, które mają zostać wykluczone lub dołączone do Windscribe po nawiązaniu połączenia.
+    Uwaga: Włączenie \"Blokuj połączenia bez VPN\" przerywa podzielone tunelowanie dla każdej aplikacji poza tunelem.</string>
     <string name="mode">Tryb</string>
     <string name="split_tunneling">Tunelowanie dzielone</string>
     <string name="off">Od</string>

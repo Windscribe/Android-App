@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">Phản hồi xúc giác</string>
     <string name="version">Phiên bản</string>
     <string name="show_location_health">Tải vị trí</string>
-    <string name="split_tunneling_feature">Chọn ứng dụng để loại trừ hoặc bao gồm từ Windscribe khi được kết nối</string>
+    <string name="split_tunneling_feature">Chọn ứng dụng để loại trừ hoặc bao gồm từ Windscribe khi được kết nối.
+    Lưu ý: Bật \"Chặn kết nối không có VPN\" sẽ làm hỏng tính năng tách đường hầm cho bất kỳ ứng dụng nào bên ngoài đường hầm.</string>
     <string name="mode">Chế độ</string>
     <string name="split_tunneling">Tạo đường hầm phân chia</string>
     <string name="off">Tắt</string>

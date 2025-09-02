@@ -218,7 +218,8 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="haptic_setting_label">Haptisches Feedback</string>
     <string name="version">Version</string>
     <string name="show_location_health">Standort Belastung</string>
-    <string name="split_tunneling_feature">Wähle aus, welche Apps von Windscribe ausgeschlossen oder in Windscribe aufgenommen werden sollen, wenn eine Verbindung hergestellt ist</string>
+    <string name="split_tunneling_feature">Wählen Sie aus, welche Apps von Windscribe ausgeschlossen oder eingeschlossen werden sollen, wenn eine Verbindung besteht.
+    Hinweis: Das Aktivieren von \"Verbindungen ohne VPN blockieren\" unterbricht das Split-Tunneling für alle Apps außerhalb des Tunnels.</string>
     <string name="mode">Modus</string>
     <string name="split_tunneling">Split Tunneling</string>
     <string name="off">Aus</string>

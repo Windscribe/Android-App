@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">Umpan balik haptic</string>
     <string name="version">Versi</string>
     <string name="show_location_health">Beban Lokasi</string>
-    <string name="split_tunneling_feature">Memilih app mana yang akan dikecualikan atau disertakan dari Windscribe saat Terhubung</string>
+    <string name="split_tunneling_feature">Pilih aplikasi mana yang akan dikecualikan atau disertakan dari Windscribe saat terhubung.
+    Catatan: Mengaktifkan "Blokir koneksi tanpa VPN" akan merusak split tunneling untuk aplikasi apa pun di luar terowongan.</string>
     <string name="mode">Modus</string>
     <string name="split_tunneling">Terowongan Terpisah</string>
     <string name="off">Matikan</string>

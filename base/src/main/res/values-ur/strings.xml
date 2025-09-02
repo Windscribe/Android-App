@@ -215,7 +215,8 @@
     <string name="haptic_setting_label">Haptic Feedback</string>
     <string name="version">Version</string>
     <string name="show_location_health">Location Load</string>
-    <string name="split_tunneling_feature">Choose which apps to exclude or  include from Windscribe when Connected</string>
+    <string name="split_tunneling_feature">منسلک ہونے پر Windscribe سے کون سے ایپس کو خارج کرنا یا شامل کرنا ہے کا انتخاب کریں۔
+    نوٹ: "VPN کے بغیر کنکشن بلاک کریں" کو فعال کرنے سے ٹنل کے باہر کسی بھی ایپ کے لیے اسپلٹ ٹنلنگ ٹوٹ جائے گی۔</string>
     <string name="mode">Mode</string>
     <string name="split_tunneling">Split Tunneling</string>
     <string name="off">Off</string>

@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">Feedback háptico</string>
     <string name="version">Versão</string>
     <string name="show_location_health">Carga de localização</string>
-    <string name="split_tunneling_feature">Escolha quais aplicativos excluir ou incluir do Windscribe quando estiver conectado</string>
+    <string name="split_tunneling_feature">Escolha quais aplicativos excluir ou incluir do Windscribe quando estiver conectado.
+    Nota: Habilitar \"Bloquear conexões sem VPN\" interromperá o túnel dividido para qualquer aplicativo fora do túnel.</string>
     <string name="mode">Modo</string>
     <string name="split_tunneling">Tunelamento dividido</string>
     <string name="off">Desligado</string>

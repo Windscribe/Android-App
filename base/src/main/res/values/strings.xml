@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">Haptic Feedback</string>
     <string name="version">Version</string>
     <string name="show_location_health">Location Load</string>
-    <string name="split_tunneling_feature">Choose which apps to exclude or  include from Windscribe when Connected</string>
+    <string name="split_tunneling_feature">Choose which apps to exclude or include from Windscribe when connected. 
+    Note: Enabling \"Block connections without VPN\" will break split tunneling for any app outside the tunnel.</string>
     <string name="mode">Mode</string>
     <string name="split_tunneling">Split Tunneling</string>
     <string name="off">Off</string>

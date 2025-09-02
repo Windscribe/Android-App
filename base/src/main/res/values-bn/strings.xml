@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">হ্যাপটিক প্রতিক্রিয়া</string>
     <string name="version">সংস্করণ</string>
     <string name="show_location_health">স্থানের লোড</string>
-    <string name="split_tunneling_feature">যখন সংযুক্ত হবেন, তখন কোন অ্যাপগুলি Windscribe থেকে বাদ দেবেন বা অন্তর্ভুক্ত করবেন তা নির্বাচন করুন</string>
+    <string name="split_tunneling_feature">সংযুক্ত অবস্থায় কোন অ্যাপগুলি Windscribe থেকে বাদ দিতে বা অন্তর্ভুক্ত করতে হবে তা বেছে নিন।
+    নোট: "VPN ছাড়া সংযোগ ব্লক করুন" সক্রিয় করলে টানেলের বাইরের যেকোনো অ্যাপের জন্য বিভক্ত টানেলিং ভেঙে ফেলবে।</string>
     <string name="mode">মোড</string>
     <string name="split_tunneling">স্প্লিট টানেলিং</string>
     <string name="off">বন্ধ</string>

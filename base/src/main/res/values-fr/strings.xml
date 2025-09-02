@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">Retour haptique</string>
     <string name="version">Version</string>
     <string name="show_location_health">Charge d’emplacement</string>
-    <string name="split_tunneling_feature">Choisir les applications à exclure ou à inclure de Windscribe lorsqu’elles sont connectées</string>
+    <string name="split_tunneling_feature">Choisissez les applications à exclure ou à inclure de Windscribe lors de la connexion.
+    Note : L\'activation de \"Bloquer les connexions sans VPN\" interrompra le tunneling fractionné pour toute application en dehors du tunnel.</string>
     <string name="mode">Mode</string>
     <string name="split_tunneling">Split Tunneling</string>
     <string name="off">De</string>

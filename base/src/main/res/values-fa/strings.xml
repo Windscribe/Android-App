@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">بازخورد لمسی</string>
     <string name="version">نسخهٔ</string>
     <string name="show_location_health">بار مکان</string>
-    <string name="split_tunneling_feature">انتخاب کنید که کدام برنامه ها برای حذف یا شامل شدن از Windscribe هنگام اتصال</string>
+    <string name="split_tunneling_feature">برنامه‌هایی را که هنگام اتصال از Windscribe حذف یا اضافه شوند، انتخاب کنید.
+    توجه: فعال کردن "مسدود کردن اتصالات بدون VPN" تونل‌سازی تقسیم‌شده را برای هر برنامه‌ای خارج از تونل خراب خواهد کرد۔</string>
     <string name="mode">حالت</string>
     <string name="split_tunneling">تونل زنی اسپلیت</string>
     <string name="off">خاموش</string>
