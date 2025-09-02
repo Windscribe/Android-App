@@ -47,6 +47,8 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
     override val searchKeyword: StateFlow<String> = _searchKeyword
     private val _filteredApps = MutableStateFlow(emptyList<InstalledAppsData>())
     override val filteredApps: StateFlow<List<InstalledAppsData>> = _filteredApps
+    // Store current app order positions to maintain consistency
+    private var currentAppOrder = mutableMapOf<String, Int>()
 
 
     init {
@@ -77,6 +79,11 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
             Collections.sort(appList, SortByName())
             if (initialLoad) {
                 Collections.sort(appList, SortBySelected())
+                // Store the initial order after sorting by selected status
+                currentAppOrder.clear()
+                appList.forEachIndexed { index, app ->
+                    currentAppOrder[app.packageName] = index
+                }
             }
             _apps.emit(appList)
             _showProgress.value = false
@@ -93,15 +100,50 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
 
     override fun onAppSelected(app: InstalledAppsData) {
         viewModelScope.launch(Dispatchers.IO) {
-            _showProgress.value = true
-            val apps = preferenceHelper.installedApps().toMutableList()
-            if (app.isChecked) {
-                apps.remove(app.packageName)
-            } else {
-                apps.add(app.packageName)
+            updateSavedApps(app)
+            updateAppListInPlace(app)
+        }
+    }
+
+    private fun updateSavedApps(app: InstalledAppsData) {
+        val apps = preferenceHelper.installedApps().toMutableList()
+        if (app.isChecked) {
+            apps.remove(app.packageName)
+        } else {
+            apps.add(app.packageName)
+        }
+        preferenceHelper.saveInstalledApps(apps.toList())
+    }
+
+    private suspend fun updateAppListInPlace(app: InstalledAppsData) {
+        val currentApps = _apps.value.toMutableList()
+        val appIndex = currentApps.indexOfFirst { it.packageName == app.packageName }
+        if (appIndex != -1) {
+            currentApps[appIndex].isChecked = !currentApps[appIndex].isChecked
+            val newAppsList = createNewAppsList(currentApps)
+            newAppsList[appIndex].isChecked = currentApps[appIndex].isChecked
+            emitUpdatedLists(newAppsList)
+        }
+    }
+
+    private fun createNewAppsList(currentApps: MutableList<InstalledAppsData>): MutableList<InstalledAppsData> {
+        return currentApps.map { appData ->
+            val newApp = InstalledAppsData(appData.appName, appData.packageName, appData.appIconDrawable)
+            newApp.isChecked = appData.isChecked
+            newApp
+        }.toMutableList()
+    }
+
+    private suspend fun emitUpdatedLists(newAppsList: MutableList<InstalledAppsData>) {
+        _apps.emit(newAppsList)
+        val query = _searchKeyword.value
+        if (query.isEmpty()) {
+            _filteredApps.emit(newAppsList)
+        } else {
+            val filteredApps = newAppsList.filter {
+                it.appName.contains(query, true)
             }
-            preferenceHelper.saveInstalledApps(apps.toList())
-            loadApps()
+            _filteredApps.emit(filteredApps)
         }
     }
 
