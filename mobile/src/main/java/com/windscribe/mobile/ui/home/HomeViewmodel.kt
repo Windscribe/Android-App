@@ -75,9 +75,9 @@ class HomeViewmodelImpl(
     override val hapticFeedbackEnabled: StateFlow<Boolean> = _hapticFeedbackEnabled
     private val _showLocationLoad = MutableStateFlow(preferences.isShowLocationHealthEnabled)
     override val showLocationLoad: StateFlow<Boolean> = _showLocationLoad
-    private val _hideIp = MutableStateFlow(false)
+    private val _hideIp = MutableStateFlow(preferences.blurIp)
     override val hideIp: StateFlow<Boolean> = _hideIp
-    private val _hideNetworkName = MutableStateFlow(false)
+    private val _hideNetworkName = MutableStateFlow(preferences.blurNetworkName)
     override val hideNetworkName: StateFlow<Boolean> = _hideNetworkName
 
     private val trayPreferenceChangeListener = OnTrayPreferenceChangeListener {
@@ -177,10 +177,12 @@ class HomeViewmodelImpl(
 
     override fun onHideIpClick() {
         _hideIp.value = !_hideIp.value
+        preferences.blurIp = _hideIp.value
     }
 
     override fun onHideNetworkNameClick() {
         _hideNetworkName.value = !_hideNetworkName.value
+        preferences.blurNetworkName = _hideNetworkName.value
     }
 
     override fun onCleared() {
