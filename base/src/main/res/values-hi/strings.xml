@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">हैप्टिक फीडबैक</string>
     <string name="version">संस्करण</string>
     <string name="show_location_health">स्थान लोड</string>
-    <string name="split_tunneling_feature">कनेक्ट होने पर विंडस्क्राइब से किन ऐप्स को बाहर करना या शामिल करना है, चुनें</string>
+    <string name="split_tunneling_feature">कनेक्ट होने पर Windscribe से कौन से ऐप्स को बाहर करना या शामिल करना है चुनें।
+    नोट: "VPN के बिना कनेक्शन ब्लॉक करें" को सक्षम करने से टनल के बाहर किसी भी ऐप के लिए स्प्लिट टनलिंग टूट जाएगी।</string>
     <string name="mode">मोड</string>
     <string name="split_tunneling">स्प्लिट टनलिंग</string>
     <string name="off">बंद</string>

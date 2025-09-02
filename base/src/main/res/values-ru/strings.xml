@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">Вибрация</string>
     <string name="version">Версия</string>
     <string name="show_location_health">Нагрузка локаций</string>
-    <string name="split_tunneling_feature">Выберите, какие приложения следует исключить или включить из Windscribe при подключении</string>
+    <string name="split_tunneling_feature">Выберите, какие приложения следует исключить или включить из Windscribe при подключении.
+    Примечание: Включение \"Блокировать соединения без VPN\" нарушит раздельное туннелирование для любого приложения вне туннеля.</string>
     <string name="mode">Режим</string>
     <string name="split_tunneling">Раздельное туннелирование</string>
     <string name="off">От</string>

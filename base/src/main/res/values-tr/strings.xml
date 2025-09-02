@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">Dokunsal Geri Bildirim</string>
     <string name="version">Sürüm</string>
     <string name="show_location_health">Konum Yükleme</string>
-    <string name="split_tunneling_feature">Bağlandığınızda Windscribe\dan hangi uygulamaların hariç tutulacağını veya dahil edileceğini seçme</string>
+    <string name="split_tunneling_feature">Bağlandığınızda Windscribe\'dan hangi uygulamaların hariç tutulacağını veya dahil edileceğini seçin.
+    Not: \"VPN olmadan bağlantıları engelle\"yi etkinleştirmek, tünel dışındaki herhangi bir uygulama için bölünmüş tünel oluşturmayı bozacaktır.</string>
     <string name="mode">Mod</string>
     <string name="split_tunneling">Bölünmüş Tünel Açma</string>
     <string name="off">Kapalı</string>

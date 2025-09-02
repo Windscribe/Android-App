@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">ردود الفعل اللمسية</string>
     <string name="version">الإصدار</string>
     <string name="show_location_health">تحميل الموقع</string>
-    <string name="split_tunneling_feature">اختيار التطبيقات التي تريد استبعادها أو تضمينها من Windscribe عند الاتصال</string>
+    <string name="split_tunneling_feature">اختر التطبيقات التي تريد استبعادها أو تضمينها من Windscribe عند الاتصال.
+    ملاحظة: تفعيل \"حظر الاتصالات بدون VPN\" سيؤدي إلى كسر النفق المقسم لأي تطبيق خارج النفق.</string>
     <string name="mode">طريقة</string>
     <string name="split_tunneling">الانقسام النفقي</string>
     <string name="off">قباله</string>

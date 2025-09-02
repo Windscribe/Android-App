@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">햅틱 피드백</string>
     <string name="version">버전</string>
     <string name="show_location_health">위치 로드</string>
-    <string name="split_tunneling_feature">연결 시 Windscribe에서 제외하거나 포함할 앱 선택</string>
+    <string name="split_tunneling_feature">연결 시 Windscribe에서 제외하거나 포함할 앱을 선택합니다.
+    참고: \"VPN 없이 연결 차단\"을 활성화하면 터널 외부의 모든 앱에 대해 분할 터널링이 중단됩니다.</string>
     <string name="mode">모드</string>
     <string name="split_tunneling">스플릿 터널링</string>
     <string name="off">끄기</string>

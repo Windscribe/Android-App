@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">触觉反馈</string>
     <string name="version">版本</string>
     <string name="show_location_health">位置加载</string>
-    <string name="split_tunneling_feature">选择要在连接时从 Windscribe 中排除或包含的应用程序</string>
+    <string name="split_tunneling_feature">選擇連接時要從 Windscribe 中排除或包含的應用程式。
+    注意：啟用「阻止沒有 VPN 的連接」將會中斷隧道外任何應用程式的分隧道功能。</string>
     <string name="mode">模式</string>
     <string name="split_tunneling">拆分隧道</string>
     <string name="off">關閉</string>

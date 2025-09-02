@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">Тактильний зворотний зв\язок</string>
     <string name="version">Версія</string>
     <string name="show_location_health">Навантаження на місце розташування</string>
-    <string name="split_tunneling_feature">Виберіть, які програми виключити або включити з Windscribe під час підключення</string>
+    <string name="split_tunneling_feature">Виберіть, які програми виключити або включити з Windscribe під час підключення.
+    Примітка: Увімкнення \"Блокувати з\'єднання без VPN\" порушить роздільне тунелювання для будь-якої програми поза тунелем.</string>
     <string name="mode">Режим</string>
     <string name="split_tunneling">Роздільне тунелювання</string>
     <string name="off">Вимкнено</string>

@@ -216,7 +216,8 @@
     <string name="haptic_setting_label">触覚フィードバック</string>
     <string name="version">バージョン</string>
     <string name="show_location_health">ロケーションロード</string>
-    <string name="split_tunneling_feature">接続時にWindscribeから除外または含めるアプリを選択する</string>
+    <string name="split_tunneling_feature">接続時にWindscribeから除外または含めるアプリを選択します。
+    注意：「VPNなしでの接続をブロック」を有効にすると、トンネル外のアプリのスプリットトンネリングが中断されます。</string>
     <string name="mode">モード</string>
     <string name="split_tunneling">スプリットトンネリング</string>
     <string name="off">オフ</string>
