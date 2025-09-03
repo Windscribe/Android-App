@@ -1,0 +1,4 @@
+v3.93(TV)
+* Updated WireGuard backend for faster connection times.
+* Added DNS state manager to automatically detect and set DNS servers.
+* Various stability improvements and bug fixes.
