@@ -270,7 +270,7 @@ private fun CompactUI(
         }
         Column {
             Header(connectionViewmodel, homeViewmodel)
-            ConnectionStatusSheet(connectionViewmodel, homeViewmodel)
+            ConnectionStatusSheet(connectionViewmodel)
             Spacer(modifier = Modifier.height(32.dp))
             LocationName(connectionViewmodel)
             Spacer(modifier = Modifier.weight(1.0f))
@@ -292,12 +292,9 @@ private fun CompactUI(
 
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
-private fun ConnectionStatusSheet(
-    connectionViewmodel: ConnectionViewmodel,
-    homeViewmodel: HomeViewmodel
-) {
+private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
     val state by connectionViewmodel.connectionUIState.collectAsState()
-    val isHapticEnabled by homeViewmodel.hapticFeedbackEnabled.collectAsState()
+    val isDecoyTrafficEnabled by connectionViewmodel.isDecoyTrafficEnabled.collectAsState()
     val containerColor = when (state) {
         is ConnectionUIState.Connected -> AppColors.mintGreen
         else -> AppColors.white
@@ -307,11 +304,13 @@ private fun ConnectionStatusSheet(
         verticalAlignment = Alignment.CenterVertically
     ) {
         ConnectionStatus(state)
-        val activity = LocalContext.current as AppStartActivity
-        val antiCensorshipProtocolInteractionSource = remember { MutableInteractionSource() }
         val antiCensorshipEnabled by connectionViewmodel.isAntiCensorshipEnabled.collectAsState()
+        val showDecoyTraffic = state is ConnectionUIState.Connected && isDecoyTrafficEnabled
+        
+        // Add initial spacing
+        Spacer(modifier = Modifier.width(if (antiCensorshipEnabled || showDecoyTraffic) 4.dp else 12.dp))
+        
         if (antiCensorshipEnabled) {
-            Spacer(modifier = Modifier.width(4.dp))
             Image(
                 painter = painterResource(if (state is ConnectionUIState.Connected) R.drawable.ic_anti_censorship_enabled else R.drawable.ic_anti_censorship_disabled),
                 contentDescription = null,
@@ -321,8 +320,11 @@ private fun ConnectionStatusSheet(
                 colorFilter = ColorFilter.tint(containerColor)
             )
             Spacer(modifier = Modifier.width(4.dp))
-        } else {
-            Spacer(modifier = Modifier.width(12.dp))
+        }
+        
+        if (showDecoyTraffic) {
+            Text(stringResource(com.windscribe.vpn.R.string.decoy), style = font12, color = AppColors.neonGreen)
+            Spacer(modifier = Modifier.width(4.dp))
         }
         Text(
             text = "${Util.getProtocolLabel(state.protocolInfo?.protocol ?: "")}  ${state.protocolInfo?.port}",

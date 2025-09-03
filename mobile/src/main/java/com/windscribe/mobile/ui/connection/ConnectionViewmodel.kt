@@ -28,6 +28,7 @@ import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.UserStatusConstants
+import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.model.User
@@ -131,6 +132,7 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract val bestLocation: StateFlow<ServerListItem?>
     abstract val isAntiCensorshipEnabled: StateFlow<Boolean>
     abstract val isPreferredProtocolEnabled: StateFlow<Boolean>
+    abstract val isDecoyTrafficEnabled: StateFlow<Boolean>
     abstract val aspectRatio: StateFlow<Int>
     abstract val goto: SharedFlow<HomeGoto>
     abstract val newFeedCount: StateFlow<Int>
@@ -163,7 +165,8 @@ class ConnectionViewmodelImpl @Inject constructor(
     private val preferences: PreferencesHelper,
     private val autoConnectionManager: AutoConnectionManager,
     private val userRepository: UserRepository,
-    private val serverListRepository: ServerListRepository
+    private val serverListRepository: ServerListRepository,
+    private val decoyTrafficController: DecoyTrafficController
 ) :
     ConnectionViewmodel() {
     private val _connectionUIState = MutableStateFlow<ConnectionUIState>(ConnectionUIState.Idle)
@@ -184,6 +187,8 @@ class ConnectionViewmodelImpl @Inject constructor(
     override val isAntiCensorshipEnabled: StateFlow<Boolean> = _isAntiCensorshipEnabled
     private val _isPreferredProtocolEnabled = MutableStateFlow(false)
     override val isPreferredProtocolEnabled: StateFlow<Boolean> = _isPreferredProtocolEnabled
+    private val _isDecoyTrafficEnabled = MutableStateFlow(false)
+    override val isDecoyTrafficEnabled: StateFlow<Boolean> = _isDecoyTrafficEnabled
     private val _goto = MutableSharedFlow<HomeGoto>(replay = 0)
     override val goto: SharedFlow<HomeGoto> = _goto
     private val _newFeedCount = MutableStateFlow(0)
@@ -211,6 +216,7 @@ class ConnectionViewmodelImpl @Inject constructor(
         handleConnectionSoundsState()
         handleConnectionHapticFeedback()
         observeCustomLocationNameChanges()
+        observeDecoyTrafficChanges()
     }
 
     private fun fetchNewsfeedCount() {
@@ -271,6 +277,14 @@ class ConnectionViewmodelImpl @Inject constructor(
                 .collectLatest {
                     fetchLastLocation()
                 }
+        }
+    }
+
+    private fun observeDecoyTrafficChanges() {
+        viewModelScope.launch(Dispatchers.IO) {
+            decoyTrafficController.state.collect {
+                _isDecoyTrafficEnabled.value = it
+            }
         }
     }
 

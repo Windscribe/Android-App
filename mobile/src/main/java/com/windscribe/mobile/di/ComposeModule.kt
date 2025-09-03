@@ -164,7 +164,8 @@ class ComposeModule {
                         appPreferenceHelper,
                         autoConnectionManager,
                         userRepository,
-                        serverListRepository
+                        serverListRepository,
+                        decoyTrafficController
                     ) as T
                 } else if (modelClass.isAssignableFrom(ConfigViewmodel::class.java)) {
                     return ConfigViewmodelImpl(localDbInterface, latencyRepository) as T
