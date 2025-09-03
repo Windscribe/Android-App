@@ -37,6 +37,7 @@ import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.services.canAccessNetworkName
 import com.windscribe.vpn.services.startAutoConnectService
 import com.windscribe.vpn.state.AppLifeCycleObserver
+import com.windscribe.vpn.state.DNSStateManager
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -87,6 +88,9 @@ open class Windscribe : MultiDexApplication() {
 
     @Inject
     lateinit var deviceStateManager: DeviceStateManager
+
+    @Inject
+    lateinit var dnsStateManager: DNSStateManager
 
     @Inject
     lateinit var workManager: WindScribeWorkManager
@@ -143,6 +147,9 @@ open class Windscribe : MultiDexApplication() {
             firebaseManager.initialise()
         }
         deviceStateManager.init(this)
+        if (VERSION.SDK_INT >= VERSION_CODES.M) {
+            dnsStateManager.init(this)
+        }
         if (preference.sessionHash != null) {
             workManager.updateNodeLatencies()
         }
@@ -278,6 +285,7 @@ open class Windscribe : MultiDexApplication() {
 
     override fun onTerminate() {
         logger.debug("App is being terminated.")
+        dnsStateManager.destroy()
         super.onTerminate()
     }
 
