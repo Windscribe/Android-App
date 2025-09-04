@@ -90,22 +90,35 @@ class DNSStateManager @Inject constructor(
     
     private fun setDnsOnWSNet(dnsServers: List<String>) {
         try {
-            val ipv4Addresses = dnsServers.mapNotNull { dnsAddress ->
-                when {
+            val validDnsAddresses = dnsServers.mapIndexedNotNull { index, dnsAddress ->
+                val result = when {
+                    // IPv4 with port - remove port
                     dnsAddress.matches(Regex("\\d+\\.\\d+\\.\\d+\\.\\d+:\\d+")) -> {
                         dnsAddress.substringBefore(":")
                     }
+                    // IPv4 without port
                     dnsAddress.matches(Regex("\\d+\\.\\d+\\.\\d+\\.\\d+")) -> {
                         dnsAddress
                     }
-                    else -> null
+                    // IPv6 with port (bracket notation) - keep brackets, remove port
+                    dnsAddress.matches(Regex("\\[([0-9a-fA-F:]+)]:\\d+")) -> {
+                        dnsAddress.substringBefore(":")
+                    }
+                    // IPv6 without port or with %interface - wrap in brackets, remove interface
+                    dnsAddress.matches(Regex("([0-9a-fA-F:]+)(%\\w+)?")) -> {
+                        "[${dnsAddress.substringBefore("%")}]"
+                    }
+                    else -> {
+                        logger.warn("DNS[$index]: Unrecognized format '$dnsAddress' - skipping")
+                        null
+                    }
                 }
+                result
             }.toMutableList()
-            
-            ipv4Addresses.add("76.76.2.0")
-            ipv4Addresses.add("1.1.1.1")
-            
-            WSNet.instance().dnsResolver().setDnsServers(ipv4Addresses.toTypedArray())
+            validDnsAddresses.add("76.76.2.0")
+            validDnsAddresses.add("1.1.1.1")
+            logger.info("Setting DNS servers to $validDnsAddresses")
+            WSNet.instance().dnsResolver().setDnsServers(validDnsAddresses.toTypedArray())
         } catch (e: Exception) {
             logger.error("Error setting DNS servers on WSNet", e)
         }
