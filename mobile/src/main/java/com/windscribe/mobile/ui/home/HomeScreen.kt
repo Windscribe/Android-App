@@ -133,30 +133,43 @@ private fun HandleGotoAction(
         HomeGoto.Banned -> {
             val bannedData = AccountStatusDialogData(
                 title = stringResource(com.windscribe.vpn.R.string.you_ve_been_banned),
-                icon = R.drawable.garry_angry,
+                icon = R.drawable.garry_account_ban,
                 description = stringResource(com.windscribe.vpn.R.string.you_ve_violated_our_terms),
-                showSkipButton = false,
-                skipText = "",
-                showUpgradeButton = true,
-                upgradeText = stringResource(com.windscribe.vpn.R.string.ok),
-                bannedLayout = true
+                showSecondaryButton = true,
+                secondaryText = stringResource(com.windscribe.vpn.R.string.close),
+                showPrimaryButton = false,
+                primaryText = ""
             )
             navigateWithData(navController, Screen.AccountStatus.route, bannedData)
+            didNavigate = true
+        }
+
+        HomeGoto.Downgraded -> {
+            val downgradedData = AccountStatusDialogData(
+                title = stringResource(com.windscribe.vpn.R.string.you_r_pro_plan_expired),
+                icon = R.drawable.garry_downgraded,
+                description = stringResource(com.windscribe.vpn.R.string.you_ve_been_downgraded_to_free_for_now),
+                showSecondaryButton = true,
+                secondaryText = stringResource(com.windscribe.vpn.R.string.back),
+                showPrimaryButton = true,
+                primaryText = stringResource(com.windscribe.vpn.R.string.renew_plan)
+            )
+            navigateWithData(navController, Screen.AccountStatus.route, downgradedData)
             didNavigate = true
         }
 
         is HomeGoto.Expired -> {
             val expireData = AccountStatusDialogData(
                 title = stringResource(com.windscribe.vpn.R.string.you_re_out_of_data),
-                icon = R.drawable.garry_nodata,
+                icon = R.drawable.garry_account_no_data,
                 description = stringResource(
                     com.windscribe.vpn.R.string.upgrade_to_stay_protected,
                     goto.date
                 ),
-                showSkipButton = true,
-                skipText = stringResource(com.windscribe.vpn.R.string.upgrade_later),
-                showUpgradeButton = true,
-                upgradeText = stringResource(com.windscribe.vpn.R.string.upgrade),
+                showSecondaryButton = true,
+                secondaryText = stringResource(com.windscribe.vpn.R.string.back),
+                showPrimaryButton = true,
+                primaryText = stringResource(com.windscribe.vpn.R.string.upgrade_case_normal)
             )
             navigateWithData(navController, Screen.AccountStatus.route, expireData)
             didNavigate = true

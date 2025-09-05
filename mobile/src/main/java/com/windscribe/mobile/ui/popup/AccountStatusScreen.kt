@@ -1,32 +1,25 @@
 package com.windscribe.mobile.ui.popup
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.rememberNavController
+import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.AppStartActivity
-import com.windscribe.mobile.ui.common.NextButton
-import com.windscribe.mobile.ui.common.TextButton
+import com.windscribe.mobile.ui.common.PopupContainer
+import com.windscribe.mobile.ui.common.PopupDescription
+import com.windscribe.mobile.ui.common.PopupHeroImage
+import com.windscribe.mobile.ui.common.PopupPrimaryActionButton
+import com.windscribe.mobile.ui.common.PopupSecondaryActionButton
+import com.windscribe.mobile.ui.common.PopupTitle
+import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.model.AccountStatusDialogData
 import com.windscribe.mobile.ui.nav.LocalNavController
-import com.windscribe.mobile.ui.theme.AppColors
-import com.windscribe.mobile.ui.theme.font16
-import com.windscribe.mobile.ui.theme.font24
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 
 
@@ -34,55 +27,86 @@ import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 fun AccountStatusScreen(data: AccountStatusDialogData) {
     val navController = LocalNavController.current
     val activity = LocalContext.current as? AppStartActivity
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(color = AppColors.deepBlue)
-        .clickable(enabled = false) {}) {
-        Column(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(horizontal = 32.dp)
-                .width(400.dp)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Image(
-                painter = painterResource(id = data.icon),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(100.dp)
-                    .padding(top = 8.dp)
-            )
-            Text(
-                text = data.title,
-                style = font24,
-                color = AppColors.white,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = data.description,
-                style = font16,
-                color = AppColors.white,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
-            if (data.showUpgradeButton) {
-                Spacer(modifier = Modifier.padding(top = 24.dp))
-                NextButton(Modifier, text = data.upgradeText, true) {
-                    if (data.bannedLayout) {
-                        navController.popBackStack()
-                    } else {
-                        activity?.startActivity(UpgradeActivity.getStartIntent(activity))
-                        navController.popBackStack()
-                    }
-                }
+    PopupContainer {
+        Spacer(Modifier.weight(1f))
+        PopupHeroImage(data.icon)
+        Spacer(modifier = Modifier.height(25.dp))
+        PopupTitle(data.title)
+        Spacer(Modifier.height(25.dp))
+        PopupDescription(data.description)
+        Spacer(Modifier.height(32.dp))
+        if (data.showPrimaryButton) {
+            PopupPrimaryActionButton(modifier = Modifier, data.primaryText) {
+                activity?.startActivity(UpgradeActivity.getStartIntent(activity))
+                navController.popBackStack()
             }
-            if (data.showSkipButton) {
-                TextButton(data.skipText) {
-                    navController.popBackStack()
-                }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+        if (data.showSecondaryButton) {
+            PopupSecondaryActionButton(modifier = Modifier, data.secondaryText) {
+                navController.popBackStack()
             }
         }
+        Spacer(Modifier.weight(1f))
+    }
+}
+
+@MultiDevicePreview
+@Composable
+private fun AccountStateBannedScreenPreview() {
+    val bannedData = AccountStatusDialogData(
+        title = stringResource(com.windscribe.vpn.R.string.you_ve_been_banned),
+        icon = R.drawable.garry_account_ban,
+        description = stringResource(com.windscribe.vpn.R.string.you_ve_violated_our_terms),
+        showSecondaryButton = true,
+        secondaryText = stringResource(com.windscribe.vpn.R.string.close),
+        showPrimaryButton = false,
+        primaryText = ""
+    )
+    CompositionLocalProvider(
+        LocalNavController provides rememberNavController()
+    ) {
+        AccountStatusScreen(bannedData)
+    }
+}
+
+@MultiDevicePreview
+@Composable
+private fun AccountStateOutOfDataScreenPreview() {
+    val expireData = AccountStatusDialogData(
+        title = stringResource(com.windscribe.vpn.R.string.you_re_out_of_data),
+        icon = R.drawable.garry_account_no_data,
+        description = stringResource(
+            com.windscribe.vpn.R.string.upgrade_to_stay_protected,
+            "YYYY-MM-DD"
+        ),
+        showSecondaryButton = true,
+        secondaryText = stringResource(com.windscribe.vpn.R.string.back),
+        showPrimaryButton = true,
+        primaryText = stringResource(com.windscribe.vpn.R.string.upgrade_case_normal)
+    )
+    CompositionLocalProvider(
+        LocalNavController provides rememberNavController()
+    ) {
+        AccountStatusScreen(expireData)
+    }
+}
+
+@MultiDevicePreview
+@Composable
+private fun AccountStateDowngradedPreview() {
+    val downgraded = AccountStatusDialogData(
+        title = stringResource(com.windscribe.vpn.R.string.you_r_pro_plan_expired),
+        icon = R.drawable.garry_downgraded,
+        description = stringResource(com.windscribe.vpn.R.string.you_ve_been_downgraded_to_free_for_now),
+        showSecondaryButton = true,
+        secondaryText = stringResource(com.windscribe.vpn.R.string.back),
+        showPrimaryButton = true,
+        primaryText = stringResource(com.windscribe.vpn.R.string.renew_plan)
+    )
+    CompositionLocalProvider(
+        LocalNavController provides rememberNavController()
+    ) {
+        AccountStatusScreen(downgraded)
     }
 }

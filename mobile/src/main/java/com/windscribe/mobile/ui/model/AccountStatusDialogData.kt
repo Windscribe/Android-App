@@ -4,9 +4,8 @@ data class AccountStatusDialogData(
     val title: String,
     val icon: Int,
     val description: String,
-    val showSkipButton: Boolean,
-    val skipText: String,
-    val showUpgradeButton: Boolean,
-    val upgradeText: String,
-    val bannedLayout: Boolean = false
+    val showSecondaryButton: Boolean,
+    val secondaryText: String,
+    val showPrimaryButton: Boolean,
+    val primaryText: String
 ) : java.io.Serializable
