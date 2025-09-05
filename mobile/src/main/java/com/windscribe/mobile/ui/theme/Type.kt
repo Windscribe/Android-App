@@ -46,6 +46,13 @@ val font18 = TextStyle(
     fontSize = 18.sp,
     textAlign = TextAlign.Center
 )
+
+val font22 = TextStyle(
+    fontFamily = IbmPlex,
+    fontWeight = FontWeight.Bold,
+    fontSize = 22.sp,
+    textAlign = TextAlign.Center
+)
 val font24 = TextStyle(
     fontFamily = IbmPlex,
     fontWeight = FontWeight.Bold,

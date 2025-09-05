@@ -17,6 +17,7 @@ object AppColors {
     // Green
     val green = Color(0xFF072711)
     val neonGreen = Color(0xFF55FF8A)
+    val actionGreen = Color(0xFF00FF7B)
     val mintGreen = Color(0xFF61FF8A)
     // Others
     val yellow = Color(0xFEFEBC2E)
