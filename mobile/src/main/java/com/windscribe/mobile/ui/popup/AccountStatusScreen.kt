@@ -75,7 +75,7 @@ private fun AccountStateBannedScreenPreview() {
 private fun AccountStateOutOfDataScreenPreview() {
     val expireData = AccountStatusDialogData(
         title = stringResource(com.windscribe.vpn.R.string.you_re_out_of_data),
-        icon = R.drawable.garry_nodata,
+        icon = R.drawable.garry_account_no_data,
         description = stringResource(
             com.windscribe.vpn.R.string.upgrade_to_stay_protected,
             "YYYY-MM-DD"

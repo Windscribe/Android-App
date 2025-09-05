@@ -26,6 +26,7 @@ sealed class HomeGoto {
     object Upgrade : HomeGoto()
     data class Expired(val date: String) : HomeGoto()
     object Banned : HomeGoto()
+    object Downgraded : HomeGoto()
     object PowerWhitelist : HomeGoto()
     object ShareAppLink : HomeGoto()
     object LocationMaintenance : HomeGoto()
@@ -155,6 +156,20 @@ class HomeViewmodelImpl(
                     val resetDate = user.nextResetDate() ?: ""
                     _goto.emit(HomeGoto.Expired(resetDate))
                 }
+            }
+
+            // Check for user status changes (pro to free downgrade)
+            val previousUserStatus = preferences.getPreviousUserStatus(user.userName)
+            val currentUserStatus = user.userStatusInt
+            if (previousUserStatus == -1) {
+                // First time tracking this user's status, set baseline without showing popup
+                preferences.setPreviousUserStatus(user.userName, currentUserStatus)
+            } else if (previousUserStatus != currentUserStatus) {
+                // User was pro (1) and now is free (0) - downgrade detected
+                if (previousUserStatus == 1 && currentUserStatus == 0) {
+                    _goto.emit(HomeGoto.Downgraded)
+                }
+                preferences.setPreviousUserStatus(user.userName, currentUserStatus)
             }
         }
     }
