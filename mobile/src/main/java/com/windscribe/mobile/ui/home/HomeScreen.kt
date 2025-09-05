@@ -135,11 +135,10 @@ private fun HandleGotoAction(
                 title = stringResource(com.windscribe.vpn.R.string.you_ve_been_banned),
                 icon = R.drawable.garry_angry,
                 description = stringResource(com.windscribe.vpn.R.string.you_ve_violated_our_terms),
-                showSkipButton = false,
-                skipText = "",
-                showUpgradeButton = true,
-                upgradeText = stringResource(com.windscribe.vpn.R.string.ok),
-                bannedLayout = true
+                showSecondaryButton = true,
+                secondaryText = stringResource(com.windscribe.vpn.R.string.close),
+                showPrimaryButton = false,
+                primaryText = ""
             )
             navigateWithData(navController, Screen.AccountStatus.route, bannedData)
             didNavigate = true
@@ -153,10 +152,10 @@ private fun HandleGotoAction(
                     com.windscribe.vpn.R.string.upgrade_to_stay_protected,
                     goto.date
                 ),
-                showSkipButton = true,
-                skipText = stringResource(com.windscribe.vpn.R.string.upgrade_later),
-                showUpgradeButton = true,
-                upgradeText = stringResource(com.windscribe.vpn.R.string.upgrade),
+                showSecondaryButton = true,
+                secondaryText = stringResource(com.windscribe.vpn.R.string.back),
+                showPrimaryButton = true,
+                primaryText = stringResource(com.windscribe.vpn.R.string.upgrade_case_normal)
             )
             navigateWithData(navController, Screen.AccountStatus.route, expireData)
             didNavigate = true

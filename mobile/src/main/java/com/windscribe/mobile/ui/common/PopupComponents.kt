@@ -65,7 +65,7 @@ fun PopupContainer(content: @Composable (ColumnScope.() -> Unit)) {
 @Composable
 fun PopupPrimaryActionButton(
     modifier: Modifier = Modifier,
-    resourceId: Int,
+    text: String,
     onClick: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -85,7 +85,7 @@ fun PopupPrimaryActionButton(
         shape = RoundedCornerShape(24.dp),
     ) {
         Text(
-            text = stringResource(resourceId),
+            text = text,
             style = font18,
         )
     }
@@ -94,7 +94,7 @@ fun PopupPrimaryActionButton(
 @Composable
 fun PopupSecondaryActionButton(
     modifier: Modifier = Modifier,
-    resourceId: Int,
+    text: String,
     onClick: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -114,7 +114,7 @@ fun PopupSecondaryActionButton(
         shape = RoundedCornerShape(24.dp),
     ) {
         Text(
-            text = stringResource(resourceId),
+            text = text,
             style = font18,
         )
     }
@@ -131,9 +131,9 @@ fun PopupHeroImage(resourceId: Int) {
 }
 
 @Composable
-fun PopupTitle(resourceId: Int) {
+fun PopupTitle(text: String) {
     Text(
-        text = stringResource(resourceId),
+        text = text,
         style = font22,
         color = MaterialTheme.colorScheme.primaryTextColor,
         textAlign = TextAlign.Center
@@ -141,9 +141,9 @@ fun PopupTitle(resourceId: Int) {
 }
 
 @Composable
-fun PopupDescription(resourceId: Int) {
+fun PopupDescription(text: String) {
     Text(
-        text = stringResource(resourceId),
+        text = text,
         style = font16,
         color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = .50f),
         textAlign = TextAlign.Center,
@@ -159,14 +159,15 @@ fun PopupHeroImagePreview() {
 
 @Preview(
     name = "Light Theme",
-    uiMode = Configuration.UI_MODE_NIGHT_NO)
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
 @Preview(
     name = "Dark Theme",
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
 fun PopupTitlePreview() {
-    PopupTitle(resourceId = com.windscribe.vpn.R.string.under_maintenance)
+    PopupTitle(stringResource(com.windscribe.vpn.R.string.under_maintenance))
 }
 
 @Preview(
@@ -179,7 +180,7 @@ fun PopupTitlePreview() {
 )
 @Composable
 fun PopupDescriptionPreview() {
-    PopupDescription(resourceId = com.windscribe.vpn.R.string.check_status_description)
+    PopupDescription(stringResource(com.windscribe.vpn.R.string.check_status_description))
 }
 
 @Preview(
@@ -193,7 +194,7 @@ fun PopupDescriptionPreview() {
 @Composable
 fun PopupPrimaryActionButtonPreview() {
     PopupPrimaryActionButton(
-        resourceId = com.windscribe.vpn.R.string.check_status,
+        text = stringResource(com.windscribe.vpn.R.string.check_status),
         onClick = {}
     )
 }
@@ -210,7 +211,7 @@ fun PopupPrimaryActionButtonPreview() {
 @Composable
 fun PopupSecondaryActionButtonPreview() {
     PopupSecondaryActionButton(
-        resourceId = com.windscribe.vpn.R.string.back,
+        text = stringResource(com.windscribe.vpn.R.string.back),
         onClick = {}
     )
 }
