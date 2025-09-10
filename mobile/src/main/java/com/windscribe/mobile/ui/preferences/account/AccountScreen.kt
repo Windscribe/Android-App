@@ -99,9 +99,11 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
                 GhostAccountState()
                 return@Column
             }
-            Column(Modifier
-                .navigationBarsPadding()
-                .verticalScroll(scrollState)) {
+            Column(
+                Modifier
+                    .navigationBarsPadding()
+                    .verticalScroll(scrollState)
+            ) {
                 Spacer(modifier = Modifier.height(20.dp))
                 AccountInfo(viewModel)
                 Spacer(modifier = Modifier.height(14.dp))
@@ -550,10 +552,12 @@ private fun PlanInfo(viewModel: AccountViewModel? = null) {
     val plan = when (type) {
         is AccountType.Pro, is AccountType.Unlimited -> stringResource(R.string.unlimited_data)
         is AccountType.Free -> type.data
+        is AccountType.AlcCustom -> type.data
     }
     val planType = when (type) {
         is AccountType.Pro -> stringResource(R.string.pro)
         is AccountType.Unlimited -> stringResource(R.string.a_la_carte_unlimited_plan)
+        is AccountType.AlcCustom -> stringResource(R.string.custom)
         is AccountType.Free -> stringResource(R.string.free)
     }
     val resetDateBackground = when (type) {
@@ -562,7 +566,7 @@ private fun PlanInfo(viewModel: AccountViewModel? = null) {
             bottomEnd = 12.dp
         )
 
-        is AccountType.Free -> RoundedCornerShape(0.dp)
+        is AccountType.Free, is AccountType.AlcCustom -> RoundedCornerShape(0.dp)
     }
     val dateType = (accountState as AccountState.Account).dateType
     Column {
@@ -593,7 +597,7 @@ private fun PlanInfo(viewModel: AccountViewModel? = null) {
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 planType,
-                style = font16.copy(color = if (type is AccountType.Free) MaterialTheme.colorScheme.primaryTextColor else AppColors.cyberBlue)
+                style = font16.copy(color = if (type is AccountType.Free || type is AccountType.AlcCustom) MaterialTheme.colorScheme.primaryTextColor else AppColors.cyberBlue)
             )
         }
         Spacer(modifier = Modifier.height(1.dp))
@@ -621,7 +625,7 @@ private fun PlanInfo(viewModel: AccountViewModel? = null) {
                 style = font16.copy(color = MaterialTheme.colorScheme.preferencesSubtitleColor)
             )
         }
-        if (type is AccountType.Free) {
+        if (type is AccountType.Free || type is AccountType.AlcCustom) {
             Spacer(modifier = Modifier.height(1.dp))
             Row(
                 modifier = Modifier
@@ -807,19 +811,6 @@ private fun AccountScreenPreview(accountState: AccountState) {
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun AccountScreenFreePreview() {
-    AccountScreenPreview(
-        AccountState.Account(
-            AccountType.Free("10 GB"),
-            "CryptoBuddy",
-            EmailState.NoEmail,
-            DateType.Reset("2323-01-20")
-        )
-    )
-}
-
-@Composable
-@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun AccountScreenProPreview() {
     AccountScreenPreview(
         AccountState.Account(
@@ -833,6 +824,20 @@ private fun AccountScreenProPreview() {
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun AccountScreenFreePreview() {
+    AccountScreenPreview(
+        AccountState.Account(
+            AccountType.Free("10 GB"),
+            "CryptoBuddy",
+            EmailState.NoEmail,
+            DateType.Reset("2323-01-20"),
+            dataLeft = "10GB"
+        )
+    )
+}
+
+@Composable
+@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun AccountScreenUnconfirmedPreview() {
     AccountScreenPreview(
         AccountState.Account(
@@ -840,6 +845,20 @@ private fun AccountScreenUnconfirmedPreview() {
             "CryptoBuddy",
             EmailState.Email("james.monroe@examplepetstore.com"),
             DateType.Expiry("2323-01-20")
+        )
+    )
+}
+
+@Composable
+@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun AccountScreenAlc() {
+    AccountScreenPreview(
+        AccountState.Account(
+            AccountType.AlcCustom("10 GB"),
+            "CryptoBuddy",
+            EmailState.NoEmail,
+            DateType.Reset("2323-01-20"),
+            dataLeft = "20GB"
         )
     )
 }
