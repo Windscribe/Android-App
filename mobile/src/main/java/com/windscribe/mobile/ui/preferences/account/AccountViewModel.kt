@@ -31,6 +31,7 @@ import java.util.Locale
 sealed class AccountType {
     object Pro : AccountType()
     data class Free(val data: String) : AccountType()
+    data class AlcCustom(val data: String) : AccountType()
     object Unlimited : AccountType()
 }
 
@@ -138,12 +139,14 @@ class AccountViewModelImpl(
                         DateType.Reset(it.resetDate ?: "")
                     )
                 } else {
-                    var dataLeft = it.maxData - it.dataUsed
-                    if (dataLeft < 0) {
-                        dataLeft = 0
+                    val dataLeft = maxOf(0, it.maxData - it.dataUsed)
+                    val accountType = if (it.alcList != null) {
+                        AccountType.AlcCustom("${it.maxData / UserStatusConstants.GB_DATA.toFloat()} GB")
+                    } else {
+                        AccountType.Free("${it.maxData / UserStatusConstants.GB_DATA.toFloat()} GB")
                     }
                     _accountState.value = AccountState.Account(
-                        AccountType.Free("${it.maxData / UserStatusConstants.GB_DATA.toFloat()} GB"),
+                        accountType,
                         it.userName,
                         emailState,
                         DateType.Reset(it.resetDate ?: ""),
