@@ -99,9 +99,11 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
                 GhostAccountState()
                 return@Column
             }
-            Column(Modifier
-                .navigationBarsPadding()
-                .verticalScroll(scrollState)) {
+            Column(
+                Modifier
+                    .navigationBarsPadding()
+                    .verticalScroll(scrollState)
+            ) {
                 Spacer(modifier = Modifier.height(20.dp))
                 AccountInfo(viewModel)
                 Spacer(modifier = Modifier.height(14.dp))
@@ -563,7 +565,8 @@ private fun PlanInfo(viewModel: AccountViewModel? = null) {
             bottomStart = 12.dp,
             bottomEnd = 12.dp
         )
-        is AccountType.Free, is AccountType.AlcCustom  -> RoundedCornerShape(0.dp)
+
+        is AccountType.Free, is AccountType.AlcCustom -> RoundedCornerShape(0.dp)
     }
     val dateType = (accountState as AccountState.Account).dateType
     Column {
@@ -808,19 +811,6 @@ private fun AccountScreenPreview(accountState: AccountState) {
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun AccountScreenFreePreview() {
-    AccountScreenPreview(
-        AccountState.Account(
-            AccountType.Free("10 GB"),
-            "CryptoBuddy",
-            EmailState.NoEmail,
-            DateType.Reset("2323-01-20")
-        )
-    )
-}
-
-@Composable
-@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun AccountScreenProPreview() {
     AccountScreenPreview(
         AccountState.Account(
@@ -834,6 +824,20 @@ private fun AccountScreenProPreview() {
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun AccountScreenFreePreview() {
+    AccountScreenPreview(
+        AccountState.Account(
+            AccountType.Free("10 GB"),
+            "CryptoBuddy",
+            EmailState.NoEmail,
+            DateType.Reset("2323-01-20"),
+            dataLeft = "10GB"
+        )
+    )
+}
+
+@Composable
+@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun AccountScreenUnconfirmedPreview() {
     AccountScreenPreview(
         AccountState.Account(
@@ -841,6 +845,20 @@ private fun AccountScreenUnconfirmedPreview() {
             "CryptoBuddy",
             EmailState.Email("james.monroe@examplepetstore.com"),
             DateType.Expiry("2323-01-20")
+        )
+    )
+}
+
+@Composable
+@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun AccountScreenAlc() {
+    AccountScreenPreview(
+        AccountState.Account(
+            AccountType.AlcCustom("10 GB"),
+            "CryptoBuddy",
+            EmailState.NoEmail,
+            DateType.Reset("2323-01-20"),
+            dataLeft = "20GB"
         )
     )
 }
