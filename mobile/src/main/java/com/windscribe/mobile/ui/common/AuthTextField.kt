@@ -120,6 +120,10 @@ fun AuthTextField(
                     errorIndicatorColor = Color.Transparent,
                     cursorColor = AppColors.white,
                     disabledIndicatorColor = Color.Transparent,
+                    selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
+                        handleColor = AppColors.white,
+                        backgroundColor = AppColors.white.copy(alpha = 0.3f)
+                    )
                 ),
                 visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
                 trailingIcon = {
