@@ -223,6 +223,10 @@ private fun TextField(
                     errorIndicatorColor = Color.Transparent,
                     cursorColor = MaterialTheme.colorScheme.primaryTextColor,
                     disabledIndicatorColor = Color.Transparent,
+                    selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
+                        handleColor = MaterialTheme.colorScheme.primaryTextColor,
+                        backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.3f)
+                    )
                 ),
                 visualTransformation = VisualTransformation.None,
                 modifier = Modifier

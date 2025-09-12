@@ -135,6 +135,10 @@ private fun Search(viewModel: SplitTunnelViewModel? = null) {
                     unfocusedIndicatorColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent,
                     cursorColor = MaterialTheme.colorScheme.primaryTextColor,
+                    selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
+                        handleColor = MaterialTheme.colorScheme.primaryTextColor,
+                        backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.3f)
+                    )
                 ),
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
             )

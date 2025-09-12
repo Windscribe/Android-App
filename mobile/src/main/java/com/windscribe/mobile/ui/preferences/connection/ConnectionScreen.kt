@@ -450,6 +450,10 @@ private fun CustomDNSAddress(viewModel: ConnectionViewModel?) {
                 focusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,
                 cursorColor = MaterialTheme.colorScheme.primaryTextColor,
+                selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
+                    handleColor = MaterialTheme.colorScheme.primaryTextColor,
+                    backgroundColor = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.3f)
+                )
             ),
             onValueChange = {
                 viewModel?.onCustomDNSAddressChanged(it)
