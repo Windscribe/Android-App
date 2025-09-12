@@ -20,6 +20,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -39,6 +42,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -125,7 +132,8 @@ fun EditCustomConfigScreen(viewmodel: EditCustomConfigViewmodel?) {
                     onValueChange = { viewmodel?.onPasswordChange(it) },
                     modifier = Modifier.fillMaxWidth(),
                     hint = stringResource(com.windscribe.vpn.R.string.password),
-                    value = password
+                    value = password,
+                    isPassword = true
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -165,8 +173,10 @@ private fun CustomTextField(
     hint: String,
     value: String,
     onValueChange: (String) -> Unit = {},
+    isPassword: Boolean = false,
 ) {
     var text by remember { mutableStateOf(value) }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     // ADD THIS
     LaunchedEffect(value) {
@@ -190,6 +200,27 @@ private fun CustomTextField(
                 isError = false,
                 singleLine = true,
                 shape = RoundedCornerShape(9.dp),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.None,
+                    autoCorrectEnabled = false,
+                    keyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Text
+                ),
+                visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
+                trailingIcon = {
+                    if (isPassword) {
+                        IconButton(
+                            onClick = { passwordVisible = !passwordVisible }
+                        ) {
+                            Icon(
+                                painter = painterResource(
+                                    id = if (passwordVisible) R.drawable.ic_hide_password else R.drawable.ic_show_password
+                                ),
+                                contentDescription = "Toggle password visibility",
+                                tint = AppColors.white.copy(alpha = 0.50f)
+                            )
+                        }
+                    }
+                },
                 colors = TextFieldDefaults.colors(
                     focusedTextColor = AppColors.white,
                     unfocusedTextColor = AppColors.white,
@@ -202,6 +233,10 @@ private fun CustomTextField(
                     focusedIndicatorColor = Color.Transparent,
                     errorIndicatorColor = Color.Transparent,
                     cursorColor = AppColors.white,
+                    selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
+                        handleColor = AppColors.white,
+                        backgroundColor = AppColors.white.copy(alpha = 0.3f)
+                    )
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
