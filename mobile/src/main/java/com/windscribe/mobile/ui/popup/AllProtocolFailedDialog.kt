@@ -133,7 +133,7 @@ fun contactSupport(context: Context, navController: NavController) {
         putExtra(Intent.EXTRA_EMAIL, arrayOf("helpdesk@windscribe.com"))
         putExtra(Intent.EXTRA_SUBJECT, "Restrictive Network Detected")
         putExtra(Intent.EXTRA_TEXT, "Please find the attached debug log.")
-        val logFile = File(appContext.cacheDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME)
+        val logFile = File(appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME)
         if (logFile.exists()) {
             val fileUri: Uri = FileProvider.getUriForFile(
                 context,
@@ -152,7 +152,7 @@ fun contactSupport(context: Context, navController: NavController) {
 }
 
 fun exportLog(context: Context, navController: NavController) {
-    val logFile = File(appContext.cacheDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME)
+    val logFile = File(appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME)
     if (logFile.exists()) {
         val fileUri: Uri = FileProvider.getUriForFile(
             context,

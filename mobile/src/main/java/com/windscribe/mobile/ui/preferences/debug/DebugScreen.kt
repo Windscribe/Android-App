@@ -80,7 +80,7 @@ fun DebugScreen(viewModel: DebugViewModel? = null) {
 }
 
 private fun exportLog(context: Context) {
-    val logFile = File(appContext.cacheDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME)
+    val logFile = File(appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME)
     if (logFile.exists()) {
         val fileUri: Uri = FileProvider.getUriForFile(
             context,

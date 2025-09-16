@@ -183,7 +183,7 @@ class ServiceInteractorImpl @Inject constructor(
     }
 
     private fun getDebugFilePath(): String {
-        return Windscribe.appContext.cacheDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
+        return Windscribe.appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
     }
 
     override fun saveNetwork(networkInfo: NetworkInfo): Single<Int> {

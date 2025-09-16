@@ -7,9 +7,9 @@
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!-- lazy initialization: don't create the file until 1st write -->
         <lazy>false</lazy>
-        <file>/data/user/0/com.windscribe.vpn/cache/applog.txt</file>
+        <file>/data/user/0/com.windscribe.vpn/files/applog.txt</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>/data/user/0/com.windscribe.vpn/cache/applog.%i.log.zip
+            <fileNamePattern>/data/user/0/com.windscribe.vpn/files/applog.%i.log.zip
             </fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>1</maxIndex>

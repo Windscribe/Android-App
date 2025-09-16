@@ -104,7 +104,7 @@ class AdvanceParameterRepositoryImpl(
         } else if (showWgLog()) {
             "${appContext.filesDir}/wireguard_log.txt"
         } else {
-            appContext.cacheDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
+            appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
         }
     }
 }
