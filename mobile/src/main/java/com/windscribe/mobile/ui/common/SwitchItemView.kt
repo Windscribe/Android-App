@@ -24,6 +24,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
@@ -67,9 +68,13 @@ fun SwitchItemView(
             Text(
                 text = stringResource(title),
                 style = font16.copy(fontWeight = FontWeight.Medium),
-                color = MaterialTheme.colorScheme.primaryTextColor
+                color = MaterialTheme.colorScheme.primaryTextColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.weight(1f)
             )
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(8.dp))
             if (enabled) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_toggle_button_on),

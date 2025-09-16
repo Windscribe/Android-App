@@ -36,4 +36,11 @@ fun PreviewWithNav(content: @Composable () -> Unit) {
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     device = "spec:width=1280dp,height=800dp,dpi=240"
 )
+@Preview(
+    name = "Large Font",
+    showBackground = true,
+    showSystemUi = true,
+    fontScale = 2.0f,
+    locale = "ru"
+)
 annotation class MultiDevicePreview
