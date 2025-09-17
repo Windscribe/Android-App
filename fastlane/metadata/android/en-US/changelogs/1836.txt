@@ -1,0 +1,4 @@
+v3.93(TV)
+* Added DNS state manager to automatically detect and set DNS servers for WSNet.
+* Post quantum support for API.
+* Various stability improvements and bug fixes.

@@ -1,0 +1,8 @@
+v3.93(Mobile)
+* Added DNS state manager to automatically detect and set DNS servers for WSNet.
+* Added missing decoy traffic icon for home screen.
+* Updated split tunneling feature description with VPN killswitch warning.
+* Enhanced split tunnel app ordering to preserve app positions during selection.
+* Updated server & user status popups.
+* Post quantum support for API.
+* Various stability improvements and bug fixes.

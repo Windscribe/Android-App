@@ -1,7 +1,0 @@
-v3.93(Mobile)
-* Updated WireGuard backend for faster connection times.
-* Added DNS state manager to automatically detect and set DNS servers.
-* Fixed ConnectionStatusSheet spacing when anti-censorship and decoy traffic are disabled.
-* Updated split tunneling feature description with VPN killswitch warning.
-* Enhanced split tunnel app ordering to preserve app positions during selection.
-* Various stability improvements and bug fixes.
