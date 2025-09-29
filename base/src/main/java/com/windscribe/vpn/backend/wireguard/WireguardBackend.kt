@@ -13,7 +13,6 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
 import android.os.PowerManager
-import android.util.Log
 import com.windscribe.vpn.R
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -29,6 +28,7 @@ import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes.EXPIRED_OR_BANNED_ACCOUNT
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserRepository
@@ -65,18 +65,26 @@ import kotlin.random.Random
 
 @Singleton
 class WireguardBackend(
-        var backend: GoBackend,
-        var scope: CoroutineScope,
-        var networkInfoManager: NetworkInfoManager,
-        vpnStateManager: VPNConnectionStateManager,
-        var serviceInteractor: ServiceInteractor,
-        val vpnProfileCreator: VPNProfileCreator,
-        val userRepository: Lazy<UserRepository>,
-        val deviceStateManager: DeviceStateManager,
-        val preferencesHelper: PreferencesHelper,
-        advanceParameterRepository: AdvanceParameterRepository,
-        val proxyDNSManager: ProxyDNSManager
-) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager, advanceParameterRepository) {
+    var backend: GoBackend,
+    var scope: CoroutineScope,
+    var networkInfoManager: NetworkInfoManager,
+    vpnStateManager: VPNConnectionStateManager,
+    var serviceInteractor: ServiceInteractor,
+    val vpnProfileCreator: VPNProfileCreator,
+    val userRepository: Lazy<UserRepository>,
+    val deviceStateManager: DeviceStateManager,
+    val preferencesHelper: PreferencesHelper,
+    advanceParameterRepository: AdvanceParameterRepository,
+    val proxyDNSManager: ProxyDNSManager,
+    val localDbInterface: LocalDbInterface,
+    val wgLogger: WgLogger
+) : VpnBackend(
+    scope,
+    vpnStateManager,
+    serviceInteractor,
+    networkInfoManager,
+    advanceParameterRepository
+) {
 
     var service: WireGuardWrapperService? = null
     private var connectionStateJob: Job? = null
@@ -87,13 +95,13 @@ class WireguardBackend(
     override var active = false
     private val maxHandshakeTimeInSeconds = 180L
     private var protectByVPN = AtomicBoolean(false)
-    private val wgLogger = WgLogger()
+    private var wgErrorJob: Job? = null
     private val connectivityManager =
-            appContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        appContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
     private val powerManager = appContext.getSystemService(Context.POWER_SERVICE) as PowerManager
     private val networkRequest =
-            NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                    .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build()
+        NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build()
     private val callback = object : NetworkCallback() {
         override fun onAvailable(network: Network) {
             super.onAvailable(network)
@@ -104,15 +112,17 @@ class WireguardBackend(
             }
         }
     }
+
     init {
         WSNet.instance().httpNetworkManager().setWhitelistSocketsCallback { fds ->
             for (fd in fds) {
                 if (active && protectByVPN.get()) {
-                   service?.protect(fd)
+                    service?.protect(fd)
                 }
             }
         }
     }
+
     private val isHealthServiceRunning
         get() = healthJob?.isActive ?: false
 
@@ -127,7 +137,7 @@ class WireguardBackend(
     }
 
     private val testTunnel = WireGuardTunnel(
-            name = appContext.getString(R.string.app_name), config = null, state = DOWN
+        name = appContext.getString(R.string.app_name), config = null, state = DOWN
     )
 
     private var stickyDisconnectEvent = false
@@ -160,9 +170,35 @@ class WireguardBackend(
         scope.launch {
             wgLogger.captureLogs(appContext)
         }
+        handleConnectionFailure()
+    }
+
+    private fun handleConnectionFailure() {
+        wgErrorJob = scope.launch {
+            wgLogger.failedIpFlow.collectLatest { ip ->
+                val hostname = try {
+                    localDbInterface.getCitiesAsync()
+                        .asSequence()
+                        .flatMap { it.nodes }
+                        .asSequence()
+                        .firstOrNull { it.ip3 == ip }
+                        ?.hostname
+                } catch (_: Exception) {
+                    null
+                } ?: return@collectLatest
+                disconnect(
+                    error = VPNState.Error(
+                        message = "PSK failed for host: $hostname",
+                        error = VPNState.ErrorType.PskFailure,
+                        showError = false
+                    )
+                )
+            }
+        }
     }
 
     override fun deactivate() {
+        wgErrorJob?.cancel()
         connectionStateJob?.cancel()
         wgLogger.stopCapture()
         active = false
@@ -171,7 +207,7 @@ class WireguardBackend(
 
     @Suppress("UNUSED_VARIABLE")
     private fun sendUdpStuffingForWireGuard(
-            config: Config
+        config: Config
     ) {
         try {
             //Open a port to send the package
@@ -189,9 +225,12 @@ class WireguardBackend(
                 }
                 for (k in config.peers) {
                     k.endpoint.toSet().forEach {
-                        val sendPacket = socket.send(DatagramPacket(ntpBuf, ntpBuf.size,
+                        val sendPacket = socket.send(
+                            DatagramPacket(
+                                ntpBuf, ntpBuf.size,
                                 InetAddress.getByName(it.host), it.port
-                        ))
+                            )
+                        )
                     }
                 }
             }
@@ -231,7 +270,7 @@ class WireguardBackend(
 
     override suspend fun disconnect(error: VPNState.Error?) {
         this.error = error
-        if (proxyDNSManager.invalidConfig){
+        if (proxyDNSManager.invalidConfig) {
             proxyDNSManager.stopControlD()
         }
         deviceIdleJob?.cancel()
@@ -300,8 +339,8 @@ class WireguardBackend(
                     connectivityManager.requestNetwork(networkRequest, callback)
                 }
             } ?: vpnLogger.debug("Unable to get handshake time from wg binary..")
-        } catch (e: Exception){
-           vpnLogger.debug("Error Getting handshake time {}", e.message ?: "no error msg")
+        } catch (e: Exception) {
+            vpnLogger.debug("Error Getting handshake time {}", e.message ?: "no error msg")
         }
     }
 
@@ -311,11 +350,11 @@ class WireguardBackend(
             vpnLogger.debug("Creating config from saved params")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 vpnLogger.debug(
-                        "Power options: Interactive:${powerManager.isInteractive} Power Save mode: ${powerManager.isPowerSaveMode} Ignore battery optimization: ${
-                            powerManager.isIgnoringBatteryOptimizations(
-                                    appContext.packageName
-                            )
-                        } Device Idle: ${powerManager.isDeviceIdleMode}"
+                    "Power options: Interactive:${powerManager.isInteractive} Power Save mode: ${powerManager.isPowerSaveMode} Ignore battery optimization: ${
+                        powerManager.isIgnoringBatteryOptimizations(
+                            appContext.packageName
+                        )
+                    } Device Idle: ${powerManager.isDeviceIdleMode}"
                 )
             }
             try {

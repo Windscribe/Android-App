@@ -305,4 +305,8 @@ class LocalDatabaseImpl @Inject constructor(
     override suspend fun deleteNetworkSync(networkName: String): Int {
         return networkInfoDao.deleteNetworkSync(networkName)
     }
+
+    override suspend fun getCitiesAsync(): List<City> {
+        return cityDao.getCitiesAsync()
+    }
 }

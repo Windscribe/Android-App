@@ -55,6 +55,7 @@ class AutoConnectionManager(
     private val _connectedProtocol: MutableStateFlow<ProtocolInformation?> = MutableStateFlow(null)
     val connectedProtocol: StateFlow<ProtocolInformation?> = _connectedProtocol
     private var lastProtocolLog = String()
+    private var pskAttemptCount = 0
 
     init {
         networkInfoManager.addNetworkInfoListener(this@AutoConnectionManager)
@@ -144,6 +145,15 @@ class AutoConnectionManager(
                                 attempt = attempt
                             )
                             return@first false
+                        } else if (it.error?.error == VPNState.ErrorType.PskFailure) {
+                            pskAttemptCount++
+                            logger.debug("Trying next node after psk failure (attempt: $pskAttemptCount).")
+                            vpnController.get().connect(
+                                connectionId = newConnectionId,
+                                protocolInformation = protocolInformation,
+                                attempt = pskAttemptCount
+                            )
+                            return@first false
                         } else if (it.error?.error == VPNState.ErrorType.UserReconnect) {
                             return@first false
                         } else {
@@ -160,6 +170,7 @@ class AutoConnectionManager(
         stop()
         this.continuation = it
         isEnabled = true
+        pskAttemptCount = 0  // Reset PSK attempt counter for fresh connection
         val connectionResult = connectionAttempt()
         if (connectionResult.status == VPNState.Status.Connected) {
             isEnabled = false
@@ -491,6 +502,7 @@ class AutoConnectionManager(
                 }
 
                 override fun onProtocolSelect(protocolInformation: ProtocolInformation) {
+                    pskAttemptCount = 0  // Reset PSK counter for new protocol
                     logger.debug("Next selected protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
                     if (WindUtilities.isOnline().not()) {
                         logger.debug("No internet detected. existing.")

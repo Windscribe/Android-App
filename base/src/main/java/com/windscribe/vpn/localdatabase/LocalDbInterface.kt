@@ -89,4 +89,5 @@ interface LocalDbInterface {
     suspend fun updateNetworkSync(networkInfo: NetworkInfo): Int
     suspend fun deleteNetworkSync(networkName: String): Int
     fun getCountryCode(cityId: Int): String
+    suspend fun getCitiesAsync(): List<City>
 }

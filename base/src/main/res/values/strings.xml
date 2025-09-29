@@ -561,4 +561,6 @@ last chosen location.</string>
     <string name="none">None</string>
     <string name="free">Free</string>
     <string name="upgrade_to_pro">Upgrade to Pro</string>
+    <string name="aggressive_rekeying">Aggressive Rekeying</string>
+    <string name="aggressive_rekeying_description">Quantum safe WireGuard PSK rotation on every new server connection</string>
 </resources>
