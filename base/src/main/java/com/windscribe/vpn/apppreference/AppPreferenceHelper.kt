@@ -818,10 +818,4 @@ class AppPreferenceHelper(
         set(value) {
             preference.put(PreferencesKeyConstants.CONNECTED_CUSTOM_SOUND, value)
         }
-
-    override var aggressiveRekeying: Boolean
-        get() =  preference.getBoolean(AGGRESSIVE_REKEYING, false)
-        set(value) {
-            preference.put(AGGRESSIVE_REKEYING, value)
-        }
 }

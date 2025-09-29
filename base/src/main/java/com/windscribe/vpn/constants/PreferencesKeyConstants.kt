@@ -190,6 +190,4 @@ object PreferencesKeyConstants {
     const val CONNECTED_BUNDLE_SOUND_OPTION = "connected_bundle_sound_option"
     const val DISCONNECTED_CUSTOM_SOUND = "disconnected_custom_sound"
     const val CONNECTED_CUSTOM_SOUND = "connected_custom_sound"
-
-    const val AGGRESSIVE_REKEY = "aggressive_rekey"
 }

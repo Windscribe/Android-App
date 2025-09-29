@@ -184,18 +184,6 @@ fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
                     explainer = FeatureExplainer.CIRCUMVENT_CENSORSHIP,
                     onSelect = { viewModel?.onAntiCensorshipToggleClicked() }
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                val aggressiveRekeying by viewModel?.aggressiveRekeying?.collectAsState() ?: remember { 
-                    mutableStateOf(false) 
-                }
-                SwitchItemView(
-                    title = R.string.aggressive_rekeying,
-                    icon = com.windscribe.mobile.R.drawable.ic_lan_icon,
-                    description = R.string.aggressive_rekeying_description,
-                    aggressiveRekeying,
-                    explainer = FeatureExplainer.AGGRESSIVE_REKEYING,
-                    onSelect = { viewModel?.onAggressiveRekeyingToggleClicked() }
-                )
             }
         }
     }

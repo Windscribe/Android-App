@@ -72,8 +72,6 @@ abstract class ConnectionViewModel : ViewModel() {
     abstract fun onDecoyTrafficToggleClicked()
     abstract val antiCensorship: StateFlow<Boolean>
     abstract fun onAntiCensorshipToggleClicked()
-    abstract val aggressiveRekeying: StateFlow<Boolean>
-    abstract fun onAggressiveRekeyingToggleClicked()
     abstract fun onPacketSizeModeSelected(auto: Boolean)
     abstract val packetSize: StateFlow<Int>
     abstract fun onPacketSizeSaved()
@@ -147,8 +145,6 @@ class ConnectionViewModelImpl(
     override val trafficMultipliers: StateFlow<List<DropDownStringItem>> = _trafficMultipliers
     private val _trafficMultiplier = MutableStateFlow("")
     override val trafficMultiplier: StateFlow<String> = _trafficMultiplier
-    private val _aggressiveRekeying = MutableStateFlow(preferencesHelper.aggressiveRekeying)
-    override val aggressiveRekeying: StateFlow<Boolean> = _aggressiveRekeying
 
     init {
         loadPortMapItems()
@@ -329,13 +325,6 @@ class ConnectionViewModelImpl(
             viewModelScope.launch {
                 proxyDNSManager.stopControlD()
             }
-        }
-    }
-
-    override fun onAggressiveRekeyingToggleClicked() {
-        viewModelScope.launch {
-            _aggressiveRekeying.emit(!_aggressiveRekeying.value)
-            preferencesHelper.aggressiveRekeying = _aggressiveRekeying.value
         }
     }
 
