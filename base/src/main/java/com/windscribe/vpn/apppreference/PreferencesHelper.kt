@@ -164,4 +164,5 @@ interface PreferencesHelper {
     var connectedBundleSoundOption: Int
     var customDisconnectedSound: String?
     var customConnectedSound: String?
+    var aggressiveRekeying: Boolean
 }

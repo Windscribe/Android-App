@@ -3,11 +3,13 @@
  */
 package com.windscribe.vpn.apppreference
 
+import ch.qos.logback.core.util.AggregationType
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
+import com.windscribe.vpn.constants.FeatureExplainer.AGGRESSIVE_REKEYING
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.ADVANCE_PARAM_TEXT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.ALREADY_SHOWN_SHARE_APP_LINK
@@ -815,5 +817,11 @@ class AppPreferenceHelper(
         get() = preference.getString(PreferencesKeyConstants.CONNECTED_CUSTOM_SOUND, null)
         set(value) {
             preference.put(PreferencesKeyConstants.CONNECTED_CUSTOM_SOUND, value)
+        }
+
+    override var aggressiveRekeying: Boolean
+        get() =  preference.getBoolean(AGGRESSIVE_REKEYING, false)
+        set(value) {
+            preference.put(AGGRESSIVE_REKEYING, value)
         }
 }

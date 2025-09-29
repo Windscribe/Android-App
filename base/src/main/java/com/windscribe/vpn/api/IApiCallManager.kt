@@ -109,6 +109,8 @@ interface IApiCallManager {
         deviceId: String
     ): Single<GenericResponseClass<WgConnectResponse?, ApiErrorResponse?>>
 
+    fun wgRekey(clientPublicKey: String): Single<GenericResponseClass<WgRekeyResponse?, ApiErrorResponse?>>
+
     fun sendDecoyTraffic(
         url: String,
         data: String,

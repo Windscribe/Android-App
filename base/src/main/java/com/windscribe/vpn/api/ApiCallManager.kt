@@ -27,6 +27,7 @@ import com.windscribe.vpn.api.response.VerifyExpressLoginResponse
 import com.windscribe.vpn.api.response.WebSession
 import com.windscribe.vpn.api.response.WgConnectResponse
 import com.windscribe.vpn.api.response.WgInitResponse
+import com.windscribe.vpn.api.response.WgRekeyResponse
 import com.windscribe.vpn.api.response.XPressLoginCodeResponse
 import com.windscribe.vpn.api.response.XPressLoginVerifyResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -469,6 +470,19 @@ open class ApiCallManager @Inject constructor(
                 deleteOldestKey
             ) { code, json ->
                 buildResponse(sub, code, json, WgInitResponse::class.java)
+            }
+            sub.setCancellable { callback.cancel() }
+        }
+    }
+
+    override fun wgRekey( clientPublicKey: String): Single<GenericResponseClass<WgRekeyResponse?, ApiErrorResponse?>> {
+        return Single.create { sub ->
+            if (checkSession(sub)) return@create
+            val callback = wsNetServerAPI.wgConfigsPskRekey(
+                preferencesHelper.sessionHash,
+                clientPublicKey,
+            ) { code, json ->
+                buildResponse(sub, code, json, WgRekeyResponse::class.java)
             }
             sub.setCancellable { callback.cancel() }
         }

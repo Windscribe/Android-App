@@ -29,6 +29,7 @@ import com.windscribe.vpn.backend.openvpn.ProxyTunnelManager
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.backend.wireguard.WgLogger
 import com.windscribe.vpn.backend.wireguard.WireguardBackend
 import com.windscribe.vpn.backend.wireguard.WireguardContextWrapper
 import com.windscribe.vpn.commonutils.WindUtilities
@@ -502,10 +503,8 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun provideWgConfigRepository(
-        scope: CoroutineScope, serviceInteractor: ServiceInteractor
-    ): WgConfigRepository {
-        return WgConfigRepository(scope, serviceInteractor)
+    fun provideWgConfigRepository(serviceInteractor: ServiceInteractor, scope: CoroutineScope, localDbInterface: LocalDbInterface): WgConfigRepository {
+        return WgConfigRepository(serviceInteractor, scope, localDbInterface)
     }
 
     @Provides
@@ -585,7 +584,9 @@ open class BaseApplicationModule {
         deviceStateManager: DeviceStateManager,
         preferencesHelper: PreferencesHelper,
         advanceParameterRepository: AdvanceParameterRepository,
-        proxyDNSManager: ProxyDNSManager
+        proxyDNSManager: ProxyDNSManager,
+        localDbInterface: LocalDbInterface,
+        wgLogger: WgLogger
     ): WireguardBackend {
         return WireguardBackend(
             goBackend,
@@ -597,7 +598,10 @@ open class BaseApplicationModule {
             userRepository,
             deviceStateManager,
             preferencesHelper,
-            advanceParameterRepository, proxyDNSManager
+            advanceParameterRepository,
+            proxyDNSManager,
+            localDbInterface,
+            wgLogger
         )
     }
 
@@ -852,6 +856,9 @@ open class BaseApplicationModule {
     ): WSNet {
         WSNet.setLogger({
             val msg = it.split(Regex("\\]\\s*")).lastOrNull()?.trim() ?: ""
+            if (msg.contains("6464/latency")) {
+                return@setLogger
+            }
             logger.debug(msg)
         }, true)
         if (preferencesHelper.getDeviceUUID() == null) {
@@ -918,5 +925,11 @@ open class BaseApplicationModule {
         userRepository: UserRepository
     ): WindscribeReviewManager {
         return WindscribeReviewManagerImpl(scope, app, preferencesHelper, userRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWgLogger(): WgLogger {
+        return WgLogger()
     }
 }
