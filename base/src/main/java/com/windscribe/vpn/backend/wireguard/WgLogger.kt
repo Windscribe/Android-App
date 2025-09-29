@@ -1,7 +1,6 @@
 package com.windscribe.vpn.backend.wireguard
 
 import android.content.Context
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -16,19 +15,12 @@ class WgLogger {
     
     private val _failedIpFlow = MutableSharedFlow<String>(replay = 0)
     val failedIpFlow: SharedFlow<String> = _failedIpFlow
-    
-    private val _handshakeSuccessFlow = MutableSharedFlow<String>(replay = 0)
-    val handshakeSuccessFlow: SharedFlow<String> = _handshakeSuccessFlow
-    
+
     // Pattern to match "Received invalid response message from IP:PORT"
     private val invalidResponsePattern = Pattern.compile(
         "Received invalid response message from ([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}):[0-9]+"
     )
-    
-    // Pattern to match handshake success: "peer(+5ta…LQEE) - Received handshake response"
-    private val handshakeSuccessPattern = Pattern.compile(
-        "peer\\([^)]+\\) - Received handshake response"
-    )
+
     suspend fun captureLogs(context: Context) {
         withContext(Dispatchers.IO) {
             try {
@@ -45,7 +37,6 @@ class WgLogger {
                         appendLineToFile(logFile, it)
                         ensureMaxLines(logFile)
                         checkForInvalidResponseMessage(it)
-                        checkForHandshakeSuccess(it)
                     }
                 }
             } catch (e: Exception) {
@@ -81,16 +72,6 @@ class WgLogger {
             if (failedIp != null) {
                 _failedIpFlow.emit(failedIp)
             }
-        }
-    }
-    
-    /**
-     * Checks log line for handshake success pattern
-     */
-    private suspend fun checkForHandshakeSuccess(logLine: String) {
-        if (handshakeSuccessPattern.matcher(logLine).find()) {
-            // Emit handshake success - can be refined to extract specific details
-            _handshakeSuccessFlow.emit(logLine)
         }
     }
 }
