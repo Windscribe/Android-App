@@ -46,9 +46,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -449,7 +451,12 @@ internal fun BoxScope.NetworkInfoSheet(
                     AnimatedIPAddress(
                         connectionViewmodel = connectionViewmodel,
                         style = font16,
-                        color = AppColors.white
+                        color = AppColors.white,
+                        modifier = Modifier.graphicsLayer {
+                            renderEffect = if (hideIp && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                BlurEffect(15f, 15f)
+                            } else null
+                        }
                     )
 
                     // Overlay box for Android 10 and below - only covers the text
