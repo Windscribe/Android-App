@@ -13,7 +13,7 @@ This diagram illustrates the intelligent PSK (Pre-Shared Key) rotation and retry
 │   └─> Most recently rotated PSK from API                    │
 │ - timestamp: Long                                           │
 │   └─> When latestPsk was generated                          │
-│ - perServerStates: Map<String, PerServerPskState>          │
+│ - perServerStates: Map<String, PerServerPskState>           │
 │   └─> Per-hostname PSK tracking                             │
 └─────────────────────────────────────────────────────────────┘
                             │
@@ -26,7 +26,7 @@ This diagram illustrates the intelligent PSK (Pre-Shared Key) rotation and retry
 │ - currentPsk: String                                        │
 │   └─> PSK that should work for this server                  │
 │ - previousPsk: String?                                      │
-│   └─> Fallback PSK to try if currentPsk fails              │
+│   └─> Fallback PSK to try if currentPsk fails               │
 │ - lastHandshakeTime: Long                                   │
 │   └─> Last successful handshake (used to track inactive peers)│
 └─────────────────────────────────────────────────────────────┘

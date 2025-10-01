@@ -1,6 +1,7 @@
 package com.windscribe.mobile.ui.connection
 
 import android.media.MediaPlayer
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
 import androidx.annotation.StringRes
@@ -128,6 +129,7 @@ sealed class ConnectionUIState {
 abstract class ConnectionViewmodel : ViewModel() {
     abstract val connectionUIState: StateFlow<ConnectionUIState>
     abstract val ipState: StateFlow<String>
+    abstract val shouldAnimateIp: StateFlow<Boolean>
     abstract val networkInfoState: StateFlow<NetworkInfoState>
     abstract val ipContextMenuState: StateFlow<Pair<Boolean, Offset>>
     abstract val bestLocation: StateFlow<ServerListItem?>
@@ -153,6 +155,7 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract fun onGoToHandled()
     abstract fun setIsSingleLineLocationName(singleLine: Boolean)
     abstract fun onHapticFeedbackHandled()
+    abstract fun onIpAnimationComplete()
 }
 
 class ConnectionViewmodelImpl @Inject constructor(
@@ -175,6 +178,9 @@ class ConnectionViewmodelImpl @Inject constructor(
 
     private val _ipState: MutableStateFlow<String> = MutableStateFlow("")
     override val ipState: StateFlow<String> = _ipState
+    private val _shouldAnimateIp: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override val shouldAnimateIp: StateFlow<Boolean> = _shouldAnimateIp
+    private var lastValidIp: String? = null
     private val _networkInfoState: MutableStateFlow<NetworkInfoState> =
         MutableStateFlow(NetworkInfoState.Unknown)
     override val networkInfoState: StateFlow<NetworkInfoState> = _networkInfoState
@@ -357,10 +363,18 @@ class ConnectionViewmodelImpl @Inject constructor(
                     is RepositoryState.Loading,
                     is RepositoryState.Error -> {
                         _ipState.emit("--.--.--.--")
+                        _shouldAnimateIp.emit(false)
                     }
 
                     is RepositoryState.Success -> {
-                        _ipState.emit(state.data)
+                        val newIp = state.data
+                        val isValid = !newIp.contains("--")
+                        val shouldAnimate = isValid && lastValidIp != null && lastValidIp != newIp
+                        _shouldAnimateIp.emit(shouldAnimate)
+                        _ipState.emit(newIp)
+                        if (isValid) {
+                            lastValidIp = newIp
+                        }
                     }
                 }
             }
@@ -814,6 +828,12 @@ class ConnectionViewmodelImpl @Inject constructor(
     override fun onHapticFeedbackHandled() {
         viewModelScope.launch {
             _shouldPlayHapticFeedback.emit(false)
+        }
+    }
+
+    override fun onIpAnimationComplete() {
+        viewModelScope.launch {
+            _shouldAnimateIp.emit(false)
         }
     }
 

@@ -3,9 +3,19 @@ package com.windscribe.mobile.ui.common
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -26,33 +36,29 @@ fun AnimatedIPAddress(
     modifier: Modifier = Modifier,
     style: TextStyle = TextStyle(fontSize = 20.sp),
     color: Color = Color.Black,
-    animationDurationMs: Int = 1144
 ) {
     val ipAddress by connectionViewmodel.ipState.collectAsState()
-
-    var lastValidIp by remember { mutableStateOf("--.--.--.--") }
-
-    val shouldAnimate = remember(ipAddress) {
-        val isValid = !ipAddress.contains("--")
-        val animate = isValid && lastValidIp != ipAddress
-        if (isValid) lastValidIp = ipAddress
-        animate
-    }
-
+    val shouldAnimate by connectionViewmodel.shouldAnimateIp.collectAsState()
     if (ipAddress.contains("--")) {
         Text(text = ipAddress, style = style, color = color, modifier = modifier)
     } else {
         Row(modifier = modifier) {
             var digitIndex = 0
+            val totalDigits = ipAddress.count { it.isDigit() }
             ipAddress.forEachIndexed { index, char ->
                 key("ip-$index") {
                     if (char.isDigit()) {
+                        val currentDigitIndex = digitIndex++
+                        val isLastDigit = currentDigitIndex == totalDigits - 1
                         AnimatedDigit(
                             targetDigit = char.digitToInt(),
                             shouldAnimate = shouldAnimate,
-                            digitIndex = digitIndex++,
+                            digitIndex = currentDigitIndex,
                             style = style,
-                            color = color
+                            color = color,
+                            onAnimationComplete = if (isLastDigit) {
+                                { connectionViewmodel.onIpAnimationComplete() }
+                            } else null
                         )
                     } else {
                         Text(text = char.toString(), style = style, color = color)
@@ -69,13 +75,14 @@ private fun AnimatedDigit(
     shouldAnimate: Boolean,
     digitIndex: Int,
     style: TextStyle,
-    color: Color
+    color: Color,
+    onAnimationComplete: (() -> Unit)? = null
 ) {
     var currentDigit by remember { mutableIntStateOf(targetDigit) }
     val offsetY = remember { Animatable(0f) }
     val itemHeight = style.fontSize.value * 1.5f
 
-    LaunchedEffect(targetDigit) {
+    LaunchedEffect(targetDigit, shouldAnimate) {
         if (shouldAnimate) {
             delay(digitIndex * 65L)
 
@@ -107,6 +114,9 @@ private fun AnimatedDigit(
                     easing = LinearOutSlowInEasing
                 )
             )
+
+            // Call completion callback for the last digit
+            onAnimationComplete?.invoke()
         } else {
             currentDigit = targetDigit
         }
