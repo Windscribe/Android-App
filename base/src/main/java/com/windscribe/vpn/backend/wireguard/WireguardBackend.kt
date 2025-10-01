@@ -77,7 +77,8 @@ class WireguardBackend(
     advanceParameterRepository: AdvanceParameterRepository,
     val proxyDNSManager: ProxyDNSManager,
     val localDbInterface: LocalDbInterface,
-    val wgLogger: WgLogger
+    val wgLogger: WgLogger,
+    val wgConfigRepository: com.windscribe.vpn.repository.WgConfigRepository
 ) : VpnBackend(
     scope,
     vpnStateManager,
@@ -175,24 +176,37 @@ class WireguardBackend(
 
     private fun handleConnectionFailure() {
         wgErrorJob = scope.launch {
-            wgLogger.failedIpFlow.collectLatest { ip ->
-                val hostname = try {
-                    localDbInterface.getCitiesAsync()
-                        .asSequence()
-                        .flatMap { it.nodes }
-                        .asSequence()
-                        .firstOrNull { it.ip3 == ip }
-                        ?.hostname
-                } catch (_: Exception) {
-                    null
-                } ?: return@collectLatest
-                disconnect(
-                    error = VPNState.Error(
-                        message = "PSK failed for host: $hostname",
-                        error = VPNState.ErrorType.PskFailure,
-                        showError = false
+            launch {
+                wgLogger.failedIpFlow.collectLatest { ip ->
+                    val hostname = try {
+                        localDbInterface.getCitiesAsync()
+                            .asSequence()
+                            .flatMap { it.nodes }
+                            .asSequence()
+                            .firstOrNull { it.ip3 == ip }
+                            ?.hostname
+                    } catch (_: Exception) {
+                        null
+                    } ?: return@collectLatest
+
+                    vpnLogger.debug("PSK failed for $hostname, updating to use latest global PSK")
+                    wgConfigRepository.onPskFailure(hostname)
+
+                    disconnect(
+                        error = VPNState.Error(
+                            message = "PSK failed for host: $hostname",
+                            error = VPNState.ErrorType.PskFailure,
+                            showError = false
+                        )
                     )
-                )
+                }
+            }
+
+            launch {
+                wgLogger.handshakeSuccessFlow.collectLatest {
+                    vpnLogger.debug("Handshake successful, updating PSK state")
+                    wgConfigRepository.onHandshakeSuccess()
+                }
             }
         }
     }

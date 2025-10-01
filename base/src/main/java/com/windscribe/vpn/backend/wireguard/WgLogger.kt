@@ -12,13 +12,21 @@ import java.util.regex.Pattern
 
 class WgLogger {
     private var logcatProcess: Process? = null
-    
+
     private val _failedIpFlow = MutableSharedFlow<String>(replay = 0)
     val failedIpFlow: SharedFlow<String> = _failedIpFlow
+
+    private val _handshakeSuccessFlow = MutableSharedFlow<Unit>(replay = 0)
+    val handshakeSuccessFlow: SharedFlow<Unit> = _handshakeSuccessFlow
 
     // Pattern to match "Received invalid response message from IP:PORT"
     private val invalidResponsePattern = Pattern.compile(
         "Received invalid response message from ([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}):[0-9]+"
+    )
+
+    // Pattern to match "peer(...) - Received handshake response"
+    private val handshakeResponsePattern = Pattern.compile(
+        "peer\\(.+\\) - Received handshake response"
     )
 
     suspend fun captureLogs(context: Context) {
@@ -29,7 +37,7 @@ class WgLogger {
                     logFile.createNewFile()
                 }
                 val process =
-                    Runtime.getRuntime().exec("logcat WireGuard/GoBackend/Windscribe:D *:S")
+                    Runtime.getRuntime().exec("logcat -T 1 WireGuard/GoBackend/Windscribe:D *:S")
                 val bufferedReader = BufferedReader(InputStreamReader(process.inputStream))
                 var line: String?
                 while (bufferedReader.readLine().also { line = it } != null) {
@@ -37,6 +45,7 @@ class WgLogger {
                         appendLineToFile(logFile, it)
                         ensureMaxLines(logFile)
                         checkForInvalidResponseMessage(it)
+                        checkForHandshakeResponse(it)
                     }
                 }
             } catch (e: Exception) {
@@ -72,6 +81,16 @@ class WgLogger {
             if (failedIp != null) {
                 _failedIpFlow.emit(failedIp)
             }
+        }
+    }
+
+    /**
+     * Checks log line for "Received handshake response" pattern and emits event if found
+     */
+    private suspend fun checkForHandshakeResponse(logLine: String) {
+        val matcher = handshakeResponsePattern.matcher(logLine)
+        if (matcher.find()) {
+            _handshakeSuccessFlow.emit(Unit)
         }
     }
 }
