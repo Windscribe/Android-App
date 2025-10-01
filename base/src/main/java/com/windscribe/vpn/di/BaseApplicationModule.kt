@@ -586,7 +586,8 @@ open class BaseApplicationModule {
         advanceParameterRepository: AdvanceParameterRepository,
         proxyDNSManager: ProxyDNSManager,
         localDbInterface: LocalDbInterface,
-        wgLogger: WgLogger
+        wgLogger: WgLogger,
+        wgConfigRepository: WgConfigRepository
     ): WireguardBackend {
         return WireguardBackend(
             goBackend,
@@ -601,7 +602,8 @@ open class BaseApplicationModule {
             advanceParameterRepository,
             proxyDNSManager,
             localDbInterface,
-            wgLogger
+            wgLogger,
+            wgConfigRepository
         )
     }
 
@@ -684,6 +686,7 @@ open class BaseApplicationModule {
         networkInfoManager: NetworkInfoManager,
         interactor: ServiceInteractor,
         scope: CoroutineScope,
+        wgConfigRepository: WgConfigRepository,
         connectionDataRepository: ConnectionDataRepository
     ): AutoConnectionManager {
         return AutoConnectionManager(
@@ -692,7 +695,8 @@ open class BaseApplicationModule {
             vpnController,
             networkInfoManager,
             interactor,
-            connectionDataRepository
+            connectionDataRepository,
+            wgConfigRepository
         )
     }
 

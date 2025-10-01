@@ -32,6 +32,7 @@ import com.windscribe.vpn.api.response.XPressLoginCodeResponse
 import com.windscribe.vpn.api.response.XPressLoginVerifyResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.NetworkErrorCodes
+import com.windscribe.vpn.constants.VpnPreferenceConstants.WG_CONNECT_DEFAULT_TTL
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.exceptions.WSNetException
 import com.windscribe.vpn.exceptions.WindScribeException
@@ -450,7 +451,7 @@ open class ApiCallManager @Inject constructor(
                 clientPublicKey,
                 hostname,
                 deviceId,
-                "3600"
+                WG_CONNECT_DEFAULT_TTL.toString()
             ) { code, json ->
                 buildResponse(sub, code, json, WgConnectResponse::class.java)
             }

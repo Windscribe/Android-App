@@ -14,6 +14,7 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.ConnectionDataRepository
+import com.windscribe.vpn.repository.WgConfigRepository
 import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -40,7 +41,8 @@ class AutoConnectionManager(
     private val vpnController: Lazy<WindVpnController>,
     private val networkInfoManager: NetworkInfoManager,
     private val interactor: ServiceInteractor,
-    private val connectionDataRepository: ConnectionDataRepository
+    private val connectionDataRepository: ConnectionDataRepository,
+    private val wgConfigRepository: WgConfigRepository
 
 ) : NetworkInfoListener {
 
@@ -55,7 +57,6 @@ class AutoConnectionManager(
     private val _connectedProtocol: MutableStateFlow<ProtocolInformation?> = MutableStateFlow(null)
     val connectedProtocol: StateFlow<ProtocolInformation?> = _connectedProtocol
     private var lastProtocolLog = String()
-    private var pskAttemptCount = 0
 
     init {
         networkInfoManager.addNetworkInfoListener(this@AutoConnectionManager)
@@ -146,13 +147,16 @@ class AutoConnectionManager(
                             )
                             return@first false
                         } else if (it.error?.error == VPNState.ErrorType.PskFailure) {
-                            pskAttemptCount++
-                            logger.debug("Trying next node after psk failure (attempt: $pskAttemptCount).")
-                            vpnController.get().connect(
-                                connectionId = newConnectionId,
-                                protocolInformation = protocolInformation,
-                                attempt = pskAttemptCount
-                            )
+                            val nextHostToTry = wgConfigRepository.nextHostnameToTry()
+                            if (nextHostToTry != null) {
+                                logger.debug("Trying next node after psk failure $nextHostToTry")
+                                vpnController.get().connect(
+                                    connectionId = newConnectionId,
+                                    protocolInformation = protocolInformation,
+                                    attempt = attempt,
+                                    nextHostToTry
+                                )
+                            }
                             return@first false
                         } else if (it.error?.error == VPNState.ErrorType.UserReconnect) {
                             return@first false
@@ -170,7 +174,6 @@ class AutoConnectionManager(
         stop()
         this.continuation = it
         isEnabled = true
-        pskAttemptCount = 0  // Reset PSK attempt counter for fresh connection
         val connectionResult = connectionAttempt()
         if (connectionResult.status == VPNState.Status.Connected) {
             isEnabled = false
@@ -502,7 +505,6 @@ class AutoConnectionManager(
                 }
 
                 override fun onProtocolSelect(protocolInformation: ProtocolInformation) {
-                    pskAttemptCount = 0  // Reset PSK counter for new protocol
                     logger.debug("Next selected protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
                     if (WindUtilities.isOnline().not()) {
                         logger.debug("No internet detected. existing.")

@@ -9,7 +9,6 @@ import android.content.Context.ACTIVITY_SERVICE
 import android.content.Intent
 import android.net.VpnService
 import androidx.work.Data
-import com.windscribe.vpn.BuildConfig.DEV
 import com.windscribe.vpn.R
 import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -25,7 +24,6 @@ import com.windscribe.vpn.backend.openvpn.WindStunnelUtility
 import com.windscribe.vpn.backend.utils.SelectedLocationType.CityLocation
 import com.windscribe.vpn.backend.utils.SelectedLocationType.StaticIp
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.constants.AdvanceParamKeys
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_INVALID_DNS_ADDRESS
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_PSK_FAILURE
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
@@ -77,14 +75,13 @@ open class WindVpnController @Inject constructor(
 ) {
 
     private val logger = LoggerFactory.getLogger("vpn")
-    private var isConnecting = false
 
     private suspend fun createVPNProfile(
-        protocolInformation: ProtocolInformation, attempt: Int = 0
+        protocolInformation: ProtocolInformation, attempt: Int = 0, hostname: String? = null
     ): String {
         return when (WindUtilities.getSourceTypeBlocking()) {
             CityLocation -> createVpnProfileFromCity(
-                interactor.preferenceHelper.selectedCity, protocolInformation, attempt
+                interactor.preferenceHelper.selectedCity, protocolInformation, attempt, hostname
             )
             StaticIp -> createVpnProfileFromStaticIp(
                 interactor.preferenceHelper.selectedCity, protocolInformation
@@ -138,28 +135,28 @@ open class WindVpnController @Inject constructor(
     }
 
     private suspend fun createVpnProfileFromCity(
-        selectedCity: Int, config: ProtocolInformation, attempt: Int = 0
+        selectedCity: Int, config: ProtocolInformation, attempt: Int = 0, hostname: String?
     ): String {
         val cityAndRegion = interactor.getCityAndRegionByID(selectedCity)
         val city = cityAndRegion.city
         val nodes = city.getNodes()
-        if (attempt >= nodes.size) {
-            throw InvalidVPNConfigException(
-                CallResult.Error(
-                    code = ERROR_PSK_FAILURE,
-                    errorMessage = "All nodes in city ${city.nodeName} have been attempted due to psk failure."
-                )
-            )
-        }
-        
+        // Random node
         var randomIndex = Util.getRandomNode(lastUsedRandomIndex, attempt, nodes)
+        // Node if hostname is provided to retry same hostname
+        nodes.forEachIndexed {
+            index, node ->
+            if (node.hostname == hostname) {
+                randomIndex = index
+            }
+        }
+        // Node with forced hostname from advance parameter
         val forcedNodeIndex = getForcedNodeIndex(city)
         if (forcedNodeIndex != -1){
-            logger.debug("Forcing node to ${nodes[forcedNodeIndex]}")
+            logger.debug("Forcing node to {}", nodes[forcedNodeIndex])
             randomIndex = forcedNodeIndex
         }
         val selectedNode: Node = nodes[randomIndex]
-        logger.debug("$selectedNode")
+        logger.debug("{}", selectedNode)
         lastUsedRandomIndex = randomIndex
         val coordinatesArray = city.coordinates.split(",".toRegex()).toTypedArray()
         val ikev2Ip = selectedNode.ip
@@ -254,12 +251,12 @@ open class WindVpnController @Inject constructor(
 
     /**
      * Connects or reconnect to the VPN
-     * @param alwaysOnVPN if vpn service was launched by system.
      */
     open suspend fun connect(
         connectionId: UUID = UUID.randomUUID(),
         protocolInformation: ProtocolInformation? = null,
-        attempt: Int = 0
+        attempt: Int = 0,
+        hostname: String? = null
     ) {
         when {
             // Disconnect from VPN and connect to next selected location.
@@ -270,20 +267,20 @@ open class WindVpnController @Inject constructor(
                     error = VPNState.Error(error = VPNState.ErrorType.UserReconnect)
                 )
                 createProfileAndLaunchService(
-                    connectionId, protocolInformation, attempt
+                    connectionId, protocolInformation, attempt, hostname
                 )
             }
             // Stop Network list service and connect
             vpnConnectionStateManager.state.value.status == UnsecuredNetwork -> {
                 stopNetworkWhiteListService()
                 createProfileAndLaunchService(
-                    connectionId, protocolInformation, attempt
+                    connectionId, protocolInformation, attempt, hostname
                 )
             }
             else -> {
                 // Make a fresh connection
                 createProfileAndLaunchService(
-                    connectionId, protocolInformation, attempt
+                    connectionId, protocolInformation, attempt, hostname
                 )
             }
         }
@@ -292,7 +289,8 @@ open class WindVpnController @Inject constructor(
     private suspend fun createProfileAndLaunchService(
         connectionId: UUID = UUID.randomUUID(),
         selectedProtocol: ProtocolInformation? = null,
-        attempt: Int = 0
+        attempt: Int = 0,
+        hostname: String? = null
     ) {
         try {
             logger.debug("Connecting to VPN with connectionId: $connectionId")
@@ -304,7 +302,7 @@ open class WindVpnController @Inject constructor(
                 return@let it
             } ?: getProtocolInformationToConnect()
             logger.info("Protocol: $protocolInformation")
-            val profileToConnect = createVPNProfile(protocolInformation, attempt)
+            val profileToConnect = createVPNProfile(protocolInformation, attempt, hostname)
             logger.info("Location: $profileToConnect")
             launchVPNService(protocolInformation, connectionId)
         } catch (e: Exception) {
