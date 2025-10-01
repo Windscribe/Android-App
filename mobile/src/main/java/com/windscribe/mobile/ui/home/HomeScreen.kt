@@ -46,14 +46,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -66,10 +61,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.windscribe.mobile.R
-import com.windscribe.mobile.ui.AppStartActivity
+import com.windscribe.mobile.ui.common.AnimatedIPAddress
 import com.windscribe.mobile.ui.common.AppConnectButton
 import com.windscribe.mobile.ui.common.LocationImage
 import com.windscribe.mobile.ui.common.fitsInOneLine
@@ -426,7 +420,6 @@ internal fun BoxScope.NetworkInfoSheet(
     connectionViewmodel: ConnectionViewmodel,
     homeViewmodel: HomeViewmodel
 ) {
-    val ip by connectionViewmodel.ipState.collectAsState()
     val showContextMenu by connectionViewmodel.ipContextMenuState.collectAsState()
     val hideIp by homeViewmodel.hideIp.collectAsState()
     Row(
@@ -453,20 +446,12 @@ internal fun BoxScope.NetworkInfoSheet(
                             )
                         }
                 ) {
-                    Text(
-                        text = ip,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        style = font16.copy(fontWeight = FontWeight.Medium),
-                        color = AppColors.white.copy(alpha = 0.70f),
-                        modifier = Modifier
-                            .graphicsLayer {
-                                renderEffect = if (hideIp && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                    BlurEffect(15f, 15f)
-                                } else null
-                            }
+                    AnimatedIPAddress(
+                        connectionViewmodel = connectionViewmodel,
+                        style = font16,
+                        color = AppColors.white
                     )
-                    
+
                     // Overlay box for Android 10 and below - only covers the text
                     if (hideIp && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
                         Box(
