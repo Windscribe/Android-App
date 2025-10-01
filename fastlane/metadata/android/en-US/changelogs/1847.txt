@@ -1,0 +1,3 @@
+v3.93(Mobile)
+* Animate IP change.
+* Post Quantum WireGuard.
