@@ -25,7 +25,6 @@ import com.windscribe.vpn.backend.utils.SelectedLocationType.CityLocation
 import com.windscribe.vpn.backend.utils.SelectedLocationType.StaticIp
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_INVALID_DNS_ADDRESS
-import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_PSK_FAILURE
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA
@@ -469,9 +468,6 @@ open class WindVpnController @Inject constructor(
                         showError = true
                     )
                 )
-            }
-            ERROR_PSK_FAILURE -> {
-                vpnConnectionStateManager.setState(VPNState(Disconnected, connectionId = connectionId))
             }
             EXPIRED_OR_BANNED_ACCOUNT, ERROR_VALID_CONFIG_NOT_FOUND -> {
                 logger.debug("Forcing session update.")

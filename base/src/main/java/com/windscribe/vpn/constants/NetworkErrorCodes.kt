@@ -26,6 +26,4 @@ object NetworkErrorCodes {
     const val ERROR_UNEXPECTED_API_DATA = 30002
     const val ERROR_VALID_CONFIG_NOT_FOUND = 30003
     const val ERROR_INVALID_DNS_ADDRESS = 30004
-
-    const val ERROR_PSK_FAILURE = 30005
 }

@@ -171,44 +171,6 @@ class WireguardBackend(
         scope.launch {
             wgLogger.captureLogs(appContext)
         }
-        handleConnectionFailure()
-    }
-
-    private fun handleConnectionFailure() {
-        wgErrorJob = scope.launch {
-            launch {
-                wgLogger.failedIpFlow.collectLatest { ip ->
-                    val hostname = try {
-                        localDbInterface.getCitiesAsync()
-                            .asSequence()
-                            .flatMap { it.nodes }
-                            .asSequence()
-                            .firstOrNull { it.ip3 == ip }
-                            ?.hostname
-                    } catch (_: Exception) {
-                        null
-                    } ?: return@collectLatest
-
-                    vpnLogger.debug("PSK failed for $hostname, updating to use latest global PSK")
-                    wgConfigRepository.onPskFailure(hostname)
-
-                    disconnect(
-                        error = VPNState.Error(
-                            message = "PSK failed for host: $hostname",
-                            error = VPNState.ErrorType.PskFailure,
-                            showError = false
-                        )
-                    )
-                }
-            }
-
-            launch {
-                wgLogger.handshakeSuccessFlow.collectLatest {
-                    vpnLogger.debug("Handshake successful, updating PSK state")
-                    wgConfigRepository.onHandshakeSuccess()
-                }
-            }
-        }
     }
 
     override fun deactivate() {

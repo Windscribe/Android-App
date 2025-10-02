@@ -146,18 +146,6 @@ class AutoConnectionManager(
                                 attempt = attempt
                             )
                             return@first false
-                        } else if (it.error?.error == VPNState.ErrorType.PskFailure) {
-                            val nextHostToTry = wgConfigRepository.nextHostnameToTry()
-                            if (nextHostToTry != null) {
-                                logger.debug("Trying next node after psk failure $nextHostToTry")
-                                vpnController.get().connect(
-                                    connectionId = newConnectionId,
-                                    protocolInformation = protocolInformation,
-                                    attempt = attempt,
-                                    nextHostToTry
-                                )
-                            }
-                            return@first false
                         } else if (it.error?.error == VPNState.ErrorType.UserReconnect) {
                             return@first false
                         } else {

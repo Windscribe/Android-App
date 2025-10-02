@@ -476,19 +476,6 @@ open class ApiCallManager @Inject constructor(
         }
     }
 
-    override fun wgRekey( clientPublicKey: String): Single<GenericResponseClass<WgRekeyResponse?, ApiErrorResponse?>> {
-        return Single.create { sub ->
-            if (checkSession(sub)) return@create
-            val callback = wsNetServerAPI.wgConfigsPskRekey(
-                preferencesHelper.sessionHash,
-                clientPublicKey,
-            ) { code, json ->
-                buildResponse(sub, code, json, WgRekeyResponse::class.java)
-            }
-            sub.setCancellable { callback.cancel() }
-        }
-    }
-
     override fun resendUserEmailAddress(extraParams: Map<String, String>?): Single<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>> {
         return Single.create { sub ->
             if (checkSession(sub)) return@create
