@@ -587,7 +587,8 @@ open class BaseApplicationModule {
         proxyDNSManager: ProxyDNSManager,
         localDbInterface: LocalDbInterface,
         wgLogger: WgLogger,
-        wgConfigRepository: WgConfigRepository
+        wgConfigRepository: WgConfigRepository,
+        wsNet: WSNet
     ): WireguardBackend {
         return WireguardBackend(
             goBackend,
@@ -603,7 +604,8 @@ open class BaseApplicationModule {
             proxyDNSManager,
             localDbInterface,
             wgLogger,
-            wgConfigRepository
+            wgConfigRepository,
+            wsNet
         )
     }
 
@@ -638,13 +640,15 @@ open class BaseApplicationModule {
         workManager: WindScribeWorkManager,
         networkInfoManager: NetworkInfoManager,
         vpnConnectionStateManager: VPNConnectionStateManager,
-        proxyDNSManager: ProxyDNSManager
+        proxyDNSManager: ProxyDNSManager,
+        wsNet: WSNet
     ): AppLifeCycleObserver {
         return AppLifeCycleObserver(
             workManager,
             networkInfoManager,
             vpnConnectionStateManager,
-            proxyDNSManager
+            proxyDNSManager,
+            wsNet
         )
     }
 
@@ -759,10 +763,11 @@ open class BaseApplicationModule {
         scope: CoroutineScope,
         autoConnectionManager: AutoConnectionManager,
         preferencesHelper: PreferencesHelper,
-        userRepository: Lazy<UserRepository>
+        userRepository: Lazy<UserRepository>,
+        wsNet: Lazy<WSNet>
     ): VPNConnectionStateManager {
         return VPNConnectionStateManager(
-            scope, autoConnectionManager, preferencesHelper, userRepository
+            scope, autoConnectionManager, preferencesHelper, userRepository, wsNet
         )
     }
 

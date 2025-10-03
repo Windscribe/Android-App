@@ -78,7 +78,8 @@ class WireguardBackend(
     val proxyDNSManager: ProxyDNSManager,
     val localDbInterface: LocalDbInterface,
     val wgLogger: WgLogger,
-    val wgConfigRepository: com.windscribe.vpn.repository.WgConfigRepository
+    val wgConfigRepository: com.windscribe.vpn.repository.WgConfigRepository,
+    private val wsNet: WSNet
 ) : VpnBackend(
     scope,
     vpnStateManager,
@@ -115,7 +116,7 @@ class WireguardBackend(
     }
 
     init {
-        WSNet.instance().httpNetworkManager().setWhitelistSocketsCallback { fds ->
+        wsNet.httpNetworkManager().setWhitelistSocketsCallback { fds ->
             for (fd in fds) {
                 if (active && protectByVPN.get()) {
                     service?.protect(fd)

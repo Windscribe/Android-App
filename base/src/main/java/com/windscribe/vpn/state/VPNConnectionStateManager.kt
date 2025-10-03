@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Singleton
 
 @Singleton
-class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionManager: AutoConnectionManager, val preferencesHelper: PreferencesHelper, val userRepository: Lazy<UserRepository>) {
+class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionManager: AutoConnectionManager, val preferencesHelper: PreferencesHelper, val userRepository: Lazy<UserRepository>, private val wsNet: Lazy<WSNet>) {
     private val logger = LoggerFactory.getLogger("vpn")
 
     private val _events = MutableStateFlow(VPNState(Disconnected))
@@ -61,7 +61,7 @@ class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionMan
         val start = AtomicBoolean(false)
         scope.launch {
             state.collectLatest {
-                WSNet.instance().setIsConnectedToVpnState(isVPNConnected())
+                wsNet.get().setIsConnectedToVpnState(isVPNConnected())
                 if (start.getAndSet(true)) {
                     logger.info("VPN state changed to ${it.status}")
                 } else {

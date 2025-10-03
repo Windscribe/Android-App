@@ -29,7 +29,8 @@ class AppLifeCycleObserver @Inject constructor(
     private val workManager: WindScribeWorkManager,
     private val networkInfoManager: NetworkInfoManager,
     private val vpnConnectionStateManager: VPNConnectionStateManager,
-    private val proxyDNSManager: ProxyDNSManager
+    private val proxyDNSManager: ProxyDNSManager,
+    private val wsNet: WSNet
 ) :
     LifecycleObserver {
 
@@ -60,7 +61,7 @@ class AppLifeCycleObserver @Inject constructor(
                proxyDNSManager.stopControlD()
             }
         }
-        appContext.preference.wsNetSettings = WSNet.instance().currentPersistentSettings()
+        appContext.preference.wsNetSettings = wsNet.currentPersistentSettings()
         logger.info("----------App going to background.--------\n")
     }
 
