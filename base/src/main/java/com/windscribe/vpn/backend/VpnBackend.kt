@@ -5,9 +5,12 @@
 package com.windscribe.vpn.backend
 
 import com.windscribe.vpn.ServiceInteractor
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.AdvanceParameterRepository
+import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import io.reactivex.Single
@@ -34,7 +37,7 @@ abstract class VpnBackend(
         private val vpnServiceInteractor: ServiceInteractor,
         private val networkInfoManager: NetworkInfoManager,
         private val advanceParameterRepository: AdvanceParameterRepository
-) {
+) : NetworkInfoListener {
 
     val vpnLogger: Logger = LoggerFactory.getLogger("vpn")
     var connectionJob: Job? = null
@@ -42,6 +45,7 @@ abstract class VpnBackend(
     var protocolInformation: ProtocolInformation? = null
     var connectionId: UUID? = null
     var error: VPNState.Error? = null
+    private var isHandlingNetworkChange = false
 
     private val connectivityTestJob = CompositeDisposable()
 
@@ -51,7 +55,37 @@ abstract class VpnBackend(
                 if (it.status == VPNState.Status.Disconnected || it.status == VPNState.Status.Disconnecting) {
                     // Stop existing connectivity test if a disconnect is in process.
                     connectivityTestJob.clear()
+                    // Reset network change flag when disconnecting/disconnected
+                    isHandlingNetworkChange = false
                 }
+            }
+        }
+    }
+
+    override fun onNetworkInfoUpdate(networkInfo: NetworkInfo?, userReload: Boolean) {
+        // Prevent duplicate processing of network changes
+        if (isHandlingNetworkChange) {
+            vpnLogger.debug("Already handling network change, ignoring duplicate event.")
+            return
+        }
+        // Check if VPN is connected and network requires different protocol/port
+        val vpnState = stateManager.state.value
+        if (vpnState.status == VPNState.Status.Connected &&
+            vpnServiceInteractor.preferenceHelper.autoConnect &&
+            networkInfo?.isAutoSecureOn == true &&
+            networkInfo.isPreferredOn &&
+            networkInfo.protocol != null &&
+            networkInfo.port != null) {
+
+            val currentProtocol = protocolInformation?.protocol
+            val currentPort = protocolInformation?.port
+            val networkProtocol = networkInfo.protocol
+            val networkPort = networkInfo.port
+
+            if (currentProtocol != networkProtocol || currentPort != networkPort) {
+                isHandlingNetworkChange = true
+                vpnLogger.debug("Network change detected while connected. Current: $currentProtocol:$currentPort, Required: $networkProtocol:$networkPort. Reconnecting with correct protocol/port...")
+                appContext.vpnController.connectAsync()
             }
         }
     }

@@ -167,6 +167,7 @@ class WireguardBackend(
                 stickyDisconnectEvent = false
             }
         }
+        networkInfoManager.addNetworkInfoListener(this)
         vpnLogger.info("WireGuard backend activated.")
         active = true
         scope.launch {
@@ -177,6 +178,7 @@ class WireguardBackend(
     override fun deactivate() {
         wgErrorJob?.cancel()
         connectionStateJob?.cancel()
+        networkInfoManager.removeNetworkInfoListener(this)
         wgLogger.stopCapture()
         active = false
         vpnLogger.debug("WireGuard backend deactivated.")

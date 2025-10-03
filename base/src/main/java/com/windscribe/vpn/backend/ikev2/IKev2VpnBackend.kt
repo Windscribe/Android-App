@@ -42,17 +42,12 @@ class IKev2VpnBackend(
         var serviceInteractor: ServiceInteractor,
         advanceParameterRepository: AdvanceParameterRepository,
         val proxyDNSManager: ProxyDNSManager
-) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager, advanceParameterRepository), VpnStateListener,
-    NetworkInfoListener {
+) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager, advanceParameterRepository), VpnStateListener {
 
     private var vpnService: VpnStateService? = null
     private val stateServiceChannel = Channel<VpnStateService>()
     private var serviceConnection: ServiceConnection? = null
     override var active = false
-
-    override fun onNetworkInfoUpdate(networkInfo: NetworkInfo?, userReload: Boolean) {
-        // stateChanged()
-    }
 
     override fun activate() {
         bindToStateService()

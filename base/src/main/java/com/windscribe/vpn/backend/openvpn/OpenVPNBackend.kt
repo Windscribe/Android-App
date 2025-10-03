@@ -52,6 +52,7 @@ class OpenVPNBackend(
             }
         }
         VpnStatus.addByteCountListener(this)
+        networkInfoManager.addNetworkInfoListener(this)
         active = true
         vpnLogger.info("Open VPN backend activated.")
     }
@@ -60,6 +61,7 @@ class OpenVPNBackend(
         VpnStatus.removeLogListener {}
         VpnStatus.removeStateListener(this)
         VpnStatus.removeByteCountListener(this)
+        networkInfoManager.removeNetworkInfoListener(this)
         active = false
         vpnLogger.info("Open VPN backend deactivated.")
     }
