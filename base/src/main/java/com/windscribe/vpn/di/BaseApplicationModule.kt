@@ -223,8 +223,8 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun provideDNSStateManager(scope: CoroutineScope): DNSStateManager {
-        return DNSStateManager(scope)
+    fun provideDNSStateManager(scope: CoroutineScope, wsNet: WSNet): DNSStateManager {
+        return DNSStateManager(scope, wsNet)
     }
 
     @Provides

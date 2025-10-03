@@ -21,7 +21,8 @@ import javax.inject.Singleton
 
 @Singleton
 class DNSStateManager @Inject constructor(
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
+    private val wsNet: WSNet
 ) {
     
     private val logger = LoggerFactory.getLogger("dns_state")
@@ -118,7 +119,7 @@ class DNSStateManager @Inject constructor(
             validDnsAddresses.add("76.76.2.0")
             validDnsAddresses.add("1.1.1.1")
             logger.info("Setting DNS servers to $validDnsAddresses")
-            WSNet.instance().dnsResolver().setDnsServers(validDnsAddresses.toTypedArray())
+            wsNet.dnsResolver().setDnsServers(validDnsAddresses.toTypedArray())
         } catch (e: Exception) {
             logger.error("Error setting DNS servers on WSNet", e)
         }
