@@ -61,7 +61,17 @@ fun AnimatedIPAddress(
                             } else null
                         )
                     } else {
-                        Text(text = char.toString(), style = style, color = color)
+                        Box(
+                            modifier = Modifier.height((style.fontSize.value * 1.5f).dp),
+                            contentAlignment = Alignment.BottomCenter
+                        ) {
+                            Text(
+                                text = char.toString(),
+                                style = style,
+                                color = color,
+                                modifier = Modifier.offset(y = (-1).dp)
+                            )
+                        }
                     }
                 }
             }
