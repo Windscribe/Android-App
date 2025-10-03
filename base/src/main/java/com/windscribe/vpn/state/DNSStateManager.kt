@@ -91,6 +91,11 @@ class DNSStateManager @Inject constructor(
     
     private fun setDnsOnWSNet(dnsServers: List<String>) {
         try {
+            if (!WSNet.isValid()) {
+                logger.warn("WSNet instance not valid, skipping DNS update")
+                return
+            }
+
             val validDnsAddresses = dnsServers.mapIndexedNotNull { index, dnsAddress ->
                 val result = when {
                     // IPv4 with port - remove port
