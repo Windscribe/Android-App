@@ -26,10 +26,6 @@ import androidx.compose.ui.unit.sp
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import kotlinx.coroutines.delay
 
-/**
- * Animated IP Address display with slot-machine style digit animation.
- * Animates transitions between valid IPs, ignoring placeholder states.
- */
 @Composable
 fun AnimatedIPAddress(
     connectionViewmodel: ConnectionViewmodel,
@@ -39,9 +35,18 @@ fun AnimatedIPAddress(
 ) {
     val ipAddress by connectionViewmodel.ipState.collectAsState()
     val shouldAnimate by connectionViewmodel.shouldAnimateIp.collectAsState()
+
     if (ipAddress.contains("--")) {
         Text(text = ipAddress, style = style, color = color, modifier = modifier)
     } else {
+        val animationTrigger = remember { mutableIntStateOf(0) }
+
+        LaunchedEffect(shouldAnimate) {
+            if (shouldAnimate) {
+                animationTrigger.intValue++
+            }
+        }
+
         Row(modifier = modifier) {
             var digitIndex = 0
             val totalDigits = ipAddress.count { it.isDigit() }
@@ -52,7 +57,7 @@ fun AnimatedIPAddress(
                         val isLastDigit = currentDigitIndex == totalDigits - 1
                         AnimatedDigit(
                             targetDigit = char.digitToInt(),
-                            shouldAnimate = shouldAnimate,
+                            animationTrigger = animationTrigger.intValue,
                             digitIndex = currentDigitIndex,
                             style = style,
                             color = color,
@@ -82,53 +87,43 @@ fun AnimatedIPAddress(
 @Composable
 private fun AnimatedDigit(
     targetDigit: Int,
-    shouldAnimate: Boolean,
+    animationTrigger: Int,
     digitIndex: Int,
     style: TextStyle,
     color: Color,
     onAnimationComplete: (() -> Unit)? = null
 ) {
-    var currentDigit by remember { mutableIntStateOf(targetDigit) }
-    val offsetY = remember { Animatable(0f) }
+    var previousDigit by remember { mutableIntStateOf(targetDigit) }
+    val animatedValue = remember { Animatable(targetDigit.toFloat()) }
     val itemHeight = style.fontSize.value * 1.5f
+    val randomDelay = remember(animationTrigger) { (0..50).random().toLong() }
 
-    LaunchedEffect(targetDigit, shouldAnimate) {
-        if (shouldAnimate) {
-            delay(digitIndex * 65L)
+    LaunchedEffect(animationTrigger) {
+        if (animationTrigger > 0) {
+            delay(randomDelay)
 
-            repeat(5) {
-                currentDigit = (0..9).random()
-                offsetY.snapTo(itemHeight)
-                offsetY.animateTo(
-                    targetValue = 0f,
-                    animationSpec = tween(
-                        durationMillis = 78,
-                        easing = LinearOutSlowInEasing
-                    )
-                )
-                offsetY.animateTo(
-                    targetValue = -itemHeight,
-                    animationSpec = tween(
-                        durationMillis = 78,
-                        easing = LinearOutSlowInEasing
-                    )
-                )
+            val from = animatedValue.value
+            val currentMod = from.toInt() % 10
+            val diff = if (targetDigit >= currentMod) {
+                targetDigit - currentMod
+            } else {
+                (10 - currentMod) + targetDigit
             }
 
-            currentDigit = targetDigit
-            offsetY.snapTo(itemHeight)
-            offsetY.animateTo(
-                targetValue = 0f,
+            animatedValue.animateTo(
+                targetValue = from + 30f + diff,
                 animationSpec = tween(
-                    durationMillis = 390,
+                    durationMillis = 1500,
                     easing = LinearOutSlowInEasing
                 )
             )
 
-            // Call completion callback for the last digit
+            animatedValue.snapTo(targetDigit.toFloat())
+            previousDigit = targetDigit
             onAnimationComplete?.invoke()
-        } else {
-            currentDigit = targetDigit
+        } else if (targetDigit != previousDigit) {
+            animatedValue.snapTo(targetDigit.toFloat())
+            previousDigit = targetDigit
         }
     }
 
@@ -138,11 +133,22 @@ private fun AnimatedDigit(
             .clipToBounds(),
         contentAlignment = Alignment.Center
     ) {
+        val currentValue = animatedValue.value
+        val currentFloor = currentValue.toInt()
+        val delta = currentValue - currentFloor
+
         Text(
-            text = currentDigit.toString(),
+            text = (currentFloor % 10).toString(),
             style = style,
             color = color,
-            modifier = Modifier.offset(y = offsetY.value.dp)
+            modifier = Modifier.offset(y = (-delta * itemHeight).dp)
+        )
+
+        Text(
+            text = ((currentFloor + 1) % 10).toString(),
+            style = style,
+            color = color,
+            modifier = Modifier.offset(y = ((1 - delta) * itemHeight).dp)
         )
     }
 }
