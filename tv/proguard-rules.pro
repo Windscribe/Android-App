@@ -1,3 +1,7 @@
+# Keep source file names and line numbers for crash reporting
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+
 # Retrofit
 -dontnote retrofit2.Platform
 -dontwarn retrofit2.Platform,Java8
