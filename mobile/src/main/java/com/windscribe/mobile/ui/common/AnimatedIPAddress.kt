@@ -96,7 +96,7 @@ private fun AnimatedDigit(
     var previousDigit by remember { mutableIntStateOf(targetDigit) }
     val animatedValue = remember { Animatable(targetDigit.toFloat()) }
     val itemHeight = style.fontSize.value * 1.5f
-    val randomDelay = remember(animationTrigger) { (0..50).random().toLong() }
+    val randomDelay = remember(animationTrigger) { (0..40).random().toLong() }
 
     LaunchedEffect(animationTrigger) {
         if (animationTrigger > 0) {
@@ -113,7 +113,7 @@ private fun AnimatedDigit(
             animatedValue.animateTo(
                 targetValue = from + 30f + diff,
                 animationSpec = tween(
-                    durationMillis = 1500,
+                    durationMillis = 560,
                     easing = LinearOutSlowInEasing
                 )
             )
