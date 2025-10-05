@@ -334,7 +334,7 @@ class ServerViewModelImpl(
         errorMessage: String
     ) {
         stateFlow.value = ListState.Loading
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             if (!ignoreLatencyAwait) {
                 awaitLatencyIfNeeded()
             }
