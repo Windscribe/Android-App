@@ -82,8 +82,10 @@ class HomeViewmodelImpl(
     override val hideNetworkName: StateFlow<Boolean> = _hideNetworkName
 
     private val trayPreferenceChangeListener = OnTrayPreferenceChangeListener {
-        _hapticFeedbackEnabled.value = preferences.isHapticFeedbackEnabled
-        _showLocationLoad.value = preferences.isShowLocationHealthEnabled
+        viewModelScope.launch(Dispatchers.IO) {
+            _hapticFeedbackEnabled.value = preferences.isHapticFeedbackEnabled
+            _showLocationLoad.value = preferences.isShowLocationHealthEnabled
+        }
     }
     private val logger = LoggerFactory.getLogger("basic")
 

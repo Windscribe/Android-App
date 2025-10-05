@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.multidex.MultiDexApplication
+import com.windscribe.vpn.debug.MainThreadWatchdog
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.FragmentType
@@ -48,6 +49,7 @@ import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import org.strongswan.android.logic.StrongSwanApplication
 import java.util.Locale
@@ -122,6 +124,7 @@ open class Windscribe : MultiDexApplication() {
     override fun onCreate() {
         if (BuildConfig.DEV) {
             setupStrictMode()
+            MainThreadWatchdog().start()
         }
         super.onCreate()
         appContext = this
@@ -150,14 +153,16 @@ open class Windscribe : MultiDexApplication() {
         if (VERSION.SDK_INT >= VERSION_CODES.M) {
             dnsStateManager.init(this)
         }
-        if (preference.sessionHash != null) {
-            workManager.updateNodeLatencies()
-        }
         mockLocationManager.init()
-        if (preference.sessionHash != null && preference.autoConnect && canAccessNetworkName()) {
-            startAutoConnectService()
-        }
         reviewManager.handleAppReview()
+        applicationScope.launch {
+            if (preference.sessionHash != null) {
+                workManager.updateNodeLatencies()
+            }
+            if (preference.sessionHash != null && preference.autoConnect && canAccessNetworkName()) {
+                startAutoConnectService()
+            }
+        }
     }
 
     private fun initStrongswan() {
