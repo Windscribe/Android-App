@@ -58,7 +58,6 @@ fun AnimatedIPAddress(
                         AnimatedDigit(
                             targetDigit = char.digitToInt(),
                             animationTrigger = animationTrigger.intValue,
-                            digitIndex = currentDigitIndex,
                             style = style,
                             color = color,
                             onAnimationComplete = if (isLastDigit) {
@@ -88,7 +87,6 @@ fun AnimatedIPAddress(
 private fun AnimatedDigit(
     targetDigit: Int,
     animationTrigger: Int,
-    digitIndex: Int,
     style: TextStyle,
     color: Color,
     onAnimationComplete: (() -> Unit)? = null
@@ -113,7 +111,7 @@ private fun AnimatedDigit(
             animatedValue.animateTo(
                 targetValue = from + 30f + diff,
                 animationSpec = tween(
-                    durationMillis = 560,
+                    durationMillis = 750,
                     easing = LinearOutSlowInEasing
                 )
             )
