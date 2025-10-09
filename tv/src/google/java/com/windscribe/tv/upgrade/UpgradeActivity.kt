@@ -14,7 +14,6 @@ import com.android.billingclient.api.BillingFlowParams.ProductDetailsParams
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.QueryProductDetailsParams
-import com.google.common.collect.ImmutableList
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.confirmemail.ConfirmActivity
@@ -135,7 +134,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
             val offerToken = it[selectedIndex].offerToken
             builder.setOfferToken(offerToken)
         }
-        val productDetailsParamsList = ImmutableList.of(builder.build())
+        val productDetailsParamsList = listOf(builder.build())
         presenter.onMonthlyItemClicked(productDetailsParamsList)
     }
 
@@ -231,7 +230,7 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
     }
 
     override fun startPurchaseFlow(
-        productDetailsParams: ImmutableList<ProductDetailsParams>,
+        productDetailsParams: List<ProductDetailsParams>,
         accountID: String?
     ) {
         val builder =

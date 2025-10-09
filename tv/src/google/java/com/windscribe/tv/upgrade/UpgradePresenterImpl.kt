@@ -10,7 +10,6 @@ import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.QueryProductDetailsParams
-import com.google.common.collect.ImmutableList
 import com.google.gson.Gson
 import com.windscribe.tv.R
 import com.windscribe.vpn.ActivityInteractor
@@ -109,7 +108,7 @@ class UpgradePresenterImpl @Inject constructor(
         }
     }
 
-    private fun launchPurchaseFlowWithAccountID(productDetailsParams: ImmutableList<BillingFlowParams.ProductDetailsParams>) {
+    private fun launchPurchaseFlowWithAccountID(productDetailsParams: List<BillingFlowParams.ProductDetailsParams>) {
         interactor.getCompositeDisposable().add(
             interactor.getUserSessionData()
                 .flatMap { userSessionResponse: UserSessionResponse ->
@@ -196,7 +195,7 @@ class UpgradePresenterImpl @Inject constructor(
         upgradeView.startPurchaseFlow(selectedSku)
     }
 
-    override fun onMonthlyItemClicked(productDetailsParams: ImmutableList<BillingFlowParams.ProductDetailsParams>) {
+    override fun onMonthlyItemClicked(productDetailsParams: List<BillingFlowParams.ProductDetailsParams>) {
         logger.info("Starting purchase flow...")
         launchPurchaseFlowWithAccountID(productDetailsParams)
     }

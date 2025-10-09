@@ -7,7 +7,6 @@ import com.amazon.device.iap.model.Product
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.QueryProductDetailsParams
-import com.google.common.collect.ImmutableList
 import com.windscribe.vpn.billing.WindscribeInAppProduct
 
 interface UpgradeView {
@@ -34,7 +33,7 @@ interface UpgradeView {
     fun showProgressBar(message: String)
     fun showToast(toastText: String)
     fun startPurchaseFlow(
-        productDetailsParams: ImmutableList<BillingFlowParams.ProductDetailsParams>,
+        productDetailsParams: List<BillingFlowParams.ProductDetailsParams>,
         accountID: String?
     )
 
