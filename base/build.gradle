@@ -46,25 +46,6 @@ android {
         disable 'MissingTranslation', 'NonConstantResourceId', 'VectorRaster', 'ContentDescription'
     }
     namespace 'com.windscribe.vpn'
-    //Force gradle to pick latest version of guava and junit.
-    configurations.all {
-        resolutionStrategy.force 'com.google.code.findbugs:jsr305:1.3.9'
-        resolutionStrategy.eachDependency { details ->
-            if (details.requested.group == 'com.google.guava') {
-                def version = details.requested.version
-                def versionData = version.split('-')
-                if (versionData.contains('jre')) {
-                    details.useVersion "32.1.2-jre"
-                }
-                if (versionData.contains('android')) {
-                    details.useVersion "32.1.2-android"
-                }
-            }
-            if (details.requested.group == 'junit') {
-                details.useVersion "4.13.2"
-            }
-        }
-    }
     flavorDimensions "dim"
     productFlavors {
         fdroid {
