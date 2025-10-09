@@ -32,7 +32,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.common.io.Files.append
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.Description
