@@ -56,6 +56,7 @@ android {
     compileOptions {
         sourceCompatibility rootProject.java
         targetCompatibility rootProject.java
+        coreLibraryDesugaringEnabled true
     }
 
     buildFeatures {
@@ -86,6 +87,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$archLifecycle"
     implementation "androidx.navigation:navigation-fragment-ktx:$navigation"
     implementation "androidx.navigation:navigation-ui-ktx:$navigation"
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
     //Core Module
     implementation project(path: ':base')
     //Kapt

@@ -12,7 +12,6 @@ import com.amazon.device.iap.model.PurchaseResponse;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
-import com.google.common.collect.ImmutableList;
 import com.windscribe.vpn.api.response.PushNotificationAction;
 import com.windscribe.vpn.billing.AmazonPurchase;
 import com.windscribe.vpn.billing.PurchaseState;
@@ -38,7 +37,7 @@ public interface UpgradePresenter {
 
     void onDestroy();
 
-    void buyGoogleProduct(@Nullable ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParams);
+    void buyGoogleProduct(@Nullable List<BillingFlowParams.ProductDetailsParams> productDetailsParams);
 
     void onProductDataResponse(Map<String, Product> products);
 

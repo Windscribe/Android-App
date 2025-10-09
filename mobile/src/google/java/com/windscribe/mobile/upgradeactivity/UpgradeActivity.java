@@ -35,7 +35,6 @@ import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.QueryProductDetailsParams;
-import com.google.common.collect.ImmutableList;
 import com.windscribe.mobile.R;
 import com.windscribe.mobile.databinding.ActivityUpgradeBinding;
 import com.windscribe.mobile.di.ActivityModule;
@@ -153,7 +152,7 @@ public class UpgradeActivity extends BaseActivity
                         .getOfferToken();
                 builder.setOfferToken(offerToken);
             }
-            ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParamsList = ImmutableList.of(builder.build());
+            List<BillingFlowParams.ProductDetailsParams> productDetailsParamsList = List.of(builder.build());
             presenter.buyGoogleProduct(productDetailsParamsList);
         }
     }
@@ -486,7 +485,7 @@ public class UpgradeActivity extends BaseActivity
     }
 
     @Override
-    public void startPurchaseFlow(ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParams, String accountID) {
+    public void startPurchaseFlow(List<BillingFlowParams.ProductDetailsParams> productDetailsParams, String accountID) {
         BillingFlowParams.Builder builder = BillingFlowParams.newBuilder()
                 .setProductDetailsParamsList(productDetailsParams);
         if (accountID != null) {
