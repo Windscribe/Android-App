@@ -8,7 +8,6 @@ import com.amazon.device.iap.model.PurchaseResponse
 import com.android.billingclient.api.BillingFlowParams.ProductDetailsParams
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
-import com.google.common.collect.ImmutableList
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.billing.AmazonPurchase
 import com.windscribe.vpn.billing.PurchaseState
@@ -23,7 +22,7 @@ interface UpgradePresenter {
     fun onContinueFreeClick()
     fun onContinuePlanClick(selectedSku: Product)
     fun onDestroy()
-    fun onMonthlyItemClicked(productDetailsParams: ImmutableList<ProductDetailsParams>)
+    fun onMonthlyItemClicked(productDetailsParams: List<ProductDetailsParams>)
     fun onProductDataResponse(products: Map<String, Product>)
     fun onProductResponseFailure()
     fun onPurchaseConsumed(purchase: Purchase)

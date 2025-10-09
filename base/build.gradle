@@ -46,25 +46,6 @@ android {
         disable 'MissingTranslation', 'NonConstantResourceId', 'VectorRaster', 'ContentDescription'
     }
     namespace 'com.windscribe.vpn'
-    //Force gradle to pick latest version of guava and junit.
-    configurations.all {
-        resolutionStrategy.force 'com.google.code.findbugs:jsr305:1.3.9'
-        resolutionStrategy.eachDependency { details ->
-            if (details.requested.group == 'com.google.guava') {
-                def version = details.requested.version
-                def versionData = version.split('-')
-                if (versionData.contains('jre')) {
-                    details.useVersion "32.1.2-jre"
-                }
-                if (versionData.contains('android')) {
-                    details.useVersion "32.1.2-android"
-                }
-            }
-            if (details.requested.group == 'junit') {
-                details.useVersion "4.13.2"
-            }
-        }
-    }
     flavorDimensions "dim"
     productFlavors {
         fdroid {
@@ -79,19 +60,8 @@ android {
 dependencies {
     //Android
     api "androidx.appcompat:appcompat:$appCompat"
-    api "com.google.android.material:material:$material"
-    api 'androidx.vectordrawable:vectordrawable:1.1.0'
-    api 'androidx.transition:transition:1.4.1'
-    api 'androidx.constraintlayout:constraintlayout:2.1.4'
     api 'androidx.multidex:multidex:2.0.1'
     api "androidx.security:security-crypto:1.1.0-alpha05"
-    api "androidx.lifecycle:lifecycle-extensions:2.2.0"
-    api "androidx.lifecycle:lifecycle-common-java8:$archLifecycle"
-    runtimeOnly "androidx.lifecycle:lifecycle-runtime-ktx:$archLifecycle"
-    // Kotlin
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_std_lib"
-    implementation "androidx.core:core-ktx:$ktx_core"
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.6.4'
     //VPN
     implementation project(path: ':openvpn')
     implementation project(path: ':strongswan')
@@ -133,22 +103,17 @@ dependencies {
     // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesCore"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesCore"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.6.4'
     // Supporting libraries
-    api 'org.javatuples:javatuples:1.2'
     api 'com.github.seancfoley:ipaddress:5.3.1'
+    api 'com.github.GCX-HCI:tray:v0.12.0'
+    // TV only
     api "com.github.bumptech.glide:glide:$glide"
     kapt "com.github.bumptech.glide:compiler:$glide"
-    api 'commons-io:commons-io:2.11.0'
-    api 'com.github.thoughtbot.expandable-recycler-view:expandablerecyclerview:v1.3'
-    api 'com.google.guava:guava:32.1.2-android'
-    api 'com.github.GCX-HCI:tray:v0.12.0'
-    implementation 'org.isomorphism:token-bucket:1.6'
     // Test
     testImplementation "junit:junit:$JUnit"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testImplementation 'org.junit.jupiter:junit-jupiter'
-    implementation 'commons-io:commons-io:2.13.0'
-    implementation 'commons-net:commons-net:3.6'
     // Google only dependencies
     googleApi "com.google.firebase:firebase-messaging:$fireBase"
     googleApi files("$projectDir/src/google/libs/in-app-purchasing-2.0.76.jar")

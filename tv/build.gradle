@@ -56,7 +56,7 @@ android {
     compileOptions {
         sourceCompatibility rootProject.java
         targetCompatibility rootProject.java
-        coreLibraryDesugaringEnabled = true
+        coreLibraryDesugaringEnabled true
     }
     buildFeatures {
         viewBinding true
@@ -80,10 +80,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appCompat"
     implementation "com.google.android.material:material:$material"
     implementation "androidx.leanback:leanback:$leanBack"
-    //Kotlin
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin"
-    implementation "androidx.core:core-ktx:$ktx_core"
-    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugarJdk"
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
     //Core
     implementation project(path: ':base')
     //Annotation

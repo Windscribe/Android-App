@@ -18,17 +18,10 @@ buildscript {
     ext.appCompat = "1.6.1"
     ext.navigation = "2.5.3"
     ext.archLifecycle = '2.6.1'
-    ext.coroutines_version = '1.7.3'
     ext.coroutinesCore = "1.7.3"
-    //Kotlin
-    ext.kotlin = "2.0.0"
-    ext.ktx_core = "1.9.0"
-    ext.desugarJdk = "2.0.3"
-    ext.kotlin_std_lib = "2.0.0"
     //Feature
     ext.retrofit = "2.9.0"
     ext.fireBase = "23.1.2"
-    ext.butterknife = "10.2.3"
     ext.glide = "4.11.0"
     ext.epoxyVersion = "4.6.3"
     ext.dagger = "2.51"

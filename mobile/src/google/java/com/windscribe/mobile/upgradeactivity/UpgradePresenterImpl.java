@@ -37,7 +37,6 @@ import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.QueryProductDetailsParams;
-import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.windscribe.mobile.R;
 import com.windscribe.vpn.ActivityInteractor;
@@ -154,7 +153,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
         }
     }
 
-    public void launchPurchaseFlowWithAccountID(ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParams) {
+    public void launchPurchaseFlowWithAccountID(List<BillingFlowParams.ProductDetailsParams> productDetailsParams) {
         mUpgradeInteractor.getCompositeDisposable().add(mUpgradeInteractor.getUserSessionData()
                 .flatMap((Function<UserSessionResponse, SingleSource<String>>)
                         userSessionResponse -> Single.fromCallable(() -> {
@@ -237,7 +236,7 @@ public class UpgradePresenterImpl implements UpgradePresenter {
     }
 
     @Override
-    public void buyGoogleProduct(@Nullable ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParams) {
+    public void buyGoogleProduct(@Nullable List<BillingFlowParams.ProductDetailsParams> productDetailsParams) {
         if (productDetailsParams != null) {
             //Start purchase flow
             presenterLog.info("Starting purchase flow...");
