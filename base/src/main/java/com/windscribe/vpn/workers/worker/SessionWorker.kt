@@ -15,18 +15,17 @@ import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.constants.NetworkErrorCodes
-import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.exceptions.GenericApiException
 import com.windscribe.vpn.exceptions.InvalidSessionException
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
+import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.repository.WgConfigRepository
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
-import kotlinx.coroutines.rx2.await
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -82,7 +81,7 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
                 userRepository.logout()
                 Result.failure()
             } else {
-                logger.debug(WindError.instance.rxErrorToString(e))
+                logger.debug(e.message)
                 Result.retry()
             }
         }
@@ -93,7 +92,7 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
             if (changed[0]) {
                 workManager.updateServerList()
             }
-            val storedSipCount = localDbInterface.staticRegionCount.await()
+            val storedSipCount = localDbInterface.getAllStaticRegions().size
             logger.debug("Sip: stored: $storedSipCount updated: ${it.sipCount}")
             if (storedSipCount != it.sipCount) {
                 workManager.updateStaticIpList()
@@ -113,14 +112,19 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
     }
 
     private suspend fun getSession(): UserSessionResponse {
-        val response = apiCallManager.getSessionGeneric(null).await()
-        return response.dataClass ?: response.errorClass?.let {
-            if (it.errorCode == NetworkErrorCodes.ERROR_RESPONSE_SESSION_INVALID) {
-                throw InvalidSessionException("Session request Success: Invalid session.")
-            } else {
-                throw GenericApiException(response.errorClass)
+        val response = apiCallManager.getSessionGeneric(null).callResult<UserSessionResponse>()
+        when(response) {
+            is CallResult.Error -> {
+                if (response.code == NetworkErrorCodes.ERROR_RESPONSE_SESSION_INVALID) {
+                    throw InvalidSessionException("Session request Success: Invalid session.")
+                } else {
+                    throw GenericApiException(response.errorMessage)
+                }
             }
-        } ?: throw Exception("Unexpected data returned")
+            is CallResult.Success -> {
+                return response.data
+            }
+        }
     }
 
     private fun handleAccountStatusChange(user: User) {

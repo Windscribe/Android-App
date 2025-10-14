@@ -4,18 +4,19 @@
 
 package com.windscribe.vpn.backend
 
-import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.api.response.GetMyIpResponse
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.ProtocolInformation
+import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.AdvanceParameterRepository
+import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import io.reactivex.Single
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -23,8 +24,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
-import java.util.concurrent.TimeUnit
+import java.util.UUID
 import javax.inject.Singleton
 
 /**
@@ -32,11 +32,12 @@ import javax.inject.Singleton
  * */
 @Singleton
 abstract class VpnBackend(
-        private val mainScope: CoroutineScope,
-        val stateManager: VPNConnectionStateManager,
-        private val vpnServiceInteractor: ServiceInteractor,
-        private val networkInfoManager: NetworkInfoManager,
-        private val advanceParameterRepository: AdvanceParameterRepository
+    private val mainScope: CoroutineScope,
+    val stateManager: VPNConnectionStateManager,
+    private val preferencesHelper: PreferencesHelper,
+    private val networkInfoManager: NetworkInfoManager,
+    private val advanceParameterRepository: AdvanceParameterRepository,
+    private val apiManager: IApiCallManager
 ) : NetworkInfoListener {
 
     val vpnLogger: Logger = LoggerFactory.getLogger("vpn")
@@ -47,14 +48,15 @@ abstract class VpnBackend(
     var error: VPNState.Error? = null
     private var isHandlingNetworkChange = false
 
-    private val connectivityTestJob = CompositeDisposable()
+    private var connectivityTestJob: Job? = null
 
     init {
         mainScope.launch {
             stateManager.state.collectLatest {
                 if (it.status == VPNState.Status.Disconnected || it.status == VPNState.Status.Disconnecting) {
                     // Stop existing connectivity test if a disconnect is in process.
-                    connectivityTestJob.clear()
+                    connectivityTestJob?.cancel()
+                    connectivityTestJob = null
                     // Reset network change flag when disconnecting/disconnected
                     isHandlingNetworkChange = false
                 }
@@ -71,11 +73,12 @@ abstract class VpnBackend(
         // Check if VPN is connected and network requires different protocol/port
         val vpnState = stateManager.state.value
         if (vpnState.status == VPNState.Status.Connected &&
-            vpnServiceInteractor.preferenceHelper.autoConnect &&
+            preferencesHelper.autoConnect &&
             networkInfo?.isAutoSecureOn == true &&
             networkInfo.isPreferredOn &&
             networkInfo.protocol != null &&
-            networkInfo.port != null) {
+            networkInfo.port != null
+        ) {
 
             val currentProtocol = protocolInformation?.protocol
             val currentPort = protocolInformation?.port
@@ -92,9 +95,10 @@ abstract class VpnBackend(
 
     fun startConnectionJob() {
         val preferredProtocolOn = networkInfoManager.networkInfo?.isPreferredOn ?: false
-        if (preferredProtocolOn.not() && vpnServiceInteractor.preferenceHelper.getResponseString(
-                        PreferencesKeyConstants.CONNECTION_MODE_KEY
-                ) != PreferencesKeyConstants.CONNECTION_MODE_AUTO) {
+        if (preferredProtocolOn.not() && preferencesHelper.getResponseString(
+                PreferencesKeyConstants.CONNECTION_MODE_KEY
+            ) != PreferencesKeyConstants.CONNECTION_MODE_AUTO
+        ) {
             vpnLogger.debug("Manual connection mode selected without preferred protocol.")
             return
         }
@@ -107,10 +111,10 @@ abstract class VpnBackend(
     private suspend fun connectionTimeout() {
         vpnLogger.error("Connection timeout.")
         disconnect(
-                error = VPNState.Error(
-                        error = VPNState.ErrorType.TimeoutError,
-                        "connection timeout"
-                )
+            error = VPNState.Error(
+                error = VPNState.ErrorType.TimeoutError,
+                "connection timeout"
+            )
         )
     }
 
@@ -121,52 +125,72 @@ abstract class VpnBackend(
      */
     fun testConnectivity() {
         connectionJob?.cancel()
-        connectivityTestJob.clear()
+        connectivityTestJob?.cancel()
+        connectivityTestJob = null
+
         vpnLogger.info("Starting connectivity test.")
-        val startDelay = advanceParameterRepository.getTunnelStartDelay() ?: 500
-        val retryDelay = advanceParameterRepository.getTunnelTestRetryDelay() ?: 500
-        // Max Attempts = First attempt + retries
+        val startDelay = advanceParameterRepository.getTunnelStartDelay() ?: 500L
+        val retryDelay = advanceParameterRepository.getTunnelTestRetryDelay() ?: 500L
         val maxAttempts = advanceParameterRepository.getTunnelTestAttempts() ?: 3
-        var maxRetries = maxAttempts
-        if (maxAttempts >= 1) {
-            maxRetries -= 1
-        }
-        var failedAttemptIndex = 0
-        connectivityTestJob.add(
-                Single.just(true).delay(startDelay, TimeUnit.MILLISECONDS).flatMap {
-                    vpnServiceInteractor.apiManager
-                            .checkConnectivityAndIpAddress()
-                            .doOnError {
-                                failedAttemptIndex++
-                                vpnLogger.info("Failed Attempt: $failedAttemptIndex")
-                            }.retryWhen { error ->
-                                return@retryWhen error.take(maxRetries).delay(retryDelay, TimeUnit.MILLISECONDS)
-                            }
-                }.timeout(20, TimeUnit.SECONDS)
-                        .observeOn(Schedulers.io())
-                        .subscribeOn(Schedulers.io())
-                        .subscribe(
-                                { ip ->
-                                    ip.dataClass?.userIp?.let { it ->
-                                        if (Util.validIpAddress(it)) {
-                                            val ipAddress: String = Util.getModifiedIpAddress(it.trim { it <= ' ' })
-                                            vpnServiceInteractor.preferenceHelper.saveResponseStringData(
-                                                    PreferencesKeyConstants.USER_IP,
-                                                    ipAddress
-                                            )
-                                            connectivityTestPassed(it)
-                                        } else {
-                                            failedConnectivityTest()
-                                        }
-                                    } ?: kotlin.run {
-                                        failedConnectivityTest()
-                                    }
-                                },
-                                {
-                                    failedConnectivityTest()
+
+        connectivityTestJob = mainScope.launch {
+            try {
+                // Initial delay before first attempt
+                delay(startDelay)
+
+                var lastError: String? = null
+                var attemptCount = 0
+                var success = false
+
+                // Try maxAttempts times
+                while (attemptCount < maxAttempts && !success) {
+                    attemptCount++
+                    vpnLogger.info("Connectivity test attempt: $attemptCount/$maxAttempts")
+
+                    val result = result<GetMyIpResponse> {
+                        apiManager.checkConnectivityAndIpAddress()
+                    }
+
+                    when (result) {
+                        is CallResult.Success -> {
+                            val userIp = result.data.userIp
+                            if (userIp != null && Util.validIpAddress(userIp)) {
+                                val ipAddress = Util.getModifiedIpAddress(userIp.trim())
+                                preferencesHelper.saveResponseStringData(
+                                    PreferencesKeyConstants.USER_IP,
+                                    ipAddress
+                                )
+                                connectivityTestPassed(userIp)
+                                success = true
+                            } else {
+                                lastError = "Invalid IP address: $userIp"
+                                vpnLogger.info("Failed Attempt: $attemptCount - $lastError")
+                                if (attemptCount < maxAttempts) {
+                                    delay(retryDelay)
                                 }
-                        )
-        )
+                            }
+                        }
+
+                        is CallResult.Error -> {
+                            lastError = result.errorMessage
+                            vpnLogger.info("Failed Attempt: $attemptCount - $lastError")
+                            if (attemptCount < maxAttempts) {
+                                delay(retryDelay)
+                            }
+                        }
+                    }
+                }
+
+                if (!success) {
+                    vpnLogger.error("Connectivity test failed after $attemptCount attempts")
+                    failedConnectivityTest()
+                }
+
+            } catch (e: Exception) {
+                vpnLogger.error("Connectivity test error: ${e.message}")
+                failedConnectivityTest()
+            }
+        }
     }
 
     fun updateState(vpnState: VPNState) {
@@ -195,23 +219,24 @@ abstract class VpnBackend(
     }
 
     private fun failedConnectivityTest() {
-        connectivityTestJob.clear()
+        connectivityTestJob?.cancel()
+        connectivityTestJob = null
         connectionJob?.cancel()
         // If app is in foreground, try other protocols.
         if (reconnecting.not()) {
             mainScope.launch {
                 vpnLogger.info("Connectivity test failed.")
                 disconnect(
-                        error = VPNState.Error(
-                                VPNState.ErrorType.ConnectivityTestFailed,
-                                "Connectivity test failed."
-                        )
+                    error = VPNState.Error(
+                        VPNState.ErrorType.ConnectivityTestFailed,
+                        "Connectivity test failed."
+                    )
                 )
             }
         } else {
             vpnLogger.info("Connectivity test failed in background.")
             // Consider it connected and will fetch ip on app launch.
-            vpnServiceInteractor.preferenceHelper.removeResponseData(PreferencesKeyConstants.USER_IP)
+            preferencesHelper.removeResponseData(PreferencesKeyConstants.USER_IP)
             updateState(VPNState(VPNState.Status.Connected))
             mainScope.launch {
                 delay(500)

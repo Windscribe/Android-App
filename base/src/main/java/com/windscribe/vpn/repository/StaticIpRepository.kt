@@ -3,31 +3,28 @@
  */
 package com.windscribe.vpn.repository
 
-import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.api.response.StaticIPResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
-import com.windscribe.vpn.constants.NetworkKeyConstants
+import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.serverlist.entity.StaticRegion
-import io.reactivex.Completable
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.await
-import kotlinx.coroutines.rx2.rxCompletable
 import org.json.JSONObject
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class StaticIpRepository @Inject constructor(
-        val scope: CoroutineScope,
-        private val preferencesHelper: PreferencesHelper,
-        private val apiCallManager: IApiCallManager,
-        private val localDbInterface: LocalDbInterface,
+    val scope: CoroutineScope,
+    private val preferencesHelper: PreferencesHelper,
+    private val apiCallManager: IApiCallManager,
+    private val localDbInterface: LocalDbInterface,
 ) {
     private var _events = MutableStateFlow(emptyList<StaticRegion>())
     val regions: StateFlow<List<StaticRegion>> = _events
@@ -39,30 +36,32 @@ class StaticIpRepository @Inject constructor(
     fun load() {
         scope.launch {
             try {
-                val regions = localDbInterface.allStaticRegions.await()
+                val regions = localDbInterface.getAllStaticRegions()
                 _events.emit(regions)
-            }catch (e:Exception){}
+            } catch (e: Exception) {
+            }
         }
     }
 
-    private suspend fun updateFromApi() {
-        val response = apiCallManager.getStaticIpList(preferencesHelper.getDeviceUUID()).await()
-        val regions = response.dataClass?.let {
-            val jsonObject = JSONObject(Gson().toJson(it))
-            Gson().fromJson<List<StaticRegion>>(
-                    jsonObject.getJSONArray("static_ips").toString(),
-                    object : TypeToken<List<StaticRegion>?>() {}.type
-            )
-        } ?: emptyList()
-        if (regions.isNotEmpty()) {
-            regions[0].deviceName
+    suspend fun updateFromApi() {
+        val result = result<StaticIPResponse> {
+            apiCallManager.getStaticIpList(preferencesHelper.getDeviceUUID())
         }
-        localDbInterface.addStaticRegions(regions).await()
-    }
-
-    fun update(): Completable {
-        return rxCompletable {
-            updateFromApi()
+        when (result) {
+            is CallResult.Error -> {}
+            is CallResult.Success -> {
+                val regions = result.data.let {
+                    val jsonObject = JSONObject(Gson().toJson(it))
+                    Gson().fromJson<List<StaticRegion>>(
+                        jsonObject.getJSONArray("static_ips").toString(),
+                        object : TypeToken<List<StaticRegion>?>() {}.type
+                    )
+                } ?: emptyList()
+                if (regions.isNotEmpty()) {
+                    regions[0].deviceName
+                }
+                localDbInterface.addStaticRegions(regions)
+            }
         }
     }
 }

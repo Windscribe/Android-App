@@ -3,7 +3,6 @@
  */
 package com.windscribe.vpn.errormodel
 
-import io.reactivex.exceptions.CompositeException
 import java.io.PrintWriter
 import java.io.StringWriter
 
@@ -24,24 +23,6 @@ class WindError private constructor() {
             sw.toString().substring(0, 1999)
         } else {
             sw.toString()
-        }
-    }
-
-    fun rxErrorToString(e: Exception): String {
-        if (e is CompositeException) {
-            var error = ""
-            e.exceptions.forEach {
-                if (!error.contains("${it.message}")) {
-                    error += "${it.message}\n"
-                }
-            }
-            return error
-        } else {
-            return e.message?.let {
-                return it
-            } ?: kotlin.run {
-                return e.toString()
-            }
         }
     }
 

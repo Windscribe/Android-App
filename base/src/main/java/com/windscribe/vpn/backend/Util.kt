@@ -21,7 +21,6 @@ import com.wireguard.config.BadConfigException
 import com.wireguard.config.Config
 import inet.ipaddr.AddressStringException
 import inet.ipaddr.IPAddressString
-import io.reactivex.Single
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileNotFoundException
@@ -51,20 +50,18 @@ object Util {
         return null
     }
 
-    fun getSavedLocation(): Single<LastSelectedLocation> {
-        return Single.fromCallable {
-            try {
-                ObjectInputStream(Windscribe.appContext.openFileInput(LAST_SELECTED_LOCATION)).use {
-                        val obj = it.readObject()
-                        if (obj is LastSelectedLocation) {
-                            return@use obj
-                        } else {
-                            throw WindScribeException("Invalid location found.")
-                        }
-                    }
-            } catch (ignored: FileNotFoundException) {
-                throw WindScribeException("No saved location")
+    suspend fun getSavedLocationAsync(): LastSelectedLocation {
+        return try {
+            ObjectInputStream(Windscribe.appContext.openFileInput(LAST_SELECTED_LOCATION)).use {
+                val obj = it.readObject()
+                if (obj is LastSelectedLocation) {
+                    obj
+                } else {
+                    throw WindScribeException("Invalid location found.")
+                }
             }
+        } catch (ignored: FileNotFoundException) {
+            throw WindScribeException("No saved location")
         }
     }
 

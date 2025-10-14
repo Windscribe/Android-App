@@ -1,10 +1,11 @@
 package com.windscribe.vpn.di
 
-import com.windscribe.vpn.ServiceInteractor
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.mocks.TestWindVpnController
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.EmergencyConnectRepository
@@ -24,7 +25,7 @@ class TestVPNModule {
     @Singleton
     fun provideWindVpnController(
         coroutineScope: CoroutineScope,
-        serviceInteractor: ServiceInteractor,
+        preferencesHelper: PreferencesHelper,
         vpnProfileCreator: VPNProfileCreator,
         autoConnectionManager: AutoConnectionManager,
         vpnConnectionStateManager: VPNConnectionStateManager,
@@ -32,11 +33,12 @@ class TestVPNModule {
         locationRepository: LocationRepository,
         wgConfigRepository: WgConfigRepository,
         advanceParameterRepository: Lazy<AdvanceParameterRepository>,
-        emergencyConnectRepository: EmergencyConnectRepository
+        emergencyConnectRepository: EmergencyConnectRepository,
+        localDbInterface: LocalDbInterface
     ): WindVpnController {
         return TestWindVpnController(
             coroutineScope,
-            serviceInteractor,
+            preferencesHelper,
             vpnProfileCreator,
             vpnConnectionStateManager,
             vpnBackendHolder,
@@ -44,7 +46,8 @@ class TestVPNModule {
             autoConnectionManager,
             wgConfigRepository,
             advanceParameterRepository,
-            emergencyConnectRepository
+            emergencyConnectRepository,
+            localDbInterface
         )
     }
 }

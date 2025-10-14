@@ -3,107 +3,110 @@
  */
 package com.windscribe.tv.serverlist.detail
 
-import com.windscribe.tv.R
 import com.windscribe.tv.serverlist.adapters.DetailViewAdapter
 import com.windscribe.tv.serverlist.customviews.State.FavouriteState
 import com.windscribe.tv.serverlist.overlay.LoadState
-import com.windscribe.vpn.ActivityInteractor
-import com.windscribe.vpn.Windscribe.Companion.getExecutorService
 import com.windscribe.vpn.api.response.ServerNodeListOverLoaded
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.FlagIconResource
+import com.windscribe.vpn.commonutils.ResourceHelper
+import com.windscribe.vpn.constants.UserStatusConstants
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.LatencyRepository
-import com.windscribe.vpn.serverlist.entity.*
-import io.reactivex.Completable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.observers.DisposableSingleObserver
-import io.reactivex.schedulers.Schedulers
+import com.windscribe.vpn.serverlist.entity.City
+import com.windscribe.vpn.serverlist.entity.Favourite
+import com.windscribe.vpn.serverlist.entity.ServerListData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Inject
 
-class DetailsPresenterImp(
+class DetailsPresenterImp @Inject constructor(
     private val detailView: DetailView,
-    private val interactor: ActivityInteractor
+    private val activityScope: CoroutineScope,
+    private val localDbInterface: LocalDbInterface,
+    private val preferencesHelper: PreferencesHelper,
+    private val resourceHelper: ResourceHelper,
+    private val latencyRepository: LatencyRepository
 ) : DetailPresenter, DetailListener {
     private val logger = LoggerFactory.getLogger("basic")
     private var detailViewAdapter: DetailViewAdapter? = null
     override fun onDestroy() {
         logger.debug("Destroying detail presenter")
-        interactor.getCompositeDisposable()
-        interactor.getCompositeDisposable().dispose()
+        // Coroutine scope will be cancelled by the activity
     }
 
     override fun init(regionId: Int) {
         logger.debug("Loading detail view for group.")
         detailView.setState(LoadState.Loading, 0, com.windscribe.vpn.R.string.load_loading)
-        val cities: MutableList<City> = ArrayList()
-        val serverListData = ServerListData()
-        val oneTimeCompositeDisposable = CompositeDisposable()
-        oneTimeCompositeDisposable.add(
-            interactor.getAllCities(regionId)
-                .flatMap { updatedCities: List<City> ->
-                    logger.info("Regions and cities...")
-                    cities.clear()
-                    cities.addAll(updatedCities)
-                    cities.sortBy { it.nodeName }
-                    interactor.getAllPings()
-                }.onErrorReturnItem(ArrayList())
-                .flatMap { pingTimes: List<PingTime> ->
-                    logger.info("Ping times....")
-                    serverListData.pingTimes = pingTimes
-                    interactor.getFavourites()
-                }.onErrorReturnItem(ArrayList())
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSingleObserver<List<Favourite>>() {
-                    override fun onError(e: Throwable) {
-                        logger.debug("Error loading group view.")
-                        detailView.setState(LoadState.Error, 0, com.windscribe.vpn.R.string.load_error)
-                        if (!oneTimeCompositeDisposable.isDisposed) {
-                            oneTimeCompositeDisposable.dispose()
-                        }
-                    }
 
-                    override fun onSuccess(favourites: List<Favourite>) {
-                        logger.debug("***Successfully received server list.***")
-                        serverListData.setShowLatencyInMs(
-                            interactor.getAppPreferenceInterface().showLatencyInMS
+        activityScope.launch(Dispatchers.IO) {
+            try {
+                // Load cities
+                val cities = localDbInterface.getAllCitiesAsync(regionId)
+                logger.info("Regions and cities...")
+                val sortedCities = cities.sortedBy { it.nodeName }
+
+                // Load ping times
+                val pingTimes = try {
+                    localDbInterface.getAllPingsAsync()
+                } catch (e: Exception) {
+                    logger.debug("Error loading ping times: ${e.message}")
+                    emptyList()
+                }
+                logger.info("Ping times....")
+
+                // Load favourites
+                val favourites = try {
+                    localDbInterface.getFavouritesAsync()
+                } catch (e: Exception) {
+                    logger.debug("Error loading favourites: ${e.message}")
+                    emptyList()
+                }
+
+                withContext(Dispatchers.Main) {
+                    logger.debug("***Successfully received server list.***")
+                    val serverListData = ServerListData()
+                    serverListData.setShowLatencyInMs(preferencesHelper.showLatencyInMS)
+                    serverListData.isProUser = preferencesHelper.userStatus == UserStatusConstants.USER_STATUS_PREMIUM
+                    serverListData.pingTimes = pingTimes
+                    serverListData.favourites = favourites
+
+                    if (sortedCities.isNotEmpty()) {
+                        setBackground(regionId)
+                        detailViewAdapter = DetailViewAdapter(
+                            sortedCities,
+                            serverListData,
+                            this@DetailsPresenterImp
                         )
-                        serverListData.isProUser =
-                            interactor.getAppPreferenceInterface().userStatus == 1
-                        serverListData.favourites = favourites
-                        if (cities.size > 0) {
-                            setBackground(regionId)
-                            detailViewAdapter = DetailViewAdapter(
-                                cities,
-                                serverListData, this@DetailsPresenterImp
-                            )
-                            detailViewAdapter?.setPremiumUser(interactor.isPremiumUser())
-                            detailViewAdapter?.let { detailView.setDetailAdapter(it) }
-                            setFavouriteStates()
-                            detailView.setState(LoadState.Loaded, 0, 0)
-                            logger.debug("Successfully loaded detail view.")
-                        } else {
-                            detailView.setState(LoadState.NoResult, 0, com.windscribe.vpn.R.string.load_nothing_found)
-                            logger.debug("No nodes found under this group.")
-                        }
-                        if (!oneTimeCompositeDisposable.isDisposed) {
-                            oneTimeCompositeDisposable.dispose()
-                        }
+                        detailViewAdapter?.setPremiumUser(preferencesHelper.userStatus == UserStatusConstants.USER_STATUS_PREMIUM)
+                        detailViewAdapter?.let { detailView.setDetailAdapter(it) }
+                        setFavouriteStates()
+                        detailView.setState(LoadState.Loaded, 0, 0)
+                        logger.debug("Successfully loaded detail view.")
+                    } else {
+                        detailView.setState(LoadState.NoResult, 0, com.windscribe.vpn.R.string.load_nothing_found)
+                        logger.debug("No nodes found under this group.")
                     }
-                })
-        )
+                }
+            } catch (e: Throwable) {
+                withContext(Dispatchers.Main) {
+                    logger.debug("Error loading group view.")
+                    detailView.setState(LoadState.Error, 0, com.windscribe.vpn.R.string.load_error)
+                }
+            }
+        }
     }
 
     override fun onConnectClick(city: City) {
         logger.debug("Selected group item to connect.")
-        getExecutorService()
-            .submit {
-                interactor.getAppPreferenceInterface().setFutureSelectCity(
-                    city.getId()
-                )
-            }
+        activityScope.launch(Dispatchers.IO) {
+            preferencesHelper.setFutureSelectCity(city.getId())
+        }
         detailView.onNodeSelected(city.getId())
     }
 
@@ -124,80 +127,83 @@ class DetailsPresenterImp(
     private fun removeFromFavourite(cityId: Int) {
         val favourite = Favourite()
         favourite.id = cityId
-        interactor.getCompositeDisposable()
-            .add(Completable.fromAction { interactor.deleteFavourite(favourite) }
-                .andThen(interactor.getFavourites())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSingleObserver<List<Favourite>>() {
-                    override fun onError(e: Throwable) {
-                        logger.debug("Failed to add location to favourites.")
-                        detailView.showToast("Error occurred." + e.localizedMessage)
-                    }
+        activityScope.launch(Dispatchers.IO) {
+            try {
+                localDbInterface.deleteFavourite(cityId)
+                val favourites = localDbInterface.getFavouritesAsync()
 
-                    override fun onSuccess(favourites: List<Favourite>) {
-                        logger.debug("Removed from favourites.")
-                        detailView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.remove_from_favourites))
-                        detailViewAdapter?.setFavourites(favourites)
-                    }
-                }))
+                withContext(Dispatchers.Main) {
+                    logger.debug("Removed from favourites.")
+                    detailView.showToast(resourceHelper.getString(com.windscribe.vpn.R.string.remove_from_favourites))
+                    detailViewAdapter?.setFavourites(favourites)
+                }
+            } catch (e: Throwable) {
+                withContext(Dispatchers.Main) {
+                    logger.debug("Failed to add location to favourites.")
+                    detailView.showToast("Error occurred." + e.localizedMessage)
+                }
+            }
+        }
     }
 
     private fun addToFav(cityId: Int) {
         val favourite = Favourite()
         favourite.id = cityId
-        interactor.getCompositeDisposable().add(interactor.addToFavourites(favourite)
-            .flatMap { interactor.getFavourites() }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeWith(object : DisposableSingleObserver<List<Favourite>>() {
-                override fun onError(e: Throwable) {
+        activityScope.launch(Dispatchers.IO) {
+            try {
+                localDbInterface.addToFavouritesAsync(favourite)
+                val favourites = localDbInterface.getFavouritesAsync()
+
+                withContext(Dispatchers.Main) {
+                    detailView.showToast(resourceHelper.getString(com.windscribe.vpn.R.string.added_to_favourites))
+                    detailViewAdapter?.setFavourites(favourites)
+                }
+            } catch (e: Throwable) {
+                withContext(Dispatchers.Main) {
                     logger.debug("Failed to add location to favourites.")
                     detailView.showToast("Error occurred.")
                 }
-
-                override fun onSuccess(favourites: List<Favourite>) {
-                    detailView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.added_to_favourites))
-                    detailViewAdapter?.setFavourites(favourites)
-                }
-            })
-        )
+            }
+        }
     }
 
     private fun setBackground(regionId: Int) {
-        interactor.getCompositeDisposable().add(
-            interactor.getRegionAndCity(regionId)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSingleObserver<RegionAndCities>() {
-                    override fun onError(e: Throwable) {}
-                    override fun onSuccess(cities: RegionAndCities) {
-                        detailView.setCountryFlagBackground(
-                            FlagIconResource.getFlag(cities.region.countryCode)
-                        )
-                        detailView.setTitle(cities.region.name)
-                        detailView.setCount("" + cities.cities.size)
-                    }
-                })
-        )
+        activityScope.launch(Dispatchers.IO) {
+            try {
+                val cities = localDbInterface.getRegionAsync(regionId)
+
+                withContext(Dispatchers.Main) {
+                    detailView.setCountryFlagBackground(
+                        FlagIconResource.getFlag(cities.region.countryCode)
+                    )
+                    detailView.setTitle(cities.region.name)
+                    detailView.setCount("" + cities.cities.size)
+                }
+            } catch (e: Throwable) {
+            }
+        }
     }
 
     private fun setFavouriteStates() {
-        interactor.getCompositeDisposable().add(
-            interactor.getFavoriteServerList()
-                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSingleObserver<List<ServerNodeListOverLoaded>>() {
-                    override fun onError(e: Throwable) {}
-                    override fun onSuccess(serverNodeListOverLoaded: List<ServerNodeListOverLoaded>) {
-                        detailViewAdapter?.addFav(serverNodeListOverLoaded)
-                    }
-                })
-        )
+        activityScope.launch(Dispatchers.IO) {
+            try {
+                val jsonString = preferencesHelper.getResponseString(com.windscribe.vpn.constants.PreferencesKeyConstants.FAVORITE_SERVER_LIST)
+                val serverNodeList = com.google.gson.Gson().fromJson<List<ServerNodeListOverLoaded>>(
+                    jsonString,
+                    object : com.google.gson.reflect.TypeToken<List<ServerNodeListOverLoaded>>() {}.type
+                )
+
+                withContext(Dispatchers.Main) {
+                    detailViewAdapter?.addFav(serverNodeList)
+                }
+            } catch (e: Throwable) {
+            }
+        }
     }
 
     private val latencyAtomic = AtomicBoolean(true)
     override suspend fun observeLatencyChange() {
-        interactor.getLatencyRepository().latencyEvent.collectLatest {
+        latencyRepository.latencyEvent.collectLatest {
             if (latencyAtomic.getAndSet(false)) return@collectLatest
             when (it.second) {
                 LatencyRepository.LatencyType.Servers -> updateLatency()
@@ -207,15 +213,15 @@ class DetailsPresenterImp(
     }
 
     private fun updateLatency() {
-        interactor.getCompositeDisposable().add(
-            interactor.getAllPings().subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSingleObserver<List<PingTime>>() {
-                    override fun onError(e: Throwable) {}
-                    override fun onSuccess(pings: List<PingTime>) {
-                        detailViewAdapter?.setPings(pings)
-                    }
-                })
-        )
+        activityScope.launch(Dispatchers.IO) {
+            try {
+                val pings = localDbInterface.getAllPingsAsync()
+
+                withContext(Dispatchers.Main) {
+                    detailViewAdapter?.setPings(pings)
+                }
+            } catch (e: Throwable) {
+            }
+        }
     }
 }

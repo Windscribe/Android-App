@@ -88,7 +88,7 @@ class AppStartViewModelImpl @Inject constructor(
 
     private fun ssoLogin(token: String) {
         viewModelScope.launch {
-            when (val result = api.sso("google", token).result<SsoResponse>()) {
+            when (val result = result<SsoResponse> { api.sso("google", token) }) {
                 is CallResult.Error -> {
                     logger.error("Sso login failed with error: ${result.errorMessage}")
                     updateState(SsoLoginState.Error(result.errorMessage))

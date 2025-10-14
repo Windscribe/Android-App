@@ -7,8 +7,8 @@ package com.windscribe.vpn.bootreceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.JobIntentWorkAroundService
-import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.ShortcutStateManager
 import org.slf4j.LoggerFactory
@@ -18,7 +18,7 @@ import javax.inject.Inject
 class BootSessionService : JobIntentWorkAroundService() {
 
     @Inject
-    lateinit var interactor: ServiceInteractor
+    lateinit var preferencesHelper: PreferencesHelper
 
     @Inject
     lateinit var vpnController: WindVpnController
@@ -36,7 +36,7 @@ class BootSessionService : JobIntentWorkAroundService() {
 
     override fun onHandleWork(intent: Intent) {
         if (stateBoolean.getAndSet(false)) {
-            if (interactor.preferenceHelper.autoStartOnBoot) {
+            if (preferencesHelper.autoStartOnBoot) {
                 logger.debug("Device rebooted and Auto start on boot is true, attempting to connect.")
                 shortcutStateManager.connect()
             }

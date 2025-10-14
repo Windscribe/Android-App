@@ -1,6 +1,5 @@
 package com.windscribe.vpn.repository
 
-import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.AdvanceParamKeys.FORCE_NODE
 import com.windscribe.vpn.constants.AdvanceParamKeys.SERVER_LIST_COUNTRY_OVERRIDE
@@ -10,7 +9,6 @@ import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_START_DELAY
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_TEST_ATTEMPTS
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_TEST_RETRY_DELAY
 import com.windscribe.vpn.constants.AdvanceParamKeys.USE_ICMP_PINGS
-import com.windscribe.vpn.constants.PreferencesKeyConstants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +24,6 @@ interface AdvanceParameterRepository {
     fun getTunnelTestRetryDelay(): Long?
     fun getTunnelTestAttempts(): Long?
     fun pingType(): Int
-    fun getDebugFilePath(): String
 }
 
 class AdvanceParameterRepositoryImpl(
@@ -96,15 +93,5 @@ class AdvanceParameterRepositoryImpl(
             }
         }
         return map
-    }
-
-    override fun getDebugFilePath(): String {
-        return if (showStrongSwanLog()) {
-            "${appContext.filesDir}/charon.log"
-        } else if (showWgLog()) {
-            "${appContext.filesDir}/wireguard_log.txt"
-        } else {
-            appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
-        }
     }
 }

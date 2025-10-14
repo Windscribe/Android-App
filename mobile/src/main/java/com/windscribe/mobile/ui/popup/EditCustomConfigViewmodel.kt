@@ -3,7 +3,6 @@ package com.windscribe.mobile.ui.popup
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.backend.utils.WindVpnController
-import com.windscribe.vpn.commonutils.Ext.toResult
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.serverlist.entity.ConfigFile
@@ -62,16 +61,17 @@ class EditCustomConfigViewmodelImpl(
 
     override fun load(id: Int, connect: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            localDbInterface.getConfigFile(id).toResult().onSuccess {
-                _configState.emit(EditConfigState.Success(it))
-                _name.emit(it.name)
-                _username.emit(it.username)
-                _password.emit(it.password)
-                _isRemember.emit(it.isRemember)
+            try {
+                val config = localDbInterface.getConfigFileAsync(id)
+                _configState.emit(EditConfigState.Success(config))
+                _name.emit(config.name)
+                _username.emit(config.username)
+                _password.emit(config.password)
+                _isRemember.emit(config.isRemember)
                 _connect.emit(connect)
-                val configType = WindUtilities.getConfigType(it.content)
+                val configType = WindUtilities.getConfigType(config.content)
                 _isOpenVPN.emit(configType == WindUtilities.ConfigType.OpenVPN)
-            }.onFailure {
+            } catch (e: Exception) {
                 _configState.emit(EditConfigState.Error)
             }
         }

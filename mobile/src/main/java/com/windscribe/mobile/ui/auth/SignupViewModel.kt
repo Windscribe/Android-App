@@ -3,18 +3,19 @@ package com.windscribe.mobile.ui.auth
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.windscribe.mobile.R
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.AuthToken
+import com.windscribe.vpn.api.response.UserRegistrationResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
-import com.windscribe.vpn.commonutils.Ext.toResult
+import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.errormodel.SessionErrorHandler
 import com.windscribe.vpn.exceptions.ApiFailure
-import com.windscribe.vpn.exceptions.WSNetException
+import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserDataState
 import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.repository.getNetworkError
 import com.windscribe.vpn.services.FirebaseManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -126,7 +127,8 @@ class SignupViewModel @Inject constructor(
             )
             return
         }
-        val passwordRegex = Regex("^(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9!@#\$%^&*()_+\\-={}\\[\\]:;\"'<>,.?/`~|\\\\]+$")
+        val passwordRegex =
+            Regex("^(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9!@#\$%^&*()_+\\-={}\\[\\]:;\"'<>,.?/`~|\\\\]+$")
         if (!password.matches(passwordRegex)) {
             updateState(
                 SignupState.Error(
@@ -156,21 +158,22 @@ class SignupViewModel @Inject constructor(
 
     private suspend fun startSignupProcess() {
         logger.info("Trying to registering with provided credentials...")
-        val authResult = apiCallManager.authTokenSignup(false).toResult()
-        authResult.onSuccess {
-            if (it.errorClass != null) {
-                logger.info("Error login: ${it.errorClass!!.errorMessage}")
-                _signupButtonEnabled.emit(true)
-                handleApiError(it.errorClass!!.errorCode, it.errorClass!!.errorMessage)
+        val authResult = result<AuthToken> { apiCallManager.authTokenSignup(false) }
+        when (authResult) {
+            is CallResult.Error -> {
+                val networkError = getNetworkError(authResult.code)
+                if (networkError != null) {
+                    handleNetworkError(networkError)
+                } else {
+                    logger.info("Error login: ${authResult.errorMessage}")
+                    _signupButtonEnabled.emit(true)
+                    handleApiError(authResult.code, authResult.errorMessage)
+                }
             }
-            if (it.dataClass != null) {
-                logger.info("Received auth token: ${it.dataClass!!.token}")
-                handleAuthToken(it.dataClass!!)
-            }
-        }
-        authResult.onFailure {
-            if (it is WSNetException) {
-                handleNetworkError(it.getType())
+
+            is CallResult.Success -> {
+                logger.info("Received auth token: ${authResult.data.token}")
+                handleAuthToken(authResult.data)
             }
         }
     }
@@ -196,30 +199,35 @@ class SignupViewModel @Inject constructor(
             )
             updateState(SignupState.Captcha(request))
         } else {
-            val result = apiCallManager.signUserIn(
-                username.trim(),
-                password.trim(),
-                referralUsername.trim(),
-                email.trim(),
-                voucher.trim(),
-                token,
-                null,
-                floatArrayOf(), floatArrayOf()
-            ).toResult()
-            result.onFailure {
-                if (it is WSNetException) {
-                    logger.error("SignupError: ${it.message}")
-                    handleNetworkError(it.getType())
-                }
+            val result = result<UserRegistrationResponse> {
+                apiCallManager.signUserIn(
+                    username.trim(),
+                    password.trim(),
+                    referralUsername.trim(),
+                    email.trim(),
+                    voucher.trim(),
+                    token,
+                    null,
+                    floatArrayOf(), floatArrayOf()
+                )
             }
-            result.onSuccess {
-                if (it.dataClass != null) {
-                    logger.info("User signup in successfully.")
-                    handleSuccessfulSignup(it.dataClass!!.sessionAuthHash)
+
+            when (result) {
+                is CallResult.Error -> {
+                    val networkError = getNetworkError(result.code)
+                    if (networkError != null) {
+                        logger.error("SignupError: ${result.errorMessage}")
+                        handleNetworkError(networkError)
+                    } else {
+                        logger.info("Error signup: ${result.errorMessage}")
+                        _signupButtonEnabled.emit(true)
+                        handleApiError(result.code, result.errorMessage)
+                    }
                 }
-                if (it.errorClass != null) {
-                    _signupButtonEnabled.emit(true)
-                    handleApiError(it.errorClass!!.errorCode, it.errorClass!!.errorMessage)
+
+                is CallResult.Success -> {
+                    logger.info("User signup in successfully.")
+                    handleSuccessfulSignup(result.data.sessionAuthHash)
                 }
             }
         }
@@ -228,30 +236,33 @@ class SignupViewModel @Inject constructor(
     private suspend fun loginWithCaptcha(captchaSolution: CaptchaSolution) {
         val trailX = captchaSolution.trail["x"]?.toFloatArray() ?: floatArrayOf()
         val trailY = captchaSolution.trail["y"]?.toFloatArray() ?: floatArrayOf()
-        val result = apiCallManager.signUserIn(
-            username.trim(),
-            password.trim(),
-            referralUsername.trim(),
-            email.trim(),
-            voucher.trim(),
-            captchaSolution.token,
-            "${captchaSolution.leftOffset}",
-            trailX,
-            trailY
-        ).toResult()
-        result.onFailure {
-            if (it is WSNetException) {
-                handleNetworkError(it.getType())
-            }
+        val result = result<UserRegistrationResponse> {
+            apiCallManager.signUserIn(
+                username.trim(),
+                password.trim(),
+                referralUsername.trim(),
+                email.trim(),
+                voucher.trim(),
+                captchaSolution.token,
+                "${captchaSolution.leftOffset}",
+                trailX,
+                trailY
+            )
         }
-        result.onSuccess {
-            if (it.dataClass != null) {
-                logger.info("User signup in successfully.")
-                handleSuccessfulSignup(it.dataClass!!.sessionAuthHash)
+        when (result) {
+            is CallResult.Error -> {
+                val networkError = getNetworkError(result.code)
+                if (networkError != null) {
+                    handleNetworkError(networkError)
+                } else {
+                    _signupButtonEnabled.emit(true)
+                    handleApiError(result.code, result.errorMessage)
+                }
             }
-            if (it.errorClass != null) {
-                _signupButtonEnabled.emit(true)
-                handleApiError(it.errorClass!!.errorCode, it.errorClass!!.errorMessage)
+
+            is CallResult.Success -> {
+                logger.info("User signup in successfully.")
+                handleSuccessfulSignup(result.data.sessionAuthHash)
             }
         }
     }

@@ -14,6 +14,7 @@ import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
 import com.windscribe.vpn.serverlist.entity.City
 import com.windscribe.vpn.serverlist.entity.ConfigFile
+import com.windscribe.vpn.serverlist.entity.Favourite
 import com.windscribe.vpn.serverlist.entity.Region
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import kotlinx.coroutines.Dispatchers
@@ -343,7 +344,6 @@ class ServerViewModelImpl(
                 .map { transform(it) }
                 .catch { e -> stateFlow.value = ListState.Error("$errorMessage: ${e.message}") }
                 .collect { result ->
-                    Log.d("ServerViewModelImpl", "Received result: $result")
                     stateFlow.value = ListState.Success(result.toList())
                 }
         }
@@ -375,7 +375,7 @@ class ServerViewModelImpl(
                 if (isFavorite) {
                     favouriteRepository.remove(city.id)
                 } else {
-                    favouriteRepository.add(city).getOrNull()
+                    localDbInterface.addToFavouritesAsync(Favourite(city.id))
                 }
             }
         }
@@ -405,11 +405,11 @@ class ServerViewModelImpl(
     }
 
     override fun onQueryTextChange(query: String) {
+        if (_searchKeyword.value.isEmpty() && query.isEmpty()) {
+            return
+        }
+        _searchKeyword.value = query
         viewModelScope.launch(Dispatchers.IO) {
-            if (_searchKeyword.value.isEmpty() && query.isEmpty()) {
-                return@launch
-            }
-            _searchKeyword.value = query
             _searchListState.emit(ListState.Loading)
             val items =
                 (serverListState.value as? ListState.Success<ServerListItem>)?.data ?: emptyList()

@@ -44,7 +44,9 @@ class IpRepository(
         scope.launch {
             _state.emit(RepositoryState.Loading())
             if (WindUtilities.isOnline()) {
-                val result = apiCallManagerV2.checkConnectivityAndIpAddress().result<GetMyIpResponse>()
+                val result = result<GetMyIpResponse> {
+                    apiCallManagerV2.checkConnectivityAndIpAddress()
+                }
                 when (result) {
                     is CallResult.Error -> loadIpFromStorage()
                     is CallResult.Success -> {

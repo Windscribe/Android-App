@@ -1,20 +1,25 @@
 package com.windscribe.vpn.autoconnection
 
+import android.os.Build
 import androidx.fragment.app.DialogFragment
-import com.windscribe.vpn.ServiceInteractor
+import com.windscribe.vpn.R
+import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.alert.showErrorDialog
+import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.api.response.GenericSuccess
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindVpnController
-import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.ThreadSafeList
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.encoding.encoders.Base64
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.ConnectionDataRepository
-import com.windscribe.vpn.repository.WgConfigRepository
 import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -28,9 +33,12 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.rx2.await
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.slf4j.LoggerFactory
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileReader
+import java.nio.charset.Charset
 import java.util.UUID
 import javax.inject.Singleton
 
@@ -40,11 +48,12 @@ class AutoConnectionManager(
     private val vpnConnectionStateManager: Lazy<VPNConnectionStateManager>,
     private val vpnController: Lazy<WindVpnController>,
     private val networkInfoManager: NetworkInfoManager,
-    private val interactor: ServiceInteractor,
     private val connectionDataRepository: ConnectionDataRepository,
-    private val wgConfigRepository: WgConfigRepository
+    private val localDbInterface: LocalDbInterface,
+    private val apiManager: IApiCallManager,
+    private val preferencesHelper: PreferencesHelper
 
-) : NetworkInfoListener {
+    ) : NetworkInfoListener {
 
     private var continuation: CancellableContinuation<Boolean>? = null
     private val logger = LoggerFactory.getLogger("vpn")
@@ -126,7 +135,7 @@ class AutoConnectionManager(
                     if (it.connectionId == newConnectionId) {
                         if (it.error?.error == VPNState.ErrorType.AuthenticationError) {
                             logger.debug("Updating user auth credentials.")
-                            if (connectionDataRepository.update().result()) {
+                            if (connectionDataRepository.update()) {
                                 logger.debug("Auth updated successfully.")
                                 vpnController.get().connect(
                                     connectionId = newConnectionId,
@@ -181,7 +190,7 @@ class AutoConnectionManager(
         }
         if (isEnabled) {
             logger.debug("Engaging auto connect.")
-            listOfProtocols.firstOrNull { it.protocol == interactor.preferenceHelper.selectedProtocol }?.type =
+            listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.type =
                 ProtocolConnectionStatus.Failed
             engageAutomaticMode()
         }
@@ -197,7 +206,7 @@ class AutoConnectionManager(
             } else {
                 logger.debug("Engaging auto connect.")
                 if (vpnConnectionStateManager.get().state.value.status == VPNState.Status.Connected) {
-                    listOfProtocols.firstOrNull { it.protocol == interactor.preferenceHelper.selectedProtocol }?.type =
+                    listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.type =
                         ProtocolConnectionStatus.Connected
                 }
                 engageConnectionChangeMode()
@@ -209,15 +218,15 @@ class AutoConnectionManager(
         var appSupportedProtocolOrder = if (listOfProtocols.size > 0) {
             listOfProtocols
         } else {
-            if (interactor.preferenceHelper.isSuggested()){
-                Util.getAppSupportedProtocolList(interactor.preferenceHelper.getDefaultProtoInfo())
+            if (preferencesHelper.isSuggested()){
+                Util.getAppSupportedProtocolList(preferencesHelper.getDefaultProtoInfo())
             } else {
                 Util.getAppSupportedProtocolList()
             }
         }
-        if (interactor.preferenceHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY) != PreferencesKeyConstants.CONNECTION_MODE_AUTO) {
+        if (preferencesHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY) != PreferencesKeyConstants.CONNECTION_MODE_AUTO) {
             setupManualProtocol(
-                interactor.preferenceHelper.savedProtocol, appSupportedProtocolOrder
+                preferencesHelper.savedProtocol, appSupportedProtocolOrder
             )
         } else {
             manualProtocol = null
@@ -273,16 +282,16 @@ class AutoConnectionManager(
         appSupportedProtocolOrder: List<ProtocolInformation>
     ) {
         val port: String = when (protocol) {
-            PreferencesKeyConstants.PROTO_IKev2 -> interactor.preferenceHelper.iKEv2Port
-            PreferencesKeyConstants.PROTO_UDP -> interactor.preferenceHelper.savedUDPPort
-            PreferencesKeyConstants.PROTO_TCP -> interactor.preferenceHelper.savedTCPPort
-            PreferencesKeyConstants.PROTO_STEALTH -> interactor.preferenceHelper.savedSTEALTHPort
-            PreferencesKeyConstants.PROTO_WIRE_GUARD -> interactor.preferenceHelper.wireGuardPort
-            PreferencesKeyConstants.PROTO_WS_TUNNEL -> interactor.preferenceHelper.savedWSTunnelPort
+            PreferencesKeyConstants.PROTO_IKev2 -> preferencesHelper.iKEv2Port
+            PreferencesKeyConstants.PROTO_UDP -> preferencesHelper.savedUDPPort
+            PreferencesKeyConstants.PROTO_TCP -> preferencesHelper.savedTCPPort
+            PreferencesKeyConstants.PROTO_STEALTH -> preferencesHelper.savedSTEALTHPort
+            PreferencesKeyConstants.PROTO_WIRE_GUARD -> preferencesHelper.wireGuardPort
+            PreferencesKeyConstants.PROTO_WS_TUNNEL -> preferencesHelper.savedWSTunnelPort
             else -> PreferencesKeyConstants.DEFAULT_IKEV2_PORT
         }
         manualProtocol = appSupportedProtocolOrder.firstOrNull {
-            it.protocol == interactor.preferenceHelper.savedProtocol
+            it.protocol == preferencesHelper.savedProtocol
         }
         manualProtocol?.port = port
     }
@@ -373,7 +382,7 @@ class AutoConnectionManager(
         if (isEnabled) {
             continuation?.let {
                 CoroutineScope(it.context).launch {
-                    when (val result = interactor.sendLog()) {
+                    when (val result = sendLogToServer()) {
                         is CallResult.Error -> {
                             logger.debug("Error sending log ${result.errorMessage}")
                             dismissDialog()
@@ -386,6 +395,31 @@ class AutoConnectionManager(
                     }
                 }
             }
+        }
+    }
+
+    suspend fun sendLogToServer(): CallResult<GenericSuccess> {
+        return try {
+            var logLine: String?
+            val debugFilePath = appContext.filesDir.path + PreferencesKeyConstants.DEBUG_LOG_FILE_NAME
+            val logFile = Windscribe.appContext.resources.getString(
+                R.string.log_file_header,
+                Build.VERSION.SDK_INT, Build.BRAND, Build.DEVICE, Build.MODEL, Build.MANUFACTURER,
+                Build.VERSION.RELEASE, WindUtilities.getVersionCode()
+            )
+            val builder = StringBuilder()
+            builder.append(logFile)
+            val file = File(debugFilePath)
+            val bufferedReader = BufferedReader(FileReader(file))
+            while (bufferedReader.readLine().also { logLine = it } != null) {
+                builder.append(logLine)
+                builder.append("\n")
+            }
+            bufferedReader.close()
+            val encodedLog = String(Base64.encode(builder.toString().toByteArray(Charset.defaultCharset())))
+            return apiManager.postDebugLog(preferencesHelper.userName, encodedLog).callResult()
+        } catch (ignored: Exception) {
+            CallResult.Error(errorMessage = "Unable to load debug logs from disk.")
         }
     }
 
@@ -463,7 +497,7 @@ class AutoConnectionManager(
             if (isEnabled) {
                 continuation?.let { c ->
                     CoroutineScope(c.context).launch {
-                        interactor.saveNetwork(it).await()
+                        localDbInterface.updateNetworkSync(it)
                         logger.debug("Saved ${protocolInformation.protocol}:${protocolInformation.port} for SSID: ${it.networkName}")
                     }
                 }
@@ -483,9 +517,9 @@ class AutoConnectionManager(
             FragmentType.ConnectionFailure,
             autoConnectionModeCallback = object : AutoConnectionModeCallback {
                 override fun onCancel() {
-                    listOfProtocols.firstOrNull { it.protocol == interactor.preferenceHelper.selectedProtocol }?.type =
+                    listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.type =
                             ProtocolConnectionStatus.NextUp
-                    listOfProtocols.firstOrNull { it.protocol == interactor.preferenceHelper.selectedProtocol }?.let {
+                    listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.let {
                         moveProtocolToTop(it, listOfProtocols)
                     }
                     logger.debug("Cancel clicked existing auto connect.")
@@ -601,9 +635,9 @@ class AutoConnectionManager(
     fun setSelectedProtocol(protocolInformation: ProtocolInformation) {
         logger.info("Trying to connect: $protocolInformation")
         scope.launch {
-            interactor.preferenceHelper.selectedProtocol = protocolInformation.protocol
-            interactor.preferenceHelper.selectedPort = protocolInformation.port
-            interactor.preferenceHelper.selectedProtocolType = protocolInformation.type
+            preferencesHelper.selectedProtocol = protocolInformation.protocol
+            preferencesHelper.selectedPort = protocolInformation.port
+            preferencesHelper.selectedProtocolType = protocolInformation.type
             _connectedProtocol.emit(protocolInformation)
         }
     }

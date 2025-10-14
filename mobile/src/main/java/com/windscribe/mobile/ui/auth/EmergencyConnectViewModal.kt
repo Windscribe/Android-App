@@ -1,7 +1,6 @@
 package com.windscribe.mobile.ui.auth
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindVpnController
@@ -80,24 +79,6 @@ class EmergencyConnectViewModal @Inject constructor(
                 logger.error("Failure to connect using emergency vpn profiles: $it")
                 _uiState.emit(EmergencyConnectUIState.Disconnected)
                 error.emit(it.message ?: "Failed to connect using emergency vpn profile.")
-            }
-        }
-    }
-
-    companion object {
-        fun provideFactory(
-            scope: CoroutineScope,
-            windVpnController: WindVpnController,
-            vpnConnectionStateManager: VPNConnectionStateManager
-        ) = object : ViewModelProvider.NewInstanceFactory() {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                if (modelClass.isAssignableFrom(EmergencyConnectViewModal::class.java)) {
-                    return EmergencyConnectViewModal(
-                        scope, windVpnController, vpnConnectionStateManager
-                    ) as T
-                }
-                return super.create(modelClass)
             }
         }
     }

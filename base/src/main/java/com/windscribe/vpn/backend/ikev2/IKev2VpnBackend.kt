@@ -9,9 +9,10 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
-import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.VPNState
@@ -39,10 +40,11 @@ class IKev2VpnBackend(
         var scope: CoroutineScope,
         var networkInfoManager: NetworkInfoManager,
         vpnStateManager: VPNConnectionStateManager,
-        var serviceInteractor: ServiceInteractor,
+        var preferencesHelper: PreferencesHelper,
         advanceParameterRepository: AdvanceParameterRepository,
-        val proxyDNSManager: ProxyDNSManager
-) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager, advanceParameterRepository), VpnStateListener {
+        val proxyDNSManager: ProxyDNSManager,
+        private val apiManager: IApiCallManager
+) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager), VpnStateListener {
 
     private var vpnService: VpnStateService? = null
     private val stateServiceChannel = Channel<VpnStateService>()

@@ -4,13 +4,13 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.windscribe.vpn.Windscribe
-import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.repository.ConnectionDataRepository
 import com.windscribe.vpn.repository.UserRepository
-import javax.inject.Inject
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
-class CredentialsWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(appContext, params) {
+class CredentialsWorker(appContext: Context, params: WorkerParameters) :
+    CoroutineWorker(appContext, params) {
     private val logger = LoggerFactory.getLogger("worker")
 
     @Inject
@@ -24,15 +24,15 @@ class CredentialsWorker(appContext: Context, params: WorkerParameters) : Corouti
     }
 
     override suspend fun doWork(): Result {
-        return if(userRepository.loggedIn() && userRepository.accountStatusOkay()){
-            connectionDataRepository.update().result{ success, error ->
-                if(success){
-                    logger.debug("Successful updated credentials data.")
-                }else{
-                    logger.debug("Failed to update credentials data: $error")
-                }
+        return if (userRepository.loggedIn() && userRepository.accountStatusOkay()) {
+            try {
+                connectionDataRepository.update()
+                logger.debug("Successful updated credentials data.")
+                Result.success()
+            } catch (_: Exception) {
+                Result.failure()
             }
-        }else{
+        } else {
             Result.failure()
         }
     }

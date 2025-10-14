@@ -6,11 +6,9 @@ import androidx.work.WorkerParameters
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.utils.WindVpnController
-import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.UserRepository
-import io.reactivex.Flowable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -43,21 +41,29 @@ class ServerListWorker(context: Context, workerParams: WorkerParameters) : Corou
     }
 
     override suspend fun doWork(): Result {
-        if(!userRepository.loggedIn())return Result.failure()
-        return serverListRepository.update()
-                .repeatWhen {
-                    val reloadServerList = serverListRepository.globalServerList && appContext.appLifeCycleObserver.overriddenCountryCode!=null && appContext.appLifeCycleObserver.overriddenCountryCode!="ZZ"
-                    return@repeatWhen Flowable.just(reloadServerList)
-                }.result{ success, error ->
-            if(success){
-                serverListRepository.load()
-                logger.debug("Successfully updated server list. Global Server list: ${serverListRepository.globalServerList} CountryOverride: ${appContext.appLifeCycleObserver.overriddenCountryCode}")
-                mainScope.launch {
-                    handleLocationUpdate()
-                }
-            }else{
-                logger.debug("Failed to update server list: $error")
+        if (!userRepository.loggedIn()) return Result.failure()
+
+        return runCatching {
+            // First update
+            serverListRepository.update()
+            // Check if we need to reload with different country code
+            val reloadServerList = serverListRepository.globalServerList &&
+                appContext.appLifeCycleObserver.overriddenCountryCode != null &&
+                appContext.appLifeCycleObserver.overriddenCountryCode != "ZZ"
+            if (reloadServerList) {
+                // Reload server list with country override
+                serverListRepository.update()
             }
+            // Load the updated server list
+            serverListRepository.load()
+            logger.debug("Successfully updated server list. Global Server list: ${serverListRepository.globalServerList} CountryOverride: ${appContext.appLifeCycleObserver.overriddenCountryCode}")
+            mainScope.launch {
+                handleLocationUpdate()
+            }
+            Result.success()
+        }.getOrElse { error ->
+            logger.debug("Failed to update server list: $error")
+            Result.failure()
         }
     }
 

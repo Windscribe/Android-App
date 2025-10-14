@@ -10,11 +10,11 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.state.DeviceStateManager.DeviceStateListener
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
-import java.util.concurrent.Callable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentLinkedQueue
 import javax.inject.Singleton
 
@@ -22,16 +22,12 @@ import javax.inject.Singleton
 class NetworkInfoManager(private val preferencesHelper: PreferencesHelper, private val localDbInterface: LocalDbInterface, deviceStateManager: DeviceStateManager) :
         DeviceStateListener {
 
-    private val compositeDisposable = CompositeDisposable()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     var networkInfo: NetworkInfo? = null
         private set
     private val listeners = ConcurrentLinkedQueue<NetworkInfoListener>()
     fun addNetworkInfoListener(networkInfoListener: NetworkInfoListener) {
         listeners.add(networkInfoListener)
-    }
-
-    private fun addNetworkToKnown(networkName: String): Single<Long> {
-        return localDbInterface.addNetwork(preferencesHelper.getDefaultNetworkInfo(networkName))
     }
 
     override fun onNetworkStateChanged() {
@@ -46,37 +42,37 @@ class NetworkInfoManager(private val preferencesHelper: PreferencesHelper, priva
         listeners.remove(networkInfoListener)
     }
 
-    fun updateNetworkInfo(networkInfo: NetworkInfo) {
-        compositeDisposable.add(
-                localDbInterface.updateNetwork(networkInfo).doOnSuccess { reloadCurrentNetwork(true) }
-                        .subscribeOn(Schedulers.io())
-                        .subscribe()
-        )
-    }
-
     private fun reloadCurrentNetwork(userReload: Boolean) {
-        compositeDisposable.add(
-                Single.fromCallable(Callable { WindUtilities.getNetworkName() } as Callable<String>)
-                        .flatMap { name ->
-                            localDbInterface
-                                    .getNetwork(name).onErrorResumeNext(
-                                            addNetworkToKnown(name)
-                                                    .flatMap { localDbInterface.getNetwork(name) }
-                                    )
-                        }
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .doOnSuccess {
-                            this.networkInfo = it
-                            for (listener in listeners) {
-                                listener.onNetworkInfoUpdate(networkInfo, userReload)
-                            }
-                        }.doOnError {
-                            networkInfo = null
-                            for (listener in listeners) {
-                                listener.onNetworkInfoUpdate(null, userReload)
-                            }
-                        }.subscribeOn(Schedulers.io()).subscribe({}, {})
-        )
+        scope.launch {
+            try {
+                val name = withContext(Dispatchers.IO) {
+                    WindUtilities.getNetworkName()
+                }
+
+                var network = withContext(Dispatchers.IO) {
+                    localDbInterface.getNetwork(name)
+                }
+
+                if (network == null) {
+                    withContext(Dispatchers.IO) {
+                        localDbInterface.addNetwork(preferencesHelper.getDefaultNetworkInfo(name))
+                    }
+                    network = withContext(Dispatchers.IO) {
+                        localDbInterface.getNetwork(name)
+                    }
+                }
+
+                networkInfo = network
+                for (listener in listeners) {
+                    listener.onNetworkInfoUpdate(networkInfo, userReload)
+                }
+            } catch (e: Exception) {
+                networkInfo = null
+                for (listener in listeners) {
+                    listener.onNetworkInfoUpdate(null, userReload)
+                }
+            }
+        }
     }
 
     init {

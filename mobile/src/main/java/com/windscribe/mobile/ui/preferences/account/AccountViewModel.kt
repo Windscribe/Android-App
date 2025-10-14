@@ -164,7 +164,7 @@ class AccountViewModelImpl(
     override fun onManageAccountClicked() {
         viewModelScope.launch(Dispatchers.IO) {
             _showProgress.value = true
-            val result = api.getWebSession().result<WebSession>()
+            val result = result<WebSession> { api.getWebSession() }
             when (result) {
                 is CallResult.Error -> {
                     _showProgress.value = false
@@ -190,7 +190,7 @@ class AccountViewModelImpl(
     override fun onEnterLazyLoginCode(code: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _showProgress.value = true
-            val result = api.verifyExpressLoginCode(code).result<VerifyExpressLoginResponse>()
+            val result = result<VerifyExpressLoginResponse> { api.verifyExpressLoginCode(code) }
             delay(3000)
             _showProgress.value = false
             when (result) {
@@ -218,7 +218,7 @@ class AccountViewModelImpl(
     override fun onEnterVoucherCode(code: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _showProgress.value = true
-            val result = api.claimVoucherCode(code).result<ClaimVoucherCodeResponse>()
+            val result = result<ClaimVoucherCodeResponse> { api.claimVoucherCode(code) }
             delay(3000)
             _showProgress.value = false
             when (result) {

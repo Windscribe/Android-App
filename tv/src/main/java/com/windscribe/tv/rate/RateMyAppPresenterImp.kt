@@ -3,31 +3,42 @@
  */
 package com.windscribe.tv.rate
 
-import android.content.pm.PackageManager
-import com.windscribe.vpn.ActivityInteractor
-import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.RateDialogConstants
+import com.windscribe.vpn.services.FirebaseManager
+import java.util.Date
+import javax.inject.Inject
 
-class RateMyAppPresenterImp(
+class RateMyAppPresenterImp @Inject constructor(
     private val rateView: RateView,
-    private val interactor: ActivityInteractor
+    private val preferencesHelper: PreferencesHelper,
+    private val firebaseManager: FirebaseManager
 ) : RateMyAppPresenter {
     override fun onAskMeLaterClick() {
-        interactor.setRateDialogUpdateTime()
-        interactor.saveRateAppPreference(RateDialogConstants.STATUS_ASK_LATER)
+        preferencesHelper.saveResponseStringData(
+            RateDialogConstants.LAST_UPDATE_TIME,
+            Date().time.toString()
+        )
+        preferencesHelper.saveResponseIntegerData(RateDialogConstants.CURRENT_STATUS_KEY, RateDialogConstants.STATUS_ASK_LATER)
         rateView.onGoWindScribeActivity()
     }
 
     override fun onNeverAskClick() {
-        interactor.setRateDialogUpdateTime()
-        interactor.saveRateAppPreference(RateDialogConstants.STATUS_NEVER_ASK)
+        preferencesHelper.saveResponseStringData(
+            RateDialogConstants.LAST_UPDATE_TIME,
+            Date().time.toString()
+        )
+        preferencesHelper.saveResponseIntegerData(RateDialogConstants.CURRENT_STATUS_KEY, RateDialogConstants.STATUS_NEVER_ASK)
         rateView.onGoWindScribeActivity()
     }
 
     override fun onRateNowClick() {
-        interactor.setRateDialogUpdateTime()
-        interactor.saveRateAppPreference(RateDialogConstants.STATUS_ALREADY_ASKED)
-        if (interactor.getFireBaseManager().isPlayStoreInstalled) {
+        preferencesHelper.saveResponseStringData(
+            RateDialogConstants.LAST_UPDATE_TIME,
+            Date().time.toString()
+        )
+        preferencesHelper.saveResponseIntegerData(RateDialogConstants.CURRENT_STATUS_KEY, RateDialogConstants.STATUS_ALREADY_ASKED)
+        if (firebaseManager.isPlayStoreInstalled) {
             rateView.openPlayStoreWithLink()
         } else {
             rateView.showToast("No Play store installed.")

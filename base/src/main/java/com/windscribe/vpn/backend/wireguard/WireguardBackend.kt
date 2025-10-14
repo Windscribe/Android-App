@@ -14,8 +14,8 @@ import android.net.NetworkRequest
 import android.os.Build
 import android.os.PowerManager
 import com.windscribe.vpn.R
-import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.ProxyDNSManager
@@ -69,7 +69,6 @@ class WireguardBackend(
     var scope: CoroutineScope,
     var networkInfoManager: NetworkInfoManager,
     vpnStateManager: VPNConnectionStateManager,
-    var serviceInteractor: ServiceInteractor,
     val vpnProfileCreator: VPNProfileCreator,
     val userRepository: Lazy<UserRepository>,
     val deviceStateManager: DeviceStateManager,
@@ -79,13 +78,15 @@ class WireguardBackend(
     val localDbInterface: LocalDbInterface,
     val wgLogger: WgLogger,
     val wgConfigRepository: com.windscribe.vpn.repository.WgConfigRepository,
-    private val wsNet: WSNet
+    private val wsNet: WSNet,
+    private val apiManager: IApiCallManager
 ) : VpnBackend(
     scope,
     vpnStateManager,
-    serviceInteractor,
+    preferencesHelper,
     networkInfoManager,
-    advanceParameterRepository
+    advanceParameterRepository,
+    apiManager
 ) {
 
     var service: WireGuardWrapperService? = null

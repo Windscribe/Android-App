@@ -3,81 +3,83 @@
  */
 package com.windscribe.tv.splash
 
-import com.windscribe.vpn.ActivityInteractor
-import com.windscribe.vpn.Windscribe.Companion.getExecutorService
-import com.windscribe.vpn.api.response.ApiErrorResponse
-import com.windscribe.vpn.api.response.GenericResponseClass
+import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.autoconnection.AutoConnectionManager
+import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.errormodel.WindError.Companion.instance
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.observers.DisposableCompletableObserver
-import io.reactivex.observers.DisposableSingleObserver
-import io.reactivex.schedulers.Schedulers
+import com.windscribe.vpn.localdatabase.LocalDbInterface
+import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
+import com.windscribe.vpn.repository.CallResult
+import com.windscribe.vpn.repository.ServerListRepository
+import com.windscribe.vpn.repository.StaticIpRepository
+import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.services.ReceiptValidator
+import com.windscribe.vpn.workers.WindScribeWorkManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.util.Date
 import javax.inject.Inject
 
 class SplashPresenterImpl @Inject constructor(
     private var splashView: SplashView,
-    private var interactor: ActivityInteractor
+    private var activityScope: CoroutineScope,
+    private var preferencesHelper: PreferencesHelper,
+    private var apiCallManager: IApiCallManager,
+    private var localDbInterface: LocalDbInterface,
+    private var autoConnectionManager: AutoConnectionManager,
+    private var workManager: WindScribeWorkManager,
+    private var receiptValidator: ReceiptValidator,
+    private var userRepository: UserRepository,
+    private var serverListRepository: ServerListRepository,
+    private var staticIpRepository: StaticIpRepository
 ) : SplashPresenter {
     private val logger = LoggerFactory.getLogger("basic")
 
     override fun onDestroy() {
-        if (!interactor.getCompositeDisposable().isDisposed) {
-            interactor.getCompositeDisposable().dispose()
-        }
+        // Coroutine scope will be cancelled by the activity
     }
 
     fun checkApplicationInstanceAndDecideActivity() {
-        if (interactor.getAppPreferenceInterface().isNewApplicationInstance) {
-            getExecutorService().submit {
-                interactor.getAppPreferenceInterface().isNewApplicationInstance = false
+        if (preferencesHelper.isNewApplicationInstance) {
+            activityScope.launch(Dispatchers.IO) {
+                preferencesHelper.isNewApplicationInstance = false
             }
-            val installation = interactor.getAppPreferenceInterface()
-                .getResponseString(PreferencesKeyConstants.NEW_INSTALLATION)
+            val installation = preferencesHelper.getResponseString(PreferencesKeyConstants.NEW_INSTALLATION)
             if (PreferencesKeyConstants.I_NEW == installation) {
                 // Record new install
-                interactor.getAppPreferenceInterface()
-                    .saveResponseStringData(
-                        PreferencesKeyConstants.NEW_INSTALLATION,
-                        PreferencesKeyConstants.I_OLD
-                    )
-                interactor.getCompositeDisposable().add(
-                    interactor.getApiCallManager()
-                        .recordAppInstall()
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(
-                            object :
-                                DisposableSingleObserver<GenericResponseClass<String?, ApiErrorResponse?>?>() {
-                                override fun onError(e: Throwable) {
-                                    logger.debug(
-                                        "Error: " + instance
-                                            .convertThrowableToString(e)
-                                    )
-                                    decideActivity()
-                                }
-
-                                override fun onSuccess(
-                                    recordInstallResponse: GenericResponseClass<String?, ApiErrorResponse?>
-                                ) {
-                                    if (recordInstallResponse.dataClass != null) {
-                                        logger.info(
-                                            "Recording app install success. " +
-                                                recordInstallResponse.dataClass
-                                        )
-                                    } else if (recordInstallResponse.errorClass != null) {
-                                        logger.debug(
-                                            "Recording app install failed. " +
-                                                recordInstallResponse.errorClass.toString()
-                                        )
-                                    }
-                                    decideActivity()
-                                }
-                            })
+                preferencesHelper.saveResponseStringData(
+                    PreferencesKeyConstants.NEW_INSTALLATION,
+                    PreferencesKeyConstants.I_OLD
                 )
+                activityScope.launch(Dispatchers.IO) {
+                    try {
+                        val result = result<String> {
+                            apiCallManager.recordAppInstall()
+                        }
+                        withContext(Dispatchers.Main) {
+                            when (result) {
+                                is CallResult.Success -> {
+                                    logger.info("Recording app install success. ${result.data}")
+                                }
+                                is CallResult.Error -> {
+                                    logger.debug("Recording app install failed. ${result.errorMessage}")
+                                }
+                            }
+                            decideActivity()
+                        }
+                    } catch (e: Throwable) {
+                        logger.debug("Error: ${instance.convertThrowableToString(e)}")
+                        withContext(Dispatchers.Main) {
+                            decideActivity()
+                        }
+                    }
+                }
             } else {
                 // Not a new install, decide activity
                 decideActivity()
@@ -89,44 +91,49 @@ class SplashPresenterImpl @Inject constructor(
     }
 
     override fun checkNewMigration() {
-        interactor.getAutoConnectionManager().reset()
+        autoConnectionManager.reset()
         migrateSessionAuthIfRequired()
-        val userLoggedIn = interactor.getAppPreferenceInterface().sessionHash != null
+        val userLoggedIn = preferencesHelper.sessionHash != null
         if (userLoggedIn) {
-            if (interactor.getAppPreferenceInterface().loginTime == null){
-                interactor.getAppPreferenceInterface().loginTime = Date()
+            if (preferencesHelper.loginTime == null){
+                preferencesHelper.loginTime = Date()
             }
-            interactor.getCompositeDisposable().add(
-                interactor.serverDataAvailable()
-                    .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                    .subscribeWith(object : DisposableSingleObserver<Boolean?>() {
-                        override fun onError(e: Throwable) {
-                            checkApplicationInstanceAndDecideActivity()
-                        }
+            activityScope.launch(Dispatchers.IO) {
+                try {
+                    // Check if server data is available (check if any cities exist)
+                    val serverListAvailable = try {
+                        localDbInterface.getCitiesAsync().count() > 0
+                    } catch (_: Exception) {
+                        false
+                    }
 
-                        override fun onSuccess(serverListAvailable: Boolean) {
-                            if (serverListAvailable) {
-                                logger.info("Migration not required.")
-                                checkApplicationInstanceAndDecideActivity()
-                            } else {
-                                logger.info("Migration required. updating server list.")
-                                updateDataFromApiAndOldStorage()
-                            }
+                    withContext(Dispatchers.Main) {
+                        if (serverListAvailable) {
+                            logger.info("Migration not required.")
+                            checkApplicationInstanceAndDecideActivity()
+                        } else {
+                            logger.info("Migration required. updating server list.")
+                            updateDataFromApiAndOldStorage()
                         }
-                    })
-            )
+                    }
+                } catch (_: Throwable) {
+                    withContext(Dispatchers.Main) {
+                        checkApplicationInstanceAndDecideActivity()
+                    }
+                }
+            }
         } else {
             checkApplicationInstanceAndDecideActivity()
         }
     }
 
     fun decideActivity() {
-        val sessionHash = interactor.getAppPreferenceInterface().sessionHash
+        val sessionHash = preferencesHelper.sessionHash
         if (sessionHash != null) {
             logger.info("Session auth hash present. User is already logged in...")
             if (WindUtilities.isOnline()) {
-                interactor.getWorkManager().updateNodeLatencies()
-                interactor.getReceiptValidator().checkPendingAccountUpgrades()
+                workManager.updateNodeLatencies()
+                receiptValidator.checkPendingAccountUpgrades()
             }
             splashView.navigateToHome()
         } else {
@@ -136,39 +143,61 @@ class SplashPresenterImpl @Inject constructor(
 
     // Move SessionAuth to secure preferences
     private fun migrateSessionAuthIfRequired() {
-        val oldSessionAuth = interactor.getAppPreferenceInterface().oldSessionAuth
-        val newSessionAuth = interactor.getAppPreferenceInterface().sessionHash
+        val oldSessionAuth = preferencesHelper.oldSessionAuth
+        val newSessionAuth = preferencesHelper.sessionHash
         if (oldSessionAuth != null && newSessionAuth == null) {
             logger.debug("Migrating session auth to secure preferences")
-            interactor.getAppPreferenceInterface().sessionHash = oldSessionAuth
-            interactor.getAppPreferenceInterface().clearOldSessionAuth()
+            preferencesHelper.sessionHash = oldSessionAuth
+            preferencesHelper.clearOldSessionAuth()
         }
     }
 
     private fun updateDataFromApiAndOldStorage() {
-        interactor.getCompositeDisposable().add(
-            interactor.getServerListUpdater().update()
-                .doOnError { logger.info("Failed to download server list.") }
-                .andThen(interactor.getStaticListUpdater().update())
-                .andThen(interactor.updateUserData())
-                .andThen(interactor.updateServerData())
-                .onErrorResumeNext { throwable: Throwable ->
-                    logger.info(
-                        "*********Preparing dashboard failed: " + throwable.toString() +
-                            " Use reload button in server list in home activity.*******"
-                    )
-                    interactor.updateUserData().andThen(interactor.updateServerData())
+        activityScope.launch(Dispatchers.IO) {
+            try {
+                // Try to update server list
+                try {
+                    serverListRepository.update()
+                } catch (e: Exception) {
+                    logger.info("Failed to download server list.")
+                    throw e
                 }
-                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableCompletableObserver() {
-                    override fun onComplete() {
-                        checkApplicationInstanceAndDecideActivity()
-                    }
 
-                    override fun onError(e: Throwable) {
-                        checkApplicationInstanceAndDecideActivity()
-                    }
-                })
-        )
+                // Update static IPs
+                staticIpRepository.updateFromApi()
+
+                // Update user data
+                userRepository.reload()
+
+                // Update server data
+                localDbInterface.insertOrUpdateStatusAsync(
+                    ServerStatusUpdateTable(
+                        preferencesHelper.userName,
+                        preferencesHelper.userStatus
+                    )
+                )
+            } catch (throwable: Throwable) {
+                // Fallback: try to update user and server data even if server list update failed
+                logger.info(
+                    "*********Preparing dashboard failed: $throwable" +
+                        " Use reload button in server list in home activity.*******"
+                )
+                try {
+                    userRepository.reload()
+                    localDbInterface.insertOrUpdateStatusAsync(
+                        ServerStatusUpdateTable(
+                            preferencesHelper.userName,
+                            preferencesHelper.userStatus
+                        )
+                    )
+                } catch (_: Exception) {
+                    // Ignore errors in fallback
+                }
+            }
+
+            withContext(Dispatchers.Main) {
+                checkApplicationInstanceAndDecideActivity()
+            }
+        }
     }
 }

@@ -9,7 +9,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.AdvanceParamsValues.IGNORE
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
@@ -19,21 +21,15 @@ import com.windscribe.vpn.serverlist.entity.RegionAndCities
 import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import dagger.Lazy
-import io.reactivex.Completable
-import io.reactivex.Single
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.await
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.io.FileInputStream
-import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.security.MessageDigest
@@ -83,7 +79,7 @@ class ServerListRepository @Inject constructor(
 
     fun load() {
         scope.launch {
-            _events.emit(localDbInterface.allRegion.await())
+            _events.emit(localDbInterface.getAllRegionAsync())
             observeServerLocations()
         }
         loadCustomLocationsJson()
@@ -106,13 +102,19 @@ class ServerListRepository @Inject constructor(
         }
     }
 
-    fun update(): Completable {
+    suspend fun update() {
         logger.debug("Starting server list update")
-        return apiCallManager.getSessionGeneric(null).flatMap {
-            it.dataClass?.let { userSession ->
+
+        // Get session
+        val sessionResult = result<UserSessionResponse> {
+            apiCallManager.getSessionGeneric(null)
+        }
+        when (sessionResult) {
+            is CallResult.Success -> {
+                val userSession = sessionResult.data
                 userRepository.get().reload(userSession)
                 val user = User(userSession)
-                userRepository.get().reload(userSession)
+
                 val alc = if (userSession.alcList.isNullOrEmpty()) {
                     arrayOf()
                 } else {
@@ -124,43 +126,56 @@ class ServerListRepository @Inject constructor(
                     globalServerList = false
                 }
                 logger.debug("Country override: $countryOverride")
-                apiCallManager.getServerList(
-                    user.userStatusInt == 1,
-                    user.locationHash,
-                    alc,
-                    countryOverride
-                )
-            } ?: it.errorClass?.let { error ->
-                logger.debug("Error updating session $error")
-                throw Exception()
-            } ?: kotlin.run {
-                logger.debug("Unknown error updating session")
-                throw Exception()
-            }
-        }.flatMap { response ->
-            Single.fromCallable {
-                logger.debug("Parsing server list JSON")
-                response.dataClass?.let {
-                    val jsonObject = JSONObject(it)
-                    val infoObject = jsonObject.getJSONObject("info")
-                    logger.debug(infoObject.toString())
-                    appLifeCycleObserver.overriddenCountryCode =
-                        if (infoObject.has("country_override")) {
-                            infoObject.getString("country_override")
-                        } else {
-                            null
-                        }
-                    preferenceHelper.locationHash = hash(it)
-                    val dataArray = jsonObject.getJSONArray("data")
-                    Gson().fromJson<List<Region>>(
-                        dataArray.toString(),
-                        object : TypeToken<ArrayList<Region?>?>() {}.type
+
+                // Get server list
+                val serverListResult = result<String> {
+                    apiCallManager.getServerList(
+                        user.userStatusInt == 1,
+                        user.locationHash,
+                        alc,
+                        countryOverride
                     )
-                } ?: response.errorClass?.let {
-                    throw Exception(it.errorMessage)
+                }
+
+                when (serverListResult) {
+                    is CallResult.Success -> {
+                        // Parse server list JSON
+                        logger.debug("Parsing server list JSON")
+                        val jsonString = serverListResult.data
+                        val jsonObject = JSONObject(jsonString)
+                        val infoObject = jsonObject.getJSONObject("info")
+                        logger.debug(infoObject.toString())
+
+                        appLifeCycleObserver.overriddenCountryCode =
+                            if (infoObject.has("country_override")) {
+                                infoObject.getString("country_override")
+                            } else {
+                                null
+                            }
+
+                        preferenceHelper.locationHash = hash(jsonString)
+                        val dataArray = jsonObject.getJSONArray("data")
+                        val regions = Gson().fromJson<List<Region>>(
+                            dataArray.toString(),
+                            object : TypeToken<ArrayList<Region?>?>() {}.type
+                        )
+
+                        // Add to database
+                        addToDatabase(regions)
+                    }
+
+                    is CallResult.Error -> {
+                        logger.debug("Error getting server list: $serverListResult")
+                        throw Exception("Failed to get server list")
+                    }
                 }
             }
-        }.flatMapCompletable { regions: List<Region> -> addToDatabase(regions) }
+
+            is CallResult.Error -> {
+                logger.debug("Error updating session: $sessionResult")
+                throw Exception("Failed to update session")
+            }
+        }
     }
 
     private fun hash(jsonString: String): String {
@@ -170,7 +185,7 @@ class ServerListRepository @Inject constructor(
         return hashBytes.joinToString("") { "%02x".format(it) }
     }
 
-    private fun addToDatabase(regions: List<Region>): Completable {
+    private suspend fun addToDatabase(regions: List<Region>) {
         val cities: MutableList<City> = ArrayList()
         for (region in regions) {
             if (region.getCities() != null) {
@@ -180,13 +195,11 @@ class ServerListRepository @Inject constructor(
                 }
             }
         }
-        return localDbInterface.addToRegions(regions)
-            .andThen(localDbInterface.addToCities(cities))
-            .andThen(Completable.fromAction {
-                preferenceChangeObserver.postCityServerChange()
-                load()
-                favouriteRepository.load()
-            })
+        localDbInterface.addToRegions(regions)
+        localDbInterface.addToCities(cities)
+        preferenceChangeObserver.postCityServerChange()
+        load()
+        favouriteRepository.load()
     }
 
     private fun observeServerLocations() {
@@ -239,14 +252,14 @@ class ServerListRepository @Inject constructor(
             _customCities.value = cities
             _customRegions.value = customLocationsData.locations
             scope.launch {
-                _events.emit(localDbInterface.allRegion.await())
+                _events.emit(localDbInterface.getAllRegionAsync())
                 favouriteRepository.load()
             }
         } catch (ignored: Exception) {
             _customCities.value = listOf()
             _customRegions.value = listOf()
             scope.launch {
-                _events.emit(localDbInterface.allRegion.await())
+                _events.emit(localDbInterface.getAllRegionAsync())
                 favouriteRepository.load()
             }
         }

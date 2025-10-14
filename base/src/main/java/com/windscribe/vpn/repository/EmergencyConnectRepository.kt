@@ -4,7 +4,6 @@ import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.model.OpenVPNConnectionInfo
 import com.wsnet.lib.WSNetEmergencyConnect
 import kotlinx.coroutines.suspendCancellableCoroutine
-import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
 
 interface EmergencyConnectRepository {

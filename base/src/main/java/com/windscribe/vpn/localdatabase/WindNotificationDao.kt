@@ -9,18 +9,19 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.windscribe.vpn.localdatabase.tables.WindNotification
-import io.reactivex.Completable
-import io.reactivex.Single
 
 @Dao
 interface WindNotificationDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(newsFeedNotification: List<WindNotification>): Completable
+    suspend fun insert(newsFeedNotification: List<WindNotification>)
 
     @Query("Select * from WindNotification order by date DESC")
-    fun getWindNotifications(): Single<List<WindNotification>>
+    suspend fun getWindNotifications(): List<WindNotification>
+
+    @Query("Select * from WindNotification order by date DESC")
+    suspend fun getWindNotificationsAsync(): List<WindNotification>
 
     @Query("Delete from WindNotification")
-    abstract fun clean()
+    fun clean()
 }

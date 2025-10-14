@@ -1,8 +1,11 @@
 package com.windscribe.vpn.state
 
-import com.windscribe.vpn.ServiceInteractor
+import com.google.gson.Gson
+import com.windscribe.vpn.api.response.UserSessionResponse
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.UserRepository
 import dagger.Lazy
@@ -15,23 +18,28 @@ class ShortcutStateManager(
     private var userRepository: Lazy<UserRepository>,
     private var autoConnectionManager: AutoConnectionManager,
     private var networkInfoManager: NetworkInfoManager,
-    private val interactor: ServiceInteractor,
+    private val preferencesHelper: PreferencesHelper,
     private val windVpnController: WindVpnController
 ) {
     private var logger = LoggerFactory.getLogger("shortcut")
     private var initilized = false
     fun connect() {
         if (initilized) {
-            interactor.preferenceHelper.globalUserConnectionPreference = true
+            preferencesHelper.globalUserConnectionPreference = true
             logger.debug("Connecting from shortcut.")
             windVpnController.connectAsync()
         } else {
             load {
-                interactor.preferenceHelper.globalUserConnectionPreference = true
+                preferencesHelper.globalUserConnectionPreference = true
                 logger.debug("Connecting from shortcut.")
                 windVpnController.connectAsync()
             }
         }
+    }
+
+    private suspend fun getUserSession(): UserSessionResponse {
+        val session = preferencesHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
+        return Gson().fromJson(session, UserSessionResponse::class.java)
     }
 
     fun load(callback: () -> Unit) {
@@ -39,7 +47,7 @@ class ShortcutStateManager(
         scope.launch {
             logger.debug("Loading user info.")
             kotlin.runCatching {
-                interactor.getUserSession()
+                getUserSession()
             }.onSuccess {
                 userRepository.reload(it) { user ->
                     if (user.accountStatus == User.AccountStatus.Okay) {

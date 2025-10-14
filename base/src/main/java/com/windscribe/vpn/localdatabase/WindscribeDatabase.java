@@ -15,7 +15,6 @@ import com.windscribe.vpn.localdatabase.tables.UserStatusTable;
 import com.windscribe.vpn.localdatabase.tables.WindNotification;
 import com.windscribe.vpn.serverlist.dao.CityAndRegionDao;
 import com.windscribe.vpn.serverlist.dao.CityDao;
-import com.windscribe.vpn.serverlist.dao.CityDetailDao;
 import com.windscribe.vpn.serverlist.dao.ConfigFileDao;
 import com.windscribe.vpn.serverlist.dao.FavouriteDao;
 import com.windscribe.vpn.serverlist.dao.PingTimeDao;
@@ -43,15 +42,11 @@ public abstract class WindscribeDatabase extends RoomDatabase {
 
     public abstract CityDao cityDao();
 
-    public abstract CityDetailDao cityDetailDao();
-
     public abstract ConfigFileDao configFileDao();
 
     public abstract FavouriteDao favouriteDao();
 
     public abstract NetworkInfoDao networkInfoDao();
-
-    public abstract PingTestDao pingTestDao();
 
     public abstract PingTimeDao pingTimeDao();
 

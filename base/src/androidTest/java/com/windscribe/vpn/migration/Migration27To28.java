@@ -31,18 +31,6 @@ public class Migration27To28 {
 
     private StaticRegionDao mStaticRegionDao;
 
-    @Test
-    public void addOVPNX509Column() throws IOException {
-        final String TEST_DB_NAME = "wind_db";
-        SupportSQLiteDatabase db = testHelper.createDatabase(TEST_DB_NAME, 27);
-        Integer regionID = addRegion(db);
-        db.close();
-        testHelper.runMigrationsAndValidate(TEST_DB_NAME, 28, true, migration_27_28);
-        StaticRegion region = mStaticRegionDao.getStaticRegionByID(regionID).blockingGet();
-        assertNull(region.getOvpnX509());
-        assertEquals(regionID, region.getId());
-    }
-
     @Before
     public void init() {
         mStaticRegionDao = Windscribe.getAppContext().getWindscribeDatabase().staticRegionDao();

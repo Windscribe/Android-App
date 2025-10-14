@@ -6,8 +6,8 @@ package com.windscribe.vpn.services
 
 import android.app.IntentService
 import android.content.Intent
-import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +21,7 @@ class DisconnectService : IntentService("DisconnectService") {
     lateinit var controller: WindVpnController
 
     @Inject
-    lateinit var disconnectServiceInteractor: ServiceInteractor
+    lateinit var  preferencesHelper: PreferencesHelper
 
     @Inject
     lateinit var vpnConnectionStateManager: VPNConnectionStateManager
@@ -40,7 +40,7 @@ class DisconnectService : IntentService("DisconnectService") {
         intent?.let {
             scope.launch {
                 logger.info("Stopping vpn services from notification.")
-                disconnectServiceInteractor.preferenceHelper.globalUserConnectionPreference = false
+                preferencesHelper.globalUserConnectionPreference = false
                 controller.disconnectAsync()
             }
         }

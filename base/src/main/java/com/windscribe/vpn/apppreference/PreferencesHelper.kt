@@ -8,7 +8,6 @@ import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.WgLocalParams
-import io.reactivex.Single
 import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
 import java.util.Date
 import javax.inject.Singleton
@@ -32,7 +31,6 @@ interface PreferencesHelper {
     var flagViewWidth: Int
     var globalUserConnectionPreference: Boolean
     val iKEv2Port: String
-    val installedApps: Single<List<String>>
     fun installedApps(): List<String>
     var wgConnectApiFailOverState: Map<String, Boolean>
     var keepAlive: String

@@ -5,37 +5,36 @@
 package com.windscribe.vpn.workers.worker
 
 import android.content.Context
-import androidx.work.RxWorker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import io.reactivex.Single
+import com.windscribe.vpn.api.ApiCallManager
+import com.windscribe.vpn.api.response.GenericSuccess
+import com.windscribe.vpn.commonutils.Ext.result
+import com.windscribe.vpn.repository.CallResult
 import javax.inject.Inject
 
 class RobertSyncWorker(context: Context, workerParameters: WorkerParameters) :
-        RxWorker(context, workerParameters) {
+    CoroutineWorker(context, workerParameters) {
 
     @Inject
-    lateinit var interactor: ServiceInteractor
+    lateinit var apiManager: ApiCallManager
 
     init {
         appContext.applicationComponent.inject(this)
     }
 
-    override fun createWork(): Single<Result> {
-        return interactor.apiManager.syncRobert()
-                .flatMap {
-                    when {
-                        it.dataClass != null -> {
-                            return@flatMap Single.just(Result.success())
-                        }
-                        it.errorClass != null -> {
-                            return@flatMap Single.just(Result.failure())
-                        }
-                        else -> {
-                            return@flatMap Single.just(Result.retry())
-                        }
-                    }
-                }.onErrorReturnItem(Result.retry())
+    override suspend fun doWork(): Result {
+        return try {
+            val result = result<GenericSuccess> {
+                apiManager.syncRobert()
+            }
+            return when (result) {
+                is CallResult.Error -> Result.failure()
+                is CallResult.Success<*> -> Result.success()
+            }
+        } catch (_: Exception) {
+            Result.failure()
+        }
     }
 }

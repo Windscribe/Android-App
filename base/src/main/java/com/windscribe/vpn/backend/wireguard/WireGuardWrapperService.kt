@@ -8,7 +8,6 @@ import android.content.Intent
 import android.net.VpnService
 import com.windscribe.common.DNSDetails
 import com.windscribe.common.startSafeForeground
-import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.ProxyDNSManager
@@ -26,9 +25,6 @@ class WireGuardWrapperService : GoBackend.VpnService() {
 
     @Inject
     lateinit var windNotificationBuilder: WindNotificationBuilder
-
-    @Inject
-    lateinit var serviceInteractor: ServiceInteractor
 
     @Inject
     lateinit var wireguardBackend: WireguardBackend
@@ -64,7 +60,7 @@ class WireGuardWrapperService : GoBackend.VpnService() {
             NotificationConstants.SERVICE_NOTIFICATION_ID,
             windNotificationBuilder.buildNotification(Connecting)
         )
-        return if (serviceInteractor.preferenceHelper.globalUserConnectionPreference) {
+        return if (preferencesHelper.globalUserConnectionPreference) {
             START_STICKY
         } else {
             START_NOT_STICKY

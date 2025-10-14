@@ -20,9 +20,16 @@ import com.windscribe.tv.upgrade.UpgradePresenterImpl
 import com.windscribe.tv.upgrade.UpgradeView
 import com.windscribe.tv.welcome.WelcomeView
 import com.windscribe.tv.windscribe.WindscribeView
-import com.windscribe.vpn.ActivityInteractor
+import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.localdatabase.LocalDbInterface
+import com.windscribe.vpn.repository.ConnectionDataRepository
+import com.windscribe.vpn.repository.ServerListRepository
+import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.services.ReceiptValidator
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.CoroutineScope
 
 @Module
 class ActivityModule : BaseActivityModule {
@@ -87,7 +94,26 @@ class ActivityModule : BaseActivityModule {
 
     @Provides
     @PerActivity
-    fun provideUpgradePresenter(activityInteractor: ActivityInteractor): UpgradePresenter {
-        return UpgradePresenterImpl(upgradeView, activityInteractor)
+    fun provideUpgradePresenter(
+        activityScope: CoroutineScope,
+        preferencesHelper: PreferencesHelper,
+        apiCallManager: IApiCallManager,
+        localDbInterface: LocalDbInterface,
+        userRepository: UserRepository,
+        receiptValidator: ReceiptValidator,
+        connectionDataRepository: ConnectionDataRepository,
+        serverListRepository: ServerListRepository
+    ): UpgradePresenter {
+        return UpgradePresenterImpl(
+            upgradeView,
+            activityScope,
+            preferencesHelper,
+            apiCallManager,
+            localDbInterface,
+            userRepository,
+            receiptValidator,
+            connectionDataRepository,
+            serverListRepository
+        )
     }
 }

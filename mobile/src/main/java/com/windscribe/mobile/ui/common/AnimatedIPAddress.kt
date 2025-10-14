@@ -47,34 +47,36 @@ fun AnimatedIPAddress(
             }
         }
 
-        Row(modifier = modifier) {
-            var digitIndex = 0
-            val totalDigits = ipAddress.count { it.isDigit() }
-            ipAddress.forEachIndexed { index, char ->
-                key("ip-$index") {
-                    if (char.isDigit()) {
-                        val currentDigitIndex = digitIndex++
-                        val isLastDigit = currentDigitIndex == totalDigits - 1
-                        AnimatedDigit(
-                            targetDigit = char.digitToInt(),
-                            animationTrigger = animationTrigger.intValue,
-                            style = style,
-                            color = color,
-                            onAnimationComplete = if (isLastDigit) {
-                                { connectionViewmodel.onIpAnimationComplete() }
-                            } else null
-                        )
-                    } else {
-                        Box(
-                            modifier = Modifier.height((style.fontSize.value * 1.5f).dp),
-                            contentAlignment = Alignment.BottomCenter
-                        ) {
-                            Text(
-                                text = char.toString(),
+        key(ipAddress) {
+            Row(modifier = modifier) {
+                var digitIndex = 0
+                val totalDigits = ipAddress.count { it.isDigit() }
+                ipAddress.forEachIndexed { index, char ->
+                    key("$ipAddress-$index-$char") {
+                        if (char.isDigit()) {
+                            val currentDigitIndex = digitIndex++
+                            val isLastDigit = currentDigitIndex == totalDigits - 1
+                            AnimatedDigit(
+                                targetDigit = char.digitToInt(),
+                                animationTrigger = animationTrigger.intValue,
                                 style = style,
                                 color = color,
-                                modifier = Modifier.offset(y = (-1).dp)
+                                onAnimationComplete = if (isLastDigit) {
+                                    { connectionViewmodel.onIpAnimationComplete() }
+                                } else null
                             )
+                        } else {
+                            Box(
+                                modifier = Modifier.height((style.fontSize.value * 1.5f).dp),
+                                contentAlignment = Alignment.BottomCenter
+                            ) {
+                                Text(
+                                    text = char.toString(),
+                                    style = style,
+                                    color = color,
+                                    modifier = Modifier.offset(y = (-1).dp)
+                                )
+                            }
                         }
                     }
                 }

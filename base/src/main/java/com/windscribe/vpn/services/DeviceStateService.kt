@@ -7,26 +7,23 @@ package com.windscribe.vpn.services
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.JobIntentWorkAroundService
-import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.exceptions.WindScribeException
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 class DeviceStateService : JobIntentWorkAroundService() {
-
-    @Inject
-    lateinit var interactor: ServiceInteractor
 
     @Inject
     lateinit var vpnController: WindVpnController
@@ -40,9 +37,11 @@ class DeviceStateService : JobIntentWorkAroundService() {
     @Inject
     lateinit var vpnConnectionStateManager: VPNConnectionStateManager
 
+    @Inject
+    lateinit var localDbInterface: LocalDbInterface
+
     private val logger = LoggerFactory.getLogger("vpn")
     private val stateBoolean = AtomicBoolean()
-    private val compositeDisposable = CompositeDisposable()
     override fun onCreate() {
         super.onCreate()
         stateBoolean.set(true)
@@ -51,7 +50,6 @@ class DeviceStateService : JobIntentWorkAroundService() {
 
     override fun onHandleWork(intent: Intent) {
         if (stateBoolean.getAndSet(false)) {
-            compositeDisposable.clear()
             val networkInfo = WindUtilities.getUnderLayNetworkInfo()
             if (networkInfo != null) {
                 logger.info("Network: ${networkInfo.detailedState} | VPN: ${vpnConnectionStateManager.state.value.status.name}")
@@ -69,24 +67,27 @@ class DeviceStateService : JobIntentWorkAroundService() {
             addToKnownNetworks(networkName)
         } catch (e: WindScribeException) {
             logger.debug(e.message)
-            compositeDisposable.clear()
         }
     }
 
     private fun addToKnownNetworks(networkName: String) {
-        compositeDisposable.add(
-                interactor.getNetwork(networkName)
-                        .onErrorResumeNext {
-                            logger.info("Saving $networkName(SSID) to database.")
-                            interactor.addNetworkToKnown(networkName).flatMap { interactor.getNetwork(networkName) }
-                        }.subscribeOn(Schedulers.io())
-                        .observeOn(Schedulers.io())
-                        .subscribe({
-                            resetConnectState(it)
-                        }, {
-                            logger.info("Ignore: no network information for network name: $networkName")
-                            interactor.compositeDisposable.dispose()
-                        }))
+        scope.launch(Dispatchers.IO) {
+            try {
+                val network = localDbInterface.getNetwork(networkName)
+                if (network == null) {
+                    logger.info("Saving $networkName(SSID) to database.")
+                    localDbInterface.addNetwork(preferencesHelper.getDefaultNetworkInfo(networkName))
+                    val newNetwork = localDbInterface.getNetwork(networkName)
+                    if (newNetwork != null) {
+                        resetConnectState(newNetwork)
+                    }
+                } else {
+                    resetConnectState(network)
+                }
+            } catch (e: Exception) {
+                logger.info("Ignore: no network information for network name: $networkName")
+            }
+        }
     }
 
     private fun resetConnectState(networkInfo: NetworkInfo) {
@@ -95,10 +96,9 @@ class DeviceStateService : JobIntentWorkAroundService() {
             logger.debug("${networkInfo.networkName} is unsecured. Starting network whitelist service.")
             vpnController.disconnectAsync(true)
         }
-        if(vpnConnectionStateManager.state.value.status == VPNState.Status.Connected && preferencesHelper.whiteListedNetwork != networkInfo.networkName){
+        if (vpnConnectionStateManager.state.value.status == VPNState.Status.Connected && preferencesHelper.whiteListedNetwork != networkInfo.networkName) {
             preferencesHelper.whiteListedNetwork = null
         }
-        compositeDisposable.clear()
     }
 
     companion object {
@@ -108,8 +108,11 @@ class DeviceStateService : JobIntentWorkAroundService() {
         @JvmStatic
         fun enqueueWork(context: Context) {
             enqueueWork(
-                    context, DeviceStateService::class.java, JOB_ID,
-                    Intent(context, DeviceStateService::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context, DeviceStateService::class.java, JOB_ID,
+                Intent(
+                    context,
+                    DeviceStateService::class.java
+                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             )
         }
     }

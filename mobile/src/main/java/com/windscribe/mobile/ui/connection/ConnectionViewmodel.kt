@@ -1,7 +1,6 @@
 package com.windscribe.mobile.ui.connection
 
 import android.media.MediaPlayer
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
 import androidx.annotation.StringRes
@@ -9,11 +8,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.common.isEnabled
+import com.windscribe.mobile.ui.home.HomeGoto
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.bundledBackgrounds
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.getSoundFile
-import com.windscribe.mobile.ui.common.isEnabled
-import com.windscribe.mobile.ui.home.HomeGoto
 import com.windscribe.mobile.ui.serverlist.ServerListItem
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -24,7 +23,6 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
 import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.backend.utils.WindVpnController
-import com.windscribe.vpn.commonutils.Ext.toResult
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkKeyConstants
@@ -55,7 +53,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
 import org.slf4j.LoggerFactory
@@ -176,7 +173,7 @@ class ConnectionViewmodelImpl @Inject constructor(
     private val _connectionUIState = MutableStateFlow<ConnectionUIState>(ConnectionUIState.Idle)
     override val connectionUIState: StateFlow<ConnectionUIState> = _connectionUIState
 
-    private val _ipState: MutableStateFlow<String> = MutableStateFlow("")
+    private val _ipState: MutableStateFlow<String> = MutableStateFlow("--.--.--.--")
     override val ipState: StateFlow<String> = _ipState
     private val _shouldAnimateIp: MutableStateFlow<Boolean> = MutableStateFlow(false)
     override val shouldAnimateIp: StateFlow<Boolean> = _shouldAnimateIp
@@ -228,15 +225,16 @@ class ConnectionViewmodelImpl @Inject constructor(
 
     private fun fetchNewsfeedCount() {
         viewModelScope.launch(Dispatchers.IO) {
-            localdb.windNotifications.toResult().onSuccess {
+            try {
+                val notifications = localdb.getWindNotifications()
                 var count = 0
-                for ((notificationId) in it) {
+                for ((notificationId) in notifications) {
                     if (!preferences.isNotificationAlreadyShown(notificationId.toString())) {
                         count++
                     }
                 }
                 _newFeedCount.emit(count)
-            }.onFailure {
+            } catch (_ : Exception) {
                 _newFeedCount.emit(0)
             }
         }
@@ -260,15 +258,15 @@ class ConnectionViewmodelImpl @Inject constructor(
                 lastLocationState.emit(location)
                 fetchConnectionState()
             } else {
-                locationRepository.bestLocation.toResult()
-                    .onSuccess {
-                        saveLastLocation(it)
-                        _bestLocation.emit(ServerListItem(it.region.id, it.region, listOf(it.city)))
-                        fetchConnectionState()
-                    }.onFailure {
-                        lastLocationState.value = null
-                        fetchConnectionState()
-                    }
+                try {
+                    val bestCityAndRegion = locationRepository.getBestLocationAsync()
+                    saveLastLocation(bestCityAndRegion)
+                    _bestLocation.emit(ServerListItem(bestCityAndRegion.region.id, bestCityAndRegion.region, listOf(bestCityAndRegion.city)))
+                    fetchConnectionState()
+                } catch (_ : Exception) {
+                    lastLocationState.value = null
+                    fetchConnectionState()
+                }
             }
         }
     }
@@ -599,13 +597,19 @@ class ConnectionViewmodelImpl @Inject constructor(
         appScope.launch {
             when (locationSource) {
                 SelectedLocationType.CustomConfiguredProfile -> {
-                    localdb.getConfigFile(selectedLocation.cityId).toResult()
-                        .onSuccess { onConfigClick(it) }
+                    try {
+                        val location = localdb.getConfigFileAsync(selectedLocation.cityId)
+                        onConfigClick(location)
+                    } catch (e: Exception) {
+                        showToast("Unable to find selected location in database. Update server list.")
+                    }
                 }
 
                 SelectedLocationType.StaticIp -> {
-                    localdb.getStaticRegionByID(selectedLocation.cityId).toResult()
-                        .onSuccess { onStaticIpClick(it) }
+                    val staticIp = localdb.getStaticRegionByIDAsync(selectedLocation.cityId)
+                    if (staticIp != null) {
+                        onStaticIpClick(staticIp)
+                    }
                 }
 
                 SelectedLocationType.CityLocation -> {
@@ -799,16 +803,16 @@ class ConnectionViewmodelImpl @Inject constructor(
 
     private fun fetchBestLocation() {
         viewModelScope.launch(Dispatchers.IO) {
-            locationRepository.bestLocation.toResult()
-                .onSuccess {
-                    try {
-                        _bestLocation.emit(ServerListItem(it.region.id, it.region, listOf(it.city)))
-                    }catch (ignored: Exception) {
-                        _bestLocation.emit(null)
-                    }
-                }.onFailure {
+            try {
+                val bestCityAndRegion = locationRepository.getBestLocationAsync()
+                try {
+                    _bestLocation.emit(ServerListItem(bestCityAndRegion.region.id, bestCityAndRegion.region, listOf(bestCityAndRegion.city)))
+                }catch (ignored: Exception) {
                     _bestLocation.emit(null)
                 }
+            } catch (_ : Exception) {
+                _bestLocation.emit(null)
+            }
         }
     }
 

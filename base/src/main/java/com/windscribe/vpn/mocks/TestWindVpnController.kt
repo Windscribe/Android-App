@@ -1,12 +1,13 @@
 package com.windscribe.vpn.mocks
 
-import com.windscribe.vpn.ServiceInteractor
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VpnBackendHolder
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.EmergencyConnectRepository
 import com.windscribe.vpn.repository.LocationRepository
@@ -20,7 +21,7 @@ import java.util.*
 
 class TestWindVpnController(
         scope: CoroutineScope,
-        interactor: ServiceInteractor,
+        preferencesHelper: PreferencesHelper,
         vpnProfileCreator: VPNProfileCreator,
         private val vpnConnectionStateManager: VPNConnectionStateManager,
         vpnBackendHolder: VpnBackendHolder,
@@ -28,10 +29,11 @@ class TestWindVpnController(
         autoConnectionManager: AutoConnectionManager,
         wgConfigRepository: WgConfigRepository,
         advanceParameterRepository: Lazy<AdvanceParameterRepository>,
-        emergencyConnectRepository: EmergencyConnectRepository
+        emergencyConnectRepository: EmergencyConnectRepository,
+        localDbInterface: LocalDbInterface
 ) : WindVpnController(
     scope,
-    interactor,
+    preferencesHelper,
     vpnProfileCreator,
     vpnConnectionStateManager,
     vpnBackendHolder,
@@ -39,7 +41,8 @@ class TestWindVpnController(
     wgConfigRepository,
     advanceParameterRepository,
     autoConnectionManager,
-    emergencyConnectRepository
+    emergencyConnectRepository,
+    localDbInterface
 ) {
     var mockState: VPNState = VPNState(VPNState.Status.Disconnected)
     override suspend fun launchVPNService(

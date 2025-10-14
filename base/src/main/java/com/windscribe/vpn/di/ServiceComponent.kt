@@ -15,7 +15,7 @@ import com.windscribe.vpn.services.VpnTileService
 import dagger.Component
 
 @PerService
-@Component(dependencies = [ApplicationComponent::class], modules = [ServiceModule::class])
+@Component(dependencies = [ApplicationComponent::class])
 interface ServiceComponent {
     fun inject(wireGuardService: WireGuardWrapperService)
     fun inject(noNetworkService: NetworkWhiteListService)
