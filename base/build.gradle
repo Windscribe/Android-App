@@ -67,14 +67,10 @@ dependencies {
     implementation project(path: ':strongswan')
     implementation project(path: ':common')
     api project(path: ':wgtunnel')
-    //Rxjava
-    api 'io.reactivex.rxjava2:rxandroid:2.1.1'
-    api 'io.reactivex.rxjava2:rxjava:2.2.19'
     //Retrofit
     implementation "com.squareup.retrofit2:retrofit:$retrofit"
     api "com.squareup.retrofit2:converter-gson:$retrofit"
     implementation "com.squareup.retrofit2:converter-scalars:$retrofit"
-    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
     //Okhttp
     implementation 'com.squareup.okhttp3:logging-interceptor:4.2.2'
     implementation 'com.squareup.okhttp3:okhttp:4.11.0'
@@ -86,30 +82,23 @@ dependencies {
         exclude group: 'ch.qos.logback', module: 'logback-core'
     }
     //Room
-    api "androidx.room:room-rxjava2:$room"
     api "androidx.room:room-ktx:$room"
     api "androidx.room:room-runtime:$room"
     kapt "androidx.room:room-compiler:$room"
     implementation "androidx.room:room-testing:$room"
+    androidTestImplementation "androidx.room:room-testing:$room"
     // Work manager
     api "androidx.work:work-runtime:$work_manager"
-    api "androidx.work:work-rxjava2:$work_manager"
     implementation "androidx.work:work-runtime-ktx:$work_manager"
     androidTestImplementation "androidx.work:work-testing:$work_manager"
-    androidTestImplementation "androidx.room:room-testing:$work_manager"
     // Dagger
     kapt "com.google.dagger:dagger-compiler:$dagger"
     api "com.google.dagger:dagger:$dagger"
     // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesCore"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesCore"
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.6.4'
     // Supporting libraries
     api 'com.github.seancfoley:ipaddress:5.3.1'
     api 'com.github.GCX-HCI:tray:v0.12.0'
-    // TV only
-    api "com.github.bumptech.glide:glide:$glide"
-    kapt "com.github.bumptech.glide:compiler:$glide"
     // Test
     testImplementation "junit:junit:$JUnit"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'

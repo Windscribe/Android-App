@@ -15,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.multidex.MultiDexApplication
-import com.windscribe.vpn.debug.MainThreadWatchdog
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.FragmentType
@@ -24,6 +23,7 @@ import com.windscribe.vpn.backend.ikev2.CharonVpnServiceWrapper
 import com.windscribe.vpn.backend.ikev2.StrongswanCertificateManager.init
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.debug.MainThreadWatchdog
 import com.windscribe.vpn.di.ActivityComponent
 import com.windscribe.vpn.di.ApplicationComponent
 import com.windscribe.vpn.di.ApplicationModule
@@ -31,7 +31,6 @@ import com.windscribe.vpn.di.DaggerActivityComponent
 import com.windscribe.vpn.di.DaggerApplicationComponent
 import com.windscribe.vpn.di.DaggerServiceComponent
 import com.windscribe.vpn.di.ServiceComponent
-import com.windscribe.vpn.di.ServiceModule
 import com.windscribe.vpn.localdatabase.WindscribeDatabase
 import com.windscribe.vpn.mocklocation.MockLocationManager
 import com.windscribe.vpn.services.FirebaseManager
@@ -45,7 +44,6 @@ import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.state.WindscribeReviewManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import de.blinkt.openvpn.core.PRNGFixes
-import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -70,11 +68,12 @@ open class Windscribe : MultiDexApplication() {
         val isTV: Boolean
         fun setTheme()
         fun launchFragment(
-                protocolInformationList: List<ProtocolInformation>,
-                fragmentType: FragmentType,
-                autoConnectionModeCallback: AutoConnectionModeCallback,
-                protocolInformation: ProtocolInformation? = null
+            protocolInformationList: List<ProtocolInformation>,
+            fragmentType: FragmentType,
+            autoConnectionModeCallback: AutoConnectionModeCallback,
+            protocolInformation: ProtocolInformation? = null
         ): Boolean
+
         fun cancelDialog() {}
     }
 
@@ -133,8 +132,8 @@ open class Windscribe : MultiDexApplication() {
         applicationComponent = getApplicationModuleComponent()
         applicationComponent.inject(this)
         activityComponent = DaggerActivityComponent.builder()
-                .applicationComponent(applicationComponent)
-                .build()
+            .applicationComponent(applicationComponent)
+            .build()
         serviceComponent = serviceComponent()
         ProcessLifecycleOwner.get().lifecycle.addObserver(appLifeCycleObserver)
         preference.isNewApplicationInstance = true
@@ -144,7 +143,6 @@ open class Windscribe : MultiDexApplication() {
         } catch (ignored: Exception) {
         }
         setUpNewInstallation()
-        RxJavaPlugins.setErrorHandler { throwable: Throwable -> logger.info(throwable.toString()) }
         initStrongswan()
         if (BuildConfig.APP_ID.isNotEmpty()) {
             firebaseManager.initialise()
@@ -217,15 +215,15 @@ open class Windscribe : MultiDexApplication() {
     private fun setUpNewInstallation() {
         if (preference.getResponseString(PreferencesKeyConstants.NEW_INSTALLATION) == null) {
             preference.saveResponseStringData(
-                    PreferencesKeyConstants.NEW_INSTALLATION,
-                    PreferencesKeyConstants.I_OLD
+                PreferencesKeyConstants.NEW_INSTALLATION,
+                PreferencesKeyConstants.I_OLD
             )
             // This will be true for legacy app but not beta version users
             if (preference.getResponseString(PreferencesKeyConstants.CONNECTION_STATUS) == null) {
                 // Only Recording for legacy to new version
                 preference.saveResponseStringData(
-                        PreferencesKeyConstants.NEW_INSTALLATION,
-                        PreferencesKeyConstants.I_NEW
+                    PreferencesKeyConstants.NEW_INSTALLATION,
+                    PreferencesKeyConstants.I_NEW
                 )
                 preference.removeResponseData(PreferencesKeyConstants.SESSION_HASH)
             }
@@ -238,20 +236,20 @@ open class Windscribe : MultiDexApplication() {
     private fun setupStrictMode() {
         if (VERSION.SDK_INT >= VERSION_CODES.O) {
             StrictMode.setThreadPolicy(
-                    Builder()
-                            .detectAll()
-                            .permitDiskReads()
-                            .permitDiskWrites()
-                            .permitUnbufferedIo()
-                            .penaltyLog()
-                            .build()
+                Builder()
+                    .detectAll()
+                    .permitDiskReads()
+                    .permitDiskWrites()
+                    .permitUnbufferedIo()
+                    .penaltyLog()
+                    .build()
             )
             StrictMode.setVmPolicy(
-                    VmPolicy.Builder()
-                            .detectLeakedSqlLiteObjects()
-                            .detectLeakedClosableObjects().detectActivityLeaks().detectFileUriExposure()
-                            .detectLeakedRegistrationObjects().detectContentUriWithoutPermission()
-                            .penaltyLog().build()
+                VmPolicy.Builder()
+                    .detectLeakedSqlLiteObjects()
+                    .detectLeakedClosableObjects().detectActivityLeaks().detectFileUriExposure()
+                    .detectLeakedRegistrationObjects().detectContentUriWithoutPermission()
+                    .penaltyLog().build()
             )
         }
     }
@@ -273,14 +271,13 @@ open class Windscribe : MultiDexApplication() {
 
     open fun getApplicationModuleComponent(): ApplicationComponent {
         return DaggerApplicationComponent.builder()
-                .applicationModule(ApplicationModule(this)).build()
+            .applicationModule(ApplicationModule(this)).build()
     }
 
     private fun serviceComponent(): ServiceComponent {
         return DaggerServiceComponent.builder()
-                .serviceModule(ServiceModule())
-                .applicationComponent(applicationComponent)
-                .build()
+            .applicationComponent(applicationComponent)
+            .build()
     }
 
     override fun onLowMemory() {

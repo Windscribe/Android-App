@@ -10,7 +10,6 @@ import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED
 import android.net.VpnService
 import android.util.Log
 import com.windscribe.common.startSafeForeground
-import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
@@ -28,9 +27,6 @@ class CharonVpnServiceWrapper : CharonVpnService() {
 
     @Inject
     lateinit var windNotificationBuilder: WindNotificationBuilder
-
-    @Inject
-    lateinit var serviceInteractor: ServiceInteractor
 
     @Inject
     lateinit var vpnController: WindVpnController

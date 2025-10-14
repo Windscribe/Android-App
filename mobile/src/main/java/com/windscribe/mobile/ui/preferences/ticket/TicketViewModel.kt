@@ -95,15 +95,17 @@ class TicketViewModelImpl(val userRepository: UserRepository, val api: IApiCallM
     override fun onSendTicketClicked() {
         viewModelScope.launch {
             _submitTicketState.emit(SubmitTicketState.Loading)
-            val result = api.sendTicket(
-                email.value,
-                username,
-                subject.value,
-                message.value,
-                queryType.value.toString(),
-                queryType.value.name,
-                "app_android"
-            ).result<TicketResponse>()
+            val result = result<TicketResponse> {
+                api.sendTicket(
+                    email.value,
+                    username,
+                    subject.value,
+                    message.value,
+                    queryType.value.toString(),
+                    queryType.value.name,
+                    "app_android"
+                )
+            }
             when (result) {
                 is CallResult.Error -> {
                     if (result.code == NetworkErrorCodes.ERROR_UNEXPECTED_API_DATA || result.code == NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API) {

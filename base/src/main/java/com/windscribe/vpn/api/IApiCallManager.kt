@@ -4,35 +4,34 @@
 package com.windscribe.vpn.api
 
 import com.windscribe.vpn.api.response.*
-import io.reactivex.Single
 
 interface IApiCallManager {
 
-    fun addUserEmailAddress(email: String): Single<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>>
-    fun checkConnectivityAndIpAddress(): Single<GenericResponseClass<GetMyIpResponse?, ApiErrorResponse?>>
-    fun claimAccount(
+    suspend fun addUserEmailAddress(email: String): GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>
+    suspend fun checkConnectivityAndIpAddress(): GenericResponseClass<GetMyIpResponse?, ApiErrorResponse?>
+    suspend fun claimAccount(
         username: String,
         password: String,
         email: String,
         voucherCode: String?
-    ): Single<GenericResponseClass<ClaimAccountResponse?, ApiErrorResponse?>>
+    ): GenericResponseClass<ClaimAccountResponse?, ApiErrorResponse?>
 
-    fun getBillingPlans(promo: String?): Single<GenericResponseClass<BillingPlanResponse?, ApiErrorResponse?>>
-    fun getNotifications(pcpID: String?): Single<GenericResponseClass<NewsFeedNotification?, ApiErrorResponse?>>
-    fun getPortMap(): Single<GenericResponseClass<PortMapResponse?, ApiErrorResponse?>>
-    fun getServerConfig(): Single<GenericResponseClass<String?, ApiErrorResponse?>>
-    fun getServerCredentials(extraParams: Map<String, String>? = null): Single<GenericResponseClass<ServerCredentialsResponse?, ApiErrorResponse?>>
-    fun getServerCredentialsForIKev2(extraParams: Map<String, String>? = null): Single<GenericResponseClass<ServerCredentialsResponse?, ApiErrorResponse?>>
-    fun getServerList(
+    suspend fun getBillingPlans(promo: String?): GenericResponseClass<BillingPlanResponse?, ApiErrorResponse?>
+    suspend fun getNotifications(pcpID: String?): GenericResponseClass<NewsFeedNotification?, ApiErrorResponse?>
+    suspend fun getPortMap(): GenericResponseClass<PortMapResponse?, ApiErrorResponse?>
+    suspend fun getServerConfig(): GenericResponseClass<String?, ApiErrorResponse?>
+    suspend fun getServerCredentials(extraParams: Map<String, String>? = null): GenericResponseClass<ServerCredentialsResponse?, ApiErrorResponse?>
+    suspend fun getServerCredentialsForIKev2(extraParams: Map<String, String>? = null): GenericResponseClass<ServerCredentialsResponse?, ApiErrorResponse?>
+    suspend fun getServerList(
         isPro: Boolean,
         locHash: String,
         alcList: Array<String>,
         overriddenCountryCode: String?
-    ): Single<GenericResponseClass<String?, ApiErrorResponse?>>
+    ): GenericResponseClass<String?, ApiErrorResponse?>
 
-    fun getSessionGeneric(firebaseToken: String?): Single<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>>
-    fun getStaticIpList(deviceID: String?): Single<GenericResponseClass<StaticIPResponse?, ApiErrorResponse?>>
-    fun logUserIn(
+    suspend fun getSessionGeneric(firebaseToken: String?): GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>
+    suspend fun getStaticIpList(deviceID: String?): GenericResponseClass<StaticIPResponse?, ApiErrorResponse?>
+    suspend fun logUserIn(
         username: String,
         password: String,
         twoFa: String?,
@@ -40,12 +39,12 @@ interface IApiCallManager {
         captchaSolution: String?,
         captchaTrailX: FloatArray,
         captchaTrailY: FloatArray
-    ): Single<GenericResponseClass<UserLoginResponse?, ApiErrorResponse?>>
+    ): GenericResponseClass<UserLoginResponse?, ApiErrorResponse?>
 
-    fun getWebSession(): Single<GenericResponseClass<WebSession?, ApiErrorResponse?>>
-    fun recordAppInstall(): Single<GenericResponseClass<String?, ApiErrorResponse?>>
-    fun resendUserEmailAddress(extraParams: Map<String, String>? = null): Single<GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>>
-    fun sendTicket(
+    suspend fun getWebSession(): GenericResponseClass<WebSession?, ApiErrorResponse?>
+    suspend fun recordAppInstall(): GenericResponseClass<String?, ApiErrorResponse?>
+    suspend fun resendUserEmailAddress(extraParams: Map<String, String>? = null): GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>
+    suspend fun sendTicket(
         supportEmail: String,
         supportName: String,
         supportSubject: String,
@@ -53,9 +52,9 @@ interface IApiCallManager {
         supportCategory: String,
         type: String,
         channel: String
-    ): Single<GenericResponseClass<TicketResponse?, ApiErrorResponse?>>
+    ): GenericResponseClass<TicketResponse?, ApiErrorResponse?>
 
-    fun signUserIn(
+    suspend fun signUserIn(
         username: String,
         password: String,
         referringUsername: String?,
@@ -65,60 +64,60 @@ interface IApiCallManager {
         captchaSolution: String?,
         captchaTrailX: FloatArray,
         captchaTrailY: FloatArray
-    ): Single<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>
+    ): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>
 
-    fun claimVoucherCode(voucherCode: String): Single<GenericResponseClass<ClaimVoucherCodeResponse?, ApiErrorResponse?>>
-    fun signUpUsingToken(token: String): Single<GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>>
-    fun verifyPurchaseReceipt(
+    suspend fun claimVoucherCode(voucherCode: String): GenericResponseClass<ClaimVoucherCodeResponse?, ApiErrorResponse?>
+    suspend fun signUpUsingToken(token: String): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?>
+    suspend fun verifyPurchaseReceipt(
         purchaseToken: String,
         gpPackageName: String,
         gpProductId: String,
         type: String,
         amazonUserId: String
-    ): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>
+    ): GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
 
-    fun verifyExpressLoginCode(loginCode: String): Single<GenericResponseClass<VerifyExpressLoginResponse?, ApiErrorResponse?>>
-    fun generateXPressLoginCode(): Single<GenericResponseClass<XPressLoginCodeResponse?, ApiErrorResponse?>>
-    fun verifyXPressLoginCode(
+    suspend fun verifyExpressLoginCode(loginCode: String): GenericResponseClass<VerifyExpressLoginResponse?, ApiErrorResponse?>
+    suspend fun generateXPressLoginCode(): GenericResponseClass<XPressLoginCodeResponse?, ApiErrorResponse?>
+    suspend fun verifyXPressLoginCode(
         loginCode: String,
         signature: String
-    ): Single<GenericResponseClass<XPressLoginVerifyResponse?, ApiErrorResponse?>>
+    ): GenericResponseClass<XPressLoginVerifyResponse?, ApiErrorResponse?>
 
-    fun postDebugLog(
+    suspend fun postDebugLog(
         username: String,
         log: String
-    ): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>
+    ): GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
 
-    fun postPromoPaymentConfirmation(pcpID: String): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>
-    fun getRobertFilters(): Single<GenericResponseClass<RobertFilterResponse?, ApiErrorResponse?>>
-    fun updateRobertSettings(
+    suspend fun postPromoPaymentConfirmation(pcpID: String): GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
+    suspend fun getRobertFilters(): GenericResponseClass<RobertFilterResponse?, ApiErrorResponse?>
+    suspend fun updateRobertSettings(
         id: String,
         status: Int
-    ): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>
+    ): GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
 
-    fun syncRobert(): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>
-    fun deleteSession(): Single<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>>
-    fun wgInit(
+    suspend fun syncRobert(): GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
+    suspend fun deleteSession(): GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
+    suspend fun wgInit(
         clientPublicKey: String,
         deleteOldestKey: Boolean
-    ): Single<GenericResponseClass<WgInitResponse?, ApiErrorResponse?>>
+    ): GenericResponseClass<WgInitResponse?, ApiErrorResponse?>
 
-    fun wgConnect(
+    suspend fun wgConnect(
         clientPublicKey: String,
         hostname: String,
         deviceId: String
-    ): Single<GenericResponseClass<WgConnectResponse?, ApiErrorResponse?>>
-    fun sendDecoyTraffic(
+    ): GenericResponseClass<WgConnectResponse?, ApiErrorResponse?>
+    suspend fun sendDecoyTraffic(
         url: String,
         data: String,
         sizeToReceive: String?
-    ): Single<GenericResponseClass<String?, ApiErrorResponse?>>
+    ): GenericResponseClass<String?, ApiErrorResponse?>
 
-    fun sso(
+    suspend fun sso(
         provider: String,
         token: String
-    ): Single<GenericResponseClass<SsoResponse?, ApiErrorResponse?>>
+    ): GenericResponseClass<SsoResponse?, ApiErrorResponse?>
 
-    fun authTokenSignup(useAsciiCaptcha: Boolean): Single<GenericResponseClass<AuthToken?, ApiErrorResponse?>>
-    fun authTokenLogin(useAsciiCaptcha: Boolean): Single<GenericResponseClass<AuthToken?, ApiErrorResponse?>>
+    suspend fun authTokenSignup(useAsciiCaptcha: Boolean): GenericResponseClass<AuthToken?, ApiErrorResponse?>
+    suspend fun authTokenLogin(useAsciiCaptcha: Boolean): GenericResponseClass<AuthToken?, ApiErrorResponse?>
 }

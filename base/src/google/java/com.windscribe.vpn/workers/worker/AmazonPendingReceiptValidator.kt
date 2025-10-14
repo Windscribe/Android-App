@@ -5,9 +5,10 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
-import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.GenericSuccess
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.billing.AmazonPurchase
 import com.windscribe.vpn.billing.PurchaseState
 import com.windscribe.vpn.commonutils.Ext.result
@@ -20,14 +21,16 @@ import javax.inject.Inject
 class AmazonPendingReceiptValidator(appContext: Context, params: WorkerParameters) : CoroutineWorker(appContext, params) {
     private val logger = LoggerFactory.getLogger("billing")
     @Inject
-    lateinit var interactor: ServiceInteractor
+    lateinit var apiManager: IApiCallManager
+    @Inject
+    lateinit var preferencesHelper: PreferencesHelper
 
     init {
         Windscribe.appContext.applicationComponent.inject(this)
     }
 
     override suspend fun doWork(): Result {
-        val state = interactor.preferenceHelper.purchaseFlowState
+        val state = preferencesHelper.purchaseFlowState
         if (state == PurchaseState.FINISHED.name) {
             return Result.success()
         }
@@ -35,7 +38,7 @@ class AmazonPendingReceiptValidator(appContext: Context, params: WorkerParameter
             val result = verifyPayment(getPendingAmazonPurchase())
             return if (result) {
                 logger.debug("Successfully verified purchase receipt")
-                interactor.preferenceHelper.savePurchaseFlowState(PurchaseState.FINISHED.name)
+                preferencesHelper.savePurchaseFlowState(PurchaseState.FINISHED.name)
                 Windscribe.appContext.workManager.updateSession()
                 Result.success()
             } else {
@@ -49,7 +52,7 @@ class AmazonPendingReceiptValidator(appContext: Context, params: WorkerParameter
     }
 
     private fun getPendingAmazonPurchase(): AmazonPurchase {
-        val json = interactor.preferenceHelper.getResponseString(BillingConstants.AMAZON_PURCHASED_ITEM)
+        val json = preferencesHelper.getResponseString(BillingConstants.AMAZON_PURCHASED_ITEM)
                 ?: throw WindScribeException("No amazon purchase found.")
         try {
             return Gson().fromJson(json, AmazonPurchase::class.java)
@@ -60,7 +63,9 @@ class AmazonPendingReceiptValidator(appContext: Context, params: WorkerParameter
 
     private suspend fun verifyPayment(amazonPurchase: AmazonPurchase): Boolean {
         logger.debug("Verifying amazon receipt.")
-        return when (val result = interactor.apiManager.verifyPurchaseReceipt(amazonPurchase.receiptId, "", "", BillingConstants.AMAZON_PURCHASE_TYPE, amazonPurchase.userId).result<GenericSuccess>()) {
+        return when (val result = result<GenericSuccess> {
+            apiManager.verifyPurchaseReceipt(amazonPurchase.receiptId, "", "", BillingConstants.AMAZON_PURCHASE_TYPE, amazonPurchase.userId)
+        }) {
             is CallResult.Error -> {
                 logger.debug("Payment verification failed: ${result.errorMessage}")
                 false

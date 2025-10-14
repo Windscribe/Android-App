@@ -64,6 +64,7 @@ import com.windscribe.vpn.repository.FavouriteRepository
 import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.LocationRepository
+import com.windscribe.vpn.repository.LogRepository
 import com.windscribe.vpn.repository.NotificationRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
@@ -104,7 +105,9 @@ class ComposeModule {
         workManager: WindScribeWorkManager,
         advanceParameterRepository: AdvanceParameterRepository,
         proxyDNSManager: ProxyDNSManager,
-        decoyTrafficController: DecoyTrafficController
+        decoyTrafficController: DecoyTrafficController,
+        portMapRepository: com.windscribe.vpn.repository.PortMapRepository,
+        logRepository: LogRepository
     ): ViewModelProvider.Factory {
         return object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -190,23 +193,23 @@ class ComposeModule {
                 } else if (modelClass.isAssignableFrom(AccountViewModel::class.java)) {
                     return AccountViewModelImpl(userRepository, apiCallManager, workManager) as T
                 } else if (modelClass.isAssignableFrom(ConnectionViewModel::class.java)) {
-                    return ConnectionViewModelImpl(preferencesHelper = appPreferenceHelper, api = apiCallManager, autoConnectionManager, vpnConnectionStateManager, proxyDNSManager, decoyTrafficController) as T
+                    return ConnectionViewModelImpl(preferencesHelper = appPreferenceHelper, api = apiCallManager, autoConnectionManager, vpnConnectionStateManager, proxyDNSManager, decoyTrafficController, portMapRepository) as T
                 } else if (modelClass.isAssignableFrom(RobertViewModel::class.java)) {
                     return RobertViewModelImpl(apiCallManager, appPreferenceHelper) as T
                 } else if (modelClass.isAssignableFrom(LipstickViewmodel::class.java)) {
                     return LipstickViewmodelImpl(appPreferenceHelper, serverListRepository) as T
                 } else if (modelClass.isAssignableFrom(HelpViewModel::class.java)) {
-                    return HelpViewModelImpl(userRepository,advanceParameterRepository,apiCallManager) as T
+                    return HelpViewModelImpl(userRepository,logRepository) as T
                 } else if (modelClass.isAssignableFrom(TicketViewModel::class.java)) {
                     return TicketViewModelImpl(userRepository, apiCallManager) as T
                 } else if (modelClass.isAssignableFrom(AdvanceViewModel::class.java)) {
                     return AdvanceViewModelImpl(appPreferenceHelper, advanceParameterRepository) as T
                 } else if (modelClass.isAssignableFrom(DebugViewModel::class.java)) {
-                    return DebugViewModelImpl(advanceParameterRepository) as T
+                    return DebugViewModelImpl(logRepository) as T
                 } else if (modelClass.isAssignableFrom(NetworkOptionsViewModel::class.java)) {
                     return NetworkOptionsViewModelImpl(appPreferenceHelper, networkInfoManager, localDbInterface) as T
                 } else if (modelClass.isAssignableFrom(NetworkDetailViewModel::class.java)) {
-                    return NetworkDetailViewModelImpl(localDbInterface, apiCallManager, appPreferenceHelper, networkInfoManager, windVpnController, vpnConnectionStateManager) as T
+                    return NetworkDetailViewModelImpl(localDbInterface, apiCallManager, appPreferenceHelper, networkInfoManager, windVpnController, vpnConnectionStateManager, portMapRepository) as T
                 } else if (modelClass.isAssignableFrom(SplitTunnelViewModel::class.java)) {
                     return SplitTunnelViewModelImpl(appPreferenceHelper) as T
                 }

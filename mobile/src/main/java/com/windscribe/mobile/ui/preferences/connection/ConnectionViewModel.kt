@@ -8,13 +8,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.connection.ToastMessage
-import com.windscribe.mobile.ui.helper.PortMapLoader
 import com.windscribe.mobile.ui.model.DropDownStringItem
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
+import com.windscribe.vpn.repository.PortMapRepository
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_AUTO
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_IKev2
@@ -99,6 +99,7 @@ class ConnectionViewModelImpl(
     val vpnManagerStateManager: VPNConnectionStateManager,
     val proxyDNSManager: ProxyDNSManager,
     val decoyTrafficController: DecoyTrafficController,
+    val portMapRepository: PortMapRepository,
 ) : ConnectionViewModel() {
     private val _showProgress = MutableStateFlow(false)
     override val showProgress: StateFlow<Boolean> = _showProgress
@@ -153,7 +154,7 @@ class ConnectionViewModelImpl(
 
     private fun loadPortMapItems() {
         viewModelScope.launch(Dispatchers.IO) {
-            val portMapResult = PortMapLoader.getPortMap(api, preferencesHelper)
+            val portMapResult = portMapRepository.getPortMap()
             if (portMapResult.isSuccess) {
                 val portMap = portMapResult.getOrNull()
                 portMap?.portmap?.map {

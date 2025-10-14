@@ -6,8 +6,9 @@ package com.windscribe.vpn.backend.openvpn
 
 import android.content.Intent
 import android.os.Build
-import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.VPNState
@@ -32,10 +33,11 @@ class OpenVPNBackend(
     var scope: CoroutineScope,
     var networkInfoManager: NetworkInfoManager,
     vpnStateManager: VPNConnectionStateManager,
-    var serviceInteractor: ServiceInteractor,
+    var preferencesHelper: PreferencesHelper,
     advanceParameterRepository: AdvanceParameterRepository,
-    val proxyDNSManager: ProxyDNSManager
-) : VpnBackend(scope, vpnStateManager, serviceInteractor, networkInfoManager, advanceParameterRepository),
+    val proxyDNSManager: ProxyDNSManager,
+    apiManager: IApiCallManager
+) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager),
     VpnStatus.StateListener, VpnStatus.ByteCountListener {
 
     override var active = false
@@ -141,7 +143,7 @@ class OpenVPNBackend(
                     )
                 }
                 ConnectionStatus.LEVEL_AUTH_FAILED -> {
-                    serviceInteractor.preferenceHelper.isReconnecting = false
+                    preferencesHelper.isReconnecting = false
                     scope.launch {
                         disconnect(
                             VPNState.Error(

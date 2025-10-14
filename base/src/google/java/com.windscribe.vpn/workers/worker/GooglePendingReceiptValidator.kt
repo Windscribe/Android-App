@@ -3,13 +3,19 @@ package com.windscribe.vpn.workers.worker
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.android.billingclient.api.*
-import com.windscribe.vpn.ServiceInteractor
+import com.android.billingclient.api.AcknowledgePurchaseParams
+import com.android.billingclient.api.AcknowledgePurchaseResponseListener
+import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingClientStateListener
+import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.Purchase
+import com.android.billingclient.api.PurchaseHistoryRecord
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.api.ApiCallManager
 import com.windscribe.vpn.api.response.GenericSuccess
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.billing.PurchaseState
 import com.windscribe.vpn.commonutils.Ext.result
-import com.windscribe.vpn.constants.BillingConstants
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.repository.CallResult
 import org.slf4j.LoggerFactory
@@ -21,8 +27,9 @@ class GooglePendingReceiptValidator(appContext: Context, params: WorkerParameter
     private val logger = LoggerFactory.getLogger("billing")
 
     @Inject
-    lateinit var interactor: ServiceInteractor
-
+    lateinit var apiManager: ApiCallManager
+    @Inject
+    lateinit var preferencesHelper: PreferencesHelper
     private var billingClient: BillingClient? = null
 
     init {
@@ -30,7 +37,7 @@ class GooglePendingReceiptValidator(appContext: Context, params: WorkerParameter
     }
 
     override suspend fun doWork(): Result {
-        val state = interactor.preferenceHelper.purchaseFlowState
+        val state = preferencesHelper.purchaseFlowState
         if (state == PurchaseState.FINISHED.name) {
             return Result.success()
         }
@@ -47,7 +54,7 @@ class GooglePendingReceiptValidator(appContext: Context, params: WorkerParameter
             }
             return if (result) {
                 logger.debug("Successfully verified purchase receipt")
-                interactor.preferenceHelper.savePurchaseFlowState(PurchaseState.FINISHED.name)
+                preferencesHelper.savePurchaseFlowState(PurchaseState.FINISHED.name)
                 Windscribe.appContext.workManager.updateSession()
                 Result.success()
             } else {
@@ -107,7 +114,7 @@ class GooglePendingReceiptValidator(appContext: Context, params: WorkerParameter
         billingClient?.queryPurchaseHistoryAsync(BillingClient.SkuType.SUBS) { billingResult: BillingResult, purchasesList: List<PurchaseHistoryRecord>? ->
             if (BillingClient.BillingResponseCode.OK == billingResult.responseCode) {
                 if (purchasesList == null || purchasesList.isEmpty()) {
-                    interactor.preferenceHelper.savePurchaseFlowState(PurchaseState.FINISHED.name)
+                    preferencesHelper.savePurchaseFlowState(PurchaseState.FINISHED.name)
                     it.resumeWith(kotlin.Result.failure(WindScribeException("No purchase history found.")))
                 } else {
                     it.resumeWith(kotlin.Result.success(purchasesList))
@@ -121,8 +128,9 @@ class GooglePendingReceiptValidator(appContext: Context, params: WorkerParameter
 
     private suspend fun verifyPayment(itemPurchased: PurchaseHistoryRecord): Boolean {
         logger.info("Verifying payment for purchased item: " + itemPurchased.originalJson)
-        return when (val result =
-            interactor.apiManager.verifyPurchaseReceipt(itemPurchased.purchaseToken, "com.windscribe.vpn", itemPurchased.products[0], "", "").result<GenericSuccess>()) {
+        return when (val result = result<GenericSuccess> {
+            apiManager.verifyPurchaseReceipt(itemPurchased.purchaseToken, "com.windscribe.vpn", itemPurchased.products[0], "", "")
+        }) {
             is CallResult.Error -> {
                 logger.debug("Payment verification failed: ${result.errorMessage}")
                 false

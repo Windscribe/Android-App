@@ -2,49 +2,33 @@ package com.windscribe.vpn.repository
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
-import com.windscribe.vpn.ServiceInteractor
+import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.api.response.WgConnectConfig
 import com.windscribe.vpn.api.response.WgConnectResponse
 import com.windscribe.vpn.api.response.WgInitResponse
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_WG_UNABLE_TO_GENERATE_PSK
-import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.wireguard.crypto.Key
 import com.wireguard.crypto.KeyPair
-import io.reactivex.Single
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import org.slf4j.LoggerFactory
 import java.io.Serializable
-import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 /**
- * Repository for loading and managing WireGuard configuration with intelligent PSK rotation.
- *
+ * Repository for loading and managing WireGuard configuration
  * This repository handles the complete lifecycle of WireGuard connections including:
  * - Key pair generation and management
- * - Pre-shared key (PSK) rotation and state tracking per server
  * - Connection configuration assembly
- * - Automatic PSK rotation on app start (every 5 minutes)
- * - PSK retry logic when connection fails
- *
- * ## PSK Rotation Strategy
- * The repository implements a two-PSK approach per server:
- * - **currentPsk**: The PSK that should work for this server
- * - **previousPsk**: The previous PSK to try if currentPsk fails
- * - **latestPsk**: The globally rotated PSK from the server
- *
- * When a server's cached peer expires (after ~1 hour of inactivity), it needs the latest global PSK.
- * This system intelligently tracks which PSK each server expects based on connection success/failure.
  */
 @Singleton
 class WgConfigRepository(
-    private val interactor: ServiceInteractor,
-    scope: CoroutineScope,
-    private val localDbInterface: LocalDbInterface
+    private val apiManager: IApiCallManager,
+    private val preferenceHelper: PreferencesHelper
 ) {
     private val logger = LoggerFactory.getLogger("wg-config")
 
@@ -54,7 +38,7 @@ class WgConfigRepository(
      */
     fun deleteKeys() {
         logger.debug("Deleting cached WireGuard parameters")
-        interactor.preferenceHelper.wgLocalParams = null
+        preferenceHelper.wgLocalParams = null
     }
     /**
      * Generates or retrieves WireGuard key pair and initial PSK.
@@ -64,25 +48,26 @@ class WgConfigRepository(
      * @return CallResult containing local WireGuard parameters (private key, allowed IPs, PSK)
      */
     private suspend fun generateKeys(forceInit: Boolean): CallResult<WgLocalParams> {
-        return interactor.preferenceHelper.wgLocalParams?.let { existingParams ->
+        return preferenceHelper.wgLocalParams?.let { existingParams ->
             return@let CallResult.Success(existingParams)
         } ?: run {
             logger.debug("Generating new WireGuard key pair")
             val keyPair = KeyPair()
             val publicKey = keyPair.publicKey.toBase64()
-            val callResult = interactor.apiManager.wgInit(publicKey, forceInit)
-                .flatMap { response ->
-                    when (response.errorClass?.errorCode) {
-                        ERROR_WG_UNABLE_TO_GENERATE_PSK -> {
-                            logger.debug("Retrying WireGuard init - Error: WireGuard utility failure")
-                            interactor.apiManager.wgInit(publicKey, forceInit)
-                        }
 
-                        else -> Single.just(response)
-                    }
-                }
-                .delaySubscription(100, TimeUnit.MILLISECONDS)
-                .result<WgInitResponse>()
+            // Initial delay
+            delay(100)
+
+            // Try wgInit with retry logic
+            var response = apiManager.wgInit(publicKey, forceInit)
+            if (response.errorClass?.errorCode == ERROR_WG_UNABLE_TO_GENERATE_PSK) {
+                logger.debug("Retrying WireGuard init - Error: WireGuard utility failure")
+                response = apiManager.wgInit(publicKey, forceInit)
+            }
+
+            val callResult = result<WgInitResponse> {
+                response
+            }
 
             when (callResult) {
                 is CallResult.Success -> {
@@ -91,7 +76,7 @@ class WgConfigRepository(
                         callResult.data.config.allowedIPs,
                         callResult.data.config.preSharedKey
                     )
-                    interactor.preferenceHelper.wgLocalParams = localParams
+                    preferenceHelper.wgLocalParams = localParams
                     CallResult.Success(localParams)
                 }
 
@@ -154,8 +139,9 @@ class WgConfigRepository(
     /// Validates user account status
     private suspend fun validateUserAccountStatus(): CallResult<Unit> {
         logger.debug("Checking user account status")
-        return when (val userSessionResponse =
-            interactor.apiManager.getSessionGeneric(null).result<UserSessionResponse>()) {
+        return when (val userSessionResponse = result<UserSessionResponse> {
+            apiManager.getSessionGeneric(null)
+        }) {
             is CallResult.Success -> {
                 if (userSessionResponse.data.userAccountStatus != 1) {
                     logger.debug("User account is expired/banned: ${userSessionResponse.data.userAccountStatus}")
@@ -182,17 +168,19 @@ class WgConfigRepository(
     ): CallResult<WgConnectConfig> {
         val deviceId = getDeviceIdForStaticIp()
 
-        val callResult = interactor.apiManager.wgConnect(userPublicKey, hostname, deviceId)
-            .flatMap { response ->
-                if (response.errorClass?.errorCode == ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP) {
-                    logger.debug("Retrying WireGuard connect - Error: Unable to select WireGuard IP")
-                    interactor.apiManager.wgConnect(userPublicKey, hostname, deviceId)
-                } else {
-                    Single.just(response)
-                }
-            }
-            .delaySubscription(100, TimeUnit.MILLISECONDS)
-            .result<WgConnectResponse>()
+        // Initial delay
+        delay(100)
+
+        // Try wgConnect with retry logic
+        var response = apiManager.wgConnect(userPublicKey, hostname, deviceId)
+        if (response.errorClass?.errorCode == ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP) {
+            logger.debug("Retrying WireGuard connect - Error: Unable to select WireGuard IP")
+            response = apiManager.wgConnect(userPublicKey, hostname, deviceId)
+        }
+
+        val callResult = result<WgConnectResponse> {
+            response
+        }
 
         return when (callResult) {
             is CallResult.Success -> CallResult.Success(callResult.data.config)
@@ -202,9 +190,9 @@ class WgConfigRepository(
 
     /// Generates device id for static ip
     private fun getDeviceIdForStaticIp(): String {
-        return if (interactor.preferenceHelper.isConnectingToStaticIp) {
+        return if (preferenceHelper.isConnectingToStaticIp) {
             runCatching {
-                interactor.preferenceHelper.getDeviceUUID()
+                preferenceHelper.getDeviceUUID()
                     ?: throw Exception("Failed to get device UUID")
             }.getOrElse { exception ->
                 logger.debug("Error getting device UUID: ${exception.message}")

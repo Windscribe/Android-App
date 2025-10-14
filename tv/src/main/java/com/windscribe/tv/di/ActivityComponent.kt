@@ -18,7 +18,7 @@ import com.windscribe.vpn.di.ApplicationComponent
 import dagger.Component
 
 @PerActivity
-@Component(dependencies = [ApplicationComponent::class], modules = [ActivityModule::class])
+@Component(dependencies = [ApplicationComponent::class], modules = [ActivityModule::class, PresenterModule::class])
 interface ActivityComponent {
     fun inject(confirmActivity: ConfirmActivity)
     fun inject(splashActivity: SplashActivity)

@@ -10,8 +10,8 @@ import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import androidx.annotation.RequiresApi
 import com.windscribe.vpn.R.drawable
-import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.*
 import com.windscribe.vpn.backend.utils.WindVpnController
@@ -28,9 +28,6 @@ import javax.inject.Inject
 class VpnTileService : TileService() {
 
     @Inject
-    lateinit var interactor: ServiceInteractor
-
-    @Inject
     lateinit var vpnController: WindVpnController
 
     @Inject
@@ -44,6 +41,9 @@ class VpnTileService : TileService() {
     @Inject
     lateinit var shortcutStateManager: ShortcutStateManager
 
+    @Inject
+    lateinit var preferencesHelper: PreferencesHelper
+
     private val logger = LoggerFactory.getLogger("shortcut")
 
     override fun onCreate() {
@@ -55,7 +55,7 @@ class VpnTileService : TileService() {
         super.onClick()
         logger.debug("Quick tile icon clicked....")
         if (vpnConnectionStateManager.isVPNActive()) {
-            interactor.preferenceHelper.globalUserConnectionPreference = false
+            preferencesHelper.globalUserConnectionPreference = false
             vpnController.disconnectAsync()
         } else {
             shortcutStateManager.connect()

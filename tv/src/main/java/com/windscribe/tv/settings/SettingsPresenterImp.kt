@@ -5,24 +5,23 @@ package com.windscribe.tv.settings
 
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import com.windscribe.tv.R
 import com.windscribe.tv.adapter.InstalledAppsAdapter
 import com.windscribe.tv.adapter.InstalledAppsData
 import com.windscribe.tv.di.PerActivity
 import com.windscribe.tv.settings.fragment.AccountFragment
 import com.windscribe.tv.sort.SortByName
-import com.windscribe.vpn.ActivityInteractor
-import com.windscribe.vpn.ActivityInteractorImpl.PortMapLoadCallback
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.Windscribe.Companion.getExecutorService
-import com.windscribe.vpn.api.response.ApiErrorResponse
-import com.windscribe.vpn.api.response.GenericResponseClass
-import com.windscribe.vpn.api.response.GenericSuccess
+import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.PortMapResponse
 import com.windscribe.vpn.api.response.PortMapResponse.PortMap
 import com.windscribe.vpn.api.response.UserSessionResponse
+import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
-import com.windscribe.vpn.constants.NetworkKeyConstants
+import com.windscribe.vpn.commonutils.Ext.result
+import com.windscribe.vpn.repository.LogRepository
+import com.windscribe.vpn.commonutils.ResourceHelper
+import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.BOOT_ALLOW
 import com.windscribe.vpn.constants.PreferencesKeyConstants.BOOT_BLOCK
 import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_AUTO
@@ -41,48 +40,52 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_UDP
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WS_TUNNEL
 import com.windscribe.vpn.constants.UserStatusConstants
-import com.windscribe.vpn.errormodel.SessionErrorHandler
 import com.windscribe.vpn.errormodel.WindError
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
 import com.windscribe.vpn.model.User
-import io.reactivex.Completable
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.functions.Function
-import io.reactivex.observers.DisposableCompletableObserver
-import io.reactivex.observers.DisposableSingleObserver
-import io.reactivex.schedulers.Schedulers
+import com.windscribe.vpn.repository.CallResult
+import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.state.VPNConnectionStateManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Collections
+import java.util.Locale
 import javax.inject.Inject
 
 @PerActivity
 class SettingsPresenterImp @Inject constructor(
-        private var settingView: SettingView,
-        private var interactor: ActivityInteractor,
-        private var proxyDNSManager: ProxyDNSManager
+    private var settingView: SettingView,
+    private val activityScope: CoroutineScope,
+    private val preferencesHelper: PreferencesHelper,
+    private val resourceHelper: ResourceHelper,
+    private val apiCallManager: IApiCallManager,
+    private val userRepository: UserRepository,
+    private val localDbInterface: LocalDbInterface,
+    private val autoConnectionManager: AutoConnectionManager,
+    private val vpnConnectionStateManager: VPNConnectionStateManager,
+    private val logRepository: LogRepository,
+    private var proxyDNSManager: ProxyDNSManager,
+    private val portMapRepository: com.windscribe.vpn.repository.PortMapRepository
 ) : SettingsPresenter, InstalledAppsAdapter.InstalledAppListener {
     private val installedAppList: MutableList<InstalledAppsData> = ArrayList()
     private var installedAppsAdapter: InstalledAppsAdapter? = null
     private val logger = LoggerFactory.getLogger("basic")
     override fun onDestroy() {
         logger.info("Disposing observer...")
-        interactor.getAutoConnectionManager().reset()
-        if (!interactor.getCompositeDisposable().isDisposed) {
-            interactor.getCompositeDisposable().dispose()
-        }
+        autoConnectionManager.reset()
     }
 
     override val isUserInGhostMode: Boolean
-        get() = interactor.getAppPreferenceInterface().userIsInGhostMode()
+        get() = preferencesHelper.userIsInGhostMode()
     override val isUserPro: Boolean
-        get() = (
-                interactor.getAppPreferenceInterface().userStatus
-                        == UserStatusConstants.USER_STATUS_PREMIUM
-                )
+        get() = (preferencesHelper.userStatus == UserStatusConstants.USER_STATUS_PREMIUM)
 
     override fun onAddEmailClicked() {
         logger.info("Showing account in browser...")
@@ -90,64 +93,66 @@ class SettingsPresenterImp @Inject constructor(
     }
 
     override fun onAllowBootStartClick() {
-        val allowStartOnBoot = interactor.getAppPreferenceInterface().autoStartOnBoot
+        val allowStartOnBoot = preferencesHelper.autoStartOnBoot
         if (!allowStartOnBoot) {
-            interactor.getAppPreferenceInterface().autoStartOnBoot = true
+            preferencesHelper.autoStartOnBoot = true
             settingView.setBootStartMode(BOOT_ALLOW)
         }
     }
 
     override fun onAllowLanClicked() {
-        val allowByPassLanTraffic = interactor.getAppPreferenceInterface().lanByPass
+        val allowByPassLanTraffic = preferencesHelper.lanByPass
         if (!allowByPassLanTraffic) {
-            getExecutorService()
-                    .submit { interactor.getAppPreferenceInterface().lanByPass = true }
+            activityScope.launch {
+                preferencesHelper.lanByPass = true
+            }
             settingView.setLanTrafficMode(LAN_ALLOW)
         }
     }
 
     override fun onBlockBootStartClick() {
-        val allowStartOnBoot = interactor.getAppPreferenceInterface().autoStartOnBoot
+        val allowStartOnBoot = preferencesHelper.autoStartOnBoot
         if (allowStartOnBoot) {
-            getExecutorService()
-                    .submit { interactor.getAppPreferenceInterface().autoStartOnBoot = false }
+            activityScope.launch {
+                preferencesHelper.autoStartOnBoot = false
+            }
             settingView.setBootStartMode(BOOT_BLOCK)
         }
     }
 
     override fun onBlockLanClicked() {
-        val allowByPassLanTraffic = interactor.getAppPreferenceInterface().lanByPass
+        val allowByPassLanTraffic = preferencesHelper.lanByPass
         if (allowByPassLanTraffic) {
-            interactor.getAppPreferenceInterface().lanByPass = false
+            preferencesHelper.lanByPass = false
             settingView.setLanTrafficMode(LAN_BLOCK)
         }
     }
 
     override fun onCustomDNSClicked() {
-        val dnsMode = interactor.getAppPreferenceInterface().dnsMode
+        val dnsMode = preferencesHelper.dnsMode
         if (dnsMode != DNS_MODE_CUSTOM) {
-            interactor.getAppPreferenceInterface().dnsMode = DNS_MODE_CUSTOM
+            preferencesHelper.dnsMode = DNS_MODE_CUSTOM
             settingView.setCustomDNS(true)
             settingView.setCustomDNSAddressVisibility(true)
         }
     }
 
     override fun onRobertDNSClicked() {
-        val dnsMode = interactor.getAppPreferenceInterface().dnsMode
+        val dnsMode = preferencesHelper.dnsMode
         if (dnsMode != DNS_MODE_ROBERT) {
-            interactor.getAppPreferenceInterface().dnsMode = DNS_MODE_ROBERT
+            preferencesHelper.dnsMode = DNS_MODE_ROBERT
             settingView.setCustomDNS(false)
             settingView.setCustomDNSAddressVisibility(false)
         }
     }
 
     override fun saveCustomDNSAddress(url: String) {
-        val dnsAddress = interactor.getAppPreferenceInterface().dnsAddress
+        val dnsAddress = preferencesHelper.dnsAddress
         if (dnsAddress != url && url.isNotEmpty()) {
-            interactor.getAppPreferenceInterface().dnsAddress = url
+            preferencesHelper.dnsAddress = url
             proxyDNSManager.invalidConfig = true
-            interactor.getMainScope().launch {
-                if (!interactor.getVpnConnectionStateManager().isVPNConnected()){
+            activityScope.launch {
+                if (!vpnConnectionStateManager.isVPNConnected()) {
                     proxyDNSManager.stopControlD()
                 }
             }
@@ -155,47 +160,56 @@ class SettingsPresenterImp @Inject constructor(
     }
 
     override fun onAllowAntiCensorshipClicked() {
-        if (interactor.getAppPreferenceInterface().isAntiCensorshipOn.not()) {
-            interactor.getAppPreferenceInterface().isAntiCensorshipOn = true
+        if (preferencesHelper.isAntiCensorshipOn.not()) {
+            preferencesHelper.isAntiCensorshipOn = true
             settingView.setAntiCensorshipMode(true)
         }
     }
 
     override fun onBlockAntiCensorshipClicked() {
-        if (interactor.getAppPreferenceInterface().isAntiCensorshipOn) {
-            interactor.getAppPreferenceInterface().isAntiCensorshipOn = false
+        if (preferencesHelper.isAntiCensorshipOn) {
+            preferencesHelper.isAntiCensorshipOn = false
             settingView.setAntiCensorshipMode(false)
         }
     }
 
     override fun onConnectionModeAutoClicked() {
-        if (CONNECTION_MODE_AUTO != interactor.getSavedConnectionMode()) {
-            getExecutorService().submit {
-                interactor.saveConnectionMode(CONNECTION_MODE_AUTO)
-                interactor.getAppPreferenceInterface().nextProtocol(null)
-                interactor.saveProtocol(PROTO_IKev2)
+        if (CONNECTION_MODE_AUTO != (preferencesHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY)
+                ?: CONNECTION_MODE_AUTO)
+        ) {
+            activityScope.launch {
+                preferencesHelper.saveResponseStringData(
+                    PreferencesKeyConstants.CONNECTION_MODE_KEY, CONNECTION_MODE_AUTO
+                )
+                preferencesHelper.nextProtocol(null)
+                preferencesHelper.saveResponseStringData(
+                    PreferencesKeyConstants.PROTOCOL_KEY, PROTO_IKev2
+                )
             }
             settingView.setupLayoutForAutoMode()
         }
     }
 
     override fun onConnectionModeManualClicked() {
-        if (CONNECTION_MODE_MANUAL != interactor.getSavedConnectionMode()) {
-            interactor.saveConnectionMode(CONNECTION_MODE_MANUAL)
+        if (CONNECTION_MODE_MANUAL != (preferencesHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY)
+                ?: CONNECTION_MODE_AUTO)
+        ) {
+            preferencesHelper.saveResponseStringData(
+                PreferencesKeyConstants.CONNECTION_MODE_KEY, CONNECTION_MODE_MANUAL
+            )
             settingView.setupLayoutForManualMode()
-            val savedProtocol = interactor.getSavedProtocol()
+            val savedProtocol = preferencesHelper.savedProtocol
             setProtocolAdapter(savedProtocol)
             setPortMapAdapter(savedProtocol)
         }
     }
 
     override fun onDisabledModeClick() {
-        val splitRouting = interactor.getAppPreferenceInterface().splitTunnelToggle
+        val splitRouting = preferencesHelper.splitTunnelToggle
         if (splitRouting) {
-            getExecutorService()
-                    .submit {
-                        interactor.getAppPreferenceInterface().splitTunnelToggle = false
-                    }
+            activityScope.launch(Dispatchers.IO) {
+                preferencesHelper.splitTunnelToggle = false
+            }
             settingView.setSplitRouteMode(DISABLED_MODE)
         }
     }
@@ -205,12 +219,12 @@ class SettingsPresenterImp @Inject constructor(
     }
 
     override fun onExclusiveModeClick() {
-        val splitRouting = interactor.getAppPreferenceInterface().splitTunnelToggle
-        val splitRoutingMode = interactor.getAppPreferenceInterface().splitRoutingMode
+        val splitRouting = preferencesHelper.splitTunnelToggle
+        val splitRoutingMode = preferencesHelper.splitRoutingMode
         if ((splitRoutingMode != EXCLUSIVE_MODE) or !splitRouting) {
-            getExecutorService().submit {
-                interactor.getAppPreferenceInterface().splitTunnelToggle = true
-                interactor.getAppPreferenceInterface().saveSplitRoutingMode(EXCLUSIVE_MODE)
+            activityScope.launch(Dispatchers.IO) {
+                preferencesHelper.splitTunnelToggle = true
+                preferencesHelper.saveSplitRoutingMode(EXCLUSIVE_MODE)
             }
             settingView.setSplitRouteMode(EXCLUSIVE_MODE)
             addWindScribeToList(false)
@@ -218,12 +232,12 @@ class SettingsPresenterImp @Inject constructor(
     }
 
     override fun onInclusiveModeClick() {
-        val splitRouting = interactor.getAppPreferenceInterface().splitTunnelToggle
-        val splitRoutingMode = interactor.getAppPreferenceInterface().splitRoutingMode
+        val splitRouting = preferencesHelper.splitTunnelToggle
+        val splitRoutingMode = preferencesHelper.splitRoutingMode
         if ((splitRoutingMode != INCLUSIVE_MODE) or !splitRouting) {
-            getExecutorService().submit {
-                interactor.getAppPreferenceInterface().splitTunnelToggle = true
-                interactor.getAppPreferenceInterface().saveSplitRoutingMode(INCLUSIVE_MODE)
+            activityScope.launch(Dispatchers.IO) {
+                preferencesHelper.splitTunnelToggle = true
+                preferencesHelper.saveSplitRoutingMode(INCLUSIVE_MODE)
             }
             settingView.setSplitRouteMode(INCLUSIVE_MODE)
             addWindScribeToList(true)
@@ -231,40 +245,37 @@ class SettingsPresenterImp @Inject constructor(
     }
 
     override fun onInstalledAppClick(updatedModel: InstalledAppsData?, reloadAdapter: Boolean) {
-        interactor.getCompositeDisposable().add(
-                interactor.getAppPreferenceInterface().installedApps
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeOn(Schedulers.io())
-                        .subscribeWith(object : DisposableSingleObserver<List<String>>() {
-                            override fun onError(e: Throwable) {
-                                val list: MutableList<String> = ArrayList()
-                                updatedModel?.let { saveApps(list, it, reloadAdapter) }
-                            }
-
-                            override fun onSuccess(installedAppsData: List<String>) {
-                                updatedModel?.let { saveApps(installedAppsData, it, reloadAdapter) }
-                            }
-                        })
-        )
+        activityScope.launch(Dispatchers.IO) {
+            try {
+                val apps = preferencesHelper.installedApps()
+                withContext(Dispatchers.Main) {
+                    updatedModel?.let { saveApps(apps, it, reloadAdapter) }
+                }
+            } catch (_: Exception) {
+                withContext(Dispatchers.Main) {
+                    val list: MutableList<String> = ArrayList()
+                    updatedModel?.let { saveApps(list, it, reloadAdapter) }
+                }
+            }
+        }
     }
 
     override fun onLanguageSelected(selectedLanguage: String) {
         // Save the selected language
-        val savedLanguage = interactor.getSavedLanguage()
+        val savedLanguage = preferencesHelper.savedLanguage
         if (savedLanguage == selectedLanguage) {
             logger.info("Language selected is same as saved. No action taken...")
         } else {
-            interactor.saveSelectedLanguage(selectedLanguage)
+            preferencesHelper.saveResponseStringData(
+                PreferencesKeyConstants.USER_LANGUAGE, selectedLanguage
+            )
             settingView.reloadApp()
         }
     }
 
     override fun onLoginAndClaimClick() {
-        val ghostMode = interactor.getAppPreferenceInterface().userIsInGhostMode()
-        val proUser = (
-                interactor.getAppPreferenceInterface().userStatus
-                        == UserStatusConstants.USER_STATUS_PREMIUM
-                )
+        val ghostMode = preferencesHelper.userIsInGhostMode()
+        val proUser = (preferencesHelper.userStatus == UserStatusConstants.USER_STATUS_PREMIUM)
         if (!proUser && ghostMode) {
             settingView.goToLogin()
         } else if (ghostMode) {
@@ -274,140 +285,134 @@ class SettingsPresenterImp @Inject constructor(
 
     override fun onPortSelected(protocol: String, port: String) {
         logger.info("Saving selected port...")
-        interactor.loadPortMap(object : PortMapLoadCallback {
-            override fun onFinished(portMapResponse: PortMapResponse) {
-                when (getProtocolFromHeading(portMapResponse, protocol)) {
-                    PROTO_IKev2 -> {
-                        logger.info("Saving selected IKev2 port...")
-                        interactor.getAppPreferenceInterface().saveIKEv2Port(port)
-                    }
+        portMapRepository.getPortMapWithCallback { portMapResponse ->
+            when (getProtocolFromHeading(portMapResponse, protocol)) {
+                PROTO_IKev2 -> {
+                    logger.info("Saving selected IKev2 port...")
+                    preferencesHelper.saveIKEv2Port(port)
+                }
 
-                    PROTO_UDP -> {
-                        logger.info("Saving selected udp port...")
-                        interactor.saveUDPPort(port)
-                    }
+                PROTO_UDP -> {
+                    logger.info("Saving selected udp port...")
+                    preferencesHelper.saveResponseStringData(
+                        PreferencesKeyConstants.SAVED_UDP_PORT, port
+                    )
+                }
 
-                    PROTO_TCP -> {
-                        logger.info("Saving selected tcp port...")
-                        interactor.saveTCPPort(port)
-                    }
+                PROTO_TCP -> {
+                    logger.info("Saving selected tcp port...")
+                    preferencesHelper.saveResponseStringData(
+                        PreferencesKeyConstants.SAVED_TCP_PORT, port
+                    )
+                }
 
-                    PROTO_STEALTH -> {
-                        logger.info("Saving selected stealth port...")
-                        interactor.saveSTEALTHPort(port)
-                    }
+                PROTO_STEALTH -> {
+                    logger.info("Saving selected stealth port...")
+                    preferencesHelper.saveResponseStringData(
+                        PreferencesKeyConstants.SAVED_STEALTH_PORT, port
+                    )
+                }
 
-                    PROTO_WS_TUNNEL -> {
-                        logger.info("Saving selected ws port...")
-                        interactor.saveWSTunnelPort(port)
-                    }
+                PROTO_WS_TUNNEL -> {
+                    logger.info("Saving selected ws port...")
+                    preferencesHelper.saveResponseStringData(
+                        PreferencesKeyConstants.SAVED_WS_TUNNEL_PORT, port
+                    )
+                }
 
-                    PROTO_WIRE_GUARD -> {
-                        logger.info("Saving selected wire guard port...")
-                        interactor.getAppPreferenceInterface().saveWireGuardPort(port)
-                    }
+                PROTO_WIRE_GUARD -> {
+                    logger.info("Saving selected wire guard port...")
+                    preferencesHelper.saveWireGuardPort(port)
+                }
 
-                    else -> {
-                        logger.info("Saving default port (udp)...")
-                        interactor.saveUDPPort(port)
-                    }
+                else -> {
+                    logger.info("Saving default port (udp)...")
+                    preferencesHelper.saveResponseStringData(
+                        PreferencesKeyConstants.SAVED_UDP_PORT, port
+                    )
                 }
             }
-        })
+        }
     }
 
     override fun onProtocolSelected(protocol: String) {
         logger.debug("Saving selected protocol.")
-        interactor.loadPortMap(object : PortMapLoadCallback {
-            override fun onFinished(portMapResponse: PortMapResponse) {
-                val protocolFromHeading = getProtocolFromHeading(portMapResponse, protocol)
-                val savedProtocol = interactor.getSavedProtocol()
-                if (savedProtocol == protocolFromHeading) {
-                    logger.debug("Protocol re-selected is same as saved. No action taken...")
-                } else {
-                    logger.info("Saving selected protocol...")
-                    interactor.saveProtocol(protocolFromHeading)
-                    setPortMapAdapter(protocol)
-                }
+        portMapRepository.getPortMapWithCallback { portMapResponse ->
+            val protocolFromHeading = getProtocolFromHeading(portMapResponse, protocol)
+            val savedProtocol = preferencesHelper.savedProtocol
+            if (savedProtocol == protocolFromHeading) {
+                logger.debug("Protocol re-selected is same as saved. No action taken...")
+            } else {
+                logger.info("Saving selected protocol...")
+                preferencesHelper.saveResponseStringData(
+                    PreferencesKeyConstants.PROTOCOL_KEY, protocolFromHeading
+                )
+                setPortMapAdapter(protocol)
             }
-        })
+        }
     }
 
     override fun onSendDebugClicked() {
         logger.info("Preparing debug file...")
         settingView.showProgress(settingView.getResourceString(com.windscribe.vpn.R.string.sending_debug_log))
-        interactor.getCompositeDisposable().add(
-                Single.fromCallable { interactor.getEncodedLog() }
-                        .flatMap { encodedLog: String ->
-                            logger.info("Reading log file successful, submitting app log...")
-                            interactor.getApiCallManager().postDebugLog(interactor.getAppPreferenceInterface().userName, encodedLog)
-                        }.subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(
-                                object :
-                                        DisposableSingleObserver<GenericResponseClass<GenericSuccess?, ApiErrorResponse?>?>() {
-                                    override fun onError(e: Throwable) {
-                                        logger.debug(
-                                                "Error Submitting Log: " +
-                                                        WindError.instance.convertThrowableToString(e)
-                                        )
-                                        settingView.showToast(
-                                                interactor.getResourceString(com.windscribe.vpn.R.string.log_submission_failed)
-                                        )
-                                        settingView.hideProgress()
-                                    }
+        activityScope.launch(Dispatchers.IO) {
+            try {
+                val result = logRepository.onSendLog()
+                when (result) {
+                    is CallResult.Success -> {
+                        withContext(Dispatchers.Main) {
+                            settingView.hideProgress()
+                            settingView.showToast(resourceHelper.getString(com.windscribe.vpn.R.string.app_log_submitted))
+                        }
+                    }
 
-                                    override fun onSuccess(
-                                            appLogSubmissionResponse: GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
-                                    ) {
-                                        settingView.hideProgress()
-                                        if (appLogSubmissionResponse.dataClass?.isSuccessful == true) {
-                                            settingView.showToast(
-                                                    interactor.getResourceString(com.windscribe.vpn.R.string.app_log_submitted)
-                                            )
-                                        } else if (appLogSubmissionResponse.errorClass != null) {
-                                            appLogSubmissionResponse.errorClass?.let {
-                                                settingView.showToast(
-                                                        SessionErrorHandler.instance.getErrorMessage(
-                                                                it
-                                                        )
-                                                )
-                                            }
-                                        } else {
-                                            settingView.showToast(
-                                                    interactor.getResourceString(com.windscribe.vpn.R.string.log_submission_failed)
-                                            )
-                                        }
-                                    }
-                                })
-        )
+                    is CallResult.Error -> {
+                        withContext(Dispatchers.Main) {
+                            settingView.hideProgress()
+                            logger.debug("Error Submitting Log from Api: " + result.errorMessage)
+                            settingView.showToast(resourceHelper.getString(com.windscribe.vpn.R.string.log_submission_failed))
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    settingView.hideProgress()
+                    logger.debug(
+                        "Error Submitting Log: " + WindError.instance.convertThrowableToString(
+                            e
+                        )
+                    )
+                    settingView.showToast(
+                        resourceHelper.getString(com.windscribe.vpn.R.string.log_submission_failed)
+                    )
+                }
+            }
+        }
     }
 
     override fun onSignOutClicked() {
-        interactor.getMainScope().launch { interactor.getUserRepository().logout() }
+        activityScope.launch { userRepository.logout() }
     }
 
     override fun onSortSelected(newSort: String) {
-        interactor.getAppPreferenceInterface().saveSelection(newSort)
-        interactor.getCompositeDisposable().add(
-                interactor.getServerStatus()
-                        .flatMapCompletable(
-                                Function { serverStatusUpdateTable: ServerStatusUpdateTable ->
-                                    interactor
-                                            .updateServerList(if (serverStatusUpdateTable.serverStatus == 0) 1 else 0)
-                                } as Function<ServerStatusUpdateTable, Completable>
-                        )
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeOn(Schedulers.io())
-                        .subscribeWith(object : DisposableCompletableObserver() {
-                            override fun onComplete() {}
-                            override fun onError(e: Throwable) {}
-                        })
-        )
+        preferencesHelper.saveSelection(newSort)
+        activityScope.launch(Dispatchers.IO) {
+            try {
+                val serverStatusUpdateTable =
+                    localDbInterface.getServerStatus(preferencesHelper.userName)
+                localDbInterface.insertOrUpdateStatus(
+                    ServerStatusUpdateTable(
+                        preferencesHelper.userName,
+                        if (serverStatusUpdateTable.serverStatus == 0) 1 else 0
+                    )
+                )
+            } catch (_: Exception) {
+            }
+        }
     }
 
     override fun onUpgradeClicked(textViewText: String) {
-        if (interactor.getResourceString(com.windscribe.vpn.R.string.upgrade_case_normal) == textViewText) {
+        if (resourceHelper.getString(com.windscribe.vpn.R.string.upgrade_case_normal) == textViewText) {
             // User is free user.. goto upgrade activity
             logger.info("Showing upgrade dialog to the user...")
             settingView.openUpgradeActivity()
@@ -418,7 +423,7 @@ class SettingsPresenterImp @Inject constructor(
     }
 
     override fun observeUserData(settingsActivity: SettingActivity) {
-        interactor.getUserRepository().user.observe(settingsActivity, this::setAccountInfo)
+        userRepository.user.observe(settingsActivity, this::setAccountInfo)
     }
 
     private fun setAccountInfo(user: User) {
@@ -429,8 +434,8 @@ class SettingsPresenterImp @Inject constructor(
         when (user.emailStatus) {
             User.EmailStatus.NoEmail -> {
                 settingView.setEmailState(
-                        if (user.isPro) AccountFragment.Status.NOT_ADDED_PRO else AccountFragment.Status.NOT_ADDED,
-                        null
+                    if (user.isPro) AccountFragment.Status.NOT_ADDED_PRO else AccountFragment.Status.NOT_ADDED,
+                    null
                 )
             }
 
@@ -448,43 +453,40 @@ class SettingsPresenterImp @Inject constructor(
         if (user.isPro) {
             setExpiryOrResetDate(true, user.expiryDate)
             settingView.setPlanName(
-                    interactor.getResourceString(com.windscribe.vpn.R.string.unlimited_data)
+                resourceHelper.getString(com.windscribe.vpn.R.string.unlimited_data)
             )
             settingView.setupLayoutForPremiumUser(
-                    interactor.getResourceString(com.windscribe.vpn.R.string.plan_pro)
+                resourceHelper.getString(com.windscribe.vpn.R.string.plan_pro)
             )
         } else if (user.isAlaCarteUnlimitedPlan) {
             setExpiryOrResetDate(true, user.expiryDate)
             settingView.setPlanName(
-                    interactor.getResourceString(com.windscribe.vpn.R.string.unlimited_data)
+                resourceHelper.getString(com.windscribe.vpn.R.string.unlimited_data)
             )
             settingView.setupLayoutForPremiumUser(
-                    interactor.getResourceString(com.windscribe.vpn.R.string.a_la_carte_unlimited_plan)
+                resourceHelper.getString(com.windscribe.vpn.R.string.a_la_carte_unlimited_plan)
             )
         } else {
             settingView.setupLayoutForFreeUser(
-                    interactor.getResourceString(com.windscribe.vpn.R.string.upgrade_case_normal)
+                resourceHelper.getString(com.windscribe.vpn.R.string.upgrade_case_normal)
             )
             setExpiryOrResetDate(false, user.resetDate)
             if (user.maxData == -1L) {
                 settingView.setPlanName(
-                        interactor.getResourceString(com.windscribe.vpn.R.string.unlimited_data)
+                    resourceHelper.getString(com.windscribe.vpn.R.string.unlimited_data)
                 )
             } else {
                 val maxTrafficData: Long = user.maxData / UserStatusConstants.GB_DATA
                 settingView.setPlanName(
-                        maxTrafficData.toString() + interactor.getResourceString(com.windscribe.vpn.R.string.gb_per_month)
+                    maxTrafficData.toString() + resourceHelper.getString(com.windscribe.vpn.R.string.gb_per_month)
                 )
             }
         }
     }
 
     override fun setUpTabMenu() {
-        val ghostMode = interactor.getAppPreferenceInterface().userIsInGhostMode()
-        val proUser = (
-                interactor.getAppPreferenceInterface().userStatus
-                        == UserStatusConstants.USER_STATUS_PREMIUM
-                )
+        val ghostMode = preferencesHelper.userIsInGhostMode()
+        val proUser = (preferencesHelper.userStatus == UserStatusConstants.USER_STATUS_PREMIUM)
         if (!proUser && ghostMode) {
             settingView.setUpTabLayoutForGhostMode()
         } else if (ghostMode) {
@@ -495,104 +497,95 @@ class SettingsPresenterImp @Inject constructor(
     }
 
     override fun setupLayoutBasedOnConnectionMode() {
-        val savedConnectionMode = interactor.getSavedConnectionMode()
+        val savedConnectionMode =
+            preferencesHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY)
+                ?: CONNECTION_MODE_AUTO
         if (CONNECTION_MODE_MANUAL == savedConnectionMode) {
             settingView.setupLayoutForManualMode()
-            logger
-                    .info(
-                            "Saved connection mode is " + savedConnectionMode + ". No need to change layout settings." +
-                                    " Continue with manual mode as default"
-                    )
-            val savedProtocol = interactor.getSavedProtocol()
+            logger.info(
+                "Saved connection mode is " + savedConnectionMode + ". No need to change layout settings." + " Continue with manual mode as default"
+            )
+            val savedProtocol = preferencesHelper.savedProtocol
             setProtocolAdapter(savedProtocol)
         } else {
             logger.info("Saved connection mode is $savedConnectionMode")
             settingView.setupLayoutForAutoMode()
         }
-        val splitRouting = interactor.getAppPreferenceInterface().splitTunnelToggle
-        val splitRoutingMode = interactor.getAppPreferenceInterface().splitRoutingMode
+        val splitRouting = preferencesHelper.splitTunnelToggle
+        val splitRoutingMode = preferencesHelper.splitRoutingMode
         settingView.setSplitRouteMode(if (splitRouting) splitRoutingMode else DISABLED_MODE)
-        val allowLanTraffic = interactor.getAppPreferenceInterface().lanByPass
+        val allowLanTraffic = preferencesHelper.lanByPass
         settingView.setLanTrafficMode(if (allowLanTraffic) LAN_ALLOW else LAN_BLOCK)
-        val allowBootStart = interactor.getAppPreferenceInterface().autoStartOnBoot
+        val allowBootStart = preferencesHelper.autoStartOnBoot
         settingView.setBootStartMode(if (allowBootStart) BOOT_ALLOW else BOOT_BLOCK)
-        settingView.setAntiCensorshipMode(interactor.getAppPreferenceInterface().isAntiCensorshipOn)
-        settingView.setCustomDNS(interactor.getAppPreferenceInterface().dnsMode == DNS_MODE_CUSTOM)
-        settingView.setCustomDNSAddress(interactor.getAppPreferenceInterface().dnsAddress ?: "")
-        settingView.setCustomDNSAddressVisibility(interactor.getAppPreferenceInterface().dnsMode == DNS_MODE_CUSTOM)
+        settingView.setAntiCensorshipMode(preferencesHelper.isAntiCensorshipOn)
+        settingView.setCustomDNS(preferencesHelper.dnsMode == DNS_MODE_CUSTOM)
+        settingView.setCustomDNSAddress(preferencesHelper.dnsAddress ?: "")
+        settingView.setCustomDNSAddressVisibility(preferencesHelper.dnsMode == DNS_MODE_CUSTOM)
         setupAppListAdapter()
     }
 
     override fun setupLayoutForDebugTab() {
-        settingView.setDebugLogProgress(interactor.getResourceString(com.windscribe.vpn.R.string.loading), "")
-        interactor.getCompositeDisposable()
-                .add(Single.fromCallable { interactor.getPartialLog() }.subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(object : DisposableSingleObserver<List<String>>() {
-                            override fun onError(e: Throwable) {
-                                settingView.setDebugLogProgress("", "Error loading logs")
-                            }
-
-                            override fun onSuccess(s: List<String>) {
-                                settingView.setDebugLog(s)
-                                settingView.setDebugLogProgress("", "")
-                            }
-                        })
-                )
+        settingView.setDebugLogProgress(
+            resourceHelper.getString(com.windscribe.vpn.R.string.loading), ""
+        )
+        activityScope.launch(Dispatchers.IO) {
+            try {
+                val log = logRepository.getPartialLog()
+                withContext(Dispatchers.Main) {
+                    settingView.setDebugLog(log)
+                    settingView.setDebugLogProgress("", "")
+                }
+            } catch (_: Exception) {
+                withContext(Dispatchers.Main) {
+                    settingView.setDebugLogProgress("", "Error loading logs")
+                }
+            }
+        }
     }
 
     override fun setupLayoutForGeneralTab() {
-        val savedLanguage = interactor.getSavedLanguage()
+        val savedLanguage = preferencesHelper.savedLanguage
         // Setup language settings
-        settingView.setupLanguageAdapter(savedLanguage, interactor.getLanguageList())
-        val savedSort = interactor.getAppPreferenceInterface().selection
+        settingView.setupLanguageAdapter(
+            savedLanguage, resourceHelper.getStringArray(com.windscribe.vpn.R.array.language)
+        )
+        val savedSort = preferencesHelper.selection
         settingView.setupSortAdapter(
-                interactor.getStringArray(com.windscribe.vpn.R.array.order_list),
-                savedSort,
-                interactor.getStringArray(com.windscribe.vpn.R.array.order_list_keys)
+            resourceHelper.getStringArray(com.windscribe.vpn.R.array.order_list),
+            savedSort,
+            resourceHelper.getStringArray(com.windscribe.vpn.R.array.order_list_keys)
         )
     }
 
     override fun showLayoutBasedOnUserType() {
-        val mUserStatus = interactor.getAppPreferenceInterface().userStatus
+        val mUserStatus = preferencesHelper.userStatus
         logger.info("Showing layout based on current user status...[status]: $mUserStatus")
         if (mUserStatus == UserStatusConstants.USER_STATUS_PREMIUM) {
-            settingView.setupLayoutForPremiumUser(interactor.getResourceString(com.windscribe.vpn.R.string.plan_pro))
+            settingView.setupLayoutForPremiumUser(resourceHelper.getString(com.windscribe.vpn.R.string.plan_pro))
         } else {
             // Get User Session Data... if not present call and save session
-            settingView.setupLayoutForFreeUser(interactor.getResourceString(com.windscribe.vpn.R.string.upgrade_case_normal))
+            settingView.setupLayoutForFreeUser(resourceHelper.getString(com.windscribe.vpn.R.string.upgrade_case_normal))
         }
     }
 
     override fun updateUserDataFromApi() {
-        interactor.getCompositeDisposable().add(
-                interactor.getApiCallManager()
-                        .getSessionGeneric(null)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(
-                                object :
-                                        DisposableSingleObserver<GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>?>() {
-                                    override fun onError(e: Throwable) {
-                                        // Error in API Call
-                                        logger.debug("Error while making get session call:" + e.message)
-                                    }
+        activityScope.launch(Dispatchers.IO) {
+            val result = result<UserSessionResponse> {
+                apiCallManager.getSessionGeneric(null)
+            }
+            withContext(Dispatchers.Main) {
+                when (result) {
+                    is CallResult.Success -> {
+                        userRepository.reload(result.data)
+                    }
 
-                                    override fun onSuccess(
-                                            userSessionResponse: GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>
-                                    ) {
-                                        if (userSessionResponse.dataClass != null) {
-                                            interactor.getUserRepository().reload(userSessionResponse.dataClass)
-                                        } else if (userSessionResponse.errorClass != null) {
-                                            // Server responded with error!
-                                            logger.debug(
-                                                    "Server returned error during get session call." +
-                                                            userSessionResponse.errorClass.toString()
-                                            )
-                                        }
-                                    }
-                                })
-        )
+                    is CallResult.Error -> {
+                        logger.debug("Error while making get session call:" + result.errorMessage)
+                    }
+                }
+            }
+        }
     }
 
     private fun addWindScribeToList(checked: Boolean) {
@@ -601,8 +594,10 @@ class SettingsPresenterImp @Inject constructor(
         try {
             val applicationInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
             val mData = InstalledAppsData(
-                    pm.getApplicationLabel(applicationInfo).toString(),
-                    applicationInfo.packageName, pm.getApplicationIcon(applicationInfo), false
+                pm.getApplicationLabel(applicationInfo).toString(),
+                applicationInfo.packageName,
+                pm.getApplicationIcon(applicationInfo),
+                false
             )
             mData.isChecked = checked
             onInstalledAppClick(mData, true)
@@ -624,66 +619,57 @@ class SettingsPresenterImp @Inject constructor(
 
     private fun getSavedPort(protocol: String?): String {
         return when (protocol) {
-            PROTO_IKev2 -> interactor.getIKev2Port()
-            PROTO_UDP -> interactor.getSavedUDPPort()
-            PROTO_TCP -> interactor.getSavedTCPPort()
-            PROTO_STEALTH -> interactor.getSavedSTEALTHPort()
-            PROTO_WS_TUNNEL -> interactor.getSavedWSTunnelPort()
-            PROTO_WIRE_GUARD -> interactor.getWireGuardPort()
+            PROTO_IKev2 -> preferencesHelper.iKEv2Port
+            PROTO_UDP -> preferencesHelper.savedUDPPort
+            PROTO_TCP -> preferencesHelper.savedTCPPort
+            PROTO_STEALTH -> preferencesHelper.savedSTEALTHPort
+            PROTO_WS_TUNNEL -> preferencesHelper.savedWSTunnelPort
+            PROTO_WIRE_GUARD -> preferencesHelper.wireGuardPort
             else -> "443"
         }
     }
 
     private fun modifyList(savedApps: List<String>) {
         val pm = appContext.packageManager
-        interactor.getCompositeDisposable().add(
-                Single.fromCallable {
-                    pm.getInstalledApplications(
-                            PackageManager.GET_META_DATA
+        activityScope.launch(Dispatchers.IO) {
+            try {
+                val packages = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+                installedAppList.clear()
+                for (applicationInfo in packages) {
+                    val isSystemApp = applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM == 1
+                    val mData = InstalledAppsData(
+                        pm.getApplicationLabel(applicationInfo).toString(),
+                        applicationInfo.packageName,
+                        pm.getApplicationIcon(applicationInfo),
+                        isSystemApp
                     )
-                }.flatMap { packages: List<ApplicationInfo> ->
-                    installedAppList.clear()
-                    for (applicationInfo in packages) {
-                        val isSystemApp = applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM == 1
-                        val mData = InstalledAppsData(
-                                pm.getApplicationLabel(applicationInfo).toString(),
-                                applicationInfo.packageName,
-                                pm.getApplicationIcon(applicationInfo),
-                                isSystemApp
-                        )
-                        for (installedAppsData in savedApps) {
-                            if (mData.packageName == installedAppsData) {
-                                mData.isChecked = true
-                            }
+                    for (installedAppsData in savedApps) {
+                        if (mData.packageName == installedAppsData) {
+                            mData.isChecked = true
                         }
-                        installedAppList.add(mData)
                     }
-                    Collections.sort(installedAppList, SortByName())
-                    Single.fromCallable { installedAppList }
-                }.observeOn(AndroidSchedulers.mainThread())
-                        .subscribeOn(Schedulers.io())
-                        .subscribeWith(object : DisposableSingleObserver<List<InstalledAppsData?>?>() {
-                            override fun onError(e: Throwable) {
-                                settingView.hideProgress()
-                            }
-
-                            override fun onSuccess(packages: List<InstalledAppsData?>) {
-                                settingView.hideProgress()
-                                installedAppsAdapter = InstalledAppsAdapter(
-                                        installedAppList, this@SettingsPresenterImp
-                                )
-                                installedAppsAdapter?.let {
-                                    settingView.setupAppsAdapter(it)
-                                }
-                            }
-                        })
-        )
+                    installedAppList.add(mData)
+                }
+                Collections.sort(installedAppList, SortByName())
+                withContext(Dispatchers.Main) {
+                    settingView.hideProgress()
+                    installedAppsAdapter = InstalledAppsAdapter(
+                        installedAppList, this@SettingsPresenterImp
+                    )
+                    installedAppsAdapter?.let {
+                        settingView.setupAppsAdapter(it)
+                    }
+                }
+            } catch (_: Exception) {
+                withContext(Dispatchers.Main) {
+                    settingView.hideProgress()
+                }
+            }
+        }
     }
 
     private fun saveApps(
-            savedList: List<String>,
-            updatedApp: InstalledAppsData,
-            reloadAdapter: Boolean
+        savedList: List<String>, updatedApp: InstalledAppsData, reloadAdapter: Boolean
     ) {
         val list = savedList.toMutableList()
         if (updatedApp.isChecked) {
@@ -691,10 +677,9 @@ class SettingsPresenterImp @Inject constructor(
         } else {
             list.remove(updatedApp.packageName)
         }
-        getExecutorService()
-                .submit {
-                    interactor.getAppPreferenceInterface().saveInstalledApps(list)
-                }
+        activityScope.launch(Dispatchers.IO) {
+            preferencesHelper.saveInstalledApps(list)
+        }
         if (reloadAdapter) {
             installedAppsAdapter?.updateApp(updatedApp.packageName, updatedApp.isChecked)
         }
@@ -712,82 +697,65 @@ class SettingsPresenterImp @Inject constructor(
                         c.add(Calendar.DATE, 30)
                         val nextResetDate = c.time
                         settingView.setResetDate(
-                                interactor.getResourceString(com.windscribe.vpn.R.string.reset_date),
-                                formatter.format(nextResetDate)
+                            resourceHelper.getString(com.windscribe.vpn.R.string.reset_date),
+                            formatter.format(nextResetDate)
                         )
                     } else {
                         val nextResetDate = c.time
                         settingView.setResetDate(
-                                interactor.getResourceString(com.windscribe.vpn.R.string.expiry_date),
-                                formatter.format(nextResetDate)
+                            resourceHelper.getString(com.windscribe.vpn.R.string.expiry_date),
+                            formatter.format(nextResetDate)
                         )
                     }
                 }
             } catch (e: ParseException) {
                 logger.debug(
-                        "Could not parse date data. " + WindError.instance.convertErrorToString(
-                                e
-                        )
+                    "Could not parse date data. " + WindError.instance.convertErrorToString(
+                        e
+                    )
                 )
             }
         }
     }
 
     private fun setPortMapAdapter(heading: String) {
-        interactor.loadPortMap(object : PortMapLoadCallback {
-            override fun onFinished(portMapResponse: PortMapResponse) {
-                portMapResponse.let {
-                    val protocol = getProtocolFromHeading(portMapResponse, heading)
-                    val savedPort = getSavedPort(protocol)
-                    for (portMap in portMapResponse.portmap) {
-                        if (portMap.protocol == protocol) {
-                            settingView.setupPortMapAdapter(savedPort, portMap.ports)
-                        }
-                    }
+        portMapRepository.getPortMapWithCallback { portMapResponse ->
+            val protocol = getProtocolFromHeading(portMapResponse, heading)
+            val savedPort = getSavedPort(protocol)
+            for (portMap in portMapResponse.portmap) {
+                if (portMap.protocol == protocol) {
+                    settingView.setupPortMapAdapter(savedPort, portMap.ports)
                 }
             }
-        })
+        }
     }
 
     private fun setProtocolAdapter(savedProtocol: String) {
-        interactor.loadPortMap(object : PortMapLoadCallback {
-            override fun onFinished(portMapResponse: PortMapResponse) {
-                portMapResponse.let {
-                    var selectedPortMap: PortMap? = null
-                    val protocols: MutableList<String> = ArrayList()
-                    for (portMap in portMapResponse.portmap) {
-                        if (portMap.protocol == savedProtocol) {
-                            selectedPortMap = portMap
-                        }
-                        protocols.add(portMap.heading)
-                    }
-                    selectedPortMap = selectedPortMap ?: portMapResponse.portmap[0]
-                    selectedPortMap?.let {
-                        settingView.setupProtocolAdapter(it.heading, protocols)
-                        setPortMapAdapter(it.heading)
-                    }
+        portMapRepository.getPortMapWithCallback { portMapResponse ->
+            var selectedPortMap: PortMap? = null
+            val protocols: MutableList<String> = ArrayList()
+            for (portMap in portMapResponse.portmap) {
+                if (portMap.protocol == savedProtocol) {
+                    selectedPortMap = portMap
                 }
+                protocols.add(portMap.heading)
             }
-        })
+            selectedPortMap = selectedPortMap ?: portMapResponse.portmap[0]
+            selectedPortMap?.let {
+                settingView.setupProtocolAdapter(it.heading, protocols)
+                setPortMapAdapter(it.heading)
+            }
+        }
     }
 
     private fun setupAppListAdapter() {
-        settingView.showProgress(interactor.getResourceString(com.windscribe.vpn.R.string.loading))
-        interactor.getCompositeDisposable()
-                .add(
-                        interactor.getAppPreferenceInterface().installedApps
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribeOn(Schedulers.io())
-                                .subscribeWith(object : DisposableSingleObserver<List<String>>() {
-                                    override fun onError(e: Throwable) {
-                                        settingView.hideProgress()
-                                        modifyList(emptyList())
-                                    }
-
-                                    override fun onSuccess(installedAppsData: List<String>) {
-                                        modifyList(installedAppsData)
-                                    }
-                                })
-                )
+        settingView.showProgress(resourceHelper.getString(com.windscribe.vpn.R.string.loading))
+        activityScope.launch(Dispatchers.IO) {
+            val apps = preferencesHelper.installedApps()
+            withContext(Dispatchers.Main) {
+                settingView.hideProgress()
+                modifyList(apps)
+            }
+        }
     }
 }

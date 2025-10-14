@@ -1,21 +1,13 @@
 package com.windscribe.mobile.ui.preferences.robert
 
 import android.net.Uri
-import androidx.annotation.StringRes
-import androidx.compose.foundation.shape.GenericShape
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.connection.ToastMessage
-import com.windscribe.mobile.ui.preferences.account.AccountViewModel
-import com.windscribe.mobile.ui.preferences.main.MainMenuViewModel
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.api.ApiCallManager
 import com.windscribe.vpn.api.IApiCallManager
-import com.windscribe.vpn.api.response.ApiErrorResponse
-import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.api.response.RobertFilter
 import com.windscribe.vpn.api.response.RobertFilterResponse
@@ -25,20 +17,13 @@ import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants
-import com.windscribe.vpn.exceptions.WindScribeException
-import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.CallResult
-import com.windscribe.vpn.repository.UserRepository
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 
 abstract class RobertViewModel : ViewModel() {
     abstract val robertFilterState: StateFlow<RobertFilterState>
@@ -79,7 +64,7 @@ class RobertViewModelImpl(
     private fun loadRobertFilters() {
         viewModelScope.launch(Dispatchers.IO) {
             _showProgress.value = true
-            val result = apiCallManager.getRobertFilters().result<RobertFilterResponse>()
+            val result = result<RobertFilterResponse> { apiCallManager.getRobertFilters() }
             _showProgress.value = false
             when (result) {
                 is CallResult.Error -> {
@@ -133,7 +118,7 @@ class RobertViewModelImpl(
     override fun onManageRulesClick() {
         viewModelScope.launch {
             _showProgress.value = true
-            val result = apiCallManager.getWebSession().result<WebSession>()
+            val result = result<WebSession> { apiCallManager.getWebSession() }
             when (result) {
                 is CallResult.Error -> {
                     _showProgress.value = false
@@ -155,8 +140,7 @@ class RobertViewModelImpl(
     override fun onFilterSettingChanged(robertFilter: RobertFilter, status: Int) {
         viewModelScope.launch {
             _showProgress.value = true
-            val result = apiCallManager.updateRobertSettings(robertFilter.id, status)
-                .result<GenericSuccess>()
+            val result = result<GenericSuccess> { apiCallManager.updateRobertSettings(robertFilter.id, status) }
             when (result) {
                 is CallResult.Error -> {
                     _showProgress.value = false

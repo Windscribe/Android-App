@@ -1,9 +1,7 @@
 package com.windscribe.vpn.repository
 
-import com.windscribe.vpn.commonutils.Ext.toResult
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.Favourite
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -33,10 +31,6 @@ class FavouriteRepository @Inject constructor(
                 _favourites.emit(favouriteCityList)
             }
         }
-    }
-
-    suspend fun add(city: City): Result<Long> {
-        return localDbInterface.addToFavourites(Favourite(city.id)).toResult()
     }
 
     fun remove(id: Int) {

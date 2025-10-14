@@ -7,8 +7,8 @@ package com.windscribe.vpn.backend.openvpn
 import android.content.Intent
 import android.net.VpnService
 import com.windscribe.common.startSafeForeground
-import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
@@ -28,7 +28,7 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
     lateinit var windNotificationBuilder: WindNotificationBuilder
 
     @Inject
-    lateinit var serviceInteractor: ServiceInteractor
+    lateinit var preferencesHelper: PreferencesHelper
 
     @Inject
     lateinit var vpnController: WindVpnController
@@ -69,7 +69,7 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
     }
 
     override fun onProcessRestore(): Boolean {
-        return serviceInteractor.preferenceHelper.globalUserConnectionPreference
+        return preferencesHelper.globalUserConnectionPreference
     }
 
     override fun onDestroy() {

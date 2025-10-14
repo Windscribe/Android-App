@@ -12,8 +12,8 @@ import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.IBinder
 import com.windscribe.common.startSafeForeground
-import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.VPNState.Status.UnsecuredNetwork
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
@@ -33,7 +33,7 @@ class NetworkWhiteListService : Service(), NetworkInfoListener {
     lateinit var scope: CoroutineScope
 
     @Inject
-    lateinit var interactor: ServiceInteractor
+    lateinit var preferencesHelper: PreferencesHelper
 
     @Inject
     lateinit var notificationBuilder: WindNotificationBuilder
@@ -58,9 +58,6 @@ class NetworkWhiteListService : Service(), NetworkInfoListener {
     override fun onDestroy() {
         networkInfoManager.removeNetworkInfoListener(this)
         logger.debug("Service on destroy.")
-        if (!interactor.compositeDisposable.isDisposed) {
-            interactor.compositeDisposable.dispose()
-        }
         super.onDestroy()
     }
 
@@ -69,7 +66,7 @@ class NetworkWhiteListService : Service(), NetworkInfoListener {
     }
 
     override fun onNetworkInfoUpdate(networkInfo: NetworkInfo?, userReload: Boolean) {
-        if (!interactor.preferenceHelper.globalUserConnectionPreference) {
+        if (!preferencesHelper.globalUserConnectionPreference) {
             logger.debug("New network available but user connection intent is false. now disconnecting")
             scope.launch {
                 windVpnController.disconnectAsync()
@@ -77,7 +74,7 @@ class NetworkWhiteListService : Service(), NetworkInfoListener {
             return
         }
         networkInfo?.let {
-            logger.debug("Network white list service > SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelisted network: ${interactor.preferenceHelper.whiteListedNetwork}")
+            logger.debug("Network white list service > SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelisted network: ${preferencesHelper.whiteListedNetwork}")
             if (!it.isAutoSecureOn) {
                 onTrustedNetworkFound()
             } else {
@@ -108,7 +105,7 @@ class NetworkWhiteListService : Service(), NetworkInfoListener {
 
     private fun onUntrustedNetworkFound() {
         networkInfoManager.removeNetworkInfoListener(this)
-        interactor.preferenceHelper.globalUserConnectionPreference = true
+        preferencesHelper.globalUserConnectionPreference = true
         windVpnController.connectAsync()
     }
 

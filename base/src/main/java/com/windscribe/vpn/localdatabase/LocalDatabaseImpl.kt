@@ -3,10 +3,7 @@
  */
 package com.windscribe.vpn.localdatabase
 
-import android.database.sqlite.SQLiteException
-import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
-import com.windscribe.vpn.localdatabase.tables.PingTestResults
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
 import com.windscribe.vpn.localdatabase.tables.UserStatusTable
@@ -28,16 +25,12 @@ import com.windscribe.vpn.serverlist.entity.Region
 import com.windscribe.vpn.serverlist.entity.RegionAndCities
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.state.PreferenceChangeObserver
-import io.reactivex.Completable
-import io.reactivex.Flowable
-import io.reactivex.Single
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class LocalDatabaseImpl @Inject constructor(
-    private val pingTestDao: PingTestDao,
     private val userStatusDao: UserStatusDao,
     private val popupNotificationDao: PopupNotificationDao,
     private val regionDao: RegionDao,
@@ -53,36 +46,126 @@ class LocalDatabaseImpl @Inject constructor(
     private val preferenceChangeObserver: PreferenceChangeObserver,
     private val windNotificationDao: WindNotificationDao
 ) : LocalDbInterface {
-    override fun addConfig(configFile: ConfigFile): Completable {
-        return configFileDao.addConfig(configFile)
-    }
 
-    override fun addNetwork(networkInfo: NetworkInfo): Single<Long> {
+    // Suspend functions (Coroutines)
+    override suspend fun addNetwork(networkInfo: NetworkInfo): Long {
         return networkInfoDao.addNetwork(networkInfo)
     }
 
-    override fun addPing(pingTime: PingTime): Completable {
-        return pingTimeDao.addPingTime(pingTime)
+    override suspend fun addPing(pingTime: PingTime) {
+        pingTimeDao.addPing(pingTime)
     }
 
-    override fun addStaticRegions(staticRegions: List<StaticRegion>): Completable {
-        return staticRegionsDao.addStaticRegions(staticRegions)
+    override suspend fun addStaticRegions(staticRegions: List<StaticRegion>) {
+        staticRegionsDao.addStaticRegions(staticRegions)
     }
 
-    override fun addToCities(cities: List<City>): Completable {
-        return cityDao.addCities(cities)
+    override suspend fun deleteFavourite(id: Int) {
+        favouriteDao.deleteFavourite(id)
     }
 
-    override fun addToFavourites(favourite: Favourite): Single<Long> {
-        return favouriteDao.addToFavourites(favourite)
+    override suspend fun getAllRegionAsync(): List<RegionAndCities> {
+        return regionAndCitiesDao.getAllRegionAsync()
     }
+
+    override suspend fun getCityByID(ids: IntArray?): List<City> {
+        return cityDao.getCityByID(ids)
+    }
+
+    override suspend fun getServerStatus(username: String): ServerStatusUpdateTable {
+        return serverStatusDao.getServerStatus(username)
+    }
+
+    override suspend fun getStaticRegionByIDAsync(id: Int): StaticRegion? {
+        return staticRegionsDao.getStaticRegionByIDAsync(id)
+    }
+
+    override suspend fun insertOrUpdateStatus(serverStatusUpdateTable: ServerStatusUpdateTable) {
+        return serverStatusDao.insertOrUpdateStatus(serverStatusUpdateTable)
+    }
+
+    override suspend fun insertOrUpdateStatusAsync(serverStatusUpdateTable: ServerStatusUpdateTable) {
+        serverStatusDao.insertOrUpdateStatusAsync(serverStatusUpdateTable)
+    }
+
+    override suspend fun updateUserStatus(userStatusTable: UserStatusTable?) {
+        try {
+            userStatusDao.delete()
+        } catch (_: Exception) {
+        }
+        if (userStatusTable != null)
+            userStatusDao.insertOrUpdateUserStatus(userStatusTable)
+    }
+
+    override suspend fun getCityByIDAsync(cityID: Int): City {
+        return cityDao.getCityByIDAsync(cityID)
+    }
+
+    override suspend fun getAllCitiesAsync(regionId: Int): List<City> {
+        return cityDao.getAllCitiesAsync(regionId)
+    }
+
+    override suspend fun getAllPingsAsync(): List<PingTime> {
+        return pingTimeDao.getAllPingsAsync()
+    }
+
+    override suspend fun getFavouritesAsync(): List<Favourite> {
+        return favouriteDao.getFavouritesAsync()
+    }
+
+    override suspend fun getRegionAsync(regionId: Int): RegionAndCities {
+        return regionAndCitiesDao.getRegionAsync(regionId)
+    }
+
+    override suspend fun addToFavouritesAsync(favourite: Favourite): Long {
+        return favouriteDao.addToFavouritesAsync(favourite)
+    }
+
+    override suspend fun updateNetworkSync(networkInfo: NetworkInfo): Int {
+        return networkInfoDao.updateNetworkSync(networkInfo)
+    }
+
+    override suspend fun deleteNetworkSync(networkName: String): Int {
+        return networkInfoDao.deleteNetworkSync(networkName)
+    }
+
+    override suspend fun getCitiesAsync(): List<City> {
+        return cityDao.getCitiesAsync()
+    }
+
+    override suspend fun getRegionIdFromCityAsync(cityID: Int): Int {
+        return cityAndRegionDao.getRegionIdFromCityAsync(cityID)
+    }
+
+    override suspend fun getLowestPingIdAsync(): Int {
+        return pingTimeDao.getLowestPingIdAsync()
+    }
+
+    override suspend fun getConfigFileAsync(configFileID: Int): ConfigFile {
+        return configFileDao.getConfigFileAsync(configFileID)
+    }
+
+    override fun getPopupNotificationsAsFlow(userName: String): Flow<List<PopupNotificationTable>> {
+        return popupNotificationDao.getPopupNotificationAsFlow(userName)
+    }
+
+    override fun getConfigs(): Flow<List<ConfigFile>> {
+        return configFileDao.allConfigsAsFlow
+    }
+
+    override fun getFavourites(): Flow<List<Favourite>> {
+        return favouriteDao.favouritesAsFlow
+    }
+
+    override fun getLatency(): Flow<List<PingTime>> {
+        return pingTimeDao.allPingsAsStateFlow
+    }
+
+    override val allNetworks: Flow<List<NetworkInfo>>
+        get() = networkInfoDao.allNetworks()
 
     override fun addToPopupNotification(popupNotificationTable: PopupNotificationTable) {
         popupNotificationDao.insertPopupNotification(popupNotificationTable)
-    }
-
-    override fun addToRegions(regions: List<Region>): Completable {
-        return regionDao.addRegions(regions)
     }
 
     override fun clearAllTables() {
@@ -97,164 +180,12 @@ class LocalDatabaseImpl @Inject constructor(
         windNotificationDao.clean()
     }
 
-    override fun delete(favourite: Favourite) {
-        favouriteDao.delete(favourite)
-    }
-
-    override suspend fun deleteFavourite(id: Int) {
-        favouriteDao.deleteFavourite(id)
-    }
-
-    override fun delete(id: Int): Completable {
-        return configFileDao.delete(id)
-    }
-
-    override fun deleteAllCities(): Completable {
-        return cityDao.deleteAll()
-    }
-
-    override fun deleteNetwork(networkName: String): Single<Int> {
-        return networkInfoDao.delete(networkName)
-    }
-
-    override fun getAllCities(id: Int): Single<List<City>> {
-        return cityDao.getAllCities(id)
-    }
-
-    override val allConfigs: Single<List<ConfigFile>>
-        get() = configFileDao.allConfigs
-    override val allNetworksWithUpdate: Flowable<List<NetworkInfo>>
-        get() = networkInfoDao.allNetworksWithUpdate
-    override val allPingTimes: Single<List<PingTime>>
-        get() = pingTimeDao.allPings
-    override val allPings: Single<List<PingTestResults>>
-        get() = pingTestDao.pingList
-    override val allRegion: Single<List<RegionAndCities>>
-        get() = regionAndCitiesDao.getAllRegion()
-    override val allStaticRegions: Single<List<StaticRegion>>
-        get() = staticRegionsDao.allStaticRegions
-    override val allStaticRegionsFlowAble: Flowable<List<StaticRegion>>
-        get() = staticRegionsDao.allStaticRegionsFlowAble
-    override val cities: Single<List<City>>
-        get() = cityDao.cities
-    override val pingableCities: Single<List<City>>
-        get() = cityDao.pingableCities
-
-    override fun getCitiesByRegion(regionID: Int, pro: Int): Single<Int> {
-        return cityAndRegionDao.getCitiesByRegion(regionID, pro)
-    }
-
-    override val city: Single<CityAndRegion>
-        get() = cityAndRegionDao.getCity()
-
-    override fun getCityAndRegionByID(cityAndRegionID: Int): Single<CityAndRegion> {
-        return cityAndRegionDao.getCityAndRegionByID(cityAndRegionID)
-    }
-
-    override fun getCityByID(cityID: Int): Single<City> {
-        return cityDao.getCityByID(cityID)
-    }
-
-    override fun getCityByID(ids: IntArray?): Single<List<City>> {
-        return cityDao.getCityByID(ids)
-    }
-
-    override fun getConfigFile(configFileID: Int): Single<ConfigFile> {
-        return configFileDao.getConfigFile(configFileID)
-    }
-
-    override fun getCordsByRegionId(regionId: Int): Single<String> {
-        return cityDao.getCordsByRegionId(regionId)
-    }
-
-    override val favourites: Single<List<Favourite>>
-        get() = favouriteDao.favourites
-
-    override fun getFreePingIdFromTime(pro: Boolean, pingTime: Int): Single<Int> {
-        return pingTimeDao.getFreePingIdFromTime(pro, pingTime)
-    }
-
-    override val lowestPing: Single<Int>
-        get() = pingTimeDao.lowestPing
-
-    override fun getLowestPingForFreeUser(pro: Boolean): Single<Int> {
-        return pingTimeDao.getLowestPingForFreeUser(pro)
-    }
-
-    override val lowestPingId: Single<Int>
-        get() = pingTimeDao.lowestPingId
-    override val maxPrimaryKey: Single<Int>
-        get() = configFileDao.maxPrimaryKey
-
-    override fun getNetwork(networkName: String): Single<NetworkInfo> {
+    override fun getNetwork(networkName: String): NetworkInfo? {
         return networkInfoDao.getNetwork(networkName)
     }
 
-    override fun getPingIdFromTime(pingTime: Int): Single<Int> {
-        return pingTimeDao.getPingIdFromTime(pingTime)
-    }
-
-    override fun getPopupNotifications(userName: String): Flowable<List<PopupNotificationTable>> {
-        return popupNotificationDao.getPopupNotification(userName)
-    }
-
-    override fun getPopupNotificationsAsFlow(userName: String): Flow<List<PopupNotificationTable>> {
-        return popupNotificationDao.getPopupNotificationAsFlow(userName)
-    }
-
-    override fun getRegion(id: Int): Single<RegionAndCities> {
-        return regionAndCitiesDao.getRegion(id)
-    }
-
-    override fun getRegionByCountryCode(countryCode: String): Single<Region> {
-        return regionDao.getRegionByCountryCode(countryCode)
-    }
-
-    override fun getRegionIdFromCity(cityID: Int): Single<Int> {
-        return cityAndRegionDao.getRegionIdFromCity(cityID)
-    }
-
-    override fun getServerStatus(username: String): Single<ServerStatusUpdateTable> {
-        return serverStatusDao.getServerStatus(username)
-    }
-
-    override fun getStaticRegionByID(id: Int): Single<StaticRegion> {
-        return staticRegionsDao.getStaticRegionByID(id)
-    }
-
-    override val staticRegionCount: Single<Int>
-        get() = staticRegionsDao.staticRegionCount
-
-    override fun getUserStatus(username: String): Flowable<UserStatusTable> {
-        return userStatusDao.getUserStatusTable(username)
-    }
-
-    override val windNotifications: Single<List<WindNotification>>
-        get() = windNotificationDao.getWindNotifications()
-
     override fun insertOrUpdateServerUpdateStatusTable(serverStatusUpdateTable: ServerStatusUpdateTable) {
         preferenceChangeObserver.postCityServerChange()
-    }
-
-    override fun insertOrUpdateStatus(serverStatusUpdateTable: ServerStatusUpdateTable): Completable {
-        return serverStatusDao.insertOrUpdateStatus(serverStatusUpdateTable)
-    }
-
-    override fun insertWindNotifications(windNotifications: List<WindNotification>): Completable {
-        return windNotificationDao.insert(windNotifications)
-    }
-
-    override fun updateNetwork(networkInfo: NetworkInfo): Single<Int> {
-        return networkInfoDao.updateNetwork(networkInfo)
-    }
-
-    override fun updateUserStatus(userStatusTable: UserStatusTable?): Completable {
-        return userStatusDao.delete()
-            .andThen(Completable.fromAction {
-                userStatusDao.insertOrUpdateUserStatus(
-                    userStatusTable
-                )
-            })
     }
 
     override fun getCityAndRegion(cityId: Int): CityAndRegion {
@@ -267,24 +198,8 @@ class LocalDatabaseImpl @Inject constructor(
         }.getOrDefault("")
     }
 
-    override fun getConfigs(): Flow<List<ConfigFile>> {
-        return configFileDao.allConfigsAsFlow
-    }
-
-    override fun getFavourites(): Flow<List<Favourite>> {
-        return favouriteDao.favouritesAsFlow
-    }
-
-    override suspend fun getCityByIDAsync(cityID: Int): City {
-        return cityDao.getCityByIDAsync(cityID)
-    }
-
-    override fun getLatency(): Flow<List<PingTime>> {
-        return pingTimeDao.allPingsAsStateFlow
-    }
-
     override fun getMaxPrimaryKey(): Int {
-        return configFileDao.maxPrimaryKeySync
+        return configFileDao.maxPrimaryKeySync ?: 0
     }
 
     override fun addConfigSync(configFile: ConfigFile) {
@@ -295,18 +210,31 @@ class LocalDatabaseImpl @Inject constructor(
         configFileDao.deleteCustomConfig(id)
     }
 
-    override val allNetworks: Flow<List<NetworkInfo>>
-        get() = networkInfoDao.allNetworks()
-
-    override suspend fun updateNetworkSync(networkInfo: NetworkInfo): Int {
-        return networkInfoDao.updateNetworkSync(networkInfo)
+    override suspend fun addToCities(cities: List<City>) {
+        return cityDao.addCities(cities)
     }
 
-    override suspend fun deleteNetworkSync(networkName: String): Int {
-        return networkInfoDao.deleteNetworkSync(networkName)
+    override suspend fun addToRegions(regions: List<Region>) {
+        return regionDao.addRegions(regions)
     }
 
-    override suspend fun getCitiesAsync(): List<City> {
-        return cityDao.getCitiesAsync()
+    override suspend fun getPingableCities(): List<City> {
+        return cityDao.getPingableCities()
+    }
+
+    override suspend fun getWindNotifications(): List<WindNotification> {
+        return windNotificationDao.getWindNotifications()
+    }
+
+    override suspend fun insertWindNotifications(windNotifications: List<WindNotification>) {
+        windNotificationDao.insert(windNotifications)
+    }
+
+    override suspend fun getAllStaticRegions(): List<StaticRegion> {
+        return staticRegionsDao.getAllStaticRegions()
+    }
+
+    override suspend fun getAllConfigs(): List<ConfigFile> {
+        return configFileDao.getAllConfigs()
     }
 }

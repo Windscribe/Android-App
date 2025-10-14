@@ -3,7 +3,6 @@
  */
 package com.windscribe.vpn.api
 
-import io.reactivex.Single
 import okhttp3.ResponseBody
 import retrofit2.http.FieldMap
 import retrofit2.http.FormUrlEncoded
@@ -15,16 +14,16 @@ interface ApiService {
     @Streaming
     @FormUrlEncoded
     @POST("/")
-    fun sendDecoyTraffic(
+    suspend fun sendDecoyTraffic(
             @FieldMap params: Map<String, String>?,
             @Header("Content-Type") contentType: String,
             @Header("X-DECOY-RESPONSE") xDecoyResponse: String
-    ): Single<ResponseBody>
+    ): ResponseBody
 
     @Streaming
     @FormUrlEncoded
     @POST("/")
-    fun sendDecoyTraffic(
+    suspend fun sendDecoyTraffic(
             @FieldMap params: Map<String, String>?, @Header("Content-Type") contentType: String
-    ): Single<ResponseBody>
+    ): ResponseBody
 }

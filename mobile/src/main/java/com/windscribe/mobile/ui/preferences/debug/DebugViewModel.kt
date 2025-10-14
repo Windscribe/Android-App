@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.repository.AdvanceParameterRepository
+import com.windscribe.vpn.repository.LogRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,7 @@ abstract class DebugViewModel : ViewModel() {
     abstract val debugLog: StateFlow<List<String>>
 }
 
-class DebugViewModelImpl(val advanceParameterRepository: AdvanceParameterRepository) :
+class DebugViewModelImpl(val logRepository: LogRepository) :
     DebugViewModel() {
     private val _showProgress = MutableStateFlow(false)
     override val showProgress: StateFlow<Boolean> = _showProgress
@@ -30,7 +31,7 @@ class DebugViewModelImpl(val advanceParameterRepository: AdvanceParameterReposit
     private fun load() {
         _showProgress.value = true
         viewModelScope.launch(Dispatchers.IO) {
-            runCatching { File(advanceParameterRepository.getDebugFilePath()).readLines() }.onSuccess {
+            runCatching { logRepository.getPartialLog() }.onSuccess {
                 _debugLog.emit(it)
                 _showProgress.value = false
             }.onFailure {

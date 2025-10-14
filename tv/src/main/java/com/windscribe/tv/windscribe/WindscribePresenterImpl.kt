@@ -10,37 +10,47 @@ import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.view.View
 import com.windscribe.tv.R.color
+import com.windscribe.tv.di.PerActivity
 import com.windscribe.tv.serverlist.adapters.ServerAdapter
 import com.windscribe.tv.sort.ByLatency
 import com.windscribe.tv.sort.ByRegionName
 import com.windscribe.tv.windscribe.WindscribeView.ConnectionStateAnimationListener
-import com.windscribe.vpn.ActivityInteractor
+import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.api.response.GetMyIpResponse
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
+import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.Util.getModifiedIpAddress
-import com.windscribe.vpn.backend.Util.getSavedLocation
 import com.windscribe.vpn.backend.Util.validIpAddress
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
+import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.FlagIconResource
+import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.BillingConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.RateDialogConstants
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.WindError
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import com.windscribe.vpn.model.User
+import com.windscribe.vpn.repository.CallResult
+import com.windscribe.vpn.repository.LocationRepository
+import com.windscribe.vpn.repository.ServerListRepository
+import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.serverlist.entity.*
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.observers.DisposableSingleObserver
-import io.reactivex.schedulers.Schedulers
-import io.reactivex.subscribers.DisposableSubscriber
+import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.windscribe.vpn.workers.WindScribeWorkManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -48,9 +58,21 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
+@PerActivity
 class WindscribePresenterImpl @Inject constructor(
     var windscribeView: WindscribeView,
-    var interactor: ActivityInteractor
+    private val activityScope: CoroutineScope,
+    private val preferencesHelper: PreferencesHelper,
+    private val apiCallManager: IApiCallManager,
+    private val localDbInterface: LocalDbInterface,
+    private val userRepository: UserRepository,
+    private val serverListRepository: ServerListRepository,
+    private val locationRepository: LocationRepository,
+    private val autoConnectionManager: AutoConnectionManager,
+    private val vpnConnectionStateManager: VPNConnectionStateManager,
+    private val vpnController: WindVpnController,
+    private val workManager: WindScribeWorkManager,
+    private val resourceHelper: ResourceHelper
 ) : WindscribePresenter, ConnectionStateAnimationListener {
 
     private val logger = LoggerFactory.getLogger("basic")
@@ -60,7 +82,7 @@ class WindscribePresenterImpl @Inject constructor(
     private var lastVPNState = VPNState.Status.Disconnected
 
     override suspend fun observeVPNState() {
-        interactor.getVpnConnectionStateManager().state.collect { vpnState: VPNState ->
+        vpnConnectionStateManager.state.collect { vpnState: VPNState ->
             if (vpnState.status === lastVPNState) return@collect
             lastVPNState = vpnState.status
             when (vpnState.status) {
@@ -80,15 +102,15 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun observeUserState(windscribeActivity: WindscribeActivity) {
-        interactor.getUserRepository().user.observe(windscribeActivity) {
+        userRepository.user.observe(windscribeActivity) {
             setAccountStatus(it)
             setUserStatus(it)
         }
     }
 
     override suspend fun observeDisconnectedProtocol() {
-        interactor.getAutoConnectionManager().nextInLineProtocol.collectLatest { protocol ->
-            if (interactor.getVpnConnectionStateManager().isVPNActive().not()) {
+        autoConnectionManager.nextInLineProtocol.collectLatest { protocol ->
+            if (vpnConnectionStateManager.isVPNActive().not()) {
                 protocol?.let {
                     windscribeView.setProtocolAndPortInfo(Util.getProtocolLabel(it.protocol), it.port, true)
                 }
@@ -97,8 +119,8 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override suspend fun observeConnectedProtocol() {
-        interactor.getAutoConnectionManager().connectedProtocol.collectLatest { protocol ->
-            if (interactor.getVpnConnectionStateManager().isVPNActive()) {
+        autoConnectionManager.connectedProtocol.collectLatest { protocol ->
+            if (vpnConnectionStateManager.isVPNActive()) {
                 protocol?.let {
                     windscribeView.setProtocolAndPortInfo(Util.getProtocolLabel(it.protocol), it.port, false)
                 }
@@ -107,94 +129,138 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun onDestroy() {
-        logger.info("Disposing observer...")
-        if (!interactor.getCompositeDisposable().isDisposed) {
-            interactor.getCompositeDisposable().dispose()
-        }
+        logger.info("Cleaning up...")
+        // Coroutines launched with activityScope are automatically cancelled when the scope is cancelled
     }
 
     override fun connectWithSelectedStaticIp(
         regionID: Int,
         serverCredentialsResponse: ServerCredentialsResponse
     ) {
-        interactor.getAppPreferenceInterface().globalUserConnectionPreference = true
-        interactor.getCompositeDisposable().add(
-            interactor.getStaticRegionByID(regionID)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSingleObserver<StaticRegion?>() {
-                    override fun onError(e: Throwable) {
-                        logger.info("Static ip not found...")
-                        windscribeView.showToast("Error finding static ip.")
-                    }
-
-                    override fun onSuccess(region: StaticRegion) {
-                        attemptConnectionUsingIp(region, serverCredentialsResponse)
-                    }
-                })
-        )
+        preferencesHelper.globalUserConnectionPreference = true
+        activityScope.launch {
+            try {
+                val region = localDbInterface.getStaticRegionByIDAsync(regionID)
+                if (region != null) {
+                    attemptConnectionUsingIp(region, serverCredentialsResponse)
+                } else {
+                    logger.info("Static ip not found...")
+                    windscribeView.showToast("Error finding static ip.")
+                }
+            } catch (_: Exception) {
+                logger.info("Static ip not found...")
+                windscribeView.showToast("Error finding static ip.")
+            }
+        }
     }
 
     override fun connectWithSelectedLocation(cityID: Int) {
-        interactor.getAppPreferenceInterface().globalUserConnectionPreference = true
-        interactor.getCompositeDisposable().add(
-            interactor.getCityAndRegionByID(cityID)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSingleObserver<CityAndRegion>() {
-                    override fun onError(e: Throwable) {
-                        logger.debug("Could not find selected location in database.")
-                        windscribeView.showToast("Error")
-                    }
-
-                    override fun onSuccess(cityAndRegion: CityAndRegion) {
-                        attemptConnection(cityAndRegion)
-                    }
-                })
-        )
+        preferencesHelper.globalUserConnectionPreference = true
+        activityScope.launch {
+            try {
+                val cityAndRegion = withContext(Dispatchers.IO) {
+                    localDbInterface.getCityAndRegion(cityID)
+                }
+                attemptConnection(cityAndRegion)
+            } catch (_: Exception) {
+                logger.debug("Could not find selected location in database.")
+                windscribeView.showToast("Error")
+            }
+        }
     }
 
     private fun handleRateDialog() {
-        interactor.getCompositeDisposable().add(
-            interactor.getUserSessionData()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                    if (!interactor.isUserEligibleForRatingApp(it)) {
-                        return@subscribe
+        activityScope.launch {
+            try {
+                val userSessionResponse = withContext(Dispatchers.IO) {
+                    val userSessionString = preferencesHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
+                    com.google.gson.Gson().fromJson(userSessionString, com.windscribe.vpn.api.response.UserSessionResponse::class.java)
+                }
+
+                if (!isUserEligibleForRatingApp(userSessionResponse)) {
+                    return@launch
+                }
+
+                when (getRateAppPreference()) {
+                    RateDialogConstants.STATUS_DEFAULT -> {
+                        setRateDialogUpdateTime()
+                        windscribeView.handleRateView()
+                        logger.debug("Rate dialog is being shown for first time.")
                     }
-                    when (interactor.getRateAppPreference()) {
-                        RateDialogConstants.STATUS_DEFAULT -> {
-                            interactor.setRateDialogUpdateTime()
+                    RateDialogConstants.STATUS_ASK_LATER -> {
+                        val time = getLastTimeUpdated()
+                        val difference = Date().time - time.toLong()
+                        val days = TimeUnit.DAYS.convert(difference, MILLISECONDS)
+                        if (days >= RateDialogConstants.MINIMUM_DAYS_TO_SHOW_AGAIN) {
+                            saveRateAppPreference(RateDialogConstants.STATUS_ALREADY_ASKED)
                             windscribeView.handleRateView()
-                            logger.debug("Rate dialog is being shown for first time.")
+                            logger.debug("Rate dialog is being shown and user's last choice was ask me later 90+ days ago.")
                         }
-                        RateDialogConstants.STATUS_ASK_LATER -> {
-                            val time = interactor.getLastTimeUpdated()
-                            val difference = Date().time - time.toLong()
-                            val days = TimeUnit.DAYS.convert(difference, MILLISECONDS)
-                            if (days >= RateDialogConstants.MINIMUM_DAYS_TO_SHOW_AGAIN) {
-                                interactor.saveRateAppPreference(
-                                    RateDialogConstants.STATUS_ALREADY_ASKED
-                                )
-                                windscribeView.handleRateView()
-                                logger
-                                    .debug("Rate dialog is being shown and user's last choice was ask me later 90+ days ago.")
-                            }
-                        }
-                        else -> {}
                     }
-                }, {})
+                    else -> {}
+                }
+            } catch (e: Exception) {
+                // Silently fail for rate dialog
+                logger.debug("Failed to check rate dialog eligibility: ${e.message}")
+            }
+        }
+    }
+
+    private fun isUserEligibleForRatingApp(userSessionResponse: com.windscribe.vpn.api.response.UserSessionResponse): Boolean {
+        val user = User(userSessionResponse)
+        val dataUsed = user.dataUsed.toDouble() / (1024 * 1024 * 1024)
+        return dataUsed >= 2.0 && elapsedTwoDayAfterLogin() && lastShownDays()
+    }
+
+    private fun elapsedTwoDayAfterLogin(): Boolean {
+        val milliSeconds1 = preferencesHelper.loginTime?.time ?: Date().time
+        val milliSeconds2 = Date().time
+        val periodSeconds = (milliSeconds2 - milliSeconds1) / 1000
+        val elapsedDays = periodSeconds / 60 / 60 / 24
+        return elapsedDays.toInt() >= 2
+    }
+
+    private fun lastShownDays(): Boolean {
+        val time = preferencesHelper.getResponseString(RateDialogConstants.LAST_UPDATE_TIME) ?: return true
+        return try {
+            val difference = Date().time - time.toLong()
+            val days = TimeUnit.DAYS.convert(difference, MILLISECONDS)
+            days > RateDialogConstants.MINIMUM_DAYS_TO_START
+        } catch (_: NumberFormatException) {
+            true
+        }
+    }
+
+    private fun getRateAppPreference(): Int {
+        return preferencesHelper.getResponseInt(
+            RateDialogConstants.CURRENT_STATUS_KEY,
+            RateDialogConstants.STATUS_DEFAULT
+        )
+    }
+
+    private fun getLastTimeUpdated(): String {
+        return preferencesHelper.getResponseString(RateDialogConstants.LAST_UPDATE_TIME)
+            ?: Date().time.toString()
+    }
+
+    private fun saveRateAppPreference(type: Int) {
+        preferencesHelper.saveResponseIntegerData(RateDialogConstants.CURRENT_STATUS_KEY, type)
+    }
+
+    private fun setRateDialogUpdateTime() {
+        preferencesHelper.saveResponseStringData(
+            RateDialogConstants.LAST_UPDATE_TIME,
+            Date().time.toString()
         )
     }
 
     override fun init() {
-        val ipAddress = interactor.getAppPreferenceInterface()
+        val ipAddress = preferencesHelper
             .getResponseString(PreferencesKeyConstants.USER_IP)
-        if (ipAddress != null && interactor.getVpnConnectionStateManager().isVPNActive()) {
+        if (ipAddress != null && vpnConnectionStateManager.isVPNActive()) {
             windscribeView.setIpAddress(ipAddress)
         }
-        if (!interactor.getVpnConnectionStateManager().isVPNActive()) {
+        if (!vpnConnectionStateManager.isVPNActive()) {
             setIPAddress()
         }
         windscribeView.startSessionServiceScheduler()
@@ -211,8 +277,8 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun logout() {
-        interactor.getMainScope().launch {
-            interactor.getUserRepository().logout()
+        activityScope.launch {
+            userRepository.logout()
         }
     }
 
@@ -224,21 +290,21 @@ class WindscribePresenterImpl @Inject constructor(
             windscribeView.showToast("Click back again to exit")
             canQuit = true
         }
-        interactor.getMainScope().launch {
+        activityScope.launch {
             delay(1000)
             canQuit = false
         }
     }
 
     override fun onConnectClicked() {
-        val vpnStatus = interactor.getVpnConnectionStateManager().state.value.status
+        val vpnStatus = vpnConnectionStateManager.state.value.status
         if (vpnStatus == VPNState.Status.Connecting || vpnStatus == VPNState.Status.Connected) {
             logger.debug("connection state was connected or connecting user initiated disconnect")
             disconnectFromVPN()
             return
         }
         if (isAccountStatusOkay) {
-            if (!interactor.getVpnConnectionStateManager().isVPNActive()) {
+            if (!vpnConnectionStateManager.isVPNActive()) {
                 if (WindUtilities.isOnline()) {
                     logger.debug("connection state was disconnected user initiated connect")
                     startVpnConnectionProcess()
@@ -251,8 +317,7 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun onConnectedAnimationCompleted() {
-        interactor.getAppPreferenceInterface()
-        windscribeView.showSplitViewIcon(interactor.getAppPreferenceInterface().lastConnectedUsingSplit)
+        windscribeView.showSplitViewIcon(preferencesHelper.lastConnectedUsingSplit)
     }
 
     override fun onConnectingAnimationCompleted() {
@@ -261,10 +326,10 @@ class WindscribePresenterImpl @Inject constructor(
 
     override fun onDisconnectIntentReceived() {
         logger.info("Setting global connection intent to [FALSE] - Disconnect intent")
-        interactor.getAppPreferenceInterface().isReconnecting = false
-        interactor.getAppPreferenceInterface().globalUserConnectionPreference = false
+        preferencesHelper.isReconnecting = false
+        preferencesHelper.globalUserConnectionPreference = false
         logger.info("Stopping established vpn connection for disconnect intent...")
-        interactor.getMainScope().launch { interactor.getVPNController().disconnectAsync() }
+        activityScope.launch { vpnController.disconnectAsync() }
     }
 
     override fun onHotStart() {
@@ -278,11 +343,11 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun onNetworkStateChanged() {
-        if (!interactor.getVpnConnectionStateManager().isVPNActive()) {
+        if (!vpnConnectionStateManager.isVPNActive()) {
             logger.debug("Network state changed & vpn is not active, getting ip address...")
             setIPAddress()
-            if (WindUtilities.isOnline() && !interactor.getVpnConnectionStateManager().isVPNActive() && interactor.getAppPreferenceInterface().pingTestRequired) {
-                interactor.getWorkManager().updateNodeLatencies()
+            if (WindUtilities.isOnline() && !vpnConnectionStateManager.isVPNActive() && preferencesHelper.pingTestRequired) {
+                workManager.updateNodeLatencies()
             }
         }
     }
@@ -291,46 +356,42 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.setState(1)
         windscribeView.setGlowVisibility(View.GONE)
         windscribeView.setVpnButtonState()
-        windscribeView.setProtocolAndPortInfo(Util.getProtocolLabel(interactor.getAppPreferenceInterface().selectedProtocol), interactor.getAppPreferenceInterface().selectedPort,false)
+        windscribeView.setProtocolAndPortInfo(Util.getProtocolLabel(preferencesHelper.selectedProtocol), preferencesHelper.selectedPort,false)
         selectedLocation?.let {
             windscribeView.startVpnConnectingAnimation(
-                interactor.getResourceString(com.windscribe.vpn.R.string.ON),
+                resourceHelper.getString(com.windscribe.vpn.R.string.ON),
                 FlagIconResource.getFlag(it.countryCode),
-                interactor.getColorResource(color.colorDeepBlue),
-                interactor.getColorResource(color.colorNavyBlue),
-                interactor.getColorResource(color.colorWhite50),
-                interactor.getColorResource(color.sea_green),
+                resourceHelper.getColorResource(color.colorDeepBlue),
+                resourceHelper.getColorResource(color.colorNavyBlue),
+                resourceHelper.getColorResource(color.colorWhite50),
+                resourceHelper.getColorResource(color.sea_green),
                 this@WindscribePresenterImpl
             )
-        } ?: kotlin.run {
-            interactor.getCompositeDisposable().add(
-                getSavedLocation()
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeWith(object : DisposableSingleObserver<LastSelectedLocation?>() {
-                        override fun onError(e: Throwable) {
-                            logger.debug(e.message)
-                        }
-
-                        override fun onSuccess(location: LastSelectedLocation) {
-                            selectedLocation = location
-                            windscribeView.startVpnConnectingAnimation(
-                                interactor.getResourceString(com.windscribe.vpn.R.string.on),
-                                FlagIconResource.getFlag(location.countryCode),
-                                interactor.getColorResource(color.colorDeepBlue),
-                                interactor.getColorResource(color.colorNavyBlue),
-                                interactor.getColorResource(color.colorWhite50),
-                                interactor.getColorResource(color.sea_green),
-                                this@WindscribePresenterImpl
-                            )
-                        }
-                    })
-            )
+        } ?: run {
+            activityScope.launch {
+                try {
+                    val location = withContext(Dispatchers.IO) {
+                        Util.getSavedLocationAsync()
+                    }
+                    selectedLocation = location
+                    windscribeView.startVpnConnectingAnimation(
+                        resourceHelper.getString(com.windscribe.vpn.R.string.on),
+                        FlagIconResource.getFlag(location.countryCode),
+                        resourceHelper.getColorResource(color.colorDeepBlue),
+                        resourceHelper.getColorResource(color.colorNavyBlue),
+                        resourceHelper.getColorResource(color.colorWhite50),
+                        resourceHelper.getColorResource(color.sea_green),
+                        this@WindscribePresenterImpl
+                    )
+                } catch (e: Exception) {
+                    logger.debug(e.message)
+                }
+            }
         }
     }
 
     private fun vpnDisconnected() {
-        if (interactor.getAppPreferenceInterface().isReconnecting) {
+        if (preferencesHelper.isReconnecting) {
             return
         }
         windscribeView.setupLayoutDisconnected()
@@ -342,7 +403,7 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     private fun vpnDisconnecting() {
-        if (interactor.getAppPreferenceInterface().isReconnecting) {
+        if (preferencesHelper.isReconnecting) {
             return
         }
         windscribeView.setState(0)
@@ -355,142 +416,128 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.setIpAddress(ip.trim())
         logger.info("Connection with the server is established.")
         windscribeView.startVpnConnectedAnimation(
-            interactor.getResourceString(com.windscribe.vpn.R.string.ON),
-            interactor.getColorResource(color.colorNavyBlue),
-            interactor.getColorResource(color.colorPrimary),
-            interactor.getColorResource(color.colorLightBlue),
-            interactor.getColorResource(color.sea_green),
+            resourceHelper.getString(com.windscribe.vpn.R.string.ON),
+            resourceHelper.getColorResource(color.colorNavyBlue),
+            resourceHelper.getColorResource(color.colorPrimary),
+            resourceHelper.getColorResource(color.colorLightBlue),
+            resourceHelper.getColorResource(color.sea_green),
             this@WindscribePresenterImpl
         )
         updateLocationData(selectedLocation,true)
     }
 
     override suspend fun observeServerList() {
-        interactor.getServerListUpdater().regions.collectLatest {
+        serverListRepository.regions.collectLatest {
             setPartialOverlayView()
         }
     }
 
     private fun setPartialOverlayView() {
-        windscribeView.showPartialViewProgress(true)
-        val regions: MutableList<RegionAndCities> = ArrayList()
-        val dataDetails = ServerListData()
-        val oneTimeCompositeDisposable = CompositeDisposable()
-        oneTimeCompositeDisposable.add(
-            interactor.getAllRegion()
-                .flatMap {
-                    regions.clear()
-                    regions.addAll(it)
-                    interactor.getAllPings()
-                }.onErrorReturnItem(ArrayList())
-                .flatMap {
-                    dataDetails.pingTimes = it
-                    interactor.getFavourites()
-                }.onErrorReturnItem(ArrayList())
-                .flatMap {
-                    dataDetails.favourites = it
-                    interactor.getLocationProvider().bestLocation
-                }.flatMap {
-                    dataDetails.setShowLatencyInMs(interactor.getAppPreferenceInterface().showLatencyInMS)
-                    dataDetails.bestLocation = it
-                    dataDetails.isProUser = interactor.getAppPreferenceInterface().userStatus == 1
-                    if (selectedLocation == null) {
-                        selectedLocation = LastSelectedLocation(
-                            it.city.getId(),
-                            it.city.nodeName, it.city.nickName,
-                            it.region.countryCode, "", ""
-                        )
-                        selectedLocation?.let {
-                            location -> Util.saveSelectedLocation(location)
-                            interactor.getLocationProvider().setSelectedCity(locationId = location.cityId)
-                        }
+        activityScope.launch(Dispatchers.IO) {
+            withContext(Dispatchers.Main) {
+                windscribeView.showPartialViewProgress(true)
+            }
+            try {
+                // Fetch all data on IO dispatcher
+                val regionsDeferred = localDbInterface.getAllRegionAsync()
+                val pingsDeferred = localDbInterface.getAllPingsAsync()
+                val favouritesDeferred = localDbInterface.getFavouritesAsync()
+                val bestLocationDeferred = locationRepository.getBestLocationAsync()
+
+                // Process data
+                val regions: MutableList<RegionAndCities> = ArrayList(regionsDeferred)
+                val dataDetails = ServerListData()
+                dataDetails.pingTimes = pingsDeferred
+                dataDetails.favourites = favouritesDeferred
+                dataDetails.setShowLatencyInMs(preferencesHelper.showLatencyInMS)
+                dataDetails.bestLocation = bestLocationDeferred
+                dataDetails.isProUser = preferencesHelper.userStatus == 1
+
+                if (selectedLocation == null) {
+                    selectedLocation = LastSelectedLocation(
+                        bestLocationDeferred.city.getId(),
+                        bestLocationDeferred.city.nodeName,
+                        bestLocationDeferred.city.nickName,
+                        bestLocationDeferred.region.countryCode,
+                        "",
+                        ""
+                    )
+                    selectedLocation?.let { location ->
+                        Util.saveSelectedLocation(location)
+                        locationRepository.setSelectedCity(locationId = location.cityId)
                     }
-                    for (regionAndCity in regions) {
-                        val total = getTotalPingTime(regionAndCity.cities, dataDetails)
-                        regionAndCity.latencyTotal = total
-                    }
-                    if (interactor.getAppPreferenceInterface().selection == PreferencesKeyConstants.LATENCY_LIST_SELECTION_MODE) {
+                }
+
+                for (regionAndCity in regions) {
+                    val total = getTotalPingTime(regionAndCity.cities, dataDetails)
+                    regionAndCity.latencyTotal = total
+                }
+
+                when (preferencesHelper.selection) {
+                    PreferencesKeyConstants.LATENCY_LIST_SELECTION_MODE -> {
                         Collections.sort(regions, ByLatency())
-                    } else if (interactor.getAppPreferenceInterface().selection == PreferencesKeyConstants.AZ_LIST_SELECTION_MODE) {
+                    }
+                    PreferencesKeyConstants.AZ_LIST_SELECTION_MODE -> {
                         Collections.sort(regions, ByRegionName())
                     }
-                    Single.fromCallable { regions.subList(0, 5.coerceAtMost(regions.size)) }
                 }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSingleObserver<List<RegionAndCities>>() {
-                    override fun onError(e: Throwable) {
-                        windscribeView.showPartialViewProgress(false)
-                        logger.debug("Failed to get server list from database.")
-                        if (!oneTimeCompositeDisposable.isDisposed) {
-                            oneTimeCompositeDisposable.dispose()
-                        }
+                withContext(Dispatchers.Main) {
+                    windscribeView.showPartialViewProgress(false)
+                    updateLocationData(selectedLocation, true)
+                    if (regions.isNotEmpty()) {
+                        regions.add(0, RegionAndCities())
+                        val serverAdapter = ServerAdapter(regions, dataDetails, null, false)
+                        windscribeView.setPartialAdapter(serverAdapter)
+                        logger.debug("Partial Server view loaded successfully. ")
                     }
-
-                    override fun onSuccess(regionsList: List<RegionAndCities>) {
-                        windscribeView.showPartialViewProgress(false)
-                        updateLocationData(selectedLocation, true)
-                        if (regions.isNotEmpty()) {
-                            regions.add(0, RegionAndCities())
-                            val serverAdapter = ServerAdapter(regions, dataDetails, null, false)
-                            windscribeView.setPartialAdapter(serverAdapter)
-                            logger.debug("Partial Server view loaded successfully. ")
-                        }
-                        if (!oneTimeCompositeDisposable.isDisposed) {
-                            oneTimeCompositeDisposable.dispose()
-                        }
-                    }
-                })
-        )
+                }
+            } catch (_: Exception) {
+                withContext(Dispatchers.Main) {
+                    windscribeView.showPartialViewProgress(false)
+                }
+                logger.debug("Failed to get server list from database.")
+            }
+        }
     }
 
     override suspend fun observeSelectedLocation() {
-        interactor.getLocationProvider().selectedCity.collectLatest {
+        locationRepository.selectedCity.collectLatest {
             setSelectedLocation()
         }
     }
 
     private fun setSelectedLocation() {
-        interactor.getCompositeDisposable().add(
-            getSavedLocation()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSingleObserver<LastSelectedLocation?>() {
-                    override fun onError(e: Throwable) {
-                        updateLocationData(null, false)
-                    }
-
-                    override fun onSuccess(location: LastSelectedLocation) {
-                        interactor.getLocationProvider().setSelectedCity(location.cityId)
-                        selectedLocation = location
-                        updateLocationData(selectedLocation, true)
-                    }
-                })
-        )
+        activityScope.launch {
+            try {
+                val location = withContext(Dispatchers.IO) {
+                    Util.getSavedLocationAsync()
+                }
+                locationRepository.setSelectedCity(location.cityId)
+                selectedLocation = location
+                updateLocationData(selectedLocation, true)
+            } catch (_: Exception) {
+                updateLocationData(null, false)
+            }
+        }
     }
 
     private fun addNotificationChangeListener() {
-        interactor.getCompositeDisposable().add(
-            interactor.getNotifications(interactor.getAppPreferenceInterface().userName)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSubscriber<List<PopupNotificationTable>>() {
-                    override fun onComplete() {
-                        logger.debug("Registering notification listener finishing.")
+        activityScope.launch(Dispatchers.IO) {
+            try {
+                localDbInterface.getPopupNotificationsAsFlow(preferencesHelper.userName)
+                    .collect { popupNotificationTables ->
+                        withContext(Dispatchers.Main) {
+                            checkForPopNotification(popupNotificationTables)
+                        }
                     }
-
-                    override fun onError(t: Throwable) {
-                        logger.debug(
-                            "Error reading popup notification table. StackTrace: " +
-                                    WindError.instance.convertThrowableToString(t)
-                        )
-                    }
-
-                    override fun onNext(popupNotificationTables: List<PopupNotificationTable>) {
-                        checkForPopNotification(popupNotificationTables)
-                    }
-                })
-        )
+                logger.debug("Registering notification listener finishing.")
+            } catch (t: Throwable) {
+                logger.debug(
+                    "Error reading popup notification table. StackTrace: " +
+                            WindError.instance.convertThrowableToString(t)
+                )
+            }
+        }
     }
 
     private fun attemptConnection(cityAndRegion: CityAndRegion) {
@@ -500,7 +547,7 @@ class WindscribePresenterImpl @Inject constructor(
             return
         }
         if (WindUtilities.isOnline()) {
-            interactor.getAppPreferenceInterface().setConnectingToStaticIP(false)
+            preferencesHelper.setConnectingToStaticIP(false)
             selectedLocation = LastSelectedLocation(
                 cityAndRegion.city.getId(),
                 cityAndRegion.city.nodeName,
@@ -508,9 +555,9 @@ class WindscribePresenterImpl @Inject constructor(
             )
             selectedLocation?.let {
                 Util.saveSelectedLocation(it)
-                interactor.getLocationProvider().setSelectedCity(it.cityId)
+                locationRepository.setSelectedCity(it.cityId)
             }
-            interactor.getVPNController().connectAsync()
+            vpnController.connectAsync()
         } else {
             logger.info("User not connected to any network.")
             windscribeView.showToast("Please connect to a network first and retry!")
@@ -523,9 +570,9 @@ class WindscribePresenterImpl @Inject constructor(
     ) {
         if (WindUtilities.isOnline()) {
             logger.info("User clicked on static ip: " + staticRegion.cityName)
-            interactor.getAppPreferenceInterface().setConnectingToStaticIP(true)
+            preferencesHelper.setConnectingToStaticIP(true)
             // Saving static IP credentials
-            interactor.getAppPreferenceInterface().saveCredentials(
+            preferencesHelper.saveCredentials(
                 PreferencesKeyConstants.STATIC_IP_CREDENTIAL,
                 serverCredentialsResponse
             )
@@ -535,10 +582,10 @@ class WindscribePresenterImpl @Inject constructor(
             )
             selectedLocation?.let {
                 Util.saveSelectedLocation(it)
-                interactor.getLocationProvider().setSelectedCity(it.cityId)
+                locationRepository.setSelectedCity(it.cityId)
             }
-            interactor.getMainScope().launch {
-                interactor.getAutoConnectionManager().connectInForeground()
+            activityScope.launch {
+                autoConnectionManager.connectInForeground()
             }
         } else {
             logger.info("User not connected to any network.")
@@ -548,11 +595,11 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun checkForPopNotification(popupNotificationTables: List<PopupNotificationTable>) {
         for (popupNotification in popupNotificationTables) {
-            val alreadySeen = interactor.getAppPreferenceInterface()
+            val alreadySeen = preferencesHelper
                 .isNotificationAlreadyShown(popupNotification.notificationId.toString())
             if (!alreadySeen && popupNotification.popUpStatus == 1) {
                 logger.info("New popup notification received, showing notification...")
-                interactor.getAppPreferenceInterface()
+                preferencesHelper
                     .saveNotificationId(popupNotification.notificationId.toString())
                 windscribeView.openNewsFeedActivity(true, popupNotification.notificationId)
                 break
@@ -562,27 +609,27 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun setIPAddress() {
         if (WindUtilities.isOnline()) {
-            interactor.getCompositeDisposable().add(
-                interactor.getApiCallManager()
-                    .checkConnectivityAndIpAddress()
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({ genericResponseClass ->
-                        genericResponseClass.dataClass?.let { ip ->
-                            if (validIpAddress(ip.userIp)) {
-                                windscribeView.setIpAddress(getModifiedIpAddress(ip.userIp.trim { it <= ' ' }))
+            activityScope.launch(Dispatchers.IO) {
+                val result = result<GetMyIpResponse> {
+                    apiCallManager.checkConnectivityAndIpAddress()
+                }
+                withContext(Dispatchers.Main) {
+                    when (result) {
+                        is CallResult.Success -> {
+                            if (validIpAddress(result.data.userIp)) {
+                                windscribeView.setIpAddress(getModifiedIpAddress(result.data.userIp.trim { it <= ' ' }))
                             } else {
                                 logger.info("Server returned error response when getting user ip")
                                 windscribeView.setIpAddress("---.---.---.---")
                             }
-                        } ?: kotlin.run {
+                        }
+                        is CallResult.Error -> {
+                            logger.debug("Network call to get ip failed: ${result.errorMessage}")
                             windscribeView.setIpAddress("---.---.---.---")
                         }
-                    }, {
-                        logger.debug("Network call to get ip failed.")
-                        windscribeView.setIpAddress("---.---.---.---")
-                    })
-            )
+                    }
+                }
+            }
         } else {
             logger.debug("Network is not available. Ip update failed...")
             windscribeView.setIpAddress("---.---.---.---")
@@ -611,7 +658,7 @@ class WindscribePresenterImpl @Inject constructor(
 
     private val isAccountStatusOkay: Boolean
         get() {
-            when (interactor.getUserRepository().user.value?.accountStatus) {
+            when (userRepository.user.value?.accountStatus) {
                 User.AccountStatus.Okay -> {
                     return true
                 }
@@ -637,28 +684,28 @@ class WindscribePresenterImpl @Inject constructor(
         }
 
     private fun isLocationNotAvailableToUser(pro: Boolean): Boolean {
-        return pro && interactor.getAppPreferenceInterface().userStatus != UserStatusConstants.USER_STATUS_PREMIUM
+        return pro && preferencesHelper.userStatus != UserStatusConstants.USER_STATUS_PREMIUM
     }
 
     private fun disconnectFromVPN() {
-        interactor.getMainScope().launch {
-            interactor.getAppPreferenceInterface().setUserIntendedDisconnect(true)
-            interactor.getAppPreferenceInterface().globalUserConnectionPreference = false
-            interactor.getAppPreferenceInterface().isReconnecting = false
-            interactor.getVPNController().disconnectAsync()
+        activityScope.launch {
+            preferencesHelper.setUserIntendedDisconnect(true)
+            preferencesHelper.globalUserConnectionPreference = false
+            preferencesHelper.isReconnecting = false
+            vpnController.disconnectAsync()
         }
     }
 
     private fun startVpnConnectionProcess() {
         if (selectedLocation != null) {
             isLocationNotAvailableToUser(false)
-            interactor.getAppPreferenceInterface().globalUserConnectionPreference = true
-            interactor.getMainScope().launch {
-                interactor.getAutoConnectionManager().connectInForeground()
+            preferencesHelper.globalUserConnectionPreference = true
+            activityScope.launch {
+                autoConnectionManager.connectInForeground()
             }
         } else {
             logger.info("Selected location is null!")
-            windscribeView.showToast(interactor.getResourceString(com.windscribe.vpn.R.string.select_location))
+            windscribeView.showToast(resourceHelper.getString(com.windscribe.vpn.R.string.select_location))
         }
     }
 
@@ -667,9 +714,9 @@ class WindscribePresenterImpl @Inject constructor(
         updateFlag: Boolean
     ) {
         if (lastSelectedLocation != null) {
-            val lowestPingId = interactor.getAppPreferenceInterface().lowestPingId
+            val lowestPingId = preferencesHelper.lowestPingId
             if (lowestPingId == lastSelectedLocation.cityId) {
-                lastSelectedLocation.nodeName = interactor.getResourceString(com.windscribe.vpn.R.string.best_location)
+                lastSelectedLocation.nodeName = resourceHelper.getString(com.windscribe.vpn.R.string.best_location)
             }
             windscribeView.updateLocationName(
                 lastSelectedLocation.nodeName,
@@ -685,23 +732,23 @@ class WindscribePresenterImpl @Inject constructor(
         when (user.accountStatus) {
             User.AccountStatus.Okay -> {}
             User.AccountStatus.Banned -> {
-                if (interactor.getVpnConnectionStateManager().isVPNActive()) {
-                    interactor.getMainScope()
-                        .launch { interactor.getVPNController().disconnectAsync() }
+                if (vpnConnectionStateManager.isVPNActive()) {
+                    activityScope
+                        .launch { vpnController.disconnectAsync() }
                 }
                 windscribeView.setupAccountStatusBanned()
             }
             else -> {
                 val previousAccountStatus =
-                    interactor.getAppPreferenceInterface().getPreviousAccountStatus(user.userName)
+                    preferencesHelper.getPreviousAccountStatus(user.userName)
                 if (user.accountStatusToInt != previousAccountStatus) {
-                    interactor.getAppPreferenceInterface()
+                    preferencesHelper
                         .setPreviousAccountStatus(user.userName, user.accountStatusToInt)
                     if (user.accountStatus == User.AccountStatus.Expired) {
                         setUserStatus(user)
-                        if (interactor.getVpnConnectionStateManager().isVPNActive()) {
-                            interactor.getMainScope()
-                                .launch { interactor.getVPNController().disconnectAsync() }
+                        if (vpnConnectionStateManager.isVPNActive()) {
+                            activityScope
+                                .launch { vpnController.disconnectAsync() }
                         }
                         windscribeView.setupAccountStatusExpired()
                     }
@@ -712,8 +759,8 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun setUserStatus(user: User) {
         if (user.maxData != -1L) {
-            user.dataLeft?.let {
-                val dataRemaining = interactor.getDataLeftString(com.windscribe.vpn.R.string.data_left, it)
+            user.dataLeft.let {
+                val dataRemaining = resourceHelper.getDataLeftString(com.windscribe.vpn.R.string.data_left, it)
                 windscribeView.setupLayoutForFreeUser(
                     dataRemaining,
                     getDataRemainingColor(it, user.maxData)
@@ -729,14 +776,12 @@ class WindscribePresenterImpl @Inject constructor(
             dataRemaining < BillingConstants.DATA_LOW_PERCENTAGE * (
                     maxData /
                             UserStatusConstants.GB_DATA.toFloat()
-                    ) -> interactor.getColorResource(color.colorRed)
+                    ) -> resourceHelper.getColorResource(color.colorRed)
             dataRemaining
                     < BillingConstants.DATA_WARNING_PERCENTAGE * (maxData / UserStatusConstants.GB_DATA.toFloat()) ->
-                interactor
-                    .getColorResource(color.colorYellow)
+                resourceHelper.getColorResource(color.colorYellow)
             else ->
-                interactor
-                    .getColorResource(color.colorWhite)
-        } else interactor.getColorResource(color.colorWhite)
+                resourceHelper.getColorResource(color.colorWhite)
+        } else resourceHelper.getColorResource(color.colorWhite)
     }
 }

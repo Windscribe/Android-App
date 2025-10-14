@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import org.slf4j.LoggerFactory
 
 class DecoyTrafficController(val scope: CoroutineScope, val apiCallManager: IApiCallManager, val preferencesHelper: PreferencesHelper, val vpnConnectionStateManager: VPNConnectionStateManager) {
@@ -89,12 +90,12 @@ class DecoyTrafficController(val scope: CoroutineScope, val apiCallManager: IApi
     private suspend fun sendTraffic(data: String, dataToReceiveString: String?) {
         try {
             val url = "http://10.255.255.1:8085"
-            sendTrafficRequestInProgress = when (apiCallManager.sendDecoyTraffic(url, data, dataToReceiveString).timeout(100, TimeUnit.SECONDS).result<String>()) {
-                is CallResult.Error -> {
-                    false
-                }
-                is CallResult.Success -> {
-                    false
+            sendTrafficRequestInProgress = withTimeout(100_000) { // 100 seconds in milliseconds
+                when (result<String> {
+                    apiCallManager.sendDecoyTraffic(url, data, dataToReceiveString)
+                }) {
+                    is CallResult.Error -> false
+                    is CallResult.Success -> false
                 }
             }
         } catch (e: Exception) {

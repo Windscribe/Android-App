@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.await
 import org.slf4j.LoggerFactory
 import java.util.Date
 import java.util.UUID
@@ -143,15 +142,27 @@ class UserRepository(
             WorkManager.getInstance(appContext).cancelAllWork()
             scope.launch {
                 logger.debug("Deleting user session.")
-                try {
-                    val response = apiManager.deleteSession().retry(3).await()
-                    response.dataClass?.let {
-                        logger.debug("Successfully deleted user session:" + it.isSuccessful)
-                    } ?: response.errorClass?.let {
-                        logger.debug("Error deleting session: ${it.errorMessage}")
+                var attempts = 0
+                val maxAttempts = 3
+                var success = false
+
+                while (attempts < maxAttempts && !success) {
+                    attempts++
+                    try {
+                        val response = apiManager.deleteSession()
+                        response.dataClass?.let {
+                            logger.debug("Successfully deleted user session: ${it.isSuccessful}")
+                            success = true
+                        } ?: response.errorClass?.let {
+                            logger.debug("Error deleting session (attempt $attempts/$maxAttempts): ${it.errorMessage}")
+                        }
+                    } catch (e: Exception) {
+                        logger.debug("Unknown error deleting session (attempt $attempts/$maxAttempts): ${e.localizedMessage}")
                     }
-                } catch (e: Exception) {
-                    logger.debug("Unknown error deleting session.${e.localizedMessage}")
+                }
+
+                if (!success) {
+                    logger.debug("Failed to delete session after $maxAttempts attempts")
                 }
                 onSessionDeleted()
             }
@@ -162,7 +173,7 @@ class UserRepository(
         scope.launch {
             preferenceHelper.sessionHash = null
             preferenceHelper.globalUserConnectionPreference = false
-            WindUtilities.deleteProfileCompletely(appContext).await()
+            WindUtilities.deleteProfileCompletely(appContext)
             autoConnectionManager.reset()
             preferenceHelper.clearAllData()
             localDbInterface.clearAllTables()
@@ -193,9 +204,13 @@ class UserRepository(
         preferenceHelper.loginTime = Date()
         emit(UserDataState.Loading("Getting session"))
         try {
-            val sessionResult = apiManager.getSessionGeneric(firebaseToken).await()
-            when (val result = sessionResult.callResult<UserSessionResponse>()) {
-                is CallResult.Error -> {}
+            val result = apiManager.getSessionGeneric(firebaseToken).callResult<UserSessionResponse>()
+            when (result) {
+                is CallResult.Error -> {
+                    logger.debug("Error getting session: ${result.errorMessage}")
+                    emit(UserDataState.Error(result.errorMessage))
+                    return@flow
+                }
                 is CallResult.Success -> {
                     logger.debug("Successfully added token $firebaseToken to ${result.data.userName}.")
                     if (preferenceHelper.getDeviceUUID() == null) {
@@ -204,16 +219,16 @@ class UserRepository(
                     }
                 }
             }
-            reload(sessionResult.dataClass, null)
-            val staticIpCount = sessionResult.dataClass?.sipCount() ?: 0
+            reload(result.data, null)
+            val staticIpCount =result.data.sipCount()
             if (staticIpCount > 0) {
                 emit(UserDataState.Loading("Getting static IPs"))
-                staticIpRepository.update().await()
+                staticIpRepository.updateFromApi()
             }
             emit(UserDataState.Loading("Getting connection data"))
-            connectionDataRepository.update().await()
+            connectionDataRepository.update()
             emit(UserDataState.Loading("Getting server list"))
-            serverListRepository.update().await()
+            serverListRepository.update()
             if (appContext.vpnConnectionStateManager.isVPNActive()) {
                 vpnController.disconnectAsync()
             }

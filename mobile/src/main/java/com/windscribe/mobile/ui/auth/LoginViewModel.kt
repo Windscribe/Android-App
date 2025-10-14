@@ -2,19 +2,19 @@ package com.windscribe.mobile.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
-import com.windscribe.mobile.R
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.AuthToken
+import com.windscribe.vpn.api.response.UserLoginResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
-import com.windscribe.vpn.commonutils.Ext.toResult
+import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.errormodel.SessionErrorHandler
 import com.windscribe.vpn.exceptions.ApiFailure
-import com.windscribe.vpn.exceptions.WSNetException
+import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserDataState
 import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.repository.getNetworkError
 import com.windscribe.vpn.services.FirebaseManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -136,49 +136,53 @@ class LoginViewModel @Inject constructor(
     private suspend fun loginWithCaptcha(captchaSolution: CaptchaSolution) {
         val trailX = captchaSolution.trail["x"]?.toFloatArray() ?: floatArrayOf()
         val trailY = captchaSolution.trail["y"]?.toFloatArray() ?: floatArrayOf()
-        val result = apiCallManager.logUserIn(
-            username.trim(),
-            password.trim(),
-            twoFactorCode.trim(),
-            captchaSolution.token,
-            "${captchaSolution.leftOffset}",
-            trailX,
-            trailY
-        ).toResult()
-        result.onFailure {
-            if (it is WSNetException) {
-                handleNetworkError(it.getType())
-            }
+        val result = result<UserLoginResponse> {
+            apiCallManager.logUserIn(
+                username.trim(),
+                password.trim(),
+                twoFactorCode.trim(),
+                captchaSolution.token,
+                "${captchaSolution.leftOffset}",
+                trailX,
+                trailY
+            )
         }
-        result.onSuccess {
-            if (it.dataClass != null) {
-                logger.info("User signup in successfully.")
-                handleSuccessfulLogin(it.dataClass!!.sessionAuthHash)
+        when (result) {
+            is CallResult.Error -> {
+                val networkError = getNetworkError(result.code)
+                if (networkError != null) {
+                    handleNetworkError(networkError)
+                } else {
+                    _loginButtonEnabled.emit(true)
+                    handleApiError(result.code, result.errorMessage)
+                }
             }
-            if (it.errorClass != null) {
-                _loginButtonEnabled.emit(true)
-                handleApiError(it.errorClass!!.errorCode, it.errorClass!!.errorMessage)
+
+            is CallResult.Success -> {
+                logger.info("User signup in successfully.")
+                handleSuccessfulLogin(result.data.sessionAuthHash)
             }
         }
     }
 
     private suspend fun startLoginProcess() {
         logger.info("Trying to log in with provided credentials...")
-        val authResult = apiCallManager.authTokenLogin(false).toResult()
-        authResult.onSuccess {
-            if (it.errorClass != null) {
-                logger.info("Error login: ${it.errorClass!!.errorMessage}")
-                _loginButtonEnabled.emit(true)
-                handleApiError(it.errorClass!!.errorCode, it.errorClass!!.errorMessage)
+        val authResult = result<AuthToken> { apiCallManager.authTokenLogin(false) }
+        when (authResult) {
+            is CallResult.Error -> {
+                val networkError = getNetworkError(authResult.code)
+                if (networkError != null) {
+                    handleNetworkError(networkError)
+                } else {
+                    logger.info("Error login: ${authResult.errorMessage}")
+                    _loginButtonEnabled.emit(true)
+                    handleApiError(authResult.code, authResult.errorMessage)
+                }
             }
-            if (it.dataClass != null) {
-                logger.info("Received auth token: ${it.dataClass!!.token}")
-                handleAuthToken(it.dataClass!!)
-            }
-        }
-        authResult.onFailure {
-            if (it is WSNetException) {
-                handleNetworkError(it.getType())
+
+            is CallResult.Success -> {
+                logger.info("Received auth token: ${authResult.data.token}")
+                handleAuthToken(authResult.data)
             }
         }
     }
@@ -196,7 +200,7 @@ class LoginViewModel @Inject constructor(
             )
             updateState(LoginState.Captcha(request))
         } else {
-            val result =
+            val result = result<UserLoginResponse> {
                 apiCallManager.logUserIn(
                     username.trim(),
                     password.trim(),
@@ -206,21 +210,22 @@ class LoginViewModel @Inject constructor(
                     floatArrayOf(),
                     floatArrayOf()
                 )
-                    .toResult()
-            result.onFailure {
-                if (it is WSNetException) {
-                    handleNetworkError(it.getType())
-                }
             }
-            result.onSuccess {
-                if (it.dataClass != null) {
-                    logger.info("User signup in successfully.")
-                    handleSuccessfulLogin(it.dataClass!!.sessionAuthHash)
+            when (result) {
+                is CallResult.Error -> {
+                    val networkError = getNetworkError(result.code)
+                    if (networkError != null) {
+                        handleNetworkError(networkError)
+                    } else {
+                        logger.info("Error login: ${result.errorMessage}")
+                        _loginButtonEnabled.emit(true)
+                        handleApiError(result.code, result.errorMessage)
+                    }
                 }
-                if (it.errorClass != null) {
-                    logger.info("Error login: ${it.errorClass!!.errorMessage}")
-                    _loginButtonEnabled.emit(true)
-                    handleApiError(it.errorClass!!.errorCode, it.errorClass!!.errorMessage)
+
+                is CallResult.Success -> {
+                    logger.info("User signup in successfully.")
+                    handleSuccessfulLogin(result.data.sessionAuthHash)
                 }
             }
         }

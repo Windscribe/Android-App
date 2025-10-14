@@ -12,7 +12,6 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
 import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.backend.utils.VPNPermissionActivity
-import com.windscribe.vpn.commonutils.Ext.toResult
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.localdatabase.LocalDbInterface
@@ -101,28 +100,32 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
     }
 
     private suspend fun getLastSelectedLocation(id: Int): Result<Pair<LastSelectedLocation, LocationTypeInt>> {
-        when (WindUtilities.getSourceTypeBlocking()) {
-            SelectedLocationType.CityLocation -> {
-                return db.getCityAndRegionByID(id).map { cityAndRegion ->
-                    Pair(LastSelectedLocation(
+        return runCatching {
+            when (WindUtilities.getSourceTypeBlocking()) {
+                SelectedLocationType.CityLocation -> {
+                    val cityAndRegion = db.getCityAndRegion(id)
+                    Pair(
+                        LastSelectedLocation(
                             cityAndRegion.city.id,
                             serverListRepository.getCustomCityName(cityAndRegion.city.id) ?: cityAndRegion.city.nodeName,
                             serverListRepository.getCustomCityNickName(cityAndRegion.city.id) ?: cityAndRegion.city.nickName,
                             cityAndRegion.region.countryCode,
-                    ), LocationTypeInt.City)
-                }.toResult()
-            }
+                        ), LocationTypeInt.City
+                    )
+                }
 
-            SelectedLocationType.StaticIp -> {
-                return db.getStaticRegionByID(id).map { staticRegion ->
-                    Pair(LastSelectedLocation(id, staticRegion.cityName, staticRegion.staticIp, staticRegion.countryCode), LocationTypeInt.Static)
-                }.toResult()
-            }
+                SelectedLocationType.StaticIp -> {
+                    val staticRegion = db.getStaticRegionByIDAsync(id) ?: throw Exception("Static region not found")
+                    Pair(
+                        LastSelectedLocation(id, staticRegion.cityName, staticRegion.staticIp, staticRegion.countryCode),
+                        LocationTypeInt.Static
+                    )
+                }
 
-            SelectedLocationType.CustomConfiguredProfile -> {
-                return db.getConfigFile(id).map {
+                SelectedLocationType.CustomConfiguredProfile -> {
+                    val configFile = db.getConfigFileAsync(id)
                     Pair(LastSelectedLocation(id, nickName = ""), LocationTypeInt.Custom)
-                }.toResult()
+                }
             }
         }
     }

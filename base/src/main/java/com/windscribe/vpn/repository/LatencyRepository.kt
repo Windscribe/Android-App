@@ -1,8 +1,6 @@
 package com.windscribe.vpn.repository
 
-import android.util.Log
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.wireguard.WireGuardVpnProfile
@@ -15,7 +13,6 @@ import com.windscribe.vpn.serverlist.entity.PingTime
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.services.ping.Ping
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import com.wsnet.lib.WSNet
 import com.wsnet.lib.WSNetPingManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -26,10 +23,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.rx2.await
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
-import okhttp3.CertificatePinner
 import org.slf4j.LoggerFactory
 import java.net.Inet4Address
 import java.net.InetSocketAddress
@@ -96,13 +91,13 @@ class LatencyRepository @Inject constructor(
 
     suspend fun updateAllServerLatencies(): Boolean {
         val currentIp = preferencesHelper.getResponseString(PreferencesKeyConstants.USER_IP)
-        val validPings = localDbInterface.allPingTimes.await().filter {
+        val validPings = localDbInterface.getAllPingsAsync().filter {
             val isSameIp = currentIp == it.ip
             val isWithinTimeLimit = (System.currentTimeMillis() - it.updatedAt).toDuration(DurationUnit.MILLISECONDS).inWholeMinutes <= MINIMUM_PING_VALIDATION_MINUTES
             val isPingValid = it.pingTime != -1
             return@filter isSameIp && isWithinTimeLimit && isPingValid
         }.map { it.id }
-        val pingJobs = localDbInterface.pingableCities.await()
+        val pingJobs = localDbInterface.getPingableCities()
                 .filter { city ->
                     return@filter !validPings.contains(city.id)
                 }.map {
@@ -111,7 +106,7 @@ class LatencyRepository @Inject constructor(
         logger.debug("Requesting latency for ${pingJobs.count()} cities.")
         val cityPings = runCatching {
             pingJobs.awaitAll().map { pingTime ->
-                localDbInterface.addPing(pingTime).await()
+                localDbInterface.addPing(pingTime)
                 pingTime
             }.run {
                 logger.debug("Latency completed for ${this.count { it.pingTime > 0 && !it.isStatic }} cities.")
@@ -127,9 +122,9 @@ class LatencyRepository @Inject constructor(
     }
 
     suspend fun updateFavouriteCityLatencies(): Boolean {
-        val cities = localDbInterface.favourites.await().map {
+        val cities = localDbInterface.getFavouritesAsync().map {
             try {
-                localDbInterface.getCityByID(it.id).await()
+                localDbInterface.getCityByIDAsync(it.id)
             } catch (e: Exception) {
                return@map null
             }
@@ -137,7 +132,7 @@ class LatencyRepository @Inject constructor(
         val pingJobs = cities.map { pingJobAsync(it) }
         val cityPings = runCatching {
             pingJobs.awaitAll().map { pingTime ->
-                localDbInterface.addPing(pingTime).await()
+                localDbInterface.addPing(pingTime)
                 pingTime
             }.run {
                 return@run updateLatencyEvent(this, LatencyType.Servers)
@@ -147,13 +142,13 @@ class LatencyRepository @Inject constructor(
     }
 
     suspend fun updateStreamingServerLatencies(): Boolean {
-        val cities = localDbInterface.allRegion.await().filter {
+        val cities = localDbInterface.getAllRegionAsync().filter {
             it.region.locationType == "streaming"
         }.map { it.cities }.reduce { l1, l2 -> l1.plus(l2) }
         val pingJobs = cities.map { pingJobAsync(it) }
         val cityPings = runCatching {
             pingJobs.awaitAll().map { pingTime ->
-                localDbInterface.addPing(pingTime).await()
+                localDbInterface.addPing(pingTime)
                 pingTime
             }.run {
                 return@run updateLatencyEvent(this, LatencyType.Servers)
@@ -165,7 +160,7 @@ class LatencyRepository @Inject constructor(
 
     private suspend fun updateLatencyEvent(latencies: List<PingTime>, type: LatencyType): Boolean {
         if (type == LatencyType.Servers) {
-            val lowestPingId = localDbInterface.lowestPingId.await()
+            val lowestPingId = localDbInterface.getLowestPingIdAsync()
             preferencesHelper.lowestPingId = lowestPingId
         }
         if (latencies.isNotEmpty()) {
@@ -177,11 +172,11 @@ class LatencyRepository @Inject constructor(
     }
 
     suspend fun updateStaticIpLatency(): Boolean {
-        val regions = localDbInterface.allStaticRegions.await()
+        val regions = localDbInterface.getAllStaticRegions()
         val pingJobs = regions.map { pingJobAsync(it) }
         val staticPings = runCatching {
             pingJobs.awaitAll().map { pingTime ->
-                localDbInterface.addPing(pingTime).await()
+                localDbInterface.addPing(pingTime)
                 pingTime
             }.run {
                 return@run updateLatencyEvent(this, LatencyType.StaticIp)
@@ -192,7 +187,7 @@ class LatencyRepository @Inject constructor(
 
     suspend fun updateConfigLatencies(): Boolean {
         return runCatching {
-            localDbInterface.allConfigs.await().map { configFile ->
+            localDbInterface.getAllConfigs().map { configFile ->
                 if (skipPing) {
                     throw Exception()
                 }
@@ -205,7 +200,7 @@ class LatencyRepository @Inject constructor(
                         getPingTime(configFile.getPrimaryKey(), 0, isStatic = false, isPro = false)
                 getLatency(hostname, pingTime)
             }.map { pingTime ->
-                localDbInterface.addPing(pingTime).await()
+                localDbInterface.addPing(pingTime)
                 pingTime
             }.run {
                 return@run updateLatencyEvent(this, LatencyType.Config)

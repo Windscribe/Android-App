@@ -19,8 +19,8 @@ import androidx.core.app.NotificationCompat.Action
 import androidx.core.app.NotificationCompat.Builder
 import com.windscribe.vpn.R.mipmap
 import com.windscribe.vpn.R.string
-import com.windscribe.vpn.ServiceInteractor
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState.Status
@@ -44,7 +44,7 @@ class WindNotificationBuilder @Inject constructor(
         private val trafficCounter: TrafficCounter,
         val scope: CoroutineScope,
         val serverListRepository: ServerListRepository,
-        private val interactor: ServiceInteractor
+        private val preferencesHelper: PreferencesHelper
 ) {
 
     private var lastUpdateTime = System.currentTimeMillis()
@@ -199,7 +199,7 @@ class WindNotificationBuilder @Inject constructor(
             trafficCounter.trafficStats.collectLatest { traffic ->
                 trafficStats = traffic.text
                 val status = vpnConnectionStateManager.state.value.status
-                if (status == Connected && interactor.preferenceHelper.globalUserConnectionPreference) {
+                if (status == Connected && preferencesHelper.globalUserConnectionPreference) {
                     notificationManager.notify(
                         NotificationConstants.SERVICE_NOTIFICATION_ID,
                         buildNotification(status)

@@ -4,11 +4,10 @@ import com.windscribe.vpn.constants.NetworkKeyConstants
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
-import javax.inject.Inject
 import java.util.concurrent.TimeUnit.MINUTES
 import java.util.concurrent.TimeUnit.SECONDS
+import javax.inject.Inject
 
 class ProtectedApiFactory @Inject constructor(
         private val retrofitBuilder: Retrofit.Builder,
@@ -27,7 +26,6 @@ class ProtectedApiFactory @Inject constructor(
         val connectionPool = ConnectionPool(0, 5, MINUTES)
         okHttpClient.connectionPool(connectionPool)
         mRetrofit = retrofitBuilder.baseUrl("https://api.windscribe.com")
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClient.build())
             .build()

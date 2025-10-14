@@ -3,7 +3,7 @@ package com.windscribe.mobile.ui.preferences.network_details
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.windscribe.mobile.ui.helper.PortMapLoader.getPortMap
+import com.windscribe.vpn.repository.PortMapRepository
 import com.windscribe.mobile.ui.model.DropDownStringItem
 import com.windscribe.mobile.ui.preferences.connection.PortMapItem
 import com.windscribe.mobile.ui.preferences.connection.ProtoItem
@@ -45,7 +45,8 @@ class NetworkDetailViewModelImpl(
     val preferencesHelper: PreferencesHelper,
     val networkNetworkManager: NetworkInfoManager,
     val vpnController: WindVpnController,
-    val vpnConnectionStateManager: VPNConnectionStateManager
+    val vpnConnectionStateManager: VPNConnectionStateManager,
+    val portMapRepository: PortMapRepository
 ) :
     NetworkDetailViewModel() {
     private val _showProgress = MutableStateFlow(false)
@@ -80,7 +81,7 @@ class NetworkDetailViewModelImpl(
     private fun loadPortMapItems() {
         viewModelScope.launch(Dispatchers.IO) {
             logger.info("Loading portmap.")
-            val portMapResult = getPortMap(api, preferencesHelper)
+            val portMapResult = portMapRepository.getPortMap()
             if (portMapResult.isSuccess) {
                 val portMap = portMapResult.getOrNull()
                 portMap?.portmap?.map {

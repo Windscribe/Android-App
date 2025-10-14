@@ -9,8 +9,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.windscribe.vpn.BuildConfig.DEV
-import com.windscribe.vpn.ServiceInteractor
-import com.windscribe.vpn.ServiceInteractorImpl
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.ApiCallManager
@@ -41,7 +39,6 @@ import com.windscribe.vpn.localdatabase.LocalDatabaseImpl
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.Migrations
 import com.windscribe.vpn.localdatabase.NetworkInfoDao
-import com.windscribe.vpn.localdatabase.PingTestDao
 import com.windscribe.vpn.localdatabase.PopupNotificationDao
 import com.windscribe.vpn.localdatabase.ServerStatusDao
 import com.windscribe.vpn.localdatabase.UserStatusDao
@@ -64,7 +61,6 @@ import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.repository.WgConfigRepository
 import com.windscribe.vpn.serverlist.dao.CityAndRegionDao
 import com.windscribe.vpn.serverlist.dao.CityDao
-import com.windscribe.vpn.serverlist.dao.CityDetailDao
 import com.windscribe.vpn.serverlist.dao.ConfigFileDao
 import com.windscribe.vpn.serverlist.dao.FavouriteDao
 import com.windscribe.vpn.serverlist.dao.PingTimeDao
@@ -143,12 +139,6 @@ open class BaseApplicationModule {
     @Singleton
     fun provideCityDao(windscribeDatabase: WindscribeDatabase): CityDao {
         return windscribeDatabase.cityDao()
-    }
-
-    @Provides
-    @Singleton
-    fun provideCityDetailDao(windscribeDatabase: WindscribeDatabase): CityDetailDao {
-        return windscribeDatabase.cityDetailDao()
     }
 
     @Provides
@@ -245,17 +235,19 @@ open class BaseApplicationModule {
         coroutineScope: CoroutineScope,
         networkInfoManager: NetworkInfoManager,
         vpnConnectionStateManager: VPNConnectionStateManager,
-        serviceInteractor: ServiceInteractor,
         advanceParameterRepository: AdvanceParameterRepository,
-        proxyDNSManager: ProxyDNSManager
+        proxyDNSManager: ProxyDNSManager,
+        apiManager: IApiCallManager,
+        preferencesHelper: PreferencesHelper
     ): IKev2VpnBackend {
         return IKev2VpnBackend(
             coroutineScope,
             networkInfoManager,
             vpnConnectionStateManager,
-            serviceInteractor,
+            preferencesHelper,
             advanceParameterRepository,
-            proxyDNSManager
+            proxyDNSManager,
+            apiManager,
         )
     }
 
@@ -271,7 +263,6 @@ open class BaseApplicationModule {
     @Provides
     @Singleton
     fun provideLocalDatabaseImpl(
-        pingTestDao: PingTestDao,
         userStatusDao: UserStatusDao,
         popupNotificationDao: PopupNotificationDao,
         regionDao: RegionDao,
@@ -288,7 +279,6 @@ open class BaseApplicationModule {
         windNotificationDao: WindNotificationDao
     ): LocalDbInterface {
         return LocalDatabaseImpl(
-            pingTestDao,
             userStatusDao,
             popupNotificationDao,
             regionDao,
@@ -343,25 +333,21 @@ open class BaseApplicationModule {
         coroutineScope: CoroutineScope,
         networkInfoManager: NetworkInfoManager,
         vpnConnectionStateManager: VPNConnectionStateManager,
-        serviceInteractor: ServiceInteractor,
+        preferencesHelper: PreferencesHelper,
         advanceParameterRepository: AdvanceParameterRepository,
-        proxyDNSManager: ProxyDNSManager
+        proxyDNSManager: ProxyDNSManager,
+        apiManager: IApiCallManager
     ): OpenVPNBackend {
         return OpenVPNBackend(
             goBackend,
             coroutineScope,
             networkInfoManager,
             vpnConnectionStateManager,
-            serviceInteractor,
+            preferencesHelper,
             advanceParameterRepository,
-            proxyDNSManager
+            proxyDNSManager,
+            apiManager
         )
-    }
-
-    @Provides
-    @Singleton
-    fun providePingTestDao(windscribeDatabase: WindscribeDatabase): PingTestDao {
-        return windscribeDatabase.pingTestDao()
     }
 
     @Provides
@@ -503,8 +489,8 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun provideWgConfigRepository(serviceInteractor: ServiceInteractor, scope: CoroutineScope, localDbInterface: LocalDbInterface): WgConfigRepository {
-        return WgConfigRepository(serviceInteractor, scope, localDbInterface)
+    fun provideWgConfigRepository(apiManager: IApiCallManager, preferencesHelper: PreferencesHelper): WgConfigRepository {
+        return WgConfigRepository(apiManager, preferencesHelper)
     }
 
     @Provides
@@ -552,7 +538,7 @@ open class BaseApplicationModule {
         scope: CoroutineScope,
         trafficCounter: TrafficCounter,
         serverListRepository: ServerListRepository,
-        interactor: ServiceInteractor
+        preferencesHelper: PreferencesHelper
     ): WindNotificationBuilder {
         return WindNotificationBuilder(
             notificationManager,
@@ -561,7 +547,7 @@ open class BaseApplicationModule {
             trafficCounter,
             scope,
             serverListRepository,
-            interactor
+            preferencesHelper
         )
     }
 
@@ -578,7 +564,6 @@ open class BaseApplicationModule {
         coroutineScope: CoroutineScope,
         networkInfoManager: NetworkInfoManager,
         vpnConnectionStateManager: VPNConnectionStateManager,
-        serviceInteractor: ServiceInteractor,
         vpnProfileCreator: VPNProfileCreator,
         userRepository: Lazy<UserRepository>,
         deviceStateManager: DeviceStateManager,
@@ -588,14 +573,14 @@ open class BaseApplicationModule {
         localDbInterface: LocalDbInterface,
         wgLogger: WgLogger,
         wgConfigRepository: WgConfigRepository,
-        wsNet: WSNet
+        wsNet: WSNet,
+        apiManager: IApiCallManager
     ): WireguardBackend {
         return WireguardBackend(
             goBackend,
             coroutineScope,
             networkInfoManager,
             vpnConnectionStateManager,
-            serviceInteractor,
             vpnProfileCreator,
             userRepository,
             deviceStateManager,
@@ -605,7 +590,8 @@ open class BaseApplicationModule {
             localDbInterface,
             wgLogger,
             wgConfigRepository,
-            wsNet
+            wsNet,
+            apiManager
         )
     }
 
@@ -688,19 +674,21 @@ open class BaseApplicationModule {
         vpnConnectionStateManager: Lazy<VPNConnectionStateManager>,
         vpnController: Lazy<WindVpnController>,
         networkInfoManager: NetworkInfoManager,
-        interactor: ServiceInteractor,
         scope: CoroutineScope,
-        wgConfigRepository: WgConfigRepository,
-        connectionDataRepository: ConnectionDataRepository
+        localDbInterface: LocalDbInterface,
+        connectionDataRepository: ConnectionDataRepository,
+        apiManager: IApiCallManager,
+        preferencesHelper: PreferencesHelper
     ): AutoConnectionManager {
         return AutoConnectionManager(
             scope,
             vpnConnectionStateManager,
             vpnController,
             networkInfoManager,
-            interactor,
             connectionDataRepository,
-            wgConfigRepository
+            localDbInterface,
+            apiManager,
+            preferencesHelper
         )
     }
 
@@ -773,16 +761,6 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun providesVPNServiceInteractor(
-        mPrefHelper: PreferencesHelper,
-        apiCallManager: IApiCallManager,
-        localDbInterface: LocalDbInterface
-    ): ServiceInteractor {
-        return ServiceInteractorImpl(mPrefHelper, apiCallManager, localDbInterface)
-    }
-
-    @Provides
-    @Singleton
     fun providesWindScribeWorkManager(
         scope: CoroutineScope,
         vpnConnectionStateManager: VPNConnectionStateManager,
@@ -821,7 +799,7 @@ open class BaseApplicationModule {
         userRepository: Lazy<UserRepository>,
         networkInfoManager: NetworkInfoManager,
         autoConnectionManager: AutoConnectionManager,
-        interactor: ServiceInteractor,
+        preferencesHelper: PreferencesHelper,
         vpnController: WindVpnController
     ): ShortcutStateManager {
         return ShortcutStateManager(
@@ -829,7 +807,7 @@ open class BaseApplicationModule {
             userRepository,
             autoConnectionManager,
             networkInfoManager,
-            interactor,
+            preferencesHelper,
             vpnController
         )
     }
@@ -940,5 +918,23 @@ open class BaseApplicationModule {
     @Singleton
     fun provideWgLogger(): WgLogger {
         return WgLogger()
+    }
+
+    @Provides
+    @Singleton
+    fun providePortMapRepository(
+        apiCallManager: IApiCallManager,
+        preferencesHelper: PreferencesHelper
+    ): com.windscribe.vpn.repository.PortMapRepository {
+        return com.windscribe.vpn.repository.PortMapRepository(apiCallManager, preferencesHelper)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLogRepository(
+        preferencesHelper: PreferencesHelper,
+        apiCallManager: IApiCallManager
+    ): com.windscribe.vpn.repository.LogRepository {
+        return com.windscribe.vpn.repository.LogRepository(preferencesHelper, apiCallManager)
     }
 }

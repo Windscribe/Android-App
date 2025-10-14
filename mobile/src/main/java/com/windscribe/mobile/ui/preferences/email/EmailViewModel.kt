@@ -60,7 +60,7 @@ class EmailViewModelImpl(
             }
             _error.emit(null)
             _showProgress.value = true
-            val result = api.addUserEmailAddress(email).result<AddEmailResponse>()
+            val result = result<AddEmailResponse> { api.addUserEmailAddress(email) }
             _showProgress.value = false
             when (result) {
                 is CallResult.Error -> {
@@ -86,7 +86,7 @@ class EmailViewModelImpl(
         viewModelScope.launch(Dispatchers.IO) {
             _error.emit(null)
             _showProgress.value = true
-            val result = api.resendUserEmailAddress().result<AddEmailResponse>()
+            val result = result<AddEmailResponse> { api.resendUserEmailAddress() }
             _showProgress.value = false
             when (result) {
                 is CallResult.Error -> {

@@ -3,13 +3,11 @@
  */
 package com.windscribe.vpn.apppreference
 
-import ch.qos.logback.core.util.AggregationType
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
-import com.windscribe.vpn.constants.FeatureExplainer.AGGRESSIVE_REKEYING
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants.ADVANCE_PARAM_TEXT
 import com.windscribe.vpn.constants.PreferencesKeyConstants.ALREADY_SHOWN_SHARE_APP_LINK
@@ -34,7 +32,6 @@ import com.windscribe.vpn.constants.VpnPreferenceConstants
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.WgLocalParams
-import io.reactivex.Single
 import net.grandcentrix.tray.AppPreferences
 import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
 import java.util.Date
@@ -131,22 +128,7 @@ class AppPreferenceHelper(
     override val iKEv2Port: String
         get() = preference.getString(PreferencesKeyConstants.SAVED_IKev2_PORT, DEFAULT_IKEV2_PORT)
             ?: DEFAULT_IKEV2_PORT
-    override val installedApps: Single<List<String>>
-        get() {
-            val jsonString =
-                preference.getString(PreferencesKeyConstants.INSTALLED_APPS_DATA, null)
-            return if (jsonString != null) {
-                Single.fromCallable {
-                    Gson().fromJson(
-                        jsonString,
-                        object :
-                            TypeToken<List<String?>?>() {}.type
-                    )
-                }
-            } else {
-                Single.fromCallable { ArrayList() }
-            }
-        }
+
     override var keepAlive: String
         get() = preference.getString(PreferencesKeyConstants.KEEP_ALIVE, "20") ?: "20"
         set(keepAlive) {

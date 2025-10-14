@@ -4,12 +4,11 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.repository.StaticIpRepository
 import com.windscribe.vpn.repository.UserRepository
-import javax.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
 class StaticIpWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     @Inject
@@ -25,13 +24,13 @@ class StaticIpWorker(context: Context, params: WorkerParameters) : CoroutineWork
 
     override suspend fun doWork(): Result {
         if(!userRepository.loggedIn())return Result.failure()
-        return staticIpRepository.update().result{ success, error ->
-            if(success){
-                staticIpRepository.load()
-                logger.debug("Successfully updated static ip list.")
-            }else{
-                logger.debug("Failed to update static ip list.: $error")
-            }
+        try {
+            staticIpRepository.load()
+            logger.debug("Successfully updated static ip list.")
+            return Result.success()
+        } catch (e: Exception) {
+            logger.debug("Failed to update static ip list.: $e")
+            return Result.failure()
         }
     }
 }
