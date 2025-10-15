@@ -19,9 +19,11 @@ import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -135,57 +137,61 @@ abstract class VpnBackend(
 
         connectivityTestJob = mainScope.launch {
             try {
-                // Initial delay before first attempt
-                delay(startDelay)
+                withTimeout(15_000) { // 15 seconds total timeout
+                    // Initial delay before first attempt
+                    delay(startDelay)
 
-                var lastError: String? = null
-                var attemptCount = 0
-                var success = false
+                    var lastError: String? = null
+                    var attemptCount = 0
+                    var success = false
 
-                // Try maxAttempts times
-                while (attemptCount < maxAttempts && !success) {
-                    attemptCount++
-                    vpnLogger.info("Connectivity test attempt: $attemptCount/$maxAttempts")
+                    // Try maxAttempts times
+                    while (attemptCount < maxAttempts && !success) {
+                        attemptCount++
+                        vpnLogger.info("Connectivity test attempt: $attemptCount/$maxAttempts")
 
-                    val result = result<GetMyIpResponse> {
-                        apiManager.checkConnectivityAndIpAddress()
-                    }
+                        val result = result<GetMyIpResponse> {
+                            apiManager.checkConnectivityAndIpAddress()
+                        }
 
-                    when (result) {
-                        is CallResult.Success -> {
-                            val userIp = result.data.userIp
-                            if (userIp != null && Util.validIpAddress(userIp)) {
-                                val ipAddress = Util.getModifiedIpAddress(userIp.trim())
-                                preferencesHelper.saveResponseStringData(
-                                    PreferencesKeyConstants.USER_IP,
-                                    ipAddress
-                                )
-                                connectivityTestPassed(userIp)
-                                success = true
-                            } else {
-                                lastError = "Invalid IP address: $userIp"
+                        when (result) {
+                            is CallResult.Success -> {
+                                val userIp = result.data.userIp
+                                if (userIp != null && Util.validIpAddress(userIp)) {
+                                    val ipAddress = Util.getModifiedIpAddress(userIp.trim())
+                                    preferencesHelper.saveResponseStringData(
+                                        PreferencesKeyConstants.USER_IP,
+                                        ipAddress
+                                    )
+                                    connectivityTestPassed(userIp)
+                                    success = true
+                                } else {
+                                    lastError = "Invalid IP address: $userIp"
+                                    vpnLogger.info("Failed Attempt: $attemptCount - $lastError")
+                                    if (attemptCount < maxAttempts) {
+                                        delay(retryDelay)
+                                    }
+                                }
+                            }
+
+                            is CallResult.Error -> {
+                                lastError = result.errorMessage
                                 vpnLogger.info("Failed Attempt: $attemptCount - $lastError")
                                 if (attemptCount < maxAttempts) {
                                     delay(retryDelay)
                                 }
                             }
                         }
+                    }
 
-                        is CallResult.Error -> {
-                            lastError = result.errorMessage
-                            vpnLogger.info("Failed Attempt: $attemptCount - $lastError")
-                            if (attemptCount < maxAttempts) {
-                                delay(retryDelay)
-                            }
-                        }
+                    if (!success) {
+                        vpnLogger.error("Connectivity test failed after $attemptCount attempts")
+                        failedConnectivityTest()
                     }
                 }
-
-                if (!success) {
-                    vpnLogger.error("Connectivity test failed after $attemptCount attempts")
-                    failedConnectivityTest()
-                }
-
+            } catch (e: TimeoutCancellationException) {
+                vpnLogger.error("Connectivity test timeout: exceeded 15 seconds")
+                failedConnectivityTest()
             } catch (e: Exception) {
                 vpnLogger.error("Connectivity test error: ${e.message}")
                 failedConnectivityTest()
