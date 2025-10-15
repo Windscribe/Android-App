@@ -71,3 +71,9 @@
 # Keep classes from minidns-client
 -keep class org.minidns.** { *; }
 -keep class com.windscribe.vpn.commonutils.LowerCaseLevelConverter { *; }
+
+# Keep Ext.result function and CallResult classes for reflection
+-keep class com.windscribe.vpn.commonutils.Ext { *; }
+-keep class com.windscribe.vpn.repository.CallResult { *; }
+-keep class com.windscribe.vpn.repository.CallResult$* { *; }
+-keep class com.windscribe.vpn.api.response.GenericResponseClass { *; }
