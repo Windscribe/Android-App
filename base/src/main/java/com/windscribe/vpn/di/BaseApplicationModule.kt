@@ -13,7 +13,6 @@ import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.ApiCallManager
 import com.windscribe.vpn.api.IApiCallManager
-import com.windscribe.vpn.api.ProtectedApiFactory
 import com.windscribe.vpn.apppreference.AppPreferenceHelper
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.SecurePreferences
@@ -598,12 +597,10 @@ open class BaseApplicationModule {
     @Provides
     @Singleton
     fun providesApiCallManagerInterface(
-        windApiFactory: ProtectedApiFactory,
         wsNetServerAPI: WSNetServerAPI,
         preferencesHelper: PreferencesHelper,
     ): IApiCallManager {
         return ApiCallManager(
-            windApiFactory,
             wsNetServerAPI,
             preferencesHelper
         )

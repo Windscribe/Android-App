@@ -36,7 +36,6 @@ import com.wsnet.lib.WSNetServerAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import okhttp3.ResponseBody
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -46,7 +45,6 @@ import kotlin.coroutines.resume
 
 @Singleton
 open class ApiCallManager @Inject constructor(
-    private val apiFactory: ProtectedApiFactory,
     val wsNetServerAPI: WSNetServerAPI,
     val preferencesHelper: PreferencesHelper
 ) : IApiCallManager {
@@ -620,18 +618,38 @@ open class ApiCallManager @Inject constructor(
     ): GenericResponseClass<String?, ApiErrorResponse?> {
         return try {
             withContext(Dispatchers.IO) {
+                val client = okhttp3.OkHttpClient.Builder()
+                    .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                    .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                    .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                    .build()
+
+                val formBody = okhttp3.FormBody.Builder()
+                    .add("data", data)
+                    .build()
+
+                val requestBuilder = okhttp3.Request.Builder()
+                    .url(url)
+                    .post(formBody)
+                    .header("Content-Type", "text/plain")
+
                 sizeToReceive?.let {
-                    val responseBody = apiFactory.createApi(url)
-                        .sendDecoyTraffic(
-                            hashMapOf(Pair("data", data)),
-                            "text/plain",
-                            sizeToReceive
-                        )
-                    responseToModel(responseBody, String::class.java)
-                } ?: run {
-                    val responseBody = apiFactory.createApi(url)
-                        .sendDecoyTraffic(hashMapOf(Pair("data", data)), "text/plain")
-                    responseToModel(responseBody, String::class.java)
+                    requestBuilder.header("X-DECOY-RESPONSE", it)
+                }
+
+                val request = requestBuilder.build()
+                val response = client.newCall(request).execute()
+                val responseBody = response.body
+
+                if (response.isSuccessful && responseBody != null) {
+                    val responseString = responseBody.string()
+                    responseBody.close()
+                    GenericResponseClass(responseString, null)
+                } else {
+                    val apiErrorResponse = ApiErrorResponse()
+                    apiErrorResponse.errorCode = NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
+                    apiErrorResponse.errorMessage = "HTTP ${response.code}: ${response.message}"
+                    GenericResponseClass(null, apiErrorResponse)
                 }
             }
         } catch (e: Exception) {
@@ -639,42 +657,6 @@ open class ApiCallManager @Inject constructor(
             apiErrorResponse.errorCode = NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
             apiErrorResponse.errorMessage = e.message ?: ""
             GenericResponseClass(null, apiErrorResponse)
-        }
-    }
-
-    /**
-     * Maps response body to generic api response
-     * @param responseBody Response body
-     * @param modelType Class type for data if String is provided raw response is returned .
-     * @return Optional Generic Class with either data or ApiErrorResponse
-     */
-    private fun <T> responseToModel(
-        responseBody: ResponseBody,
-        modelType: Class<T>
-    ): GenericResponseClass<T?, ApiErrorResponse?> {
-        val responseDataString = responseBody.string()
-        responseBody.close()
-        return try {
-            if (modelType.simpleName.equals("String")) {
-                GenericResponseClass(responseDataString as T, null)
-            } else {
-                val dataObject = JsonResponseConverter.getResponseClass(
-                    JSONObject(responseDataString),
-                    modelType
-                )
-                GenericResponseClass(dataObject, null)
-            }
-        } catch (e: Exception) {
-            try {
-                val errorObject =
-                    JsonResponseConverter.getErrorClass(JSONObject(responseDataString))
-                GenericResponseClass(null, errorObject)
-            } catch (e: Exception) {
-                val apiErrorResponse = ApiErrorResponse()
-                apiErrorResponse.errorCode = 3
-                apiErrorResponse.errorMessage = "App: Unable to parse [ $responseDataString ] to ${modelType.simpleName}."
-                GenericResponseClass(null, apiErrorResponse)
-            }
         }
     }
 }
