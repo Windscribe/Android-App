@@ -67,10 +67,8 @@ dependencies {
     implementation project(path: ':strongswan')
     implementation project(path: ':common')
     api project(path: ':wgtunnel')
-    //Retrofit
-    implementation "com.squareup.retrofit2:retrofit:$retrofit"
-    api "com.squareup.retrofit2:converter-gson:$retrofit"
-    implementation "com.squareup.retrofit2:converter-scalars:$retrofit"
+    //Gson
+    api "com.google.code.gson:gson:2.10.1"
     //Okhttp
     implementation 'com.squareup.okhttp3:logging-interceptor:4.2.2'
     implementation 'com.squareup.okhttp3:okhttp:4.11.0'

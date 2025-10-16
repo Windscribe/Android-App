@@ -90,7 +90,6 @@ import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.slf4j.LoggerFactory
-import retrofit2.Retrofit
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
@@ -723,11 +722,6 @@ open class BaseApplicationModule {
                 logger.info(message)
             }
         })
-    }
-
-    @Provides
-    fun providesRetrofitBuilder(): Retrofit.Builder {
-        return Retrofit.Builder()
     }
 
     @Provides
