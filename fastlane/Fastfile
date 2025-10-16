@@ -8,8 +8,18 @@ end
   desc "Pull Build number from play store, increment and update gradle."
   lane :updateBuildVersion do
      code = google_play_track_version_codes(package_name: ENV['PACKAGE_NAME'],track: "internal")
-          mobile_version = code[1] + 1
-          tv_version = mobile_version + 1
+
+     # Handle case where only one build exists (mobile only)
+     if code.length >= 2
+       # Both mobile and TV builds exist
+       mobile_version = code[1] + 1
+       tv_version = mobile_version + 1
+     else
+       # Only mobile build exists
+       mobile_version = (code[0] || 0) + 1
+       tv_version = mobile_version + 1
+     end
+
      increment_version_code(
         gradle_file_path: "mobile/build.gradle",
         app_folder_name:"mobile",
@@ -25,8 +35,18 @@ end
    desc "Pull Build number from play store and update gradle with same."
     lane :keepBuildVersion do
        code = google_play_track_version_codes(package_name: ENV['PACKAGE_NAME'],track: "internal")
-            mobile_version = code[0]
-            tv_version = code[1]
+
+       # Handle case where only one build exists (mobile only)
+       if code.length >= 2
+         # Both mobile and TV builds exist
+         mobile_version = code[0]
+         tv_version = code[1]
+       else
+         # Only mobile build exists
+         mobile_version = code[0] || 0
+         tv_version = mobile_version + 1
+       end
+
        increment_version_code(
           gradle_file_path: "mobile/build.gradle",
           app_folder_name:"mobile",
