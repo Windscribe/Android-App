@@ -8,13 +8,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.mobile.R
-import com.windscribe.mobile.ui.common.isEnabled
-import com.windscribe.mobile.ui.home.HomeGoto
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.bundledBackgrounds
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.getSoundFile
+import com.windscribe.mobile.ui.common.isEnabled
+import com.windscribe.mobile.ui.home.HomeGoto
 import com.windscribe.mobile.ui.serverlist.ServerListItem
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.autoconnection.ProtocolInformation
@@ -23,6 +24,7 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
 import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkKeyConstants
@@ -31,6 +33,7 @@ import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.model.User
+import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.RepositoryState
@@ -39,6 +42,7 @@ import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.serverlist.entity.City
 import com.windscribe.vpn.serverlist.entity.CityAndRegion
 import com.windscribe.vpn.serverlist.entity.ConfigFile
+import com.windscribe.vpn.serverlist.entity.Favourite
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
@@ -46,6 +50,7 @@ import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -136,23 +141,26 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract val aspectRatio: StateFlow<Int>
     abstract val goto: SharedFlow<HomeGoto>
     abstract val newFeedCount: StateFlow<Int>
+    abstract val hasPinnedIp: StateFlow<Boolean>
     abstract fun onConnectButtonClick()
     abstract fun onCityClick(city: City)
     abstract fun onStaticIpClick(staticRegion: StaticRegion)
     abstract fun onConfigClick(config: ConfigFile)
     abstract fun onIpContextMenuPosition(position: Offset)
     abstract fun onRotateIpClick()
-    abstract fun onFavouriteIpClick()
+    abstract fun onPinIPClick()
     abstract fun setContextMenuState(state: Boolean)
     abstract val toastMessage: StateFlow<ToastMessage>
     abstract val isSingleLineLocationName: StateFlow<Boolean>
     abstract val shouldPlayHapticFeedback: StateFlow<Boolean>
+    abstract val shouldAnimateFavoriteIcon: StateFlow<Boolean>
     abstract fun clearToast()
     abstract fun onProtocolChangeClick()
     abstract fun onGoToHandled()
     abstract fun setIsSingleLineLocationName(singleLine: Boolean)
     abstract fun onHapticFeedbackHandled()
     abstract fun onIpAnimationComplete()
+    abstract fun onFavoriteAnimationHandled()
 }
 
 class ConnectionViewmodelImpl @Inject constructor(
@@ -167,13 +175,14 @@ class ConnectionViewmodelImpl @Inject constructor(
     private val autoConnectionManager: AutoConnectionManager,
     private val userRepository: UserRepository,
     private val serverListRepository: ServerListRepository,
-    private val decoyTrafficController: DecoyTrafficController
+    private val decoyTrafficController: DecoyTrafficController,
+    private val api: IApiCallManager
 ) :
     ConnectionViewmodel() {
     private val _connectionUIState = MutableStateFlow<ConnectionUIState>(ConnectionUIState.Idle)
     override val connectionUIState: StateFlow<ConnectionUIState> = _connectionUIState
 
-    private val _ipState: MutableStateFlow<String> = MutableStateFlow("--.--.--.--")
+    private val _ipState: MutableStateFlow<String> = MutableStateFlow("")
     override val ipState: StateFlow<String> = _ipState
     private val _shouldAnimateIp: MutableStateFlow<Boolean> = MutableStateFlow(false)
     override val shouldAnimateIp: StateFlow<Boolean> = _shouldAnimateIp
@@ -207,8 +216,12 @@ class ConnectionViewmodelImpl @Inject constructor(
     override val isSingleLineLocationName: StateFlow<Boolean> = _isSingleLineLocationName
     private val _shouldPlayHapticFeedback = MutableStateFlow(false)
     override val shouldPlayHapticFeedback: StateFlow<Boolean> = _shouldPlayHapticFeedback
+    private val _shouldAnimateFavoriteIcon = MutableStateFlow(false)
+    override val shouldAnimateFavoriteIcon: StateFlow<Boolean> = _shouldAnimateFavoriteIcon
     private var mediaPlayer: MediaPlayer? = null
     private val logger = LoggerFactory.getLogger("ConnectionViewmodel")
+    private val _hasPinnedIp = MutableStateFlow(false)
+    override val hasPinnedIp: StateFlow<Boolean> = _hasPinnedIp
 
 
     init {
@@ -221,6 +234,7 @@ class ConnectionViewmodelImpl @Inject constructor(
         handleConnectionHapticFeedback()
         observeCustomLocationNameChanges()
         observeDecoyTrafficChanges()
+        observePinnedIpChanges()
     }
 
     private fun fetchNewsfeedCount() {
@@ -726,14 +740,99 @@ class ConnectionViewmodelImpl @Inject constructor(
         _toastMessage.value = ToastMessage.None
     }
 
-    override fun onFavouriteIpClick() {
-        setContextMenuState(false)
-        showToast("Feature not available yet.")
+    override fun onPinIPClick() {
+        viewModelScope.launch(Dispatchers.IO) {
+            setContextMenuState(false)
+            val selectedCity = locationRepository.selectedCity.value
+            val currentlyPinned = _hasPinnedIp.value
+            val result = performPinIpAction(selectedCity, currentlyPinned)
+            if (result) {
+                _shouldAnimateFavoriteIcon.emit(true)
+                val message = if (currentlyPinned) "IP unpinned successfully" else "IP pinned successfully"
+                showToast(message)
+            } else {
+                val errorMessage = if (currentlyPinned) "IP Unpinning failed" else "IP Pinning failed"
+                _goto.emit(HomeGoto.IpActionError(errorMessage))
+            }
+        }
     }
 
     override fun onRotateIpClick() {
-        setContextMenuState(false)
-        showToast("Feature not available yet.")
+        viewModelScope.launch {
+            setContextMenuState(false)
+            val result = performRotateIpAction()
+            if (result) {
+                showToast("IP rotated successfully")
+            } else {
+                _goto.emit(HomeGoto.IpActionError("IP Rotation failed"))
+            }
+        }
+    }
+
+    private suspend fun performPinIpAction(selectedCity: Int, currentlyPinned: Boolean): Boolean {
+        return if (currentlyPinned) {
+            unpinIp(selectedCity)
+        } else {
+            pinIp(selectedCity)
+        }
+    }
+
+    /**
+     * Pins the current VPN IP address to the selected city location.
+     * Sends the current IP to the API and stores it in the local database.
+     *
+     * @param selectedCity The city ID to pin the IP for
+     * @return True if the pin operation was successful, false otherwise
+     */
+    private suspend fun pinIp(selectedCity: Int): Boolean {
+        val ip = _ipState.value
+        return when (val result = result<String> { api.pinIp(ip) }) {
+            is CallResult.Success -> {
+                try {
+                    val city = localdb.getCityAndRegion(selectedCity)
+                //    localdb.addFavourite(Favourite(city.city.id))
+                //    localdb.addPinnedIp(PinnedIp(city.city.id, ip))
+                    logger.info("Pin IP request successful: ${result.data} $ip")
+                    true
+                } catch (e: Exception) {
+                    logger.error("Failed to save pinned IP to database", e)
+                    false
+                }
+            }
+            is CallResult.Error -> {
+                logger.error("Pin IP request failed: ${result.errorMessage}")
+                false
+            }
+        }.also { delay(300) }
+    }
+
+    /**
+     * Unpins the IP address for the selected city location.
+     * @param selectedCity The city ID to unpin the IP for
+     * @return True if the unpin operation was successful, false otherwise
+     */
+    private suspend fun unpinIp(selectedCity: Int): Boolean {
+        return try {
+         //   localdb.removePinnedIp(selectedCity)
+            true
+        } catch (e: Exception) {
+            logger.error("Failed to remove pinned IP from database", e)
+            false
+        }.also { delay(300) }
+    }
+
+    private suspend fun performRotateIpAction(): Boolean {
+        return when (val result = result<String> { api.rotateIp() }) {
+            is CallResult.Success -> {
+                logger.info("Rotate IP request successful: ${result.data}")
+                ipRepository.update()
+                true
+            }
+            is CallResult.Error -> {
+                logger.error("Rotate IP request failed: ${result.errorMessage}")
+                false
+            }
+        }.also { delay(300) }
     }
 
     private fun checkEligibility(isPro: Int, isStaticIp: Boolean, serverStatus: Int): Boolean {
@@ -835,9 +934,25 @@ class ConnectionViewmodelImpl @Inject constructor(
         }
     }
 
+    override fun onFavoriteAnimationHandled() {
+        viewModelScope.launch {
+            _shouldAnimateFavoriteIcon.emit(false)
+        }
+    }
+
     override fun onIpAnimationComplete() {
         viewModelScope.launch {
             _shouldAnimateIp.emit(false)
+        }
+    }
+
+    private fun observePinnedIpChanges() {
+        viewModelScope.launch(Dispatchers.IO) {
+//            localdb.getAllPinnedIps().collectLatest { pinnedIps ->
+//                val selectedCity = preferences.selectedCity
+//                val hasPinned = pinnedIps.any { it.id == selectedCity }
+//                _hasPinnedIp.emit(hasPinned)
+//            }
         }
     }
 

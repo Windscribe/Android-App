@@ -120,4 +120,6 @@ interface IApiCallManager {
 
     suspend fun authTokenSignup(useAsciiCaptcha: Boolean): GenericResponseClass<AuthToken?, ApiErrorResponse?>
     suspend fun authTokenLogin(useAsciiCaptcha: Boolean): GenericResponseClass<AuthToken?, ApiErrorResponse?>
+    suspend fun rotateIp(): GenericResponseClass<String?, ApiErrorResponse?>
+    suspend fun pinIp(ip: String?): GenericResponseClass<String?, ApiErrorResponse?>
 }

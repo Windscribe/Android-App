@@ -94,6 +94,7 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
+import com.wsnet.lib.WSNetBridgeAPI
 
 @Module
 open class BaseApplicationModule {
@@ -598,11 +599,19 @@ open class BaseApplicationModule {
     fun providesApiCallManagerInterface(
         wsNetServerAPI: WSNetServerAPI,
         preferencesHelper: PreferencesHelper,
+        bridgeAPI: WSNetBridgeAPI
     ): IApiCallManager {
         return ApiCallManager(
             wsNetServerAPI,
-            preferencesHelper
+            preferencesHelper,
+            bridgeAPI
         )
+    }
+
+    @Provides
+    @Singleton
+    fun providesBridgeApi(wsNet: WSNet): WSNetBridgeAPI {
+        return wsNet.bridgeAPI()
     }
 
     @Provides

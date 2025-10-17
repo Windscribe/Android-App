@@ -6,11 +6,14 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -53,6 +56,8 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -203,6 +208,16 @@ private fun HandleGotoAction(
             didNavigate = true
         }
 
+        is HomeGoto.IpActionError -> {
+//            navController.navigateWithData(
+//                route = Screen.IpActionResult.route,
+//                key = NavKeys.IP_ACTION_MESSAGE,
+//                value = goto.message
+//            )
+            didNavigate = true
+        }
+
+
         HomeGoto.None -> {}
         null -> {}
     }
@@ -315,10 +330,10 @@ private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
         ConnectionStatus(state)
         val antiCensorshipEnabled by connectionViewmodel.isAntiCensorshipEnabled.collectAsState()
         val showDecoyTraffic = state is ConnectionUIState.Connected && isDecoyTrafficEnabled
-        
+
         // Add initial spacing
         Spacer(modifier = Modifier.width(if (antiCensorshipEnabled || showDecoyTraffic) 4.dp else 12.dp))
-        
+
         if (antiCensorshipEnabled) {
             Image(
                 painter = painterResource(if (state is ConnectionUIState.Connected) R.drawable.ic_anti_censorship_enabled else R.drawable.ic_anti_censorship_disabled),
@@ -472,18 +487,20 @@ internal fun BoxScope.NetworkInfoSheet(
                     }
                 }
             }
-//            Image(
-//                painter = painterResource(R.drawable.ic_context),
-//                contentDescription = null,
-//                modifier = Modifier
-//                    .size(24.dp)
-//                    .onGloballyPositioned { layoutCoordinates ->
-//                        connectionViewmodel.onIpContextMenuPosition(layoutCoordinates.boundsInWindow().topLeft)
-//                    }
-//                    .hapticClickable(hapticEnabled = isHapticEnabled) {
-//                        connectionViewmodel.setContextMenuState(true)
-//                    }
-//            )
+            if (!showContextMenu.first) {
+                Image(
+                    painter = painterResource(R.drawable.ic_context),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .onGloballyPositioned { layoutCoordinates ->
+                            connectionViewmodel.onIpContextMenuPosition(layoutCoordinates.boundsInWindow().topLeft)
+                        }
+                        .hapticClickable {
+                            connectionViewmodel.setContextMenuState(true)
+                        }
+                )
+            }
         }
     }
 }
@@ -521,100 +538,6 @@ private fun ConnectionStatus(connectionUIState: ConnectionUIState) {
                 style = font12.copy(fontWeight = FontWeight.SemiBold),
                 color = containerColor,
                 modifier = Modifier.align(Alignment.Center)
-            )
-        }
-    }
-}
-
-@Composable
-private fun IPContextMenu(connectionViewModel: ConnectionViewmodel) {
-    val ipContextMenuState by connectionViewModel.ipContextMenuState.collectAsState()
-    val width = 80.dp
-
-    AnimatedVisibility(
-        visible = ipContextMenuState.first,
-        enter = fadeIn(),
-        exit = fadeOut()
-    ) {
-        Row(
-            modifier = Modifier
-                .offset {
-                    IntOffset(
-                        ipContextMenuState.second.x.roundToInt() - width.roundToPx(),
-                        ipContextMenuState.second.y.roundToInt()
-                    )
-                }
-                .fillMaxWidth()
-        ) {
-            IPMenuItem(
-                icon = R.drawable.ic_fav,
-                contentDescription = "Mark as Favourite",
-                onClick = {
-                    connectionViewModel.onFavouriteIpClick()
-                }
-            )
-            IPMenuItem(
-                icon = R.drawable.refresh,
-                contentDescription = "Refresh IP",
-                onClick = {
-                    connectionViewModel.onRotateIpClick()
-                }
-            )
-            IPMenuItem(
-                icon = R.drawable.ic_search_location_close,
-                contentDescription = "Close Menu",
-                onClick = { connectionViewModel.setContextMenuState(false) }
-            )
-        }
-    }
-}
-
-@Composable
-private fun IPMenuItem(icon: Int, contentDescription: String, onClick: () -> Unit) {
-    val interactionSource = remember { MutableInteractionSource() }
-    Image(
-        painter = painterResource(id = icon),
-        contentDescription = contentDescription,
-        colorFilter = ColorFilter.tint(AppColors.white),
-        modifier = Modifier
-            .size(24.dp)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = ripple(bounded = false, color = AppColors.white),
-                onClick = onClick
-            )
-    )
-    Spacer(modifier = Modifier.width(16.dp))
-}
-
-@Composable
-private fun Dots(modifier: Modifier) {
-    var currentIndex by remember { mutableIntStateOf(0) }
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(600)
-            currentIndex = (currentIndex + 1) % 3
-        }
-    }
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
-        modifier = modifier
-    ) {
-        repeat(3) { index ->
-            val alpha = animateFloatAsState(
-                targetValue = if (index == currentIndex) 1f else 0.4f,
-                animationSpec = tween(durationMillis = 300, easing = LinearEasing),
-                label = "dotAlpha"
-            )
-
-            Box(
-                modifier = Modifier
-                    .size(5.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = alpha.value))
             )
         }
     }
@@ -741,6 +664,114 @@ private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Home
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun IPContextMenu(connectionViewModel: ConnectionViewmodel) {
+    val ipContextMenuState by connectionViewModel.ipContextMenuState.collectAsState()
+    val hasPinnedIp by connectionViewModel.hasPinnedIp.collectAsState()
+    val density = LocalDensity.current
+    val menuWidth = 80.dp
+
+    Box(
+        modifier = Modifier
+            .offset {
+                IntOffset(
+                    ipContextMenuState.second.x.roundToInt() - with(density) { menuWidth.roundToPx() },
+                    ipContextMenuState.second.y.roundToInt()
+                )
+            }
+    ) {
+        AnimatedVisibility(
+            visible = ipContextMenuState.first,
+            enter = slideInHorizontally(
+                initialOffsetX = { fullWidth -> fullWidth },
+                animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
+            ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+            exit = slideOutHorizontally(
+                targetOffsetX = { fullWidth -> fullWidth },
+                animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing)
+            ) + fadeOut(animationSpec = tween(durationMillis = 400))
+        ) {
+            Row {
+                IPMenuItem(
+                    icon = if (hasPinnedIp) R.drawable.ic_fav_selected else R.drawable.ic_fav,
+                    contentDescription = if (hasPinnedIp) "Marked as Favourite" else "Mark as Favourite",
+                    onClick = {
+                        connectionViewModel.onPinIPClick()
+                    }
+                )
+                IPMenuItem(
+                    icon = R.drawable.refresh,
+                    contentDescription = "Refresh IP",
+                    onClick = {
+                        connectionViewModel.onRotateIpClick()
+                    }
+                )
+                IPMenuItem(
+                    icon = R.drawable.ic_search_location_close,
+                    contentDescription = "Close Menu",
+                    onClick = { connectionViewModel.setContextMenuState(false) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun IPMenuItem(
+    icon: Int,
+    contentDescription: String,
+    onClick: () -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Image(
+        painter = painterResource(id = icon),
+        contentDescription = contentDescription,
+        colorFilter = ColorFilter.tint(AppColors.white),
+        modifier = Modifier
+            .size(24.dp)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = ripple(bounded = false, color = AppColors.white),
+                onClick = onClick
+            )
+    )
+    Spacer(modifier = Modifier.width(16.dp))
+}
+
+@Composable
+private fun Dots(modifier: Modifier) {
+    var currentIndex by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(600)
+            currentIndex = (currentIndex + 1) % 3
+        }
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+        modifier = modifier
+    ) {
+        repeat(3) { index ->
+            val alpha = animateFloatAsState(
+                targetValue = if (index == currentIndex) 1f else 0.4f,
+                animationSpec = tween(durationMillis = 300, easing = LinearEasing),
+                label = "dotAlpha"
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(5.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = alpha.value))
+            )
         }
     }
 }
