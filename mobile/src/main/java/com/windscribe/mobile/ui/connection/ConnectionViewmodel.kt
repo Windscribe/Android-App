@@ -779,7 +779,7 @@ class ConnectionViewmodelImpl @Inject constructor(
 
     /**
      * Pins the current VPN IP address to the selected city location.
-     * Sends the current IP to the API and stores it in the local database.
+     * Sends the current IP to the API and stores it in the local database as a favourite with pinned IP.
      *
      * @param selectedCity The city ID to pin the IP for
      * @return True if the pin operation was successful, false otherwise
@@ -790,9 +790,9 @@ class ConnectionViewmodelImpl @Inject constructor(
             is CallResult.Success -> {
                 try {
                     val city = localdb.getCityAndRegion(selectedCity)
-                //    localdb.addFavourite(Favourite(city.city.id))
-                //    localdb.addPinnedIp(PinnedIp(city.city.id, ip))
-                    logger.info("Pin IP request successful: ${result.data} $ip")
+                    val nodeIp = preferences.selectedIp
+                    localdb.addToFavouritesAsync(Favourite(city.city.id, ip, nodeIp))
+                    logger.info("Pin IP request successful: ${result.data} $ip with nodeIp: $nodeIp")
                     true
                 } catch (e: Exception) {
                     logger.error("Failed to save pinned IP to database", e)
@@ -808,12 +808,13 @@ class ConnectionViewmodelImpl @Inject constructor(
 
     /**
      * Unpins the IP address for the selected city location.
+     * Sets the pinnedIp and pinnedNodeIp to null in the Favourite entry.
      * @param selectedCity The city ID to unpin the IP for
      * @return True if the unpin operation was successful, false otherwise
      */
     private suspend fun unpinIp(selectedCity: Int): Boolean {
         return try {
-         //   localdb.removePinnedIp(selectedCity)
+            localdb.addToFavouritesAsync(Favourite(selectedCity, null, null))
             true
         } catch (e: Exception) {
             logger.error("Failed to remove pinned IP from database", e)
@@ -948,11 +949,11 @@ class ConnectionViewmodelImpl @Inject constructor(
 
     private fun observePinnedIpChanges() {
         viewModelScope.launch(Dispatchers.IO) {
-//            localdb.getAllPinnedIps().collectLatest { pinnedIps ->
-//                val selectedCity = preferences.selectedCity
-//                val hasPinned = pinnedIps.any { it.id == selectedCity }
-//                _hasPinnedIp.emit(hasPinned)
-//            }
+            localdb.getFavourites().collectLatest { favourites ->
+                val selectedCity = locationRepository.selectedCity.value
+                val hasPinned = favourites.any { it.id == selectedCity && it.pinnedIp != null }
+                _hasPinnedIp.emit(hasPinned)
+            }
         }
     }
 

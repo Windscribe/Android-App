@@ -73,6 +73,18 @@ public class Migrations {
         }
     };
 
+    public static final Migration migration_35_36 = new Migration(35, 36) {
+        @Override
+        public void migrate(@NonNull final SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE Favourite"
+                    + " ADD COLUMN pinned_ip TEXT");
+            database.execSQL("ALTER TABLE Favourite"
+                    + " ADD COLUMN pinned_node_ip TEXT");
+            invalidateData();
+            logger.debug("Migrated database from version:35 to version:36");
+        }
+    };
+
     private static void invalidateData() {
         Windscribe.getAppContext().getPreference().setMigrationRequired(true);
     }

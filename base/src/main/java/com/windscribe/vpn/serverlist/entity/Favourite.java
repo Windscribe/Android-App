@@ -18,9 +18,31 @@ public class Favourite {
     @ColumnInfo(name = "favourite_id")
     private int Id;
 
+    @ColumnInfo(name = "pinned_ip")
+    private String pinnedIp;
+
+    @ColumnInfo(name = "pinned_node_ip")
+    private String pinnedNodeIp;
+
     @Ignore
     public Favourite(int id) {
         this.Id = id;
+        this.pinnedIp = null;
+        this.pinnedNodeIp = null;
+    }
+
+    @Ignore
+    public Favourite(int id, String pinnedIp) {
+        this.Id = id;
+        this.pinnedIp = pinnedIp;
+        this.pinnedNodeIp = null;
+    }
+
+    @Ignore
+    public Favourite(int id, String pinnedIp, String pinnedNodeIp) {
+        this.Id = id;
+        this.pinnedIp = pinnedIp;
+        this.pinnedNodeIp = pinnedNodeIp;
     }
 
     public Favourite() {
@@ -33,5 +55,21 @@ public class Favourite {
 
     public void setId(int id) {
         Id = id;
+    }
+
+    public String getPinnedIp() {
+        return pinnedIp;
+    }
+
+    public void setPinnedIp(String pinnedIp) {
+        this.pinnedIp = pinnedIp;
+    }
+
+    public String getPinnedNodeIp() {
+        return pinnedNodeIp;
+    }
+
+    public void setPinnedNodeIp(String pinnedNodeIp) {
+        this.pinnedNodeIp = pinnedNodeIp;
     }
 }

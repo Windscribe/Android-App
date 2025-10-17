@@ -161,7 +161,14 @@ private fun ListItemView(
             showLocationLoad
         )
         Spacer(modifier = Modifier.width(8.dp))
-        ServerNodeName("${item.city.nodeName} ${item.city.nickName}", Modifier.weight(1f))
+        Column(modifier = Modifier.weight(1f)) {
+            ServerNodeName("${item.city.nodeName} ${item.city.nickName}", Modifier)
+            Text(
+                text = item.pinnedIp ?: "Random IP",
+                style = font12,
+                color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f)
+            )
+        }
         LatencyIcon(latency)
         Spacer(modifier = Modifier.width(12.dp))
         FavouriteIcon(true) {
