@@ -827,6 +827,20 @@ class ConnectionViewmodelImpl @Inject constructor(
             is CallResult.Success -> {
                 logger.info("Rotate IP request successful: ${result.data}")
                 ipRepository.update()
+
+                // Update pinned IP if the current city has one
+                val selectedCity = locationRepository.selectedCity.value
+                val favourites = localdb.getFavouritesAsync()
+                val favourite = favourites.find { it.id == selectedCity && it.pinnedIp != null }
+                if (favourite != null) {
+                    // Wait for the IP to update before getting the new value
+                    delay(500)
+                    val newIp = _ipState.value
+                    val nodeIp = preferences.selectedIp
+                    localdb.addToFavouritesAsync(Favourite(selectedCity, newIp, nodeIp))
+                    logger.info("Updated pinned IP after rotation: $newIp with nodeIp: $nodeIp")
+                }
+
                 true
             }
             is CallResult.Error -> {
