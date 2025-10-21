@@ -383,13 +383,14 @@ class ConnectionViewmodelImpl @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             ipRepository.state.collect { state ->
                 when (state) {
-                    is RepositoryState.Loading,
                     is RepositoryState.Error -> {
                         _ipState.emit("--.--.--.--")
+                        logger.info("Ip: Failed ..")
                         _shouldAnimateIp.emit(false)
                     }
 
                     is RepositoryState.Success -> {
+                        logger.info("Ip: Successful: ${state.data}")
                         val newIp = state.data
                         val isValid = !newIp.contains("--")
                         val shouldAnimate = isValid && lastValidIp != null && lastValidIp != newIp
@@ -399,6 +400,7 @@ class ConnectionViewmodelImpl @Inject constructor(
                             lastValidIp = newIp
                         }
                     }
+                    else -> {}
                 }
             }
         }
