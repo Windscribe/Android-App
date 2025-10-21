@@ -385,12 +385,10 @@ class ConnectionViewmodelImpl @Inject constructor(
                 when (state) {
                     is RepositoryState.Error -> {
                         _ipState.emit("--.--.--.--")
-                        logger.info("Ip: Failed ..")
                         _shouldAnimateIp.emit(false)
                     }
 
                     is RepositoryState.Success -> {
-                        logger.info("Ip: Successful: ${state.data}")
                         val newIp = state.data
                         val isValid = !newIp.contains("--")
                         val shouldAnimate = isValid && lastValidIp != null && lastValidIp != newIp
