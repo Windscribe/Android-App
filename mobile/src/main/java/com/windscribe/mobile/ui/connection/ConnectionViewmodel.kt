@@ -253,7 +253,7 @@ class ConnectionViewmodelImpl @Inject constructor(
                     }
                 }
                 _newFeedCount.emit(count)
-            } catch (_ : Exception) {
+            } catch (_: Exception) {
                 _newFeedCount.emit(0)
             }
         }
@@ -280,9 +280,15 @@ class ConnectionViewmodelImpl @Inject constructor(
                 try {
                     val bestCityAndRegion = locationRepository.getBestLocationAsync()
                     saveLastLocation(bestCityAndRegion)
-                    _bestLocation.emit(ServerListItem(bestCityAndRegion.region.id, bestCityAndRegion.region, listOf(bestCityAndRegion.city)))
+                    _bestLocation.emit(
+                        ServerListItem(
+                            bestCityAndRegion.region.id,
+                            bestCityAndRegion.region,
+                            listOf(bestCityAndRegion.city)
+                        )
+                    )
                     fetchConnectionState()
-                } catch (_ : Exception) {
+                } catch (_: Exception) {
                     lastLocationState.value = null
                     fetchConnectionState()
                 }
@@ -753,10 +759,12 @@ class ConnectionViewmodelImpl @Inject constructor(
             val result = performPinIpAction(selectedCity, currentlyPinned)
             if (result) {
                 _shouldAnimateFavoriteIcon.emit(true)
-                val message = if (currentlyPinned) "IP unpinned successfully" else "IP pinned successfully"
+                val message =
+                    if (currentlyPinned) "IP unpinned successfully" else "IP pinned successfully"
                 showToast(message)
             } else {
-                val errorMessage = if (currentlyPinned) "IP Unpinning failed" else "IP Pinning failed"
+                val errorMessage =
+                    if (currentlyPinned) "IP Unpinning failed" else "IP Pinning failed"
                 _goto.emit(HomeGoto.IpActionError(errorMessage))
             }
         }
@@ -805,6 +813,7 @@ class ConnectionViewmodelImpl @Inject constructor(
                     false
                 }
             }
+
             is CallResult.Error -> {
                 logger.error("Pin IP request failed: ${result.errorMessage}")
                 false
@@ -812,15 +821,9 @@ class ConnectionViewmodelImpl @Inject constructor(
         }.also { delay(300) }
     }
 
-    /**
-     * Unpins the IP address for the selected city location.
-     * Sets the pinnedIp and pinnedNodeIp to null in the Favourite entry.
-     * @param selectedCity The city ID to unpin the IP for
-     * @return True if the unpin operation was successful, false otherwise
-     */
     private suspend fun unpinIp(selectedCity: Int): Boolean {
         return try {
-            localdb.addToFavouritesAsync(Favourite(selectedCity, null, null))
+            localdb.deleteFavourite(selectedCity)
             true
         } catch (e: Exception) {
             logger.error("Failed to remove pinned IP from database", e)
@@ -849,6 +852,7 @@ class ConnectionViewmodelImpl @Inject constructor(
 
                 true
             }
+
             is CallResult.Error -> {
                 logger.error("Rotate IP request failed: ${result.errorMessage}")
                 false
@@ -926,11 +930,17 @@ class ConnectionViewmodelImpl @Inject constructor(
             try {
                 val bestCityAndRegion = locationRepository.getBestLocationAsync()
                 try {
-                    _bestLocation.emit(ServerListItem(bestCityAndRegion.region.id, bestCityAndRegion.region, listOf(bestCityAndRegion.city)))
-                }catch (ignored: Exception) {
+                    _bestLocation.emit(
+                        ServerListItem(
+                            bestCityAndRegion.region.id,
+                            bestCityAndRegion.region,
+                            listOf(bestCityAndRegion.city)
+                        )
+                    )
+                } catch (ignored: Exception) {
                     _bestLocation.emit(null)
                 }
-            } catch (_ : Exception) {
+            } catch (_: Exception) {
                 _bestLocation.emit(null)
             }
         }
