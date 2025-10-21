@@ -55,6 +55,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -154,6 +155,8 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract val isSingleLineLocationName: StateFlow<Boolean>
     abstract val shouldPlayHapticFeedback: StateFlow<Boolean>
     abstract val shouldAnimateFavoriteIcon: StateFlow<Boolean>
+
+    abstract val favouriteIconAnimation: StateFlow<Int>
     abstract fun clearToast()
     abstract fun onProtocolChangeClick()
     abstract fun onGoToHandled()
@@ -222,6 +225,8 @@ class ConnectionViewmodelImpl @Inject constructor(
     private val logger = LoggerFactory.getLogger("ConnectionViewmodel")
     private val _hasPinnedIp = MutableStateFlow(false)
     override val hasPinnedIp: StateFlow<Boolean> = _hasPinnedIp
+    private val _favouriteIconAnimation = MutableStateFlow(0)
+    override val favouriteIconAnimation: StateFlow<Int> = _favouriteIconAnimation
 
 
     init {
@@ -792,6 +797,7 @@ class ConnectionViewmodelImpl @Inject constructor(
                     val city = localdb.getCityAndRegion(selectedCity)
                     val nodeIp = preferences.selectedIp
                     localdb.addToFavouritesAsync(Favourite(city.city.id, ip, nodeIp))
+                    _favouriteIconAnimation.value = _favouriteIconAnimation.value + 1
                     logger.info("Pin IP request successful: ${result.data} $ip with nodeIp: $nodeIp")
                     true
                 } catch (e: Exception) {

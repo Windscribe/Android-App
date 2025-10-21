@@ -13,9 +13,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
@@ -30,6 +39,7 @@ import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.home.HomeViewmodel
 import com.windscribe.mobile.ui.theme.serverListBackgroundColor
@@ -47,10 +57,21 @@ data class ServerTabIcon(
 fun ServerListNavigation(
     modifier: Modifier,
     viewModel: ServerViewModel,
-    homeViewmodel: HomeViewmodel,
+    connectionViewmodel: ConnectionViewmodel,
     onTabSelected: (Int) -> Unit
 ) {
     val selectedType by viewModel.selectedServerListType.collectAsState()
+    val favouriteAnimationCounter by connectionViewmodel.favouriteIconAnimation.collectAsState()
+    var animateFavIcon by remember { mutableStateOf(false) }
+
+    LaunchedEffect(favouriteAnimationCounter) {
+        if (favouriteAnimationCounter > 0) {
+            animateFavIcon = true
+            kotlinx.coroutines.delay(400)
+            animateFavIcon = false
+        }
+    }
+
     val serverTabs = listOf(
         ServerTabIcon(
             R.drawable.ic_location_all,
@@ -144,12 +165,28 @@ fun ServerListNavigation(
         ) {
             serverTabs.forEachIndexed { index, tab ->
                 val isSelected = selectedType == tab.type
+                val isFavTab = tab.type == ServerListType.Fav
+
+                val scale by animateFloatAsState(
+                    targetValue = if (animateFavIcon && isFavTab) 1.25f else 1f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        stiffness = Spring.StiffnessLow
+                    ),
+                    label = "favIconScale"
+                )
+
                 Image(
                     painter = painterResource(if (isSelected) tab.filledIcon else tab.unfilledIcon),
                     contentDescription = null,
-                    modifier = Modifier.Companion.clickable {
-                        onTabSelected(index)
-                    },
+                    modifier = Modifier
+                        .graphicsLayer(
+                            scaleX = scale,
+                            scaleY = scale
+                        )
+                        .clickable {
+                            onTabSelected(index)
+                        },
                     colorFilter = ColorFilter.tint(
                         if (isSelected) MaterialTheme.colorScheme.serverListSecondaryColor
                         else MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f)

@@ -89,7 +89,7 @@ fun ServerListScreen(
         ServerListNavigation(
             modifier = Modifier.offset(y = (-54.0f).dp),
             viewModel = viewModel,
-            homeViewmodel = homeViewmodel,
+            connectionViewModel,
             onTabSelected = { index ->
                 coroutineScope.launch {
                     viewModel.setSelectedType(index.toServerListType())
