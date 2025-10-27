@@ -11,6 +11,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.CallResult
@@ -28,6 +29,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
 import javax.inject.Singleton
+import com.wsnet.lib.WSNetBridgeAPI
 
 /**
  * Base class for Interfacing with VPN Modules.
@@ -39,7 +41,9 @@ abstract class VpnBackend(
     private val preferencesHelper: PreferencesHelper,
     private val networkInfoManager: NetworkInfoManager,
     private val advanceParameterRepository: AdvanceParameterRepository,
-    private val apiManager: IApiCallManager
+    private val apiManager: IApiCallManager,
+    protected val localDbInterface: LocalDbInterface,
+    private val bridgeAPI: WSNetBridgeAPI
 ) : NetworkInfoListener {
 
     val vpnLogger: Logger = LoggerFactory.getLogger("vpn")
@@ -129,9 +133,10 @@ abstract class VpnBackend(
         connectionJob?.cancel()
         connectivityTestJob?.cancel()
         connectivityTestJob = null
-
+        bridgeAPI.setIgnoreSslErrors(true)
+        bridgeAPI.setConnectedState(true)
         vpnLogger.info("Starting connectivity test.")
-        val startDelay = advanceParameterRepository.getTunnelStartDelay() ?: 500L
+        val startDelay = advanceParameterRepository.getTunnelStartDelay() ?: 2000L
         val retryDelay = advanceParameterRepository.getTunnelTestRetryDelay() ?: 500L
         val maxAttempts = advanceParameterRepository.getTunnelTestAttempts() ?: 3
 
@@ -140,6 +145,26 @@ abstract class VpnBackend(
                 withTimeout(15_000) { // 15 seconds total timeout
                     // Initial delay before first attempt
                     delay(startDelay)
+
+                    // Check if pinned IP is available and pin it before connectivity test
+                    val ip = localDbInterface.getFavouritesAsync().firstOrNull {
+                        it.pinnedNodeIp == preferencesHelper.selectedIp
+                    }?.pinnedIp
+
+                    if (ip != null) {
+                        vpnLogger.info("Pinning IP: $ip")
+                        val pinResult = result<Any> {
+                            apiManager.pinIp(ip)
+                        }
+                        when (pinResult) {
+                            is CallResult.Success -> {
+                                vpnLogger.info("IP pinned successfully")
+                            }
+                            is CallResult.Error -> {
+                                vpnLogger.error("Failed to pin IP: ${pinResult.errorMessage}")
+                            }
+                        }
+                    }
 
                     var lastError: String? = null
                     var attemptCount = 0

@@ -231,28 +231,6 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun provideIkev2Backend(
-        coroutineScope: CoroutineScope,
-        networkInfoManager: NetworkInfoManager,
-        vpnConnectionStateManager: VPNConnectionStateManager,
-        advanceParameterRepository: AdvanceParameterRepository,
-        proxyDNSManager: ProxyDNSManager,
-        apiManager: IApiCallManager,
-        preferencesHelper: PreferencesHelper
-    ): IKev2VpnBackend {
-        return IKev2VpnBackend(
-            coroutineScope,
-            networkInfoManager,
-            vpnConnectionStateManager,
-            preferencesHelper,
-            advanceParameterRepository,
-            proxyDNSManager,
-            apiManager,
-        )
-    }
-
-    @Provides
-    @Singleton
     fun provideCtrldManager(
         coroutineScope: CoroutineScope,
         preferencesHelper: PreferencesHelper
@@ -324,30 +302,6 @@ open class BaseApplicationModule {
         localDbInterface: LocalDbInterface
     ): NotificationRepository {
         return NotificationRepository(preferencesHelper, apiCallManager, localDbInterface)
-    }
-
-    @Provides
-    @Singleton
-    fun provideOpenVPNBackend(
-        goBackend: GoBackend,
-        coroutineScope: CoroutineScope,
-        networkInfoManager: NetworkInfoManager,
-        vpnConnectionStateManager: VPNConnectionStateManager,
-        preferencesHelper: PreferencesHelper,
-        advanceParameterRepository: AdvanceParameterRepository,
-        proxyDNSManager: ProxyDNSManager,
-        apiManager: IApiCallManager
-    ): OpenVPNBackend {
-        return OpenVPNBackend(
-            goBackend,
-            coroutineScope,
-            networkInfoManager,
-            vpnConnectionStateManager,
-            preferencesHelper,
-            advanceParameterRepository,
-            proxyDNSManager,
-            apiManager
-        )
     }
 
     @Provides
@@ -559,44 +513,6 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun provideWireguardBackend(
-        goBackend: GoBackend,
-        coroutineScope: CoroutineScope,
-        networkInfoManager: NetworkInfoManager,
-        vpnConnectionStateManager: VPNConnectionStateManager,
-        vpnProfileCreator: VPNProfileCreator,
-        userRepository: Lazy<UserRepository>,
-        deviceStateManager: DeviceStateManager,
-        preferencesHelper: PreferencesHelper,
-        advanceParameterRepository: AdvanceParameterRepository,
-        proxyDNSManager: ProxyDNSManager,
-        localDbInterface: LocalDbInterface,
-        wgLogger: WgLogger,
-        wgConfigRepository: WgConfigRepository,
-        wsNet: WSNet,
-        apiManager: IApiCallManager
-    ): WireguardBackend {
-        return WireguardBackend(
-            goBackend,
-            coroutineScope,
-            networkInfoManager,
-            vpnConnectionStateManager,
-            vpnProfileCreator,
-            userRepository,
-            deviceStateManager,
-            preferencesHelper,
-            advanceParameterRepository,
-            proxyDNSManager,
-            localDbInterface,
-            wgLogger,
-            wgConfigRepository,
-            wsNet,
-            apiManager
-        )
-    }
-
-    @Provides
-    @Singleton
     fun providesApiCallManagerInterface(
         wsNetServerAPI: WSNetServerAPI,
         preferencesHelper: PreferencesHelper,
@@ -753,10 +669,11 @@ open class BaseApplicationModule {
         autoConnectionManager: AutoConnectionManager,
         preferencesHelper: PreferencesHelper,
         userRepository: Lazy<UserRepository>,
-        wsNet: Lazy<WSNet>
+        wsNet: Lazy<WSNet>,
+        bridgeAPI: WSNetBridgeAPI
     ): VPNConnectionStateManager {
         return VPNConnectionStateManager(
-            scope, autoConnectionManager, preferencesHelper, userRepository, wsNet
+            scope, autoConnectionManager, preferencesHelper, userRepository, wsNet, bridgeAPI
         )
     }
 

@@ -799,6 +799,7 @@ class ConnectionViewmodelImpl @Inject constructor(
      */
     private suspend fun pinIp(selectedCity: Int): Boolean {
         val ip = _ipState.value
+        logger.debug("Pinning Ip to > $ip")
         return when (val result = result<String> { api.pinIp(ip) }) {
             is CallResult.Success -> {
                 try {

@@ -556,7 +556,7 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun pinIp(ip: String?): GenericResponseClass<String?, ApiErrorResponse?> {
         return suspendCancellableCoroutine { continuation ->
-            val callback = bridgeAPI.rotateIp { code, json ->
+            val callback = bridgeAPI.pinIp(ip ?: "") { code, json ->
                 buildResponse(continuation, code, json, String::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
