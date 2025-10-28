@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef OTIME_H
@@ -43,7 +42,7 @@ void frequency_limit_free(struct frequency_limit *f);
 bool frequency_limit_event_allowed(struct frequency_limit *f);
 
 /* format a time_t as ascii, or use current time if 0 */
-const char *time_string(time_t t, int usec, bool show_usec, struct gc_arena *gc);
+const char *time_string(time_t t, long usec, bool show_usec, struct gc_arena *gc);
 
 /* struct timeval functions */
 
@@ -59,6 +58,11 @@ void update_now(const time_t system_time);
 
 extern time_t now_usec;
 void update_now_usec(struct timeval *tv);
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
 
 static inline int
 openvpn_gettimeofday(struct timeval *tv, void *tz)
@@ -237,7 +241,11 @@ tv_delta(struct timeval *dest, const struct timeval *t1, const struct timeval *t
     dest->tv_usec = usec;
 }
 
-#define TV_WITHIN_SIGMA_MAX_SEC 600
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+#define TV_WITHIN_SIGMA_MAX_SEC  600
 #define TV_WITHIN_SIGMA_MAX_USEC (TV_WITHIN_SIGMA_MAX_SEC * 1000000)
 
 /*
@@ -246,7 +254,8 @@ tv_delta(struct timeval *dest, const struct timeval *t1, const struct timeval *t
 static inline bool
 tv_within_sigma(const struct timeval *t1, const struct timeval *t2, unsigned int sigma)
 {
-    const int delta = tv_subtract(t1, t2, TV_WITHIN_SIGMA_MAX_SEC); /* sigma should be less than 10 minutes */
+    /* sigma should be less than 10 minutes */
+    const int delta = tv_subtract(t1, t2, TV_WITHIN_SIGMA_MAX_SEC);
     return -(int)sigma <= delta && delta <= (int)sigma;
 }
 
@@ -259,7 +268,7 @@ interval_earliest_wakeup(interval_t *wakeup, time_t at, time_t current)
 {
     if (at > current)
     {
-        const interval_t delta = (interval_t) (at - current);
+        const interval_t delta = (interval_t)(at - current);
         if (delta < *wakeup)
         {
             *wakeup = delta;

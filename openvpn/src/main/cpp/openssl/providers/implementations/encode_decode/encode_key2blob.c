@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2021-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -24,13 +24,17 @@
 #include "prov/implementations.h"
 #include "prov/bio.h"
 #include "prov/provider_ctx.h"
-#include "endecoder_local.h"
+#include "prov/endecoder_local.h"
 
 static int write_blob(void *provctx, OSSL_CORE_BIO *cout,
                       void *data, int len)
 {
     BIO *out = ossl_bio_new_from_core_bio(provctx, cout);
-    int ret = BIO_write(out, data, len);
+    int ret;
+
+    if (out == NULL)
+        return 0;
+    ret = BIO_write(out, data, len);
 
     BIO_free(out);
     return ret;
@@ -164,7 +168,7 @@ static int key2blob_encode(void *vctx, const void *key, int selection,
           (void (*)(void))impl##2blob_free_object },                    \
         { OSSL_FUNC_ENCODER_ENCODE,                                     \
           (void (*)(void))impl##2blob_encode },                         \
-        { 0, NULL }                                                     \
+        OSSL_DISPATCH_END                                               \
     }
 
 #ifndef OPENSSL_NO_EC

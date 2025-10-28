@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef OPENVPN_COMMON_STRERROR_H
 #define OPENVPN_COMMON_STRERROR_H
@@ -28,8 +18,8 @@
 #include <errno.h>
 
 namespace openvpn {
-  inline std::string strerror_str(const int errnum)
-  {
+inline std::string strerror_str(const int errnum)
+{
     static const char unknown_err[] = "UNKNOWN_SYSTEM_ERROR";
     char buf[128];
 
@@ -37,14 +27,14 @@ namespace openvpn {
     // GNU
     const char *errstr = ::strerror_r(errnum, buf, sizeof(buf));
     if (errstr)
-      return std::string(errstr);
+        return std::string(errstr);
 #else
     // POSIX
     if (::strerror_r(errnum, buf, sizeof(buf)) == 0)
-      return std::string(buf);
+        return std::string(buf);
 #endif
     return std::string(unknown_err);
-  }
 }
+} // namespace openvpn
 
 #endif

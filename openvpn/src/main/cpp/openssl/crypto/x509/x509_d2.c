@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2020 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2024 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -30,6 +30,11 @@ int X509_STORE_set_default_paths_ex(X509_STORE *ctx, OSSL_LIB_CTX *libctx,
     lookup = X509_STORE_add_lookup(ctx, X509_LOOKUP_store());
     if (lookup == NULL)
         return 0;
+    /*
+     * The NULL URI argument will activate any default URIs (presently none),
+     * DO NOT pass the default CApath or CAfile, they're already handled above,
+     * likely much more efficiently.
+     */
     X509_LOOKUP_add_store_ex(lookup, NULL, libctx, propq);
 
     /* clear any errors */
@@ -50,7 +55,7 @@ int X509_STORE_load_file_ex(X509_STORE *ctx, const char *file,
     if (file == NULL
         || (lookup = X509_STORE_add_lookup(ctx, X509_LOOKUP_file())) == NULL
         || X509_LOOKUP_load_file_ex(lookup, file, X509_FILETYPE_PEM, libctx,
-                                    propq) == 0)
+                                    propq) <= 0)
         return 0;
 
     return 1;
@@ -67,7 +72,7 @@ int X509_STORE_load_path(X509_STORE *ctx, const char *path)
 
     if (path == NULL
         || (lookup = X509_STORE_add_lookup(ctx, X509_LOOKUP_hash_dir())) == NULL
-        || X509_LOOKUP_add_dir(lookup, path, X509_FILETYPE_PEM) == 0)
+        || X509_LOOKUP_add_dir(lookup, path, X509_FILETYPE_PEM) <= 0)
         return 0;
 
     return 1;

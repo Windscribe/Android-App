@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 // A 64-bit session ID, used by ProtoContext.
 
@@ -33,76 +23,94 @@
 
 namespace openvpn {
 
-  class ProtoSessionID
-  {
+class ProtoSessionID
+{
   public:
-    enum {
-      SIZE=8
+    enum
+    {
+        SIZE = 8
     };
 
-    ProtoSessionID()
+    constexpr ProtoSessionID()
+        : defined_(false), id_{}
     {
-      reset();
     }
 
     void reset()
     {
-      defined_ = false;
-      std::memset(id_, 0, SIZE);
+        defined_ = false;
+        std::memset(id_, 0, SIZE);
     }
 
-    explicit ProtoSessionID(Buffer& buf)
+    template <typename BufType> // so it can take a Buffer or a ConstBuffer
+    explicit ProtoSessionID(BufType &buf)
     {
-      buf.read(id_, SIZE);
-      defined_ = true;
+        buf.read(id_, SIZE);
+        defined_ = true;
     }
 
-    template <typename PRNG_TYPE>
-    void randomize(PRNG_TYPE& prng)
+    void randomize(StrongRandomAPI &rng)
     {
-      prng.assert_crypto();
-      prng.rand_bytes(id_, SIZE);
-      defined_ = true;
+        rng.rand_bytes(id_, SIZE);
+        defined_ = true;
     }
 
-    void read(Buffer& buf)
+    template <typename BufType> // so it can take a Buffer or a ConstBuffer
+    void read(BufType &buf)
     {
-      buf.read(id_, SIZE);
-      defined_ = true;
+        buf.read(id_, SIZE);
+        defined_ = true;
     }
 
-    void write(Buffer& buf) const
+    void write(Buffer &buf) const
     {
-      buf.write(id_, SIZE);
+        buf.write(id_, SIZE);
     }
 
-    void prepend(Buffer& buf) const
+    void prepend(Buffer &buf) const
     {
-      buf.prepend(id_, SIZE);
+        buf.prepend(id_, SIZE);
     }
 
-    bool defined() const { return defined_; }
-
-    bool match(const ProtoSessionID& other) const
+    // returned buffer is only valid for *this lifetime
+    const Buffer get_buf() const
     {
-      return defined_ && other.defined_ && !crypto::memneq(id_, other.id_, SIZE);
+        if (defined_)
+        {
+            return PsidBuf(const_cast<Buffer::type>(id_));
+        }
+        return Buffer();
+    }
+
+    constexpr bool defined() const
+    {
+        return defined_;
+    }
+
+    bool match(const ProtoSessionID &other) const
+    {
+        return defined_ && other.defined_ && !crypto::memneq(id_, other.id_, SIZE);
     }
 
     std::string str() const
     {
-      return render_hex(id_, SIZE);
-    }
-
-  protected:
-    ProtoSessionID(const unsigned char *data)
-    {
-      std::memcpy(id_, data, SIZE);
+        return render_hex(id_, SIZE);
     }
 
   private:
+    // access protected ctor to use Buffer w/o memcpy
+    struct PsidBuf : Buffer
+    {
+        // T* data, const size_t offset, const size_t size, const size_t capacity
+        PsidBuf(typename Buffer::type id)
+            : Buffer(id, 0, SIZE, SIZE)
+        {
+        }
+    };
+
     bool defined_;
     unsigned char id_[SIZE];
-  };
+};
 } // namespace openvpn
 
 #endif // OPENVPN_SSL_PSID_H

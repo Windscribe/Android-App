@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /*
@@ -28,8 +27,6 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#elif defined(_MSC_VER)
-#include "config-msvc.h"
 #endif
 
 #include "syshead.h"
@@ -67,28 +64,29 @@ static const int corrupt_freq[] = { 500, 100, 50 };
  * When network goes up, it will be up for between
  * UP_LOW and UP_HIGH seconds.
  */
-static const int up_low[] =  {  60, 10,  5 };
+static const int up_low[] = { 60, 10, 5 };
 static const int up_high[] = { 600, 60, 10 };
 
 /*
  * When network goes down, it will be down for between
  * DOWN_LOW and DOWN_HIGH seconds.
  */
-static const int down_low[] =  {  5, 10,  10 };
+static const int down_low[] = { 5, 10, 10 };
 static const int down_high[] = { 10, 60, 120 };
 
 /*
  * Packet flood levels:
  *  { number of packets, packet size }
  */
-static const struct packet_flood_parms packet_flood_data[] =
-{{10, 100}, {10, 1500}, {100, 1500}};
+static const struct packet_flood_parms packet_flood_data[] = { { 10, 100 },
+                                                               { 10, 1500 },
+                                                               { 100, 1500 } };
 
 struct packet_flood_parms
 get_packet_flood_parms(int level)
 {
     ASSERT(level > 0 && level < 4);
-    return packet_flood_data [level - 1];
+    return packet_flood_data[level - 1];
 }
 
 /*
@@ -99,6 +97,11 @@ flip(int n)
 {
     return (get_random() % n) == 0;
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
 
 /*
  * Return uniformly distributed random number between
@@ -150,18 +153,16 @@ ask_gremlin(int flags)
             int delta;
             if (up)
             {
-                delta = roll(down_low[up_down_level-1], down_high[up_down_level-1]);
+                delta = roll(down_low[up_down_level - 1], down_high[up_down_level - 1]);
                 up = false;
             }
             else
             {
-                delta = roll(up_low[up_down_level-1], up_high[up_down_level-1]);
+                delta = roll(up_low[up_down_level - 1], up_high[up_down_level - 1]);
                 up = true;
             }
 
-            msg(D_GREMLIN,
-                "GREMLIN: CONNECTION GOING %s FOR %d SECONDS",
-                (up ? "UP" : "DOWN"),
+            msg(D_GREMLIN, "GREMLIN: CONNECTION GOING %s FOR %d SECONDS", (up ? "UP" : "DOWN"),
                 delta);
             next = now + delta;
         }
@@ -169,7 +170,7 @@ ask_gremlin(int flags)
 
     if (drop_level)
     {
-        if (up && flip(drop_freq[drop_level-1]))
+        if (up && flip(drop_freq[drop_level - 1]))
         {
             dmsg(D_GREMLIN_VERBOSE, "GREMLIN: Random packet drop");
             return false;
@@ -188,7 +189,7 @@ corrupt_gremlin(struct buffer *buf, int flags)
     const int corrupt_level = GREMLIN_CORRUPT_LEVEL(flags);
     if (corrupt_level)
     {
-        if (flip(corrupt_freq[corrupt_level-1]))
+        if (flip(corrupt_freq[corrupt_level - 1]))
         {
             do
             {
@@ -229,8 +230,13 @@ corrupt_gremlin(struct buffer *buf, int flags)
                 {
                     break;
                 }
-            } while (flip(2));  /* a 50% chance we will corrupt again */
+            } while (flip(2)); /* a 50% chance we will corrupt again */
         }
     }
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
 #endif /* ifdef ENABLE_DEBUG */

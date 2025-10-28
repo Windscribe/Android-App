@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 // IPv4 header
 
@@ -30,39 +20,47 @@
 
 namespace openvpn {
 
-  struct IPv4Header
-  {
+struct IPv4Header
+{
     static unsigned int length(const std::uint8_t version_len)
     {
-      return (version_len & 0x0F) << 2;
+        return (version_len & 0x0F) << 2;
     }
 
     static std::uint8_t ver_len(const unsigned int version,
-				const unsigned int len)
+                                const unsigned int len)
     {
-      return ((len >> 2) & 0x0F) | (version & 0x0F) << 4;
+        return static_cast<uint8_t>(((len >> 2) & 0x0F) | (version & 0x0F) << 4);
     }
 
-    std::uint8_t    version_len;
+    static bool is_df_set(const unsigned char *data)
+    {
+        auto *hdr = reinterpret_cast<const IPv4Header *>(data);
+        return ntohs(hdr->frag_off) & IPv4Header::DF;
+    }
 
-    std::uint8_t    tos;
-    std::uint16_t   tot_len;
-    std::uint16_t   id;
+    std::uint8_t version_len;
 
-    enum {
-      OFFMASK=0x1fff,
+    std::uint8_t tos;
+    std::uint16_t tot_len;
+    std::uint16_t id;
+
+    enum
+    {
+        OFFMASK = 0x1fff,
+        DF = 0x4000,
     };
-    std::uint16_t   frag_off;
+    std::uint16_t frag_off;
 
-    std::uint8_t    ttl;
+    std::uint8_t ttl;
 
-    std::uint8_t    protocol;
+    std::uint8_t protocol;
 
-    std::uint16_t   check;
-    std::uint32_t   saddr;
-    std::uint32_t   daddr;
+    std::uint16_t check;
+    std::uint32_t saddr;
+    std::uint32_t daddr;
     /* The options start here. */
-  };
-}
+};
+} // namespace openvpn
 
 #pragma pack(pop)

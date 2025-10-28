@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2019-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -25,6 +25,7 @@
 #include "prov/provider_ctx.h"
 #include "crypto/rsa.h"
 #include "crypto/cryptlib.h"
+#include "internal/fips.h"
 #include "internal/param_build_set.h"
 
 static OSSL_FUNC_keymgmt_new_fn rsa_newdata;
@@ -52,7 +53,6 @@ static OSSL_FUNC_keymgmt_query_operation_name_fn rsa_query_operation_name;
 static OSSL_FUNC_keymgmt_dup_fn rsa_dup;
 
 #define RSA_DEFAULT_MD "SHA256"
-#define RSA_PSS_DEFAULT_MD OSSL_DIGEST_NAME_SHA1
 #define RSA_POSSIBLE_SELECTIONS                                        \
     (OSSL_KEYMGMT_SELECT_KEYPAIR | OSSL_KEYMGMT_SELECT_OTHER_PARAMETERS)
 
@@ -124,9 +124,9 @@ static int rsa_has(const void *keydata, int selection)
 
     /* OSSL_KEYMGMT_SELECT_OTHER_PARAMETERS are always available even if empty */
     if ((selection & OSSL_KEYMGMT_SELECT_KEYPAIR) != 0)
-        ok = ok && (RSA_get0_e(rsa) != NULL);
-    if ((selection & OSSL_KEYMGMT_SELECT_PUBLIC_KEY) != 0)
         ok = ok && (RSA_get0_n(rsa) != NULL);
+    if ((selection & OSSL_KEYMGMT_SELECT_PUBLIC_KEY) != 0)
+        ok = ok && (RSA_get0_e(rsa) != NULL);
     if ((selection & OSSL_KEYMGMT_SELECT_PRIVATE_KEY) != 0)
         ok = ok && (RSA_get0_d(rsa) != NULL);
     return ok;
@@ -143,10 +143,30 @@ static int rsa_match(const void *keydata1, const void *keydata2, int selection)
 
     /* There is always an |e| */
     ok = ok && BN_cmp(RSA_get0_e(rsa1), RSA_get0_e(rsa2)) == 0;
-    if ((selection & OSSL_KEYMGMT_SELECT_PUBLIC_KEY) != 0)
-        ok = ok && BN_cmp(RSA_get0_n(rsa1), RSA_get0_n(rsa2)) == 0;
-    if ((selection & OSSL_KEYMGMT_SELECT_PRIVATE_KEY) != 0)
-        ok = ok && BN_cmp(RSA_get0_d(rsa1), RSA_get0_d(rsa2)) == 0;
+    if ((selection & OSSL_KEYMGMT_SELECT_KEYPAIR) != 0) {
+        int key_checked = 0;
+
+        if ((selection & OSSL_KEYMGMT_SELECT_PUBLIC_KEY) != 0) {
+            const BIGNUM *pa = RSA_get0_n(rsa1);
+            const BIGNUM *pb = RSA_get0_n(rsa2);
+
+            if (pa != NULL && pb != NULL) {
+                ok = ok && BN_cmp(pa, pb) == 0;
+                key_checked = 1;
+            }
+        }
+        if (!key_checked
+            && (selection & OSSL_KEYMGMT_SELECT_PRIVATE_KEY) != 0) {
+            const BIGNUM *pa = RSA_get0_d(rsa1);
+            const BIGNUM *pb = RSA_get0_d(rsa2);
+
+            if (pa != NULL && pb != NULL) {
+                ok = ok && BN_cmp(pa, pb) == 0;
+                key_checked = 1;
+            }
+        }
+        ok = ok && key_checked;
+    }
     return ok;
 }
 
@@ -170,8 +190,12 @@ static int rsa_import(void *keydata, int selection, const OSSL_PARAM params[])
                                        &pss_defaults_set,
                                        params, rsa_type,
                                        ossl_rsa_get0_libctx(rsa));
-    if ((selection & OSSL_KEYMGMT_SELECT_KEYPAIR) != 0)
-        ok = ok && ossl_rsa_fromdata(rsa, params);
+    if ((selection & OSSL_KEYMGMT_SELECT_KEYPAIR) != 0) {
+        int include_private =
+            selection & OSSL_KEYMGMT_SELECT_PRIVATE_KEY ? 1 : 0;
+
+        ok = ok && ossl_rsa_fromdata(rsa, params, include_private);
+    }
 
     return ok;
 }
@@ -198,12 +222,17 @@ static int rsa_export(void *keydata, int selection,
     if ((selection & OSSL_KEYMGMT_SELECT_OTHER_PARAMETERS) != 0)
         ok = ok && (ossl_rsa_pss_params_30_is_unrestricted(pss_params)
                     || ossl_rsa_pss_params_30_todata(pss_params, tmpl, NULL));
-    if ((selection & OSSL_KEYMGMT_SELECT_KEYPAIR) != 0)
-        ok = ok && ossl_rsa_todata(rsa, tmpl, NULL);
+    if ((selection & OSSL_KEYMGMT_SELECT_KEYPAIR) != 0) {
+        int include_private =
+            selection & OSSL_KEYMGMT_SELECT_PRIVATE_KEY ? 1 : 0;
 
-    if (!ok
-        || (params = OSSL_PARAM_BLD_to_param(tmpl)) == NULL)
+        ok = ok && ossl_rsa_todata(rsa, tmpl, NULL, include_private);
+    }
+
+    if (!ok || (params = OSSL_PARAM_BLD_to_param(tmpl)) == NULL) {
+        ok = 0;
         goto err;
+    }
 
     ok = param_callback(params, cbarg);
     OSSL_PARAM_free(params);
@@ -315,6 +344,9 @@ static int rsa_get_params(void *key, OSSL_PARAM params[])
     if ((p = OSSL_PARAM_locate(params, OSSL_PKEY_PARAM_MAX_SIZE)) != NULL
         && (empty || !OSSL_PARAM_set_int(p, RSA_size(rsa))))
         return 0;
+    if ((p = OSSL_PARAM_locate(params, OSSL_PKEY_PARAM_SECURITY_CATEGORY)) != NULL)
+        if (!OSSL_PARAM_set_int(p, 0))
+            return 0;
 
     /*
      * For restricted RSA-PSS keys, we ignore the default digest request.
@@ -343,13 +375,14 @@ static int rsa_get_params(void *key, OSSL_PARAM params[])
     }
     return (rsa_type != RSA_FLAG_TYPE_RSASSAPSS
             || ossl_rsa_pss_params_30_todata(pss_params, NULL, params))
-        && ossl_rsa_todata(rsa, NULL, params);
+        && ossl_rsa_todata(rsa, NULL, params, 1);
 }
 
 static const OSSL_PARAM rsa_params[] = {
     OSSL_PARAM_int(OSSL_PKEY_PARAM_BITS, NULL),
     OSSL_PARAM_int(OSSL_PKEY_PARAM_SECURITY_BITS, NULL),
     OSSL_PARAM_int(OSSL_PKEY_PARAM_MAX_SIZE, NULL),
+    OSSL_PARAM_int(OSSL_PKEY_PARAM_SECURITY_CATEGORY, NULL),
     OSSL_PARAM_utf8_string(OSSL_PKEY_PARAM_DEFAULT_DIGEST, NULL, 0),
     RSA_KEY_TYPES()
     OSSL_PARAM_END
@@ -434,19 +467,24 @@ static void *gen_init(void *provctx, int selection, int rsa_type,
         gctx->libctx = libctx;
         if ((gctx->pub_exp = BN_new()) == NULL
             || !BN_set_word(gctx->pub_exp, RSA_F4)) {
-            BN_free(gctx->pub_exp);
-            OPENSSL_free(gctx);
-            return NULL;
+            goto err;
         }
         gctx->nbits = 2048;
         gctx->primes = RSA_DEFAULT_PRIME_NUM;
         gctx->rsa_type = rsa_type;
+    } else {
+        goto err;
     }
-    if (!rsa_gen_set_params(gctx, params)) {
-        OPENSSL_free(gctx);
-        return NULL;
-    }
+
+    if (!rsa_gen_set_params(gctx, params))
+        goto err;
     return gctx;
+
+err:
+    if (gctx != NULL)
+        BN_free(gctx->pub_exp);
+    OPENSSL_free(gctx);
+    return NULL;
 }
 
 static void *rsa_gen_init(void *provctx, int selection,
@@ -471,7 +509,7 @@ static int rsa_gen_set_params(void *genctx, const OSSL_PARAM params[])
     struct rsa_gen_ctx *gctx = genctx;
     const OSSL_PARAM *p;
 
-    if (params == NULL)
+    if (ossl_param_is_empty(params))
         return 1;
 
     if ((p = OSSL_PARAM_locate_const(params, OSSL_PKEY_PARAM_RSA_BITS)) != NULL) {
@@ -681,7 +719,7 @@ const OSSL_DISPATCH ossl_rsa_keymgmt_functions[] = {
     { OSSL_FUNC_KEYMGMT_EXPORT, (void (*)(void))rsa_export },
     { OSSL_FUNC_KEYMGMT_EXPORT_TYPES, (void (*)(void))rsa_export_types },
     { OSSL_FUNC_KEYMGMT_DUP, (void (*)(void))rsa_dup },
-    { 0, NULL }
+    OSSL_DISPATCH_END
 };
 
 const OSSL_DISPATCH ossl_rsapss_keymgmt_functions[] = {
@@ -706,5 +744,5 @@ const OSSL_DISPATCH ossl_rsapss_keymgmt_functions[] = {
     { OSSL_FUNC_KEYMGMT_QUERY_OPERATION_NAME,
       (void (*)(void))rsa_query_operation_name },
     { OSSL_FUNC_KEYMGMT_DUP, (void (*)(void))rsa_dup },
-    { 0, NULL }
+    OSSL_DISPATCH_END
 };

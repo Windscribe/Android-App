@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2016-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -64,7 +64,7 @@ int o2i_SCT_signature(SCT *sct, const unsigned char **in, size_t len)
     len_remaining -= siglen;
     *in = p + siglen;
 
-    return len - len_remaining;
+    return (int)(len - len_remaining);
 }
 
 SCT *o2i_SCT(SCT **psct, const unsigned char **in, size_t len)
@@ -178,10 +178,8 @@ int i2o_SCT_signature(const SCT *sct, unsigned char **out)
             *out += len;
         } else {
             pstart = p = OPENSSL_malloc(len);
-            if (p == NULL) {
-                ERR_raise(ERR_LIB_CT, ERR_R_MALLOC_FAILURE);
+            if (p == NULL)
                 goto err;
-            }
             *out = p;
         }
 
@@ -191,7 +189,7 @@ int i2o_SCT_signature(const SCT *sct, unsigned char **out)
         memcpy(p, sct->sig, sct->sig_len);
     }
 
-    return len;
+    return (int)len;
 err:
     OPENSSL_free(pstart);
     return -1;
@@ -217,18 +215,18 @@ int i2o_SCT(const SCT *sct, unsigned char **out)
     else
         len = sct->sct_len;
 
+    if (len > INT_MAX)
+        return -1;
     if (out == NULL)
-        return len;
+        return (int)len;
 
     if (*out != NULL) {
         p = *out;
         *out += len;
     } else {
         pstart = p = OPENSSL_malloc(len);
-        if (p == NULL) {
-            ERR_raise(ERR_LIB_CT, ERR_R_MALLOC_FAILURE);
+        if (p == NULL)
             goto err;
-        }
         *out = p;
     }
 
@@ -248,7 +246,7 @@ int i2o_SCT(const SCT *sct, unsigned char **out)
         memcpy(p, sct->sct, len);
     }
 
-    return len;
+    return (int)len;
 err:
     OPENSSL_free(pstart);
     return -1;
@@ -330,10 +328,8 @@ int i2o_SCT_LIST(const STACK_OF(SCT) *a, unsigned char **pp)
                 ERR_raise(ERR_LIB_CT, CT_R_SCT_LIST_INVALID);
                 return -1;
             }
-            if ((*pp = OPENSSL_malloc(len)) == NULL) {
-                ERR_raise(ERR_LIB_CT, ERR_R_MALLOC_FAILURE);
+            if ((*pp = OPENSSL_malloc(len)) == NULL)
                 return -1;
-            }
             is_pp_new = 1;
         }
         p = *pp + 2;
@@ -363,7 +359,7 @@ int i2o_SCT_LIST(const STACK_OF(SCT) *a, unsigned char **pp)
         if (!is_pp_new)
             *pp += len2;
     }
-    return len2;
+    return (int)len2;
 
  err:
     if (is_pp_new) {

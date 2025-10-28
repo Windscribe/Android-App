@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2016-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -20,14 +20,12 @@
 #include "blake2_impl.h"
 #include "prov/blake2.h"
 
-static const uint32_t blake2s_IV[8] =
-{
+static const uint32_t blake2s_IV[8] = {
     0x6A09E667U, 0xBB67AE85U, 0x3C6EF372U, 0xA54FF53AU,
     0x510E527FU, 0x9B05688CU, 0x1F83D9ABU, 0x5BE0CD19U
 };
 
-static const uint8_t blake2s_sigma[10][16] =
-{
+static const uint8_t blake2s_sigma[10][16] = {
     {  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 } ,
     { 14, 10,  4,  8,  9, 15, 13,  6,  1, 12,  0,  2, 11,  7,  5,  3 } ,
     { 11,  8, 12,  0,  5,  2, 15, 13, 10, 14,  3,  6,  7,  1,  9,  4 } ,
@@ -151,7 +149,7 @@ static void blake2s_compress(BLAKE2S_CTX *S,
     uint32_t m[16];
     uint32_t v[16];
     size_t i;
-    size_t increment;
+    uint32_t increment;
 
     /*
      * There are two distinct usage vectors for this function:
@@ -172,7 +170,7 @@ static void blake2s_compress(BLAKE2S_CTX *S,
      * including even zero), which is why following assignment doesn't
      * have to reside inside the main loop below.
      */
-    increment = len < BLAKE2S_BLOCKBYTES ? len : BLAKE2S_BLOCKBYTES;
+    increment = len < BLAKE2S_BLOCKBYTES ? (uint32_t)len : BLAKE2S_BLOCKBYTES;
 
     for (i = 0; i < 8; ++i) {
         v[i] = S->h[i];
@@ -298,7 +296,7 @@ int ossl_blake2s_final(unsigned char *md, BLAKE2S_CTX *c)
 {
     uint8_t outbuffer[BLAKE2S_OUTBYTES] = {0};
     uint8_t *target = outbuffer;
-    int iter = (c->outlen + 3) / 4;
+    int iter = (int)((c->outlen + 3) / 4);
     int i;
 
     /* Avoid writing to the temporary buffer if possible */
@@ -314,8 +312,10 @@ int ossl_blake2s_final(unsigned char *md, BLAKE2S_CTX *c)
     for (i = 0; i < iter; ++i)
         store32(target + sizeof(c->h[i]) * i, c->h[i]);
 
-    if (target != md)
+    if (target != md) {
         memcpy(md, target, c->outlen);
+        OPENSSL_cleanse(target, sizeof(outbuffer));
+    }
 
     OPENSSL_cleanse(c, sizeof(BLAKE2S_CTX));
     return 1;

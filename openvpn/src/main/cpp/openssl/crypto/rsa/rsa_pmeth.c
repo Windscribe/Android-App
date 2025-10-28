@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2006-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -52,6 +52,8 @@ typedef struct {
     /* OAEP label */
     unsigned char *oaep_label;
     size_t oaep_labellen;
+    /* if to use implicit rejection in PKCS#1 v1.5 decryption */
+    int implicit_rejection;
 } RSA_PKEY_CTX;
 
 /* True if PSS parameters are restricted */
@@ -72,6 +74,7 @@ static int pkey_rsa_init(EVP_PKEY_CTX *ctx)
     /* Maximum for sign, auto for verify */
     rctx->saltlen = RSA_PSS_SALTLEN_AUTO;
     rctx->min_saltlen = -1;
+    rctx->implicit_rejection = 1;
     ctx->data = rctx;
     ctx->keygen_info = rctx->gentmp;
     ctx->keygen_info_count = 2;
@@ -97,6 +100,7 @@ static int pkey_rsa_copy(EVP_PKEY_CTX *dst, const EVP_PKEY_CTX *src)
     dctx->md = sctx->md;
     dctx->mgf1md = sctx->mgf1md;
     dctx->saltlen = sctx->saltlen;
+    dctx->implicit_rejection = sctx->implicit_rejection;
     if (sctx->oaep_label) {
         OPENSSL_free(dctx->oaep_label);
         dctx->oaep_label = OPENSSL_memdup(sctx->oaep_label, sctx->oaep_labellen);
@@ -112,10 +116,8 @@ static int setup_tbuf(RSA_PKEY_CTX *ctx, EVP_PKEY_CTX *pk)
     if (ctx->tbuf != NULL)
         return 1;
     if ((ctx->tbuf =
-            OPENSSL_malloc(RSA_size(EVP_PKEY_get0_RSA(pk->pkey)))) == NULL) {
-        ERR_raise(ERR_LIB_RSA, ERR_R_MALLOC_FAILURE);
+            OPENSSL_malloc(RSA_size(EVP_PKEY_get0_RSA(pk->pkey)))) == NULL)
         return 0;
-    }
     return 1;
 }
 
@@ -142,9 +144,16 @@ static int pkey_rsa_sign(EVP_PKEY_CTX *ctx, unsigned char *sig,
      * be reflected back in the "original" key.
      */
     RSA *rsa = (RSA *)EVP_PKEY_get0_RSA(ctx->pkey);
+    int md_size;
 
     if (rctx->md) {
-        if (tbslen != (size_t)EVP_MD_get_size(rctx->md)) {
+        md_size = EVP_MD_get_size(rctx->md);
+        if (md_size <= 0) {
+            ERR_raise(ERR_LIB_RSA, RSA_R_INVALID_DIGEST_LENGTH);
+            return -1;
+        }
+
+        if (tbslen != (size_t)md_size) {
             ERR_raise(ERR_LIB_RSA, RSA_R_INVALID_DIGEST_LENGTH);
             return -1;
         }
@@ -153,7 +162,7 @@ static int pkey_rsa_sign(EVP_PKEY_CTX *ctx, unsigned char *sig,
             unsigned int sltmp;
             if (rctx->pad_mode != RSA_PKCS1_PADDING)
                 return -1;
-            ret = RSA_sign_ASN1_OCTET_STRING(0, tbs, tbslen, sig, &sltmp, rsa);
+            ret = RSA_sign_ASN1_OCTET_STRING(0, tbs, (int)tbslen, sig, &sltmp, rsa);
 
             if (ret <= 0)
                 return ret;
@@ -164,17 +173,17 @@ static int pkey_rsa_sign(EVP_PKEY_CTX *ctx, unsigned char *sig,
                 return -1;
             }
             if (!setup_tbuf(rctx, ctx)) {
-                ERR_raise(ERR_LIB_RSA, ERR_R_MALLOC_FAILURE);
+                ERR_raise(ERR_LIB_RSA, ERR_R_RSA_LIB);
                 return -1;
             }
             memcpy(rctx->tbuf, tbs, tbslen);
             rctx->tbuf[tbslen] = RSA_X931_hash_id(EVP_MD_get_type(rctx->md));
-            ret = RSA_private_encrypt(tbslen + 1, rctx->tbuf,
+            ret = RSA_private_encrypt((int)(tbslen + 1), rctx->tbuf,
                                       sig, rsa, RSA_X931_PADDING);
         } else if (rctx->pad_mode == RSA_PKCS1_PADDING) {
             unsigned int sltmp;
             ret = RSA_sign(EVP_MD_get_type(rctx->md),
-                           tbs, tbslen, sig, &sltmp, rsa);
+                           tbs, (unsigned int)tbslen, sig, &sltmp, rsa);
             if (ret <= 0)
                 return ret;
             ret = sltmp;
@@ -192,7 +201,7 @@ static int pkey_rsa_sign(EVP_PKEY_CTX *ctx, unsigned char *sig,
             return -1;
         }
     } else {
-        ret = RSA_private_encrypt(tbslen, tbs, sig, rsa, rctx->pad_mode);
+        ret = RSA_private_encrypt((int)tbslen, tbs, sig, rsa, rctx->pad_mode);
     }
     if (ret < 0)
         return ret;
@@ -217,9 +226,9 @@ static int pkey_rsa_verifyrecover(EVP_PKEY_CTX *ctx,
         if (rctx->pad_mode == RSA_X931_PADDING) {
             if (!setup_tbuf(rctx, ctx))
                 return -1;
-            ret = RSA_public_decrypt(siglen, sig, rctx->tbuf, rsa,
+            ret = RSA_public_decrypt((int)siglen, sig, rctx->tbuf, rsa,
                                      RSA_X931_PADDING);
-            if (ret < 1)
+            if (ret <= 0)
                 return 0;
             ret--;
             if (rctx->tbuf[ret] != RSA_X931_hash_id(EVP_MD_get_type(rctx->md))) {
@@ -239,14 +248,14 @@ static int pkey_rsa_verifyrecover(EVP_PKEY_CTX *ctx,
                                   sig, siglen, rsa);
             if (ret <= 0)
                 return 0;
-            ret = sltmp;
+            ret = (int)sltmp;
         } else {
             return -1;
         }
     } else {
-        ret = RSA_public_decrypt(siglen, sig, rout, rsa, rctx->pad_mode);
+        ret = RSA_public_decrypt((int)siglen, sig, rout, rsa, rctx->pad_mode);
     }
-    if (ret < 0)
+    if (ret <= 0)
         return ret;
     *routlen = ret;
     return 1;
@@ -264,12 +273,18 @@ static int pkey_rsa_verify(EVP_PKEY_CTX *ctx,
      */
     RSA *rsa = (RSA *)EVP_PKEY_get0_RSA(ctx->pkey);
     size_t rslen;
+    int md_size;
 
     if (rctx->md) {
         if (rctx->pad_mode == RSA_PKCS1_PADDING)
-            return RSA_verify(EVP_MD_get_type(rctx->md), tbs, tbslen,
-                              sig, siglen, rsa);
-        if (tbslen != (size_t)EVP_MD_get_size(rctx->md)) {
+            return RSA_verify(EVP_MD_get_type(rctx->md), tbs, (unsigned int)tbslen,
+                              sig, (unsigned int)siglen, rsa);
+        md_size = EVP_MD_get_size(rctx->md);
+        if (md_size <= 0) {
+            ERR_raise(ERR_LIB_RSA, RSA_R_INVALID_DIGEST_LENGTH);
+            return -1;
+        }
+        if (tbslen != (size_t)md_size) {
             ERR_raise(ERR_LIB_RSA, RSA_R_INVALID_DIGEST_LENGTH);
             return -1;
         }
@@ -280,7 +295,7 @@ static int pkey_rsa_verify(EVP_PKEY_CTX *ctx,
             int ret;
             if (!setup_tbuf(rctx, ctx))
                 return -1;
-            ret = RSA_public_decrypt(siglen, sig, rctx->tbuf,
+            ret = RSA_public_decrypt((int)siglen, sig, rctx->tbuf,
                                      rsa, RSA_NO_PADDING);
             if (ret <= 0)
                 return 0;
@@ -296,9 +311,9 @@ static int pkey_rsa_verify(EVP_PKEY_CTX *ctx,
     } else {
         if (!setup_tbuf(rctx, ctx))
             return -1;
-        rslen = RSA_public_decrypt(siglen, sig, rctx->tbuf,
+        rslen = RSA_public_decrypt((int)siglen, sig, rctx->tbuf,
                                    rsa, rctx->pad_mode);
-        if (rslen == 0)
+        if (rslen <= 0)
             return 0;
     }
 
@@ -327,14 +342,14 @@ static int pkey_rsa_encrypt(EVP_PKEY_CTX *ctx,
         if (!setup_tbuf(rctx, ctx))
             return -1;
         if (!RSA_padding_add_PKCS1_OAEP_mgf1(rctx->tbuf, klen,
-                                             in, inlen,
+                                             in, (int)inlen,
                                              rctx->oaep_label,
-                                             rctx->oaep_labellen,
+                                             (int)rctx->oaep_labellen,
                                              rctx->md, rctx->mgf1md))
             return -1;
         ret = RSA_public_encrypt(klen, rctx->tbuf, out, rsa, RSA_NO_PADDING);
     } else {
-        ret = RSA_public_encrypt(inlen, in, out, rsa, rctx->pad_mode);
+        ret = RSA_public_encrypt((int)inlen, in, out, rsa, rctx->pad_mode);
     }
     if (ret < 0)
         return ret;
@@ -347,6 +362,7 @@ static int pkey_rsa_decrypt(EVP_PKEY_CTX *ctx,
                             const unsigned char *in, size_t inlen)
 {
     int ret;
+    int pad_mode;
     RSA_PKEY_CTX *rctx = ctx->data;
     /*
      * Discard const. Its marked as const because this may be a cached copy of
@@ -358,16 +374,21 @@ static int pkey_rsa_decrypt(EVP_PKEY_CTX *ctx,
     if (rctx->pad_mode == RSA_PKCS1_OAEP_PADDING) {
         if (!setup_tbuf(rctx, ctx))
             return -1;
-        ret = RSA_private_decrypt(inlen, in, rctx->tbuf, rsa, RSA_NO_PADDING);
+        ret = RSA_private_decrypt((int)inlen, in, rctx->tbuf, rsa, RSA_NO_PADDING);
         if (ret <= 0)
             return ret;
         ret = RSA_padding_check_PKCS1_OAEP_mgf1(out, ret, rctx->tbuf,
                                                 ret, ret,
                                                 rctx->oaep_label,
-                                                rctx->oaep_labellen,
+                                                (int)rctx->oaep_labellen,
                                                 rctx->md, rctx->mgf1md);
     } else {
-        ret = RSA_private_decrypt(inlen, in, out, rsa, rctx->pad_mode);
+        if (rctx->pad_mode == RSA_PKCS1_PADDING &&
+              rctx->implicit_rejection == 0)
+            pad_mode = RSA_PKCS1_NO_IMPLICIT_REJECT_PADDING;
+        else
+            pad_mode = rctx->pad_mode;
+        ret = RSA_private_decrypt((int)inlen, in, out, rsa, pad_mode);
     }
     *outlen = constant_time_select_s(constant_time_msb_s(ret), *outlen, ret);
     ret = constant_time_select_int(constant_time_msb(ret), ret, 1);
@@ -394,7 +415,7 @@ static int check_padding_md(const EVP_MD *md, int padding)
             return 0;
         }
     } else {
-        switch(mdnid) {
+        switch (mdnid) {
         /* List of all supported RSA digests */
         case NID_sha1:
         case NID_sha224:
@@ -428,6 +449,7 @@ static int check_padding_md(const EVP_MD *md, int padding)
 static int pkey_rsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2)
 {
     RSA_PKEY_CTX *rctx = ctx->data;
+    int md_size;
 
     switch (type) {
     case EVP_PKEY_CTRL_RSA_PADDING:
@@ -477,8 +499,13 @@ static int pkey_rsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2)
                     ERR_raise(ERR_LIB_RSA, RSA_R_INVALID_PSS_SALTLEN);
                     return -2;
                 }
+                md_size = EVP_MD_get_size(rctx->md);
+                if (md_size <= 0) {
+                    ERR_raise(ERR_LIB_RSA, RSA_R_INVALID_DIGEST_LENGTH);
+                    return -2;
+                }
                 if ((p1 == RSA_PSS_SALTLEN_DIGEST
-                     && rctx->min_saltlen > EVP_MD_get_size(rctx->md))
+                     && rctx->min_saltlen > md_size)
                     || (p1 >= 0 && p1 < rctx->min_saltlen)) {
                     ERR_raise(ERR_LIB_RSA, RSA_R_PSS_SALTLEN_TOO_SMALL);
                     return 0;
@@ -584,8 +611,20 @@ static int pkey_rsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2)
             ERR_raise(ERR_LIB_RSA, RSA_R_INVALID_PADDING_MODE);
             return -2;
         }
+        if (p2 == NULL) {
+            ERR_raise(ERR_LIB_EVP, ERR_R_PASSED_NULL_PARAMETER);
+            return 0;
+        }
         *(unsigned char **)p2 = rctx->oaep_label;
-        return rctx->oaep_labellen;
+        return (int)rctx->oaep_labellen;
+
+    case EVP_PKEY_CTRL_RSA_IMPLICIT_REJECTION:
+        if (rctx->pad_mode != RSA_PKCS1_PADDING) {
+            ERR_raise(ERR_LIB_RSA, RSA_R_INVALID_PADDING_MODE);
+            return -2;
+        }
+        rctx->implicit_rejection = p1;
+        return 1;
 
     case EVP_PKEY_CTRL_DIGESTINIT:
     case EVP_PKEY_CTRL_PKCS7_SIGN:
@@ -830,7 +869,7 @@ static int pkey_pss_init(EVP_PKEY_CTX *ctx)
     RSA_PKEY_CTX *rctx = ctx->data;
     const EVP_MD *md;
     const EVP_MD *mgf1md;
-    int min_saltlen, max_saltlen;
+    int min_saltlen, max_saltlen, md_size;
 
     /* Should never happen */
     if (!pkey_ctx_is_pss(ctx))
@@ -844,7 +883,12 @@ static int pkey_pss_init(EVP_PKEY_CTX *ctx)
         return 0;
 
     /* See if minimum salt length exceeds maximum possible */
-    max_saltlen = RSA_size(rsa) - EVP_MD_get_size(md);
+    md_size = EVP_MD_get_size(md);
+    if (md_size <= 0) {
+        ERR_raise(ERR_LIB_RSA, RSA_R_INVALID_DIGEST_LENGTH);
+        return 0;
+    }
+    max_saltlen = RSA_size(rsa) - md_size;
     if ((RSA_bits(rsa) & 0x7) == 1)
         max_saltlen--;
     if (min_saltlen > max_saltlen) {

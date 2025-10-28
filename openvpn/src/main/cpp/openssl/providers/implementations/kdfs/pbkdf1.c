@@ -1,11 +1,12 @@
 /*
- * Copyright 1999-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1999-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
  * in the file LICENSE in the source distribution or at
  * https://www.openssl.org/source/license.html
  */
+
 
 #include <openssl/trace.h>
 #include <stdlib.h>
@@ -15,15 +16,19 @@
 #include <openssl/kdf.h>
 #include <openssl/core_names.h>
 #include <openssl/proverr.h>
+#include "internal/common.h"
 #include "internal/cryptlib.h"
 #include "internal/numbers.h"
+#include "internal/skey.h"
 #include "crypto/evp.h"
+#include "crypto/types.h"
 #include "prov/provider_ctx.h"
 #include "prov/providercommon.h"
 #include "prov/implementations.h"
 #include "prov/provider_util.h"
 
 static OSSL_FUNC_kdf_newctx_fn kdf_pbkdf1_new;
+static OSSL_FUNC_kdf_dupctx_fn kdf_pbkdf1_dup;
 static OSSL_FUNC_kdf_freectx_fn kdf_pbkdf1_free;
 static OSSL_FUNC_kdf_reset_fn kdf_pbkdf1_reset;
 static OSSL_FUNC_kdf_derive_fn kdf_pbkdf1_derive;
@@ -31,6 +36,8 @@ static OSSL_FUNC_kdf_settable_ctx_params_fn kdf_pbkdf1_settable_ctx_params;
 static OSSL_FUNC_kdf_set_ctx_params_fn kdf_pbkdf1_set_ctx_params;
 static OSSL_FUNC_kdf_gettable_ctx_params_fn kdf_pbkdf1_gettable_ctx_params;
 static OSSL_FUNC_kdf_get_ctx_params_fn kdf_pbkdf1_get_ctx_params;
+static OSSL_FUNC_kdf_set_skey_fn kdf_pbkdf1_set_skey;
+static OSSL_FUNC_kdf_derive_skey_fn kdf_pbkdf1_derive_skey;
 
 typedef struct {
     void *provctx;
@@ -59,7 +66,7 @@ static int kdf_pbkdf1_do_derive(const unsigned char *pass, size_t passlen,
 
     ctx = EVP_MD_CTX_new();
     if (ctx == NULL) {
-        ERR_raise(ERR_LIB_PROV, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_PROV, ERR_R_EVP_LIB);
         goto err;
     }
 
@@ -69,8 +76,13 @@ static int kdf_pbkdf1_do_derive(const unsigned char *pass, size_t passlen,
         || !EVP_DigestFinal_ex(ctx, md_tmp, NULL))
         goto err;
     mdsize = EVP_MD_size(md_type);
-    if (mdsize < 0)
+    if (mdsize <= 0)
         goto err;
+    if (n > (size_t)mdsize) {
+        ERR_raise(ERR_LIB_PROV, PROV_R_LENGTH_TOO_LARGE);
+        goto err;
+    }
+
     for (i = 1; i < iter; i++) {
         if (!EVP_DigestInit_ex(ctx, md_type, NULL))
             goto err;
@@ -83,6 +95,7 @@ static int kdf_pbkdf1_do_derive(const unsigned char *pass, size_t passlen,
     memcpy(out, md_tmp, n);
     ret = 1;
 err:
+    OPENSSL_cleanse(md_tmp, EVP_MAX_MD_SIZE);
     EVP_MD_CTX_free(ctx);
     return ret;
 }
@@ -95,10 +108,8 @@ static void *kdf_pbkdf1_new(void *provctx)
         return NULL;
 
     ctx = OPENSSL_zalloc(sizeof(*ctx));
-    if (ctx == NULL) {
-        ERR_raise(ERR_LIB_PROV, ERR_R_MALLOC_FAILURE);
+    if (ctx == NULL)
         return NULL;
-    }
     ctx->provctx = provctx;
     return ctx;
 }
@@ -130,19 +141,62 @@ static void kdf_pbkdf1_reset(void *vctx)
     ctx->provctx = provctx;
 }
 
+static void *kdf_pbkdf1_dup(void *vctx)
+{
+    const KDF_PBKDF1 *src = (const KDF_PBKDF1 *)vctx;
+    KDF_PBKDF1 *dest;
+
+    dest = kdf_pbkdf1_new(src->provctx);
+    if (dest != NULL) {
+        if (!ossl_prov_memdup(src->salt, src->salt_len,
+                              &dest->salt, &dest->salt_len)
+                || !ossl_prov_memdup(src->pass, src->pass_len,
+                                     &dest->pass , &dest->pass_len)
+                || !ossl_prov_digest_copy(&dest->digest, &src->digest))
+            goto err;
+        dest->iter = src->iter;
+    }
+    return dest;
+
+ err:
+    kdf_pbkdf1_free(dest);
+    return NULL;
+}
+
 static int kdf_pbkdf1_set_membuf(unsigned char **buffer, size_t *buflen,
                              const OSSL_PARAM *p)
 {
     OPENSSL_clear_free(*buffer, *buflen);
+    *buffer = NULL;
+    *buflen = 0;
+
     if (p->data_size == 0) {
-        if ((*buffer = OPENSSL_malloc(1)) == NULL) {
-            ERR_raise(ERR_LIB_PROV, ERR_R_MALLOC_FAILURE);
+        if ((*buffer = OPENSSL_malloc(1)) == NULL)
             return 0;
-        }
     } else if (p->data != NULL) {
-        *buffer = NULL;
         if (!OSSL_PARAM_get_octet_string(p, (void **)buffer, 0, buflen))
             return 0;
+    }
+    return 1;
+}
+
+static int kdf_pbkdf1_set_membuf_skey(unsigned char **buffer, size_t *buflen,
+                                      const PROV_SKEY *pskey)
+{
+    OPENSSL_clear_free(*buffer, *buflen);
+    *buffer = NULL;
+    *buflen = 0;
+
+    if (pskey->length == 0) {
+        if ((*buffer = OPENSSL_malloc(1)) == NULL)
+            return 0;
+    } else if (pskey->data != NULL) {
+        *buffer = OPENSSL_malloc(pskey->length);
+        if (*buffer == NULL)
+            return 0;
+
+        memcpy(*buffer, pskey->data, pskey->length);
+        *buflen = pskey->length;
     }
     return 1;
 }
@@ -171,25 +225,139 @@ static int kdf_pbkdf1_derive(void *vctx, unsigned char *key, size_t keylen,
                                 ctx->iter, md, key, keylen);
 }
 
+/* Machine generated by util/perl/OpenSSL/paramnames.pm */
+#ifndef pbkdf1_set_ctx_params_list
+static const OSSL_PARAM pbkdf1_set_ctx_params_list[] = {
+    OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_PROPERTIES, NULL, 0),
+    OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_DIGEST, NULL, 0),
+    OSSL_PARAM_octet_string(OSSL_KDF_PARAM_PASSWORD, NULL, 0),
+    OSSL_PARAM_octet_string(OSSL_KDF_PARAM_SALT, NULL, 0),
+    OSSL_PARAM_uint64(OSSL_KDF_PARAM_ITER, NULL),
+    OSSL_PARAM_END
+};
+#endif
+
+#ifndef pbkdf1_set_ctx_params_st
+struct pbkdf1_set_ctx_params_st {
+    OSSL_PARAM *digest;
+    OSSL_PARAM *engine;
+    OSSL_PARAM *iter;
+    OSSL_PARAM *propq;
+    OSSL_PARAM *pw;
+    OSSL_PARAM *salt;
+};
+#endif
+
+#ifndef pbkdf1_set_ctx_params_decoder
+static int pbkdf1_set_ctx_params_decoder
+    (const OSSL_PARAM *p, struct pbkdf1_set_ctx_params_st *r)
+{
+    const char *s;
+
+    memset(r, 0, sizeof(*r));
+    if (p != NULL)
+        for (; (s = p->key) != NULL; p++)
+            switch(s[0]) {
+            default:
+                break;
+            case 'd':
+                if (ossl_likely(strcmp("igest", s + 1) == 0)) {
+                    /* OSSL_KDF_PARAM_DIGEST */
+                    if (ossl_unlikely(r->digest != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->digest = (OSSL_PARAM *)p;
+                }
+                break;
+            case 'e':
+                if (ossl_likely(strcmp("ngine", s + 1) == 0)) {
+                    /* OSSL_ALG_PARAM_ENGINE */
+                    if (ossl_unlikely(r->engine != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->engine = (OSSL_PARAM *)p;
+                }
+                break;
+            case 'i':
+                if (ossl_likely(strcmp("ter", s + 1) == 0)) {
+                    /* OSSL_KDF_PARAM_ITER */
+                    if (ossl_unlikely(r->iter != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->iter = (OSSL_PARAM *)p;
+                }
+                break;
+            case 'p':
+                switch(s[1]) {
+                default:
+                    break;
+                case 'a':
+                    if (ossl_likely(strcmp("ss", s + 2) == 0)) {
+                        /* OSSL_KDF_PARAM_PASSWORD */
+                        if (ossl_unlikely(r->pw != NULL)) {
+                            ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                           "param %s is repeated", s);
+                            return 0;
+                        }
+                        r->pw = (OSSL_PARAM *)p;
+                    }
+                    break;
+                case 'r':
+                    if (ossl_likely(strcmp("operties", s + 2) == 0)) {
+                        /* OSSL_KDF_PARAM_PROPERTIES */
+                        if (ossl_unlikely(r->propq != NULL)) {
+                            ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                           "param %s is repeated", s);
+                            return 0;
+                        }
+                        r->propq = (OSSL_PARAM *)p;
+                    }
+                }
+                break;
+            case 's':
+                if (ossl_likely(strcmp("alt", s + 1) == 0)) {
+                    /* OSSL_KDF_PARAM_SALT */
+                    if (ossl_unlikely(r->salt != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->salt = (OSSL_PARAM *)p;
+                }
+            }
+    return 1;
+}
+#endif
+/* End of machine generated */
+
 static int kdf_pbkdf1_set_ctx_params(void *vctx, const OSSL_PARAM params[])
 {
-    const OSSL_PARAM *p;
+    struct pbkdf1_set_ctx_params_st p;
     KDF_PBKDF1 *ctx = vctx;
-    OSSL_LIB_CTX *libctx = PROV_LIBCTX_OF(ctx->provctx);
+    OSSL_LIB_CTX *libctx;
 
-    if (!ossl_prov_digest_load_from_params(&ctx->digest, params, libctx))
+    if (ctx == NULL || !pbkdf1_set_ctx_params_decoder(params, &p))
         return 0;
 
-    if ((p = OSSL_PARAM_locate_const(params, OSSL_KDF_PARAM_PASSWORD)) != NULL)
-        if (!kdf_pbkdf1_set_membuf(&ctx->pass, &ctx->pass_len, p))
-            return 0;
+    libctx = PROV_LIBCTX_OF(ctx->provctx);
 
-    if ((p = OSSL_PARAM_locate_const(params, OSSL_KDF_PARAM_SALT)) != NULL)
-        if (!kdf_pbkdf1_set_membuf(&ctx->salt, &ctx->salt_len,p))
-            return 0;
+    if (!ossl_prov_digest_load(&ctx->digest, p.digest,
+                               p.propq, p.engine, libctx))
+        return 0;
 
-    if ((p = OSSL_PARAM_locate_const(params, OSSL_KDF_PARAM_ITER)) != NULL)
-        if (!OSSL_PARAM_get_uint64(p, &ctx->iter))
+    if (p.pw != NULL && !kdf_pbkdf1_set_membuf(&ctx->pass, &ctx->pass_len, p.pw))
+        return 0;
+
+    if (p.salt != NULL && !kdf_pbkdf1_set_membuf(&ctx->salt, &ctx->salt_len, p.salt))
+        return 0;
+
+    if (p.iter != NULL && !OSSL_PARAM_get_uint64(p.iter, &ctx->iter))
             return 0;
     return 1;
 }
@@ -197,38 +365,114 @@ static int kdf_pbkdf1_set_ctx_params(void *vctx, const OSSL_PARAM params[])
 static const OSSL_PARAM *kdf_pbkdf1_settable_ctx_params(ossl_unused void *ctx,
                                                         ossl_unused void *p_ctx)
 {
-    static const OSSL_PARAM known_settable_ctx_params[] = {
-        OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_PROPERTIES, NULL, 0),
-        OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_DIGEST, NULL, 0),
-        OSSL_PARAM_octet_string(OSSL_KDF_PARAM_PASSWORD, NULL, 0),
-        OSSL_PARAM_octet_string(OSSL_KDF_PARAM_SALT, NULL, 0),
-        OSSL_PARAM_uint64(OSSL_KDF_PARAM_ITER, NULL),
-        OSSL_PARAM_END
-    };
-    return known_settable_ctx_params;
+    return pbkdf1_set_ctx_params_list;
 }
+
+/* Machine generated by util/perl/OpenSSL/paramnames.pm */
+#ifndef pbkdf1_get_ctx_params_list
+static const OSSL_PARAM pbkdf1_get_ctx_params_list[] = {
+    OSSL_PARAM_size_t(OSSL_KDF_PARAM_SIZE, NULL),
+    OSSL_PARAM_END
+};
+#endif
+
+#ifndef pbkdf1_get_ctx_params_st
+struct pbkdf1_get_ctx_params_st {
+    OSSL_PARAM *size;
+};
+#endif
+
+#ifndef pbkdf1_get_ctx_params_decoder
+static int pbkdf1_get_ctx_params_decoder
+    (const OSSL_PARAM *p, struct pbkdf1_get_ctx_params_st *r)
+{
+    const char *s;
+
+    memset(r, 0, sizeof(*r));
+    if (p != NULL)
+        for (; (s = p->key) != NULL; p++)
+            if (ossl_likely(strcmp("size", s + 0) == 0)) {
+                /* OSSL_KDF_PARAM_SIZE */
+                if (ossl_unlikely(r->size != NULL)) {
+                    ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                   "param %s is repeated", s);
+                    return 0;
+                }
+                r->size = (OSSL_PARAM *)p;
+            }
+    return 1;
+}
+#endif
+/* End of machine generated */
 
 static int kdf_pbkdf1_get_ctx_params(void *vctx, OSSL_PARAM params[])
 {
-    OSSL_PARAM *p;
+    struct pbkdf1_get_ctx_params_st p;
+    KDF_PBKDF1 *ctx = vctx;
 
-    if ((p = OSSL_PARAM_locate(params, OSSL_KDF_PARAM_SIZE)) != NULL)
-        return OSSL_PARAM_set_size_t(p, SIZE_MAX);
-    return -2;
+    if (ctx == NULL || !pbkdf1_get_ctx_params_decoder(params, &p))
+        return 0;
+
+    if (p.size != NULL && !OSSL_PARAM_set_size_t(p.size, SIZE_MAX))
+        return 0;
+    return 1;
 }
 
 static const OSSL_PARAM *kdf_pbkdf1_gettable_ctx_params(ossl_unused void *ctx,
                                                         ossl_unused void *p_ctx)
 {
-    static const OSSL_PARAM known_gettable_ctx_params[] = {
-        OSSL_PARAM_size_t(OSSL_KDF_PARAM_SIZE, NULL),
-        OSSL_PARAM_END
-    };
-    return known_gettable_ctx_params;
+    return pbkdf1_get_ctx_params_list;
+}
+
+static int kdf_pbkdf1_set_skey(void *vctx, void *skeydata, const char *paramname)
+{
+    KDF_PBKDF1 *ctx = (KDF_PBKDF1 *)vctx;
+    PROV_SKEY *pskey = (PROV_SKEY *)skeydata;
+
+    if (paramname == NULL || skeydata == NULL)
+        return 0;
+
+    if (strcmp(paramname, OSSL_KDF_PARAM_PASSWORD) == 0)
+        return kdf_pbkdf1_set_membuf_skey(&ctx->pass, &ctx->pass_len, pskey);
+
+    if (strcmp(paramname, OSSL_KDF_PARAM_SALT) == 0)
+        return kdf_pbkdf1_set_membuf_skey(&ctx->salt, &ctx->salt_len, pskey);
+
+    return 0;
+}
+
+static
+void *kdf_pbkdf1_derive_skey(void *vctx, const char *key_type ossl_unused, void *provctx,
+                             OSSL_FUNC_skeymgmt_import_fn *import,
+                             size_t keylen, const OSSL_PARAM params[])
+{
+    unsigned char *key = NULL;
+    void *ret = NULL;
+    OSSL_PARAM import_params[2] = {OSSL_PARAM_END, OSSL_PARAM_END};
+
+    if (import == NULL || keylen == 0)
+        return NULL;
+
+    if ((key = OPENSSL_zalloc(keylen)) == NULL)
+        return NULL;
+
+    if (kdf_pbkdf1_derive(vctx, key, keylen, params) == 0) {
+        OPENSSL_free(key);
+        return NULL;
+    }
+
+    import_params[0] = OSSL_PARAM_construct_octet_string(OSSL_SKEY_PARAM_RAW_BYTES,
+                                                         (void *)key, keylen);
+
+    ret = import(provctx, OSSL_SKEYMGMT_SELECT_SECRET_KEY, import_params);
+    OPENSSL_free(key);
+
+    return ret;
 }
 
 const OSSL_DISPATCH ossl_kdf_pbkdf1_functions[] = {
     { OSSL_FUNC_KDF_NEWCTX, (void(*)(void))kdf_pbkdf1_new },
+    { OSSL_FUNC_KDF_DUPCTX, (void(*)(void))kdf_pbkdf1_dup },
     { OSSL_FUNC_KDF_FREECTX, (void(*)(void))kdf_pbkdf1_free },
     { OSSL_FUNC_KDF_RESET, (void(*)(void))kdf_pbkdf1_reset },
     { OSSL_FUNC_KDF_DERIVE, (void(*)(void))kdf_pbkdf1_derive },
@@ -238,5 +482,7 @@ const OSSL_DISPATCH ossl_kdf_pbkdf1_functions[] = {
     { OSSL_FUNC_KDF_GETTABLE_CTX_PARAMS,
       (void(*)(void))kdf_pbkdf1_gettable_ctx_params },
     { OSSL_FUNC_KDF_GET_CTX_PARAMS, (void(*)(void))kdf_pbkdf1_get_ctx_params },
-    { 0, NULL }
+    { OSSL_FUNC_KDF_SET_SKEY, (void(*)(void))kdf_pbkdf1_set_skey },
+    { OSSL_FUNC_KDF_DERIVE_SKEY, (void(*)(void))kdf_pbkdf1_derive_skey },
+    OSSL_DISPATCH_END
 };

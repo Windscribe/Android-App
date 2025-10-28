@@ -6,7 +6,7 @@ it will attempt to connect against.  But there are some configuration
 options which are related to specific ``--remote`` options.  For these
 use cases, connection profiles are the solution.
 
-By enacpulating the ``--remote`` option and related options within
+By encapsulating the ``--remote`` option and related options within
 ``<connection>`` and ``</connection>``, these options are handled as a
 group.
 
@@ -16,8 +16,7 @@ achieves a successful connection.
 ``--remote-random`` can be used to initially "scramble" the connection
 list.
 
-Here is an example of connection profile usage:
-::
+Here is an example of connection profile usage::
 
    client
    dev tun
@@ -40,7 +39,6 @@ Here is an example of connection profile usage:
    http-proxy 192.168.0.8 8080
    </connection>
 
-   persist-key
    persist-tun
    pkcs12 client.p12
    remote-cert-tls server
@@ -60,7 +58,7 @@ block:
 ``http-proxy-option``, ``key-direction``, ``link-mtu``, ``local``,
 ``lport``, ``mssfix``, ``mtu-disc``, ``nobind``, ``port``, ``proto``,
 ``remote``, ``rport``, ``socks-proxy``, ``tls-auth``, ``tls-crypt``,
-``tun-mtu and``, ``tun-mtu-extra``.
+``tls-crypt-v2``, ``tun-mtu and``, ``tun-mtu-extra``.
 
 A defaulting mechanism exists for specifying options to apply to all
 ``<connection>`` profiles. If any of the above options (with the

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,14 +17,11 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#elif defined(_MSC_VER)
-#include "config-msvc.h"
 #endif
 
 #ifndef HAVE_GETTIMEOFDAY
@@ -51,7 +48,7 @@ gettimeofday_calibrate(void)
 {
     const time_t t = time(NULL);
     const DWORD gtc = GetTickCount();
-    gtc_base = t - gtc/1000;
+    gtc_base = t - gtc / 1000;
     gtc_last = gtc;
 }
 
@@ -115,7 +112,7 @@ gettimeofday(struct timeval *tv, void *tz)
     return 0;
 }
 
-#else  /* ifdef _WIN32 */
+#else /* ifdef _WIN32 */
 
 #include <time.h>
 

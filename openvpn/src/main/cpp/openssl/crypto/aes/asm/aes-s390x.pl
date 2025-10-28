@@ -1,5 +1,5 @@
 #! /usr/bin/env perl
-# Copyright 2007-2020 The OpenSSL Project Authors. All Rights Reserved.
+# Copyright 2007-2025 The OpenSSL Project Authors. All Rights Reserved.
 #
 # Licensed under the Apache License 2.0 (the "License").  You may not use
 # this file except in compliance with the License.  You can obtain a copy
@@ -8,10 +8,10 @@
 
 
 # ====================================================================
-# Written by Andy Polyakov <appro@openssl.org> for the OpenSSL
+# Written by Andy Polyakov, @dot-asm, initially for use in the OpenSSL
 # project. The module is, however, dual licensed under OpenSSL and
 # CRYPTOGAMS licenses depending on where you obtain it. For further
-# details see http://www.openssl.org/~appro/cryptogams/.
+# details see https://github.com/dot-asm/cryptogams/.
 # ====================================================================
 
 # AES for s390x.
@@ -1431,6 +1431,9 @@ $code.=<<___ if (!$softonly);
 	st${g}	$s3,0($sp)			# backchain
 	la	%r1,$stdframe($sp)
 
+	xc	$stdframe+0(64,$sp),$stdframe+0($sp)	# clear reserved/unused
+							# in parameter block
+
 	lmg	$s2,$s3,0($key)			# copy key
 	stg	$s2,$stdframe+80($sp)
 	stg	$s3,$stdframe+88($sp)
@@ -2276,7 +2279,7 @@ $code.=<<___;
 ___
 }
 $code.=<<___;
-.string	"AES for s390x, CRYPTOGAMS by <appro\@openssl.org>"
+.string	"AES for s390x, CRYPTOGAMS by <https://github.com/dot-asm>"
 ___
 
 $code =~ s/\`([^\`]*)\`/eval $1/gem;

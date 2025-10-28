@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2011-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -72,15 +72,16 @@ static int aesni_cbc_hmac_sha1_init_key(EVP_CIPHER_CTX *ctx,
 {
     EVP_AES_HMAC_SHA1 *key = data(ctx);
     int ret;
+    const int keylen = EVP_CIPHER_CTX_get_key_length(ctx) * 8;
 
+    if (keylen <= 0) {
+        ERR_raise(ERR_LIB_EVP, EVP_R_INVALID_KEY_LENGTH);
+        return 0;
+    }
     if (enc)
-        ret = aesni_set_encrypt_key(inkey,
-                                    EVP_CIPHER_CTX_get_key_length(ctx) * 8,
-                                    &key->ks);
+        ret = aesni_set_encrypt_key(inkey, keylen, &key->ks);
     else
-        ret = aesni_set_decrypt_key(inkey,
-                                    EVP_CIPHER_CTX_get_key_length(ctx) * 8,
-                                    &key->ks);
+        ret = aesni_set_decrypt_key(inkey, keylen, &key->ks);
 
     SHA1_Init(&key->head);      /* handy when benchmarking */
     key->tail = key->head;
@@ -121,8 +122,8 @@ static void sha1_update(SHA_CTX *c, const void *data, size_t len)
         sha1_block_data_order(c, ptr, len / SHA_CBLOCK);
 
         ptr += len;
-        c->Nh += len >> 29;
-        c->Nl += len <<= 3;
+        c->Nh += (unsigned int)(len >> 29);
+        c->Nl += (unsigned int)(len <<= 3);
         if (c->Nl < (unsigned int)len)
             c->Nh++;
     }
@@ -444,8 +445,8 @@ static int aesni_cbc_hmac_sha1_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
             blocks *= SHA_CBLOCK;
             aes_off += blocks;
             sha_off += blocks;
-            key->md.Nh += blocks >> 29;
-            key->md.Nl += blocks <<= 3;
+            key->md.Nh += (unsigned int)(blocks >> 29);
+            key->md.Nl += (unsigned int)(blocks <<= 3);
             if (key->md.Nl < (unsigned int)blocks)
                 key->md.Nh++;
         } else {
@@ -467,7 +468,7 @@ static int aesni_cbc_hmac_sha1_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
 
             /* pad the payload|hmac */
             plen += SHA_DIGEST_LENGTH;
-            for (l = len - plen - 1; plen < len; plen++)
+            for (l = (unsigned int)(len - plen - 1); plen < len; plen++)
                 out[plen] = l;
             /* encrypt HMAC|padding at once */
             aesni_cbc_encrypt(out + aes_off, out + aes_off, len - aes_off,
@@ -496,6 +497,12 @@ static int aesni_cbc_hmac_sha1_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
 # if defined(STITCHED_DECRYPT_CALL)
             unsigned char tail_iv[AES_BLOCK_SIZE];
             int stitch = 0;
+            const int keylen = EVP_CIPHER_CTX_get_key_length(ctx);
+
+            if (keylen <= 0) {
+                ERR_raise(ERR_LIB_EVP, EVP_R_INVALID_KEY_LENGTH);
+                return 0;
+            }
 # endif
 
             if ((key->aux.tls_aad[plen - 4] << 8 | key->aux.tls_aad[plen - 3])
@@ -513,7 +520,7 @@ static int aesni_cbc_hmac_sha1_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
                 return 0;
 
 # if defined(STITCHED_DECRYPT_CALL)
-            if (len >= 1024 && ctx->key_len == 32) {
+            if (len >= 1024 && keylen == 32) {
                 /* decrypt last block */
                 memcpy(tail_iv, in + len - 2 * AES_BLOCK_SIZE,
                        AES_BLOCK_SIZE);
@@ -529,7 +536,7 @@ static int aesni_cbc_hmac_sha1_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
 
             /* figure out payload length */
             pad = out[len - 1];
-            maxpad = len - (SHA_DIGEST_LENGTH + 1);
+            maxpad = (unsigned int)(len - (SHA_DIGEST_LENGTH + 1));
             maxpad |= (255 - maxpad) >> (sizeof(maxpad) * 8 - 8);
             maxpad &= 255;
 
@@ -541,12 +548,12 @@ static int aesni_cbc_hmac_sha1_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
              * we'll use the maxpad value instead of the supplied pad to make
              * sure we perform well defined pointer arithmetic.
              */
-            pad = constant_time_select(mask, pad, maxpad);
+            pad = constant_time_select((unsigned int)mask, pad, maxpad);
 
             inp_len = len - (SHA_DIGEST_LENGTH + pad + 1);
 
-            key->aux.tls_aad[plen - 2] = inp_len >> 8;
-            key->aux.tls_aad[plen - 1] = inp_len;
+            key->aux.tls_aad[plen - 2] = (unsigned char)(inp_len >> 8);
+            key->aux.tls_aad[plen - 1] = (unsigned char)inp_len;
 
             /* calculate HMAC */
             key->md = key->head;
@@ -587,7 +594,7 @@ static int aesni_cbc_hmac_sha1_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
             }
 
             /* but pretend as if we hashed padded payload */
-            bitlen = key->md.Nl + (inp_len << 3); /* at most 18 bits */
+            bitlen = key->md.Nl + (unsigned int)(inp_len << 3); /* at most 18 bits */
 #  ifdef BSWAP4
             bitlen = BSWAP4(bitlen);
 #  else
@@ -734,7 +741,7 @@ static int aesni_cbc_hmac_sha1_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
             return ret;
         } else {
 # if defined(STITCHED_DECRYPT_CALL)
-            if (len >= 1024 && ctx->key_len == 32) {
+            if (len >= 1024 && keylen == 32) {
                 if (sha_off %= SHA_CBLOCK)
                     blocks = (len - 3 * SHA_CBLOCK) / SHA_CBLOCK;
                 else
@@ -862,7 +869,7 @@ static int aesni_cbc_hmac_sha1_ctrl(EVP_CIPHER_CTX *ctx, int type, int arg,
                     if (inp_len >= 8192 && OPENSSL_ia32cap_P[2] & (1 << 5))
                         n4x = 2; /* AVX2 */
                 } else if ((n4x = param->interleave / 4) && n4x <= 2)
-                    inp_len = param->len;
+                    inp_len = (unsigned int)param->len;
                 else
                     return -1;
 

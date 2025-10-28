@@ -9,6 +9,7 @@ set(crypto_srcs
         crypto/aes/aes_ofb.c
         crypto/aes/aes_wrap.c
         crypto/aria/aria.c
+        crypto/array_alloc.c
         crypto/asn1_dsa.c
         crypto/asn1/a_bitstr.c
         crypto/asn1/a_d2i_fp.c
@@ -77,13 +78,11 @@ set(crypto_srcs
         crypto/async/async.c
         crypto/async/async_err.c
         crypto/async/async_wait.c
-
         crypto/bf/bf_cfb64.c
         crypto/bf/bf_ecb.c
         crypto/bf/bf_enc.c
         crypto/bf/bf_ofb64.c
         crypto/bf/bf_skey.c
-
         crypto/bio/bf_buff.c
         crypto/bio/bf_nbio.c
         crypto/bio/bf_null.c
@@ -104,6 +103,7 @@ set(crypto_srcs
         crypto/bio/bss_conn.c
         crypto/bio/bss_core.c
         crypto/bio/bss_dgram.c
+        crypto/bio/bss_dgram_pair.c
         crypto/bio/bss_fd.c
         crypto/bio/bss_file.c
         crypto/bio/bss_log.c
@@ -146,7 +146,6 @@ set(crypto_srcs
         crypto/bsearch.c
         crypto/buffer/buf_err.c
         crypto/buffer/buffer.c
-        crypto/chacha/chacha_enc.c
         crypto/cmac/cmac.c
         crypto/cms/cms_asn1.c
         crypto/cms/cms_att.c
@@ -157,12 +156,17 @@ set(crypto_srcs
         crypto/cms/cms_err.c
         crypto/cms/cms_ess.c
         crypto/cms/cms_io.c
+        crypto/cms/cms_kem.c
+        crypto/cms/cms_kemri.c
         crypto/cms/cms_kari.c
         crypto/cms/cms_lib.c
         crypto/cms/cms_pwri.c
         crypto/cms/cms_sd.c
         crypto/cms/cms_smime.c
+        crypto/comp_methods.c
+        crypto/comp/c_brotli.c
         crypto/comp/c_zlib.c
+        crypto/comp/c_zstd.c
         crypto/comp/comp_err.c
         crypto/comp/comp_lib.c
         crypto/cmp/cmp_util.c
@@ -198,6 +202,7 @@ set(crypto_srcs
         crypto/ctype.c
         crypto/cpuid.c
         crypto/cversion.c
+        crypto/defaults.c
         crypto/des/cbc_cksm.c
         crypto/des/cbc_enc.c
         crypto/des/cfb64ede.c
@@ -247,6 +252,7 @@ set(crypto_srcs
         crypto/dsa/dsa_sign.c
         crypto/dsa/dsa_vrf.c
         crypto/der_writer.c
+        crypto/deterministic_nonce.c
         crypto/dso/dso_dl.c
         crypto/dso/dso_dlfcn.c
         crypto/dso/dso_err.c
@@ -288,6 +294,7 @@ set(crypto_srcs
         crypto/ec/ecp_nistz256.c
         crypto/ec/ecp_oct.c
         crypto/ec/ecp_smpl.c
+        crypto/ec/ecp_sm2p256.c
         crypto/ec/ecx_backend.c
         crypto/ec/ecx_meth.c
         crypto/ec/ecx_key.c
@@ -320,10 +327,14 @@ set(crypto_srcs
         crypto/engine/tb_pkmeth.c
         crypto/engine/tb_rand.c
         crypto/engine/tb_rsa.c
-        crypto/err/err.c
-        crypto/err/err_all.c
-        crypto/err/err_blocks.c
+        crypto/err/err_save.c
+        crypto/err/openssl.ec
+        crypto/err/err_mark.c
         crypto/err/err_prn.c
+        crypto/err/err_blocks.c
+        crypto/err/err.c
+        crypto/err/err_all_legacy.c
+        crypto/err/err_all.c
         crypto/ess/ess_asn1.c
         crypto/ess/ess_err.c
         crypto/ess/ess_lib.c
@@ -367,6 +378,8 @@ set(crypto_srcs
         crypto/evp/evp_lib.c
         crypto/evp/evp_pbe.c
         crypto/evp/evp_pkey.c
+        crypto/evp/evp_pkey_type.c
+        crypto/evp/evp_rand.c
         crypto/evp/evp_utils.c
         crypto/evp/exchange.c
         crypto/evp/kdf_lib.c
@@ -398,8 +411,9 @@ set(crypto_srcs
         crypto/evp/pmeth_check.c
         crypto/evp/pmeth_gn.c
         crypto/evp/pmeth_lib.c
-        crypto/evp/evp_rand.c
         crypto/evp/signature.c
+        crypto/evp/s_lib.c
+        crypto/evp/skeymgmt_meth.c
         crypto/ex_data.c
         crypto/ffc/ffc_backend.c
         crypto/ffc/ffc_dh.c
@@ -409,10 +423,15 @@ set(crypto_srcs
         crypto/ffc/ffc_params_generate.c
         crypto/ffc/ffc_params_validate.c
         crypto/getenv.c
+        crypto/hashtable/hashfunc.c
+        crypto/hashtable/hashtable.c
         crypto/hmac/hmac.c
+        crypto/hpke/hpke.c
+        crypto/hpke/hpke_util.c
         crypto/http/http_client.c
         crypto/http/http_err.c
         crypto/http/http_lib.c
+        crypto/indicator_core.c
         crypto/info.c
         crypto/init.c
         crypto/initthread.c
@@ -426,6 +445,15 @@ set(crypto_srcs
         crypto/md5/md5_sha1.c
         crypto/mem.c
         crypto/mem_sec.c
+        crypto/ml_dsa/ml_dsa_sample.c
+        crypto/ml_dsa/ml_dsa_key.c
+        crypto/ml_dsa/ml_dsa_sign.c
+        crypto/ml_dsa/ml_dsa_params.c
+        crypto/ml_dsa/ml_dsa_ntt.c
+        crypto/ml_dsa/ml_dsa_key_compress.c
+        crypto/ml_dsa/ml_dsa_encoders.c
+        crypto/ml_dsa/ml_dsa_matrix.c
+        crypto/ml_kem/ml_kem.c
         crypto/modes/cbc128.c
         crypto/modes/ccm128.c
         crypto/modes/cfb128.c
@@ -435,6 +463,7 @@ set(crypto_srcs
         crypto/modes/ofb128.c
         crypto/modes/siv128.c
         crypto/modes/xts128.c
+        crypto/modes/xts128gb.c
         crypto/modes/wrap128.c
         crypto/o_dir.c
         crypto/o_fopen.c
@@ -509,12 +538,14 @@ set(crypto_srcs
         crypto/property/property_string.c
         crypto/provider_child.c
         crypto/punycode.c
+        crypto/quic_vlint.c
         crypto/rand/prov_seed.c
         crypto/rand/rand_egd.c
         crypto/rand/rand_err.c
         crypto/rand/rand_lib.c
         crypto/rand/rand_meth.c
         crypto/rand/rand_pool.c
+        crypto/rand/rand_uniform.c
         crypto/rand/randfile.c
         crypto/rc2/rc2_cbc.c
         crypto/rc2/rc2_ecb.c
@@ -555,6 +586,17 @@ set(crypto_srcs
         crypto/sha/sha3.c
         crypto/sha/sha512.c
         crypto/siphash/siphash.c
+        crypto/sleep.c
+        crypto/slh_dsa/slh_fors.c
+        crypto/slh_dsa/slh_dsa.c
+        crypto/slh_dsa/slh_hypertree.c
+        crypto/slh_dsa/slh_xmss.c
+        crypto/slh_dsa/slh_dsa_hash_ctx.c
+        crypto/slh_dsa/slh_wots.c
+        crypto/slh_dsa/slh_hash.c
+        crypto/slh_dsa/slh_dsa_key.c
+        crypto/slh_dsa/slh_adrs.c
+        crypto/slh_dsa/slh_params.c
         crypto/sm2/sm2_err.c
         crypto/sm2/sm2_crypt.c
         crypto/sm2/sm2_key.c
@@ -565,6 +607,7 @@ set(crypto_srcs
         crypto/sparse_array.c
         crypto/srp/srp_lib.c
         crypto/srp/srp_vfy.c
+        crypto/ssl_err.c
         crypto/store/store_init.c
         crypto/store/store_err.c
         crypto/store/store_register.c
@@ -573,10 +616,16 @@ set(crypto_srcs
         crypto/store/store_meth.c
         crypto/store/store_strings.c
         crypto/stack/stack.c
+        crypto/threads_common.c
         crypto/threads_none.c
         crypto/threads_pthread.c
         crypto/threads_win.c
         crypto/threads_lib.c
+        crypto/thread/arch/thread_posix.c
+        crypto/thread/api.c
+        crypto/thread/arch.c
+        crypto/thread/internal.c
+        crypto/time.c
         crypto/trace.c
         crypto/ts/ts_err.c
         crypto/txt_db/txt_db.c
@@ -592,6 +641,19 @@ set(crypto_srcs
         crypto/x509/t_crl.c
         crypto/x509/t_req.c
         crypto/x509/t_x509.c
+        crypto/x509/v3_aaa.c
+        crypto/x509/v3_attrdesc.c
+        crypto/x509/v3_attrmap.c
+        crypto/x509/v3_authattid.c
+        crypto/x509/v3_ind_iss.c
+        crypto/x509/v3_group_ac.c
+        crypto/x509/v3_no_ass.c
+        crypto/x509/v3_no_rev_avail.c
+        crypto/x509/v3_rolespec.c
+        crypto/x509/v3_single_use.c
+        crypto/x509/v3_soa_id.c
+        crypto/x509/v3_timespec.c
+        crypto/x509/x509_acert.c
         crypto/x509/x509_att.c
         crypto/x509/x509_cmp.c
         crypto/x509/x509_d2.c
@@ -628,9 +690,12 @@ set(crypto_srcs
         crypto/x509/pcy_map.c
         crypto/x509/pcy_node.c
         crypto/x509/pcy_tree.c
+        crypto/x509/v3_ac_tgt.c
         crypto/x509/v3_admis.c
         crypto/x509/v3_akeya.c
         crypto/x509/v3_akid.c
+        crypto/x509/v3_audit_id.c
+        crypto/x509/v3_battcons.c
         crypto/x509/v3_bcons.c
         crypto/x509/v3_bitst.c
         crypto/x509/v3_conf.c
@@ -642,6 +707,7 @@ set(crypto_srcs
         crypto/x509/v3_ia5.c
         crypto/x509/v3_info.c
         crypto/x509/v3_int.c
+        crypto/x509/v3_iobo.c
         crypto/x509/v3_ist.c
         crypto/x509/v3_lib.c
         crypto/x509/v3_ncons.c
@@ -653,9 +719,11 @@ set(crypto_srcs
         crypto/x509/v3_prn.c
         crypto/x509/v3_purp.c
         crypto/x509/v3_san.c
+        crypto/x509/v3_sda.c
         crypto/x509/v3_skid.c
         crypto/x509/v3_sxnet.c
         crypto/x509/v3_tlsf.c
+        crypto/x509/v3_usernotice.c
         crypto/x509/v3_utf8.c
         crypto/x509/v3_utl.c
         crypto/x509/v3err.c
@@ -663,12 +731,13 @@ set(crypto_srcs
 if (${ANDROID_ABI} STREQUAL "armeabi-v7a")
     set(crypto_srcs ${crypto_srcs}
             crypto/aes/asm/aes-armv4.S
-            crypto/aes/asm/aesv8-armx.S
             crypto/aes/asm/bsaes-armv7.S
+            crypto/aes/asm/aesv8-armx.S
             crypto/armcap.c
             crypto/armv4cpuid.S
             crypto/bn/asm/armv4-gf2m.S
             crypto/bn/asm/armv4-mont.S
+            crypto/chacha/asm/chacha-armv4.S
             crypto/ec/asm/ecp_nistz256-armv4.S
             crypto/modes/asm/ghash-armv4.S
             crypto/modes/asm/ghashv8-armx.S
@@ -677,23 +746,35 @@ if (${ANDROID_ABI} STREQUAL "armeabi-v7a")
             crypto/sha/asm/sha512-armv4.S
             crypto/sha/asm/keccak1600-armv4.S
             )
-
 elseif (${ANDROID_ABI} STREQUAL "arm64-v8a")
     set(crypto_srcs ${crypto_srcs}
             crypto/aes/aes_core.c
             crypto/aes/asm/aesv8-armx-64.S
+            crypto/aes/asm/bsaes-armv8.S
             crypto/aes/asm/vpaes-armv8.S
             crypto/arm64cpuid.S
             crypto/armcap.c
             crypto/bn/asm/armv8-mont.S
+            crypto/chacha/asm/chacha-armv8-sve.S
+            crypto/chacha/asm/chacha-armv8.S
             crypto/ec/asm/ecp_nistz256-armv8.S
+            crypto/ec/asm/ecp_sm2p256-armv8.S
+            crypto/md5/asm/md5-aarch64.S
             crypto/modes/asm/ghashv8-armx-64.S
             crypto/modes/asm/aes-gcm-armv8_64.S
+            crypto/modes/aes-gcm-armv8-unroll8_64.S
             crypto/poly1305/asm/poly1305-armv8.S
             crypto/sha/asm/sha1-armv8.S
             crypto/sha/asm/sha256-armv8.S
             crypto/sha/asm/sha512-armv8.S
             crypto/sha/asm/keccak1600-armv8.S
+            crypto/sm3/asm/sm3-armv8.S
+            crypto/sm4/asm/sm4-armv8.S
+            crypto/sm4/asm/vpsm4-armv8.S
+            crypto/sm4/asm/vpsm4_ex-armv8.S
+            crypto/aes/asm/aes-sha1-armv8.S
+            crypto/aes/asm/aes-sha256-armv8.S
+            crypto/aes/asm/aes-sha512-armv8.S
             )
 elseif (${ANDROID_ABI} STREQUAL "x86")
     set(crypto_srcs ${crypto_srcs}
@@ -705,6 +786,7 @@ elseif (${ANDROID_ABI} STREQUAL "x86")
             crypto/bn/asm/co-586.S
             crypto/bn/asm/x86-gf2m.S
             crypto/bn/asm/x86-mont.S
+            crypto/chacha/asm/chacha-x86.S
             crypto/des/asm/crypt586.S
             crypto/des/asm/des-586.S
             crypto/ec/asm/ecp_nistz256-x86.S
@@ -734,14 +816,19 @@ elseif (${ANDROID_ABI} STREQUAL "x86_64")
             crypto/aes/asm/vpaes-x86_64.S
             crypto/bn/asm/rsaz-avx2.S
             crypto/bn/asm/rsaz-x86_64.S
+            crypto/bn/asm/rsaz-4k-avx512.S
+            crypto/bn/asm/rsaz-2k-avx512.S
+            crypto/bn/asm/rsaz-3k-avx512.S
             crypto/bn/asm/x86_64-gcc.c
             crypto/bn/asm/x86_64-gf2m.S
             crypto/bn/asm/x86_64-mont.S
             crypto/bn/asm/x86_64-mont5.S
+            crypto/chacha/asm/chacha-x86_64.S
             crypto/ec/asm/ecp_nistz256-x86_64.S
             crypto/md5/asm/md5-x86_64.S
             crypto/modes/asm/aesni-gcm-x86_64.S
             crypto/modes/asm/ghash-x86_64.S
+            crypto/modes/asm/aes-gcm-avx512.S
             crypto/poly1305/asm/poly1305-x86_64.S
             crypto/rc4/asm/rc4-md5-x86_64.S
             crypto/rc4/asm/rc4-x86_64.S
@@ -756,8 +843,14 @@ elseif (${ANDROID_ABI} STREQUAL "x86_64")
             #crypto/sha/asm/keccak1600-avx512vl.S
             crypto/ec/asm/x25519-x86_64.S
             crypto/x86_64cpuid.S
+            crypto/aes/asm/aesni-xts-avx512.S
+            crypto/bn/asm/rsaz-2k-avxifma.S
+            crypto/bn/asm/rsaz-4k-avxifma.S
+            crypto/bn/asm/rsaz-3k-avxifma.S
+            crypto/aes/asm/aes-cfb-avx512.S
+            crypto/sm4/asm/sm4-x86_64.S
+            crypto/sm3/asm/sm3-x86_64.S
             )
-
     list(REMOVE_ITEM crypto_srcs
             crypto/aes/aes_cbc.c
             crypto/bn/bn_asm.c
@@ -770,133 +863,168 @@ else ()
 endif ()
 
 set(provider_srcs
-        providers/nullprov.c
+        providers/baseprov.c
         providers/common/bio_prov.c
         providers/common/capabilities.c
         providers/common/der/der_digests_gen.c
         providers/common/der/der_dsa_gen.c
         providers/common/der/der_dsa_sig.c
         providers/common/der/der_ec_gen.c
+        providers/common/der/der_ec_sig.c
         providers/common/der/der_ecx_gen.c
         providers/common/der/der_ecx_key.c
-        providers/common/der/der_ec_sig.c
+        providers/common/der/der_ml_dsa_key.c
         providers/common/der/der_rsa_gen.c
         providers/common/der/der_rsa_key.c
         providers/common/der/der_rsa_sig.c
+        providers/common/der/der_slh_dsa_gen.c.in
+        providers/common/der/der_slh_dsa_key.c
         providers/common/der/der_sm2_gen.c
         providers/common/der/der_sm2_sig.c
         providers/common/der/der_wrap_gen.c
         providers/common/digest_to_nid.c
         providers/common/provider_ctx.c
-        providers/common/provider_util.c
         providers/common/provider_err.c
         providers/common/provider_seeding.c
+        providers/common/provider_util.c
         providers/common/securitycheck.c
         providers/common/securitycheck_default.c
-        providers/baseprov.c
         providers/defltprov.c
+        providers/common/der/der_hkdf_gen.c
+        providers/common/der/der_slh_dsa_gen.c
+        providers/common/der/der_ml_dsa_gen.c
         providers/implementations/asymciphers/rsa_enc.c
         providers/implementations/asymciphers/sm2_enc.c
-        providers/implementations/ciphers/ciphercommon_block.c
-        providers/implementations/ciphers/cipher_chacha20.c
-        providers/implementations/ciphers/cipher_aes_cbc_hmac_sha1_hw.c
-        providers/implementations/ciphers/cipher_aes_cbc_hmac_sha.c
-        providers/implementations/ciphers/cipher_tdes_wrap.c
         providers/implementations/ciphers/cipher_aes.c
-        providers/implementations/ciphers/cipher_blowfish_hw.c
-        providers/implementations/ciphers/cipher_aes_wrp.c
-        providers/implementations/ciphers/cipher_des.c
-        providers/implementations/ciphers/ciphercommon_gcm_hw.c
-        providers/implementations/ciphers/cipher_aria.c
-        providers/implementations/ciphers/cipher_aes_ocb.c
-        providers/implementations/ciphers/cipher_desx_hw.c
-        providers/implementations/ciphers/cipher_aes_xts.c
-        providers/implementations/ciphers/cipher_aria_hw.c
-        providers/implementations/ciphers/cipher_aes_gcm.c
-        providers/implementations/ciphers/ciphercommon_ccm_hw.c
-        providers/implementations/ciphers/cipher_aes_siv.c
-        providers/implementations/ciphers/cipher_tdes_common.c
+        providers/implementations/ciphers/cipher_aes_cbc_hmac_sha.c
+        providers/implementations/ciphers/cipher_aes_cbc_hmac_sha1_hw.c
+        providers/implementations/ciphers/cipher_aes_cbc_hmac_sha_etm.c
+        providers/implementations/ciphers/cipher_aes_cbc_hmac_sha1_etm_hw.c
+        providers/implementations/ciphers/cipher_aes_cbc_hmac_sha256_etm_hw.c
+        providers/implementations/ciphers/cipher_aes_cbc_hmac_sha256_hw.c
+        providers/implementations/ciphers/cipher_aes_cbc_hmac_sha512_etm_hw.c
         providers/implementations/ciphers/cipher_aes_ccm.c
-        providers/implementations/ciphers/cipher_sm4.c
-        providers/implementations/ciphers/cipher_aes_hw.c
-        providers/implementations/ciphers/cipher_aes_ocb_hw.c
-        providers/implementations/ciphers/cipher_cts.c
-        providers/implementations/ciphers/cipher_des_hw.c
-        providers/implementations/ciphers/cipher_null.c
-        providers/implementations/ciphers/cipher_rc2_hw.c
-        providers/implementations/ciphers/cipher_chacha20_poly1305_hw.c
-        providers/implementations/ciphers/cipher_tdes.c
         providers/implementations/ciphers/cipher_aes_ccm_hw.c
-        providers/implementations/ciphers/ciphercommon_ccm.c
-        providers/implementations/ciphers/cipher_tdes_default.c
-        providers/implementations/ciphers/ciphercommon.c
-        providers/implementations/ciphers/ciphercommon_block.c
-        providers/implementations/ciphers/cipher_tdes_default_hw.c
-        providers/implementations/ciphers/cipher_sm4_hw.c
-        providers/implementations/ciphers/ciphercommon_gcm.c
-        providers/implementations/ciphers/cipher_tdes_wrap_hw.c
-        providers/implementations/ciphers/cipher_desx.c
-        providers/implementations/ciphers/ciphercommon_hw.c
-        providers/implementations/ciphers/cipher_rc2.c
+        providers/implementations/ciphers/cipher_aes_cfb_hw.c
+        providers/implementations/ciphers/cipher_aes_gcm.c
+        providers/implementations/ciphers/cipher_aes_gcm_hw.c
+        providers/implementations/ciphers/cipher_aes_gcm_siv.c
+        providers/implementations/ciphers/cipher_aes_gcm_siv_hw.c
+        providers/implementations/ciphers/cipher_aes_gcm_siv_polyval.c
+        providers/implementations/ciphers/cipher_aes_hw.c
+        providers/implementations/ciphers/cipher_aes_ocb.c
+        providers/implementations/ciphers/cipher_aes_ocb_hw.c
+        providers/implementations/ciphers/cipher_aes_siv.c
+        providers/implementations/ciphers/cipher_aes_siv_hw.c
+        providers/implementations/ciphers/cipher_aes_wrp.c
+        providers/implementations/ciphers/cipher_aes_xts.c
+        providers/implementations/ciphers/cipher_aes_xts_fips.c
         providers/implementations/ciphers/cipher_aes_xts_hw.c
-        providers/implementations/ciphers/cipher_chacha20_hw.c
+        providers/implementations/ciphers/cipher_aria.c
+        providers/implementations/ciphers/cipher_aria_ccm.c
         providers/implementations/ciphers/cipher_aria_ccm_hw.c
-        providers/implementations/ciphers/cipher_blowfish.c
         providers/implementations/ciphers/cipher_aria_gcm.c
         providers/implementations/ciphers/cipher_aria_gcm_hw.c
-        providers/implementations/ciphers/cipher_rc4_hw.c
+        providers/implementations/ciphers/cipher_aria_hw.c
+        providers/implementations/ciphers/cipher_blowfish.c
+        providers/implementations/ciphers/cipher_blowfish_hw.c
+        providers/implementations/ciphers/cipher_chacha20.c
+        providers/implementations/ciphers/cipher_chacha20_hw.c
         providers/implementations/ciphers/cipher_chacha20_poly1305.c
+        providers/implementations/ciphers/cipher_chacha20_poly1305_hw.c
+        providers/implementations/ciphers/cipher_cts.c
+        providers/implementations/ciphers/cipher_des.c
+        providers/implementations/ciphers/cipher_des_hw.c
+        providers/implementations/ciphers/cipher_desx.c
+        providers/implementations/ciphers/cipher_desx_hw.c
+        providers/implementations/ciphers/cipher_null.c
+        providers/implementations/ciphers/cipher_rc2.c
+        providers/implementations/ciphers/cipher_rc2_hw.c
         providers/implementations/ciphers/cipher_rc4_hmac_md5.c
-        providers/implementations/ciphers/cipher_aes_cbc_hmac_sha256_hw.c
-        providers/implementations/ciphers/cipher_aria_ccm.c
-        providers/implementations/ciphers/cipher_aes_siv_hw.c
-        providers/implementations/ciphers/cipher_aes_gcm_hw.c
+        providers/implementations/ciphers/cipher_rc4_hw.c
+        providers/implementations/ciphers/cipher_sm4.c
+        providers/implementations/ciphers/cipher_sm4_ccm.c
+        providers/implementations/ciphers/cipher_sm4_ccm_hw.c
+        providers/implementations/ciphers/cipher_sm4_gcm.c
+        providers/implementations/ciphers/cipher_sm4_gcm_hw.c
+        providers/implementations/ciphers/cipher_sm4_hw.c
+        providers/implementations/ciphers/cipher_sm4_xts.c
+        providers/implementations/ciphers/cipher_sm4_xts_hw.c
+        providers/implementations/ciphers/cipher_tdes.c
+        providers/implementations/ciphers/cipher_tdes_common.c
+        providers/implementations/ciphers/cipher_tdes_default.c
+        providers/implementations/ciphers/cipher_tdes_default_hw.c
         providers/implementations/ciphers/cipher_tdes_hw.c
-        providers/implementations/ciphers/cipher_aes_xts_fips.c
-        providers/implementations/digests/sha2_prov.c
-        providers/implementations/digests/sm3_prov.c
-        providers/implementations/digests/md5_sha1_prov.c
-        providers/implementations/digests/digestcommon.c
+        providers/implementations/ciphers/cipher_tdes_wrap.c
+        providers/implementations/ciphers/cipher_tdes_wrap_hw.c
+        providers/implementations/ciphers/ciphercommon.c
+        providers/implementations/ciphers/ciphercommon_block.c
+        providers/implementations/ciphers/ciphercommon_ccm.c
+        providers/implementations/ciphers/ciphercommon_ccm_hw.c
+        providers/implementations/ciphers/ciphercommon_gcm.c
+        providers/implementations/ciphers/ciphercommon_gcm_hw.c
+        providers/implementations/ciphers/ciphercommon_hw.c
         providers/implementations/digests/blake2_prov.c
-        providers/implementations/digests/md5_prov.c
-        providers/implementations/digests/blake2s_prov.c
         providers/implementations/digests/blake2b_prov.c
-        providers/implementations/digests/sha3_prov.c
+        providers/implementations/digests/blake2s_prov.c
+        providers/implementations/digests/digestcommon.c
         providers/implementations/digests/md4_prov.c
+        providers/implementations/digests/md5_prov.c
+        providers/implementations/digests/md5_sha1_prov.c
+        providers/implementations/digests/null_prov.c
+        providers/implementations/digests/sha2_prov.c
+        providers/implementations/digests/sha3_prov.c
+        providers/implementations/digests/sm3_prov.c
         providers/implementations/encode_decode/decode_der2key.c
         providers/implementations/encode_decode/decode_epki2pki.c
+        providers/implementations/encode_decode/decode_msblob2key.c
+        providers/implementations/encode_decode/decode_pem2der.c
+        providers/implementations/encode_decode/decode_pvk2key.c
         providers/implementations/encode_decode/decode_spki2typespki.c
         providers/implementations/encode_decode/encode_key2any.c
         providers/implementations/encode_decode/encode_key2blob.c
         providers/implementations/encode_decode/encode_key2ms.c
         providers/implementations/encode_decode/encode_key2text.c
-        providers/implementations/encode_decode/decode_msblob2key.c
-        providers/implementations/encode_decode/decode_pem2der.c
-        providers/implementations/encode_decode/decode_pvk2key.c
         providers/implementations/encode_decode/endecoder_common.c
-        providers/implementations/exchange/ecx_exch.c
-        providers/implementations/exchange/ecdh_exch.c
+        providers/implementations/encode_decode/ml_common_codecs.c
+        providers/implementations/encode_decode/ml_dsa_codecs.c
+        providers/implementations/encode_decode/ml_kem_codecs.c
         providers/implementations/exchange/dh_exch.c
+        providers/implementations/exchange/ecdh_exch.c
+        providers/implementations/exchange/ecx_exch.c
         providers/implementations/exchange/kdf_exch.c
+        providers/implementations/kdfs/argon2.c
+        providers/implementations/kdfs/hkdf.c
+        providers/implementations/kdfs/hmacdrbg_kdf.c
+        providers/implementations/kdfs/kbkdf.c
+        providers/implementations/kdfs/krb5kdf.c
+        providers/implementations/kdfs/pbkdf2.c
+        providers/implementations/kdfs/pkcs12kdf.c
+        providers/implementations/kdfs/pvkkdf.c
+        providers/implementations/kdfs/scrypt.c
+        providers/implementations/kdfs/sshkdf.c
+        providers/implementations/kdfs/sskdf.c
+        providers/implementations/kdfs/tls1_prf.c
+        providers/implementations/kdfs/x942kdf.c
+        providers/implementations/kem/ec_kem.c
+        providers/implementations/kem/ecx_kem.c
+        providers/implementations/kem/kem_util.c
+        providers/implementations/kem/ml_kem_kem.c
+        providers/implementations/kem/mlx_kem.c
         providers/implementations/kem/rsa_kem.c
+        providers/implementations/kem/template_kem.c
         providers/implementations/keymgmt/dh_kmgmt.c
-        providers/implementations/keymgmt/ec_kmgmt.c
         providers/implementations/keymgmt/dsa_kmgmt.c
+        providers/implementations/keymgmt/ec_kmgmt.c
         providers/implementations/keymgmt/ecx_kmgmt.c
         providers/implementations/keymgmt/kdf_legacy_kmgmt.c
         providers/implementations/keymgmt/mac_legacy_kmgmt.c
+        providers/implementations/keymgmt/ml_dsa_kmgmt.c
+        providers/implementations/keymgmt/ml_kem_kmgmt.c
+        providers/implementations/keymgmt/mlx_kmgmt.c
         providers/implementations/keymgmt/rsa_kmgmt.c
-        providers/implementations/kdfs/x942kdf.c
-        providers/implementations/kdfs/sskdf.c
-        providers/implementations/kdfs/tls1_prf.c
-        providers/implementations/kdfs/sshkdf.c
-        providers/implementations/kdfs/scrypt.c
-        providers/implementations/kdfs/krb5kdf.c
-        providers/implementations/kdfs/hkdf.c
-        providers/implementations/kdfs/pbkdf2_fips.c
-        providers/implementations/kdfs/kbkdf.c
-        providers/implementations/kdfs/pbkdf2.c
-        providers/implementations/kdfs/pkcs12kdf.c
+        providers/implementations/keymgmt/slh_dsa_kmgmt.c
+        providers/implementations/keymgmt/template_kmgmt.c
         providers/implementations/macs/blake2b_mac.c
         providers/implementations/macs/blake2s_mac.c
         providers/implementations/macs/cmac_prov.c
@@ -916,10 +1044,15 @@ set(provider_srcs
         providers/implementations/signature/ecdsa_sig.c
         providers/implementations/signature/eddsa_sig.c
         providers/implementations/signature/mac_legacy_sig.c
+        providers/implementations/signature/ml_dsa_sig.c
         providers/implementations/signature/rsa_sig.c
-	    providers/implementations/signature/sm2_sig.c
+        providers/implementations/signature/slh_dsa_sig.c
+        providers/implementations/skeymgmt/aes_skmgmt.c
+        providers/implementations/skeymgmt/generic.c
+        providers/implementations/signature/sm2_sig.c
         providers/implementations/storemgmt/file_store.c
         providers/implementations/storemgmt/file_store_any2obj.c
+        providers/nullprov.c
         providers/prov_running.c
         )
 
@@ -929,7 +1062,7 @@ set(legacy_srcs
         providers/implementations/ciphers/cipher_rc4_hmac_md5.c
         providers/implementations/ciphers/cipher_rc4.c
         providers/implementations/kdfs/pbkdf1.c
-)
+        )
 
 PREPEND(crypto_srcs_with_path ${OPENSSL_PATH} ${provider_srcs} ${legacy_srcs} ${crypto_srcs})
 add_library(crypto ${SSLLIBTYPE} ${crypto_srcs_with_path})
@@ -944,15 +1077,16 @@ target_include_directories(crypto PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/openssl/crypto/ec/curve448/
         ${CMAKE_CURRENT_SOURCE_DIR}/openssl/providers/common/include/
         ${CMAKE_CURRENT_SOURCE_DIR}/openssl/providers/implementations/include/
+        ${CMAKE_CURRENT_SOURCE_DIR}/openssl/providers/fips/include/
         )
 
 target_include_directories(crypto PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/openssl/crypto/modes
-
         )
 
 target_compile_definitions(crypto PRIVATE -DNO_WINDOWS_BRAINDEATH -DMODULESDIR="ossl-modules" -DOPENSSL_BUILDING_OPENSSL)
 target_compile_options(crypto PRIVATE -Wno-missing-field-initializers -Wno-unused-parameter
+        -DMD5_ASM
         -DKECCAK1600_ASM
         -DNDEBUG
         -DECP_NISTZ256_ASM
@@ -964,6 +1098,7 @@ target_compile_options(crypto PRIVATE -Wno-missing-field-initializers -Wno-unuse
         -DOPENSSL_CPUID_OBJ
         -DL_ENDIAN
         -DSTATIC_LEGACY
+        -DOPENSSL_NO_SM2_PRECOMP
         )
 
 if (${ANDROID_ABI} STREQUAL "armeabi-v7a")
@@ -972,13 +1107,17 @@ if (${ANDROID_ABI} STREQUAL "armeabi-v7a")
             -DBSAES_ASM
             -DGHASH_ASM
             -DOPENSSL_BN_ASM_GF2m
+            -D__ARM_MAX_ARCH__=8
             )
-
-
 elseif (${ANDROID_ABI} STREQUAL "arm64-v8a")
     target_compile_definitions(crypto PRIVATE
             -DPOLY1305_ASM
+            -DBSAES_ASM
             -DVPAES_ASM
+            -DVPSM4_ASM
+            -DOPENSSL_SM3_ASM
+            -DSM4_ASM
+            -DECP_SM2P256_ASM
             )
 elseif (${ANDROID_ABI} STREQUAL "x86")
     target_compile_definitions(crypto PRIVATE
@@ -986,7 +1125,6 @@ elseif (${ANDROID_ABI} STREQUAL "x86")
             -DDES_ASM
             -DECP_NISTZ256_ASM
             -DGHASH_ASM
-            -DMD5_ASM
             -DOPENSSL_BN_ASM_GF2m
             -DOPENSSL_BN_ASM_PART_WORDS
             -DOPENSSL_IA32_SSE2
@@ -997,9 +1135,9 @@ elseif (${ANDROID_ABI} STREQUAL "x86_64")
     target_compile_definitions(crypto PRIVATE
             -DAES_ASM
             -DBSAES_ASM
+            -DCMLL_ASM
             -DECP_NISTZ256_ASM
             -DGHASH_ASM
-            -DMD5_ASM
             -DNDEBUG
             -DOPENSSL_BN_ASM_GF2m
             -DOPENSSL_BN_ASM_MONT5
@@ -1007,6 +1145,8 @@ elseif (${ANDROID_ABI} STREQUAL "x86_64")
             -DPOLY1305_ASM
             -DVPAES_ASM
             -DX25519_ASM
+            -DOPENSSL_SM3_ASM
+            -DSM4_ASM
             )
 else ()
     message(FATAL_ERROR "Unknown arch ${ANDROID_ABI} for flags")
@@ -1024,7 +1164,6 @@ else ()
             )
 endif ()
 
-
 ################## SSL Library ###########################################
 
 set(ssl_srcs
@@ -1034,14 +1173,62 @@ set(ssl_srcs
         ssl/d1_srtp.c
         ssl/methods.c
         ssl/pqueue.c
-        ssl/record/dtls1_bitmap.c
+        ssl/priority_queue.c
+        ssl/quic/cc_newreno.c
+        ssl/quic/json_enc.c
+        ssl/quic/qlog.c
+        ssl/quic/qlog_event_helpers.c
+        ssl/quic/quic_ackm.c
+        ssl/quic/quic_cfq.c
+        ssl/quic/quic_channel.c
+        ssl/quic/quic_demux.c
+        ssl/quic/quic_engine.c
+        ssl/quic/quic_fc.c
+        ssl/quic/quic_fifd.c
+        ssl/quic/quic_impl.c
+        ssl/quic/quic_lcidm.c
+        ssl/quic/quic_method.c
+        ssl/quic/quic_obj.c
+        ssl/quic/quic_port.c
+        ssl/quic/quic_rcidm.c
+        ssl/quic/quic_reactor.c
+        ssl/quic/quic_reactor_wait_ctx.c
+        ssl/quic/quic_record_rx.c
+        ssl/quic/quic_record_shared.c
+        ssl/quic/quic_record_tx.c
+        ssl/quic/quic_record_util.c
+        ssl/quic/quic_rstream.c
+        ssl/quic/quic_rx_depack.c
+        ssl/quic/quic_sf_list.c
+        ssl/quic/quic_srt_gen.c
+        ssl/quic/quic_srtm.c
+        ssl/quic/quic_sstream.c
+        ssl/quic/quic_statm.c
+        ssl/quic/quic_stream_map.c
+        ssl/quic/quic_thread_assist.c
+        ssl/quic/quic_tls.c
+        ssl/quic/quic_tls_api.c
+        ssl/quic/quic_trace.c
+        ssl/quic/quic_tserver.c
+        ssl/quic/quic_txp.c
+        ssl/quic/quic_txpim.c
+        ssl/quic/quic_types.c
+        ssl/quic/quic_wire.c
+        ssl/quic/quic_wire_pkt.c
+        ssl/quic/uint_set.c
         ssl/record/rec_layer_d1.c
+        ssl/record/methods/tlsany_meth.c
+        ssl/record/methods/tls_multib.c
+        ssl/record/methods/tls_pad.c
+        ssl/record/methods/tls1_meth.c
+        ssl/record/methods/ssl3_meth.c
+        ssl/record/methods/tls13_meth.c
+        ssl/record/methods/dtls_meth.c
+        ssl/record/methods/ssl3_cbc.c
+        ssl/record/methods/tls_common.c
         ssl/record/rec_layer_s3.c
-        ssl/record/ssl3_buffer.c
-        ssl/record/ssl3_record.c
-        ssl/record/ssl3_record_tls13.c
-        ssl/record/tls_pad.c
-        ssl/s3_cbc.c
+        ssl/rio/poll_builder.c
+        ssl/rio/rio_notifier.c
         ssl/s3_enc.c
         ssl/s3_lib.c
         ssl/s3_msg.c
@@ -1049,7 +1236,6 @@ set(ssl_srcs
         ssl/ssl_cert.c
         ssl/ssl_ciph.c
         ssl/ssl_conf.c
-        ssl/ssl_err.c
         ssl/ssl_init.c
         ssl/ssl_lib.c
         ssl/ssl_mcnf.c
@@ -1079,7 +1265,6 @@ set(ssl_srcs
 PREPEND(ssl_srcs_with_path ${OPENSSL_PATH} ${ssl_srcs})
 add_library(ssl ${SSLLIBTYPE} ${ssl_srcs_with_path})
 target_compile_definitions(ssl PRIVATE -DOPENSSL_BUILDING_OPENSSL)
-
 
 target_link_libraries(ssl crypto)
 

@@ -1,5 +1,5 @@
 [/
- / Copyright (c) 2003-2021 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+ / Copyright (c) 2003-2024 Christopher M. Kohlhoff (chris at kohlhoff dot com)
  /
  / Distributed under the Boost Software License, Version 1.0. (See accompanying
  / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,9 +7,1407 @@
 
 [section:history Revision History]
 
+[heading Asio 1.32.0]
+
+* Fixed an issue in `co_composed` caused by a missing `decay`.
+
+* Fixed an issue in `co_composed` due to a missing reference in a cast to a base
+  class type.
+
+* Changed to use the standard C++20 coroutine feature test macro by default.
+
+* Changed to use `std::aligned_alloc` on Android, when available.
+
+* Fixed an integer conversion warning in `ip::address_v6`, on iOS/tvOS.
+
+* Added missing include of `<malloc.h>` required for `_alloca`.
+
+* Changed to use a standard feature test macro to check if the standard library
+  supports `std::invoke_result`.
+
+* Fixed handling of `file_base::append` in Windows file support.
+
+* Fixed some warnings in IP address to string conversion.
+
+* Added support for using `co_spawn` when exceptions are disabled.
+
+* Fixed `spawn.hpp` header to be self-contained.
+
+* Enabled TLS v1.3 options for WolfSSL.
+
+* Fixed `experimental::coro` implementation to use the correct cancellation
+  slot.
+
+* Fixed `io_context::strand::wrap()` so that its return value has an associated
+  executor.
+
+* Marked `constexpr` global variables as `inline`.
+
+* Documentation fixes.
+
+[heading Asio 1.31.0]
+
+* Changed the `default_completion_token` trait's primary template to select
+  `deferred` as the default completion token. As a result, most asynchronous
+  operations' initiating functions will return a deferred asynchronous operation
+  by default. For example, the completion token can be omitted when calling
+  asynchronous operations from an `awaitable` coroutine:[br]
+  ``
+  awaitable<void> echo(ip::tcp::socket& my_socket)
+  {
+    char data[1024];
+    for (;;)
+    {
+      std::size_t n = co_await my_socket.async_read_some(buffer(data));
+      co_await async_write(my_socket, buffer(data, n));
+    }
+  }
+  ``
+  or when using an operation that accepts asynchronous operations as function
+  objects, such as `experimental::make_parallel_group`:[br]
+  ``
+  experimental::make_parallel_group(
+      my_socket.async_read_some(buffer(data)),
+      my_timer.async_wait()
+    ).async_wait(/* ... */);
+  ``
+
+* Added the `is_completion_condition` trait and used it to add the missing
+  default completion tokens to overloads of `async_read`, `async_read_at`,
+  `async_write`, and `async_write_at`.
+
+* Added the `is_connect_condition` trait and used it disambiguate overloads of
+  `async_connect` when the completion token is defaulted.
+
+* Extended the completion token adapters `as_tuple`, `bind_allocator`,
+  `bind_cancellation_slot`, `bind_executor`, `bind_immediate_executor`, and
+  `redirect_error` to allow them to be used as ['partial completion token
+  adapters]. This means that they can be created without explicitly supplying a
+  completion token. Instead, when the adapter is passed to an asynchronous
+  operation, it will automatically determine the operation's default completion
+  token and adapt it. For example, the expression:[br]
+  ``
+  my_socket.async_read_some(my_buffer, as_tuple)
+  ``
+  will return a deferred asynchronous operation with the completion arguments
+  packaged in a tuple. They may also be applied using the `deferred` operations'
+  pipe operator:[br]
+  ``
+  error_code e;
+  co_await (async_write(my_socket, my_buffer) | redirect_error(e));
+  ``
+
+* Added the `cancel_after` and `cancel_at` completion token adapters. These
+  may be used to adapt any asynchronous operation to emit a cancellation signal
+  after a specified duration or at an absolute time point. For example:[br]
+  ``
+  my_socket.async_read_some(my_buffer,
+      cancel_after(std::chrono::seconds(10),
+        [](error_code e, std::size_t n)
+        {
+          // ...
+        }));
+  ``
+  This cancellation is implemented internally using a `basic_waitable_timer`.
+  By default, this timer is created using the asynchronous operation's I/O
+  executor. If the operation does specify its I/O executor, a timer may be
+  explicitly supplied:[br]
+  ``
+  my_socket.async_read_some(my_buffer,
+      cancel_after(my_timer, std::chrono::seconds(10),
+        [](error_code e, std::size_t n)
+        {
+          // ...
+        }));
+  ``
+  These adapters may also be used as partial completion token adapters, as
+  in:[br]
+  ``
+  co_await my_socket.async_read_some(my_buffer, cancel_after(5s));
+  ``
+  or:[br]
+  ``
+  co_await (
+      async_write(my_socket, my_buffer) | as_tuple
+        | cancel_after(std::chronos::seconds(10)
+    );
+  ``
+  or to adapt other partial completion token adapters:[br]
+  ``
+  co_await my_socket.async_read_some(my_buffer, cancel_after(5s, as_tuple));
+  ``
+  Note that, since the implementation in terms of a timer introduces a parallel
+  `async_wait` operation, it is the responsibility of the caller to ensure that
+  the asynchronous operation is performed in an implicit or explicit strand.
+
+* Changed all completion token adapters to ensure they correctly propagate the
+  asynchronous operation's I/O executor during adaptation.
+
+* Fixed `async_compose` and `co_composed` to correctly indicate if they have
+  an I/O executor.
+
+* Moved `co_composed` out of the `experimental` namespace.
+
+* Added `composed`, which creates an initiation function object from a stateful
+  implementation. It is similar to `co_composed`, but for regular function
+  objects rather than C++20 coroutines. For example:
+  ``
+  struct async_echo_implementation
+  {
+    tcp::socket& socket_;
+    mutable_buffer buffer_;
+    enum { starting, reading, writing } state_;
+
+    template <typename Self>
+    void operator()(Self& self,
+        error_code error,
+        std::size_t n)
+    {
+      switch (state_)
+      {
+        // ...
+      }
+    }
+  };
+
+  template <typename CompletionToken>
+  auto async_echo(tcp::socket& socket,
+      mutable_buffer buffer,
+      CompletionToken&& token)
+  {
+    return async_initiate<CompletionToken,
+      void(error_code, std::size_t)>(
+        composed(
+          async_echo_implementation{socket, buffer,
+            async_echo_implementation::starting}, socket),
+        token, error_code{}, 0);
+  }
+  ``
+  The `async_compose` function has been changed to be a thin wrapper around
+  `composed`. However, unlike `async_compose`, `composed` allows arguments to be
+  passed to the stateful implementation when the operation is initiated.
+
+* Changed the `detached` completion token to work with asynchronous operations
+  that have multiple completion signatures.
+
+* Changed `async_initiate` to allow an empty variadic list of completion
+  signatures, which would indicate that an asynchronous operation never
+  completes.
+
+* Added overloads of `async_initiate` that automatically deduce the type of
+  the completion token. For example:[br]
+  ``
+  async_initiate(co_composed(/* ... */), detached, arg_1, arg_2);
+  ``
+  will deduce the token type from the argument `detached`.
+
+* Added `async_immediate` which implements a trivial asynchronous operation that
+  completes immediately, using an associated immediate executor if available.
+  It is intended for use within asynchronous compositions to make it easier to
+  provide optimised immediate completion.
+
+* Updated the documentation for various asynchronous operations to specify
+  immediate completion in terms of `async_immediate`.
+
+* Enabled SFINAE-based partial specialisation of the `associator` trait.
+
+* Changed to use the recycling allocator as the fallback for all operations,
+  rather than calling the underlying recycling allocation helper functions
+  directly.
+
+* Fixed the `deferred` implementation to ensure that the wrapped initiation
+  function object's copyability is correctly propagated.
+
+* Fixed `experimental::coro` compatibility with clang 15.
+
+* Fixed deduction of a completion handler's default immediate executor type.
+
+* Don't use `ioctl` to modify the non-blocking mode on socket or descriptors
+  that have been assigned, as they may originate from an external source.
+
+* Don't call `fcntl` with `F_SETFL` if the flags aren't changing.
+
+* Don't enable non-blocking mode when performing an `async_wait` operation on
+  sockets or descriptors.
+
+* Update some composed operation examples to destroy the timer object before
+  calling the completion handler.
+
+* Fix `read_until` regex support when `BOOST_ASIO_NO_DYNAMIC_BUFFER_V1` is
+  defined.
+
+[heading Asio 1.30.2]
+
+* Fixed `co_spawn` to correctly propagate exceptions resulting from cancellation
+  to the completion handler.
+
+* Added calls to `std::launder` to fix undefined behaviour in `awaitable<>`
+  internal storage.
+
+* Added missing handling of the `file_base::append` flag in the Windows
+  implementation of file support.
+
+* Updated the socket and descriptor implementations to add more cases where they
+  will fall back to `fcntl` if a call to `ioctl` fails.
+
+* Fixed a compile error that occurred when channels and `experimental::coro`
+  were both used in the same translation unit.
+
+* Added missing CancellationSlot type requirements to documentation.
+
+* Minor documentation updates.
+
+[heading Asio 1.30.1]
+
+* Fixed the `async_result` primary template's concept checking to correctly
+  handle lvalue-qualified completion signatures.
+
+* Fixed some compile errors that could arise when using the `bind_allocator`,
+  `bind_executor`, `bind_immediate_executor` and `bind_cancellation_slot`
+  completion token adapters to adapt each other.
+
+* Changed the `experimental::ranged_parallel_group` operation so that it moves
+  the `completion_order` vector when invoking the completion handler.
+
+* Fixed the [^asio/experimental/parallel_group.hpp] header so that it is
+  self-contained.
+
+* Fixed some warnings about deprecated implicit copy constructors on
+  `ip::basic_resolver_query`, `io_context::strand`, and `coroutine`.
+
+* Updated the version specification used to initialise Winsock.
+
+* Fixed the documentation hyperlinks for the deduced return types of
+  asynchronous operations' initiating functions.
+
+[heading Asio 1.30.0]
+
+* Fixed compatibility between `any_completion_handler` and compilation using
+  `ASIO_USE_TS_EXECUTOR_AS_DEFAULT`.
+
+* Fixed a crash that may occur when attempting to access a default-constructed
+  `any_completion_handler` object's associators.
+
+* Fixed `ssl::stream<>` class's `async_handshake` operation so that it works
+  with a defaulted completion token.
+
+* Updated all examples to use C++11 as the minimum language standard.
+
+[heading Asio 1.29.0]
+
+* Changed to require C++11 as the minimum language standard.
+
+* Removed deprecated functionality from the `asio::execution` namespace.
+
+* Removed deprecated invocation and allocation hooks.
+
+* Added compatibility between Asio's placeholders and `std::bind`.
+
+* Added `try_send_via_dispatch` and `try_send_n_via_dispatch` functions to
+  channels.
+
+* Improved C++11 support for multi-signature channels.
+
+* Fixed compatibility between channel asynchronous operations and
+  `any_completion_handler`.
+
+* Added missing equality operators for mixed property types belonging to the
+  same category.
+
+* Fixed an issue where `spawn`-based stackful coroutines would terminate the
+  program when used with asynchronous operations that have a completion
+  signature starting with `std::exception_ptr`.
+
+[heading Asio 1.28.2]
+
+* Fixed the completion token adapters `bind_allocator`, `bind_cancellation_slot`
+  and `bind_immediate_executor` to not require a `return_type` type alias in
+  the adapted `async_result` specialisation.
+
+* Fixed a potental crash due to an object lifetime issue in the `co_spawn`
+  operation's cancellation support.
+
+* Enabled compiler-supported thread locals on more target platforms, using the
+  `thread_local` keyword if available.
+
+* Fixed the documentation of the per-operation cancellation behaviour for
+  `experimental::co_composed` to correctly state that terminal cancellation is
+  enabled by default.
+
+* Documented the per-operation cancellation behaviour of `async_compose`.
+
+* Added `bind_immediate_executor` to the `Completion Token Adapters` overview.
+
+* Added an example illustrating how to use an `experimental channel` for
+  mutual exclusion between cooperating asynchronous actors.
+
+* Added an example showing how to write a minimal completion executor.
+
+[heading Asio 1.28.1]
+
+* Added missing compatibility with `associated_immediate_executor` to
+  `any_completion_handler`.
+
+* Fixed a null pointer dereference that occurs when using `query`, `require` or
+  `prefer` with an empty `any_executor`.
+
+* Added a workaround in `experimental::coro` for a spurious syntax error when
+  compiling with MSVC.
+
+* Fixed an integer truncation issue in per-operation cancellation, when using
+  the reactor backend on 64-bit Windows.
+
+* Added a compile-time check for a minimum Linux kernel version of 5.10, when
+  [^io_uring] support is enabled.
+
+* Fixed a compile error in the converting move constructors for
+  `experimental::basic_channel` and `experimental::basic_concurrent_channel`.
+
+* Fixed a memory leak on some `signal_set` error handling code paths.
+
+* Fixed `bad_address_cast` to not use a deprecated implicit copy constructor.
+
+* Fixed a copy/paste error in the `dev_poll_reactor` backend.
+
+* Fixed the [^io_uring] backend to ensure the internal timeout operations, used
+  to implement `io_context::run_for` and `io_context::run_until`, are
+  cleaned up correctly.
+
+* Eliminated some duplicated state in the `co_spawn` implementation's entry
+  point, reducing memory consumption.
+
+* Added c++14 echo examples to boostify script.
+
+[heading Asio 1.28.0]
+
+* Added missing handler tracking source location support to `awaitable<>`-based
+  coroutine's ability to `co_await` asynchronous operations packaged as function
+  objects.
+
+* Add missing handler tracking source location support to `co_composed`.
+
+* Fixed suppression of spurious 'potential null dereference' warnings, to work
+  with older compilers.
+
+* Fixed a bug where passing the deprecated `const_buffers_1` and
+  `mutable_buffers_1` types to `asio::buffer()` would result in the contiguous
+  iterator overloads being incorrectly chosen.
+
+* Disabled the runtime Windows version test unless targeting older Windows
+  versions.
+
+* Fixed compatibility between buffered stream wrappers and move-constructible
+  streams, such as `ssl::stream<>`.
+
+* Marked `ip::address_v4::to_ulong` as deprecated in the documentation.
+
+* Fixed shadowed variable warnings.
+
+* Fixed `basic_socket_acceptor::async_accept` concept requirement checking to
+  be compatible with lambdas that have a deduced return type.
+
+* Fixed a feature detection macro used in `use_future`'s compatibility traits.
+
+* Fixed `as_tuple` compatibility with legacy completion tokens.
+
+* Fixed `redirect_error` compatibility with new completion tokens.
+
+* Fixed a potential, Windows-specific program termination due to exceptions that
+  should have been allowed to escape from a destructor.
+
+* Fixed `this_coro` to prevent inadvertent `co_await` of boolean expressions.
+
+* Fixed result handling in `experimental::use_coro` implementation.
+
+* Fixed variadic template emulation for `is_async_operation` and
+  `completion_signature_of`.
+
+* Fixed incorrect reuse of a moved-from result in `experimental::promise`.
+
+* Fixed `experimental::coro` use with custom allocators.
+
+* Fixed clean up of internal I/O object structures when using [^io_uring].
+
+* Use cached offset when seeking a file with seek_cur on Windows.
+
+* Added immediate completion to asynchronous operation requirements.
+
+* Added `any_completion_handler<>`, `co_composed`, and immediate completion
+  support to the documentation overview.
+
+* Added buffer literals to the documentation.
+
+* Added a link to the
+  [@https://github.com/chriskohlhoff/asio-debugger-extensions Asio debugger
+  extensions] repository.
+
+[heading Asio 1.27.0]
+
+* Added the ability to customise the execution of a completion handler when an
+  operation completes immediately. This change adds the
+  `associated_immediate_executor` associator trait, `bind_immediate_executor`
+  function, and `immediate_executor_binder` adapter. When a supported operation
+  completes immediately (that is, within the initiating function) the
+  associated immmediate executor is obtained, and the completion handler is
+  delivered through that executor as if by using `asio::dispatch` on that
+  executor. By default, the immediate executor delivers the completion handler
+  as if using `asio::post` via the operation's I/O executor. For example, to
+  allow a recursive call to the completion handler of an `async_read_some`
+  operation, we may specify that immediate completion is delivered via a
+  `system_executor`:[br]
+  ``
+  my_socket.async_read_some(my_buffer,
+      bind_immediate_executor(
+        system_executor(),
+        [](error_code e, size_t n)
+        {
+          // ...
+        }
+      )
+    );
+  ``[br]
+  Immediate execution is currently supported for asynchronous operations on
+  reactor-based sockets and descriptors, and for asynchronous operations on
+  channels.
+
+* Added user-defined literals for buffer types. The `_buf` literal suffix,
+  defined in namespace `asio::buffer_literals`, may be used to create
+  const_buffer objects from string, binary integer, and hexadecimal integer
+  literals. These buffer literals may be arbitrarily long. For example:[br]
+  [pre
+  using namespace asio::buffer_literals;
+
+  asio::const_buffer b1 = "hello"_buf;
+  asio::const_buffer b2 = 0xdeadbeef_buf;
+  asio::const_buffer b3 = 0x01234567'89abcdef'01234567'89abcdef_buf;
+  asio::const_buffer b4 = 0b1010101011001100_buf;
+  ][br]
+  The memory associated with a buffer literal is valid for the lifetime of the
+  program. This means that the buffer can be safely used with asynchronous
+  operations:[br]
+  ``
+  async_write(my_socket, "hello"_buf, my_handler);
+  ``[br]
+
+* Added a new protocol type `local::seq_packet_protocol` to represent `AF_UNIX`
+  with `SOCK_SEQPACKET`.
+
+* Exposed `sigaction()` flags via optional argument to `signal_set::add`. When
+  registering a signal, it is now possible to pass flags that specify the
+  behaviour associated with the signal. These flags are specified as an enum
+  type in a new class, signal_set_base, and are passed to the underlying
+  `sigaction()` call. For example:[br]
+  ``
+  asio::signal_set sigs(my_io_context);
+  sigs.add(SIGINT, asio::signal_set::flags::restart);
+  ``[br]
+  Specifying flags other than `flags::dont_care` will fail unless `sigaction()`
+  is supported by the target operating system. Since signal registration is
+  global, conflicting flags (multiple registrations that pass differing flags
+  other than `flags::dont_care`) will also result in an error.
+
+* Change `allocator_binder`, `executor_binder`, and `cancellation_slot_binder`
+  to support detection of unspecialised associators.
+
+* Fixed ambiguity in `associated_cancellation_slot<reference_wrapper>::get()`.
+
+* Fixed `awaitable` handling for completion signatures containing
+  `std::exception_ptr`.
+
+* Fixed `experimental::channel` `try_send` failure after a `cancel`.
+
+* Fixed `thread_pool::join()` deadlock when the pool has no internal threads.
+
+* Fixed pipe `release()` when using [^io_uring].
+
+* Fixed a data initialisation issue in the [^io_uring] backend.
+
+* Fixed a dangling reference issue in the execution context overload of
+  `get_associated_executor`.
+
+* Ensured buffered messages can still be received when an
+  `experimental::channel` is closed.
+
+* Fixed the `any_completion_handler` assignment operator to work correctly.
+
+* Constrained the constructor of the move-only class template
+  `any_completion_handler` to prevent accidental copying
+
+* Suppressed spurious 'potential null dereference' warnings.
+
+* Changed to use `uint64_t` for OpenSSL options, to match OpenSSL 3.
+
+* Fixed `deferred` interoperability with multiple completion signatures.
+
+* Fixed channels to support C++11 and later. Note that for C++11 and C++14,
+  support is limited to channels with a single completion signature, or
+  channels with a void() signature (plus the error signature added by the
+  channel traits).
+
+* Added `any_completion_handler` to the documentation.
+
+[heading Asio 1.26.0]
+
+* Fixed `spawn` and `co_spawn` implementations to dispatch cancellation
+  handlers on the correct executor. When a completion handler uses a specified
+  (i.e. non-default) associated executor, cancellation handlers are dispatched
+  to the executor that was passed to `spawn()` or `co_spawn()`.
+
+* Fixed `spawn` to ensure the completion handler is dispatched through the
+  correct executor.
+
+* Changed to use `snprintf` rather than `sprintf` on latest Xcode, to address
+  deprecation warnings.
+
+* Fixed compatibility between `co_spawn` and `any_completion_handler`.
+
+* Fixed the arguments passed to `select_reactor::run` when it is run on an
+  internal thread.
+
+* Fixed compilation errors when `(BOOST_)ASIO_DISABLE_SMALL_BLOCK_RECYCLING` is
+  defined.
+
+* Updated detection of C++20 coroutine support on clang 14 and later.
+  This includes the ability to use coroutines with libstdc++.
+
+* Changed standard library feature detection to always enable
+  `std::invoke_result` when targeting C++17 or later.
+
+* Fixed detection of return type deduction with MSVC.
+
+* Added a missing include in `experimental::coro` implementation.
+
+* Updated the asynchronous operation requirements to relax the requirements on
+  the associated executor.
+
+* Added [^io_uring] to the implementation notes.
+
+[heading Asio 1.25.0]
+
+* Added the `consign` completion token adapter, which can be used to attach
+  additional values to a completion handler. This is typically used to keep at
+  least one copy of an object, such as a smart pointer, alive until the
+  completion handler is called. For example:[br]
+  ``
+  auto timer1 = std::make_shared<asio::steady_timer>(my_io_context);
+  timer1->expires_after(std::chrono::seconds(1));
+  timer1->async_wait(
+      asio::consign(
+        [](asio::error_code ec)
+        {
+          // ...
+        },
+        timer1
+      )
+    );
+  ``[br]
+
+* Added `any_completion_handler<>`, which can be used to type-erase completion
+  handlers. A typical use case is to enable separate compilation of
+  asynchronous operation implementations. For example:[br]
+  ``
+  // Header file:
+
+  void async_sleep_impl(
+      asio::any_completion_handler<void(asio::error_code)> handler,
+      asio::any_io_executor ex, std::chrono::nanoseconds duration);
+
+  template <typename CompletionToken>
+  inline auto async_sleep(asio::any_io_executor ex,
+      std::chrono::nanoseconds duration, CompletionToken&& token)
+  {
+    return asio::async_initiate<
+      CompletionToken, void(asio::error_code)>(
+        async_sleep_impl, token, std::move(ex), duration);
+  }
+
+  // Separately compiled source file:
+
+  void async_sleep_impl(
+      asio::any_completion_handler<void(asio::error_code)> handler,
+      asio::any_io_executor ex, std::chrono::nanoseconds duration)
+  {
+    auto timer = std::make_shared<asio::steady_timer>(ex, duration);
+    timer->async_wait(asio::consign(std::move(handler), timer));
+  }
+  ``[br]
+
+* Added `experimental::co_composed` which facilitates a lightweight
+  implementation of user-defined asynchronous operations using C++20
+  coroutines. The following example illustrates a simple asynchronous operation
+  that implements an echo protocol in terms of a coroutine:[br]
+  ``
+  template <typename CompletionToken>
+  auto async_echo(tcp::socket& socket,
+      CompletionToken&& token)
+  {
+    return asio::async_initiate<
+      CompletionToken, void(asio::error_code)>(
+        asio::experimental::co_composed<
+          void(asio::error_code)>(
+            [](auto state, tcp::socket& socket) -> void
+            {
+              try
+              {
+                state.throw_if_cancelled(true);
+                state.reset_cancellation_state(
+                  asio::enable_terminal_cancellation());
+
+                for (;;)
+                {
+                  char data[1024];
+                  std::size_t n = co_await socket.async_read_some(
+                      asio::buffer(data), asio::deferred);
+
+                  co_await asio::async_write(socket,
+                      asio::buffer(data, n), asio::deferred);
+                }
+              }
+              catch (const asio::system_error& e)
+              {
+                co_return {e.code()};
+              }
+            }, socket),
+        token, std::ref(socket));
+  }
+  ``[br]
+
+* Add range-based experimental::make_parallel_group() overloads that may be used
+  to launch a dynamically-sized set of asynchronous operations, where all
+  operations are the same type. For example:[br]
+  ``
+  using op_type = decltype(
+      socket1.async_read_some(
+        asio::buffer(data1),
+        asio::deferred
+      )
+    );
+
+  std::vector<op_type> ops;
+  ops.push_back(
+      socket1.async_read_some(
+        asio::buffer(data1),
+        asio::deferred
+      )
+    );
+  ops.push_back(
+      socket2.async_read_some(
+        asio::buffer(data2),
+        asio::deferred
+      )
+    );
+
+  asio::experimental::make_parallel_group(ops).async_wait(
+      asio::experimental::wait_for_all(),
+      [](
+          std::vector<std::size_t> completion_order,
+          std::vector<asio::error_code> e,
+          std::vector<std::size_t> n
+        )
+      {
+        for (std::size_t i = 0; i < completion_order.size(); ++i)
+        {
+          std::size_t idx = completion_order[i];
+          std::cout << "socket " << idx << " finished: ";
+          std::cout << e[idx] << ", " << n[idx] << "\n";
+        }
+      }
+    );
+  ``[br]
+  Thanks go to Klemens Morgenstern for supplying part of this implementation.
+
+* Added `any_completion_executor`, a type-erased wrappers for executors that
+  are associated with completion handlers.
+
+* Added missing `context` query to use_future's executor.
+
+* Added nothrow constructor overloads to `execution::any_executor<>` and
+  `any_io_executor`.
+
+* Optimised representation of empty `execution::any_executor` objects to improve
+  the performance of copy and move operations.
+
+* Added an `associated_cancellation_slot` specialisation for
+  `std::reference_wrapper`.
+
+* Changed I/O objects to return their executors by const reference.
+
+* Changed associated to use deduced return types for all two-argument `get`
+  functions.
+
+* Fixed `spawn` implementation to catch unhandled exceptions and rethrow them
+  outside of the spawned "thread".
+
+* Fixed cleanup of of terminal-state `spawn` "thread" objects.
+
+* Changed semantics of `dispatch` to mean the executor is used as-is. An
+  execution context's default executor is imbued with the possibly-blocking
+  property.
+
+* Deprecated the `execution::execute` customisation point. Use `execute` as a
+  member function.
+
+* Deprecated the concepts, traits, functions and customisation points related to
+  senders and receivers.
+
+* Added a C++11 `parallel_group` example.
+
+* Fixed example code to not use the deprecated conversion of a resolve result to
+  an endpoint.
+
+* Fixed an ambiguity in `experimental::channel_traits` specialisations.
+
+* Added a specialised channel implementation for the  for `R(error_code)`
+  signature.
+
+* Made `cancelled()` public on the `async_compose` 'self' object.
+
+* Added io_executor_type and get_io_executor to the `async_compose` 'self'
+  object.
+
+* Fixed implementation of `release()` for Windows overlapped handles.
+
+* Enabled deferred awaiting for `experimental::coro`, regularised
+  `experimental::use_coro`, and fixed allocator handling. This means that
+  `use_coro` does not return a coro object, just like use_awaitable does, i.e.
+  it's an overhead that buys us type erasure. Allocators can now be set for
+  `coro` by including `allocator_arg` in the coro signature.
+
+* Cleaned up `experimental::promise` and made it an asynchronous operation
+  object.
+
+* Constrained `post`/`defer` overloads on ability to require `blocking.never`.
+
+* Changed descriptor implementation to fall back to `fcntl` if `ioctl` fails
+  with `ENOTTY` when setting non-blocking mode.
+
+[heading Asio 1.24.0]
+
+* Improved the performance of `awaitable<>`-based coroutines when they directly
+  `co_await` an asynchronous operation, by eliminating the copy of the operation
+  object in `await_transform`.
+
+* Improved the performance of `spawn()`-based stackful coroutines by storing a
+  reference to the yield context in the completion handler, rather than storing
+  a copy of the executor.
+
+* Fixed a C++03 build error by disabling `index_sequence` emulation when
+  variadic templates are unavailable.
+
+* Fixed detection of `std::aligned_alloc` for older Apple platforms.
+
+* Removed faulty assertions from `experimental::coro` implementation.
+
+* Added defence against Qt-defined macros when building with Intel C++.
+
+* Ensured that a `spawn()`-based stackful coroutine is cleaned up immediately
+  after it completes.
+
+* Changed the implementation of the `select_reactor`, on Windows, to ensure that
+  any exception resulting from failure to recreate its interrupter's sockets
+  will be allowed to propagate out through `io_context::run()`.
+
+* Changed the MSVC version used for the `system_error` workaround, as more
+  recent runtime redistributables appear to have fixed the issue.
+
+* Changed the `async_compose` example to use a return type compatible with the
+  new `async_result` form.
+
+[heading Asio 1.23.0]
+
+* Added a deduced trailing return type, using `decltype`, to all asynchronous
+  operations' initiating functions when using C++11. This change enables the
+  new form of `async_result`, where the return type can vary per operation,
+  for C++11.
+
+* Moved `append`, `prepend`, `as_tuple`, and `deferred` to the `asio`
+  namespace, and made them compatible with C++11. These are no longer
+  experimental facilities, although the names have temporarily been retained
+  under the `asio::experimental` namespace for backwards compatibility.
+
+* Added `buffer()` overloads for contiguous containers, such as `std::span`.
+
+* Added the ability for `awaitable<>`-based coroutines to directly `co_await`
+  operations that are packaged as function objects. For example, using
+  `deferred`:[br]
+  ``
+  asio::awaitable<void> my_coro()
+  {
+    asio::steady_timer timer(co_await asio::this_coro::executor);
+    timer.expires_after(std::chrono::seconds(5));
+
+    co_await timer.async_wait(asio::deferred);
+  }
+  ``
+  or with a handcrafted function object:[br]
+  ``
+  asio::awaitable<void> my_coro()
+  {
+    asio::steady_timer timer(co_await asio::this_coro::executor);
+    timer.expires_after(std::chrono::seconds(5));
+
+    co_await [&](auto&& token)
+    {
+      return timer.async_wait(std::forward<decltype(token)>(token));
+    };
+  }
+  ``[br]
+
+* Changed `spawn()` to be a completion token-based asynchronous operation. This
+  introduces new `spawn()` overloads that conform to the requirements for
+  asynchronous operations. For example:[br]
+  ``
+  std::string do_read(asio::yield_context yield)
+  {
+    char data[1024];
+    size_t n = my_socket.async_read_some(asio::buffer(data), yield);
+    return std::string(data, n);
+  }
+
+  asio::spawn(my_executor, do_read,
+      [](std::exception_ptr ex, std::string result)
+      {
+        // ...
+      });
+  ``
+  These new `spawn()` overloads support cancellation, and the
+  `basic_yield_context` completion token has also been enhanced to support
+  move-only and variadic result types. When targeting C++11 and later, these
+  functions are implemented in terms of Boost.Context directly. The existing
+  overloads have been retained but are deprecated.
+
+* Added the `is_async_operation` trait and `async_operation` concept. The
+  `is_async_operation` trait may be used to determine if a function object, and
+  optional arguments, may be called to initiate an asynchronous operation. For
+  example, when using `deferred`:[br]
+  ``
+  auto d = my_timer.async_wait(asio::deferred);
+  static_assert(asio::is_async_operation<decltype(d)>::value);
+  ``[br]
+  or with a handcrafted asynchronous operation:[br]
+  ``
+  struct my_async_op
+  {
+    asio::ip::tcp::socket& socket_ = ...;
+
+    template <typename Token>
+    auto operator()(asio::const_buffer data, Token&& token)
+    {
+      return asio::async_write(socket_, data,
+          std::forward<Token>(token));
+    }
+  };
+
+  static_assert(
+      asio::is_async_operation<
+        my_async_op, asio::const_buffer>::value);
+  ``[br]
+
+* Added the `completion_signature_of` trait. The `completion_signature_of`
+  trait (and corresponding type alias `completion_signature_of_t`) may be used
+  to determine the completion signature of an asynchronous operation. For
+  example:[br]
+  ``
+  auto d = my_timer.async_wait(asio::deferred);
+  using sig = asio::completion_signature_of<decltype(d)>::type;
+  // sig is void(error_code)
+  ``[br]
+  or with a handcrafted asynchronous operation:[br]
+  ``
+  struct my_async_op
+  {
+    asio::ip::tcp::socket& socket_ = ...;
+
+    template <typename Token>
+    auto operator()(asio::const_buffer data, Token&& token)
+    {
+      return asio::async_write(socket_, data,
+          std::forward<Token>(token));
+    }
+  };
+
+  using sig =
+    asio::completion_signature_of<
+      my_async_op, asio::const_buffer>::type;
+  // sig is void(error_code, size_t)
+  ``[br]
+
+* Added converting move construction/assignment to posix descriptors, serial
+  ports, pipes, Windows `object_handle`, Windows stream handles, and Windows
+  random-access handles.
+
+* Added `release()` member functions to pipes, Windows stream handles, and
+  Windows random-access handles.
+
+* Enabled support for `Endpoint` implementations that return `void` pointers
+  from their `data()` member functions, as per the documented `Endpoint` type
+  requirements.
+
+* Removed `all()` and `race()` from `experimental::promise`, as
+  `experimental::parallel_group` covers this functionality.
+
+* Added source locations to exceptions and error codes produced by the
+  synchronous and asynchronous operations.
+
+* Fixed compatibility with OpenSSL 3.0.4 and later.
+
+* Fixed compatibility with with [^-masm=intel].
+
+* Explicitly stated that socket `shutdown()` calls are thread-safe with respect
+  to certain other synchronous operations on the same socket.
+
+* Optimised the move construction of I/O objects where only the executor type
+  differs.
+
+* Fixed the detection of `std::invoke_result` for clang/libc++.
+
+* Fixed an issue where `experimental::parallel_group` initiation incorrectly
+  moved arguments instead of forwarding them.
+
+* Fixed a sequencing issue in the implementation of `post()`, `dispatch()`,
+  and `defer()`, where the the associated allocator may be obtained from an
+  already moved-from completion handler.
+
+* Fixed the `awaitable<>` implementation to propagate exceptions from awaited
+  initiation functions through the current completion handler.
+
+* Fixed detection of `std::aligned_alloc` with [^gcc].
+
+* Changed to avoid using the soon-to-be-deprecated `std::aligned_storage` on
+  newer compilers.
+
+* Fixed various compiler warnings.
+
+* Updated all composed operations examples, and the C++11 timeouts example, to
+  use the new `async_result` form.
+
+* Added composed operation and coroutine examples for C++20.
+
+* Added pkg-config support.
+
+[heading Asio 1.22.2]
+
+* On Windows, changed the file support to open files using the same sharing mode
+  as `fopen()`.
+
+* On Linux, fixed the UNIX domain sockets implementation to correctly handle
+  `EAGAIN` as an indication of an in-progress connect operation.
+
+* Fixed `experimental::basic_channel::reset()` and
+  `experimental::basic_concurrent_channel::reset()` so that they work correctly
+  for an unclosed channel.
+
+* Fixed potential undefined behaviour in the `experimental::promise` operations
+  `race()` and `all()`.
+
+* Changed the `co_spawn` implementation to explicitly dispatch cancellation
+  signals through the specified executor, if the the completion handler has an
+  associated executor of its own.
+
+* Added more detailed reference documentation to `make_strand()`,
+  `make_work_guard()`, `ip::address_v4`, `ip::address_v6`,
+  `experimental::basic_channel`, and `experimental::basic_concurrent_channel`.
+
+* Re-arranged and extended the Overview documentation to cover files, pipes,
+  `async_compose`, `experimental::deferred`, `experimental::parallel_group`,
+  `experimental::promise`, channels, and completion token adapters.
+
+* Reverted the `io_context` reference documentation to use `executor_work_guard`
+  when preventing the `io_context` from running out of work.
+
+* Removed references to `deadline_timer` from the Overview documentation.
+
+* Added reference documentation cross-references to asynchronous model elements.
+
+[heading Asio 1.22.1]
+
+* Added `bind_allocator`, to simplify associating a custom allocator with a
+  completion token or handler.
+
+* Added the `file_base::sync_all_on_write` flag, which maps to `O_SYNC` on POSIX
+  and `FILE_FLAG_WRITE_THROUGH` on Windows.
+
+* Added missing implementation of `basic_file::release()`.
+
+* Added per-operation cancellation support to signal sets.
+
+* Exposed `recycling_allocator` as part of the public interface.
+
+* Added the `nodiscard` attribute to the following functions:
+  * `bind_allocator()`
+  * `bind_cancellation_slot()`
+  * `bind_executor()`
+  * `buffer()`
+  * `dynamic_buffer()`
+  * `experimental::append()`
+  * `experimental::as_single()`
+  * `experimental::as_tuple()`
+  * `experimental::make_parallel_group()`
+  * `experimental::prepend()`
+  * `get_associated_allocator()`
+  * `get_associated_cancellation_slot()`
+  * `get_associated_executor()`
+  * `make_work_guard()`
+
+* Added compatibility with OpenSSL 3.0, particularly when deprecated
+  functionality is disabled.
+
+* Added support for adopting an existing `SSL*` into an `ssl::stream<>`.
+
+* Enabled `executor_work_guard<>` even when `ASIO_NO_TS_EXECUTORS` is defined.
+
+* Enabled movable socket iostreams when using clang.
+
+* Fixed `bind_cancellation_slot` compatibility with legacy completion tokens.
+
+* Fixed `bind_executor` compatibility with legacy completion tokens.
+
+* Fixed `associator` specialisations for `experimental::append` and
+  `experimental::prepend`, to correctly propagate the associated allocator,
+  executor, and cancellation slot.
+
+* Fixed 'zero as null pointer constant' warning in C++20 coroutines
+  implementation of `awaitable`.
+
+* Ensured concurrency hint preprocessor macros are made available when
+  [^asio/io_context.hpp] is included.
+
+* Fixed issue where the primary `associated_allocator` template was not
+  correctly detecting the nested `T::allocator_type`.
+
+* Fixed [^io_uring] implementation of `async_receive_from` operation for
+  sockets.
+
+* Fixed [^io_uring] implementation of `write_some_at` operation for files.
+
+* Changed [^io_uring] implementation to correctly check that it is not the
+  default before registering with reactor.
+
+* Fixed a circular inclusion issue when using [^io_uring] in some build
+  configurations.
+
+* Fixed `experimental::coro`'s per-operation cancellation to clear the slot at
+  completion of each operation.
+
+* Fixed memory management in `experimental::promise`'s type-erased completion
+  handlers.
+
+* Fixed move `operator=` implementation for `ssl::stream`.
+
+* Fixed `any_io_executor` implementation to work when both
+  `ASIO_USE_TS_EXECUTOR_AS_DEFAULT` and `ASIO_SEPARATE_COMPILATION` are
+  defined.
+
+* Fixed implementation of `basic_socket::at_mark()` when using the
+  `sockatmark()` system call.
+
+* Changed the recycling allocator to use the default alignment as the minimum
+  alignment for allocations.
+
+* Added additional standard header file includes, as required by newer
+  compilers.
+
+* Added a workaround for apparent coroutine codegen bug with Apple's clang.
+
+* Fixed various warnings in the examples and unit tests.
+
+* Added a C++11 example showing file descriptor passing over local sockets.
+  Thanks to Heiko Hund for providing this example.
+
+* Added C++14 examples of wrapping callback-based APIs in asynchronous
+  operations.
+
+* Added an overview of Asio's asynchronous model to the documentation.
+
+* Reworked reference documentation in terms of completion tokens.
+
+* Updated documentation of asynchronous operation requirements to use new
+  completion token form.
+
+* Updated documentation for `dispatch()`, `post()`, and `defer()` to cover both
+  the old and new executor forms.
+
+* Documented per-operation cancellation for serial ports.
+
+* Clarified the non-concurrency guarantees made for allocators.
+
+[heading Asio 1.22.0]
+
+* Improved error messages emitted by `ssl` facilities.
+
+* Fixed `bind_executor` compatibility with completion tokens.
+
+* Fixed build errors when `ASIO_USE_TS_EXECUTOR_AS_DEFAULT` is defined.
+
+* Fixed corruption, cleanup issues in channel implementation.
+
+* Added missing move assignment operator to `awaitable<>`.
+
+* Fixed an access violation when using coroutines with MSVC, due to incorrect
+  alignment of allocated memory.
+
+* Fixed a cleanup issue in `experimental::parallel_group` that occured when the
+  execution context was shut down with parallel operations still pending.
+
+* Fixed header inclusion order problem when io_uring is enabled.
+
+* Eliminated `shared_ptr` use from `experimental::coro` `co_spawn()`
+  implementation.
+
+* Prevented `async_resume` from being called on `experimental::coro`
+  temporaries.
+
+* Made `awaitable_operators.hpp` header self-contained.
+
+* Added clarifications to the documentation on concurrency hints.
+
+* Added documentation on error handling techniques for C++20 coroutines.
+
+* Added channel-based proxy example.
+
+* Regenerated `ssl` certificates used in examples.
+
+[heading Asio 1.21.0]
+
+* Added an io_uring backend. This backend may be used for all I/O objects,
+  including sockets, timers, and posix descriptors.[br]
+  [br]
+  The backend is disabled by default, and must be enabled by defining both
+  `ASIO_HAS_IO_URING` and `ASIO_DISABLE_EPOLL`.[br]
+  [br]
+  Simply defining `ASIO_HAS_IO_URING` alone will enable the backend without
+  using it for the existing I/O objects. This allows it to be used for I/O
+  objects that require io_uring support, such as files.[br]
+  [br]
+  This support depends on the [^liburing] library at both compile and link
+  time. Add `-luring` to your list of libraries for linking.
+
+* Added support for files. This introduces new classes for stream-oriented and
+  random-access files. For example, to write to a newly created stream-oriented
+  file:[br]
+  ``
+  asio::stream_file file(
+      my_io_context, "/path/to/file",
+      asio::stream_file::write_only
+        | asio::stream_file::create
+        | asio::stream_file::truncate);
+
+  file.async_write_some(my_buffer,
+      [](error_code e, size_t n)
+      {
+        // ...
+      });
+  ``[br]
+  or to read from a random-access file:[br]
+  ``
+  asio::random_access_file file(
+      my_io_context, "/path/to/file",
+      asio::random_access_file::read_only);
+
+  file.async_read_some_at(1234, my_buffer,
+      [](error_code e, size_t n)
+      {
+        // ...
+      });
+  ``[br]
+  This feature currently supports I/O completion ports on Windows, and io_uring
+  on Linux (define `ASIO_HAS_IO_URING` to enable).
+
+* Added support for portable pipes. This change add supports for pipes on POSIX
+  and Windows (when I/O completion ports are available). For example, to create
+  and use a connected pair of pipe objects:[br]
+  ``
+  asio::readable_pipe read_end;
+  asio::writable_pipe write_end;
+  asio::connect_pipe(read_end, write_end);
+
+  write_end.async_write_some(my_write_buffer,
+      [](error_code e, size_t n)
+      {
+        // ...
+      });
+
+  read_end.async_read_some(my_read_buffer,
+      [](error_code e, size_t n)
+      {
+        // ...
+      });
+  ``[br]
+
+* Added support for registered buffers. The `mutable_registered_buffer` and
+  `const_registered_buffer` classes are buffer sequence types that represent
+  registered buffers. These buffers are obtained by first performing a buffer
+  registration:[br]
+  ``
+    auto my_registration =
+      asio::register_buffers(
+          my_execution_context,
+          my_buffer_sequence);
+  ``[br]
+  The registration object must be maintained for as long as the buffer
+  registration is required. The supplied buffer sequence represents the
+  memory location or locations that will be registered, and the caller
+  must ensure they remain valid for as long as they are registered. The
+  registration is automatically removed when the registration object is
+  destroyed. There can be at most one active registration per execution
+  context.[br]
+  [br]
+  The registration object is a container of registered buffers. Buffers
+  may be obtained from it by iterating over the container, or via direct
+  index access:[br]
+  ``
+    asio::mutable_registered_buffer my_buffer
+      = my_registration[i];
+  ``[br]
+  The registered buffers may then be passed directly to operations:[br]
+  ``
+  asio::async_read(my_socket, my_buffer,
+      [](error_code ec, size_t n)
+      {
+        // ...
+      });
+  ``[br]
+  Buffer registration supports the io_uring backend when used with read and
+  write operations on descriptors, files, pipes, and sockets. For portability,
+  the facility may be used on other platforms, but the registered buffers will
+  behave as normal buffers.
+
+* Added experimental support for channels. This adds templates
+  `experimental::basic_channel` and `experimental::basic_concurrent_channel`,
+  with aliases `experimental::channel` and `experimental::concurrent_channel`.
+  Channels may be used to send completions as messages. For example:[br]
+  ``
+  // Create a channel with no buffer space.
+  channel<void(error_code, size_t)> ch(ctx);
+
+  // The call to try_send fails as there is no buffer
+  // space and no waiting receive operations.
+  bool ok = ch.try_send(asio::error::eof, 123);
+  assert(!ok);
+
+  // The async_send operation is outstanding until
+  // a receive operation consumes the message.
+  ch.async_send(asio::error::eof, 123,
+      [](error_code ec)
+      {
+        // ...
+      });
+
+  // The async_receive consumes the message. Both the
+  // async_send and async_receive operations complete
+  // immediately.
+  ch.async_receive(
+      [](error_code ec, size_t n)
+      {
+        // ...
+      });
+  ``[br]
+
+* Implemented improvements to `experimental::coro`.
+  * Added overload so member functions can provide an explicit executor.
+  * Added `co_spawn` for `coro` tasks.
+  * Added reference and overview documentation.
+  * Adopted awaitable cancellation model.
+  * Refactored implementation.
+
+* Disabled `aligned_alloc` on [^clang] when using an MSVC runtime.
+
+* Changed to use a faster implementation for `ip::network_v4::canonical()`.
+
+* Added template specialisations for common uses to improve compile time.
+
+* Reduced the size of `io_context` executors to a single pointer.
+
+* Increased the small object buffer size for `execution::any_executor` and
+  `any_io_executor`.
+
+* Fixed multi-signature handling when variadic templates are disabled.
+
+* Fixed compatibility with new versions of [^gcc] and [^clang].
+
+* Fixed compilation on Solaris.
+
+* Fix defence against Qt-defined macros when building with MSVC.
+
+* Fixed various warnings.
+
+[heading Asio 1.20.0]
+
+* Fixed `experimental::coro` compatibility with [^gcc].
+
+* Fixed `experimental::promise` compatibility with [^gcc].
+
+* Added documentation for per-operation cancellation.
+
+* Added documentation for `parallel_group`.
+
+* Added overview documentation for `experimental::coro`.
+
+* Added some missing C++14 examples.
+
+* Updated C++20 coroutines overview documentation.
+
+[heading Asio 1.19.2]
+
+* Cleaned up memory recycling to ensure the cache size is used consistently.
+
+* Changed `parallel_group` to use the recycling allocator for shared state.
+
+* Changed `awaitable` memory recycling to use the configurable cache size.
+
+* Ensured `parallel_group` respects operations' associated executors.
+
+* Added defence against macros defined by Qt.
+
+* Added missing `boost_` prefix to namespaces during boostification.
+
+* Added missing lvalue-qualified overloads for `deferred` operator().
+
+* Added a tag to disambiguate `deferred` constructors.
+
+* Added missing `push`/`pop_options` includes.
+
+* Fixed argument evaluation order issue with a potentially moved-from variable
+  in `awaitable` implementation.
+
+* Enabled "expression SFINAE" for recent MSVC using `/std:c++latest`.
+
+* Fixed compilation errors when `dev_poll_reactor` backend is used.
+
+* Fixed handler type requirements checking to reflect rvalue completion handler
+  invocation.
+
+* Fixed `posix::basic_stream_descriptor` move operations to work with
+  non-defaulted executors.
+
+* Added missing move of executor in strand implementation.
+
+[heading Asio 1.19.1]
+
+* Fixed handling of move-only results with awaitable operators `&&` and `||`.
+
+* Fixed `strand<>` to avoid using a potentially moved-from executor.
+
+* Fixed order of `_aligned_malloc` arguments for MSVC.
+
+* Ensured handler alignment requirements are respected by `cancellation_signal`.
+
+* Ensured [^gcc] tests are not used for [^clang] when detecting compiler
+  features.
+
+* Disabled coroutines support for the [^clang] shipped with MSVC.
+
+* Fixed compatibility with recent LibreSSL when `OPENSSL_NO_SSL_INTERN` is
+  defined.
+
+* Documented supported cancellation types for individual asynchronous
+  operations.
+
+* Ensured un-cancelled ops are correctly placed back in the queue.
+
 [heading Asio 1.19.0]
 
-* Added support for cancellation of individual asynchonrous operations.
+* Added support for cancellation of individual asynchronous operations.
   Cancellation is implemented by having each completion handler carry an
   associated `CancellationSlot`, a lightweight cancellation channel that is
   specified through the new `associated_cancellation_slot` associator. A
@@ -728,15 +2126,14 @@
   operation is launched with location information, it outputs lines using the
   [*<action>] [^n^m], prior to the [^n*m] line that signifies the beginning
   of the asynchronous operation. For example:
-  ``
+  [pre
   @asio|1589423304.861944|>7|ec=system:0,bytes_transferred=5
   @asio|1589423304.861952|7^8|in 'async_write' (./../../../include/asio/impl/write.hpp:330)
   @asio|1589423304.861952|7^8|called from 'do_write' (handler_tracking/async_tcp_echo_server.cpp:62)
   @asio|1589423304.861952|7^8|called from 'operator()' (handler_tracking/async_tcp_echo_server.cpp:51)
   @asio|1589423304.861952|7*8|socket@0x7ff61c008230.async_send
   @asio|1589423304.861975|.8|non_blocking_send,ec=system:0,bytes_transferred=5
-  @asio|1589423304.861980|<7|
-  ``[br]
+  @asio|1589423304.861980|<7|][br]
   If `std::source_location` or `std::experimental::source_location` are
   available, the `use_awaitable_t` token (when default-constructed or used as a
   default completion token) will also cause handler tracking to output a source
@@ -771,21 +2168,18 @@
   include only those events in the tree that produced the nominated handlers.
   For example, to filter the output to include only the events associated with
   handlers `123`, `456`, and their predecessors:
-  ``
-  cat output.txt | perl handlertree.pl 123 456
-  ``
+  [pre
+  cat output.txt | perl handlertree.pl 123 456]
   or:
-  ``
-  perl handlertree.pl 123 456 < output.txt
-  ``[br]
+  [pre
+  perl handlertree.pl 123 456 < output.txt][br]
   This script may be combined with handerlive.pl and handlerviz.pl to produce a
   graph of the "live" asynchronous operation chains. For example:
-  ``
+  [pre
   cat output.txt | \
     perl handlertree.pl `perl handlerlive.pl output.txt` | \
     perl handlerviz.pl | \
-    dot -Tsvg > output.svg
-  ``[br]
+    dot -Tsvg > output.svg][br]
 
 * Added changes for clang-based Embarcadero C++ compilers.
 
@@ -1733,19 +3127,18 @@
   stackful coroutines, based on the Boost.Coroutine library. The `spawn()`
   function enables programs to implement asynchronous logic in a synchronous
   manner. For example: `size_t n = my_socket.async_read_some(my_buffer, yield);`.
-  For further information, see [link asio.overview.core.spawn Stackful
+  For further information, see [link asio.overview.composition.spawn Stackful
   Coroutines].
 
 * Added the `asio::use_future` special value, which provides first-class
   support for returning a C++11 `std::future` from an asynchronous
   operation's initiating function. For example:
   `future<size_t> = my_socket.async_read_some(my_buffer, asio::use_future);`.
-  For further information, see [link asio.overview.cpp2011.futures C++
-  2011 Support - Futures].
+  For further information, see [link asio.overview.composition.futures Futures].
 
 * Promoted the stackless coroutine class and macros to be part of Asio's
   documented interface, rather than part of the HTTP server 4 example.
-  For further information, see [link asio.overview.core.coroutine
+  For further information, see [link asio.overview.composition.coroutine
   Stackless Coroutines].
 
 * Added a new handler hook called `asio_handler_is_continuation`.

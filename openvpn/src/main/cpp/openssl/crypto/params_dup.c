@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2021-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -10,8 +10,8 @@
 #include <string.h>
 #include <openssl/params.h>
 #include <openssl/param_build.h>
+#include "internal/mem_alloc_utils.h"
 #include "internal/param_build_set.h"
-#include "e_os.h" /* strcasecmp */
 
 #define OSSL_PARAM_ALLOCATED_END    127
 #define OSSL_PARAM_MERGE_LIST_MAX   128
@@ -35,14 +35,17 @@ size_t ossl_param_bytes_to_blocks(size_t bytes)
 static int ossl_param_buf_alloc(OSSL_PARAM_BUF *out, size_t extra_blocks,
                                 int is_secure)
 {
-    size_t sz = OSSL_PARAM_ALIGN_SIZE * (extra_blocks + out->blocks);
+    size_t num_blocks, sz = 0;
+
+    if (ossl_unlikely(!ossl_size_add(extra_blocks, out->blocks, &num_blocks,
+                                     OPENSSL_FILE, OPENSSL_LINE)
+                      || !ossl_size_mul(num_blocks, OSSL_PARAM_ALIGN_SIZE, &sz,
+                                        OPENSSL_FILE, OPENSSL_LINE)))
+        return 0;
 
     out->alloc = is_secure ? OPENSSL_secure_zalloc(sz) : OPENSSL_zalloc(sz);
-    if (out->alloc == NULL) {
-        ERR_raise(ERR_LIB_CRYPTO, is_secure ? CRYPTO_R_SECURE_MALLOC_FAILURE
-                                            : ERR_R_MALLOC_FAILURE);
+    if (out->alloc == NULL)
         return 0;
-    }
     out->alloc_sz = sz;
     out->cur = out->alloc + extra_blocks;
     return 1;
@@ -106,8 +109,10 @@ OSSL_PARAM *OSSL_PARAM_dup(const OSSL_PARAM *src)
     OSSL_PARAM *last, *dst;
     int param_count = 1; /* Include terminator in the count */
 
-    if (src == NULL)
+    if (src == NULL) {
+        ERR_raise(ERR_LIB_CRYPTO, ERR_R_PASSED_NULL_PARAMETER);
         return NULL;
+    }
 
     memset(buf, 0, sizeof(buf));
 
@@ -142,7 +147,7 @@ static int compare_params(const void *left, const void *right)
     const OSSL_PARAM *l = *(const OSSL_PARAM **)left;
     const OSSL_PARAM *r = *(const OSSL_PARAM **)right;
 
-    return strcasecmp(l->key, r->key);
+    return OPENSSL_strcasecmp(l->key, r->key);
 }
 
 OSSL_PARAM *OSSL_PARAM_merge(const OSSL_PARAM *p1, const OSSL_PARAM *p2)
@@ -155,8 +160,10 @@ OSSL_PARAM *OSSL_PARAM_merge(const OSSL_PARAM *p1, const OSSL_PARAM *p2)
     size_t  list1_sz = 0, list2_sz = 0;
     int diff;
 
-    if (p1 == NULL && p2 == NULL)
+    if (p1 == NULL && p2 == NULL) {
+        ERR_raise(ERR_LIB_CRYPTO, ERR_R_PASSED_NULL_PARAMETER);
         return NULL;
+    }
 
     /* Copy p1 to list1 */
     if (p1 != NULL) {
@@ -171,41 +178,41 @@ OSSL_PARAM *OSSL_PARAM_merge(const OSSL_PARAM *p1, const OSSL_PARAM *p2)
             list2[list2_sz++] = p;
     }
     list2[list2_sz] = NULL;
-    if (list1_sz == 0 && list2_sz == 0)
+    if (list1_sz == 0 && list2_sz == 0) {
+        ERR_raise(ERR_LIB_CRYPTO, CRYPTO_R_NO_PARAMS_TO_MERGE);
         return NULL;
+    }
 
     /* Sort the 2 lists */
     qsort(list1, list1_sz, sizeof(OSSL_PARAM *), compare_params);
     qsort(list2, list2_sz, sizeof(OSSL_PARAM *), compare_params);
 
    /* Allocate enough space to store the merged parameters */
-    params = OPENSSL_zalloc((list1_sz + list2_sz + 1) * sizeof(*p1));
-    if (params == NULL) {
-        ERR_raise(ERR_LIB_CRYPTO, ERR_R_MALLOC_FAILURE);
+    params = OPENSSL_calloc(list1_sz + list2_sz + 1, sizeof(*p1));
+    if (params == NULL)
         return NULL;
-    }
     dst = params;
     p1cur = list1;
     p2cur = list2;
     while (1) {
         /* If list1 is finished just tack list2 onto the end */
         if (*p1cur == NULL) {
-            do {
+            while (*p2cur != NULL) {
                 *dst++ = **p2cur;
                 p2cur++;
-            } while (*p2cur != NULL);
+            }
             break;
         }
         /* If list2 is finished just tack list1 onto the end */
         if (*p2cur == NULL) {
-            do {
+            while (*p1cur != NULL) {
                 *dst++ = **p1cur;
                 p1cur++;
-            } while (*p1cur != NULL);
+            }
             break;
         }
         /* consume the list element with the smaller key */
-        diff = strcasecmp((*p1cur)->key, (*p2cur)->key);
+        diff = OPENSSL_strcasecmp((*p1cur)->key, (*p2cur)->key);
         if (diff == 0) {
             /* If the keys are the same then throw away the list1 element */
             *dst++ = **p2cur;

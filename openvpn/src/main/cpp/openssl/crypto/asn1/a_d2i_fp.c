@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -110,7 +110,6 @@ int asn1_d2i_read_bio(BIO *in, BUF_MEM **pb)
 {
     BUF_MEM *b;
     unsigned char *p;
-    int i;
     size_t want = HEADER_SIZE;
     uint32_t eos = 0;
     size_t off = 0;
@@ -123,7 +122,7 @@ int asn1_d2i_read_bio(BIO *in, BUF_MEM **pb)
 
     b = BUF_MEM_new();
     if (b == NULL) {
-        ERR_raise(ERR_LIB_ASN1, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_ASN1, ERR_R_BUF_LIB);
         return -1;
     }
 
@@ -131,13 +130,15 @@ int asn1_d2i_read_bio(BIO *in, BUF_MEM **pb)
     for (;;) {
         diff = len - off;
         if (want >= diff) {
+            int i;
+
             want -= diff;
 
             if (len + want < len || !BUF_MEM_grow_clean(b, len + want)) {
-                ERR_raise(ERR_LIB_ASN1, ERR_R_MALLOC_FAILURE);
+                ERR_raise(ERR_LIB_ASN1, ERR_R_BUF_LIB);
                 goto err;
             }
-            i = BIO_read(in, &(b->data[len]), want);
+            i = BIO_read(in, &(b->data[len]), (int)want);
             if (i < 0 && diff == 0) {
                 ERR_raise(ERR_LIB_ASN1, ASN1_R_NOT_ENOUGH_DATA);
                 goto err;
@@ -148,6 +149,9 @@ int asn1_d2i_read_bio(BIO *in, BUF_MEM **pb)
                     goto err;
                 }
                 len += i;
+                if ((size_t)i < want)
+                    continue;
+
             }
         }
         /* else data already loaded */
@@ -157,7 +161,7 @@ int asn1_d2i_read_bio(BIO *in, BUF_MEM **pb)
         diff = len - off;
         if (diff == 0)
             goto err;
-        inf = ASN1_get_object(&q, &slen, &tag, &xclass, diff);
+        inf = ASN1_get_object(&q, &slen, &tag, &xclass, (int)diff);
         if (inf & 0x80) {
             unsigned long e;
 
@@ -166,8 +170,7 @@ int asn1_d2i_read_bio(BIO *in, BUF_MEM **pb)
                 goto err;
             ERR_pop_to_mark();
         }
-        i = q - p;            /* header length */
-        off += i;               /* end of data */
+        off += q - p;               /* end of data */
 
         if (inf & 1) {
             /* no data body so go round again */
@@ -204,14 +207,15 @@ int asn1_d2i_read_bio(BIO *in, BUF_MEM **pb)
                      * in one go.
                      */
                     size_t chunk = want > chunk_max ? chunk_max : want;
+                    int i;
 
                     if (!BUF_MEM_grow_clean(b, len + chunk)) {
-                        ERR_raise(ERR_LIB_ASN1, ERR_R_MALLOC_FAILURE);
+                        ERR_raise(ERR_LIB_ASN1, ERR_R_BUF_LIB);
                         goto err;
                     }
                     want -= chunk;
                     while (chunk > 0) {
-                        i = BIO_read(in, &(b->data[len]), chunk);
+                        i = BIO_read(in, &(b->data[len]), (int)chunk);
                         if (i <= 0) {
                             ERR_raise(ERR_LIB_ASN1, ASN1_R_NOT_ENOUGH_DATA);
                             goto err;
@@ -245,7 +249,7 @@ int asn1_d2i_read_bio(BIO *in, BUF_MEM **pb)
     }
 
     *pb = b;
-    return off;
+    return (int)off;
  err:
     ERR_clear_last_mark();
     BUF_MEM_free(b);

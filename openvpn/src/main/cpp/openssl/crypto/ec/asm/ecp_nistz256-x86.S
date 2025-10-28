@@ -2379,15 +2379,20 @@ ecp_nistz256_precomputed:
 .long	1,0,0,0,0,0,0,0
 .byte	69,67,80,95,78,73,83,90,50,53,54,32,102,111,114,32
 .byte	120,56,54,47,83,83,69,50,44,32,67,82,89,80,84,79
-.byte	71,65,77,83,32,98,121,32,60,97,112,112,114,111,64,111
-.byte	112,101,110,115,115,108,46,111,114,103,62,0
+.byte	71,65,77,83,32,98,121,32,60,104,116,116,112,115,58,47
+.byte	47,103,105,116,104,117,98,46,99,111,109,47,100,111,116,45
+.byte	97,115,109,62,0
 .align	64
 .globl	ecp_nistz256_mul_by_2
 .type	ecp_nistz256_mul_by_2,@function
 .align	16
 ecp_nistz256_mul_by_2:
 .L_ecp_nistz256_mul_by_2_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -2407,7 +2412,11 @@ ecp_nistz256_mul_by_2:
 .align	16
 ecp_nistz256_mul_by_3:
 .L_ecp_nistz256_mul_by_3_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -2433,7 +2442,11 @@ ecp_nistz256_mul_by_3:
 .align	16
 ecp_nistz256_div_by_2:
 .L_ecp_nistz256_div_by_2_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -2450,7 +2463,11 @@ ecp_nistz256_div_by_2:
 .type	_ecp_nistz256_div_by_2,@function
 .align	16
 _ecp_nistz256_div_by_2:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	movl	(%esi),%ebp
 	xorl	%edx,%edx
 	movl	4(%esi),%ebx
@@ -2534,7 +2551,11 @@ _ecp_nistz256_div_by_2:
 .align	16
 ecp_nistz256_add:
 .L_ecp_nistz256_add_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -2552,7 +2573,11 @@ ecp_nistz256_add:
 .type	_ecp_nistz256_add,@function
 .align	16
 _ecp_nistz256_add:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	movl	(%esi),%eax
 	movl	4(%esi),%ebx
 	movl	8(%esi),%ecx
@@ -2630,7 +2655,11 @@ _ecp_nistz256_add:
 .align	16
 ecp_nistz256_sub:
 .L_ecp_nistz256_sub_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -2648,7 +2677,11 @@ ecp_nistz256_sub:
 .type	_ecp_nistz256_sub,@function
 .align	16
 _ecp_nistz256_sub:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	movl	(%esi),%eax
 	movl	4(%esi),%ebx
 	movl	8(%esi),%ecx
@@ -2707,7 +2740,11 @@ _ecp_nistz256_sub:
 .align	16
 ecp_nistz256_neg:
 .L_ecp_nistz256_neg_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -2736,7 +2773,11 @@ ecp_nistz256_neg:
 .type	_picup_eax,@function
 .align	16
 _picup_eax:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	movl	(%esp),%eax
 	ret
 .size	_picup_eax,.-_picup_eax
@@ -2745,7 +2786,11 @@ _picup_eax:
 .align	16
 ecp_nistz256_to_mont:
 .L_ecp_nistz256_to_mont_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -2769,7 +2814,11 @@ ecp_nistz256_to_mont:
 .align	16
 ecp_nistz256_from_mont:
 .L_ecp_nistz256_from_mont_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -2793,7 +2842,11 @@ ecp_nistz256_from_mont:
 .align	16
 ecp_nistz256_mul_mont:
 .L_ecp_nistz256_mul_mont_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -2817,7 +2870,11 @@ ecp_nistz256_mul_mont:
 .align	16
 ecp_nistz256_sqr_mont:
 .L_ecp_nistz256_sqr_mont_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -2839,7 +2896,11 @@ ecp_nistz256_sqr_mont:
 .type	_ecp_nistz256_mul_mont,@function
 .align	16
 _ecp_nistz256_mul_mont:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	andl	$83886080,%eax
 	cmpl	$83886080,%eax
 	jne	.L004mul_mont_ialu
@@ -3737,7 +3798,11 @@ _ecp_nistz256_mul_mont:
 .align	16
 ecp_nistz256_scatter_w5:
 .L_ecp_nistz256_scatter_w5_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -3771,7 +3836,11 @@ ecp_nistz256_scatter_w5:
 .align	16
 ecp_nistz256_gather_w5:
 .L_ecp_nistz256_gather_w5_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -3866,7 +3935,11 @@ ecp_nistz256_gather_w5:
 .align	16
 ecp_nistz256_scatter_w7:
 .L_ecp_nistz256_scatter_w7_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -3898,7 +3971,11 @@ ecp_nistz256_scatter_w7:
 .align	16
 ecp_nistz256_gather_w7:
 .L_ecp_nistz256_gather_w7_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -4113,7 +4190,11 @@ ecp_nistz256_gather_w7:
 .align	16
 ecp_nistz256_point_double:
 .L_ecp_nistz256_point_double_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -4240,7 +4321,11 @@ ecp_nistz256_point_double:
 .align	16
 ecp_nistz256_point_add:
 .L_ecp_nistz256_point_add_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -4754,7 +4839,11 @@ ecp_nistz256_point_add:
 .align	16
 ecp_nistz256_point_add_affine:
 .L_ecp_nistz256_point_add_affine_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -5182,7 +5271,7 @@ ecp_nistz256_point_add_affine:
 	popl	%ebp
 	ret
 .size	ecp_nistz256_point_add_affine,.-.L_ecp_nistz256_point_add_affine_begin
-.comm	OPENSSL_ia32cap_P,16,4
+.comm	OPENSSL_ia32cap_P,40,4
 
 	.section ".note.gnu.property", "a"
 	.p2align 2

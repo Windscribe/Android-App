@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -57,13 +57,10 @@ static int linebuffer_new(BIO *bi)
 {
     BIO_LINEBUFFER_CTX *ctx;
 
-    if ((ctx = OPENSSL_malloc(sizeof(*ctx))) == NULL) {
-        ERR_raise(ERR_LIB_BIO, ERR_R_MALLOC_FAILURE);
+    if ((ctx = OPENSSL_malloc(sizeof(*ctx))) == NULL)
         return 0;
-    }
     ctx->obuf = OPENSSL_malloc(DEFAULT_LINEBUFFER_SIZE);
     if (ctx->obuf == NULL) {
-        ERR_raise(ERR_LIB_BIO, ERR_R_MALLOC_FAILURE);
         OPENSSL_free(ctx);
         return 0;
     }
@@ -136,14 +133,15 @@ static int linebuffer_write(BIO *b, const char *in, int inl)
         while ((foundnl || p - in > ctx->obuf_size - ctx->obuf_len)
                && ctx->obuf_len > 0) {
             int orig_olen = ctx->obuf_len;
+            int llen = (int)(p - in);
 
             i = ctx->obuf_size - ctx->obuf_len;
-            if (p - in > 0) {
-                if (i >= p - in) {
-                    memcpy(&(ctx->obuf[ctx->obuf_len]), in, p - in);
-                    ctx->obuf_len += p - in;
-                    inl -= p - in;
-                    num += p - in;
+            if (llen > 0) {
+                if (i >= llen) {
+                    memcpy(&(ctx->obuf[ctx->obuf_len]), in, llen);
+                    ctx->obuf_len += llen;
+                    inl -= llen;
+                    num += llen;
                     in = p;
                 } else {
                     memcpy(&(ctx->obuf[ctx->obuf_len]), in, i);
@@ -173,7 +171,7 @@ static int linebuffer_write(BIO *b, const char *in, int inl)
          * if a NL was found and there is anything to write.
          */
         if ((foundnl || p - in > ctx->obuf_size) && p - in > 0) {
-            i = BIO_write(b->next_bio, in, p - in);
+            i = BIO_write(b->next_bio, in, (int)(p - in));
             if (i <= 0) {
                 BIO_copy_next_retry(b);
                 if (i < 0)
@@ -237,7 +235,7 @@ static long linebuffer_ctrl(BIO *b, int cmd, long num, void *ptr)
         if ((obs > DEFAULT_LINEBUFFER_SIZE) && (obs != ctx->obuf_size)) {
             p = OPENSSL_malloc((size_t)obs);
             if (p == NULL)
-                goto malloc_error;
+                return 0;
         }
         if (ctx->obuf != p) {
             if (ctx->obuf_len > obs) {
@@ -262,6 +260,7 @@ static long linebuffer_ctrl(BIO *b, int cmd, long num, void *ptr)
             return 0;
         if (ctx->obuf_len <= 0) {
             ret = BIO_ctrl(b->next_bio, cmd, num, ptr);
+            BIO_copy_next_retry(b);
             break;
         }
 
@@ -281,10 +280,11 @@ static long linebuffer_ctrl(BIO *b, int cmd, long num, void *ptr)
             }
         }
         ret = BIO_ctrl(b->next_bio, cmd, num, ptr);
+        BIO_copy_next_retry(b);
         break;
     case BIO_CTRL_DUP:
         dbio = (BIO *)ptr;
-        if (!BIO_set_write_buffer_size(dbio, ctx->obuf_size))
+        if (BIO_set_write_buffer_size(dbio, ctx->obuf_size) <= 0)
             ret = 0;
         break;
     default:
@@ -294,9 +294,6 @@ static long linebuffer_ctrl(BIO *b, int cmd, long num, void *ptr)
         break;
     }
     return ret;
- malloc_error:
-    ERR_raise(ERR_LIB_BIO, ERR_R_MALLOC_FAILURE);
-    return 0;
 }
 
 static long linebuffer_callback_ctrl(BIO *b, int cmd, BIO_info_cb *fp)
@@ -315,5 +312,9 @@ static int linebuffer_gets(BIO *b, char *buf, int size)
 
 static int linebuffer_puts(BIO *b, const char *str)
 {
-    return linebuffer_write(b, str, strlen(str));
+    size_t len = strlen(str);
+
+    if (len > INT_MAX)
+        return -1;
+    return linebuffer_write(b, str, (int)len);
 }

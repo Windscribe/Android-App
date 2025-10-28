@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2004-2025 The OpenSSL Project Authors. All Rights Reserved.
  * Copyright (c) 2004, EdelKey Project. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
@@ -84,11 +84,11 @@ static int t_fromb64(unsigned char *a, size_t alen, const char *src)
 
     /* Add any encoded padding that is required */
     if (padsize != 0
-            && EVP_DecodeUpdate(ctx, a, &outl, pad, padsize) < 0) {
+            && EVP_DecodeUpdate(ctx, a, &outl, pad, (int)padsize) < 0) {
         outl = -1;
         goto err;
     }
-    if (EVP_DecodeUpdate(ctx, a, &outl2, (const unsigned char *)src, size) < 0) {
+    if (EVP_DecodeUpdate(ctx, a, &outl2, (const unsigned char *)src, (int)size) < 0) {
         outl = -1;
         goto err;
     }
@@ -117,7 +117,7 @@ static int t_fromb64(unsigned char *a, size_t alen, const char *src)
          * from the encoded data as we added to the pre-encoded data.
          */
         memmove(a, a + padsize, outl - padsize);
-        outl -= padsize;
+        outl -= (int)padsize;
     }
 
  err:
@@ -135,7 +135,7 @@ static int t_tob64(char *dst, const unsigned char *src, int size)
     EVP_ENCODE_CTX *ctx = EVP_ENCODE_CTX_new();
     int outl = 0, outl2 = 0;
     unsigned char pad[2] = {0, 0};
-    size_t leadz = 0;
+    int leadz = 0;
 
     if (ctx == NULL)
         return 0;
@@ -191,10 +191,8 @@ SRP_user_pwd *SRP_user_pwd_new(void)
 {
     SRP_user_pwd *ret;
 
-    if ((ret = OPENSSL_malloc(sizeof(*ret))) == NULL) {
-        /* ERR_raise(ERR_LIB_SRP, ERR_R_MALLOC_FAILURE); */ /*ckerr_ignore*/
+    if ((ret = OPENSSL_malloc(sizeof(*ret))) == NULL)
         return NULL;
-    }
     ret->N = NULL;
     ret->g = NULL;
     ret->s = NULL;
@@ -216,6 +214,8 @@ int SRP_user_pwd_set1_ids(SRP_user_pwd *vinfo, const char *id,
 {
     OPENSSL_free(vinfo->id);
     OPENSSL_free(vinfo->info);
+    vinfo->id = NULL;
+    vinfo->info = NULL;
     if (id != NULL && NULL == (vinfo->id = OPENSSL_strdup(id)))
         return 0;
     return (info == NULL || NULL != (vinfo->info = OPENSSL_strdup(info)));
@@ -283,6 +283,7 @@ SRP_VBASE *SRP_VBASE_new(char *seed_key)
         return NULL;
     if ((vb->users_pwd = sk_SRP_user_pwd_new_null()) == NULL
         || (vb->gN_cache = sk_SRP_gN_cache_new_null()) == NULL) {
+        sk_SRP_user_pwd_free(vb->users_pwd);
         OPENSSL_free(vb);
         return NULL;
     }
@@ -393,7 +394,7 @@ static BIGNUM *SRP_gN_place_bn(STACK_OF(SRP_gN_cache) *gN_cache, char *ch)
 
 int SRP_VBASE_init(SRP_VBASE *vb, char *verifier_file)
 {
-    int error_code;
+    int error_code = SRP_ERR_MEMORY;
     STACK_OF(SRP_gN) *SRP_gN_tab = sk_SRP_gN_new_null();
     char *last_index = NULL;
     int i;
@@ -405,7 +406,15 @@ int SRP_VBASE_init(SRP_VBASE *vb, char *verifier_file)
     TXT_DB *tmpdb = NULL;
     BIO *in = BIO_new(BIO_s_file());
 
+    if (SRP_gN_tab == NULL)
+        goto err;
+
     error_code = SRP_ERR_OPEN_FILE;
+
+    if (verifier_file == NULL) {
+        ERR_raise(ERR_LIB_X509, ERR_R_PASSED_NULL_PARAMETER);
+        goto err;
+    }
 
     if (in == NULL || BIO_read_filename(in, verifier_file) <= 0)
         goto err;
@@ -628,7 +637,7 @@ char *SRP_create_verifier_ex(const char *user, const char *pass, char **salt,
         if (N_bn_alloc == NULL)
             goto err;
         N_bn = N_bn_alloc;
-        if ((len = t_fromb64(tmp, sizeof(tmp) ,g)) <= 0)
+        if ((len = t_fromb64(tmp, sizeof(tmp), g)) <= 0)
             goto err;
         g_bn_alloc = BN_bin2bn(tmp, len, NULL);
         if (g_bn_alloc == NULL)
@@ -672,9 +681,8 @@ char *SRP_create_verifier_ex(const char *user, const char *pass, char **salt,
     if (*salt == NULL) {
         char *tmp_salt;
 
-        if ((tmp_salt = OPENSSL_malloc(SRP_RANDOM_SALT_LEN * 2)) == NULL) {
+        if ((tmp_salt = OPENSSL_malloc_array(SRP_RANDOM_SALT_LEN, 2)) == NULL)
             goto err;
-        }
         if (!t_tob64(tmp_salt, tmp2, SRP_RANDOM_SALT_LEN)) {
             OPENSSL_free(tmp_salt);
             goto err;

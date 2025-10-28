@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2015-2025 The OpenSSL Project Authors. All Rights Reserved.
  * Copyright 2004-2014, Akamai Technologies. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
@@ -15,14 +15,30 @@
  * For details on that implementation, see below (look for uppercase
  * "SECURE HEAP IMPLEMENTATION").
  */
-#include "e_os.h"
+#include "internal/e_os.h"
 #include <openssl/crypto.h>
+#include <openssl/err.h>
 
 #include <string.h>
 
 #ifndef OPENSSL_NO_SECURE_MEMORY
 # if defined(_WIN32)
 #  include <windows.h>
+#  if defined(WINAPI_FAMILY_PARTITION)
+#   if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
+/*
+ * While VirtualLock is available under the app partition (e.g. UWP),
+ * the headers do not define the API. Define it ourselves instead.
+ */
+WINBASEAPI
+BOOL
+WINAPI
+VirtualLock(
+    _In_ LPVOID lpAddress,
+    _In_ SIZE_T dwSize
+    );
+#   endif
+#  endif
 # endif
 # include <stdlib.h>
 # include <assert.h>
@@ -49,6 +65,18 @@
 # endif
 # include <sys/stat.h>
 # include <fcntl.h>
+#endif
+#ifndef HAVE_MADVISE
+# if defined(MADV_DONTDUMP)
+#  define HAVE_MADVISE 1
+# else
+#  define HAVE_MADVISE 0
+# endif
+#endif
+#if HAVE_MADVISE
+# undef NO_MADVISE
+#else
+# define NO_MADVISE
 #endif
 
 #define CLEAR(p, s) OPENSSL_cleanse(p, s)
@@ -126,18 +154,27 @@ int CRYPTO_secure_malloc_initialized(void)
 void *CRYPTO_secure_malloc(size_t num, const char *file, int line)
 {
 #ifndef OPENSSL_NO_SECURE_MEMORY
-    void *ret;
+    void *ret = NULL;
     size_t actual_size;
+    int reason = CRYPTO_R_SECURE_MALLOC_FAILURE;
 
     if (!secure_mem_initialized) {
         return CRYPTO_malloc(num, file, line);
     }
-    if (!CRYPTO_THREAD_write_lock(sec_malloc_lock))
-        return NULL;
+    if (!CRYPTO_THREAD_write_lock(sec_malloc_lock)) {
+        reason = ERR_R_CRYPTO_LIB;
+        goto err;
+    }
     ret = sh_malloc(num);
     actual_size = ret ? sh_actual_size(ret) : 0;
     secure_mem_used += actual_size;
     CRYPTO_THREAD_unlock(sec_malloc_lock);
+ err:
+    if (ret == NULL && (file != NULL || line != 0)) {
+        ERR_new();
+        ERR_set_debug(file, line, NULL);
+        ERR_set_error(ERR_LIB_CRYPTO, reason, NULL);
+    }
     return ret;
 #else
     return CRYPTO_malloc(num, file, line);
@@ -223,11 +260,17 @@ int CRYPTO_secure_allocated(const void *ptr)
 
 size_t CRYPTO_secure_used(void)
 {
+    size_t ret = 0;
+
 #ifndef OPENSSL_NO_SECURE_MEMORY
-    return secure_mem_used;
-#else
-    return 0;
+    if (!CRYPTO_THREAD_read_lock(sec_malloc_lock))
+        return 0;
+
+    ret = secure_mem_used;
+
+    CRYPTO_THREAD_unlock(sec_malloc_lock);
 #endif /* OPENSSL_NO_SECURE_MEMORY */
+    return ret;
 }
 
 size_t CRYPTO_secure_actual_size(void *ptr)
@@ -235,7 +278,7 @@ size_t CRYPTO_secure_actual_size(void *ptr)
 #ifndef OPENSSL_NO_SECURE_MEMORY
     size_t actual_size;
 
-    if (!CRYPTO_THREAD_write_lock(sec_malloc_lock))
+    if (!CRYPTO_THREAD_read_lock(sec_malloc_lock))
         return 0;
     actual_size = sh_actual_size(ptr);
     CRYPTO_THREAD_unlock(sec_malloc_lock);
@@ -278,14 +321,12 @@ size_t CRYPTO_secure_actual_size(void *ptr)
     ((char*)(p) >= (char*)sh.freelist && (char*)(p) < (char*)&sh.freelist[sh.freelist_size])
 
 
-typedef struct sh_list_st
-{
+typedef struct sh_list_st {
     struct sh_list_st *next;
     struct sh_list_st **p_next;
 } SH_LIST;
 
-typedef struct sh_st
-{
+typedef struct sh_st {
     char* map_result;
     size_t map_size;
     char *arena;
@@ -439,7 +480,7 @@ static int sh_init(size_t size, size_t minsize)
     for (i = sh.bittable_size; i; i >>= 1)
         sh.freelist_size++;
 
-    sh.freelist = OPENSSL_zalloc(sh.freelist_size * sizeof(char *));
+    sh.freelist = OPENSSL_calloc(sh.freelist_size, sizeof(char *));
     OPENSSL_assert(sh.freelist != NULL);
     if (sh.freelist == NULL)
         goto err;
@@ -542,7 +583,7 @@ static int sh_init(size_t size, size_t minsize)
     if (mlock(sh.arena, sh.arena_size) < 0)
         ret = 2;
 #endif
-#ifdef MADV_DONTDUMP
+#ifndef NO_MADVISE
     if (madvise(sh.arena, sh.arena_size, MADV_DONTDUMP) < 0)
         ret = 2;
 #endif
@@ -615,8 +656,8 @@ static void *sh_malloc(size_t size)
         char *temp = sh.freelist[slist];
 
         /* remove from bigger list */
-        OPENSSL_assert(!sh_testbit(temp, slist, sh.bitmalloc));
-        sh_clearbit(temp, slist, sh.bittable);
+        OPENSSL_assert(!sh_testbit(temp, (int)slist, sh.bitmalloc));
+        sh_clearbit(temp, (int)slist, sh.bittable);
         sh_remove_from_list(temp);
         OPENSSL_assert(temp != sh.freelist[slist]);
 
@@ -624,25 +665,25 @@ static void *sh_malloc(size_t size)
         slist++;
 
         /* add to smaller list */
-        OPENSSL_assert(!sh_testbit(temp, slist, sh.bitmalloc));
-        sh_setbit(temp, slist, sh.bittable);
+        OPENSSL_assert(!sh_testbit(temp, (int)slist, sh.bitmalloc));
+        sh_setbit(temp, (int)slist, sh.bittable);
         sh_add_to_list(&sh.freelist[slist], temp);
         OPENSSL_assert(sh.freelist[slist] == temp);
 
         /* split in 2 */
         temp += sh.arena_size >> slist;
-        OPENSSL_assert(!sh_testbit(temp, slist, sh.bitmalloc));
-        sh_setbit(temp, slist, sh.bittable);
+        OPENSSL_assert(!sh_testbit(temp, (int)slist, sh.bitmalloc));
+        sh_setbit(temp, (int)slist, sh.bittable);
         sh_add_to_list(&sh.freelist[slist], temp);
         OPENSSL_assert(sh.freelist[slist] == temp);
 
-        OPENSSL_assert(temp-(sh.arena_size >> slist) == sh_find_my_buddy(temp, slist));
+        OPENSSL_assert(temp-(sh.arena_size >> slist) == sh_find_my_buddy(temp, (int)slist));
     }
 
     /* peel off memory to hand back */
     chunk = sh.freelist[list];
-    OPENSSL_assert(sh_testbit(chunk, list, sh.bittable));
-    sh_setbit(chunk, list, sh.bitmalloc);
+    OPENSSL_assert(sh_testbit(chunk, (int)list, sh.bittable));
+    sh_setbit(chunk, (int)list, sh.bitmalloc);
     sh_remove_from_list(chunk);
 
     OPENSSL_assert(WITHIN_ARENA(chunk));
@@ -665,19 +706,19 @@ static void sh_free(void *ptr)
         return;
 
     list = sh_getlist(ptr);
-    OPENSSL_assert(sh_testbit(ptr, list, sh.bittable));
-    sh_clearbit(ptr, list, sh.bitmalloc);
+    OPENSSL_assert(sh_testbit(ptr, (int)list, sh.bittable));
+    sh_clearbit(ptr, (int)list, sh.bitmalloc);
     sh_add_to_list(&sh.freelist[list], ptr);
 
     /* Try to coalesce two adjacent free areas. */
-    while ((buddy = sh_find_my_buddy(ptr, list)) != NULL) {
-        OPENSSL_assert(ptr == sh_find_my_buddy(buddy, list));
+    while ((buddy = sh_find_my_buddy(ptr, (int)list)) != NULL) {
+        OPENSSL_assert(ptr == sh_find_my_buddy(buddy, (int)list));
         OPENSSL_assert(ptr != NULL);
-        OPENSSL_assert(!sh_testbit(ptr, list, sh.bitmalloc));
-        sh_clearbit(ptr, list, sh.bittable);
+        OPENSSL_assert(!sh_testbit(ptr, (int)list, sh.bitmalloc));
+        sh_clearbit(ptr, (int)list, sh.bittable);
         sh_remove_from_list(ptr);
-        OPENSSL_assert(!sh_testbit(ptr, list, sh.bitmalloc));
-        sh_clearbit(buddy, list, sh.bittable);
+        OPENSSL_assert(!sh_testbit(ptr, (int)list, sh.bitmalloc));
+        sh_clearbit(buddy, (int)list, sh.bittable);
         sh_remove_from_list(buddy);
 
         list--;
@@ -687,8 +728,8 @@ static void sh_free(void *ptr)
         if (ptr > buddy)
             ptr = buddy;
 
-        OPENSSL_assert(!sh_testbit(ptr, list, sh.bitmalloc));
-        sh_setbit(ptr, list, sh.bittable);
+        OPENSSL_assert(!sh_testbit(ptr, (int)list, sh.bitmalloc));
+        sh_setbit(ptr, (int)list, sh.bittable);
         sh_add_to_list(&sh.freelist[list], ptr);
         OPENSSL_assert(sh.freelist[list] == ptr);
     }
@@ -701,7 +742,7 @@ static size_t sh_actual_size(char *ptr)
     OPENSSL_assert(WITHIN_ARENA(ptr));
     if (!WITHIN_ARENA(ptr))
         return 0;
-    list = sh_getlist(ptr);
+    list = (int)sh_getlist(ptr);
     OPENSSL_assert(sh_testbit(ptr, list, sh.bittable));
     return sh.arena_size / (ONE << list);
 }

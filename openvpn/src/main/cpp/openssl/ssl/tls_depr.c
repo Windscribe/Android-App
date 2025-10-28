@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2020-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -12,6 +12,7 @@
 
 #include <openssl/engine.h>
 #include "ssl_local.h"
+#include "internal/ssl_unwrap.h"
 
 /*
  * Engine APIs are only used to support applications that still use ENGINEs.
@@ -27,6 +28,7 @@ void tls_engine_finish(ENGINE *e)
 
 const EVP_CIPHER *tls_get_cipher_from_engine(int nid)
 {
+    const EVP_CIPHER *ret = NULL;
 #ifndef OPENSSL_NO_ENGINE
     ENGINE *eng;
 
@@ -36,15 +38,16 @@ const EVP_CIPHER *tls_get_cipher_from_engine(int nid)
      */
     eng = ENGINE_get_cipher_engine(nid);
     if (eng != NULL) {
+        ret = ENGINE_get_cipher(eng, nid);
         ENGINE_finish(eng);
-        return EVP_get_cipherbynid(nid);
     }
 #endif
-    return NULL;
+    return ret;
 }
 
 const EVP_MD *tls_get_digest_from_engine(int nid)
 {
+    const EVP_MD *ret = NULL;
 #ifndef OPENSSL_NO_ENGINE
     ENGINE *eng;
 
@@ -54,18 +57,22 @@ const EVP_MD *tls_get_digest_from_engine(int nid)
      */
     eng = ENGINE_get_digest_engine(nid);
     if (eng != NULL) {
+        ret = ENGINE_get_digest(eng, nid);
         ENGINE_finish(eng);
-        return EVP_get_digestbynid(nid);
     }
 #endif
-    return NULL;
+    return ret;
 }
 
 #ifndef OPENSSL_NO_ENGINE
-int tls_engine_load_ssl_client_cert(SSL *s, X509 **px509, EVP_PKEY **ppkey)
+int tls_engine_load_ssl_client_cert(SSL_CONNECTION *s, X509 **px509,
+                                    EVP_PKEY **ppkey)
 {
-    return ENGINE_load_ssl_client_cert(s->ctx->client_cert_engine, s,
-                                       SSL_get_client_CA_list(s),
+    SSL *ssl = SSL_CONNECTION_GET_SSL(s);
+
+    return ENGINE_load_ssl_client_cert(SSL_CONNECTION_GET_CTX(s)->client_cert_engine,
+                                       ssl,
+                                       SSL_get_client_CA_list(ssl),
                                        px509, ppkey, NULL, NULL, NULL);
 }
 #endif
@@ -112,7 +119,7 @@ void ssl_hmac_old_free(SSL_HMAC *ctx)
 
 int ssl_hmac_old_init(SSL_HMAC *ctx, void *key, size_t len, char *md)
 {
-    return HMAC_Init_ex(ctx->old_ctx, key, len, EVP_get_digestbyname(md), NULL);
+    return HMAC_Init_ex(ctx->old_ctx, key, (int)len, EVP_get_digestbyname(md), NULL);
 }
 
 int ssl_hmac_old_update(SSL_HMAC *ctx, const unsigned char *data, size_t len)
@@ -164,9 +171,11 @@ EVP_PKEY *ssl_dh_to_pkey(DH *dh)
 
 /* Some deprecated public APIs pass EC_KEY objects */
 int ssl_set_tmp_ecdh_groups(uint16_t **pext, size_t *pextlen,
+                            uint16_t **ksext, size_t *ksextlen,
+                            size_t **tplext, size_t *tplextlen,
                             void *key)
 {
-#  ifndef OPENSSL_NO_EC
+# ifndef OPENSSL_NO_EC
     const EC_GROUP *group = EC_KEY_get0_group((const EC_KEY *)key);
     int nid;
 
@@ -177,10 +186,13 @@ int ssl_set_tmp_ecdh_groups(uint16_t **pext, size_t *pextlen,
     nid = EC_GROUP_get_curve_name(group);
     if (nid == NID_undef)
         return 0;
-    return tls1_set_groups(pext, pextlen, &nid, 1);
-#  else
+    return tls1_set_groups(pext, pextlen,
+                           ksext, ksextlen,
+                           tplext, tplextlen,
+                           &nid, 1);
+# else
     return 0;
-#  endif
+# endif
 }
 
 /*

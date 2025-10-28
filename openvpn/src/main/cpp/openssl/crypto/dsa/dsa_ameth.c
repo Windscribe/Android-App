@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2006-2024 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -54,7 +54,7 @@ static int dsa_pub_decode(EVP_PKEY *pkey, const X509_PUBKEY *pubkey)
 
     } else if ((ptype == V_ASN1_NULL) || (ptype == V_ASN1_UNDEF)) {
         if ((dsa = DSA_new()) == NULL) {
-            ERR_raise(ERR_LIB_DSA, ERR_R_MALLOC_FAILURE);
+            ERR_raise(ERR_LIB_DSA, ERR_R_DSA_LIB);
             goto err;
         }
     } else {
@@ -101,12 +101,12 @@ static int dsa_pub_encode(X509_PUBKEY *pk, const EVP_PKEY *pkey)
         && dsa->params.g != NULL) {
         str = ASN1_STRING_new();
         if (str == NULL) {
-            ERR_raise(ERR_LIB_DSA, ERR_R_MALLOC_FAILURE);
+            ERR_raise(ERR_LIB_DSA, ERR_R_ASN1_LIB);
             goto err;
         }
         str->length = i2d_DSAparams(dsa, &str->data);
         if (str->length <= 0) {
-            ERR_raise(ERR_LIB_DSA, ERR_R_MALLOC_FAILURE);
+            ERR_raise(ERR_LIB_DSA, ERR_R_ASN1_LIB);
             goto err;
         }
         ptype = V_ASN1_SEQUENCE;
@@ -116,7 +116,7 @@ static int dsa_pub_encode(X509_PUBKEY *pk, const EVP_PKEY *pkey)
     pubint = BN_to_ASN1_INTEGER(dsa->pub_key, NULL);
 
     if (pubint == NULL) {
-        ERR_raise(ERR_LIB_DSA, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_DSA, ERR_R_ASN1_LIB);
         goto err;
     }
 
@@ -124,7 +124,7 @@ static int dsa_pub_encode(X509_PUBKEY *pk, const EVP_PKEY *pkey)
     ASN1_INTEGER_free(pubint);
 
     if (penclen <= 0) {
-        ERR_raise(ERR_LIB_DSA, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_DSA, ERR_R_ASN1_LIB);
         goto err;
     }
 
@@ -175,13 +175,13 @@ static int dsa_priv_encode(PKCS8_PRIV_KEY_INFO *p8, const EVP_PKEY *pkey)
     params = ASN1_STRING_new();
 
     if (params == NULL) {
-        ERR_raise(ERR_LIB_DSA, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_DSA, ERR_R_ASN1_LIB);
         goto err;
     }
 
     params->length = i2d_DSAparams(pkey->pkey.dsa, &params->data);
     if (params->length <= 0) {
-        ERR_raise(ERR_LIB_DSA, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_DSA, ERR_R_ASN1_LIB);
         goto err;
     }
     params->type = V_ASN1_SEQUENCE;
@@ -197,18 +197,21 @@ static int dsa_priv_encode(PKCS8_PRIV_KEY_INFO *p8, const EVP_PKEY *pkey)
     dplen = i2d_ASN1_INTEGER(prkey, &dp);
 
     ASN1_STRING_clear_free(prkey);
-    prkey = NULL;
+
+    if (dplen <= 0) {
+        ERR_raise(ERR_LIB_DSA, DSA_R_BN_ERROR);
+        goto err;
+    }
 
     if (!PKCS8_pkey_set0(p8, OBJ_nid2obj(NID_dsa), 0,
-                         V_ASN1_SEQUENCE, params, dp, dplen))
+                         V_ASN1_SEQUENCE, params, dp, dplen)) {
+        OPENSSL_clear_free(dp, dplen);
         goto err;
-
+    }
     return 1;
 
  err:
-    OPENSSL_free(dp);
     ASN1_STRING_free(params);
-    ASN1_STRING_clear_free(prkey);
     return 0;
 }
 
@@ -480,12 +483,12 @@ static int dsa_pkey_import_from(const OSSL_PARAM params[], void *vpctx)
     DSA *dsa = ossl_dsa_new(pctx->libctx);
 
     if (dsa == NULL) {
-        ERR_raise(ERR_LIB_DSA, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_DSA, ERR_R_DSA_LIB);
         return 0;
     }
 
     if (!ossl_dsa_ffc_params_fromdata(dsa, params)
-        || !ossl_dsa_key_fromdata(dsa, params)
+        || !ossl_dsa_key_fromdata(dsa, params, 1)
         || !EVP_PKEY_assign_DSA(pkey, dsa)) {
         DSA_free(dsa);
         return 0;
@@ -513,26 +516,24 @@ static int dsa_pkey_copy(EVP_PKEY *to, EVP_PKEY *from)
 
 /* NB these are sorted in pkey_id order, lowest first */
 
-const EVP_PKEY_ASN1_METHOD ossl_dsa_asn1_meths[5] = {
+const EVP_PKEY_ASN1_METHOD ossl_dsa_asn1_meths[4] = {
 
-    {
-     EVP_PKEY_DSA2,
-     EVP_PKEY_DSA,
-     ASN1_PKEY_ALIAS},
-
+    /* This aliases NID_dsa with NID_dsa_2 */
     {
      EVP_PKEY_DSA1,
      EVP_PKEY_DSA,
      ASN1_PKEY_ALIAS},
 
+    /* This aliases NID_dsaWithSHA with NID_dsaWithSHA_2 */
     {
      EVP_PKEY_DSA4,
-     EVP_PKEY_DSA,
+     EVP_PKEY_DSA2,
      ASN1_PKEY_ALIAS},
 
+    /* This aliases NID_dsaWithSHA with NID_dsaWithSHA1 */
     {
      EVP_PKEY_DSA3,
-     EVP_PKEY_DSA,
+     EVP_PKEY_DSA2,
      ASN1_PKEY_ALIAS},
 
     {

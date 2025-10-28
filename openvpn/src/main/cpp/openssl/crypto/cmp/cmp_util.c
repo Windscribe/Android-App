@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2007-2025 The OpenSSL Project Authors. All Rights Reserved.
  * Copyright Nokia 2007-2019
  * Copyright Siemens AG 2015-2019
  *
@@ -53,10 +53,9 @@ static OSSL_CMP_severity parse_level(const char *level)
     if (end_level == NULL)
         return -1;
 
-    if (strncmp(level, OSSL_CMP_LOG_PREFIX,
-                strlen(OSSL_CMP_LOG_PREFIX)) == 0)
+    if (HAS_PREFIX(level, OSSL_CMP_LOG_PREFIX))
         level += strlen(OSSL_CMP_LOG_PREFIX);
-    len = end_level - level;
+    len = (int)(end_level - level);
     if (len > max_level_len)
         return -1;
     OPENSSL_strlcpy(level_copy, level, len + 1);
@@ -101,8 +100,8 @@ const char *ossl_cmp_log_parse_metadata(const char *buf,
                     *file = OPENSSL_strndup(p_file, p_line - 1 - p_file);
                     /* no real problem if OPENSSL_strndup() returns NULL */
                     *line = (int)line_number;
-                    msg = strchr(p_level, ':') + 1;
-                    if (*msg == ' ')
+                    msg = strchr(p_level, ':');
+                    if (msg != NULL && *++msg == ' ')
                         msg++;
                 }
             }
@@ -190,7 +189,7 @@ void OSSL_CMP_print_errors_cb(OSSL_CMP_log_cb_t log_fn)
                 BIO_free(bio);
             }
 #else
-            /* ERR_raise(ERR_LIB_CMP, CMP_R_NO_STDIO) makes no sense during error printing */
+            /* ERR_raise(..., CMP_R_NO_STDIO) would make no sense here */
 #endif
         } else {
             if (log_fn(component, file, line, OSSL_CMP_LOG_ERR, msg) <= 0)
@@ -244,6 +243,7 @@ int ossl_cmp_asn1_octet_string_set1(ASN1_OCTET_STRING **tgt,
                                     const ASN1_OCTET_STRING *src)
 {
     ASN1_OCTET_STRING *new;
+
     if (tgt == NULL) {
         ERR_raise(ERR_LIB_CMP, CMP_R_NULL_ARGUMENT);
         return 0;

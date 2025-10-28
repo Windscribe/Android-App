@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 
@@ -29,46 +19,46 @@
 
 namespace openvpn {
 
-  class iOSActiveInterface : public ReachabilityInterface
-  {
+class iOSActiveInterface : public ReachabilityInterface
+{
   public:
-    virtual Status reachable() const
+    Status reachable() const override
     {
-      if (ei.iface_up("en0"))
-	return ReachableViaWiFi;
-      else if (ei.iface_up("pdp_ip0"))
-	return ReachableViaWWAN;
-      else
-	return NotReachable;
+        if (ei.iface_up("en0"))
+            return ReachableViaWiFi;
+        else if (ei.iface_up("pdp_ip0"))
+            return ReachableViaWWAN;
+        else
+            return NotReachable;
     }
 
-    virtual bool reachableVia(const std::string& net_type) const
+    bool reachableVia(const std::string &net_type) const override
     {
-      const Status r = reachable();
-      if (net_type == "cellular")
-	return r == ReachableViaWWAN;
-      else if (net_type == "wifi")
-	return r == ReachableViaWiFi;
-      else
-	return r != NotReachable;
+        const Status r = reachable();
+        if (net_type == "cellular")
+            return r == ReachableViaWWAN;
+        else if (net_type == "wifi")
+            return r == ReachableViaWiFi;
+        else
+            return r != NotReachable;
     }
 
-    virtual std::string to_string() const
+    std::string to_string() const override
     {
-      switch (reachable())
-	{
-	case ReachableViaWiFi:
-	  return "ReachableViaWiFi";
-	case ReachableViaWWAN:
-	  return "ReachableViaWWAN";
-	case NotReachable:
-	  return "NotReachable";
-	}
+        switch (reachable())
+        {
+        case ReachableViaWiFi:
+            return "ReachableViaWiFi";
+        case ReachableViaWWAN:
+            return "ReachableViaWWAN";
+        case NotReachable:
+            return "NotReachable";
+        }
     }
 
   private:
     EnumIface ei;
-  };
+};
 
-}
+} // namespace openvpn
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2006-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -83,6 +83,7 @@ int pkey_main(int argc, char **argv)
     char *point_format = NULL;
 #endif
 
+    opt_set_unknown_name("cipher");
     prog = opt_init(argc, argv, pkey_options);
     while ((o = opt_next()) != OPT_EOF) {
         switch (o) {
@@ -171,16 +172,15 @@ int pkey_main(int argc, char **argv)
     }
 
     /* No extra arguments. */
-    argc = opt_num_rest();
-    if (argc != 0)
+    if (!opt_check_rest_arg(NULL))
         goto opthelp;
 
     if (text && text_pub)
         BIO_printf(bio_err,
                    "Warning: The -text option is ignored with -text_pub\n");
-    if (traditional && (noout || outformat != FORMAT_PEM))
+    if (traditional && (noout || pubout))
         BIO_printf(bio_err,
-                   "Warning: The -traditional is ignored since there is no PEM output\n");
+                   "Warning: -traditional is ignored with no private key output\n");
 
     /* -pubout and -text is the same as -text_pub */
     if (!text_pub && pubout && text) {
@@ -190,10 +190,8 @@ int pkey_main(int argc, char **argv)
 
     private = (!noout && !pubout) || (text && !text_pub);
 
-    if (ciphername != NULL) {
-        if (!opt_cipher(ciphername, &cipher))
-            goto opthelp;
-    }
+    if (!opt_cipher(ciphername, &cipher))
+        goto opthelp;
     if (cipher == NULL) {
         if (passoutarg != NULL)
             BIO_printf(bio_err,
@@ -210,15 +208,15 @@ int pkey_main(int argc, char **argv)
         goto end;
     }
 
-    out = bio_open_owner(outfile, outformat, private);
-    if (out == NULL)
-        goto end;
-
     if (pubin)
         pkey = load_pubkey(infile, informat, 1, passin, e, "Public Key");
     else
         pkey = load_key(infile, informat, 1, passin, e, "key");
     if (pkey == NULL)
+        goto end;
+
+    out = bio_open_owner(outfile, outformat, private);
+    if (out == NULL)
         goto end;
 
 #ifndef OPENSSL_NO_EC
@@ -250,7 +248,7 @@ int pkey_main(int argc, char **argv)
             goto end;
         }
 
-        if (check)
+        if (check && !pubin)
             r = EVP_PKEY_check(ctx);
         else
             r = EVP_PKEY_public_check(ctx);
@@ -297,8 +295,14 @@ int pkey_main(int argc, char **argv)
                     goto end;
             } else {
                 assert(private);
-                if (!i2d_PrivateKey_bio(out, pkey))
-                    goto end;
+                if (traditional) {
+                    if (!i2d_PrivateKey_bio(out, pkey))
+                        goto end;
+                } else {
+                    if (!i2d_PKCS8PrivateKey_bio(out, pkey, NULL, NULL, 0,
+                                                 NULL, NULL))
+                        goto end;
+                }
             }
         } else {
             BIO_printf(bio_err, "Bad format specified for key\n");

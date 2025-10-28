@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1999-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -34,11 +34,9 @@ NETSCAPE_SPKI *NETSCAPE_SPKI_b64_decode(const char *str, int len)
     int spki_len;
     NETSCAPE_SPKI *spki;
     if (len <= 0)
-        len = strlen(str);
-    if ((spki_der = OPENSSL_malloc(len + 1)) == NULL) {
-        ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
+        len = (int)strlen(str);
+    if ((spki_der = OPENSSL_malloc(len + 1)) == NULL)
         return NULL;
-    }
     spki_len = EVP_DecodeBlock(spki_der, (const unsigned char *)str, len);
     if (spki_len < 0) {
         ERR_raise(ERR_LIB_X509, X509_R_BASE64_DECODE_ERROR);
@@ -63,9 +61,8 @@ char *NETSCAPE_SPKI_b64_encode(NETSCAPE_SPKI *spki)
     if (der_len <= 0)
         return NULL;
     der_spki = OPENSSL_malloc(der_len);
-    b64_str = OPENSSL_malloc(der_len * 2);
+    b64_str = OPENSSL_malloc_array(der_len, 2);
     if (der_spki == NULL || b64_str == NULL) {
-        ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
         OPENSSL_free(der_spki);
         OPENSSL_free(b64_str);
         return NULL;

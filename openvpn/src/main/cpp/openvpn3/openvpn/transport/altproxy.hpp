@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef OPENVPN_TRANSPORT_ALTPROXY_H
 #define OPENVPN_TRANSPORT_ALTPROXY_H
@@ -31,24 +21,25 @@
 #include <openvpn/crypto/digestapi.hpp>
 
 namespace openvpn {
-  struct AltProxy : public RC<thread_unsafe_refcount>
-  {
+struct AltProxy : public RC<thread_unsafe_refcount>
+{
     struct Config
     {
-      Config()
-	: free_list_max_size(8),
-	  socket_protect(nullptr)
-      {}
+        Config()
+            : free_list_max_size(8),
+              socket_protect(nullptr)
+        {
+        }
 
-      RemoteList::Ptr remote_list;
-      size_t free_list_max_size;
-      Frame::Ptr frame;
-      SessionStats::Ptr stats;
+        RemoteList::Ptr remote_list;
+        size_t free_list_max_size;
+        Frame::Ptr frame;
+        SessionStats::Ptr stats;
 
-      RandomAPI::Ptr rng;
-      DigestFactory::Ptr digest_factory;
+        StrongRandomAPI::Ptr rng;
+        DigestFactory::Ptr digest_factory;
 
-      SocketProtect* socket_protect;
+        SocketProtect *socket_protect;
     };
 
     typedef RCPtr<AltProxy> Ptr;
@@ -60,7 +51,7 @@ namespace openvpn {
     virtual void set_enable_cache(const bool enable_cache) = 0;
 
     // return a RemoteList::Ptr (optional) to precache it
-    virtual void precache(RemoteList::Ptr& r) = 0;
+    virtual void precache(RemoteList::Ptr &r) = 0;
 
     // iterate to next host in proxy-specific remote_list, return true
     // to prevent next() from being called on global remote_list
@@ -70,8 +61,8 @@ namespace openvpn {
     virtual bool requires_tcp() const = 0;
 
     // return a new TransportClientFactory for this proxy
-    virtual TransportClientFactory::Ptr new_transport_client_factory(const Config&) = 0;
-  };
-}
+    virtual TransportClientFactory::Ptr new_transport_client_factory(const Config &) = 0;
+};
+} // namespace openvpn
 
 #endif

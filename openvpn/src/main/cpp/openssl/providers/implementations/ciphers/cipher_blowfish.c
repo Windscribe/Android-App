@@ -41,10 +41,8 @@ static void *blowfish_dupctx(void *ctx)
         return NULL;
 
     ret = OPENSSL_malloc(sizeof(*ret));
-    if (ret == NULL) {
-        ERR_raise(ERR_LIB_PROV, ERR_R_MALLOC_FAILURE);
+    if (ret == NULL)
         return NULL;
-    }
     *ret = *in;
 
     return ret;
@@ -55,6 +53,6 @@ IMPLEMENT_var_keylen_cipher(blowfish, BLOWFISH, ecb, ECB, BF_FLAGS, 128, 64, 0, 
 /* bf_cbc_functions */
 IMPLEMENT_var_keylen_cipher(blowfish, BLOWFISH, cbc, CBC, BF_FLAGS, 128, 64, 64, block)
 /* bf_ofb_functions */
-IMPLEMENT_var_keylen_cipher(blowfish, BLOWFISH, ofb64, OFB, BF_FLAGS, 64, 8, 64, stream)
+IMPLEMENT_var_keylen_cipher(blowfish, BLOWFISH, ofb64, OFB, BF_FLAGS, 128, 8, 64, stream)
 /* bf_cfb_functions */
-IMPLEMENT_var_keylen_cipher(blowfish, BLOWFISH, cfb64,  CFB, BF_FLAGS, 64, 8, 64, stream)
+IMPLEMENT_var_keylen_cipher(blowfish, BLOWFISH, cfb64,  CFB, BF_FLAGS, 128, 8, 64, stream)

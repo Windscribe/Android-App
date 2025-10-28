@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1999-2023 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -62,6 +62,7 @@ int (*X509_TRUST_set_default(int (*trust) (int, X509 *, int))) (int, X509 *,
     return oldtrust;
 }
 
+/* Returns X509_TRUST_TRUSTED, X509_TRUST_REJECTED, or X509_TRUST_UNTRUSTED */
 int X509_check_trust(X509 *x, int id, int flags)
 {
     X509_TRUST *pt;
@@ -72,7 +73,7 @@ int X509_check_trust(X509 *x, int id, int flags)
         return obj_trust(NID_anyExtendedKeyUsage, x,
                          flags | X509_TRUST_DO_SS_COMPAT);
     idx = X509_TRUST_get_by_id(id);
-    if (idx == -1)
+    if (idx < 0)
         return default_trust(id, x, flags);
     pt = X509_TRUST_get0(idx);
     return pt->check_trust(pt, x, flags);
@@ -104,6 +105,8 @@ int X509_TRUST_get_by_id(int id)
     if (trtable == NULL)
         return -1;
     tmp.trust = id;
+    /* Ideally, this would be done under lock */
+    sk_X509_TRUST_sort(trtable);
     idx = sk_X509_TRUST_find(trtable, &tmp);
     if (idx < 0)
         return -1;
@@ -112,7 +115,7 @@ int X509_TRUST_get_by_id(int id)
 
 int X509_TRUST_set(int *t, int trust)
 {
-    if (X509_TRUST_get_by_id(trust) == -1) {
+    if (X509_TRUST_get_by_id(trust) < 0) {
         ERR_raise(ERR_LIB_X509, X509_R_INVALID_TRUST);
         return 0;
     }
@@ -134,11 +137,9 @@ int X509_TRUST_add(int id, int flags, int (*ck) (X509_TRUST *, X509 *, int),
     /* Get existing entry if any */
     idx = X509_TRUST_get_by_id(id);
     /* Need a new entry */
-    if (idx == -1) {
-        if ((trtmp = OPENSSL_malloc(sizeof(*trtmp))) == NULL) {
-            ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
+    if (idx < 0) {
+        if ((trtmp = OPENSSL_malloc(sizeof(*trtmp))) == NULL)
             return 0;
-        }
         trtmp->flags = X509_TRUST_DYNAMIC;
     } else
         trtmp = X509_TRUST_get0(idx);
@@ -147,10 +148,8 @@ int X509_TRUST_add(int id, int flags, int (*ck) (X509_TRUST *, X509 *, int),
     if (trtmp->flags & X509_TRUST_DYNAMIC_NAME)
         OPENSSL_free(trtmp->name);
     /* dup supplied name */
-    if ((trtmp->name = OPENSSL_strdup(name)) == NULL) {
-        ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
+    if ((trtmp->name = OPENSSL_strdup(name)) == NULL)
         goto err;
-    }
     /* Keep the dynamic flag of existing entry */
     trtmp->flags &= X509_TRUST_DYNAMIC;
     /* Set all other flags */
@@ -162,20 +161,20 @@ int X509_TRUST_add(int id, int flags, int (*ck) (X509_TRUST *, X509 *, int),
     trtmp->arg2 = arg2;
 
     /* If its a new entry manage the dynamic table */
-    if (idx == -1) {
+    if (idx < 0) {
         if (trtable == NULL
             && (trtable = sk_X509_TRUST_new(tr_cmp)) == NULL) {
-            ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
-            goto err;;
+            ERR_raise(ERR_LIB_X509, ERR_R_CRYPTO_LIB);
+            goto err;
         }
         if (!sk_X509_TRUST_push(trtable, trtmp)) {
-            ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
+            ERR_raise(ERR_LIB_X509, ERR_R_CRYPTO_LIB);
             goto err;
         }
     }
     return 1;
  err:
-    if (idx == -1) {
+    if (idx < 0) {
         OPENSSL_free(trtmp->name);
         OPENSSL_free(trtmp);
     }
@@ -253,7 +252,7 @@ static int obj_trust(int id, X509 *x, int flags)
     X509_CERT_AUX *ax = x->aux;
     int i;
 
-    if (ax && ax->reject) {
+    if (ax != NULL && ax->reject != NULL) {
         for (i = 0; i < sk_ASN1_OBJECT_num(ax->reject); i++) {
             ASN1_OBJECT *obj = sk_ASN1_OBJECT_value(ax->reject, i);
             int nid = OBJ_obj2nid(obj);
@@ -264,7 +263,7 @@ static int obj_trust(int id, X509 *x, int flags)
         }
     }
 
-    if (ax && ax->trust) {
+    if (ax != NULL && ax->trust != NULL) {
         for (i = 0; i < sk_ASN1_OBJECT_num(ax->trust); i++) {
             ASN1_OBJECT *obj = sk_ASN1_OBJECT_value(ax->trust, i);
             int nid = OBJ_obj2nid(obj);
@@ -276,7 +275,7 @@ static int obj_trust(int id, X509 *x, int flags)
         /*
          * Reject when explicit trust EKU are set and none match.
          *
-         * Returning untrusted is enough for for full chains that end in
+         * Returning untrusted is enough for full chains that end in
          * self-signed roots, because when explicit trust is specified it
          * suppresses the default blanket trust of self-signed objects.
          *

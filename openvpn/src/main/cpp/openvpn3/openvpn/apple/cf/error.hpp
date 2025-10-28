@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef OPENVPN_APPLECRYPTO_CF_ERROR_H
 #define OPENVPN_APPLECRYPTO_CF_ERROR_H
@@ -32,35 +22,41 @@
 
 namespace openvpn {
 
-  // string exception class
-  class CFException : public std::exception
-  {
+// string exception class
+class CFException : public std::exception
+{
   public:
-    CFException(const std::string& text)
+    explicit CFException(const std::string &text)
     {
-      errtxt = text;
+        errtxt = text;
     }
 
-    CFException(const std::string& text, const OSStatus status)
+    CFException(const std::string &text, const OSStatus status)
     {
-      set_errtxt(text, status);
+        set_errtxt(text, status);
     }
 
-    virtual const char* what() const throw() { return errtxt.c_str(); }
-    std::string what_str() const { return errtxt; }
+    const char *what() const noexcept override
+    {
+        return errtxt.c_str();
+    }
+    std::string what_str() const
+    {
+        return errtxt;
+    }
 
-    virtual ~CFException() throw() {}
+    virtual ~CFException() noexcept = default;
 
   private:
-    void set_errtxt(const std::string& text, const OSStatus status)
+    void set_errtxt(const std::string &text, const OSStatus status)
     {
-      std::ostringstream s;
-      s << text << ": OSX Error code=" << status;
-      errtxt = s.str();
+        std::ostringstream s;
+        s << text << ": OSX Error code=" << status;
+        errtxt = s.str();
     }
 
     std::string errtxt;
-  };
+};
 
 } // namespace openvpn
 

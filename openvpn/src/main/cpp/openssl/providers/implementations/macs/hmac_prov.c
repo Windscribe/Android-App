@@ -1,11 +1,12 @@
 /*
- * Copyright 2018-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2018-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
  * in the file LICENSE in the source distribution or at
  * https://www.openssl.org/source/license.html
  */
+
 
 /*
  * HMAC low level APIs are deprecated for public use, but still ok for internal
@@ -20,11 +21,17 @@
 #include <openssl/params.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
+#include <openssl/proverr.h>
+#include <openssl/err.h>
+
+#include "internal/ssl3_cbc.h"
+#include "internal/cryptlib.h"
 
 #include "prov/implementations.h"
 #include "prov/provider_ctx.h"
 #include "prov/provider_util.h"
 #include "prov/providercommon.h"
+#include "prov/securitycheck.h"
 
 /*
  * Forward declaration of everything implemented here.  This is not strictly
@@ -57,18 +64,16 @@ struct hmac_data_st {
     int tls_header_set;
     unsigned char tls_mac_out[EVP_MAX_MD_SIZE];
     size_t tls_mac_out_size;
+#ifdef FIPS_MODULE
+    /*
+     * 'internal' is set to 1 if HMAC is used inside another algorithm such as a
+     * KDF. In this case it is the parent algorithm that is responsible for
+     * performing any conditional FIPS indicator related checks for the HMAC.
+     */
+    int internal;
+#endif
+    OSSL_FIPS_IND_DECLARE
 };
-
-/* Defined in ssl/s3_cbc.c */
-int ssl3_cbc_digest_record(const EVP_MD *md,
-                           unsigned char *md_out,
-                           size_t *md_out_size,
-                           const unsigned char header[13],
-                           const unsigned char *data,
-                           size_t data_size,
-                           size_t data_plus_mac_plus_padding_size,
-                           const unsigned char *mac_secret,
-                           size_t mac_secret_length, char is_sslv3);
 
 static void *hmac_new(void *provctx)
 {
@@ -83,6 +88,7 @@ static void *hmac_new(void *provctx)
         return NULL;
     }
     macctx->provctx = provctx;
+    OSSL_FIPS_IND_INIT(macctx)
 
     return macctx;
 }
@@ -94,7 +100,7 @@ static void hmac_free(void *vmacctx)
     if (macctx != NULL) {
         HMAC_CTX_free(macctx->ctx);
         ossl_prov_digest_reset(&macctx->digest);
-        OPENSSL_secure_clear_free(macctx->key, macctx->keylen);
+        OPENSSL_clear_free(macctx->key, macctx->keylen);
         OPENSSL_free(macctx);
     }
 }
@@ -115,6 +121,7 @@ static void *hmac_dup(void *vsrc)
     *dst = *src;
     dst->ctx = ctx;
     dst->key = NULL;
+    memset(&dst->digest, 0, sizeof(dst->digest));
 
     if (!HMAC_CTX_copy(dst->ctx, src->ctx)
         || !ossl_prov_digest_copy(&dst->digest, &src->digest)) {
@@ -122,13 +129,13 @@ static void *hmac_dup(void *vsrc)
         return NULL;
     }
     if (src->key != NULL) {
-        /* There is no "secure" OPENSSL_memdup */
-        dst->key = OPENSSL_secure_malloc(src->keylen > 0 ? src->keylen : 1);
+        dst->key = OPENSSL_malloc(src->keylen > 0 ? src->keylen : 1);
         if (dst->key == NULL) {
             hmac_free(dst);
             return 0;
         }
-        memcpy(dst->key, src->key, src->keylen);
+        if (src->keylen > 0)
+            memcpy(dst->key, src->key, src->keylen);
     }
     return dst;
 }
@@ -152,19 +159,41 @@ static int hmac_setkey(struct hmac_data_st *macctx,
 {
     const EVP_MD *digest;
 
-    if (macctx->keylen > 0)
-        OPENSSL_secure_clear_free(macctx->key, macctx->keylen);
+#ifdef FIPS_MODULE
+    /*
+     * KDF's pass a salt rather than a key,
+     * which is why it skips the key check unless "HMAC" is fetched directly.
+     */
+    if (!macctx->internal) {
+        OSSL_LIB_CTX *libctx = PROV_LIBCTX_OF(macctx->provctx);
+        int approved = ossl_mac_check_key_size(keylen);
+
+        if (!approved) {
+            if (!OSSL_FIPS_IND_ON_UNAPPROVED(macctx, OSSL_FIPS_IND_SETTABLE0,
+                                             libctx, "HMAC", "keysize",
+                                             ossl_fips_config_hmac_key_check)) {
+                ERR_raise(ERR_LIB_PROV, PROV_R_INVALID_KEY_LENGTH);
+                return 0;
+            }
+        }
+    }
+#endif
+
+    if (macctx->key != NULL)
+        OPENSSL_clear_free(macctx->key, macctx->keylen);
     /* Keep a copy of the key in case we need it for TLS HMAC */
-    macctx->key = OPENSSL_secure_malloc(keylen > 0 ? keylen : 1);
+    macctx->key = OPENSSL_malloc(keylen > 0 ? keylen : 1);
     if (macctx->key == NULL)
         return 0;
-    memcpy(macctx->key, key, keylen);
+
+    if (keylen > 0)
+        memcpy(macctx->key, key, keylen);
     macctx->keylen = keylen;
 
     digest = ossl_prov_digest_md(&macctx->digest);
     /* HMAC_Init_ex doesn't tolerate all zero params, so we must be careful */
     if (key != NULL || (macctx->tls_data_size == 0 && digest != NULL))
-        return HMAC_Init_ex(macctx->ctx, key, keylen, digest,
+        return HMAC_Init_ex(macctx->ctx, key, (int)keylen, digest,
                             ossl_prov_digest_engine(&macctx->digest));
     return 1;
 }
@@ -177,9 +206,11 @@ static int hmac_init(void *vmacctx, const unsigned char *key,
     if (!ossl_prov_is_running() || !hmac_set_ctx_params(macctx, params))
         return 0;
 
-    if (key != NULL && !hmac_setkey(macctx, key, keylen))
-        return 0;
-    return 1;
+    if (key != NULL)
+        return hmac_setkey(macctx, key, keylen);
+
+    /* Just reinit the HMAC context */
+    return HMAC_Init_ex(macctx->ctx, NULL, 0, NULL, NULL);
 }
 
 static int hmac_update(void *vmacctx, const unsigned char *data,
@@ -238,63 +269,241 @@ static int hmac_final(void *vmacctx, unsigned char *out, size_t *outl,
     return 1;
 }
 
-static const OSSL_PARAM known_gettable_ctx_params[] = {
+/* Machine generated by util/perl/OpenSSL/paramnames.pm */
+#ifndef hmac_get_ctx_params_list
+static const OSSL_PARAM hmac_get_ctx_params_list[] = {
     OSSL_PARAM_size_t(OSSL_MAC_PARAM_SIZE, NULL),
     OSSL_PARAM_size_t(OSSL_MAC_PARAM_BLOCK_SIZE, NULL),
+# if defined(FIPS_MODULE)
+    OSSL_PARAM_int(OSSL_ALG_PARAM_FIPS_APPROVED_INDICATOR, NULL),
+# endif
     OSSL_PARAM_END
 };
+#endif
+
+#ifndef hmac_get_ctx_params_st
+struct hmac_get_ctx_params_st {
+    OSSL_PARAM *bsize;
+# if defined(FIPS_MODULE)
+    OSSL_PARAM *ind;
+# endif
+    OSSL_PARAM *size;
+};
+#endif
+
+#ifndef hmac_get_ctx_params_decoder
+static int hmac_get_ctx_params_decoder
+    (const OSSL_PARAM *p, struct hmac_get_ctx_params_st *r)
+{
+    const char *s;
+
+    memset(r, 0, sizeof(*r));
+    if (p != NULL)
+        for (; (s = p->key) != NULL; p++)
+            switch(s[0]) {
+            default:
+                break;
+            case 'b':
+                if (ossl_likely(strcmp("lock-size", s + 1) == 0)) {
+                    /* OSSL_MAC_PARAM_BLOCK_SIZE */
+                    if (ossl_unlikely(r->bsize != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->bsize = (OSSL_PARAM *)p;
+                }
+                break;
+            case 'f':
+# if defined(FIPS_MODULE)
+                if (ossl_likely(strcmp("ips-indicator", s + 1) == 0)) {
+                    /* OSSL_ALG_PARAM_FIPS_APPROVED_INDICATOR */
+                    if (ossl_unlikely(r->ind != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->ind = (OSSL_PARAM *)p;
+                }
+# endif
+                break;
+            case 's':
+                if (ossl_likely(strcmp("ize", s + 1) == 0)) {
+                    /* OSSL_MAC_PARAM_SIZE */
+                    if (ossl_unlikely(r->size != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->size = (OSSL_PARAM *)p;
+                }
+            }
+    return 1;
+}
+#endif
+/* End of machine generated */
+
 static const OSSL_PARAM *hmac_gettable_ctx_params(ossl_unused void *ctx,
                                                   ossl_unused void *provctx)
 {
-    return known_gettable_ctx_params;
+    return hmac_get_ctx_params_list;
 }
 
 static int hmac_get_ctx_params(void *vmacctx, OSSL_PARAM params[])
 {
     struct hmac_data_st *macctx = vmacctx;
-    OSSL_PARAM *p;
+    struct hmac_get_ctx_params_st p;
 
-    if ((p = OSSL_PARAM_locate(params, OSSL_MAC_PARAM_SIZE)) != NULL
-            && !OSSL_PARAM_set_size_t(p, hmac_size(macctx)))
+    if (macctx == NULL || !hmac_get_ctx_params_decoder(params, &p))
         return 0;
 
-    if ((p = OSSL_PARAM_locate(params, OSSL_MAC_PARAM_BLOCK_SIZE)) != NULL
-            && !OSSL_PARAM_set_int(p, hmac_block_size(macctx)))
+    if (p.size != NULL && !OSSL_PARAM_set_size_t(p.size, hmac_size(macctx)))
         return 0;
 
+    if (p.bsize != NULL && !OSSL_PARAM_set_int(p.bsize, hmac_block_size(macctx)))
+        return 0;
+
+#ifdef FIPS_MODULE
+    if (p.ind != NULL) {
+        int approved = 0;
+
+        if (!macctx->internal)
+            approved = OSSL_FIPS_IND_GET(macctx)->approved;
+        if (!OSSL_PARAM_set_int(p.ind, approved))
+            return 0;
+    }
+#endif
     return 1;
 }
 
-static const OSSL_PARAM known_settable_ctx_params[] = {
+/* Machine generated by util/perl/OpenSSL/paramnames.pm */
+#ifndef hmac_set_ctx_params_list
+static const OSSL_PARAM hmac_set_ctx_params_list[] = {
     OSSL_PARAM_utf8_string(OSSL_MAC_PARAM_DIGEST, NULL, 0),
     OSSL_PARAM_utf8_string(OSSL_MAC_PARAM_PROPERTIES, NULL, 0),
     OSSL_PARAM_octet_string(OSSL_MAC_PARAM_KEY, NULL, 0),
-    OSSL_PARAM_int(OSSL_MAC_PARAM_DIGEST_NOINIT, NULL),
-    OSSL_PARAM_int(OSSL_MAC_PARAM_DIGEST_ONESHOT, NULL),
     OSSL_PARAM_size_t(OSSL_MAC_PARAM_TLS_DATA_SIZE, NULL),
+# if defined(FIPS_MODULE)
+    OSSL_PARAM_int(OSSL_MAC_PARAM_FIPS_KEY_CHECK, NULL),
+# endif
     OSSL_PARAM_END
 };
+#endif
+
+#ifndef hmac_set_ctx_params_st
+struct hmac_set_ctx_params_st {
+    OSSL_PARAM *digest;
+    OSSL_PARAM *engine;
+# if defined(FIPS_MODULE)
+    OSSL_PARAM *ind_k;
+# endif
+    OSSL_PARAM *key;
+    OSSL_PARAM *propq;
+    OSSL_PARAM *tlssize;
+};
+#endif
+
+#ifndef hmac_set_ctx_params_decoder
+static int hmac_set_ctx_params_decoder
+    (const OSSL_PARAM *p, struct hmac_set_ctx_params_st *r)
+{
+    const char *s;
+
+    memset(r, 0, sizeof(*r));
+    if (p != NULL)
+        for (; (s = p->key) != NULL; p++)
+            switch(s[0]) {
+            default:
+                break;
+            case 'd':
+                if (ossl_likely(strcmp("igest", s + 1) == 0)) {
+                    /* OSSL_MAC_PARAM_DIGEST */
+                    if (ossl_unlikely(r->digest != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->digest = (OSSL_PARAM *)p;
+                }
+                break;
+            case 'e':
+                if (ossl_likely(strcmp("ngine", s + 1) == 0)) {
+                    /* OSSL_ALG_PARAM_ENGINE */
+                    if (ossl_unlikely(r->engine != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->engine = (OSSL_PARAM *)p;
+                }
+                break;
+            case 'k':
+                switch(s[1]) {
+                default:
+                    break;
+                case 'e':
+                    switch(s[2]) {
+                    default:
+                        break;
+                    case 'y':
+                        switch(s[3]) {
+                        default:
+                            break;
+                        case '-':
+# if defined(FIPS_MODULE)
+                            if (ossl_likely(strcmp("check", s + 4) == 0)) {
+                                /* OSSL_MAC_PARAM_FIPS_KEY_CHECK */
+                                if (ossl_unlikely(r->ind_k != NULL)) {
+                                    ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                   "param %s is repeated", s);
+                                    return 0;
+                                }
+                                r->ind_k = (OSSL_PARAM *)p;
+                            }
+# endif
+                            break;
+                        case '\0':
+                            if (ossl_unlikely(r->key != NULL)) {
+                                ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                               "param %s is repeated", s);
+                                return 0;
+                            }
+                            r->key = (OSSL_PARAM *)p;
+                        }
+                    }
+                }
+                break;
+            case 'p':
+                if (ossl_likely(strcmp("roperties", s + 1) == 0)) {
+                    /* OSSL_MAC_PARAM_PROPERTIES */
+                    if (ossl_unlikely(r->propq != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->propq = (OSSL_PARAM *)p;
+                }
+                break;
+            case 't':
+                if (ossl_likely(strcmp("ls-data-size", s + 1) == 0)) {
+                    /* OSSL_MAC_PARAM_TLS_DATA_SIZE */
+                    if (ossl_unlikely(r->tlssize != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->tlssize = (OSSL_PARAM *)p;
+                }
+            }
+    return 1;
+}
+#endif
+/* End of machine generated */
+
 static const OSSL_PARAM *hmac_settable_ctx_params(ossl_unused void *ctx,
                                                   ossl_unused void *provctx)
 {
-    return known_settable_ctx_params;
-}
-
-static int set_flag(const OSSL_PARAM params[], const char *key, int mask,
-                    int *flags)
-{
-    const OSSL_PARAM *p = OSSL_PARAM_locate_const(params, key);
-    int flag = 0;
-
-    if (p != NULL) {
-        if (!OSSL_PARAM_get_int(p, &flag))
-            return 0;
-        if (flag == 0)
-            *flags &= ~mask;
-        else
-            *flags |= mask;
-    }
-    return 1;
+    return hmac_set_ctx_params_list;
 }
 
 /*
@@ -303,49 +512,33 @@ static int set_flag(const OSSL_PARAM params[], const char *key, int mask,
 static int hmac_set_ctx_params(void *vmacctx, const OSSL_PARAM params[])
 {
     struct hmac_data_st *macctx = vmacctx;
-    OSSL_LIB_CTX *ctx = PROV_LIBCTX_OF(macctx->provctx);
-    const OSSL_PARAM *p;
-    int flags = 0;
+    OSSL_LIB_CTX *ctx;
+    struct hmac_set_ctx_params_st p;
 
-    if (params == NULL)
-        return 1;
-
-    if (!ossl_prov_digest_load_from_params(&macctx->digest, params, ctx))
+    if (macctx == NULL || !hmac_set_ctx_params_decoder(params, &p))
         return 0;
 
-    if (!set_flag(params, OSSL_MAC_PARAM_DIGEST_NOINIT, EVP_MD_CTX_FLAG_NO_INIT,
-                  &flags))
+    ctx = PROV_LIBCTX_OF(macctx->provctx);
+
+    if (!OSSL_FIPS_IND_SET_CTX_FROM_PARAM(macctx, OSSL_FIPS_IND_SETTABLE0, p.ind_k))
         return 0;
-    if (!set_flag(params, OSSL_MAC_PARAM_DIGEST_ONESHOT, EVP_MD_CTX_FLAG_ONESHOT,
-                  &flags))
+
+    if (p.digest != NULL
+            && !ossl_prov_digest_load(&macctx->digest, p.digest, p.propq,
+                                      p.engine, ctx))
         return 0;
-    if (flags)
-        HMAC_CTX_set_flags(macctx->ctx, flags);
 
-    if ((p = OSSL_PARAM_locate_const(params, OSSL_MAC_PARAM_KEY)) != NULL) {
-        if (p->data_type != OSSL_PARAM_OCTET_STRING)
+    if (p.key != NULL) {
+        if (p.key->data_type != OSSL_PARAM_OCTET_STRING)
             return 0;
 
-        if (macctx->keylen > 0)
-            OPENSSL_secure_clear_free(macctx->key, macctx->keylen);
-        /* Keep a copy of the key if we need it for TLS HMAC */
-        macctx->key = OPENSSL_secure_malloc(p->data_size > 0 ? p->data_size : 1);
-        if (macctx->key == NULL)
-            return 0;
-        memcpy(macctx->key, p->data, p->data_size);
-        macctx->keylen = p->data_size;
-
-        if (!HMAC_Init_ex(macctx->ctx, p->data, p->data_size,
-                          ossl_prov_digest_md(&macctx->digest),
-                          NULL /* ENGINE */))
-            return 0;
-
-    }
-    if ((p = OSSL_PARAM_locate_const(params,
-                                     OSSL_MAC_PARAM_TLS_DATA_SIZE)) != NULL) {
-        if (!OSSL_PARAM_get_size_t(p, &macctx->tls_data_size))
+        if (!hmac_setkey(macctx, p.key->data, p.key->data_size))
             return 0;
     }
+
+    if (p.tlssize != NULL && !OSSL_PARAM_get_size_t(p.tlssize, &macctx->tls_data_size))
+        return 0;
+
     return 1;
 }
 
@@ -362,5 +555,35 @@ const OSSL_DISPATCH ossl_hmac_functions[] = {
     { OSSL_FUNC_MAC_SETTABLE_CTX_PARAMS,
       (void (*)(void))hmac_settable_ctx_params },
     { OSSL_FUNC_MAC_SET_CTX_PARAMS, (void (*)(void))hmac_set_ctx_params },
-    { 0, NULL }
+    OSSL_DISPATCH_END
 };
+
+#ifdef FIPS_MODULE
+static OSSL_FUNC_mac_newctx_fn hmac_internal_new;
+
+static void *hmac_internal_new(void *provctx)
+{
+    struct hmac_data_st *macctx = hmac_new(provctx);
+
+    if (macctx != NULL)
+        macctx->internal = 1;
+    return macctx;
+}
+
+const OSSL_DISPATCH ossl_hmac_internal_functions[] = {
+    { OSSL_FUNC_MAC_NEWCTX, (void (*)(void))hmac_internal_new },
+    { OSSL_FUNC_MAC_DUPCTX, (void (*)(void))hmac_dup },
+    { OSSL_FUNC_MAC_FREECTX, (void (*)(void))hmac_free },
+    { OSSL_FUNC_MAC_INIT, (void (*)(void))hmac_init },
+    { OSSL_FUNC_MAC_UPDATE, (void (*)(void))hmac_update },
+    { OSSL_FUNC_MAC_FINAL, (void (*)(void))hmac_final },
+    { OSSL_FUNC_MAC_GETTABLE_CTX_PARAMS,
+      (void (*)(void))hmac_gettable_ctx_params },
+    { OSSL_FUNC_MAC_GET_CTX_PARAMS, (void (*)(void))hmac_get_ctx_params },
+    { OSSL_FUNC_MAC_SETTABLE_CTX_PARAMS,
+      (void (*)(void))hmac_settable_ctx_params },
+    { OSSL_FUNC_MAC_SET_CTX_PARAMS, (void (*)(void))hmac_set_ctx_params },
+    OSSL_DISPATCH_END
+};
+
+#endif /* FIPS_MODULE */

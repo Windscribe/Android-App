@@ -436,6 +436,7 @@ SHA3_squeeze:
 	ret
 .size	SHA3_squeeze,.-SHA3_squeeze
 
+.section .rodata
 .align	64
 theta_perm:
 	.quad	0, 1, 2, 3, 4, 5, 6, 7		# [not used]
@@ -492,4 +493,4 @@ iotas:
 	.quad	0x0000000080000001
 	.quad	0x8000000080008008
 
-.asciz	"Keccak-1600 absorb and squeeze for AVX-512F, CRYPTOGAMS by <appro@openssl.org>"
+.asciz	"Keccak-1600 absorb and squeeze for AVX-512F, CRYPTOGAMS by <https://github.com/dot-asm>"

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2019-2024 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -12,7 +12,6 @@
 #include "internal/ffc.h"
 #include "internal/param_build_set.h"
 #include "internal/nelem.h"
-#include "e_os.h" /* strcasecmp */
 
 #ifndef FIPS_MODULE
 # include <openssl/asn1.h> /* ossl_ffc_params_print */
@@ -28,11 +27,19 @@ void ossl_ffc_params_init(FFC_PARAMS *params)
 
 void ossl_ffc_params_cleanup(FFC_PARAMS *params)
 {
+#ifdef OPENSSL_PEDANTIC_ZEROIZATION
+    BN_clear_free(params->p);
+    BN_clear_free(params->q);
+    BN_clear_free(params->g);
+    BN_clear_free(params->j);
+    OPENSSL_clear_free(params->seed, params->seedlen);
+#else
     BN_free(params->p);
     BN_free(params->q);
     BN_free(params->g);
     BN_free(params->j);
     OPENSSL_free(params->seed);
+#endif
     ossl_ffc_params_init(params);
 }
 
@@ -76,9 +83,6 @@ void ossl_ffc_params_set0_j(FFC_PARAMS *d, BIGNUM *j)
 int ossl_ffc_params_set_seed(FFC_PARAMS *params,
                              const unsigned char *seed, size_t seedlen)
 {
-    if (params == NULL)
-        return 0;
-
     if (params->seed != NULL) {
         if (params->seed == seed)
             return 1;
@@ -126,11 +130,10 @@ void ossl_ffc_params_enable_flags(FFC_PARAMS *params, unsigned int flags,
         params->flags &= ~flags;
 }
 
-int ossl_ffc_set_digest(FFC_PARAMS *params, const char *alg, const char *props)
+void ossl_ffc_set_digest(FFC_PARAMS *params, const char *alg, const char *props)
 {
     params->mdname = alg;
     params->mdprops = props;
-    return 1;
 }
 
 int ossl_ffc_params_set_validate_params(FFC_PARAMS *params,
@@ -183,6 +186,8 @@ int ossl_ffc_params_copy(FFC_PARAMS *dst, const FFC_PARAMS *src)
         || !ffc_bn_cpy(&dst->j, src->j))
         return 0;
 
+    dst->mdname = src->mdname;
+    dst->mdprops = src->mdprops;
     OPENSSL_free(dst->seed);
     dst->seedlen = src->seedlen;
     if (src->seed != NULL) {
@@ -197,6 +202,7 @@ int ossl_ffc_params_copy(FFC_PARAMS *dst, const FFC_PARAMS *src)
     dst->h = src->h;
     dst->gindex = src->gindex;
     dst->flags = src->flags;
+    dst->keylength = src->keylength;
     return 1;
 }
 
@@ -211,9 +217,6 @@ int ossl_ffc_params_todata(const FFC_PARAMS *ffc, OSSL_PARAM_BLD *bld,
                       OSSL_PARAM params[])
 {
     int test_flags;
-
-    if (ffc == NULL)
-        return 0;
 
     if (ffc->p != NULL
         && !ossl_param_build_set_bn(bld, params, OSSL_PKEY_PARAM_FFC_P, ffc->p))

@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -87,7 +87,7 @@ static int do_pk8pkey(BIO *bp, const EVP_PKEY *x, int isder, int nid,
     if (kstr == NULL && cb == NULL) {
         if (u != NULL) {
             kstr = u;
-            klen = strlen(u);
+            klen = (int)strlen(u);
         } else {
             cb = PEM_def_callback;
         }
@@ -136,7 +136,7 @@ static int do_pk8pkey(BIO *bp, const EVP_PKEY *x, int isder, int nid,
         if (enc || (nid != -1)) {
             if (kstr == NULL) {
                 klen = cb(buf, PEM_BUFSIZE, 1, u);
-                if (klen <= 0) {
+                if (klen < 0) {
                     ERR_raise(ERR_LIB_PEM, PEM_R_READ_KEY);
                     goto legacy_end;
                 }
@@ -173,7 +173,7 @@ EVP_PKEY *d2i_PKCS8PrivateKey_bio(BIO *bp, EVP_PKEY **x, pem_password_cb *cb,
     X509_SIG *p8 = NULL;
     int klen;
     EVP_PKEY *ret;
-    char psbuf[PEM_BUFSIZE];
+    char psbuf[PEM_BUFSIZE + 1]; /* reserve one byte at the end */
 
     p8 = d2i_PKCS8_bio(bp, NULL);
     if (p8 == NULL)
@@ -182,7 +182,7 @@ EVP_PKEY *d2i_PKCS8PrivateKey_bio(BIO *bp, EVP_PKEY **x, pem_password_cb *cb,
         klen = cb(psbuf, PEM_BUFSIZE, 0, u);
     else
         klen = PEM_def_callback(psbuf, PEM_BUFSIZE, 0, u);
-    if (klen < 0) {
+    if (klen < 0 || klen > PEM_BUFSIZE) {
         ERR_raise(ERR_LIB_PEM, PEM_R_BAD_PASSWORD_READ);
         X509_SIG_free(p8);
         return NULL;

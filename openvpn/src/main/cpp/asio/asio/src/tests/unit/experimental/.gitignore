@@ -8,5 +8,11 @@
 *.pdb
 *.tds
 awaitable_operators
-deferred
+basic_channel
+basic_concurrent_channel
+channel
+channel_traits
+co_composed
+concurrent_channel
+parallel_group
 promise

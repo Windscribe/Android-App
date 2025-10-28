@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.22.1)
+cmake_minimum_required(VERSION 3.4.1)
+project("ics-openvpn")
 # Git version string
 
 include(GetGitRevisionDescription.cmake)
@@ -21,17 +22,23 @@ SET(OPENVPN3OSSL ON)
 SET(SSLLIBTYPE STATIC)
 SET(OPENSSL_PATH "openssl")
 
+set(CMAKE_CXX_STANDARD 23)
+
+
 #add_subdirectory(lzo)
 include(tools.cmake)
 include(lzo.cmake)
 include(lz4.cmake)
 include(openssl/openssl.cmake)
 
-if (NOT ${OPENVPN3OSSL} OR ${OPENVPN2MBED})
+if(NOT ${OPENVPN3OSSL} OR ${OPENVPN2MBED})
     add_subdirectory(mbedtls)
-endif ()
+endif()
 
-add_library(ovpnutil SHARED ovpnutil/jniglue.c ovpnutil/scan_ifs.c)
+# We only build skeleton variant (OpenVPN 2 only, no OpenVPN 3)
+message("Building skeleton variant - OpenVPN 2 only")
+
+add_library(ovpnutil SHARED ovpnutil/jniglue.c)
 target_link_options(ovpnutil PRIVATE "-Wl,-z,max-page-size=16384")
 target_compile_definitions(ovpnutil PRIVATE -DTARGET_ARCH_ABI=\"${ANDROID_ABI}\"
         -DOPENVPN2_GIT_REVISION=\"${OPENVPN2_GIT}\"
@@ -52,10 +59,13 @@ set(openvpn_srcs
         src/openvpn/console.c
         src/openvpn/console_builtin.c
         src/openvpn/crypto.c
+        src/openvpn/crypto_epoch.c
         src/openvpn/crypto_openssl.c
         src/openvpn/crypto_mbedtls.c
         src/openvpn/cryptoapi.c
         src/openvpn/dhcp.c
+        src/openvpn/dns.c
+        src/openvpn/dns.h
         src/openvpn/error.c
         src/openvpn/event.c
         src/openvpn/env_set.c
@@ -80,10 +90,13 @@ set(openvpn_srcs
         src/openvpn/mtu.c
         src/openvpn/mudp.c
         src/openvpn/multi.c
+        src/openvpn/multi_io.c
         src/openvpn/ntlm.c
         src/openvpn/occ.c
         src/openvpn/openvpn.c
         src/openvpn/options.c
+        src/openvpn/options_parse.c
+        src/openvpn/options_util.c
         src/openvpn/otime.c
         src/openvpn/packet_id.c
         src/openvpn/perf.c
@@ -97,6 +110,8 @@ set(openvpn_srcs
         src/openvpn/proxy.c
         src/openvpn/ps.c
         src/openvpn/push.c
+        src/openvpn/push_util.c
+        src/openvpn/reflect_filter.c
         src/openvpn/reliable.c
         src/openvpn/route.c
         src/openvpn/run_command.c
@@ -105,11 +120,14 @@ set(openvpn_srcs
         src/openvpn/shaper.c
         src/openvpn/sig.c
         src/openvpn/socket.c
+        src/openvpn/socket_util.c
         src/openvpn/socks.c
         src/openvpn/ssl.c
         src/openvpn/ssl_openssl.c
         src/openvpn/ssl_mbedtls.c
         src/openvpn/ssl_ncp.c
+        src/openvpn/ssl_pkt.c
+        src/openvpn/ssl_pkt.h
         src/openvpn/ssl_util.c
         src/openvpn/ssl_verify.c
         src/openvpn/ssl_verify_openssl.c
@@ -117,9 +135,10 @@ set(openvpn_srcs
         src/openvpn/status.c
         src/openvpn/tls_crypt.c
         src/openvpn/tun.c
+        src/openvpn/tun_afunix.c
         src/openvpn/vlan.c
-        #src/openvpn/xkey_helper.c
-        #src/openvpn/xkey_provider.c
+        src/openvpn/xkey_helper.c
+        src/openvpn/xkey_provider.c
         src/openvpn/comp-lz4.c
         src/openvpn/comp.c
         src/openvpn/compstub.c
@@ -144,6 +163,7 @@ target_compile_definitions(openvpn PRIVATE
         -DCONFIGURE_GIT_FLAGS=\"\"
         -DTARGET_ABI=\"${ANDROID_ABI}\"
         -DOPENSSL_API_COMPAT=0x11000000L
+        -DDEFAULT_DNS_UPDOWN=\"/not/supported/on/android\"
         )
 
 if (${OPENVPN2MBED})
@@ -160,15 +180,17 @@ endif ()
 
 add_executable(libovpnexec.so minivpn/minivpn.c)
 target_link_options(libovpnexec.so PRIVATE "-Wl,-z,max-page-size=16384")
-target_link_libraries(libovpnexec.so PRIVATE openvpn)
+target_compile_options(libovpnexec.so PRIVATE -fPIE -fstack-protector-all -D_FORTIFY_SOURCE=2)
+target_link_libraries(libovpnexec.so PRIVATE openvpn -fPIE -pie)
 
 add_executable(pie_openvpn.${ANDROID_ABI} minivpn/minivpn.c)
 target_link_options(pie_openvpn.${ANDROID_ABI} PRIVATE "-Wl,-z,max-page-size=16384")
 target_compile_options(pie_openvpn.${ANDROID_ABI} PRIVATE -fPIE)
 target_link_libraries(pie_openvpn.${ANDROID_ABI} PRIVATE openvpn -fPIE -pie)
 
-target_compile_options(libovpnexec.so PRIVATE -fstack-protector-all -D_FORTIFY_SOURCE=2)
+# Security hardening flags
 target_compile_options(openvpn PRIVATE -fstack-protector-all -D_FORTIFY_SOURCE=2)
+
 # Hack to copy OpenVPN binaries to assets directory
 SET(OVPN_ASSET_DIR ${CMAKE_SOURCE_DIR}/../../../build/ovpnassets)
 

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,14 +17,11 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#elif defined(_MSC_VER)
-#include "config-msvc.h"
 #endif
 
 #include "syshead.h"
@@ -51,7 +48,7 @@ print_status_mode(unsigned int flags)
         case STATUS_OUTPUT_READ:
             return "READ";
 
-        case STATUS_OUTPUT_READ|STATUS_OUTPUT_WRITE:
+        case STATUS_OUTPUT_READ | STATUS_OUTPUT_WRITE:
             return "READ/WRITE";
 
         default:
@@ -60,11 +57,8 @@ print_status_mode(unsigned int flags)
 }
 
 struct status_output *
-status_open(const char *filename,
-            const int refresh_freq,
-            const int msglevel,
-            const struct virtual_output *vout,
-            const unsigned int flags)
+status_open(const char *filename, const int refresh_freq, const int msglevel,
+            const struct virtual_output *vout, const unsigned int flags)
 {
     struct status_output *so = NULL;
     if (filename || msglevel >= 0 || vout)
@@ -81,21 +75,16 @@ status_open(const char *filename,
             switch (so->flags)
             {
                 case STATUS_OUTPUT_WRITE:
-                    so->fd = platform_open(filename,
-                                           O_CREAT | O_TRUNC | O_WRONLY,
-                                           S_IRUSR | S_IWUSR);
+                    so->fd =
+                        platform_open(filename, O_CREAT | O_TRUNC | O_WRONLY, S_IRUSR | S_IWUSR);
                     break;
 
                 case STATUS_OUTPUT_READ:
-                    so->fd = platform_open(filename,
-                                           O_RDONLY,
-                                           S_IRUSR | S_IWUSR);
+                    so->fd = platform_open(filename, O_RDONLY, S_IRUSR | S_IWUSR);
                     break;
 
-                case STATUS_OUTPUT_READ|STATUS_OUTPUT_WRITE:
-                    so->fd = platform_open(filename,
-                                           O_CREAT | O_RDWR,
-                                           S_IRUSR | S_IWUSR);
+                case STATUS_OUTPUT_READ | STATUS_OUTPUT_WRITE:
+                    so->fd = platform_open(filename, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
                     break;
 
                 default:
@@ -170,10 +159,10 @@ status_flush(struct status_output *so)
         }
 #elif defined(HAVE_CHSIZE)
         {
-            const long off = (long) lseek(so->fd, (off_t)0, SEEK_CUR);
+            const long off = (long)lseek(so->fd, (off_t)0, SEEK_CUR);
             chsize(so->fd, off);
         }
-#else  /* if defined(HAVE_FTRUNCATE) */
+#else /* if defined(HAVE_FTRUNCATE) */
 #warning both ftruncate and chsize functions appear to be missing from this OS
 #endif
 
@@ -218,6 +207,11 @@ status_close(struct status_output *so)
     return ret;
 }
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
+
 #define STATUS_PRINTF_MAXLEN 512
 
 void
@@ -225,7 +219,7 @@ status_printf(struct status_output *so, const char *format, ...)
 {
     if (so && (so->flags & STATUS_OUTPUT_WRITE))
     {
-        char buf[STATUS_PRINTF_MAXLEN+2]; /* leave extra bytes for CR, LF */
+        char buf[STATUS_PRINTF_MAXLEN + 2]; /* leave extra bytes for CR, LF */
         va_list arglist;
         int stat;
 
@@ -241,14 +235,13 @@ status_printf(struct status_output *so, const char *format, ...)
 
         if (so->msglevel >= 0 && !so->errors)
         {
-            msg(so->msglevel, "%s", buf);
+            msg((msglvl_t)so->msglevel, "%s", buf);
         }
 
         if (so->fd >= 0 && !so->errors)
         {
-            int len;
             strcat(buf, "\n");
-            len = strlen(buf);
+            size_t len = strlen(buf);
             if (len > 0)
             {
                 if (write(so->fd, buf, len) != len)
@@ -315,3 +308,7 @@ status_read(struct status_output *so, struct buffer *buf)
 
     return ret;
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif

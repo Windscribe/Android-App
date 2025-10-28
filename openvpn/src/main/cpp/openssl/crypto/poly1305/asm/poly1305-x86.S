@@ -5,7 +5,11 @@
 .align	16
 poly1305_init:
 .L_poly1305_init_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -67,7 +71,11 @@ poly1305_init:
 .align	16
 poly1305_blocks:
 .L_poly1305_blocks_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -236,7 +244,11 @@ poly1305_blocks:
 .align	16
 poly1305_emit:
 .L_poly1305_emit_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -296,7 +308,11 @@ poly1305_emit:
 .type	_poly1305_init_sse2,@function
 .align	16
 _poly1305_init_sse2:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	movdqu	24(%edi),%xmm4
 	leal	48(%edi),%edi
 	movl	%esp,%ebp
@@ -499,7 +515,11 @@ _poly1305_init_sse2:
 .type	_poly1305_blocks_sse2,@function
 .align	16
 _poly1305_blocks_sse2:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -1261,7 +1281,11 @@ _poly1305_blocks_sse2:
 .type	_poly1305_emit_sse2,@function
 .align	16
 _poly1305_emit_sse2:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -1355,7 +1379,11 @@ _poly1305_emit_sse2:
 .type	_poly1305_init_avx2,@function
 .align	16
 _poly1305_init_avx2:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	vmovdqu	24(%edi),%xmm4
 	leal	48(%edi),%edi
 	movl	%esp,%ebp
@@ -1527,7 +1555,11 @@ _poly1305_init_avx2:
 .type	_poly1305_blocks_avx2,@function
 .align	16
 _poly1305_blocks_avx2:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -1912,10 +1944,10 @@ _poly1305_blocks_avx2:
 .long	268435455,268435452,268435452,268435452
 .byte	80,111,108,121,49,51,48,53,32,102,111,114,32,120,56,54
 .byte	44,32,67,82,89,80,84,79,71,65,77,83,32,98,121,32
-.byte	60,97,112,112,114,111,64,111,112,101,110,115,115,108,46,111
-.byte	114,103,62,0
+.byte	60,104,116,116,112,115,58,47,47,103,105,116,104,117,98,46
+.byte	99,111,109,47,100,111,116,45,97,115,109,62,0
 .align	4
-.comm	OPENSSL_ia32cap_P,16,4
+.comm	OPENSSL_ia32cap_P,40,4
 
 	.section ".note.gnu.property", "a"
 	.p2align 2

@@ -4,7 +4,11 @@
 .align	16
 gcm_gmult_4bit_x86:
 .L_gcm_gmult_4bit_x86_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -99,7 +103,11 @@ gcm_gmult_4bit_x86:
 .align	16
 gcm_ghash_4bit_x86:
 .L_gcm_ghash_4bit_x86_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -209,7 +217,11 @@ gcm_ghash_4bit_x86:
 .align	16
 gcm_gmult_4bit_mmx:
 .L_gcm_gmult_4bit_mmx_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -309,7 +321,11 @@ gcm_gmult_4bit_mmx:
 .align	16
 gcm_ghash_4bit_mmx:
 .L_gcm_ghash_4bit_mmx_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -914,7 +930,11 @@ gcm_ghash_4bit_mmx:
 .align	16
 gcm_init_clmul:
 .L_gcm_init_clmul_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	movl	4(%esp),%edx
 	movl	8(%esp),%eax
 	call	.L010pic
@@ -984,7 +1004,11 @@ gcm_init_clmul:
 .align	16
 gcm_gmult_clmul:
 .L_gcm_gmult_clmul_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	movl	4(%esp),%eax
 	movl	8(%esp),%edx
 	call	.L011pic
@@ -1038,7 +1062,11 @@ gcm_gmult_clmul:
 .align	16
 gcm_ghash_clmul:
 .L_gcm_ghash_clmul_begin:
+	#ifdef __CET__
+
 .byte	243,15,30,251
+	#endif
+
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -1266,9 +1294,9 @@ gcm_ghash_clmul:
 .long	0,3774873600,0,4246732800,0,3644850176,0,3311403008
 .long	0,2441084928,0,2376073216,0,2847932416,0,3051356160
 .byte	71,72,65,83,72,32,102,111,114,32,120,56,54,44,32,67
-.byte	82,89,80,84,79,71,65,77,83,32,98,121,32,60,97,112
-.byte	112,114,111,64,111,112,101,110,115,115,108,46,111,114,103,62
-.byte	0
+.byte	82,89,80,84,79,71,65,77,83,32,98,121,32,60,104,116
+.byte	116,112,115,58,47,47,103,105,116,104,117,98,46,99,111,109
+.byte	47,100,111,116,45,97,115,109,62,0
 
 	.section ".note.gnu.property", "a"
 	.p2align 2

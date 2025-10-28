@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1999-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -15,7 +15,7 @@
  * See ssl/ssltest.c for some hints on how this can be used.
  */
 
-#include "e_os.h"
+#include "internal/e_os.h"
 #include <assert.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -183,7 +183,7 @@ static int bio_read(BIO *bio, char *buf, int size_)
     }
     while (rest);
 
-    return size;
+    return (int)size;
 }
 
 /*-
@@ -273,7 +273,7 @@ static int bio_write(BIO *bio, const char *buf, int num_)
 
     BIO_clear_retry_flags(bio);
 
-    if (!bio->init || buf == NULL || num == 0)
+    if (!bio->init || buf == NULL || num_ <= 0)
         return 0;
 
     b = bio->ptr;
@@ -332,7 +332,7 @@ static int bio_write(BIO *bio, const char *buf, int num_)
     }
     while (rest);
 
-    return num;
+    return (int)num;
 }
 
 /*-
@@ -474,7 +474,7 @@ static long bio_ctrl(BIO *bio, int cmd, long num, void *ptr)
         if (b->peer == NULL || b->closed)
             ret = 0;
         else
-            ret = (long)b->size - b->len;
+            ret = (long)(b->size - b->len);
         break;
 
     case BIO_C_GET_READ_REQUEST:
@@ -600,7 +600,11 @@ static long bio_ctrl(BIO *bio, int cmd, long num, void *ptr)
 
 static int bio_puts(BIO *bio, const char *str)
 {
-    return bio_write(bio, str, strlen(str));
+    size_t len = strlen(str);
+
+    if (len > INT_MAX)
+        return -1;
+    return bio_write(bio, str, (int)len);
 }
 
 static int bio_make_pair(BIO *bio1, BIO *bio2)
@@ -620,20 +624,16 @@ static int bio_make_pair(BIO *bio1, BIO *bio2)
 
     if (b1->buf == NULL) {
         b1->buf = OPENSSL_malloc(b1->size);
-        if (b1->buf == NULL) {
-            ERR_raise(ERR_LIB_BIO, ERR_R_MALLOC_FAILURE);
+        if (b1->buf == NULL)
             return 0;
-        }
         b1->len = 0;
         b1->offset = 0;
     }
 
     if (b2->buf == NULL) {
         b2->buf = OPENSSL_malloc(b2->size);
-        if (b2->buf == NULL) {
-            ERR_raise(ERR_LIB_BIO, ERR_R_MALLOC_FAILURE);
+        if (b2->buf == NULL)
             return 0;
-        }
         b2->len = 0;
         b2->offset = 0;
     }
@@ -687,6 +687,9 @@ int BIO_new_bio_pair(BIO **bio1_p, size_t writebuf1,
     long r;
     int ret = 0;
 
+    if (writebuf1 > LONG_MAX || writebuf2 > LONG_MAX)
+        goto err;
+
     bio1 = BIO_new(BIO_s_bio());
     if (bio1 == NULL)
         goto err;
@@ -695,12 +698,12 @@ int BIO_new_bio_pair(BIO **bio1_p, size_t writebuf1,
         goto err;
 
     if (writebuf1) {
-        r = BIO_set_write_buf_size(bio1, writebuf1);
+        r = BIO_set_write_buf_size(bio1, (long)writebuf1);
         if (!r)
             goto err;
     }
     if (writebuf2) {
-        r = BIO_set_write_buf_size(bio2, writebuf2);
+        r = BIO_set_write_buf_size(bio2, (long)writebuf2);
         if (!r)
             goto err;
     }

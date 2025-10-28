@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2019-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -11,21 +11,19 @@
 #include <openssl/bio.h>
 #include <openssl/safestack.h>
 #include "names.h"
-
-#ifdef _WIN32
-# define strcasecmp _stricmp
-#endif
+#include "internal/e_os.h"
 
 int name_cmp(const char * const *a, const char * const *b)
 {
-    return strcasecmp(*a, *b);
+    return OPENSSL_strcasecmp(*a, *b);
 }
 
 void collect_names(const char *name, void *vdata)
 {
     STACK_OF(OPENSSL_CSTRING) *names = vdata;
 
-    sk_OPENSSL_CSTRING_push(names, name);
+    /* A failure to push cannot be handled so we ignore the result. */
+    (void)sk_OPENSSL_CSTRING_push(names, name);
 }
 
 void print_names(BIO *out, STACK_OF(OPENSSL_CSTRING) *names)

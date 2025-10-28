@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,14 +17,11 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#elif defined(_MSC_VER)
-#include "config-msvc.h"
 #endif
 
 #include "syshead.h"
@@ -54,95 +51,93 @@
  * OCC_STRING_SIZE must be set to sizeof (occ_magic)
  */
 
-const uint8_t occ_magic[] = {
-    0x28, 0x7f, 0x34, 0x6b, 0xd4, 0xef, 0x7a, 0x81,
-    0x2d, 0x56, 0xb8, 0xd3, 0xaf, 0xc5, 0x45, 0x9c
-};
+const uint8_t occ_magic[] = { 0x28, 0x7f, 0x34, 0x6b, 0xd4, 0xef, 0x7a, 0x81,
+                              0x2d, 0x56, 0xb8, 0xd3, 0xaf, 0xc5, 0x45, 0x9c };
 
 static const struct mtu_load_test mtu_load_test_sequence[] = {
 
-    {OCC_MTU_LOAD_REQUEST, -1000},
-    {OCC_MTU_LOAD, -1000},
-    {OCC_MTU_LOAD_REQUEST, -1000},
-    {OCC_MTU_LOAD, -1000},
-    {OCC_MTU_LOAD_REQUEST, -1000},
-    {OCC_MTU_LOAD, -1000},
+    { OCC_MTU_LOAD_REQUEST, -1000 },
+    { OCC_MTU_LOAD, -1000 },
+    { OCC_MTU_LOAD_REQUEST, -1000 },
+    { OCC_MTU_LOAD, -1000 },
+    { OCC_MTU_LOAD_REQUEST, -1000 },
+    { OCC_MTU_LOAD, -1000 },
 
-    {OCC_MTU_LOAD_REQUEST, -750},
-    {OCC_MTU_LOAD, -750},
-    {OCC_MTU_LOAD_REQUEST, -750},
-    {OCC_MTU_LOAD, -750},
-    {OCC_MTU_LOAD_REQUEST, -750},
-    {OCC_MTU_LOAD, -750},
+    { OCC_MTU_LOAD_REQUEST, -750 },
+    { OCC_MTU_LOAD, -750 },
+    { OCC_MTU_LOAD_REQUEST, -750 },
+    { OCC_MTU_LOAD, -750 },
+    { OCC_MTU_LOAD_REQUEST, -750 },
+    { OCC_MTU_LOAD, -750 },
 
-    {OCC_MTU_LOAD_REQUEST, -500},
-    {OCC_MTU_LOAD, -500},
-    {OCC_MTU_LOAD_REQUEST, -500},
-    {OCC_MTU_LOAD, -500},
-    {OCC_MTU_LOAD_REQUEST, -500},
-    {OCC_MTU_LOAD, -500},
+    { OCC_MTU_LOAD_REQUEST, -500 },
+    { OCC_MTU_LOAD, -500 },
+    { OCC_MTU_LOAD_REQUEST, -500 },
+    { OCC_MTU_LOAD, -500 },
+    { OCC_MTU_LOAD_REQUEST, -500 },
+    { OCC_MTU_LOAD, -500 },
 
-    {OCC_MTU_LOAD_REQUEST, -400},
-    {OCC_MTU_LOAD, -400},
-    {OCC_MTU_LOAD_REQUEST, -400},
-    {OCC_MTU_LOAD, -400},
-    {OCC_MTU_LOAD_REQUEST, -400},
-    {OCC_MTU_LOAD, -400},
+    { OCC_MTU_LOAD_REQUEST, -400 },
+    { OCC_MTU_LOAD, -400 },
+    { OCC_MTU_LOAD_REQUEST, -400 },
+    { OCC_MTU_LOAD, -400 },
+    { OCC_MTU_LOAD_REQUEST, -400 },
+    { OCC_MTU_LOAD, -400 },
 
-    {OCC_MTU_LOAD_REQUEST, -300},
-    {OCC_MTU_LOAD, -300},
-    {OCC_MTU_LOAD_REQUEST, -300},
-    {OCC_MTU_LOAD, -300},
-    {OCC_MTU_LOAD_REQUEST, -300},
-    {OCC_MTU_LOAD, -300},
+    { OCC_MTU_LOAD_REQUEST, -300 },
+    { OCC_MTU_LOAD, -300 },
+    { OCC_MTU_LOAD_REQUEST, -300 },
+    { OCC_MTU_LOAD, -300 },
+    { OCC_MTU_LOAD_REQUEST, -300 },
+    { OCC_MTU_LOAD, -300 },
 
-    {OCC_MTU_LOAD_REQUEST, -200},
-    {OCC_MTU_LOAD, -200},
-    {OCC_MTU_LOAD_REQUEST, -200},
-    {OCC_MTU_LOAD, -200},
-    {OCC_MTU_LOAD_REQUEST, -200},
-    {OCC_MTU_LOAD, -200},
+    { OCC_MTU_LOAD_REQUEST, -200 },
+    { OCC_MTU_LOAD, -200 },
+    { OCC_MTU_LOAD_REQUEST, -200 },
+    { OCC_MTU_LOAD, -200 },
+    { OCC_MTU_LOAD_REQUEST, -200 },
+    { OCC_MTU_LOAD, -200 },
 
-    {OCC_MTU_LOAD_REQUEST, -150},
-    {OCC_MTU_LOAD, -150},
-    {OCC_MTU_LOAD_REQUEST, -150},
-    {OCC_MTU_LOAD, -150},
-    {OCC_MTU_LOAD_REQUEST, -150},
-    {OCC_MTU_LOAD, -150},
+    { OCC_MTU_LOAD_REQUEST, -150 },
+    { OCC_MTU_LOAD, -150 },
+    { OCC_MTU_LOAD_REQUEST, -150 },
+    { OCC_MTU_LOAD, -150 },
+    { OCC_MTU_LOAD_REQUEST, -150 },
+    { OCC_MTU_LOAD, -150 },
 
-    {OCC_MTU_LOAD_REQUEST, -100},
-    {OCC_MTU_LOAD, -100},
-    {OCC_MTU_LOAD_REQUEST, -100},
-    {OCC_MTU_LOAD, -100},
-    {OCC_MTU_LOAD_REQUEST, -100},
-    {OCC_MTU_LOAD, -100},
+    { OCC_MTU_LOAD_REQUEST, -100 },
+    { OCC_MTU_LOAD, -100 },
+    { OCC_MTU_LOAD_REQUEST, -100 },
+    { OCC_MTU_LOAD, -100 },
+    { OCC_MTU_LOAD_REQUEST, -100 },
+    { OCC_MTU_LOAD, -100 },
 
-    {OCC_MTU_LOAD_REQUEST, -50},
-    {OCC_MTU_LOAD, -50},
-    {OCC_MTU_LOAD_REQUEST, -50},
-    {OCC_MTU_LOAD, -50},
-    {OCC_MTU_LOAD_REQUEST, -50},
-    {OCC_MTU_LOAD, -50},
+    { OCC_MTU_LOAD_REQUEST, -50 },
+    { OCC_MTU_LOAD, -50 },
+    { OCC_MTU_LOAD_REQUEST, -50 },
+    { OCC_MTU_LOAD, -50 },
+    { OCC_MTU_LOAD_REQUEST, -50 },
+    { OCC_MTU_LOAD, -50 },
 
-    {OCC_MTU_LOAD_REQUEST, 0},
-    {OCC_MTU_LOAD, 0},
-    {OCC_MTU_LOAD_REQUEST, 0},
-    {OCC_MTU_LOAD, 0},
-    {OCC_MTU_LOAD_REQUEST, 0},
-    {OCC_MTU_LOAD, 0},
+    { OCC_MTU_LOAD_REQUEST, 0 },
+    { OCC_MTU_LOAD, 0 },
+    { OCC_MTU_LOAD_REQUEST, 0 },
+    { OCC_MTU_LOAD, 0 },
+    { OCC_MTU_LOAD_REQUEST, 0 },
+    { OCC_MTU_LOAD, 0 },
 
-    {OCC_MTU_REQUEST, 0},
-    {OCC_MTU_REQUEST, 0},
-    {OCC_MTU_REQUEST, 0},
-    {OCC_MTU_REQUEST, 0},
-    {OCC_MTU_REQUEST, 0},
-    {OCC_MTU_REQUEST, 0},
-    {OCC_MTU_REQUEST, 0},
-    {OCC_MTU_REQUEST, 0},
-    {OCC_MTU_REQUEST, 0},
-    {OCC_MTU_REQUEST, 0},
+    { OCC_MTU_REQUEST, 0 },
+    { OCC_MTU_REQUEST, 0 },
+    { OCC_MTU_REQUEST, 0 },
+    { OCC_MTU_REQUEST, 0 },
+    { OCC_MTU_REQUEST, 0 },
+    { OCC_MTU_REQUEST, 0 },
+    { OCC_MTU_REQUEST, 0 },
+    { OCC_MTU_REQUEST, 0 },
+    { OCC_MTU_REQUEST, 0 },
+    { OCC_MTU_REQUEST, 0 },
 
-    {-1, 0}
+    { -1, 0 }
 };
 
 void
@@ -158,15 +153,12 @@ check_send_occ_req_dowork(struct context *c)
              */
             msg(D_SHOW_OCC,
                 "NOTE: failed to obtain options consistency info from peer -- "
-                "this could occur if the remote peer is running a version of "
-                PACKAGE_NAME
-                " before 1.5-beta8 or if there is a network connectivity problem, and will not necessarily prevent "
-                PACKAGE_NAME
+                "this could occur if the remote peer is running a version of " PACKAGE_NAME
+                " before 1.5-beta8 or if there is a network connectivity problem, and will not necessarily prevent " PACKAGE_NAME
                 " from running (" counter_format " bytes received from peer, " counter_format
                 " bytes authenticated data channel traffic) -- you can disable the options consistency "
                 "check with --disable-occ.",
-                c->c2.link_read_bytes,
-                c->c2.link_read_bytes_auth);
+                c->c2.link_read_bytes, c->c2.link_read_bytes_auth);
         }
         event_timeout_clear(&c->c2.occ_interval);
     }
@@ -181,6 +173,11 @@ check_send_occ_req_dowork(struct context *c)
         event_timeout_reset(&c->c2.occ_interval);
     }
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
 
 void
 check_send_occ_load_test_dowork(struct context *c)
@@ -199,13 +196,17 @@ check_send_occ_load_test_dowork(struct context *c)
         if (entry->op >= 0)
         {
             c->c2.occ_op = entry->op;
-            c->c2.occ_mtu_load_size =
-                EXPANDED_SIZE(&c->c2.frame) + entry->delta;
+            size_t payload_size =
+                frame_calculate_payload_size(&c->c2.frame, &c->options, &c->c1.ks.key_type);
+            size_t header_size =
+                frame_calculate_protocol_header_size(&c->c1.ks.key_type, &c->options, false);
+
+            c->c2.occ_mtu_load_size = payload_size + header_size;
         }
         else
         {
-            msg(M_INFO,
-                "NOTE: failed to empirically measure MTU (requires " PACKAGE_NAME " 1.5 or higher at other end of connection).");
+            msg(M_INFO, "NOTE: failed to empirically measure MTU (requires " PACKAGE_NAME
+                        " 1.5 or higher at other end of connection).");
             event_timeout_clear(&c->c2.occ_mtu_load_test_interval);
             c->c2.occ_mtu_load_n_tries = 0;
         }
@@ -218,8 +219,8 @@ check_send_occ_msg_dowork(struct context *c)
     bool doit = false;
 
     c->c2.buf = c->c2.buffers->aux_buf;
-    ASSERT(buf_init(&c->c2.buf, FRAME_HEADROOM(&c->c2.frame)));
-    ASSERT(buf_safe(&c->c2.buf, MAX_RW_SIZE_TUN(&c->c2.frame)));
+    ASSERT(buf_init(&c->c2.buf, c->c2.frame.buf.headroom));
+    ASSERT(buf_safe(&c->c2.buf, c->c2.frame.buf.payload_size));
     ASSERT(buf_write(&c->c2.buf, occ_magic, OCC_STRING_SIZE));
 
     switch (c->c2.occ_op)
@@ -298,10 +299,18 @@ check_send_occ_msg_dowork(struct context *c)
             {
                 break;
             }
-            need_to_add = min_int(c->c2.occ_mtu_load_size, EXPANDED_SIZE(&c->c2.frame))
-                          - OCC_STRING_SIZE
-                          - sizeof(uint8_t)
-                          - EXTRA_FRAME(&c->c2.frame);
+            size_t proto_hdr, payload_hdr;
+            const struct key_type *kt = &c->c1.ks.key_type;
+
+            /* OCC message have comp/fragment headers but not ethernet headers */
+            payload_hdr = frame_calculate_payload_overhead(0, &c->options, kt);
+
+            /* Since we do not know the payload size we just pass 0 as size here */
+            proto_hdr = frame_calculate_protocol_header_size(kt, &c->options, false);
+
+            need_to_add = min_int(c->c2.occ_mtu_load_size, c->c2.frame.buf.payload_size)
+                          - OCC_STRING_SIZE - sizeof(uint8_t) /* occ opcode */
+                          - payload_hdr - proto_hdr;
 
             while (need_to_add > 0)
             {
@@ -314,13 +323,9 @@ check_send_occ_msg_dowork(struct context *c)
                 }
                 --need_to_add;
             }
-            dmsg(D_PACKET_CONTENT, "SENT OCC_MTU_LOAD min_int(%d-%d-%d-%d,%d) size=%d",
-                 c->c2.occ_mtu_load_size,
-                 OCC_STRING_SIZE,
-                 (int) sizeof(uint8_t),
-                 EXTRA_FRAME(&c->c2.frame),
-                 MAX_RW_SIZE_TUN(&c->c2.frame),
-                 BLEN(&c->c2.buf));
+            dmsg(D_PACKET_CONTENT, "SENT OCC_MTU_LOAD min_int(%d,%d)-%d-%d-%d-%d) size=%d",
+                 c->c2.occ_mtu_load_size, c->c2.frame.buf.payload_size, OCC_STRING_SIZE,
+                 (int)sizeof(uint8_t), (int)payload_hdr, (int)proto_hdr, BLEN(&c->c2.buf));
             doit = true;
         }
         break;
@@ -346,6 +351,10 @@ check_send_occ_msg_dowork(struct context *c)
 
     c->c2.occ_op = -1;
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 void
 process_received_occ_msg(struct context *c)
@@ -376,12 +385,10 @@ process_received_occ_msg(struct context *c)
             dmsg(D_PACKET_CONTENT, "RECEIVED OCC_REPLY");
             if (c->options.occ && !TLS_MODE(c) && c->c2.options_string_remote)
             {
-                if (!options_cmp_equal_safe((char *) BPTR(&c->c2.buf),
-                                            c->c2.options_string_remote,
+                if (!options_cmp_equal_safe((char *)BPTR(&c->c2.buf), c->c2.options_string_remote,
                                             c->c2.buf.len))
                 {
-                    options_warning_safe((char *) BPTR(&c->c2.buf),
-                                         c->c2.options_string_remote,
+                    options_warning_safe((char *)BPTR(&c->c2.buf), c->c2.options_string_remote,
                                          c->c2.buf.len);
                 }
             }
@@ -392,22 +399,20 @@ process_received_occ_msg(struct context *c)
             dmsg(D_PACKET_CONTENT, "RECEIVED OCC_MTU_REPLY");
             c->c2.max_recv_size_remote = buf_read_u16(&c->c2.buf);
             c->c2.max_send_size_remote = buf_read_u16(&c->c2.buf);
-            if (c->options.mtu_test
-                && c->c2.max_recv_size_remote > 0
+            if (c->options.mtu_test && c->c2.max_recv_size_remote > 0
                 && c->c2.max_send_size_remote > 0)
             {
-                msg(M_INFO, "NOTE: Empirical MTU test completed [Tried,Actual] local->remote=[%d,%d] remote->local=[%d,%d]",
-                    c->c2.max_send_size_local,
-                    c->c2.max_recv_size_remote,
-                    c->c2.max_send_size_remote,
-                    c->c2.max_recv_size_local);
-                if (!c->options.ce.fragment
-                    && (proto_is_dgram(c->options.ce.proto))
+                msg(M_INFO,
+                    "NOTE: Empirical MTU test completed [Tried,Actual] local->remote=[%d,%d] remote->local=[%d,%d]",
+                    c->c2.max_send_size_local, c->c2.max_recv_size_remote,
+                    c->c2.max_send_size_remote, c->c2.max_recv_size_local);
+                if (!c->options.ce.fragment && (proto_is_dgram(c->options.ce.proto))
                     && c->c2.max_send_size_local > TUN_MTU_MIN
                     && (c->c2.max_recv_size_remote < c->c2.max_send_size_local
                         || c->c2.max_recv_size_local < c->c2.max_send_size_remote))
                 {
-                    msg(M_INFO, "NOTE: This connection is unable to accommodate a UDP packet size of %d. Consider using --fragment or --mssfix options as a workaround.",
+                    msg(M_INFO,
+                        "NOTE: This connection is unable to accommodate a UDP packet size of %d. Consider using --fragment or --mssfix options as a workaround.",
                         c->c2.max_send_size_local);
                 }
             }
@@ -415,9 +420,8 @@ process_received_occ_msg(struct context *c)
             break;
 
         case OCC_EXIT:
-            dmsg(D_PACKET_CONTENT, "RECEIVED OCC_EXIT");
-            c->sig->signal_received = SIGTERM;
-            c->sig->signal_text = "remote-exit";
+            dmsg(D_STREAM_ERRORS, "OCC exit message received by peer");
+            register_signal(c->sig, SIGUSR1, "remote-exit");
             break;
     }
     c->c2.buf.len = 0; /* don't pass packet on */

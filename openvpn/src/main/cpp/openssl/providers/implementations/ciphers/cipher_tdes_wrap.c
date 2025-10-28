@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -27,8 +27,7 @@
 static OSSL_FUNC_cipher_update_fn tdes_wrap_update;
 static OSSL_FUNC_cipher_cipher_fn tdes_wrap_cipher;
 
-static const unsigned char wrap_iv[8] =
-{
+static const unsigned char wrap_iv[8] = {
     0x4a, 0xdd, 0xa2, 0x2c, 0x79, 0xe8, 0x21, 0x05
 };
 
@@ -41,7 +40,7 @@ static int des_ede3_unwrap(PROV_CIPHER_CTX *ctx, unsigned char *out,
     if (inl < 24)
         return -1;
     if (out == NULL)
-        return inl - 16;
+        return (int)(inl - 16);
 
     memcpy(ctx->iv, wrap_iv, 8);
     /* Decrypt first block which will end up as icv */
@@ -67,7 +66,7 @@ static int des_ede3_unwrap(PROV_CIPHER_CTX *ctx, unsigned char *out,
     ctx->hw->cipher(ctx, icv, icv, 8);
     if (ossl_sha1(out, inl - 16, sha1tmp) /* Work out hash of first portion */
             && CRYPTO_memcmp(sha1tmp, icv, 8) == 0)
-        rv = inl - 16;
+        rv = (int)(inl - 16);
     OPENSSL_cleanse(icv, 8);
     OPENSSL_cleanse(sha1tmp, SHA_DIGEST_LENGTH);
     OPENSSL_cleanse(iv, 8);
@@ -86,8 +85,10 @@ static int des_ede3_wrap(PROV_CIPHER_CTX *ctx, unsigned char *out,
     size_t icvlen = TDES_IVLEN;
     size_t len = inl + ivlen + icvlen;
 
+    if (len > INT_MAX)
+        return 0;
     if (out == NULL)
-        return len;
+        return (int)len;
 
     /* Copy input to output buffer + 8 so we have space for IV */
     memmove(out + ivlen, in, inl);
@@ -105,7 +106,7 @@ static int des_ede3_wrap(PROV_CIPHER_CTX *ctx, unsigned char *out,
     BUF_reverse(out, NULL, len);
     memcpy(ctx->iv, wrap_iv, ivlen);
     ctx->hw->cipher(ctx, out, out, len);
-    return len;
+    return (int)len;
 }
 
 static int tdes_wrap_cipher_internal(PROV_CIPHER_CTX *ctx, unsigned char *out,
@@ -203,7 +204,7 @@ const OSSL_DISPATCH ossl_tdes_wrap_cbc_functions[] =                           \
       (void (*)(void))ossl_cipher_generic_set_ctx_params },                    \
     { OSSL_FUNC_CIPHER_SETTABLE_CTX_PARAMS,                                    \
       (void (*)(void))ossl_cipher_generic_settable_ctx_params },               \
-    { 0, NULL }                                                                \
+    OSSL_DISPATCH_END                                                          \
 }
 
 /* ossl_tdes_wrap_cbc_functions */

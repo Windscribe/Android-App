@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2019-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -34,7 +34,7 @@ int evp_keymgmt_util_try_import(const OSSL_PARAM params[], void *arg)
     /* Just in time creation of keydata */
     if (data->keydata == NULL) {
         if ((data->keydata = evp_keymgmt_newdata(data->keymgmt)) == NULL) {
-            ERR_raise(ERR_LIB_EVP, ERR_R_MALLOC_FAILURE);
+            ERR_raise(ERR_LIB_EVP, ERR_R_EVP_LIB);
             return 0;
         }
         delete_on_error = 1;
@@ -93,7 +93,8 @@ int evp_keymgmt_util_export(const EVP_PKEY *pk, int selection,
                               export_cb, export_cbarg);
 }
 
-void *evp_keymgmt_util_export_to_provider(EVP_PKEY *pk, EVP_KEYMGMT *keymgmt)
+void *evp_keymgmt_util_export_to_provider(EVP_PKEY *pk, EVP_KEYMGMT *keymgmt,
+                                          int selection)
 {
     struct evp_keymgmt_util_try_import_data_st import_data;
     OP_CACHE_ELEM *op;
@@ -127,7 +128,7 @@ void *evp_keymgmt_util_export_to_provider(EVP_PKEY *pk, EVP_KEYMGMT *keymgmt)
      */
     if (pk->dirty_cnt == pk->dirty_cnt_copy) {
         /* If this key is already exported to |keymgmt|, no more to do */
-        op = evp_keymgmt_util_find_operation_cache(pk, keymgmt);
+        op = evp_keymgmt_util_find_operation_cache(pk, keymgmt, selection);
         if (op != NULL && op->keymgmt != NULL) {
             void *ret = op->keydata;
 
@@ -157,13 +158,13 @@ void *evp_keymgmt_util_export_to_provider(EVP_PKEY *pk, EVP_KEYMGMT *keymgmt)
     /* Setup for the export callback */
     import_data.keydata = NULL;  /* evp_keymgmt_util_try_import will create it */
     import_data.keymgmt = keymgmt;
-    import_data.selection = OSSL_KEYMGMT_SELECT_ALL;
+    import_data.selection = selection;
 
     /*
      * The export function calls the callback (evp_keymgmt_util_try_import),
      * which does the import for us.  If successful, we're done.
      */
-    if (!evp_keymgmt_util_export(pk, OSSL_KEYMGMT_SELECT_ALL,
+    if (!evp_keymgmt_util_export(pk, selection,
                                  &evp_keymgmt_util_try_import, &import_data))
         /* If there was an error, bail out */
         return NULL;
@@ -173,7 +174,7 @@ void *evp_keymgmt_util_export_to_provider(EVP_PKEY *pk, EVP_KEYMGMT *keymgmt)
         return NULL;
     }
     /* Check to make sure some other thread didn't get there first */
-    op = evp_keymgmt_util_find_operation_cache(pk, keymgmt);
+    op = evp_keymgmt_util_find_operation_cache(pk, keymgmt, selection);
     if (op != NULL && op->keydata != NULL) {
         void *ret = op->keydata;
 
@@ -193,10 +194,12 @@ void *evp_keymgmt_util_export_to_provider(EVP_PKEY *pk, EVP_KEYMGMT *keymgmt)
      * operation cache.  In that case, we know that |i| is zero.
      */
     if (pk->dirty_cnt != pk->dirty_cnt_copy)
-        evp_keymgmt_util_clear_operation_cache(pk, 0);
+        evp_keymgmt_util_clear_operation_cache(pk);
 
     /* Add the new export to the operation cache */
-    if (!evp_keymgmt_util_cache_keydata(pk, keymgmt, import_data.keydata)) {
+    if (!evp_keymgmt_util_cache_keydata(pk, keymgmt, import_data.keydata,
+                                        selection)) {
+        CRYPTO_THREAD_unlock(pk->lock);
         evp_keymgmt_freedata(keymgmt, import_data.keydata);
         return NULL;
     }
@@ -216,22 +219,19 @@ static void op_cache_free(OP_CACHE_ELEM *e)
     OPENSSL_free(e);
 }
 
-int evp_keymgmt_util_clear_operation_cache(EVP_PKEY *pk, int locking)
+int evp_keymgmt_util_clear_operation_cache(EVP_PKEY *pk)
 {
     if (pk != NULL) {
-        if (locking && pk->lock != NULL && !CRYPTO_THREAD_write_lock(pk->lock))
-            return 0;
         sk_OP_CACHE_ELEM_pop_free(pk->operation_cache, op_cache_free);
         pk->operation_cache = NULL;
-        if (locking && pk->lock != NULL)
-            CRYPTO_THREAD_unlock(pk->lock);
     }
 
     return 1;
 }
 
 OP_CACHE_ELEM *evp_keymgmt_util_find_operation_cache(EVP_PKEY *pk,
-                                                     EVP_KEYMGMT *keymgmt)
+                                                     EVP_KEYMGMT *keymgmt,
+                                                     int selection)
 {
     int i, end = sk_OP_CACHE_ELEM_num(pk->operation_cache);
     OP_CACHE_ELEM *p;
@@ -239,17 +239,22 @@ OP_CACHE_ELEM *evp_keymgmt_util_find_operation_cache(EVP_PKEY *pk,
     /*
      * A comparison and sk_P_CACHE_ELEM_find() are avoided to not cause
      * problems when we've only a read lock.
+     * A keymgmt is a match if the |keymgmt| pointers are identical or if the
+     * provider and the name ID match
      */
     for (i = 0; i < end; i++) {
         p = sk_OP_CACHE_ELEM_value(pk->operation_cache, i);
-        if (keymgmt == p->keymgmt)
+        if ((p->selection & selection) == selection
+                && (keymgmt == p->keymgmt
+                    || (keymgmt->name_id == p->keymgmt->name_id
+                        && keymgmt->prov == p->keymgmt->prov)))
             return p;
     }
     return NULL;
 }
 
-int evp_keymgmt_util_cache_keydata(EVP_PKEY *pk,
-                                   EVP_KEYMGMT *keymgmt, void *keydata)
+int evp_keymgmt_util_cache_keydata(EVP_PKEY *pk, EVP_KEYMGMT *keymgmt,
+                                   void *keydata, int selection)
 {
     OP_CACHE_ELEM *p = NULL;
 
@@ -265,6 +270,7 @@ int evp_keymgmt_util_cache_keydata(EVP_PKEY *pk,
             return 0;
         p->keydata = keydata;
         p->keymgmt = keymgmt;
+        p->selection = selection;
 
         if (!EVP_KEYMGMT_up_ref(keymgmt)) {
             OPENSSL_free(p);
@@ -290,18 +296,22 @@ void evp_keymgmt_util_cache_keyinfo(EVP_PKEY *pk)
     if (pk->keydata != NULL) {
         int bits = 0;
         int security_bits = 0;
+        int security_category = -1;
         int size = 0;
-        OSSL_PARAM params[4];
+        OSSL_PARAM params[5];
 
         params[0] = OSSL_PARAM_construct_int(OSSL_PKEY_PARAM_BITS, &bits);
         params[1] = OSSL_PARAM_construct_int(OSSL_PKEY_PARAM_SECURITY_BITS,
                                              &security_bits);
-        params[2] = OSSL_PARAM_construct_int(OSSL_PKEY_PARAM_MAX_SIZE, &size);
-        params[3] = OSSL_PARAM_construct_end();
+        params[2] = OSSL_PARAM_construct_int(OSSL_PKEY_PARAM_SECURITY_CATEGORY,
+                                             &security_category);
+        params[3] = OSSL_PARAM_construct_int(OSSL_PKEY_PARAM_MAX_SIZE, &size);
+        params[4] = OSSL_PARAM_construct_end();
         if (evp_keymgmt_get_params(pk->keymgmt, pk->keydata, params)) {
             pk->cache.size = size;
             pk->cache.bits = bits;
             pk->cache.security_bits = security_bits;
+            pk->cache.security_category = security_category;
         }
     }
 }
@@ -369,7 +379,7 @@ int evp_keymgmt_util_match(EVP_PKEY *pk1, EVP_PKEY *pk2, int selection)
          * but also to determine if we should attempt a cross export
          * the other way.  There's no point doing it both ways.
          */
-        int ok = 1;
+        int ok = 0;
 
         /* Complex case, where the keymgmt differ */
         if (keymgmt1 != NULL
@@ -390,7 +400,8 @@ int evp_keymgmt_util_match(EVP_PKEY *pk1, EVP_PKEY *pk2, int selection)
             ok = 1;
             if (keydata1 != NULL) {
                 tmp_keydata =
-                    evp_keymgmt_util_export_to_provider(pk1, keymgmt2);
+                    evp_keymgmt_util_export_to_provider(pk1, keymgmt2,
+                                                        selection);
                 ok = (tmp_keydata != NULL);
             }
             if (ok) {
@@ -410,7 +421,8 @@ int evp_keymgmt_util_match(EVP_PKEY *pk1, EVP_PKEY *pk2, int selection)
             ok = 1;
             if (keydata2 != NULL) {
                 tmp_keydata =
-                    evp_keymgmt_util_export_to_provider(pk2, keymgmt1);
+                    evp_keymgmt_util_export_to_provider(pk2, keymgmt1,
+                                                        selection);
                 ok = (tmp_keydata != NULL);
             }
             if (ok) {
@@ -560,4 +572,23 @@ int evp_keymgmt_util_get_deflt_digest_name(EVP_KEYMGMT *keymgmt,
     if (rv > 0)
         OPENSSL_strlcpy(mdname, result, mdname_sz);
     return rv;
+}
+
+/*
+ * If |keymgmt| has the method function |query_operation_name|, use it to get
+ * the name of a supported operation identity.  Otherwise, return the keytype,
+ * assuming that it works as a default operation name.
+ */
+const char *evp_keymgmt_util_query_operation_name(EVP_KEYMGMT *keymgmt,
+                                                  int op_id)
+{
+    const char *name = NULL;
+
+    if (keymgmt != NULL) {
+        if (keymgmt->query_operation_name != NULL)
+            name = keymgmt->query_operation_name(op_id);
+        if (name == NULL)
+            name = EVP_KEYMGMT_get0_name(keymgmt);
+    }
+    return name;
 }

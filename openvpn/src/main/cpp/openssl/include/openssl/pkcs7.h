@@ -28,6 +28,9 @@
 # include <openssl/symhacks.h>
 # include <openssl/types.h>
 # include <openssl/pkcs7err.h>
+# ifndef OPENSSL_NO_STDIO
+#  include <stdio.h>
+# endif
 
 #ifdef  __cplusplus
 extern "C" {
@@ -56,8 +59,8 @@ typedef struct pkcs7_signer_info_st {
     PKCS7_ISSUER_AND_SERIAL *issuer_and_serial;
     X509_ALGOR *digest_alg;
     STACK_OF(X509_ATTRIBUTE) *auth_attr; /* [ 0 ] */
-    X509_ALGOR *digest_enc_alg;
-    ASN1_OCTET_STRING *enc_digest;
+    X509_ALGOR *digest_enc_alg; /* confusing name, actually used for signing */
+    ASN1_OCTET_STRING *enc_digest; /* confusing name, actually signature */
     STACK_OF(X509_ATTRIBUTE) *unauth_attr; /* [ 1 ] */
     /* The private key to sign with */
     EVP_PKEY *pkey;
@@ -78,7 +81,7 @@ SKM_DEFINE_STACK_OF_INTERNAL(PKCS7_SIGNER_INFO, PKCS7_SIGNER_INFO, PKCS7_SIGNER_
 #define sk_PKCS7_SIGNER_INFO_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_PKCS7_SIGNER_INFO_sk_type(sk), ossl_check_PKCS7_SIGNER_INFO_type(ptr))
 #define sk_PKCS7_SIGNER_INFO_pop(sk) ((PKCS7_SIGNER_INFO *)OPENSSL_sk_pop(ossl_check_PKCS7_SIGNER_INFO_sk_type(sk)))
 #define sk_PKCS7_SIGNER_INFO_shift(sk) ((PKCS7_SIGNER_INFO *)OPENSSL_sk_shift(ossl_check_PKCS7_SIGNER_INFO_sk_type(sk)))
-#define sk_PKCS7_SIGNER_INFO_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_PKCS7_SIGNER_INFO_sk_type(sk),ossl_check_PKCS7_SIGNER_INFO_freefunc_type(freefunc))
+#define sk_PKCS7_SIGNER_INFO_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_PKCS7_SIGNER_INFO_sk_type(sk), ossl_check_PKCS7_SIGNER_INFO_freefunc_type(freefunc))
 #define sk_PKCS7_SIGNER_INFO_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_PKCS7_SIGNER_INFO_sk_type(sk), ossl_check_PKCS7_SIGNER_INFO_type(ptr), (idx))
 #define sk_PKCS7_SIGNER_INFO_set(sk, idx, ptr) ((PKCS7_SIGNER_INFO *)OPENSSL_sk_set(ossl_check_PKCS7_SIGNER_INFO_sk_type(sk), (idx), ossl_check_PKCS7_SIGNER_INFO_type(ptr)))
 #define sk_PKCS7_SIGNER_INFO_find(sk, ptr) OPENSSL_sk_find(ossl_check_PKCS7_SIGNER_INFO_sk_type(sk), ossl_check_PKCS7_SIGNER_INFO_type(ptr))
@@ -114,7 +117,7 @@ SKM_DEFINE_STACK_OF_INTERNAL(PKCS7_RECIP_INFO, PKCS7_RECIP_INFO, PKCS7_RECIP_INF
 #define sk_PKCS7_RECIP_INFO_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_PKCS7_RECIP_INFO_sk_type(sk), ossl_check_PKCS7_RECIP_INFO_type(ptr))
 #define sk_PKCS7_RECIP_INFO_pop(sk) ((PKCS7_RECIP_INFO *)OPENSSL_sk_pop(ossl_check_PKCS7_RECIP_INFO_sk_type(sk)))
 #define sk_PKCS7_RECIP_INFO_shift(sk) ((PKCS7_RECIP_INFO *)OPENSSL_sk_shift(ossl_check_PKCS7_RECIP_INFO_sk_type(sk)))
-#define sk_PKCS7_RECIP_INFO_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_PKCS7_RECIP_INFO_sk_type(sk),ossl_check_PKCS7_RECIP_INFO_freefunc_type(freefunc))
+#define sk_PKCS7_RECIP_INFO_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_PKCS7_RECIP_INFO_sk_type(sk), ossl_check_PKCS7_RECIP_INFO_freefunc_type(freefunc))
 #define sk_PKCS7_RECIP_INFO_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_PKCS7_RECIP_INFO_sk_type(sk), ossl_check_PKCS7_RECIP_INFO_type(ptr), (idx))
 #define sk_PKCS7_RECIP_INFO_set(sk, idx, ptr) ((PKCS7_RECIP_INFO *)OPENSSL_sk_set(ossl_check_PKCS7_RECIP_INFO_sk_type(sk), (idx), ossl_check_PKCS7_RECIP_INFO_type(ptr)))
 #define sk_PKCS7_RECIP_INFO_find(sk, ptr) OPENSSL_sk_find(ossl_check_PKCS7_RECIP_INFO_sk_type(sk), ossl_check_PKCS7_RECIP_INFO_type(ptr))
@@ -131,8 +134,8 @@ SKM_DEFINE_STACK_OF_INTERNAL(PKCS7_RECIP_INFO, PKCS7_RECIP_INFO, PKCS7_RECIP_INF
 typedef struct pkcs7_signed_st {
     ASN1_INTEGER *version;      /* version 1 */
     STACK_OF(X509_ALGOR) *md_algs; /* md used */
-    STACK_OF(X509) *cert;       /* [ 0 ] */
-    STACK_OF(X509_CRL) *crl;    /* [ 1 ] */
+    STACK_OF(X509) *cert;       /* [ 0 ] */ /* name should be 'certificates' */
+    STACK_OF(X509_CRL) *crl;    /* [ 1 ] */ /* name should be 'crls' */
     STACK_OF(PKCS7_SIGNER_INFO) *signer_info;
     struct pkcs7_st *contents;
 } PKCS7_SIGNED;
@@ -158,8 +161,8 @@ typedef struct pkcs7_enveloped_st {
 typedef struct pkcs7_signedandenveloped_st {
     ASN1_INTEGER *version;      /* version 1 */
     STACK_OF(X509_ALGOR) *md_algs; /* md used */
-    STACK_OF(X509) *cert;       /* [ 0 ] */
-    STACK_OF(X509_CRL) *crl;    /* [ 1 ] */
+    STACK_OF(X509) *cert;       /* [ 0 ] */ /* name should be 'certificates' */
+    STACK_OF(X509_CRL) *crl;    /* [ 1 ] */ /* name should be 'crls' */
     STACK_OF(PKCS7_SIGNER_INFO) *signer_info;
     PKCS7_ENC_CONTENT *enc_data;
     STACK_OF(PKCS7_RECIP_INFO) *recipientinfo;
@@ -200,7 +203,7 @@ typedef struct pkcs7_st {
         /* NID_pkcs7_data */
         ASN1_OCTET_STRING *data;
         /* NID_pkcs7_signed */
-        PKCS7_SIGNED *sign;
+        PKCS7_SIGNED *sign; /* field name 'signed' would clash with C keyword */
         /* NID_pkcs7_enveloped */
         PKCS7_ENVELOPE *enveloped;
         /* NID_pkcs7_signedAndEnveloped */
@@ -229,7 +232,7 @@ SKM_DEFINE_STACK_OF_INTERNAL(PKCS7, PKCS7, PKCS7)
 #define sk_PKCS7_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_PKCS7_sk_type(sk), ossl_check_PKCS7_type(ptr))
 #define sk_PKCS7_pop(sk) ((PKCS7 *)OPENSSL_sk_pop(ossl_check_PKCS7_sk_type(sk)))
 #define sk_PKCS7_shift(sk) ((PKCS7 *)OPENSSL_sk_shift(ossl_check_PKCS7_sk_type(sk)))
-#define sk_PKCS7_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_PKCS7_sk_type(sk),ossl_check_PKCS7_freefunc_type(freefunc))
+#define sk_PKCS7_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_PKCS7_sk_type(sk), ossl_check_PKCS7_freefunc_type(freefunc))
 #define sk_PKCS7_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_PKCS7_sk_type(sk), ossl_check_PKCS7_type(ptr), (idx))
 #define sk_PKCS7_set(sk, idx, ptr) ((PKCS7 *)OPENSSL_sk_set(ossl_check_PKCS7_sk_type(sk), (idx), ossl_check_PKCS7_type(ptr)))
 #define sk_PKCS7_find(sk, ptr) OPENSSL_sk_find(ossl_check_PKCS7_sk_type(sk), ossl_check_PKCS7_type(ptr))
@@ -341,13 +344,13 @@ int PKCS7_SIGNER_INFO_set(PKCS7_SIGNER_INFO *p7i, X509 *x509, EVP_PKEY *pkey,
                           const EVP_MD *dgst);
 int PKCS7_SIGNER_INFO_sign(PKCS7_SIGNER_INFO *si);
 int PKCS7_add_signer(PKCS7 *p7, PKCS7_SIGNER_INFO *p7i);
-int PKCS7_add_certificate(PKCS7 *p7, X509 *x509);
-int PKCS7_add_crl(PKCS7 *p7, X509_CRL *x509);
+int PKCS7_add_certificate(PKCS7 *p7, X509 *cert);
+int PKCS7_add_crl(PKCS7 *p7, X509_CRL *crl);
 int PKCS7_content_new(PKCS7 *p7, int nid);
 int PKCS7_dataVerify(X509_STORE *cert_store, X509_STORE_CTX *ctx,
                      BIO *bio, PKCS7 *p7, PKCS7_SIGNER_INFO *si);
 int PKCS7_signatureVerify(BIO *bio, PKCS7 *p7, PKCS7_SIGNER_INFO *si,
-                          X509 *x509);
+                          X509 *signer);
 
 BIO *PKCS7_dataInit(PKCS7 *p7, BIO *bio);
 int PKCS7_dataFinal(PKCS7 *p7, BIO *bio);

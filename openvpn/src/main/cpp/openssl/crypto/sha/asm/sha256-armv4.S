@@ -1,4 +1,4 @@
-@ Copyright 2007-2020 The OpenSSL Project Authors. All Rights Reserved.
+@ Copyright 2007-2025 The OpenSSL Project Authors. All Rights Reserved.
 @
 @ Licensed under the Apache License 2.0 (the "License").  You may not use
 @ this file except in compliance with the License.  You can obtain a copy
@@ -7,10 +7,10 @@
 
 
 @ ====================================================================
-@ Written by Andy Polyakov <appro@openssl.org> for the OpenSSL
+@ Written by Andy Polyakov, @dot-asm, initially for use in the OpenSSL
 @ project. The module is, however, dual licensed under OpenSSL and
 @ CRYPTOGAMS licenses depending on where you obtain it. For further
-@ details see http://www.openssl.org/~appro/cryptogams/.
+@ details see https://github.com/dot-asm/cryptogams/.
 @
 @ Permission to use under GPL terms is granted.
 @ ====================================================================
@@ -2814,8 +2814,9 @@ sha256_block_data_order_armv8:
 	bx	lr		@ bx lr
 .size	sha256_block_data_order_armv8,.-sha256_block_data_order_armv8
 #endif
-.asciz  "SHA256 block transform for ARMv4/NEON/ARMv8, CRYPTOGAMS by <appro@openssl.org>"
+.asciz  "SHA256 block transform for ARMv4/NEON/ARMv8, CRYPTOGAMS by <https://github.com/dot-asm>"
 .align	2
 #if __ARM_MAX_ARCH__>=7 && !defined(__KERNEL__)
-.comm   OPENSSL_armcap_P,4,4
+.extern   OPENSSL_armcap_P
+.hidden   OPENSSL_armcap_P
 #endif

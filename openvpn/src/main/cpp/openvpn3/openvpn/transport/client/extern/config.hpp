@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef OPENVPN_TRANSPORT_CLIENT_EXTERN_CONFIG_H
 #define OPENVPN_TRANSPORT_CLIENT_EXTERN_CONFIG_H
@@ -27,21 +17,17 @@
 #include <openvpn/transport/socket_protect.hpp>
 #include <openvpn/client/remotelist.hpp>
 
-namespace openvpn
+namespace openvpn::ExternalTransport {
+struct Config
 {
-  namespace ExternalTransport
-  {
-    struct Config
-    {
-      Protocol protocol;
-      RemoteList::Ptr remote_list;
-      bool server_addr_float = false;
-      bool synchronous_dns_lookup = false;
-      Frame::Ptr frame;
-      SessionStats::Ptr stats;
-      SocketProtect* socket_protect = nullptr;
-    };
-  }
-}
+    Protocol protocol;
+    RemoteList::Ptr remote_list;
+    bool server_addr_float = false;
+    bool synchronous_dns_lookup = false;
+    Frame::Ptr frame;
+    SessionStats::Ptr stats;
+    SocketProtect *socket_protect = nullptr;
+};
+} // namespace openvpn::ExternalTransport
 
 #endif

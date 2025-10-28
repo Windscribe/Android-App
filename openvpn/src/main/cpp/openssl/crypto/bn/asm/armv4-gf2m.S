@@ -226,9 +226,10 @@ bn_GF2m_mul_2x2:
 .word	OPENSSL_armcap_P-.
 # endif
 #endif
-.asciz	"GF(2^m) Multiplication for ARMv4/NEON, CRYPTOGAMS by <appro@openssl.org>"
+.asciz	"GF(2^m) Multiplication for ARMv4/NEON, CRYPTOGAMS by <https://github.com/dot-asm>"
 .align	5
 
 #if __ARM_MAX_ARCH__>=7
-.comm	OPENSSL_armcap_P,4,4
+.extern	OPENSSL_armcap_P
+.hidden	OPENSSL_armcap_P
 #endif

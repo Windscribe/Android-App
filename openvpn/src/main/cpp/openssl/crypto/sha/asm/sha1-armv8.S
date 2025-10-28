@@ -1,5 +1,5 @@
+#include "arm_arch.h"
 #ifndef	__KERNEL__
-# include "arm_arch.h"
 
 .hidden	OPENSSL_armcap_P
 #endif
@@ -10,11 +10,13 @@
 .type	sha1_block_data_order,%function
 .align	6
 sha1_block_data_order:
+	AARCH64_VALID_CALL_TARGET
 	adrp	x16,OPENSSL_armcap_P
 	ldr	w16,[x16,#:lo12:OPENSSL_armcap_P]
 	tst	w16,#ARMV8_SHA1
 	b.ne	.Lv8_entry
 
+	// Armv8.3-A PAuth: even though x30 is pushed to stack it is not popped later.
 	stp	x29,x30,[sp,#-96]!
 	add	x29,sp,#0
 	stp	x19,x20,[sp,#16]
@@ -1074,10 +1076,12 @@ sha1_block_data_order:
 .align	6
 sha1_block_armv8:
 .Lv8_entry:
+	// Armv8.3-A PAuth: even though x30 is pushed to stack it is not popped later.
 	stp	x29,x30,[sp,#-16]!
 	add	x29,sp,#0
 
-	adr	x4,.Lconst
+	adrp	x4,.Lconst
+	add	x4,x4,#:lo12:.Lconst
 	eor	v1.16b,v1.16b,v1.16b
 	ld1	{v0.4s},[x0],#16
 	ld1	{v1.s}[0],[x0]
@@ -1200,12 +1204,15 @@ sha1_block_armv8:
 	ldr	x29,[sp],#16
 	ret
 .size	sha1_block_armv8,.-sha1_block_armv8
+
+.section	.rodata
+
 .align	6
 .Lconst:
 .long	0x5a827999,0x5a827999,0x5a827999,0x5a827999	//K_00_19
 .long	0x6ed9eba1,0x6ed9eba1,0x6ed9eba1,0x6ed9eba1	//K_20_39
 .long	0x8f1bbcdc,0x8f1bbcdc,0x8f1bbcdc,0x8f1bbcdc	//K_40_59
 .long	0xca62c1d6,0xca62c1d6,0xca62c1d6,0xca62c1d6	//K_60_79
-.byte	83,72,65,49,32,98,108,111,99,107,32,116,114,97,110,115,102,111,114,109,32,102,111,114,32,65,82,77,118,56,44,32,67,82,89,80,84,79,71,65,77,83,32,98,121,32,60,97,112,112,114,111,64,111,112,101,110,115,115,108,46,111,114,103,62,0
+.byte	83,72,65,49,32,98,108,111,99,107,32,116,114,97,110,115,102,111,114,109,32,102,111,114,32,65,82,77,118,56,44,32,67,82,89,80,84,79,71,65,77,83,32,98,121,32,60,104,116,116,112,115,58,47,47,103,105,116,104,117,98,46,99,111,109,47,100,111,116,45,97,115,109,62,0
 .align	2
 .align	2

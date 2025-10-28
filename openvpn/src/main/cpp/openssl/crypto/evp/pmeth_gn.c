@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2006-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -128,7 +128,6 @@ static int ossl_callback_to_pkey_gencb(const OSSL_PARAM params[], void *arg)
 int EVP_PKEY_generate(EVP_PKEY_CTX *ctx, EVP_PKEY **ppkey)
 {
     int ret = 0;
-    OSSL_CALLBACK cb;
     EVP_PKEY *allocated_pkey = NULL;
     /* Legacy compatible keygen callback info, only used with provider impls */
     int gentmp[2];
@@ -146,7 +145,7 @@ int EVP_PKEY_generate(EVP_PKEY_CTX *ctx, EVP_PKEY **ppkey)
         *ppkey = allocated_pkey = EVP_PKEY_new();
 
     if (*ppkey == NULL) {
-        ERR_raise(ERR_LIB_EVP, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_EVP, ERR_R_EVP_LIB);
         return -1;
     }
 
@@ -154,7 +153,7 @@ int EVP_PKEY_generate(EVP_PKEY_CTX *ctx, EVP_PKEY **ppkey)
         goto legacy;
 
     /*
-     * Asssigning gentmp to ctx->keygen_info is something our legacy
+     * Assigning gentmp to ctx->keygen_info is something our legacy
      * implementations do.  Because the provider implementations aren't
      * allowed to reach into our EVP_PKEY_CTX, we need to provide similar
      * space for backward compatibility.  It's ok that we attach a local
@@ -193,7 +192,7 @@ int EVP_PKEY_generate(EVP_PKEY_CTX *ctx, EVP_PKEY **ppkey)
 
     ctx->keygen_info = NULL;
 
-#ifndef FIPS_MODULE
+#if !defined(FIPS_MODULE) && !defined(OPENSSL_NO_DEPRECATED_3_6)
     /* In case |*ppkey| was originally a legacy key */
     if (ret)
         evp_pkey_free_legacy(*ppkey);
@@ -365,6 +364,7 @@ int EVP_PKEY_fromdata(EVP_PKEY_CTX *ctx, EVP_PKEY **ppkey, int selection,
                       OSSL_PARAM params[])
 {
     void *keydata = NULL;
+    EVP_PKEY *allocated_pkey = NULL;
 
     if (ctx == NULL || (ctx->operation & EVP_PKEY_OP_FROMDATA) == 0) {
         ERR_raise(ERR_LIB_EVP, EVP_R_OPERATION_NOT_SUPPORTED_FOR_THIS_KEYTYPE);
@@ -375,16 +375,21 @@ int EVP_PKEY_fromdata(EVP_PKEY_CTX *ctx, EVP_PKEY **ppkey, int selection,
         return -1;
 
     if (*ppkey == NULL)
-        *ppkey = EVP_PKEY_new();
+        allocated_pkey = *ppkey = EVP_PKEY_new();
 
     if (*ppkey == NULL) {
-        ERR_raise(ERR_LIB_EVP, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_EVP, ERR_R_EVP_LIB);
         return -1;
     }
 
     keydata = evp_keymgmt_util_fromdata(*ppkey, ctx->keymgmt, selection, params);
-    if (keydata == NULL)
+    if (keydata == NULL) {
+        if (allocated_pkey != NULL) {
+            *ppkey = NULL;
+            EVP_PKEY_free(allocated_pkey);
+        }
         return 0;
+    }
     /* keydata is cached in *ppkey, so we need not bother with it further */
     return 1;
 }

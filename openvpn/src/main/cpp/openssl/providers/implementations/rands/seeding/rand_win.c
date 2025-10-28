@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -28,7 +28,9 @@
 
 # ifdef USE_BCRYPTGENRANDOM
 #  include <bcrypt.h>
-#  pragma comment(lib, "bcrypt.lib")
+#  ifdef _MSC_VER
+#   pragma comment(lib, "bcrypt.lib")
+#  endif
 #  ifndef STATUS_SUCCESS
 #   define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
 #  endif
@@ -86,8 +88,8 @@ size_t ossl_pool_acquire_entropy(RAND_POOL *pool)
         /* poll the CryptoAPI PRNG */
         if (CryptAcquireContextW(&hProvider, NULL, NULL, PROV_RSA_FULL,
                                  CRYPT_VERIFYCONTEXT | CRYPT_SILENT) != 0) {
-            if (CryptGenRandom(hProvider, bytes_needed, buffer) != 0)
-                bytes = bytes_needed;
+            if (CryptGenRandom(hProvider, (DWORD)bytes_needed, buffer) != 0)
+                bytes = (DWORD)bytes_needed;
 
             CryptReleaseContext(hProvider, 0);
         }
@@ -106,8 +108,8 @@ size_t ossl_pool_acquire_entropy(RAND_POOL *pool)
         if (CryptAcquireContextW(&hProvider, NULL,
                                  INTEL_DEF_PROV, PROV_INTEL_SEC,
                                  CRYPT_VERIFYCONTEXT | CRYPT_SILENT) != 0) {
-            if (CryptGenRandom(hProvider, bytes_needed, buffer) != 0)
-                bytes = bytes_needed;
+            if (CryptGenRandom(hProvider, (DWORD)bytes_needed, buffer) != 0)
+                bytes = (DWORD)bytes_needed;
 
             CryptReleaseContext(hProvider, 0);
         }
@@ -142,26 +144,6 @@ int ossl_pool_add_nonce_data(RAND_POOL *pool)
     data.tid = GetCurrentThreadId();
     GetSystemTimeAsFileTime(&data.time);
 
-    return ossl_rand_pool_add(pool, (unsigned char *)&data, sizeof(data), 0);
-}
-
-int ossl_rand_pool_add_additional_data(RAND_POOL *pool)
-{
-    struct {
-        DWORD tid;
-        LARGE_INTEGER time;
-    } data;
-
-    /* Erase the entire structure including any padding */
-    memset(&data, 0, sizeof(data));
-
-    /*
-     * Add some noise from the thread id and a high resolution timer.
-     * The thread id adds a little randomness if the drbg is accessed
-     * concurrently (which is the case for the <master> drbg).
-     */
-    data.tid = GetCurrentThreadId();
-    QueryPerformanceCounter(&data.time);
     return ossl_rand_pool_add(pool, (unsigned char *)&data, sizeof(data), 0);
 }
 

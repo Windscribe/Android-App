@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2020-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -7,9 +7,10 @@
  * https://www.openssl.org/source/license.html
  */
 
+
 /*
  * ECDSA low level APIs are deprecated for public use, but still ok for
- * internal use - SM2 implemetation uses ECDSA_size() function.
+ * internal use - SM2 implementation uses ECDSA_size() function.
  */
 #include "internal/deprecated.h"
 
@@ -27,6 +28,7 @@
 #include "internal/cryptlib.h"
 #include "internal/sm3.h"
 #include "prov/implementations.h"
+#include "prov/providercommon.h"
 #include "prov/provider_ctx.h"
 #include "crypto/ec.h"
 #include "crypto/sm2.h"
@@ -65,9 +67,9 @@ typedef struct {
     EC_KEY *ec;
 
     /*
-     * Flag to termine if the 'z' digest needs to be computed and fed to the
+     * Flag to determine if the 'z' digest needs to be computed and fed to the
      * hash function.
-     * This flag should be set on initialization and the compuation should
+     * This flag should be set on initialization and the computation should
      * be performed only once, on first update.
      */
     unsigned int flag_compute_z_digest : 1;
@@ -76,7 +78,6 @@ typedef struct {
 
     /* The Algorithm Identifier of the combined signature algorithm */
     unsigned char aid_buf[OSSL_MAX_ALGORITHM_ID_SIZE];
-    unsigned char *aid;
     size_t  aid_len;
 
     /* main digest */
@@ -94,9 +95,22 @@ static int sm2sig_set_mdname(PROV_SM2_CTX *psm2ctx, const char *mdname)
     if (psm2ctx->md == NULL) /* We need an SM3 md to compare with */
         psm2ctx->md = EVP_MD_fetch(psm2ctx->libctx, psm2ctx->mdname,
                                    psm2ctx->propq);
-    if (psm2ctx->md == NULL
-        || strlen(mdname) >= sizeof(psm2ctx->mdname)
+    if (psm2ctx->md == NULL)
+        return 0;
+
+    /* XOF digests don't work */
+    if (EVP_MD_xof(psm2ctx->md)) {
+        ERR_raise(ERR_LIB_PROV, PROV_R_XOF_DIGESTS_NOT_ALLOWED);
+        return 0;
+    }
+
+    if (mdname == NULL)
+        return 1;
+
+    if (strlen(mdname) >= sizeof(psm2ctx->mdname)
         || !EVP_MD_is_a(psm2ctx->md, mdname)) {
+        ERR_raise_data(ERR_LIB_PROV, PROV_R_INVALID_DIGEST, "digest=%s",
+                       mdname);
         return 0;
     }
 
@@ -114,7 +128,6 @@ static void *sm2sig_newctx(void *provctx, const char *propq)
     ctx->libctx = PROV_LIBCTX_OF(provctx);
     if (propq != NULL && (ctx->propq = OPENSSL_strdup(propq)) == NULL) {
         OPENSSL_free(ctx);
-        ERR_raise(ERR_LIB_PROV, ERR_R_MALLOC_FAILURE);
         return NULL;
     }
     ctx->mdsize = SM3_DIGEST_LENGTH;
@@ -127,10 +140,22 @@ static int sm2sig_signature_init(void *vpsm2ctx, void *ec,
 {
     PROV_SM2_CTX *psm2ctx = (PROV_SM2_CTX *)vpsm2ctx;
 
-    if (psm2ctx == NULL || ec == NULL || !EC_KEY_up_ref(ec))
+    if (!ossl_prov_is_running()
+            || psm2ctx == NULL)
         return 0;
-    EC_KEY_free(psm2ctx->ec);
-    psm2ctx->ec = ec;
+
+    if (ec == NULL && psm2ctx->ec == NULL) {
+        ERR_raise(ERR_LIB_PROV, PROV_R_NO_KEY_SET);
+        return 0;
+    }
+
+    if (ec != NULL) {
+        if (!EC_KEY_up_ref(ec))
+            return 0;
+        EC_KEY_free(psm2ctx->ec);
+        psm2ctx->ec = ec;
+    }
+
     return sm2sig_set_ctx_params(psm2ctx, params);
 }
 
@@ -154,7 +179,7 @@ static int sm2sig_sign(void *vpsm2ctx, unsigned char *sig, size_t *siglen,
     if (ctx->mdsize != 0 && tbslen != ctx->mdsize)
         return 0;
 
-    ret = ossl_sm2_internal_sign(tbs, tbslen, sig, &sltmp, ctx->ec);
+    ret = ossl_sm2_internal_sign(tbs, (int)tbslen, sig, &sltmp, ctx->ec);
     if (ret <= 0)
         return 0;
 
@@ -170,7 +195,7 @@ static int sm2sig_verify(void *vpsm2ctx, const unsigned char *sig, size_t siglen
     if (ctx->mdsize != 0 && tbslen != ctx->mdsize)
         return 0;
 
-    return ossl_sm2_internal_verify(tbs, tbslen, sig, siglen, ctx->ec);
+    return ossl_sm2_internal_verify(tbs, (int)tbslen, sig, (int)siglen, ctx->ec);
 }
 
 static void free_md(PROV_SM2_CTX *ctx)
@@ -188,15 +213,17 @@ static int sm2sig_digest_signverify_init(void *vpsm2ctx, const char *mdname,
     int md_nid;
     WPACKET pkt;
     int ret = 0;
+    unsigned char *aid = NULL;
 
     if (!sm2sig_signature_init(vpsm2ctx, ec, params)
         || !sm2sig_set_mdname(ctx, mdname))
         return ret;
 
-    EVP_MD_CTX_free(ctx->mdctx);
-    ctx->mdctx = EVP_MD_CTX_new();
-    if (ctx->mdctx == NULL)
-        goto error;
+    if (ctx->mdctx == NULL) {
+        ctx->mdctx = EVP_MD_CTX_new();
+        if (ctx->mdctx == NULL)
+            goto error;
+    }
 
     md_nid = EVP_MD_get_type(ctx->md);
 
@@ -212,9 +239,11 @@ static int sm2sig_digest_signverify_init(void *vpsm2ctx, const char *mdname,
         && ossl_DER_w_algorithmIdentifier_SM2_with_MD(&pkt, -1, ctx->ec, md_nid)
         && WPACKET_finish(&pkt)) {
         WPACKET_get_total_written(&pkt, &ctx->aid_len);
-        ctx->aid = WPACKET_get_curr(&pkt);
+        aid = WPACKET_get_curr(&pkt);
     }
     WPACKET_cleanup(&pkt);
+    if (aid != NULL && ctx->aid_len != 0)
+        memmove(ctx->aid_buf, aid, ctx->aid_len);
 
     if (!EVP_DigestInit_ex2(ctx->mdctx, ctx->md, params))
         goto error;
@@ -224,8 +253,6 @@ static int sm2sig_digest_signverify_init(void *vpsm2ctx, const char *mdname,
     ret = 1;
 
  error:
-    if (!ret)
-        free_md(ctx);
     return ret;
 }
 
@@ -292,10 +319,13 @@ int sm2sig_digest_verify_final(void *vpsm2ctx, const unsigned char *sig,
     PROV_SM2_CTX *psm2ctx = (PROV_SM2_CTX *)vpsm2ctx;
     unsigned char digest[EVP_MAX_MD_SIZE];
     unsigned int dlen = 0;
+    int md_size;
 
-    if (psm2ctx == NULL
-        || psm2ctx->mdctx == NULL
-        || EVP_MD_get_size(psm2ctx->md) > (int)sizeof(digest))
+    if (psm2ctx == NULL || psm2ctx->mdctx == NULL)
+        return 0;
+
+    md_size = EVP_MD_get_size(psm2ctx->md);
+    if (md_size <= 0 || md_size > (int)sizeof(digest))
         return 0;
 
     if (!(sm2sig_compute_z_digest(psm2ctx)
@@ -311,6 +341,7 @@ static void sm2sig_freectx(void *vpsm2ctx)
 
     free_md(ctx);
     EC_KEY_free(ctx->ec);
+    OPENSSL_free(ctx->propq);
     OPENSSL_free(ctx->id);
     OPENSSL_free(ctx);
 }
@@ -326,12 +357,20 @@ static void *sm2sig_dupctx(void *vpsm2ctx)
 
     *dstctx = *srcctx;
     dstctx->ec = NULL;
+    dstctx->propq = NULL;
     dstctx->md = NULL;
     dstctx->mdctx = NULL;
+    dstctx->id = NULL;
 
     if (srcctx->ec != NULL && !EC_KEY_up_ref(srcctx->ec))
         goto err;
     dstctx->ec = srcctx->ec;
+
+    if (srcctx->propq != NULL) {
+        dstctx->propq = OPENSSL_strdup(srcctx->propq);
+        if (dstctx->propq == NULL)
+            goto err;
+    }
 
     if (srcctx->md != NULL && !EVP_MD_up_ref(srcctx->md))
         goto err;
@@ -358,60 +397,240 @@ static void *sm2sig_dupctx(void *vpsm2ctx)
     return NULL;
 }
 
-static int sm2sig_get_ctx_params(void *vpsm2ctx, OSSL_PARAM *params)
-{
-    PROV_SM2_CTX *psm2ctx = (PROV_SM2_CTX *)vpsm2ctx;
-    OSSL_PARAM *p;
-
-    if (psm2ctx == NULL)
-        return 0;
-
-    p = OSSL_PARAM_locate(params, OSSL_SIGNATURE_PARAM_ALGORITHM_ID);
-    if (p != NULL
-        && !OSSL_PARAM_set_octet_string(p, psm2ctx->aid, psm2ctx->aid_len))
-        return 0;
-
-    p = OSSL_PARAM_locate(params, OSSL_SIGNATURE_PARAM_DIGEST_SIZE);
-    if (p != NULL && !OSSL_PARAM_set_size_t(p, psm2ctx->mdsize))
-        return 0;
-
-    p = OSSL_PARAM_locate(params, OSSL_SIGNATURE_PARAM_DIGEST);
-    if (p != NULL && !OSSL_PARAM_set_utf8_string(p, psm2ctx->md == NULL
-                                                    ? psm2ctx->mdname
-                                                    : EVP_MD_get0_name(psm2ctx->md)))
-        return 0;
-
-    return 1;
-}
-
-static const OSSL_PARAM known_gettable_ctx_params[] = {
+/* Machine generated by util/perl/OpenSSL/paramnames.pm */
+#ifndef sm2sig_get_ctx_params_list
+static const OSSL_PARAM sm2sig_get_ctx_params_list[] = {
     OSSL_PARAM_octet_string(OSSL_SIGNATURE_PARAM_ALGORITHM_ID, NULL, 0),
     OSSL_PARAM_size_t(OSSL_SIGNATURE_PARAM_DIGEST_SIZE, NULL),
     OSSL_PARAM_utf8_string(OSSL_SIGNATURE_PARAM_DIGEST, NULL, 0),
     OSSL_PARAM_END
 };
+#endif
+
+#ifndef sm2sig_get_ctx_params_st
+struct sm2sig_get_ctx_params_st {
+    OSSL_PARAM *algid;
+    OSSL_PARAM *digest;
+    OSSL_PARAM *size;
+};
+#endif
+
+#ifndef sm2sig_get_ctx_params_decoder
+static int sm2sig_get_ctx_params_decoder
+    (const OSSL_PARAM *p, struct sm2sig_get_ctx_params_st *r)
+{
+    const char *s;
+
+    memset(r, 0, sizeof(*r));
+    if (p != NULL)
+        for (; (s = p->key) != NULL; p++)
+            switch(s[0]) {
+            default:
+                break;
+            case 'a':
+                if (ossl_likely(strcmp("lgorithm-id", s + 1) == 0)) {
+                    /* OSSL_SIGNATURE_PARAM_ALGORITHM_ID */
+                    if (ossl_unlikely(r->algid != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->algid = (OSSL_PARAM *)p;
+                }
+                break;
+            case 'd':
+                switch(s[1]) {
+                default:
+                    break;
+                case 'i':
+                    switch(s[2]) {
+                    default:
+                        break;
+                    case 'g':
+                        switch(s[3]) {
+                        default:
+                            break;
+                        case 'e':
+                            switch(s[4]) {
+                            default:
+                                break;
+                            case 's':
+                                switch(s[5]) {
+                                default:
+                                    break;
+                                case 't':
+                                    switch(s[6]) {
+                                    default:
+                                        break;
+                                    case '-':
+                                        if (ossl_likely(strcmp("size", s + 7) == 0)) {
+                                            /* OSSL_SIGNATURE_PARAM_DIGEST_SIZE */
+                                            if (ossl_unlikely(r->size != NULL)) {
+                                                ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                               "param %s is repeated", s);
+                                                return 0;
+                                            }
+                                            r->size = (OSSL_PARAM *)p;
+                                        }
+                                        break;
+                                    case '\0':
+                                        if (ossl_unlikely(r->digest != NULL)) {
+                                            ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                           "param %s is repeated", s);
+                                            return 0;
+                                        }
+                                        r->digest = (OSSL_PARAM *)p;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+    return 1;
+}
+#endif
+/* End of machine generated */
+
+static int sm2sig_get_ctx_params(void *vpsm2ctx, OSSL_PARAM *params)
+{
+    PROV_SM2_CTX *psm2ctx = (PROV_SM2_CTX *)vpsm2ctx;
+    struct sm2sig_get_ctx_params_st p;
+
+    if (psm2ctx == NULL || !sm2sig_get_ctx_params_decoder(params, &p))
+        return 0;
+
+    if (p.algid != NULL
+        && !OSSL_PARAM_set_octet_string(p.algid,
+                                        psm2ctx->aid_len == 0 ? NULL : psm2ctx->aid_buf,
+                                        psm2ctx->aid_len))
+        return 0;
+
+    if (p.size != NULL && !OSSL_PARAM_set_size_t(p.size, psm2ctx->mdsize))
+        return 0;
+
+    if (p.digest != NULL
+            && !OSSL_PARAM_set_utf8_string(p.digest, psm2ctx->md == NULL
+                                                     ? psm2ctx->mdname
+                                                     : EVP_MD_get0_name(psm2ctx->md)))
+        return 0;
+
+    return 1;
+}
 
 static const OSSL_PARAM *sm2sig_gettable_ctx_params(ossl_unused void *vpsm2ctx,
                                                     ossl_unused void *provctx)
 {
-    return known_gettable_ctx_params;
+    return sm2sig_get_ctx_params_list;
 }
+
+/* Machine generated by util/perl/OpenSSL/paramnames.pm */
+#ifndef sm2sig_set_ctx_params_list
+static const OSSL_PARAM sm2sig_set_ctx_params_list[] = {
+    OSSL_PARAM_size_t(OSSL_SIGNATURE_PARAM_DIGEST_SIZE, NULL),
+    OSSL_PARAM_utf8_string(OSSL_SIGNATURE_PARAM_DIGEST, NULL, 0),
+    OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_DIST_ID, NULL, 0),
+    OSSL_PARAM_END
+};
+#endif
+
+#ifndef sm2sig_set_ctx_params_st
+struct sm2sig_set_ctx_params_st {
+    OSSL_PARAM *digest;
+    OSSL_PARAM *distid;
+    OSSL_PARAM *size;
+};
+#endif
+
+#ifndef sm2sig_set_ctx_params_decoder
+static int sm2sig_set_ctx_params_decoder
+    (const OSSL_PARAM *p, struct sm2sig_set_ctx_params_st *r)
+{
+    const char *s;
+
+    memset(r, 0, sizeof(*r));
+    if (p != NULL)
+        for (; (s = p->key) != NULL; p++)
+            switch(s[0]) {
+            default:
+                break;
+            case 'd':
+                switch(s[1]) {
+                default:
+                    break;
+                case 'i':
+                    switch(s[2]) {
+                    default:
+                        break;
+                    case 'g':
+                        switch(s[3]) {
+                        default:
+                            break;
+                        case 'e':
+                            switch(s[4]) {
+                            default:
+                                break;
+                            case 's':
+                                switch(s[5]) {
+                                default:
+                                    break;
+                                case 't':
+                                    switch(s[6]) {
+                                    default:
+                                        break;
+                                    case '-':
+                                        if (ossl_likely(strcmp("size", s + 7) == 0)) {
+                                            /* OSSL_SIGNATURE_PARAM_DIGEST_SIZE */
+                                            if (ossl_unlikely(r->size != NULL)) {
+                                                ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                               "param %s is repeated", s);
+                                                return 0;
+                                            }
+                                            r->size = (OSSL_PARAM *)p;
+                                        }
+                                        break;
+                                    case '\0':
+                                        if (ossl_unlikely(r->digest != NULL)) {
+                                            ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                           "param %s is repeated", s);
+                                            return 0;
+                                        }
+                                        r->digest = (OSSL_PARAM *)p;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case 's':
+                        if (ossl_likely(strcmp("tid", s + 3) == 0)) {
+                            /* OSSL_PKEY_PARAM_DIST_ID */
+                            if (ossl_unlikely(r->distid != NULL)) {
+                                ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                               "param %s is repeated", s);
+                                return 0;
+                            }
+                            r->distid = (OSSL_PARAM *)p;
+                        }
+                    }
+                }
+            }
+    return 1;
+}
+#endif
+/* End of machine generated */
 
 static int sm2sig_set_ctx_params(void *vpsm2ctx, const OSSL_PARAM params[])
 {
     PROV_SM2_CTX *psm2ctx = (PROV_SM2_CTX *)vpsm2ctx;
-    const OSSL_PARAM *p;
+    struct sm2sig_set_ctx_params_st p;
     size_t mdsize;
 
-    if (psm2ctx == NULL)
+    if (psm2ctx == NULL || !sm2sig_set_ctx_params_decoder(params, &p))
         return 0;
-    if (params == NULL)
-        return 1;
 
-    p = OSSL_PARAM_locate_const(params, OSSL_PKEY_PARAM_DIST_ID);
-    if (p != NULL) {
+    if (p.distid != NULL) {
         void *tmp_id = NULL;
-        size_t tmp_idlen;
+        size_t tmp_idlen = 0;
 
         /*
          * If the 'z' digest has already been computed, the ID is set too late
@@ -419,7 +638,8 @@ static int sm2sig_set_ctx_params(void *vpsm2ctx, const OSSL_PARAM params[])
         if (!psm2ctx->flag_compute_z_digest)
             return 0;
 
-        if (!OSSL_PARAM_get_octet_string(p, &tmp_id, 0, &tmp_idlen))
+        if (p.distid->data_size != 0
+            && !OSSL_PARAM_get_octet_string(p.distid, &tmp_id, 0, &tmp_idlen))
             return 0;
         OPENSSL_free(psm2ctx->id);
         psm2ctx->id = tmp_id;
@@ -432,16 +652,14 @@ static int sm2sig_set_ctx_params(void *vpsm2ctx, const OSSL_PARAM params[])
      * If there is ever any different digest algorithm allowed with SM2
      * this needs to be adjusted accordingly.
      */
-    p = OSSL_PARAM_locate_const(params, OSSL_SIGNATURE_PARAM_DIGEST_SIZE);
-    if (p != NULL && (!OSSL_PARAM_get_size_t(p, &mdsize)
-                      || mdsize != psm2ctx->mdsize))
+    if (p.size != NULL && (!OSSL_PARAM_get_size_t(p.size, &mdsize)
+                           || mdsize != psm2ctx->mdsize))
         return 0;
 
-    p = OSSL_PARAM_locate_const(params, OSSL_SIGNATURE_PARAM_DIGEST);
-    if (p != NULL) {
+    if (p.digest != NULL) {
         char *mdname = NULL;
 
-        if (!OSSL_PARAM_get_utf8_string(p, &mdname, 0))
+        if (!OSSL_PARAM_get_utf8_string(p.digest, &mdname, 0))
             return 0;
         if (!sm2sig_set_mdname(psm2ctx, mdname)) {
             OPENSSL_free(mdname);
@@ -453,17 +671,10 @@ static int sm2sig_set_ctx_params(void *vpsm2ctx, const OSSL_PARAM params[])
     return 1;
 }
 
-static const OSSL_PARAM known_settable_ctx_params[] = {
-    OSSL_PARAM_size_t(OSSL_SIGNATURE_PARAM_DIGEST_SIZE, NULL),
-    OSSL_PARAM_utf8_string(OSSL_SIGNATURE_PARAM_DIGEST, NULL, 0),
-    OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_DIST_ID, NULL, 0),
-    OSSL_PARAM_END
-};
-
 static const OSSL_PARAM *sm2sig_settable_ctx_params(ossl_unused void *vpsm2ctx,
                                                     ossl_unused void *provctx)
 {
-    return known_settable_ctx_params;
+    return sm2sig_set_ctx_params_list;
 }
 
 static int sm2sig_get_ctx_md_params(void *vpsm2ctx, OSSL_PARAM *params)
@@ -540,5 +751,5 @@ const OSSL_DISPATCH ossl_sm2_signature_functions[] = {
       (void (*)(void))sm2sig_set_ctx_md_params },
     { OSSL_FUNC_SIGNATURE_SETTABLE_CTX_MD_PARAMS,
       (void (*)(void))sm2sig_settable_ctx_md_params },
-    { 0, NULL }
+    OSSL_DISPATCH_END
 };

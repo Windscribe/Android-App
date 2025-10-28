@@ -1,11 +1,12 @@
 /*
- * Copyright 2011-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2011-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
  * in the file LICENSE in the source distribution or at
  * https://www.openssl.org/source/license.html
  */
+
 
 #include <assert.h>
 #include <stdlib.h>
@@ -16,12 +17,16 @@
 #include <openssl/rand.h>
 #include <openssl/core_dispatch.h>
 #include <openssl/proverr.h>
+#include "internal/cryptlib.h"
 #include "internal/thread_once.h"
 #include "prov/providercommon.h"
 #include "prov/provider_ctx.h"
 #include "prov/provider_util.h"
 #include "prov/implementations.h"
-#include "drbg_local.h"
+#include "prov/drbg.h"
+#include "crypto/evp.h"
+#include "crypto/evp/evp_local.h"
+#include "internal/provider.h"
 
 static OSSL_FUNC_rand_newctx_fn drbg_hash_new_wrapper;
 static OSSL_FUNC_rand_freectx_fn drbg_hash_free;
@@ -34,6 +39,11 @@ static OSSL_FUNC_rand_set_ctx_params_fn drbg_hash_set_ctx_params;
 static OSSL_FUNC_rand_gettable_ctx_params_fn drbg_hash_gettable_ctx_params;
 static OSSL_FUNC_rand_get_ctx_params_fn drbg_hash_get_ctx_params;
 static OSSL_FUNC_rand_verify_zeroization_fn drbg_hash_verify_zeroization;
+
+static int drbg_hash_set_ctx_params_locked
+        (PROV_DRBG *drbg, const struct drbg_set_ctx_params_st *p);
+static int drbg_hash_set_ctx_params_decoder(const OSSL_PARAM params[],
+                                            struct drbg_set_ctx_params_st *p);
 
 /* 888 bits from SP800-90Ar1 10.1 table 2 */
 #define HASH_PRNG_MAX_SEEDLEN    (888/8)
@@ -113,7 +123,7 @@ static int hash_df(PROV_DRBG *drbg, unsigned char *out,
             memcpy(out, vtmp, outlen);
             OPENSSL_cleanse(vtmp, hash->blocklen);
             break;
-        } else if(!EVP_DigestFinal(ctx, out, NULL)) {
+        } else if (!EVP_DigestFinal(ctx, out, NULL)) {
             return 0;
         }
 
@@ -164,7 +174,7 @@ static int add_bytes(PROV_DRBG *drbg, unsigned char *dst,
         /* Add the carry to the top of the dst if inlen is not the same size */
         for (i = drbg->seedlen - inlen; i > 0; --i, d--) {
             *d += 1;     /* Carry can only be 1 */
-            if (*d != 0) /* exit if carry doesnt propagate to the next byte */
+            if (*d != 0) /* exit if carry doesn't propagate to the next byte */
                 break;
         }
     }
@@ -212,7 +222,7 @@ static int hash_gen(PROV_DRBG *drbg, unsigned char *out, size_t outlen)
     if (outlen == 0)
         return 1;
     memcpy(hash->vtmp, hash->V, drbg->seedlen);
-    for(;;) {
+    for (;;) {
         if (!EVP_DigestInit_ex(hash->ctx, ossl_prov_digest_md(&hash->digest),
                                NULL)
                 || !EVP_DigestUpdate(hash->ctx, hash->vtmp, drbg->seedlen))
@@ -270,11 +280,24 @@ static int drbg_hash_instantiate_wrapper(void *vdrbg, unsigned int strength,
                                          const OSSL_PARAM params[])
 {
     PROV_DRBG *drbg = (PROV_DRBG *)vdrbg;
+    struct drbg_set_ctx_params_st p;
+    int ret = 0;
 
-    if (!ossl_prov_is_running() || !drbg_hash_set_ctx_params(drbg, params))
+    if (drbg == NULL || !drbg_hash_set_ctx_params_decoder(params, &p))
         return 0;
-    return ossl_prov_drbg_instantiate(drbg, strength, prediction_resistance,
-                                      pstr, pstr_len);
+
+    if (drbg->lock != NULL && !CRYPTO_THREAD_write_lock(drbg->lock))
+        return 0;
+
+    if (!ossl_prov_is_running()
+            || !drbg_hash_set_ctx_params_locked(drbg, &p))
+        goto err;
+    ret = ossl_prov_drbg_instantiate(drbg, strength, prediction_resistance,
+                                     pstr, pstr_len);
+ err:
+    if (drbg->lock != NULL)
+        CRYPTO_THREAD_unlock(drbg->lock);
+    return ret;
 }
 
 /*
@@ -371,18 +394,38 @@ static int drbg_hash_uninstantiate(PROV_DRBG *drbg)
 
 static int drbg_hash_uninstantiate_wrapper(void *vdrbg)
 {
-    return drbg_hash_uninstantiate((PROV_DRBG *)vdrbg);
+    PROV_DRBG *drbg = (PROV_DRBG *)vdrbg;
+    int ret;
+
+    if (drbg->lock != NULL && !CRYPTO_THREAD_write_lock(drbg->lock))
+        return 0;
+
+    ret = drbg_hash_uninstantiate(drbg);
+
+    if (drbg->lock != NULL)
+        CRYPTO_THREAD_unlock(drbg->lock);
+
+    return ret;
 }
 
 static int drbg_hash_verify_zeroization(void *vdrbg)
 {
     PROV_DRBG *drbg = (PROV_DRBG *)vdrbg;
     PROV_DRBG_HASH *hash = (PROV_DRBG_HASH *)drbg->data;
+    int ret = 0;
 
-    PROV_DRBG_VERYIFY_ZEROIZATION(hash->V);
-    PROV_DRBG_VERYIFY_ZEROIZATION(hash->C);
-    PROV_DRBG_VERYIFY_ZEROIZATION(hash->vtmp);
-    return 1;
+    if (drbg->lock != NULL && !CRYPTO_THREAD_read_lock(drbg->lock))
+        return 0;
+
+    PROV_DRBG_VERIFY_ZEROIZATION(hash->V);
+    PROV_DRBG_VERIFY_ZEROIZATION(hash->C);
+    PROV_DRBG_VERIFY_ZEROIZATION(hash->vtmp);
+
+    ret = 1;
+ err:
+    if (drbg->lock != NULL)
+        CRYPTO_THREAD_unlock(drbg->lock);
+    return ret;
 }
 
 static int drbg_hash_new(PROV_DRBG *ctx)
@@ -390,10 +433,10 @@ static int drbg_hash_new(PROV_DRBG *ctx)
     PROV_DRBG_HASH *hash;
 
     hash = OPENSSL_secure_zalloc(sizeof(*hash));
-    if (hash == NULL) {
-        ERR_raise(ERR_LIB_PROV, ERR_R_MALLOC_FAILURE);
+    if (hash == NULL)
         return 0;
-    }
+
+    OSSL_FIPS_IND_INIT(ctx)
 
     ctx->data = hash;
     ctx->seedlen = HASH_PRNG_MAX_SEEDLEN;
@@ -410,7 +453,8 @@ static int drbg_hash_new(PROV_DRBG *ctx)
 static void *drbg_hash_new_wrapper(void *provctx, void *parent,
                                    const OSSL_DISPATCH *parent_dispatch)
 {
-    return ossl_rand_drbg_new(provctx, parent, parent_dispatch, &drbg_hash_new,
+    return ossl_rand_drbg_new(provctx, parent, parent_dispatch,
+                              &drbg_hash_new, &drbg_hash_free,
                               &drbg_hash_instantiate, &drbg_hash_uninstantiate,
                               &drbg_hash_reseed, &drbg_hash_generate);
 }
@@ -428,55 +472,452 @@ static void drbg_hash_free(void *vdrbg)
     ossl_rand_drbg_free(drbg);
 }
 
+#define drbg_hash_get_ctx_params_st  drbg_get_ctx_params_st
+
+/* Machine generated by util/perl/OpenSSL/paramnames.pm */
+#ifndef drbg_hash_get_ctx_params_list
+static const OSSL_PARAM drbg_hash_get_ctx_params_list[] = {
+    OSSL_PARAM_utf8_string(OSSL_DRBG_PARAM_DIGEST, NULL, 0),
+    OSSL_PARAM_int(OSSL_RAND_PARAM_STATE, NULL),
+    OSSL_PARAM_uint(OSSL_RAND_PARAM_STRENGTH, NULL),
+    OSSL_PARAM_size_t(OSSL_RAND_PARAM_MAX_REQUEST, NULL),
+    OSSL_PARAM_size_t(OSSL_DRBG_PARAM_MIN_ENTROPYLEN, NULL),
+    OSSL_PARAM_size_t(OSSL_DRBG_PARAM_MAX_ENTROPYLEN, NULL),
+    OSSL_PARAM_size_t(OSSL_DRBG_PARAM_MIN_NONCELEN, NULL),
+    OSSL_PARAM_size_t(OSSL_DRBG_PARAM_MAX_NONCELEN, NULL),
+    OSSL_PARAM_size_t(OSSL_DRBG_PARAM_MAX_PERSLEN, NULL),
+    OSSL_PARAM_size_t(OSSL_DRBG_PARAM_MAX_ADINLEN, NULL),
+    OSSL_PARAM_uint(OSSL_DRBG_PARAM_RESEED_COUNTER, NULL),
+    OSSL_PARAM_time_t(OSSL_DRBG_PARAM_RESEED_TIME, NULL),
+    OSSL_PARAM_uint(OSSL_DRBG_PARAM_RESEED_REQUESTS, NULL),
+    OSSL_PARAM_uint64(OSSL_DRBG_PARAM_RESEED_TIME_INTERVAL, NULL),
+# if defined(FIPS_MODULE)
+    OSSL_PARAM_int(OSSL_KDF_PARAM_FIPS_APPROVED_INDICATOR, NULL),
+# endif
+    OSSL_PARAM_END
+};
+#endif
+
+#ifndef drbg_hash_get_ctx_params_st
+struct drbg_hash_get_ctx_params_st {
+    OSSL_PARAM *digest;
+# if defined(FIPS_MODULE)
+    OSSL_PARAM *ind;
+# endif
+    OSSL_PARAM *maxadlen;
+    OSSL_PARAM *maxentlen;
+    OSSL_PARAM *maxnonlen;
+    OSSL_PARAM *maxperlen;
+    OSSL_PARAM *maxreq;
+    OSSL_PARAM *minentlen;
+    OSSL_PARAM *minnonlen;
+    OSSL_PARAM *reseed_cnt;
+    OSSL_PARAM *reseed_int;
+    OSSL_PARAM *reseed_req;
+    OSSL_PARAM *reseed_time;
+    OSSL_PARAM *state;
+    OSSL_PARAM *str;
+};
+#endif
+
+#ifndef drbg_hash_get_ctx_params_decoder
+static int drbg_hash_get_ctx_params_decoder
+    (const OSSL_PARAM *p, struct drbg_hash_get_ctx_params_st *r)
+{
+    const char *s;
+
+    memset(r, 0, sizeof(*r));
+    if (p != NULL)
+        for (; (s = p->key) != NULL; p++)
+            switch(s[0]) {
+            default:
+                break;
+            case 'd':
+                if (ossl_likely(strcmp("igest", s + 1) == 0)) {
+                    /* OSSL_DRBG_PARAM_DIGEST */
+                    if (ossl_unlikely(r->digest != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->digest = (OSSL_PARAM *)p;
+                }
+                break;
+            case 'f':
+# if defined(FIPS_MODULE)
+                if (ossl_likely(strcmp("ips-indicator", s + 1) == 0)) {
+                    /* OSSL_KDF_PARAM_FIPS_APPROVED_INDICATOR */
+                    if (ossl_unlikely(r->ind != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->ind = (OSSL_PARAM *)p;
+                }
+# endif
+                break;
+            case 'm':
+                switch(s[1]) {
+                default:
+                    break;
+                case 'a':
+                    switch(s[2]) {
+                    default:
+                        break;
+                    case 'x':
+                        switch(s[3]) {
+                        default:
+                            break;
+                        case '_':
+                            switch(s[4]) {
+                            default:
+                                break;
+                            case 'a':
+                                if (ossl_likely(strcmp("dinlen", s + 5) == 0)) {
+                                    /* OSSL_DRBG_PARAM_MAX_ADINLEN */
+                                    if (ossl_unlikely(r->maxadlen != NULL)) {
+                                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                       "param %s is repeated", s);
+                                        return 0;
+                                    }
+                                    r->maxadlen = (OSSL_PARAM *)p;
+                                }
+                                break;
+                            case 'e':
+                                if (ossl_likely(strcmp("ntropylen", s + 5) == 0)) {
+                                    /* OSSL_DRBG_PARAM_MAX_ENTROPYLEN */
+                                    if (ossl_unlikely(r->maxentlen != NULL)) {
+                                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                       "param %s is repeated", s);
+                                        return 0;
+                                    }
+                                    r->maxentlen = (OSSL_PARAM *)p;
+                                }
+                                break;
+                            case 'n':
+                                if (ossl_likely(strcmp("oncelen", s + 5) == 0)) {
+                                    /* OSSL_DRBG_PARAM_MAX_NONCELEN */
+                                    if (ossl_unlikely(r->maxnonlen != NULL)) {
+                                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                       "param %s is repeated", s);
+                                        return 0;
+                                    }
+                                    r->maxnonlen = (OSSL_PARAM *)p;
+                                }
+                                break;
+                            case 'p':
+                                if (ossl_likely(strcmp("erslen", s + 5) == 0)) {
+                                    /* OSSL_DRBG_PARAM_MAX_PERSLEN */
+                                    if (ossl_unlikely(r->maxperlen != NULL)) {
+                                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                       "param %s is repeated", s);
+                                        return 0;
+                                    }
+                                    r->maxperlen = (OSSL_PARAM *)p;
+                                }
+                                break;
+                            case 'r':
+                                if (ossl_likely(strcmp("equest", s + 5) == 0)) {
+                                    /* OSSL_RAND_PARAM_MAX_REQUEST */
+                                    if (ossl_unlikely(r->maxreq != NULL)) {
+                                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                       "param %s is repeated", s);
+                                        return 0;
+                                    }
+                                    r->maxreq = (OSSL_PARAM *)p;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case 'i':
+                    switch(s[2]) {
+                    default:
+                        break;
+                    case 'n':
+                        switch(s[3]) {
+                        default:
+                            break;
+                        case '_':
+                            switch(s[4]) {
+                            default:
+                                break;
+                            case 'e':
+                                if (ossl_likely(strcmp("ntropylen", s + 5) == 0)) {
+                                    /* OSSL_DRBG_PARAM_MIN_ENTROPYLEN */
+                                    if (ossl_unlikely(r->minentlen != NULL)) {
+                                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                       "param %s is repeated", s);
+                                        return 0;
+                                    }
+                                    r->minentlen = (OSSL_PARAM *)p;
+                                }
+                                break;
+                            case 'n':
+                                if (ossl_likely(strcmp("oncelen", s + 5) == 0)) {
+                                    /* OSSL_DRBG_PARAM_MIN_NONCELEN */
+                                    if (ossl_unlikely(r->minnonlen != NULL)) {
+                                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                       "param %s is repeated", s);
+                                        return 0;
+                                    }
+                                    r->minnonlen = (OSSL_PARAM *)p;
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            case 'r':
+                switch(s[1]) {
+                default:
+                    break;
+                case 'e':
+                    switch(s[2]) {
+                    default:
+                        break;
+                    case 's':
+                        switch(s[3]) {
+                        default:
+                            break;
+                        case 'e':
+                            switch(s[4]) {
+                            default:
+                                break;
+                            case 'e':
+                                switch(s[5]) {
+                                default:
+                                    break;
+                                case 'd':
+                                    switch(s[6]) {
+                                    default:
+                                        break;
+                                    case '_':
+                                        switch(s[7]) {
+                                        default:
+                                            break;
+                                        case 'c':
+                                            if (ossl_likely(strcmp("ounter", s + 8) == 0)) {
+                                                /* OSSL_DRBG_PARAM_RESEED_COUNTER */
+                                                if (ossl_unlikely(r->reseed_cnt != NULL)) {
+                                                    ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                                   "param %s is repeated", s);
+                                                    return 0;
+                                                }
+                                                r->reseed_cnt = (OSSL_PARAM *)p;
+                                            }
+                                            break;
+                                        case 'r':
+                                            if (ossl_likely(strcmp("equests", s + 8) == 0)) {
+                                                /* OSSL_DRBG_PARAM_RESEED_REQUESTS */
+                                                if (ossl_unlikely(r->reseed_req != NULL)) {
+                                                    ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                                   "param %s is repeated", s);
+                                                    return 0;
+                                                }
+                                                r->reseed_req = (OSSL_PARAM *)p;
+                                            }
+                                            break;
+                                        case 't':
+                                            switch(s[8]) {
+                                            default:
+                                                break;
+                                            case 'i':
+                                                switch(s[9]) {
+                                                default:
+                                                    break;
+                                                case 'm':
+                                                    switch(s[10]) {
+                                                    default:
+                                                        break;
+                                                    case 'e':
+                                                        switch(s[11]) {
+                                                        default:
+                                                            break;
+                                                        case '_':
+                                                            if (ossl_likely(strcmp("interval", s + 12) == 0)) {
+                                                                /* OSSL_DRBG_PARAM_RESEED_TIME_INTERVAL */
+                                                                if (ossl_unlikely(r->reseed_int != NULL)) {
+                                                                    ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                                                   "param %s is repeated", s);
+                                                                    return 0;
+                                                                }
+                                                                r->reseed_int = (OSSL_PARAM *)p;
+                                                            }
+                                                            break;
+                                                        case '\0':
+                                                            if (ossl_unlikely(r->reseed_time != NULL)) {
+                                                                ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                                               "param %s is repeated", s);
+                                                                return 0;
+                                                            }
+                                                            r->reseed_time = (OSSL_PARAM *)p;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            case 's':
+                switch(s[1]) {
+                default:
+                    break;
+                case 't':
+                    switch(s[2]) {
+                    default:
+                        break;
+                    case 'a':
+                        if (ossl_likely(strcmp("te", s + 3) == 0)) {
+                            /* OSSL_RAND_PARAM_STATE */
+                            if (ossl_unlikely(r->state != NULL)) {
+                                ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                               "param %s is repeated", s);
+                                return 0;
+                            }
+                            r->state = (OSSL_PARAM *)p;
+                        }
+                        break;
+                    case 'r':
+                        if (ossl_likely(strcmp("ength", s + 3) == 0)) {
+                            /* OSSL_RAND_PARAM_STRENGTH */
+                            if (ossl_unlikely(r->str != NULL)) {
+                                ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                               "param %s is repeated", s);
+                                return 0;
+                            }
+                            r->str = (OSSL_PARAM *)p;
+                        }
+                    }
+                }
+            }
+    return 1;
+}
+#endif
+/* End of machine generated */
+
 static int drbg_hash_get_ctx_params(void *vdrbg, OSSL_PARAM params[])
 {
     PROV_DRBG *drbg = (PROV_DRBG *)vdrbg;
-    PROV_DRBG_HASH *hash = (PROV_DRBG_HASH *)drbg->data;
+    PROV_DRBG_HASH *hash;
     const EVP_MD *md;
-    OSSL_PARAM *p;
+    struct drbg_get_ctx_params_st p;
+    int ret = 0, complete = 0;
 
-    p = OSSL_PARAM_locate(params, OSSL_DRBG_PARAM_DIGEST);
-    if (p != NULL) {
+    if (drbg == NULL || !drbg_hash_get_ctx_params_decoder(params, &p))
+        return 0;
+
+    if (!ossl_drbg_get_ctx_params_no_lock(drbg, &p, params, &complete))
+        return 0;
+
+    if (complete)
+        return 1;
+
+    hash = (PROV_DRBG_HASH *)drbg->data;
+
+    if (drbg->lock != NULL && !CRYPTO_THREAD_read_lock(drbg->lock))
+        return 0;
+
+    if (p.digest != NULL) {
         md = ossl_prov_digest_md(&hash->digest);
-        if (md == NULL || !OSSL_PARAM_set_utf8_string(p, EVP_MD_get0_name(md)))
-            return 0;
+        if (md == NULL
+                || !OSSL_PARAM_set_utf8_string(p.digest, EVP_MD_get0_name(md)))
+            goto err;
     }
 
-    return ossl_drbg_get_ctx_params(drbg, params);
+    ret = ossl_drbg_get_ctx_params(drbg, &p);
+ err:
+    if (drbg->lock != NULL)
+        CRYPTO_THREAD_unlock(drbg->lock);
+
+    return ret;
 }
 
 static const OSSL_PARAM *drbg_hash_gettable_ctx_params(ossl_unused void *vctx,
                                                        ossl_unused void *p_ctx)
 {
-    static const OSSL_PARAM known_gettable_ctx_params[] = {
-        OSSL_PARAM_utf8_string(OSSL_DRBG_PARAM_DIGEST, NULL, 0),
-        OSSL_PARAM_DRBG_GETTABLE_CTX_COMMON,
-        OSSL_PARAM_END
-    };
-    return known_gettable_ctx_params;
+    return drbg_hash_get_ctx_params_list;
 }
 
-static int drbg_hash_set_ctx_params(void *vctx, const OSSL_PARAM params[])
+static int drbg_fetch_digest_from_prov(const struct drbg_set_ctx_params_st *p,
+                                       OSSL_LIB_CTX *libctx,
+                                       EVP_MD **digest)
 {
-    PROV_DRBG *ctx = (PROV_DRBG *)vctx;
+    OSSL_PROVIDER *prov = NULL;
+    EVP_MD *md = NULL;
+    int ret = 0;
+
+    if (digest == NULL)
+        return 0;
+
+    if (p->prov == NULL || p->prov->data_type != OSSL_PARAM_UTF8_STRING)
+        return 0;
+    if ((prov = ossl_provider_find(libctx, (const char *)p->prov->data, 1)) == NULL)
+        return 0;
+
+    if (p->digest == NULL) {
+        ret = 1;
+        goto done;
+    }
+
+    if (p->digest->data_type != OSSL_PARAM_UTF8_STRING)
+        goto done;
+
+    md = evp_digest_fetch_from_prov(prov, (const char *)p->digest->data, NULL);
+    if (md) {
+        EVP_MD_free(*digest);
+        *digest = md;
+        ret = 1;
+    }
+
+done:
+    ossl_provider_free(prov);
+    return ret;
+}
+
+static int drbg_hash_set_ctx_params_locked
+        (PROV_DRBG *ctx, const struct drbg_set_ctx_params_st *p)
+{
     PROV_DRBG_HASH *hash = (PROV_DRBG_HASH *)ctx->data;
     OSSL_LIB_CTX *libctx = PROV_LIBCTX_OF(ctx->provctx);
+    EVP_MD *prov_md = NULL;
     const EVP_MD *md;
+    int md_size;
 
-    if (!ossl_prov_digest_load_from_params(&hash->digest, params, libctx))
+    if (!OSSL_FIPS_IND_SET_CTX_FROM_PARAM(ctx, OSSL_FIPS_IND_SETTABLE0, p->ind_d))
         return 0;
+
+    /* try to fetch digest from provider */
+    (void)ERR_set_mark();
+    if (!drbg_fetch_digest_from_prov(p, libctx, &prov_md)) {
+        (void)ERR_pop_to_mark();
+        /* fall back to full implementation search */
+        if (!ossl_prov_digest_load(&hash->digest, p->digest, p->propq,
+                                   p->engine, libctx))
+            return 0;
+    } else {
+        (void)ERR_clear_last_mark();
+        if (prov_md)
+            ossl_prov_digest_set_md(&hash->digest, prov_md);
+    }
 
     md = ossl_prov_digest_md(&hash->digest);
     if (md != NULL) {
-        if ((EVP_MD_get_flags(md) & EVP_MD_FLAG_XOF) != 0) {
-            ERR_raise(ERR_LIB_PROV, PROV_R_XOF_DIGESTS_NOT_ALLOWED);
-            return 0;
-        }
+        if (!ossl_drbg_verify_digest(ctx, libctx, md))
+            return 0;   /* Error already raised for us */
 
         /* These are taken from SP 800-90 10.1 Table 2 */
-        hash->blocklen = EVP_MD_get_size(md);
+        md_size = EVP_MD_get_size(md);
+        if (md_size <= 0)
+            return 0;
+        hash->blocklen = md_size;
         /* See SP800-57 Part1 Rev4 5.6.1 Table 3 */
-        ctx->strength = 64 * (hash->blocklen >> 3);
+        ctx->strength = (unsigned int)(64 * (hash->blocklen >> 3));
         if (ctx->strength > 256)
             ctx->strength = 256;
         if (hash->blocklen > MAX_BLOCKLEN_USING_SMALL_SEEDLEN)
@@ -488,19 +929,237 @@ static int drbg_hash_set_ctx_params(void *vctx, const OSSL_PARAM params[])
         ctx->min_noncelen = ctx->min_entropylen / 2;
     }
 
-    return ossl_drbg_set_ctx_params(ctx, params);
+    return ossl_drbg_set_ctx_params(ctx, p);
+}
+
+#define drbg_hash_set_ctx_params_st  drbg_set_ctx_params_st
+
+/* Machine generated by util/perl/OpenSSL/paramnames.pm */
+#ifndef drbg_hash_set_ctx_params_list
+static const OSSL_PARAM drbg_hash_set_ctx_params_list[] = {
+    OSSL_PARAM_utf8_string(OSSL_DRBG_PARAM_PROPERTIES, NULL, 0),
+    OSSL_PARAM_utf8_string(OSSL_DRBG_PARAM_DIGEST, NULL, 0),
+    OSSL_PARAM_utf8_string(OSSL_PROV_PARAM_CORE_PROV_NAME, NULL, 0),
+    OSSL_PARAM_uint(OSSL_DRBG_PARAM_RESEED_REQUESTS, NULL),
+    OSSL_PARAM_uint64(OSSL_DRBG_PARAM_RESEED_TIME_INTERVAL, NULL),
+# if defined(FIPS_MODULE)
+    OSSL_PARAM_int(OSSL_KDF_PARAM_FIPS_DIGEST_CHECK, NULL),
+# endif
+    OSSL_PARAM_END
+};
+#endif
+
+#ifndef drbg_hash_set_ctx_params_st
+struct drbg_hash_set_ctx_params_st {
+    OSSL_PARAM *digest;
+    OSSL_PARAM *engine;
+# if defined(FIPS_MODULE)
+    OSSL_PARAM *ind_d;
+# endif
+    OSSL_PARAM *propq;
+    OSSL_PARAM *prov;
+    OSSL_PARAM *reseed_req;
+    OSSL_PARAM *reseed_time;
+};
+#endif
+
+#ifndef drbg_hash_set_ctx_params_decoder
+static int drbg_hash_set_ctx_params_decoder
+    (const OSSL_PARAM *p, struct drbg_hash_set_ctx_params_st *r)
+{
+    const char *s;
+
+    memset(r, 0, sizeof(*r));
+    if (p != NULL)
+        for (; (s = p->key) != NULL; p++)
+            switch(s[0]) {
+            default:
+                break;
+            case 'd':
+                switch(s[1]) {
+                default:
+                    break;
+                case 'i':
+                    switch(s[2]) {
+                    default:
+                        break;
+                    case 'g':
+                        switch(s[3]) {
+                        default:
+                            break;
+                        case 'e':
+                            switch(s[4]) {
+                            default:
+                                break;
+                            case 's':
+                                switch(s[5]) {
+                                default:
+                                    break;
+                                case 't':
+                                    switch(s[6]) {
+                                    default:
+                                        break;
+                                    case '-':
+# if defined(FIPS_MODULE)
+                                        if (ossl_likely(strcmp("check", s + 7) == 0)) {
+                                            /* OSSL_KDF_PARAM_FIPS_DIGEST_CHECK */
+                                            if (ossl_unlikely(r->ind_d != NULL)) {
+                                                ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                               "param %s is repeated", s);
+                                                return 0;
+                                            }
+                                            r->ind_d = (OSSL_PARAM *)p;
+                                        }
+# endif
+                                        break;
+                                    case '\0':
+                                        if (ossl_unlikely(r->digest != NULL)) {
+                                            ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                           "param %s is repeated", s);
+                                            return 0;
+                                        }
+                                        r->digest = (OSSL_PARAM *)p;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            case 'e':
+                if (ossl_likely(strcmp("ngine", s + 1) == 0)) {
+                    /* OSSL_ALG_PARAM_ENGINE */
+                    if (ossl_unlikely(r->engine != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->engine = (OSSL_PARAM *)p;
+                }
+                break;
+            case 'p':
+                switch(s[1]) {
+                default:
+                    break;
+                case 'r':
+                    switch(s[2]) {
+                    default:
+                        break;
+                    case 'o':
+                        switch(s[3]) {
+                        default:
+                            break;
+                        case 'p':
+                            if (ossl_likely(strcmp("erties", s + 4) == 0)) {
+                                /* OSSL_DRBG_PARAM_PROPERTIES */
+                                if (ossl_unlikely(r->propq != NULL)) {
+                                    ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                   "param %s is repeated", s);
+                                    return 0;
+                                }
+                                r->propq = (OSSL_PARAM *)p;
+                            }
+                            break;
+                        case 'v':
+                            if (ossl_likely(strcmp("ider-name", s + 4) == 0)) {
+                                /* OSSL_PROV_PARAM_CORE_PROV_NAME */
+                                if (ossl_unlikely(r->prov != NULL)) {
+                                    ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                   "param %s is repeated", s);
+                                    return 0;
+                                }
+                                r->prov = (OSSL_PARAM *)p;
+                            }
+                        }
+                    }
+                }
+                break;
+            case 'r':
+                switch(s[1]) {
+                default:
+                    break;
+                case 'e':
+                    switch(s[2]) {
+                    default:
+                        break;
+                    case 's':
+                        switch(s[3]) {
+                        default:
+                            break;
+                        case 'e':
+                            switch(s[4]) {
+                            default:
+                                break;
+                            case 'e':
+                                switch(s[5]) {
+                                default:
+                                    break;
+                                case 'd':
+                                    switch(s[6]) {
+                                    default:
+                                        break;
+                                    case '_':
+                                        switch(s[7]) {
+                                        default:
+                                            break;
+                                        case 'r':
+                                            if (ossl_likely(strcmp("equests", s + 8) == 0)) {
+                                                /* OSSL_DRBG_PARAM_RESEED_REQUESTS */
+                                                if (ossl_unlikely(r->reseed_req != NULL)) {
+                                                    ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                                   "param %s is repeated", s);
+                                                    return 0;
+                                                }
+                                                r->reseed_req = (OSSL_PARAM *)p;
+                                            }
+                                            break;
+                                        case 't':
+                                            if (ossl_likely(strcmp("ime_interval", s + 8) == 0)) {
+                                                /* OSSL_DRBG_PARAM_RESEED_TIME_INTERVAL */
+                                                if (ossl_unlikely(r->reseed_time != NULL)) {
+                                                    ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                                   "param %s is repeated", s);
+                                                    return 0;
+                                                }
+                                                r->reseed_time = (OSSL_PARAM *)p;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+    return 1;
+}
+#endif
+/* End of machine generated */
+
+static int drbg_hash_set_ctx_params(void *vctx, const OSSL_PARAM params[])
+{
+    PROV_DRBG *drbg = (PROV_DRBG *)vctx;
+    struct drbg_set_ctx_params_st p;
+    int ret;
+
+    if (drbg == NULL || !drbg_hash_set_ctx_params_decoder(params, &p))
+        return 0;
+
+    if (drbg->lock != NULL && !CRYPTO_THREAD_write_lock(drbg->lock))
+        return 0;
+
+    ret = drbg_hash_set_ctx_params_locked(drbg, &p);
+
+    if (drbg->lock != NULL)
+        CRYPTO_THREAD_unlock(drbg->lock);
+
+    return ret;
 }
 
 static const OSSL_PARAM *drbg_hash_settable_ctx_params(ossl_unused void *vctx,
                                                        ossl_unused void *p_ctx)
 {
-    static const OSSL_PARAM known_settable_ctx_params[] = {
-        OSSL_PARAM_utf8_string(OSSL_DRBG_PARAM_PROPERTIES, NULL, 0),
-        OSSL_PARAM_utf8_string(OSSL_DRBG_PARAM_DIGEST, NULL, 0),
-        OSSL_PARAM_DRBG_SETTABLE_CTX_COMMON,
-        OSSL_PARAM_END
-    };
-    return known_settable_ctx_params;
+    return drbg_hash_set_ctx_params_list;
 }
 
 const OSSL_DISPATCH ossl_drbg_hash_functions[] = {
@@ -525,5 +1184,5 @@ const OSSL_DISPATCH ossl_drbg_hash_functions[] = {
       (void(*)(void))drbg_hash_verify_zeroization },
     { OSSL_FUNC_RAND_GET_SEED, (void(*)(void))ossl_drbg_get_seed },
     { OSSL_FUNC_RAND_CLEAR_SEED, (void(*)(void))ossl_drbg_clear_seed },
-    { 0, NULL }
+    OSSL_DISPATCH_END
 };

@@ -37,7 +37,7 @@ ASN1_OCTET_STRING *s2i_ASN1_OCTET_STRING(X509V3_EXT_METHOD *method,
     long length;
 
     if ((oct = ASN1_OCTET_STRING_new()) == NULL) {
-        ERR_raise(ERR_LIB_X509V3, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_X509V3, ERR_R_ASN1_LIB);
         return NULL;
     }
 
@@ -105,7 +105,7 @@ static ASN1_OCTET_STRING *s2i_skey_id(X509V3_EXT_METHOD *method,
         return NULL;
     }
 
-    return ossl_x509_pubkey_hash(ctx->subject_req != NULL ?
-                                 ctx->subject_req->req_info.pubkey :
-                                 ctx->subject_cert->cert_info.key);
+    return ossl_x509_pubkey_hash(ctx->subject_cert != NULL ?
+                                 ctx->subject_cert->cert_info.key :
+                                 ctx->subject_req->req_info.pubkey);
 }

@@ -1160,8 +1160,9 @@ poly1305_emit_neon:
 .word	OPENSSL_armcap_P-.Lpoly1305_init
 # endif
 #endif
-.asciz	"Poly1305 for ARMv4/NEON, CRYPTOGAMS by <appro@openssl.org>"
+.asciz	"Poly1305 for ARMv4/NEON, CRYPTOGAMS by <https://github.com/dot-asm>"
 .align	2
 #if	__ARM_MAX_ARCH__>=7
-.comm   OPENSSL_armcap_P,4,4
+.extern   OPENSSL_armcap_P
+.hidden   OPENSSL_armcap_P
 #endif

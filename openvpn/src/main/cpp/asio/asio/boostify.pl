@@ -4,6 +4,7 @@ use strict;
 use File::Path;
 
 our $boost_dir = "boostified";
+our $bad_lines = 0;
 
 sub print_line
 {
@@ -14,6 +15,7 @@ sub print_line
   {
     if ($from =~ /\.[chi]pp$/)
     {
+      ++$bad_lines;
       print("Warning: $from:$lineno: output >80 characters wide.\n");
     }
   }
@@ -100,11 +102,14 @@ sub copy_source_file
   my $is_xsl = 0;
   $is_xsl = 1 if ($from =~ /.xsl$/);
 
+  my $is_quickref = 0;
+  $is_quickref = 1 if ($from =~ /quickref.xml$/);
+
   my $is_test = 0;
   $is_test = 1 if ($from =~ /tests\/unit/);
 
   my $is_coroutine_related = 0;
-  $is_coroutine_related = 1 if ($from =~ /await/ || $from =~ /partial_promise/);
+  $is_coroutine_related = 1 if ($from =~ /await/ || $from =~ /partial_promise/ || $from =~ /co_composed/);
 
   my $is_hash_related = 0;
   $is_hash_related = 1 if ($from =~ /ip\/address/ || $from =~ /ip\/basic_endpoint/);
@@ -139,8 +144,8 @@ sub copy_source_file
       $line =~ s/ASIO_/BOOST_ASIO_/g;
     }
 
-    # Extra replacements for quickbook and XSL source only.
-    if ($is_qbk || $is_xsl)
+    # Extra replacements for quickbook, XSL and quickref.xml source only.
+    if ($is_qbk || $is_xsl || $is_quickref)
     {
       $line =~ s/asio\.examples/boost_asio.examples/g;
       $line =~ s/asio\.history/boost_asio.history/g;
@@ -155,10 +160,12 @@ sub copy_source_file
       $line =~ s/changes made in each release/changes made in each Boost release/g;
       $line =~ s/\[\$/[\$boost_asio\//g;
       $line =~ s/\[@\.\.\/src\/examples/[\@boost_asio\/example/g;
+      $line =~ s/asio\//boost\/asio\//g if $is_xsl;
       $line =~ s/include\/asio/boost\/asio/g;
       $line =~ s/\^asio/^boost\/asio/g;
       $line =~ s/namespaceasio/namespaceboost_1_1asio/g;
       $line =~ s/ \(\[\@examples\/diffs.*$//;
+      $line =~ s/boost\/tools\/boostbook/tools\/boostbook/g;
     }
 
     # Conditional replacements.
@@ -288,6 +295,17 @@ sub copy_source_file
       $line =~ s/asio::/boost::asio::/g if !$is_xsl;
       print_line($output, $line, $from, $lineno);
     }
+    elsif ($line =~ /std::system_error/)
+    {
+      $line =~ s/std::system_error/boost::system::system_error/g;
+      $line =~ s/asio::/boost::asio::/g if !$is_xsl;
+      print_line($output, $line, $from, $lineno);
+    }
+    elsif ($line =~ /ec\.assign\(0, ec\.category\(\)\)/)
+    {
+      $line =~ s/ec\.assign\(0, ec\.category\(\)\)/ec = boost::system::error_code()/g;
+      print_line($output, $line, $from, $lineno);
+    }
     elsif ($line =~ /^} \/\/ namespace std/ && !$is_coroutine_related && !$is_hash_related)
     {
       print_line($output, "} // namespace system", $from, $lineno);
@@ -322,6 +340,16 @@ sub copy_source_file
       $line =~ s/asio_handler_invoke_helpers/boost_asio_handler_invoke_helpers/g;
       print_line($output, $line, $from, $lineno);
     }
+    elsif ($line =~ /asio_(prefer|query|require|require_concept)_fn/)
+    {
+      $line =~ s/asio_(prefer|query|require|require_concept)_fn/boost_asio_$1_fn/g;
+      print_line($output, $line, $from, $lineno);
+    }
+    elsif ($line =~ /asio_execution_/ && !($line =~ /_is_unspecialised/))
+    {
+      $line =~ s/asio_execution_/boost_asio_execution_/g;
+      print_line($output, $line, $from, $lineno);
+    }
     elsif ($line =~ /[\\@]ref boost_bind/)
     {
       $line =~ s/[\\@]ref boost_bind/boost::bind()/g;
@@ -353,6 +381,25 @@ sub copy_source_file
       print_line($output, "//", $from, $lineno);
       print_line($output, $line, $from, $lineno);
     }
+    elsif ($is_quickref)
+    {
+      if ($line =~ /asio\.reference\.error_code">/)
+      {
+        # Line is removed.
+      }
+      elsif ($line =~ /asio\.reference\.system_error">/)
+      {
+        # Line is removed.
+      }
+      elsif ($line =~ /asio\.reference\.thread">/)
+      {
+        # Line is removed.
+      }
+      else
+      {
+        print_line($output, $line, $from, $lineno);
+      }
+    }
     else
     {
       print_line($output, $line, $from, $lineno);
@@ -377,6 +424,7 @@ sub copy_include_files
       "include/asio/execution/impl",
       "include/asio/experimental",
       "include/asio/experimental/detail",
+      "include/asio/experimental/detail/impl",
       "include/asio/experimental/impl",
       "include/asio/generic",
       "include/asio/generic/detail",
@@ -513,70 +561,65 @@ sub copy_properties_tests
 sub copy_examples
 {
   my @dirs = (
-      "src/examples/cpp03/allocation",
-      "src/examples/cpp03/buffers",
-      "src/examples/cpp03/chat",
-      "src/examples/cpp03/echo",
-      "src/examples/cpp03/fork",
-      "src/examples/cpp03/http/client",
-      "src/examples/cpp03/http/doc_root",
-      "src/examples/cpp03/http/server",
-      "src/examples/cpp03/http/server2",
-      "src/examples/cpp03/http/server3",
-      "src/examples/cpp03/http/server4",
-      "src/examples/cpp03/icmp",
-      "src/examples/cpp03/invocation",
-      "src/examples/cpp03/iostreams",
-      "src/examples/cpp03/local",
-      "src/examples/cpp03/multicast",
-      "src/examples/cpp03/nonblocking",
-      "src/examples/cpp03/porthopper",
-      "src/examples/cpp03/serialization",
-      "src/examples/cpp03/services",
-      "src/examples/cpp03/socks4",
-      "src/examples/cpp03/spawn",
-      "src/examples/cpp03/ssl",
-      "src/examples/cpp03/timeouts",
-      "src/examples/cpp03/timers",
-      "src/examples/cpp03/tutorial",
-      "src/examples/cpp03/tutorial/daytime1",
-      "src/examples/cpp03/tutorial/daytime2",
-      "src/examples/cpp03/tutorial/daytime3",
-      "src/examples/cpp03/tutorial/daytime4",
-      "src/examples/cpp03/tutorial/daytime5",
-      "src/examples/cpp03/tutorial/daytime6",
-      "src/examples/cpp03/tutorial/daytime7",
-      "src/examples/cpp03/tutorial/timer1",
-      "src/examples/cpp03/tutorial/timer2",
-      "src/examples/cpp03/tutorial/timer3",
-      "src/examples/cpp03/tutorial/timer4",
-      "src/examples/cpp03/tutorial/timer5",
-      "src/examples/cpp03/windows",
       "src/examples/cpp11/allocation",
       "src/examples/cpp11/buffers",
       "src/examples/cpp11/chat",
+      "src/examples/cpp11/deferred",
       "src/examples/cpp11/echo",
       "src/examples/cpp11/executors",
+      "src/examples/cpp11/files",
       "src/examples/cpp11/fork",
       "src/examples/cpp11/futures",
       "src/examples/cpp11/handler_tracking",
+      "src/examples/cpp11/http/client",
+      "src/examples/cpp11/http/doc_root",
       "src/examples/cpp11/http/server",
+      "src/examples/cpp11/http/server2",
+      "src/examples/cpp11/http/server3",
+      "src/examples/cpp11/http/server4",
+      "src/examples/cpp11/icmp",
       "src/examples/cpp11/invocation",
       "src/examples/cpp11/iostreams",
       "src/examples/cpp11/local",
       "src/examples/cpp11/multicast",
       "src/examples/cpp11/nonblocking",
       "src/examples/cpp11/operations",
+      "src/examples/cpp11/parallel_group",
+      "src/examples/cpp11/porthopper",
+      "src/examples/cpp11/serialization",
+      "src/examples/cpp11/services",
       "src/examples/cpp11/socks4",
       "src/examples/cpp11/spawn",
       "src/examples/cpp11/ssl",
       "src/examples/cpp11/timeouts",
       "src/examples/cpp11/timers",
+      "src/examples/cpp11/tutorial",
+      "src/examples/cpp11/tutorial/daytime1",
+      "src/examples/cpp11/tutorial/daytime2",
+      "src/examples/cpp11/tutorial/daytime3",
+      "src/examples/cpp11/tutorial/daytime4",
+      "src/examples/cpp11/tutorial/daytime5",
+      "src/examples/cpp11/tutorial/daytime6",
+      "src/examples/cpp11/tutorial/daytime7",
+      "src/examples/cpp11/tutorial/timer1",
+      "src/examples/cpp11/tutorial/timer2",
+      "src/examples/cpp11/tutorial/timer3",
+      "src/examples/cpp11/tutorial/timer4",
+      "src/examples/cpp11/tutorial/timer5",
+      "src/examples/cpp11/type_erasure",
+      "src/examples/cpp11/windows",
       "src/examples/cpp14/deferred",
+      "src/examples/cpp14/echo",
       "src/examples/cpp14/executors",
+      "src/examples/cpp14/iostreams",
       "src/examples/cpp14/operations",
       "src/examples/cpp14/parallel_group",
-      "src/examples/cpp17/coroutines_ts");
+      "src/examples/cpp17/coroutines_ts",
+      "src/examples/cpp20/channels",
+      "src/examples/cpp20/coroutines",
+      "src/examples/cpp20/invocation",
+      "src/examples/cpp20/operations",
+      "src/examples/cpp20/type_erasure");
 
   our $boost_dir;
   foreach my $dir (@dirs)
@@ -605,10 +648,13 @@ sub copy_doc
       "src/doc/asio.qbk",
       "src/doc/examples.qbk",
       "src/doc/net_ts.qbk",
+      "src/doc/overview.qbk",
+      "src/doc/quickref.xml",
       "src/doc/reference.xsl",
       "src/doc/std_executors.qbk",
       "src/doc/tutorial.xsl",
       glob("src/doc/overview/*.qbk"),
+      glob("src/doc/overview/model/*.qbk"),
       glob("src/doc/requirements/*.qbk"));
   foreach my $file (@files)
   {
@@ -633,11 +679,22 @@ sub copy_tools
   }
 }
 
+my $includes_only = 0;
+if (scalar(@ARGV) == 1 && $ARGV[0] eq "--includes-only")
+{
+  $includes_only = 1;
+}
+
 copy_include_files();
-create_lib_directory();
-copy_unit_tests();
-copy_latency_tests();
-copy_properties_tests();
-copy_examples();
-copy_doc();
-copy_tools();
+if (not $includes_only)
+{
+  create_lib_directory();
+  copy_unit_tests();
+  copy_latency_tests();
+  copy_properties_tests();
+  copy_examples();
+  copy_doc();
+  copy_tools();
+}
+
+exit($bad_lines > 0 ? 1 : 0);
