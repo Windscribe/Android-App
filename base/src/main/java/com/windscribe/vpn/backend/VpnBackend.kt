@@ -133,8 +133,6 @@ abstract class VpnBackend(
         connectionJob?.cancel()
         connectivityTestJob?.cancel()
         connectivityTestJob = null
-        bridgeAPI.setIgnoreSslErrors(true)
-        bridgeAPI.setConnectedState(true)
         vpnLogger.info("Starting connectivity test.")
         val startDelay = advanceParameterRepository.getTunnelStartDelay() ?: 2000L
         val retryDelay = advanceParameterRepository.getTunnelTestRetryDelay() ?: 500L
@@ -153,6 +151,8 @@ abstract class VpnBackend(
 
                     if (ip != null) {
                         vpnLogger.info("Pinning IP: $ip")
+                        bridgeAPI.setIgnoreSslErrors(true)
+                        bridgeAPI.setConnectedState(true)
                         val pinResult = result<Any> {
                             apiManager.pinIp(ip)
                         }

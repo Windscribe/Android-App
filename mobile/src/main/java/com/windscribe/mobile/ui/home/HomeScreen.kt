@@ -47,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.BlurEffect
@@ -209,11 +210,8 @@ private fun HandleGotoAction(
         }
 
         is HomeGoto.IpActionError -> {
-//            navController.navigateWithData(
-//                route = Screen.IpActionResult.route,
-//                key = NavKeys.IP_ACTION_MESSAGE,
-//                value = goto.message
-//            )
+            navController.currentBackStackEntry?.savedStateHandle?.set("message", goto.message)
+            navController.navigate(Screen.IpActionResult.route)
             didNavigate = true
         }
 
@@ -345,9 +343,13 @@ private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
             )
             Spacer(modifier = Modifier.width(4.dp))
         }
-        
+
         if (showDecoyTraffic) {
-            Text(stringResource(com.windscribe.vpn.R.string.decoy), style = font12, color = AppColors.neonGreen)
+            Text(
+                stringResource(com.windscribe.vpn.R.string.decoy),
+                style = font12,
+                color = AppColors.neonGreen
+            )
             Spacer(modifier = Modifier.width(4.dp))
         }
         Text(
@@ -438,6 +440,7 @@ internal fun BoxScope.NetworkInfoSheet(
     homeViewmodel: HomeViewmodel
 ) {
     val showContextMenu by connectionViewmodel.ipContextMenuState.collectAsState()
+    val isBridgeApiReady by connectionViewmodel.bridgeApiReady.collectAsState()
     val hideIp by homeViewmodel.hideIp.collectAsState()
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -468,9 +471,10 @@ internal fun BoxScope.NetworkInfoSheet(
                         style = font16,
                         color = AppColors.white,
                         modifier = Modifier.graphicsLayer {
-                            renderEffect = if (hideIp && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                BlurEffect(15f, 15f)
-                            } else null
+                            renderEffect =
+                                if (hideIp && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                    BlurEffect(15f, 15f)
+                                } else null
                         }
                     )
 
@@ -492,12 +496,15 @@ internal fun BoxScope.NetworkInfoSheet(
                     painter = painterResource(R.drawable.ic_context),
                     contentDescription = null,
                     modifier = Modifier
+                        .alpha(if (isBridgeApiReady) 1.0f else 0.5f)
                         .size(24.dp)
                         .onGloballyPositioned { layoutCoordinates ->
                             connectionViewmodel.onIpContextMenuPosition(layoutCoordinates.boundsInWindow().topLeft)
                         }
                         .hapticClickable {
-                            connectionViewmodel.setContextMenuState(true)
+                            if (isBridgeApiReady) {
+                                connectionViewmodel.setContextMenuState(true)
+                            }
                         }
                 )
             }

@@ -60,6 +60,7 @@ import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
+import com.windscribe.vpn.repository.BridgeApiRepository
 import com.windscribe.vpn.repository.FavouriteRepository
 import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LatencyRepository
@@ -107,7 +108,8 @@ class ComposeModule {
         proxyDNSManager: ProxyDNSManager,
         decoyTrafficController: DecoyTrafficController,
         portMapRepository: com.windscribe.vpn.repository.PortMapRepository,
-        logRepository: LogRepository
+        logRepository: LogRepository,
+        bridgeApiRepository: BridgeApiRepository
     ): ViewModelProvider.Factory {
         return object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -169,7 +171,8 @@ class ComposeModule {
                         userRepository,
                         serverListRepository,
                         decoyTrafficController,
-                        apiCallManager
+                        apiCallManager,
+                        bridgeApiRepository
                     ) as T
                 } else if (modelClass.isAssignableFrom(ConfigViewmodel::class.java)) {
                     return ConfigViewmodelImpl(localDbInterface, latencyRepository) as T

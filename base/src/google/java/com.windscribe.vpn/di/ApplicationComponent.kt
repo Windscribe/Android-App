@@ -93,6 +93,7 @@ interface ApplicationComponent {
     val advanceParameterRepository: AdvanceParameterRepository
     val portMappingRepository: PortMapRepository
     val logRepository: LogRepository
+    val bridgeApiRepository: BridgeApiRepository
 
     //Inject
     fun inject(app: Windscribe)

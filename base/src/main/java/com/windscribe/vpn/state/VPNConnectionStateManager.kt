@@ -63,7 +63,9 @@ class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionMan
         scope.launch {
             state.collectLatest {
                 wsNet.get().setIsConnectedToVpnState(isVPNConnected())
-                bridgeAPI.setConnectedState(isVPNConnected())
+                if (!isVPNConnected()) {
+                    bridgeAPI.setConnectedState(false)
+                }
                 if (start.getAndSet(true)) {
                     logger.info("VPN state changed to ${it.status}")
                 } else {

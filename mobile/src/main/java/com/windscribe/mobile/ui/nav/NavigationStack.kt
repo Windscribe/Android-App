@@ -38,6 +38,7 @@ import com.windscribe.mobile.ui.popup.AllProtocolFailedDialogScreen
 import com.windscribe.mobile.ui.popup.EditCustomConfigScreen
 import com.windscribe.mobile.ui.popup.EditCustomConfigViewmodel
 import com.windscribe.mobile.ui.popup.ExtraDataUseWarningScreen
+import com.windscribe.mobile.ui.popup.IpActionResultDialog
 import com.windscribe.mobile.ui.popup.LocationUnderMaintenanceScreen
 import com.windscribe.mobile.ui.popup.NewsfeedScreen
 import com.windscribe.mobile.ui.popup.NewsfeedViewmodel
@@ -328,6 +329,11 @@ private fun NavGraphBuilder.addNavigationScreens() {
             it.emailAdded = true
             ConfirmEmailScreen(it)
         }
+    }
+    composable(route = Screen.IpActionResult.route) {
+        val navController = LocalNavController.current
+        val message = navController.previousBackStackEntry?.savedStateHandle?.get<String>("message") ?: ""
+        IpActionResultDialog(message)
     }
 }
 

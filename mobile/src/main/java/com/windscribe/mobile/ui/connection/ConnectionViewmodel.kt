@@ -33,6 +33,7 @@ import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.model.User
+import com.windscribe.vpn.repository.BridgeApiRepository
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LocationRepository
@@ -58,6 +59,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.compose
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
@@ -164,6 +166,7 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract fun onHapticFeedbackHandled()
     abstract fun onIpAnimationComplete()
     abstract fun onFavoriteAnimationHandled()
+    abstract val bridgeApiReady: StateFlow<Boolean>
 }
 
 class ConnectionViewmodelImpl @Inject constructor(
@@ -179,7 +182,8 @@ class ConnectionViewmodelImpl @Inject constructor(
     private val userRepository: UserRepository,
     private val serverListRepository: ServerListRepository,
     private val decoyTrafficController: DecoyTrafficController,
-    private val api: IApiCallManager
+    private val api: IApiCallManager,
+    private val bridgeApiRepository: BridgeApiRepository
 ) :
     ConnectionViewmodel() {
     private val _connectionUIState = MutableStateFlow<ConnectionUIState>(ConnectionUIState.Idle)
@@ -228,6 +232,9 @@ class ConnectionViewmodelImpl @Inject constructor(
     private val _favouriteIconAnimation = MutableStateFlow(0)
     override val favouriteIconAnimation: StateFlow<Int> = _favouriteIconAnimation
 
+    private val _bridgeApiReady = MutableStateFlow(false)
+    override val bridgeApiReady: StateFlow<Boolean> = _bridgeApiReady
+
 
     init {
         fetchLastLocation()
@@ -240,6 +247,7 @@ class ConnectionViewmodelImpl @Inject constructor(
         observeCustomLocationNameChanges()
         observeDecoyTrafficChanges()
         observePinnedIpChanges()
+        observeBridgeApi()
     }
 
     private fun fetchNewsfeedCount() {
@@ -793,13 +801,11 @@ class ConnectionViewmodelImpl @Inject constructor(
     /**
      * Pins the current VPN IP address to the selected city location.
      * Sends the current IP to the API and stores it in the local database as a favourite with pinned IP.
-     *
      * @param selectedCity The city ID to pin the IP for
      * @return True if the pin operation was successful, false otherwise
      */
     private suspend fun pinIp(selectedCity: Int): Boolean {
         val ip = _ipState.value
-        logger.debug("Pinning Ip to > $ip")
         return when (val result = result<String> { api.pinIp(ip) }) {
             is CallResult.Success -> {
                 try {
@@ -819,7 +825,7 @@ class ConnectionViewmodelImpl @Inject constructor(
                 logger.error("Pin IP request failed: ${result.errorMessage}")
                 false
             }
-        }.also { delay(300) }
+         }
     }
 
     private suspend fun unpinIp(selectedCity: Int): Boolean {
@@ -829,36 +835,34 @@ class ConnectionViewmodelImpl @Inject constructor(
         } catch (e: Exception) {
             logger.error("Failed to remove pinned IP from database", e)
             false
-        }.also { delay(300) }
+        }
     }
 
     private suspend fun performRotateIpAction(): Boolean {
         return when (val result = result<String> { api.rotateIp() }) {
             is CallResult.Success -> {
                 logger.info("Rotate IP request successful: ${result.data}")
+                val currentIp = _ipState.value
                 ipRepository.update()
-
-                // Update pinned IP if the current city has one
-                val selectedCity = locationRepository.selectedCity.value
-                val favourites = localdb.getFavouritesAsync()
-                val favourite = favourites.find { it.id == selectedCity && it.pinnedIp != null }
-                if (favourite != null) {
-                    // Wait for the IP to update before getting the new value
-                    delay(500)
-                    val newIp = _ipState.value
-                    val nodeIp = preferences.selectedIp
-                    localdb.addToFavouritesAsync(Favourite(selectedCity, newIp, nodeIp))
-                    logger.info("Updated pinned IP after rotation: $newIp with nodeIp: $nodeIp")
+                // Wait for IP state to change
+                val ipChanged = kotlinx.coroutines.withTimeoutOrNull(5000) {
+                    _ipState.collectLatest { newIp ->
+                        if (newIp != currentIp && !newIp.contains("--")) {
+                            logger.info("IP changed from $currentIp to $newIp")
+                            return@collectLatest
+                        }
+                    }
                 }
-
+                if (ipChanged == null) {
+                    logger.warn("IP state did not change within timeout")
+                }
                 true
             }
-
             is CallResult.Error -> {
                 logger.error("Rotate IP request failed: ${result.errorMessage}")
                 false
             }
-        }.also { delay(300) }
+        }
     }
 
     private fun checkEligibility(isPro: Int, isStaticIp: Boolean, serverStatus: Int): Boolean {
@@ -980,10 +984,24 @@ class ConnectionViewmodelImpl @Inject constructor(
 
     private fun observePinnedIpChanges() {
         viewModelScope.launch(Dispatchers.IO) {
-            localdb.getFavourites().collectLatest { favourites ->
-                val selectedCity = locationRepository.selectedCity.value
-                val hasPinned = favourites.any { it.id == selectedCity && it.pinnedIp != null }
+            combine(
+                localdb.getFavourites(),
+                locationRepository.selectedCity
+            ) { favourites, selectedCityId ->
+                val cityId = locationRepository.getSelectedCityAndRegion()?.city?.id ?: selectedCityId
+                val hasPinned = favourites.any { it.id == cityId && it.pinnedIp != null }
                 _hasPinnedIp.emit(hasPinned)
+            }.collectLatest { }
+        }
+    }
+
+    private fun observeBridgeApi() {
+        viewModelScope.launch(Dispatchers.IO) {
+            bridgeApiRepository.apiAvailable.collectLatest {
+                _bridgeApiReady.emit(it)
+                if (_ipContextMenuState.value.first && !it) {
+                    setContextMenuState(false)
+                }
             }
         }
     }
