@@ -4,15 +4,14 @@ import android.media.MediaPlayer
 import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
 import androidx.annotation.StringRes
-import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.mobile.R
-import com.windscribe.mobile.ui.common.isEnabled
-import com.windscribe.mobile.ui.home.HomeGoto
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.bundledBackgrounds
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.getSoundFile
+import com.windscribe.mobile.ui.common.isEnabled
+import com.windscribe.mobile.ui.home.HomeGoto
 import com.windscribe.mobile.ui.serverlist.ServerListItem
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -128,7 +127,6 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract val ipState: StateFlow<String>
     abstract val shouldAnimateIp: StateFlow<Boolean>
     abstract val networkInfoState: StateFlow<NetworkInfoState>
-    abstract val ipContextMenuState: StateFlow<Pair<Boolean, Offset>>
     abstract val bestLocation: StateFlow<ServerListItem?>
     abstract val isAntiCensorshipEnabled: StateFlow<Boolean>
     abstract val isPreferredProtocolEnabled: StateFlow<Boolean>
@@ -140,10 +138,6 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract fun onCityClick(city: City)
     abstract fun onStaticIpClick(staticRegion: StaticRegion)
     abstract fun onConfigClick(config: ConfigFile)
-    abstract fun onIpContextMenuPosition(position: Offset)
-    abstract fun onRotateIpClick()
-    abstract fun onFavouriteIpClick()
-    abstract fun setContextMenuState(state: Boolean)
     abstract val toastMessage: StateFlow<ToastMessage>
     abstract val isSingleLineLocationName: StateFlow<Boolean>
     abstract val shouldPlayHapticFeedback: StateFlow<Boolean>
@@ -173,7 +167,7 @@ class ConnectionViewmodelImpl @Inject constructor(
     private val _connectionUIState = MutableStateFlow<ConnectionUIState>(ConnectionUIState.Idle)
     override val connectionUIState: StateFlow<ConnectionUIState> = _connectionUIState
 
-    private val _ipState: MutableStateFlow<String> = MutableStateFlow("--.--.--.--")
+    private val _ipState: MutableStateFlow<String> = MutableStateFlow("")
     override val ipState: StateFlow<String> = _ipState
     private val _shouldAnimateIp: MutableStateFlow<Boolean> = MutableStateFlow(false)
     override val shouldAnimateIp: StateFlow<Boolean> = _shouldAnimateIp
@@ -181,8 +175,6 @@ class ConnectionViewmodelImpl @Inject constructor(
     private val _networkInfoState: MutableStateFlow<NetworkInfoState> =
         MutableStateFlow(NetworkInfoState.Unknown)
     override val networkInfoState: StateFlow<NetworkInfoState> = _networkInfoState
-    private val _ipContextMenuState = MutableStateFlow(Pair(false, Offset.Zero))
-    override val ipContextMenuState: StateFlow<Pair<Boolean, Offset>> = _ipContextMenuState
     private val _toastMessage = MutableStateFlow<ToastMessage>(ToastMessage.None)
     override val toastMessage: StateFlow<ToastMessage> = _toastMessage
     private val _bestLocation = MutableStateFlow<ServerListItem?>(null)
@@ -234,7 +226,7 @@ class ConnectionViewmodelImpl @Inject constructor(
                     }
                 }
                 _newFeedCount.emit(count)
-            } catch (_ : Exception) {
+            } catch (_: Exception) {
                 _newFeedCount.emit(0)
             }
         }
@@ -261,9 +253,15 @@ class ConnectionViewmodelImpl @Inject constructor(
                 try {
                     val bestCityAndRegion = locationRepository.getBestLocationAsync()
                     saveLastLocation(bestCityAndRegion)
-                    _bestLocation.emit(ServerListItem(bestCityAndRegion.region.id, bestCityAndRegion.region, listOf(bestCityAndRegion.city)))
+                    _bestLocation.emit(
+                        ServerListItem(
+                            bestCityAndRegion.region.id,
+                            bestCityAndRegion.region,
+                            listOf(bestCityAndRegion.city)
+                        )
+                    )
                     fetchConnectionState()
-                } catch (_ : Exception) {
+                } catch (_: Exception) {
                     lastLocationState.value = null
                     fetchConnectionState()
                 }
@@ -358,7 +356,6 @@ class ConnectionViewmodelImpl @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             ipRepository.state.collect { state ->
                 when (state) {
-                    is RepositoryState.Loading,
                     is RepositoryState.Error -> {
                         _ipState.emit("--.--.--.--")
                         _shouldAnimateIp.emit(false)
@@ -374,6 +371,7 @@ class ConnectionViewmodelImpl @Inject constructor(
                             lastValidIp = newIp
                         }
                     }
+                    else -> {}
                 }
             }
         }
@@ -726,16 +724,6 @@ class ConnectionViewmodelImpl @Inject constructor(
         _toastMessage.value = ToastMessage.None
     }
 
-    override fun onFavouriteIpClick() {
-        setContextMenuState(false)
-        showToast("Feature not available yet.")
-    }
-
-    override fun onRotateIpClick() {
-        setContextMenuState(false)
-        showToast("Feature not available yet.")
-    }
-
     private fun checkEligibility(isPro: Int, isStaticIp: Boolean, serverStatus: Int): Boolean {
         // Check Internet
         if (!WindUtilities.isOnline()) {
@@ -787,30 +775,22 @@ class ConnectionViewmodelImpl @Inject constructor(
         return true
     }
 
-    override fun onIpContextMenuPosition(position: Offset) {
-        viewModelScope.launch {
-            val ipContextMenuState = _ipContextMenuState.value
-            _ipContextMenuState.emit(Pair(ipContextMenuState.first, position))
-        }
-    }
-
-    override fun setContextMenuState(state: Boolean) {
-        viewModelScope.launch {
-            val ipContextMenuState = _ipContextMenuState.value
-            _ipContextMenuState.emit(Pair(state, ipContextMenuState.second))
-        }
-    }
-
     private fun fetchBestLocation() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val bestCityAndRegion = locationRepository.getBestLocationAsync()
                 try {
-                    _bestLocation.emit(ServerListItem(bestCityAndRegion.region.id, bestCityAndRegion.region, listOf(bestCityAndRegion.city)))
-                }catch (ignored: Exception) {
+                    _bestLocation.emit(
+                        ServerListItem(
+                            bestCityAndRegion.region.id,
+                            bestCityAndRegion.region,
+                            listOf(bestCityAndRegion.city)
+                        )
+                    )
+                } catch (ignored: Exception) {
                     _bestLocation.emit(null)
                 }
-            } catch (_ : Exception) {
+            } catch (_: Exception) {
                 _bestLocation.emit(null)
             }
         }

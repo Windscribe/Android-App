@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
+import com.windscribe.mobile.ui.connection.BridgeApiViewModel
 import com.windscribe.mobile.ui.serverlist.AllServerList
 import com.windscribe.mobile.ui.serverlist.ConfigServerList
 import com.windscribe.mobile.ui.serverlist.FavouriteList
@@ -32,6 +33,7 @@ import com.windscribe.mobile.ui.home.HomeViewmodel
 import com.windscribe.mobile.ui.serverlist.ServerListType
 import com.windscribe.mobile.ui.serverlist.ServerViewModel
 import com.windscribe.mobile.ui.theme.serverListBackgroundColor
+import com.windscribe.vpn.repository.BridgeApiRepository
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -39,6 +41,7 @@ import kotlinx.coroutines.launch
 fun ServerListScreen(
     viewModel: ServerViewModel,
     connectionViewModel: ConnectionViewmodel,
+    bridgeApiViewModel: BridgeApiViewModel,
     configViewmodel: ConfigViewmodel,
     homeViewmodel: HomeViewmodel
 ) {
@@ -89,7 +92,7 @@ fun ServerListScreen(
         ServerListNavigation(
             modifier = Modifier.offset(y = (-54.0f).dp),
             viewModel = viewModel,
-            homeViewmodel = homeViewmodel,
+            bridgeApiViewModel,
             onTabSelected = { index ->
                 coroutineScope.launch {
                     viewModel.setSelectedType(index.toServerListType())

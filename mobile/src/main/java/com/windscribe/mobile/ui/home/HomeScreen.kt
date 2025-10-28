@@ -6,11 +6,14 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -44,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.BlurEffect
@@ -53,6 +57,8 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -63,12 +69,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.AnimatedIPAddress
 import com.windscribe.mobile.ui.common.AppConnectButton
 import com.windscribe.mobile.ui.common.LocationImage
 import com.windscribe.mobile.ui.common.fitsInOneLine
+import com.windscribe.mobile.ui.connection.BridgeApiViewModel
 import com.windscribe.mobile.ui.connection.ConnectionUIState
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.connection.LocationInfoState
@@ -90,7 +98,9 @@ import com.windscribe.mobile.ui.theme.font26
 import com.windscribe.mobile.ui.theme.font9
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.backend.Util
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 @Composable
@@ -98,14 +108,15 @@ fun HomeScreen(
     serverViewModel: ServerViewModel?,
     connectionViewmodel: ConnectionViewmodel?,
     configViewmodel: ConfigViewmodel?,
-    homeViewmodel: HomeViewmodel?
+    homeViewmodel: HomeViewmodel?,
+    bridgeApiViewModel: BridgeApiViewModel?
 ) {
-    if (serverViewModel == null || connectionViewmodel == null || configViewmodel == null || homeViewmodel == null) {
+    if (serverViewModel == null || connectionViewmodel == null || configViewmodel == null || homeViewmodel == null || bridgeApiViewModel == null) {
         return
     }
     HandleToast(connectionViewmodel)
     HandleGoto(connectionViewmodel, homeViewmodel)
-    CompactUI(serverViewModel, connectionViewmodel, configViewmodel, homeViewmodel)
+    CompactUI(serverViewModel, connectionViewmodel, configViewmodel, homeViewmodel, bridgeApiViewModel)
 }
 
 @Composable
@@ -203,6 +214,13 @@ private fun HandleGotoAction(
             didNavigate = true
         }
 
+        is HomeGoto.IpActionError -> {
+            navController.currentBackStackEntry?.savedStateHandle?.set("message", goto.message)
+            navController.navigate(Screen.IpActionResult.route)
+            didNavigate = true
+        }
+
+
         HomeGoto.None -> {}
         null -> {}
     }
@@ -267,15 +285,16 @@ private fun CompactUI(
     serverViewModel: ServerViewModel,
     connectionViewmodel: ConnectionViewmodel,
     configViewmodel: ConfigViewmodel,
-    homeViewmodel: HomeViewmodel
+    homeViewmodel: HomeViewmodel,
+    bridgeApiViewModel: BridgeApiViewModel
 ) {
     val searchState by serverViewModel.showSearchView.collectAsState()
     Background {
         ConnectedBackground(connectionViewmodel)
         Column {
             Spacer(modifier = Modifier.height(36.dp))
-            LocationImage(connectionViewmodel, homeViewmodel)
-            ServerListScreen(serverViewModel, connectionViewmodel, configViewmodel, homeViewmodel)
+            LocationImage(connectionViewmodel, homeViewmodel, bridgeApiViewModel)
+            ServerListScreen(serverViewModel, connectionViewmodel, bridgeApiViewModel,configViewmodel, homeViewmodel)
         }
         Column {
             Header(connectionViewmodel, homeViewmodel)
@@ -284,7 +303,7 @@ private fun CompactUI(
             LocationName(connectionViewmodel)
             Spacer(modifier = Modifier.weight(1.0f))
         }
-        IPContextMenu(connectionViewmodel)
+        IPContextMenu(bridgeApiViewModel)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -315,10 +334,10 @@ private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
         ConnectionStatus(state)
         val antiCensorshipEnabled by connectionViewmodel.isAntiCensorshipEnabled.collectAsState()
         val showDecoyTraffic = state is ConnectionUIState.Connected && isDecoyTrafficEnabled
-        
+
         // Add initial spacing
         Spacer(modifier = Modifier.width(if (antiCensorshipEnabled || showDecoyTraffic) 4.dp else 12.dp))
-        
+
         if (antiCensorshipEnabled) {
             Image(
                 painter = painterResource(if (state is ConnectionUIState.Connected) R.drawable.ic_anti_censorship_enabled else R.drawable.ic_anti_censorship_disabled),
@@ -330,9 +349,13 @@ private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
             )
             Spacer(modifier = Modifier.width(4.dp))
         }
-        
+
         if (showDecoyTraffic) {
-            Text(stringResource(com.windscribe.vpn.R.string.decoy), style = font12, color = AppColors.neonGreen)
+            Text(
+                stringResource(com.windscribe.vpn.R.string.decoy),
+                style = font12,
+                color = AppColors.neonGreen
+            )
             Spacer(modifier = Modifier.width(4.dp))
         }
         Text(
@@ -420,16 +443,18 @@ private fun LocationName(connectionViewmodel: ConnectionViewmodel) {
 @Composable
 internal fun BoxScope.NetworkInfoSheet(
     connectionViewmodel: ConnectionViewmodel,
-    homeViewmodel: HomeViewmodel
+    homeViewmodel: HomeViewmodel,
+    bridgeApiViewModel: BridgeApiViewModel
 ) {
-    val showContextMenu by connectionViewmodel.ipContextMenuState.collectAsState()
+    val showContextMenu by bridgeApiViewModel.ipContextMenuState.collectAsState()
+    val isBridgeApiReady by bridgeApiViewModel.bridgeApiReady.collectAsState()
     val hideIp by homeViewmodel.hideIp.collectAsState()
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .align(Alignment.BottomCenter)
             .offset(y = (-66).dp)
-            .padding(end = 12.dp)
+            .padding(end = 8.dp)
     ) {
         NetworkNameSheet(connectionViewmodel, homeViewmodel)
         Row(
@@ -453,9 +478,10 @@ internal fun BoxScope.NetworkInfoSheet(
                         style = font16,
                         color = AppColors.white,
                         modifier = Modifier.graphicsLayer {
-                            renderEffect = if (hideIp && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                BlurEffect(15f, 15f)
-                            } else null
+                            renderEffect =
+                                if (hideIp && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                    BlurEffect(15f, 15f)
+                                } else null
                         }
                     )
 
@@ -472,18 +498,23 @@ internal fun BoxScope.NetworkInfoSheet(
                     }
                 }
             }
-//            Image(
-//                painter = painterResource(R.drawable.ic_context),
-//                contentDescription = null,
-//                modifier = Modifier
-//                    .size(24.dp)
-//                    .onGloballyPositioned { layoutCoordinates ->
-//                        connectionViewmodel.onIpContextMenuPosition(layoutCoordinates.boundsInWindow().topLeft)
-//                    }
-//                    .hapticClickable(hapticEnabled = isHapticEnabled) {
-//                        connectionViewmodel.setContextMenuState(true)
-//                    }
-//            )
+            if (!showContextMenu.first) {
+                Image(
+                    painter = painterResource(R.drawable.ic_context),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .alpha(if (isBridgeApiReady) 1.0f else 0.5f)
+                        .size(24.dp)
+                        .onGloballyPositioned { layoutCoordinates ->
+                            bridgeApiViewModel.onIpContextMenuPosition(layoutCoordinates.boundsInWindow().topLeft)
+                        }
+                        .hapticClickable {
+                            if (isBridgeApiReady) {
+                                bridgeApiViewModel.setContextMenuState(true)
+                            }
+                        }
+                )
+            }
         }
     }
 }
@@ -521,100 +552,6 @@ private fun ConnectionStatus(connectionUIState: ConnectionUIState) {
                 style = font12.copy(fontWeight = FontWeight.SemiBold),
                 color = containerColor,
                 modifier = Modifier.align(Alignment.Center)
-            )
-        }
-    }
-}
-
-@Composable
-private fun IPContextMenu(connectionViewModel: ConnectionViewmodel) {
-    val ipContextMenuState by connectionViewModel.ipContextMenuState.collectAsState()
-    val width = 80.dp
-
-    AnimatedVisibility(
-        visible = ipContextMenuState.first,
-        enter = fadeIn(),
-        exit = fadeOut()
-    ) {
-        Row(
-            modifier = Modifier
-                .offset {
-                    IntOffset(
-                        ipContextMenuState.second.x.roundToInt() - width.roundToPx(),
-                        ipContextMenuState.second.y.roundToInt()
-                    )
-                }
-                .fillMaxWidth()
-        ) {
-            IPMenuItem(
-                icon = R.drawable.ic_fav,
-                contentDescription = "Mark as Favourite",
-                onClick = {
-                    connectionViewModel.onFavouriteIpClick()
-                }
-            )
-            IPMenuItem(
-                icon = R.drawable.refresh,
-                contentDescription = "Refresh IP",
-                onClick = {
-                    connectionViewModel.onRotateIpClick()
-                }
-            )
-            IPMenuItem(
-                icon = R.drawable.ic_search_location_close,
-                contentDescription = "Close Menu",
-                onClick = { connectionViewModel.setContextMenuState(false) }
-            )
-        }
-    }
-}
-
-@Composable
-private fun IPMenuItem(icon: Int, contentDescription: String, onClick: () -> Unit) {
-    val interactionSource = remember { MutableInteractionSource() }
-    Image(
-        painter = painterResource(id = icon),
-        contentDescription = contentDescription,
-        colorFilter = ColorFilter.tint(AppColors.white),
-        modifier = Modifier
-            .size(24.dp)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = ripple(bounded = false, color = AppColors.white),
-                onClick = onClick
-            )
-    )
-    Spacer(modifier = Modifier.width(16.dp))
-}
-
-@Composable
-private fun Dots(modifier: Modifier) {
-    var currentIndex by remember { mutableIntStateOf(0) }
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(600)
-            currentIndex = (currentIndex + 1) % 3
-        }
-    }
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
-        modifier = modifier
-    ) {
-        repeat(3) { index ->
-            val alpha = animateFloatAsState(
-                targetValue = if (index == currentIndex) 1f else 0.4f,
-                animationSpec = tween(durationMillis = 300, easing = LinearEasing),
-                label = "dotAlpha"
-            )
-
-            Box(
-                modifier = Modifier
-                    .size(5.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = alpha.value))
             )
         }
     }
@@ -746,9 +683,132 @@ private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Home
 }
 
 @Composable
+private fun IPContextMenu(bridgeApiViewModel: BridgeApiViewModel) {
+    val context = LocalContext.current
+    val ipContextMenuState by bridgeApiViewModel.ipContextMenuState.collectAsState()
+    val hasPinnedIp by bridgeApiViewModel.hasPinnedIp.collectAsState()
+    val density = LocalDensity.current
+    val menuWidth = 80.dp
+
+    Box(
+        modifier = Modifier
+            .offset {
+                IntOffset(
+                    ipContextMenuState.second.x.roundToInt() - with(density) { menuWidth.roundToPx() },
+                    ipContextMenuState.second.y.roundToInt()
+                )
+            }
+    ) {
+        AnimatedVisibility(
+            visible = ipContextMenuState.first,
+            enter = slideInHorizontally(
+                initialOffsetX = { fullWidth -> fullWidth },
+                animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
+            ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+            exit = slideOutHorizontally(
+                targetOffsetX = { fullWidth -> fullWidth },
+                animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing)
+            ) + fadeOut(animationSpec = tween(durationMillis = 400))
+        ) {
+            Row {
+                IPMenuItem(
+                    icon = if (hasPinnedIp) R.drawable.ic_fav_selected else R.drawable.ic_fav,
+                    contentDescription = if (hasPinnedIp) "Marked as Favourite" else "Mark as Favourite",
+                    onClick = {
+                        bridgeApiViewModel.onPinIPClick(
+                            onSuccess = { isPinned, message ->
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            },
+                            onError = { message ->
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
+                )
+                IPMenuItem(
+                    icon = R.drawable.refresh,
+                    contentDescription = "Refresh IP",
+                    onClick = {
+                        bridgeApiViewModel.onRotateIpClick(
+                            onSuccess = { message ->
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            },
+                            onError = { message ->
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
+                )
+                IPMenuItem(
+                    icon = R.drawable.ic_search_location_close,
+                    contentDescription = "Close Menu",
+                    onClick = { bridgeApiViewModel.setContextMenuState(false) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun IPMenuItem(
+    icon: Int,
+    contentDescription: String,
+    onClick: () -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Image(
+        painter = painterResource(id = icon),
+        contentDescription = contentDescription,
+        colorFilter = ColorFilter.tint(AppColors.white),
+        modifier = Modifier
+            .size(24.dp)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = ripple(bounded = false, color = AppColors.white),
+                onClick = onClick
+            )
+    )
+    Spacer(modifier = Modifier.width(16.dp))
+}
+
+@Composable
+private fun Dots(modifier: Modifier) {
+    var currentIndex by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(600)
+            currentIndex = (currentIndex + 1) % 3
+        }
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+        modifier = modifier
+    ) {
+        repeat(3) { index ->
+            val alpha = animateFloatAsState(
+                targetValue = if (index == currentIndex) 1f else 0.4f,
+                animationSpec = tween(durationMillis = 300, easing = LinearEasing),
+                label = "dotAlpha"
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(5.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = alpha.value))
+            )
+        }
+    }
+}
+
+@Composable
 @MultiDevicePreview
 private fun HomeScreenPreview() {
     PreviewWithNav {
-        HomeScreen(null, null, null, null)
+        HomeScreen(null, null, null, null, null)
     }
 }

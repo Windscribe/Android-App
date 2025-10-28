@@ -94,6 +94,7 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
+import com.wsnet.lib.WSNetBridgeAPI
 
 @Module
 open class BaseApplicationModule {
@@ -199,7 +200,8 @@ open class BaseApplicationModule {
             }).addMigrations(Migrations.migration_26_27).addMigrations(Migrations.migration_27_28)
             .addMigrations(Migrations.migration_29_31)
             .addMigrations(Migrations.migration_33_34)
-            .addMigrations(Migrations.migration_34_35).build()
+            .addMigrations(Migrations.migration_34_35)
+            .addMigrations(Migrations.migration_35_36).build()
 
     }
 
@@ -225,28 +227,6 @@ open class BaseApplicationModule {
     @Singleton
     fun provideGoBackend(): GoBackend {
         return GoBackend(WireguardContextWrapper(windscribeApp.applicationContext))
-    }
-
-    @Provides
-    @Singleton
-    fun provideIkev2Backend(
-        coroutineScope: CoroutineScope,
-        networkInfoManager: NetworkInfoManager,
-        vpnConnectionStateManager: VPNConnectionStateManager,
-        advanceParameterRepository: AdvanceParameterRepository,
-        proxyDNSManager: ProxyDNSManager,
-        apiManager: IApiCallManager,
-        preferencesHelper: PreferencesHelper
-    ): IKev2VpnBackend {
-        return IKev2VpnBackend(
-            coroutineScope,
-            networkInfoManager,
-            vpnConnectionStateManager,
-            preferencesHelper,
-            advanceParameterRepository,
-            proxyDNSManager,
-            apiManager,
-        )
     }
 
     @Provides
@@ -322,30 +302,6 @@ open class BaseApplicationModule {
         localDbInterface: LocalDbInterface
     ): NotificationRepository {
         return NotificationRepository(preferencesHelper, apiCallManager, localDbInterface)
-    }
-
-    @Provides
-    @Singleton
-    fun provideOpenVPNBackend(
-        goBackend: GoBackend,
-        coroutineScope: CoroutineScope,
-        networkInfoManager: NetworkInfoManager,
-        vpnConnectionStateManager: VPNConnectionStateManager,
-        preferencesHelper: PreferencesHelper,
-        advanceParameterRepository: AdvanceParameterRepository,
-        proxyDNSManager: ProxyDNSManager,
-        apiManager: IApiCallManager
-    ): OpenVPNBackend {
-        return OpenVPNBackend(
-            goBackend,
-            coroutineScope,
-            networkInfoManager,
-            vpnConnectionStateManager,
-            preferencesHelper,
-            advanceParameterRepository,
-            proxyDNSManager,
-            apiManager
-        )
     }
 
     @Provides
@@ -557,52 +513,22 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun provideWireguardBackend(
-        goBackend: GoBackend,
-        coroutineScope: CoroutineScope,
-        networkInfoManager: NetworkInfoManager,
-        vpnConnectionStateManager: VPNConnectionStateManager,
-        vpnProfileCreator: VPNProfileCreator,
-        userRepository: Lazy<UserRepository>,
-        deviceStateManager: DeviceStateManager,
+    fun providesApiCallManagerInterface(
+        wsNetServerAPI: WSNetServerAPI,
         preferencesHelper: PreferencesHelper,
-        advanceParameterRepository: AdvanceParameterRepository,
-        proxyDNSManager: ProxyDNSManager,
-        localDbInterface: LocalDbInterface,
-        wgLogger: WgLogger,
-        wgConfigRepository: WgConfigRepository,
-        wsNet: WSNet,
-        apiManager: IApiCallManager
-    ): WireguardBackend {
-        return WireguardBackend(
-            goBackend,
-            coroutineScope,
-            networkInfoManager,
-            vpnConnectionStateManager,
-            vpnProfileCreator,
-            userRepository,
-            deviceStateManager,
+        bridgeAPI: WSNetBridgeAPI
+    ): IApiCallManager {
+        return ApiCallManager(
+            wsNetServerAPI,
             preferencesHelper,
-            advanceParameterRepository,
-            proxyDNSManager,
-            localDbInterface,
-            wgLogger,
-            wgConfigRepository,
-            wsNet,
-            apiManager
+            bridgeAPI
         )
     }
 
     @Provides
     @Singleton
-    fun providesApiCallManagerInterface(
-        wsNetServerAPI: WSNetServerAPI,
-        preferencesHelper: PreferencesHelper,
-    ): IApiCallManager {
-        return ApiCallManager(
-            wsNetServerAPI,
-            preferencesHelper
-        )
+    fun providesBridgeApi(wsNet: WSNet): WSNetBridgeAPI {
+        return wsNet.bridgeAPI()
     }
 
     @Provides
@@ -743,10 +669,11 @@ open class BaseApplicationModule {
         autoConnectionManager: AutoConnectionManager,
         preferencesHelper: PreferencesHelper,
         userRepository: Lazy<UserRepository>,
-        wsNet: Lazy<WSNet>
+        wsNet: Lazy<WSNet>,
+        bridgeAPI: WSNetBridgeAPI
     ): VPNConnectionStateManager {
         return VPNConnectionStateManager(
-            scope, autoConnectionManager, preferencesHelper, userRepository, wsNet
+            scope, autoConnectionManager, preferencesHelper, userRepository, wsNet, bridgeAPI
         )
     }
 

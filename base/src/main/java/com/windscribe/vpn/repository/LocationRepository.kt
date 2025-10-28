@@ -230,4 +230,14 @@ class LocationRepository @Inject constructor(
             true
         }.getOrDefault(false)
     }
+
+    fun getSelectedCityAndRegion(): CityAndRegion? {
+        val selectedCityId = preferencesHelper.selectedCity
+        if (selectedCityId == -1 || WindUtilities.getSourceTypeBlocking() != SelectedLocationType.CityLocation) {
+            return null
+        }
+        return runCatching {
+            localDbInterface.getCityAndRegion(selectedCityId)
+        }.getOrNull()
+    }
 }

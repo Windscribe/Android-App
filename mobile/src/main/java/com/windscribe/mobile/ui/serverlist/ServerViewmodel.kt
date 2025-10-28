@@ -9,6 +9,7 @@ import com.windscribe.vpn.constants.PreferencesKeyConstants.LATENCY_LIST_SELECTI
 import com.windscribe.vpn.constants.PreferencesKeyConstants.SELECTION_KEY
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.FavouriteRepository
+import com.windscribe.vpn.repository.FavouriteWithCity
 import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
@@ -36,7 +37,7 @@ import java.util.Locale
 import kotlin.collections.map
 
 data class ServerListItem(val id: Int, val region: Region, val cities: List<City>)
-data class FavouriteListItem(val id: Int, val city: City, val countryCode: String)
+data class FavouriteListItem(val id: Int, val city: City, val countryCode: String, val pinnedIp: String?)
 data class StaticListItem(val id: Int, val staticItem: StaticRegion)
 data class ConfigListItem(val id: Int, val config: ConfigFile)
 data class LatencyListItem(val id: Int, val time: Int)
@@ -289,14 +290,46 @@ class ServerViewModelImpl(
         }
     }
 
+    private fun List<FavouriteWithCity>.sortFavouriteCities(): List<FavouriteWithCity> {
+        return when (preferencesHelper.selection) {
+            LATENCY_LIST_SELECTION_MODE -> {
+                val state = latencyListState.value as? ListState.Success<LatencyListItem>
+                if (state != null) {
+                    sortedBy { favWithCity ->
+                        state.data.firstOrNull { it.id == favWithCity.city.id }?.time
+                    }
+                } else {
+                    sortedBy { it.city.nodeName }
+                }
+            }
+            else -> sortedBy { it.city.nodeName }
+        }
+    }
+
+    private fun List<FavouriteWithCity>.updateFavouriteCityNames(): List<FavouriteWithCity> {
+        return map { favWithCity ->
+            val cityName = serverRepository.getCustomCityName(favWithCity.city.id)
+            val nickName = serverRepository.getCustomCityNickName(favWithCity.city.id)
+            if (cityName != null && nickName != null) {
+                favWithCity.copy(city = favWithCity.city.apply {
+                    this.nodeName = cityName
+                    this.nickName = nickName
+                })
+            } else {
+                favWithCity
+            }
+        }
+    }
+
     private fun fetchFavouriteList() {
         viewModelScope.launch(Dispatchers.IO) {
             favouriteRepository.favourites.map { favourites ->
-                favourites.updateCityNames().sortCities().map { city ->
+                favourites.updateFavouriteCityNames().sortFavouriteCities().map { favWithCity ->
                     FavouriteListItem(
-                        city.id,
-                        city,
-                        localDbInterface.getCountryCode(city.id)
+                        favWithCity.city.id,
+                        favWithCity.city,
+                        localDbInterface.getCountryCode(favWithCity.city.id),
+                        favWithCity.favourite.pinnedIp
                     )
                 }
             }.collect {

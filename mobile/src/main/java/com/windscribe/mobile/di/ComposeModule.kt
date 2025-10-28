@@ -9,6 +9,8 @@ import com.windscribe.mobile.ui.auth.AppStartViewModelImpl
 import com.windscribe.mobile.ui.auth.EmergencyConnectViewModal
 import com.windscribe.mobile.ui.auth.LoginViewModel
 import com.windscribe.mobile.ui.auth.SignupViewModel
+import com.windscribe.mobile.ui.connection.BridgeApiViewModel
+import com.windscribe.mobile.ui.connection.BridgeApiViewModelImpl
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.connection.ConnectionViewmodelImpl
 import com.windscribe.mobile.ui.home.HomeViewmodel
@@ -60,6 +62,7 @@ import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
+import com.windscribe.vpn.repository.BridgeApiRepository
 import com.windscribe.vpn.repository.FavouriteRepository
 import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LatencyRepository
@@ -107,7 +110,8 @@ class ComposeModule {
         proxyDNSManager: ProxyDNSManager,
         decoyTrafficController: DecoyTrafficController,
         portMapRepository: com.windscribe.vpn.repository.PortMapRepository,
-        logRepository: LogRepository
+        logRepository: LogRepository,
+        bridgeApiRepository: BridgeApiRepository
     ): ViewModelProvider.Factory {
         return object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -212,9 +216,17 @@ class ComposeModule {
                     return NetworkDetailViewModelImpl(localDbInterface, apiCallManager, appPreferenceHelper, networkInfoManager, windVpnController, vpnConnectionStateManager, portMapRepository) as T
                 } else if (modelClass.isAssignableFrom(SplitTunnelViewModel::class.java)) {
                     return SplitTunnelViewModelImpl(appPreferenceHelper) as T
-                }
-                else if (modelClass.isAssignableFrom(EmailViewModel::class.java)) {
+                } else if (modelClass.isAssignableFrom(EmailViewModel::class.java)) {
                     return EmailViewModelImpl(apiCallManager, userRepository, workManager) as T
+                } else if (modelClass.isAssignableFrom(BridgeApiViewModel::class.java)) {
+                    return BridgeApiViewModelImpl(
+                        bridgeApiRepository,
+                        locationRepository,
+                        localDbInterface,
+                        apiCallManager,
+                        ipRepository,
+                        appPreferenceHelper
+                    ) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
             }

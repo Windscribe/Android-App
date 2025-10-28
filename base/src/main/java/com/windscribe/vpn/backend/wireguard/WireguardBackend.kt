@@ -57,14 +57,16 @@ import java.net.InetAddress
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.toSet
 import kotlin.random.Random
+import com.wsnet.lib.WSNetBridgeAPI
 
 
 @Singleton
-class WireguardBackend(
+class WireguardBackend @Inject constructor(
     var backend: GoBackend,
     var scope: CoroutineScope,
     var networkInfoManager: NetworkInfoManager,
@@ -75,18 +77,21 @@ class WireguardBackend(
     val preferencesHelper: PreferencesHelper,
     advanceParameterRepository: AdvanceParameterRepository,
     val proxyDNSManager: ProxyDNSManager,
-    val localDbInterface: LocalDbInterface,
+    localDbInterface: LocalDbInterface,
     val wgLogger: WgLogger,
     val wgConfigRepository: com.windscribe.vpn.repository.WgConfigRepository,
     private val wsNet: WSNet,
-    private val apiManager: IApiCallManager
+    private val apiManager: IApiCallManager,
+    bridgeAPI: WSNetBridgeAPI
 ) : VpnBackend(
     scope,
     vpnStateManager,
     preferencesHelper,
     networkInfoManager,
     advanceParameterRepository,
-    apiManager
+    apiManager,
+    localDbInterface,
+    bridgeAPI
 ) {
 
     var service: WireGuardWrapperService? = null

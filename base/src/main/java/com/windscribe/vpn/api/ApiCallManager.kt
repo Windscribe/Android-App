@@ -32,6 +32,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.VpnPreferenceConstants.WG_CONNECT_DEFAULT_TTL
 import com.windscribe.vpn.exceptions.WindScribeException
+import com.wsnet.lib.WSNetBridgeAPI
 import com.wsnet.lib.WSNetServerAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -46,7 +47,8 @@ import kotlin.coroutines.resume
 @Singleton
 open class ApiCallManager @Inject constructor(
     val wsNetServerAPI: WSNetServerAPI,
-    val preferencesHelper: PreferencesHelper
+    val preferencesHelper: PreferencesHelper,
+    val bridgeAPI: WSNetBridgeAPI
 ) : IApiCallManager {
 
     private val logger = LoggerFactory.getLogger("basic")
@@ -538,6 +540,24 @@ open class ApiCallManager @Inject constructor(
         return suspendCancellableCoroutine { continuation ->
             val callback = wsNetServerAPI.authTokenSignup(useAsciiCaptcha) { code, json ->
                 buildResponse(continuation, code, json, AuthToken::class.java)
+            }
+            continuation.invokeOnCancellation { callback.cancel() }
+        }
+    }
+
+    override suspend fun rotateIp(): GenericResponseClass<String?, ApiErrorResponse?> {
+        return suspendCancellableCoroutine { continuation ->
+            val callback = bridgeAPI.rotateIp() { code, json ->
+                buildResponse(continuation, code, json, String::class.java)
+            }
+            continuation.invokeOnCancellation { callback.cancel() }
+        }
+    }
+
+    override suspend fun pinIp(ip: String?): GenericResponseClass<String?, ApiErrorResponse?> {
+        return suspendCancellableCoroutine { continuation ->
+            val callback = bridgeAPI.pinIp(ip ?: "") { code, json ->
+                buildResponse(continuation, code, json, String::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
         }

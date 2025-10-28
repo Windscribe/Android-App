@@ -142,6 +142,8 @@ open class WindVpnController @Inject constructor(
         val cityAndRegion = localDbInterface.getCityAndRegion(selectedCity)
         val city = cityAndRegion.city
         val nodes = city.getNodes()
+        val pinnedIp = localDbInterface.getFavouritesAsync().firstOrNull { it.id == selectedCity && it.pinnedNodeIp != null }?.pinnedNodeIp
+        val pinnedNode = nodes.firstOrNull { it.hostname == pinnedIp }
         // Random node
         var randomIndex = Util.getRandomNode(lastUsedRandomIndex, attempt, nodes)
         // Node if hostname is provided to retry same hostname
@@ -157,7 +159,7 @@ open class WindVpnController @Inject constructor(
             logger.debug("Forcing node to {}", nodes[forcedNodeIndex])
             randomIndex = forcedNodeIndex
         }
-        val selectedNode: Node = nodes[randomIndex]
+        val selectedNode: Node = pinnedNode ?: nodes[randomIndex]
         logger.debug("{}", selectedNode)
         lastUsedRandomIndex = randomIndex
         val coordinatesArray = city.coordinates.split(",".toRegex()).toTypedArray()

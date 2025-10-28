@@ -46,6 +46,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.connection.BridgeApiViewModel
 import com.windscribe.mobile.ui.connection.ConnectionUIState
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.connection.LocationBackground
@@ -57,7 +58,7 @@ import com.windscribe.mobile.ui.theme.AppColors
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
+fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel, bridgeApiViewModel: BridgeApiViewModel) {
     val connectionState by connectionViewmodel.connectionUIState.collectAsState()
     val locationBackground =
         (connectionState.locationInfo as? LocationInfoState.Success)?.locationInfo?.locationBackground
@@ -191,7 +192,7 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
                 )
             }
         }
-        NetworkInfoSheet(connectionViewmodel, homeViewmodel)
+        NetworkInfoSheet(connectionViewmodel, homeViewmodel, bridgeApiViewModel)
     }
 }
 

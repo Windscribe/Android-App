@@ -18,6 +18,8 @@ import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
+import com.windscribe.vpn.backend.VpnBackend.Companion.DISCONNECT_DELAY
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.NetworkInfoListener
@@ -33,18 +35,22 @@ import org.strongswan.android.logic.VpnStateService.VpnStateListener
 import java.io.File
 import java.io.IOException
 import java.util.*
+import javax.inject.Inject
 import javax.inject.Singleton
+import com.wsnet.lib.WSNetBridgeAPI
 
 @Singleton
-class IKev2VpnBackend(
+class IKev2VpnBackend @Inject constructor(
         var scope: CoroutineScope,
         var networkInfoManager: NetworkInfoManager,
         vpnStateManager: VPNConnectionStateManager,
         var preferencesHelper: PreferencesHelper,
         advanceParameterRepository: AdvanceParameterRepository,
         val proxyDNSManager: ProxyDNSManager,
-        private val apiManager: IApiCallManager
-) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager), VpnStateListener {
+        private val apiManager: IApiCallManager,
+        localDbInterface: LocalDbInterface,
+        bridgeAPI: WSNetBridgeAPI
+) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager, localDbInterface, bridgeAPI), VpnStateListener {
 
     private var vpnService: VpnStateService? = null
     private val stateServiceChannel = Channel<VpnStateService>()
