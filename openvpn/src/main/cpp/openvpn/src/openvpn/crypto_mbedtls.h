@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Fox Crypto B.V. <openvpn@foxcrypto.com>
+ *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2021 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -18,23 +18,21 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
- * @file Data Channel Cryptography mbed TLS-specific backend interface
+ * @file
+ * Data Channel Cryptography mbed TLS-specific backend interface
  */
 
 #ifndef CRYPTO_MBEDTLS_H_
 #define CRYPTO_MBEDTLS_H_
 
+#include <stdbool.h>
 #include <mbedtls/cipher.h>
 #include <mbedtls/md.h>
 #include <mbedtls/ctr_drbg.h>
-
-/** Generic cipher key type %context. */
-typedef mbedtls_cipher_info_t cipher_kt_t;
 
 /** Generic message digest key type %context. */
 typedef mbedtls_md_info_t md_kt_t;
@@ -48,32 +46,36 @@ typedef mbedtls_md_context_t md_ctx_t;
 /** Generic HMAC %context. */
 typedef mbedtls_md_context_t hmac_ctx_t;
 
+/* Use a dummy type for the provider */
+typedef void provider_t;
+
 /** Maximum length of an IV */
-#define OPENVPN_MAX_IV_LENGTH   MBEDTLS_MAX_IV_LENGTH
+#define OPENVPN_MAX_IV_LENGTH MBEDTLS_MAX_IV_LENGTH
 
 /** Cipher is in CBC mode */
-#define OPENVPN_MODE_CBC        MBEDTLS_MODE_CBC
+#define OPENVPN_MODE_CBC MBEDTLS_MODE_CBC
 
 /** Cipher is in OFB mode */
-#define OPENVPN_MODE_OFB        MBEDTLS_MODE_OFB
+#define OPENVPN_MODE_OFB MBEDTLS_MODE_OFB
 
 /** Cipher is in CFB mode */
-#define OPENVPN_MODE_CFB        MBEDTLS_MODE_CFB
+#define OPENVPN_MODE_CFB MBEDTLS_MODE_CFB
 
 /** Cipher is in GCM mode */
-#define OPENVPN_MODE_GCM        MBEDTLS_MODE_GCM
+#define OPENVPN_MODE_GCM MBEDTLS_MODE_GCM
+
+typedef mbedtls_operation_t crypto_operation_t;
 
 /** Cipher should encrypt */
-#define OPENVPN_OP_ENCRYPT      MBEDTLS_ENCRYPT
+#define OPENVPN_OP_ENCRYPT MBEDTLS_ENCRYPT
 
 /** Cipher should decrypt */
-#define OPENVPN_OP_DECRYPT      MBEDTLS_DECRYPT
+#define OPENVPN_OP_DECRYPT MBEDTLS_DECRYPT
 
-#define MD4_DIGEST_LENGTH       16
-#define MD5_DIGEST_LENGTH       16
-#define SHA_DIGEST_LENGTH       20
-#define SHA256_DIGEST_LENGTH    32
-#define DES_KEY_LENGTH 8
+#define MD4_DIGEST_LENGTH    16
+#define MD5_DIGEST_LENGTH    16
+#define SHA_DIGEST_LENGTH    20
+#define SHA256_DIGEST_LENGTH 32
 
 /**
  * Returns a singleton instance of the mbed TLS random number generator.
@@ -116,13 +118,11 @@ bool mbed_log_err(unsigned int flags, int errval, const char *prefix);
  *
  * @returns true if no errors are detected, false otherwise.
  */
-bool mbed_log_func_line(unsigned int flags, int errval, const char *func,
-                        int line);
+bool mbed_log_func_line(unsigned int flags, int errval, const char *func, int line);
 
 /** Wraps mbed_log_func_line() to prevent function calls for non-errors */
 static inline bool
-mbed_log_func_line_lite(unsigned int flags, int errval,
-                        const char *func, int line)
+mbed_log_func_line_lite(unsigned int flags, int errval, const char *func, int line)
 {
     if (errval)
     {
@@ -143,13 +143,6 @@ mbed_log_func_line_lite(unsigned int flags, int errval,
  *
  * @returns true if no errors are detected, false otherwise.
  */
-#define mbed_ok(errval) \
-    mbed_log_func_line_lite(D_CRYPT_ERRORS, errval, __func__, __LINE__)
-
-static inline bool
-cipher_kt_var_key_size(const cipher_kt_t *cipher)
-{
-    return cipher->flags & MBEDTLS_CIPHER_VARIABLE_KEY_LEN;
-}
+#define mbed_ok(errval) mbed_log_func_line_lite(D_CRYPT_ERRORS, errval, __func__, __LINE__)
 
 #endif /* CRYPTO_MBEDTLS_H_ */

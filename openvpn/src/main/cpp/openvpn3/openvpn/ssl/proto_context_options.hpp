@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 // Helper class to parse certain options needed by ProtoContext.
 
@@ -30,35 +20,45 @@
 #include <openvpn/common/options.hpp>
 
 namespace openvpn {
-  struct ProtoContextOptions : public RC<thread_safe_refcount>
-  {
-    typedef RCPtr<ProtoContextOptions> Ptr;
+struct ProtoContextCompressionOptions : public RC<thread_safe_refcount>
+{
+    typedef RCPtr<ProtoContextCompressionOptions> Ptr;
 
-    enum CompressionMode {
-      COMPRESS_NO,
-      COMPRESS_YES,
-      COMPRESS_ASYM
+    enum CompressionMode
+    {
+        COMPRESS_NO,
+        COMPRESS_YES,
+        COMPRESS_ASYM
     };
 
-    ProtoContextOptions() : compression_mode(COMPRESS_NO) {}
-
-    bool is_comp() const { return compression_mode != COMPRESS_NO; }
-    bool is_comp_asym() const { return compression_mode == COMPRESS_ASYM; }
-
-    void parse_compression_mode(const std::string& mode)
+    ProtoContextCompressionOptions()
+        : compression_mode(COMPRESS_NO)
     {
-      if (mode == "no")
-	compression_mode = COMPRESS_NO;
-      else if (mode == "yes")
-	compression_mode = COMPRESS_YES;
-      else if (mode == "asym")
-	compression_mode = COMPRESS_ASYM;
-      else
-	OPENVPN_THROW(option_error, "error parsing compression mode: " << mode);
+    }
+
+    bool is_comp() const
+    {
+        return compression_mode != COMPRESS_NO;
+    }
+    bool is_comp_asym() const
+    {
+        return compression_mode == COMPRESS_ASYM;
+    }
+
+    void parse_compression_mode(const std::string &mode)
+    {
+        if (mode == "no")
+            compression_mode = COMPRESS_NO;
+        else if (mode == "yes")
+            compression_mode = COMPRESS_YES;
+        else if (mode == "asym")
+            compression_mode = COMPRESS_ASYM;
+        else
+            OPENVPN_THROW_ARG1(option_error, ERR_INVALID_OPTION_VAL, "error parsing compression mode: " << mode);
     }
 
     CompressionMode compression_mode;
-  };
-}
+};
+} // namespace openvpn
 
 #endif

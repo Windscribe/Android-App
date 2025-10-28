@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 //
 //  This code is derived from the Apple sample Reachability.m under
 //  the following license.
@@ -81,170 +71,195 @@
 #include <openvpn/apple/reach.hpp>
 
 namespace openvpn {
-  namespace CF {
-    OPENVPN_CF_WRAP(NetworkReachability, network_reachability_cast, SCNetworkReachabilityRef, SCNetworkReachabilityGetTypeID);
-  }
+#if defined(__APPLE__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+namespace CF {
+OPENVPN_CF_WRAP(NetworkReachability, network_reachability_cast, SCNetworkReachabilityRef, SCNetworkReachabilityGetTypeID);
+}
 
-  class ReachabilityBase
-  {
+#if defined(__APPLE__)
+#pragma clang diagnostic pop
+#endif
+
+class ReachabilityBase
+{
   public:
     typedef ReachabilityInterface::Status Status;
 
-    enum Type {
-      Internet,
-      WiFi,
+    enum Type
+    {
+        Internet,
+        WiFi,
     };
 
     std::string to_string() const
     {
-      return to_string(flags());
+        return to_string(flags());
     }
 
     std::string to_string(const SCNetworkReachabilityFlags f) const
     {
-      const Status s = vstatus(f);
-      const Type t = vtype();
+        const Status s = vstatus(f);
+        const Type t = vtype();
 
-      std::string ret;
-      ret += render_type(t);
-      ret += ':';
-      ret += render_status(s);
-      ret += '/';
-      ret += render_flags(f);
-      return ret;
+        std::string ret;
+        ret += render_type(t);
+        ret += ':';
+        ret += render_status(s);
+        ret += '/';
+        ret += render_flags(f);
+        return ret;
     }
 
     Status status() const
     {
-      return vstatus(flags());
+        return vstatus(flags());
     }
 
+#if defined(__APPLE__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
     SCNetworkReachabilityFlags flags() const
     {
-      SCNetworkReachabilityFlags f = 0;
-      if (SCNetworkReachabilityGetFlags(reach(), &f) == TRUE)
-	return f;
-      else
-	return 0;
+        SCNetworkReachabilityFlags f = 0;
+        if (SCNetworkReachabilityGetFlags(reach(), &f) == TRUE)
+            return f;
+        else
+            return 0;
     }
+#if defined(__APPLE__)
+#pragma clang diagnostic pop
+#endif
 
     static std::string render_type(Type type)
     {
-      switch (type) {
-      case Internet:
-	return "Internet";
-      case WiFi:
-	return "WiFi";
-      default:
-	return "Type???";
-      }
+        switch (type)
+        {
+        case Internet:
+            return "Internet";
+        case WiFi:
+            return "WiFi";
+        default:
+            return "Type???";
+        }
     }
 
     static std::string render_status(const Status status)
     {
-      switch (status) {
-      case ReachabilityInterface::NotReachable:
-	return "NotReachable";
-      case ReachabilityInterface::ReachableViaWiFi:
-	return "ReachableViaWiFi";
-      case ReachabilityInterface::ReachableViaWWAN:
-	return "ReachableViaWWAN";
-      default:
-	return "ReachableVia???";
-      }
+        switch (status)
+        {
+        case ReachabilityInterface::NotReachable:
+            return "NotReachable";
+        case ReachabilityInterface::ReachableViaWiFi:
+            return "ReachableViaWiFi";
+        case ReachabilityInterface::ReachableViaWWAN:
+            return "ReachableViaWWAN";
+        default:
+            return "ReachableVia???";
+        }
     }
 
     static std::string render_flags(const SCNetworkReachabilityFlags flags)
     {
-      std::string ret;
+        std::string ret;
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR // Mac OS X doesn't define WWAN flags
-      if (flags & kSCNetworkReachabilityFlagsIsWWAN)
-	ret += 'W';
-      else
+        if (flags & kSCNetworkReachabilityFlagsIsWWAN)
+            ret += 'W';
+        else
 #endif
-	ret += '-';
-      if (flags & kSCNetworkReachabilityFlagsReachable)
-	ret += 'R';
-      else
-	ret += '-';
-      ret += ' ';
-      if (flags & kSCNetworkReachabilityFlagsTransientConnection)
-	ret += 't';
-      else
-	ret += '-';
-      if (flags & kSCNetworkReachabilityFlagsConnectionRequired)
-	ret += 'c';
-      else
-	ret += '-';
-      if (flags & kSCNetworkReachabilityFlagsConnectionOnTraffic)
-	ret += 'C';
-      else
-	ret += '-';
-      if (flags & kSCNetworkReachabilityFlagsInterventionRequired)
-	ret += 'i';
-      else
-	ret += '-';
-      if (flags & kSCNetworkReachabilityFlagsConnectionOnDemand)
-	ret += 'D';
-      else
-	ret += '-';
-      if (flags & kSCNetworkReachabilityFlagsIsLocalAddress)
-	ret += 'l';
-      else
-	ret += '-';
-      if (flags & kSCNetworkReachabilityFlagsIsDirect)
-	ret += 'd';
-      else
-	ret += '-';
-      return ret;
+            ret += '-';
+        if (flags & kSCNetworkReachabilityFlagsReachable)
+            ret += 'R';
+        else
+            ret += '-';
+        ret += ' ';
+        if (flags & kSCNetworkReachabilityFlagsTransientConnection)
+            ret += 't';
+        else
+            ret += '-';
+        if (flags & kSCNetworkReachabilityFlagsConnectionRequired)
+            ret += 'c';
+        else
+            ret += '-';
+        if (flags & kSCNetworkReachabilityFlagsConnectionOnTraffic)
+            ret += 'C';
+        else
+            ret += '-';
+        if (flags & kSCNetworkReachabilityFlagsInterventionRequired)
+            ret += 'i';
+        else
+            ret += '-';
+        if (flags & kSCNetworkReachabilityFlagsConnectionOnDemand)
+            ret += 'D';
+        else
+            ret += '-';
+        if (flags & kSCNetworkReachabilityFlagsIsLocalAddress)
+            ret += 'l';
+        else
+            ret += '-';
+        if (flags & kSCNetworkReachabilityFlagsIsDirect)
+            ret += 'd';
+        else
+            ret += '-';
+        return ret;
     }
 
     virtual Type vtype() const = 0;
     virtual Status vstatus(const SCNetworkReachabilityFlags flags) const = 0;
 
-    virtual ~ReachabilityBase() {}
+    virtual ~ReachabilityBase() = default;
 
     CF::NetworkReachability reach;
-  };
+};
 
-  class ReachabilityViaInternet : public ReachabilityBase
-  {
+class ReachabilityViaInternet : public ReachabilityBase
+{
   public:
+#if defined(__APPLE__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
     ReachabilityViaInternet()
     {
-      struct sockaddr_in addr;
-      bzero(&addr, sizeof(addr));
-      addr.sin_len = sizeof(addr);
-      addr.sin_family = AF_INET;
-      reach.reset(SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (struct sockaddr*)&addr));
+        struct sockaddr_in addr;
+        bzero(&addr, sizeof(addr));
+        addr.sin_len = sizeof(addr);
+        addr.sin_family = AF_INET;
+        reach.reset(SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (struct sockaddr *)&addr));
+    }
+#if defined(__APPLE__)
+#pragma clang diagnostic pop
+#endif
+
+    Type vtype() const override
+    {
+        return Internet;
     }
 
-    virtual Type vtype() const
+    Status vstatus(const SCNetworkReachabilityFlags flags) const override
     {
-      return Internet;
-    }
-
-    virtual Status vstatus(const SCNetworkReachabilityFlags flags) const
-    {
-      return status_from_flags(flags);
+        return status_from_flags(flags);
     }
 
     static Status status_from_flags(const SCNetworkReachabilityFlags flags)
     {
-      if ((flags & kSCNetworkReachabilityFlagsReachable) == 0)
-	{
-	  // The target host is not reachable.
-	  return ReachabilityInterface::NotReachable;
-	}
+        if ((flags & kSCNetworkReachabilityFlagsReachable) == 0)
+        {
+            // The target host is not reachable.
+            return ReachabilityInterface::NotReachable;
+        }
 
-      Status ret = ReachabilityInterface::NotReachable;
+        Status ret = ReachabilityInterface::NotReachable;
 
-      if ((flags & kSCNetworkReachabilityFlagsConnectionRequired) == 0)
-	{
-	  // If the target host is reachable and no connection is required then
-	  // we'll assume (for now) that you're on Wi-Fi...
-	  ret = ReachabilityInterface::ReachableViaWiFi;
-	}
+        if ((flags & kSCNetworkReachabilityFlagsConnectionRequired) == 0)
+        {
+            // If the target host is reachable and no connection is required then
+            // we'll assume (for now) that you're on Wi-Fi...
+            ret = ReachabilityInterface::ReachableViaWiFi;
+        }
 
 #if 0 // don't contaminate result by considering on-demand viability
       if ((((flags & kSCNetworkReachabilityFlagsConnectionOnDemand ) != 0) ||
@@ -262,207 +277,231 @@ namespace openvpn {
 #endif
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR // Mac OS X doesn't define WWAN flags
-      if ((flags & kSCNetworkReachabilityFlagsIsWWAN) == kSCNetworkReachabilityFlagsIsWWAN)
-	{
-	  // ... but WWAN connections are OK if the calling application
-	  // is using the CFNetwork APIs.
-	  ret = ReachabilityInterface::ReachableViaWWAN;
-	}
+        if ((flags & kSCNetworkReachabilityFlagsIsWWAN) == kSCNetworkReachabilityFlagsIsWWAN)
+        {
+            // ... but WWAN connections are OK if the calling application
+            // is using the CFNetwork APIs.
+            ret = ReachabilityInterface::ReachableViaWWAN;
+        }
 #endif
 
-      return ret;
+        return ret;
     }
-  };
+};
 
-  class ReachabilityViaWiFi : public ReachabilityBase
-  {
+class ReachabilityViaWiFi : public ReachabilityBase
+{
   public:
     ReachabilityViaWiFi()
     {
-      struct sockaddr_in addr;
-      bzero(&addr, sizeof(addr));
-      addr.sin_len = sizeof(addr);
-      addr.sin_family = AF_INET;
-      addr.sin_addr.s_addr = htonl(IN_LINKLOCALNETNUM); // 169.254.0.0.
-      reach.reset(SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (struct sockaddr*)&addr));
+        struct sockaddr_in addr;
+        bzero(&addr, sizeof(addr));
+        addr.sin_len = sizeof(addr);
+        addr.sin_family = AF_INET;
+        addr.sin_addr.s_addr = htonl(IN_LINKLOCALNETNUM); // 169.254.0.0.
+#if defined(__APPLE__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+        reach.reset(SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (struct sockaddr *)&addr));
+#if defined(__APPLE__)
+#pragma clang diagnostic pop
+#endif
     }
 
-    virtual Type vtype() const
+    Type vtype() const override
     {
-      return WiFi;
+        return WiFi;
     }
 
-    virtual Status vstatus(const SCNetworkReachabilityFlags flags) const
+    Status vstatus(const SCNetworkReachabilityFlags flags) const override
     {
-      return status_from_flags(flags);
+        return status_from_flags(flags);
     }
 
     static Status status_from_flags(const SCNetworkReachabilityFlags flags)
     {
-      Status ret = ReachabilityInterface::NotReachable;
-      if ((flags & kSCNetworkReachabilityFlagsReachable) && (flags & kSCNetworkReachabilityFlagsIsDirect))
-	ret = ReachabilityInterface::ReachableViaWiFi;
-      return ret;
+        Status ret = ReachabilityInterface::NotReachable;
+        if ((flags & kSCNetworkReachabilityFlagsReachable) && (flags & kSCNetworkReachabilityFlagsIsDirect))
+            ret = ReachabilityInterface::ReachableViaWiFi;
+        return ret;
     }
-  };
+};
 
-  class Reachability : public ReachabilityInterface
-  {
+class Reachability : public ReachabilityInterface
+{
   public:
     Reachability(const bool enable_internet, const bool enable_wifi)
     {
-      if (enable_internet)
-	internet.reset(new ReachabilityViaInternet);
-      if (enable_wifi)
-	wifi.reset(new ReachabilityViaWiFi);
+        if (enable_internet)
+            internet.reset(new ReachabilityViaInternet);
+        if (enable_wifi)
+            wifi.reset(new ReachabilityViaWiFi);
     }
 
-    bool reachableViaWiFi() const {
-      if (internet)
-	{
-	  if (wifi)
-	    return internet->status() == ReachableViaWiFi && wifi->status() == ReachableViaWiFi;
-	  else
-	    return internet->status() == ReachableViaWiFi;
-	}
-      else
-	{
-	  if (wifi)
-	    return wifi->status() == ReachableViaWiFi;
-	  else
-	    return false;
-	}
+    bool reachableViaWiFi() const
+    {
+        if (internet)
+        {
+            if (wifi)
+                return internet->status() == ReachableViaWiFi && wifi->status() == ReachableViaWiFi;
+            else
+                return internet->status() == ReachableViaWiFi;
+        }
+        else
+        {
+            if (wifi)
+                return wifi->status() == ReachableViaWiFi;
+            else
+                return false;
+        }
     }
 
     bool reachableViaCellular() const
     {
-      if (internet)
-	return internet->status() == ReachableViaWWAN;
-      else
-	return false;
+        if (internet)
+            return internet->status() == ReachableViaWWAN;
+        else
+            return false;
     }
 
-    virtual Status reachable() const
+    Status reachable() const override
     {
-      if (reachableViaWiFi())
-	return ReachableViaWiFi;
-      else if (reachableViaCellular())
-	return ReachableViaWWAN;
-      else
-	return NotReachable;
+        if (reachableViaWiFi())
+            return ReachableViaWiFi;
+        else if (reachableViaCellular())
+            return ReachableViaWWAN;
+        else
+            return NotReachable;
     }
 
-    virtual bool reachableVia(const std::string& net_type) const
+    bool reachableVia(const std::string &net_type) const override
     {
-      if (net_type == "cellular")
-	return reachableViaCellular();
-      else if (net_type == "wifi")
-	return reachableViaWiFi();
-      else
-	return reachableViaWiFi() || reachableViaCellular();
+        if (net_type == "cellular")
+            return reachableViaCellular();
+        else if (net_type == "wifi")
+            return reachableViaWiFi();
+        else
+            return reachableViaWiFi() || reachableViaCellular();
     }
 
-    virtual std::string to_string() const
+    std::string to_string() const override
     {
-      std::string ret;
-      if (internet)
-	ret += internet->to_string();
-      if (internet && wifi)
-	ret += ' ';
-      if (wifi)
-	ret += wifi->to_string();
-      return ret;
+        std::string ret;
+        if (internet)
+            ret += internet->to_string();
+        if (internet && wifi)
+            ret += ' ';
+        if (wifi)
+            ret += wifi->to_string();
+        return ret;
     }
 
     std::unique_ptr<ReachabilityViaInternet> internet;
     std::unique_ptr<ReachabilityViaWiFi> wifi;
-  };
+};
 
-  class ReachabilityTracker
-  {
+class ReachabilityTracker
+{
   public:
     ReachabilityTracker(const bool enable_internet, const bool enable_wifi)
-      : reachability(enable_internet, enable_wifi),
-	scheduled(false)
+        : reachability(enable_internet, enable_wifi),
+          scheduled(false)
     {
     }
 
     void reachability_tracker_schedule()
     {
-      if (!scheduled)
-	{
-	  if (reachability.internet)
-	    schedule(*reachability.internet, internet_callback_static);
-	  if (reachability.wifi)
-	    schedule(*reachability.wifi, wifi_callback_static);
-	  scheduled = true;
-	}
+        if (!scheduled)
+        {
+            if (reachability.internet)
+                schedule(*reachability.internet, internet_callback_static);
+            if (reachability.wifi)
+                schedule(*reachability.wifi, wifi_callback_static);
+            scheduled = true;
+        }
     }
 
     void reachability_tracker_cancel()
     {
-      if (scheduled)
-	{
-	  if (reachability.internet)
-	    cancel(*reachability.internet);
-	  if (reachability.wifi)
-	    cancel(*reachability.wifi);
-	  scheduled = false;
-	}
+        if (scheduled)
+        {
+            if (reachability.internet)
+                cancel(*reachability.internet);
+            if (reachability.wifi)
+                cancel(*reachability.wifi);
+            scheduled = false;
+        }
     }
 
-    virtual void reachability_tracker_event(const ReachabilityBase& rb, SCNetworkReachabilityFlags flags) = 0;
+    virtual void reachability_tracker_event(const ReachabilityBase &rb, SCNetworkReachabilityFlags flags) = 0;
 
     virtual ~ReachabilityTracker()
     {
-      reachability_tracker_cancel();
+        reachability_tracker_cancel();
     }
 
   private:
-    bool schedule(ReachabilityBase& rb, SCNetworkReachabilityCallBack cb)
+    bool schedule(ReachabilityBase &rb, SCNetworkReachabilityCallBack cb)
     {
-      SCNetworkReachabilityContext context = { 0, this, nullptr, nullptr, nullptr };
-      if (rb.reach.defined())
-	{
-	  if (SCNetworkReachabilitySetCallback(rb.reach(),
-					       cb,
-					       &context) == FALSE)
-	    return false;
-	  if (SCNetworkReachabilityScheduleWithRunLoop(rb.reach(),
-						       CFRunLoopGetCurrent(),
-						       kCFRunLoopCommonModes) == FALSE)
-	    return false;
-	  return true;
-	}
-      else
-	return false;
+        SCNetworkReachabilityContext context = {0, this, nullptr, nullptr, nullptr};
+        if (rb.reach.defined())
+        {
+#if defined(__APPLE__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+            if (SCNetworkReachabilitySetCallback(rb.reach(),
+                                                 cb,
+                                                 &context)
+                == FALSE)
+                return false;
+            if (SCNetworkReachabilityScheduleWithRunLoop(rb.reach(),
+                                                         CFRunLoopGetCurrent(),
+                                                         kCFRunLoopCommonModes)
+                == FALSE)
+                return false;
+            return true;
+#if defined(__APPLE__)
+#pragma clang diagnostic pop
+#endif
+        }
+        else
+            return false;
     }
 
-    void cancel(ReachabilityBase& rb)
+#if defined(__APPLE__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    void cancel(ReachabilityBase &rb)
     {
-      if (rb.reach.defined())
-	SCNetworkReachabilityUnscheduleFromRunLoop(rb.reach(), CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
+        if (rb.reach.defined())
+            SCNetworkReachabilityUnscheduleFromRunLoop(rb.reach(), CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
     }
+#if defined(__APPLE__)
+#pragma clang diagnostic pop
+#endif
 
     static void internet_callback_static(SCNetworkReachabilityRef target,
-					 SCNetworkReachabilityFlags flags,
-					 void *info)
+                                         SCNetworkReachabilityFlags flags,
+                                         void *info)
     {
-      ReachabilityTracker* self = (ReachabilityTracker*)info;
-      self->reachability_tracker_event(*self->reachability.internet, flags);
+        ReachabilityTracker *self = (ReachabilityTracker *)info;
+        self->reachability_tracker_event(*self->reachability.internet, flags);
     }
 
     static void wifi_callback_static(SCNetworkReachabilityRef target,
-				     SCNetworkReachabilityFlags flags,
-				     void *info)
+                                     SCNetworkReachabilityFlags flags,
+                                     void *info)
     {
-      ReachabilityTracker* self = (ReachabilityTracker*)info;
-      self->reachability_tracker_event(*self->reachability.wifi, flags);
+        ReachabilityTracker *self = (ReachabilityTracker *)info;
+        self->reachability_tracker_event(*self->reachability.wifi, flags);
     }
 
     Reachability reachability;
     bool scheduled;
-  };
-}
+};
+} // namespace openvpn
 
 #endif

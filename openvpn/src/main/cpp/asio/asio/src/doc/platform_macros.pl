@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# Copyright (c) 2003-2021 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+# Copyright (c) 2003-2024 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -22,7 +22,10 @@ while (my $line = <$fh>)
   }
   elsif ($line =~ /^\/\/ (.*)$/)
   {
-    $current_comment = $current_comment . $1 . "\n";
+    if (!($line =~ /boostify/))
+    {
+      $current_comment = $current_comment . $1 . "\n";
+    }
   }
   elsif ($line =~ /^# *define *ASIO_HAS_([A-Z-0-9_]*) 1/)
   {
@@ -39,7 +42,7 @@ while (my $line = <$fh>)
 
 my $intro = <<EOF;
 [/
- / Copyright (c) 2003-2021 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+ / Copyright (c) 2003-2024 Christopher M. Kohlhoff (chris at kohlhoff dot com)
  /
  / Distributed under the Boost Software License, Version 1.0. (See accompanying
  / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)

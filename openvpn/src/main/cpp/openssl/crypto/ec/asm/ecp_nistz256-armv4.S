@@ -2388,7 +2388,7 @@ ecp_nistz256_precomputed:
 .long	0xfffffffe, 0xffffffff, 0xfffffffd, 0x00000004
 .Lone:
 .long	1,0,0,0,0,0,0,0
-.asciz	"ECP_NISTZ256 for ARMv4, CRYPTOGAMS by <appro@openssl.org>"
+.asciz	"ECP_NISTZ256 for ARMv4, CRYPTOGAMS by <https://github.com/dot-asm>"
 .align	6
 @ void	ecp_nistz256_to_mont(BN_ULONG r0[8],const BN_ULONG r1[8]);
 .globl	ecp_nistz256_to_mont

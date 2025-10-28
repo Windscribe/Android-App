@@ -2,7 +2,7 @@ LIBS=../../libcrypto
 
 $SHA1ASM=
 IF[{- !$disabled{asm} -}]
-  $SHA1ASM_x86=sha1-586.s sha256-586.s sha512-586.s
+  $SHA1ASM_x86=sha1-586.S sha256-586.S sha512-586.S
   $SHA1DEF_x86=SHA1_ASM SHA256_ASM SHA512_ASM
   $SHA1ASM_x86_64=\
         sha1-x86_64.s sha256-x86_64.s sha512-x86_64.s sha1-mb-x86_64.s \
@@ -17,6 +17,9 @@ IF[{- !$disabled{asm} -}]
 
   $SHA1ASM_alpha=sha1-alpha.S
   $SHA1DEF_alpha=SHA1_ASM
+
+  $SHA1ASM_loongarch64=sha256-loongarch64.S sha512-loongarch64.S
+  $SHA1DEF_loongarch64=SHA256_ASM SHA512_ASM
 
   $SHA1ASM_mips32=sha1-mips.S sha256-mips.S
   $SHA1DEF_mips32=SHA1_ASM SHA256_ASM
@@ -45,6 +48,9 @@ IF[{- !$disabled{asm} -}]
 
   $SHA1ASM_c64xplus=sha1-c64xplus.s sha256-c64xplus.s sha512-c64xplus.s
   $SHA1DEF_c64xplus=SHA1_ASM SHA256_ASM SHA512_ASM
+
+  $SHA1ASM_riscv64=sha_riscv.c sha256-riscv64.S sha256-riscv64-zbb.S sha256-riscv64-zvkb-zvknha_or_zvknhb.S sha512-riscv64-zbb.S sha512-riscv64-zvkb-zvknhb.S
+  $SHA1DEF_riscv64=SHA256_ASM INCLUDE_C_SHA256 SHA512_ASM INCLUDE_C_SHA512
 
   # Now that we have defined all the arch specific variables, use the
   # appropriate one, and define the appropriate macros
@@ -82,13 +88,21 @@ SOURCE[../../providers/libfips.a]= $COMMON
 # need to be applied to all affected libraries and modules.
 DEFINE[../../libcrypto]=$SHA1DEF $KECCAK1600DEF
 DEFINE[../../providers/libfips.a]=$SHA1DEF $KECCAK1600DEF
+DEFINE[../../providers/libdefault.a]=$SHA1DEF $KECCAK1600DEF
+# We only need to include the SHA1DEF and KECCAK1600DEF stuff in the
+# legacy provider when it's a separate module and it's dynamically
+# linked with libcrypto.  Otherwise, it already gets everything that
+# the static libcrypto.a has, and doesn't need it added again.
+IF[{- !$disabled{module} && !$disabled{shared} -}]
+  DEFINE[../../providers/liblegacy.a]=$SHA1DEF $KECCAK1600DEF
+ENDIF
 
-GENERATE[sha1-586.s]=asm/sha1-586.pl
-DEPEND[sha1-586.s]=../perlasm/x86asm.pl
-GENERATE[sha256-586.s]=asm/sha256-586.pl
-DEPEND[sha256-586.s]=../perlasm/x86asm.pl
-GENERATE[sha512-586.s]=asm/sha512-586.pl
-DEPEND[sha512-586.s]=../perlasm/x86asm.pl
+GENERATE[sha1-586.S]=asm/sha1-586.pl
+DEPEND[sha1-586.S]=../perlasm/x86asm.pl
+GENERATE[sha256-586.S]=asm/sha256-586.pl
+DEPEND[sha256-586.S]=../perlasm/x86asm.pl
+GENERATE[sha512-586.S]=asm/sha512-586.pl
+DEPEND[sha512-586.S]=../perlasm/x86asm.pl
 
 GENERATE[sha1-ia64.s]=asm/sha1-ia64.pl
 GENERATE[sha256-ia64.s]=asm/sha512-ia64.pl
@@ -122,6 +136,11 @@ GENERATE[sha1-parisc.s]=asm/sha1-parisc.pl
 GENERATE[sha256-parisc.s]=asm/sha512-parisc.pl
 GENERATE[sha512-parisc.s]=asm/sha512-parisc.pl
 
+GENERATE[sha256-loongarch64.S]=asm/sha256-loongarch64.pl
+INCLUDE[sha256-loongarch64.o]=..
+GENERATE[sha512-loongarch64.S]=asm/sha512-loongarch64.pl
+INCLUDE[sha512-loongarch64.o]=..
+
 GENERATE[sha1-mips.S]=asm/sha1-mips.pl
 INCLUDE[sha1-mips.o]=..
 GENERATE[sha256-mips.S]=asm/sha512-mips.pl
@@ -145,6 +164,7 @@ INCLUDE[sha256-armv8.o]=..
 GENERATE[sha512-armv8.S]=asm/sha512-armv8.pl
 INCLUDE[sha512-armv8.o]=..
 GENERATE[keccak1600-armv8.S]=asm/keccak1600-armv8.pl
+INCLUDE[keccak1600-armv8.o]=..
 
 GENERATE[sha1-s390x.S]=asm/sha1-s390x.pl
 INCLUDE[sha1-s390x.o]=..
@@ -157,12 +177,19 @@ GENERATE[keccak1600-s390x.S]=asm/keccak1600-s390x.pl
 GENERATE[sha1-c64xplus.S]=asm/sha1-c64xplus.pl
 GENERATE[sha256-c64xplus.S]=asm/sha256-c64xplus.pl
 GENERATE[sha512-c64xplus.S]=asm/sha512-c64xplus.pl
-GENERATE[keccak1600-c64x.S]=asm/keccak1600-c64x.pl
 
-# These are not yet used
+GENERATE[sha256-riscv64.S]=asm/sha256-riscv64-zbb.pl
+GENERATE[sha256-riscv64-zbb.S]=asm/sha256-riscv64-zbb.pl zbb
+GENERATE[sha256-riscv64-zvkb-zvknha_or_zvknhb.S]=asm/sha256-riscv64-zvkb-zvknha_or_zvknhb.pl
+GENERATE[sha512-riscv64-zbb.S]=asm/sha512-riscv64-zbb.pl
+GENERATE[sha512-riscv64-zvkb-zvknhb.S]=asm/sha512-riscv64-zvkb-zvknhb.pl
+
+# These are not yet used and do not support multi-squeeze
+GENERATE[keccak1600-c64x.S]=asm/keccak1600-c64x.pl
 GENERATE[keccak1600-avx2.S]=asm/keccak1600-avx2.pl
 GENERATE[keccak1600-avx512.S]=asm/keccak1600-avx512.pl
 GENERATE[keccak1600-avx512vl.S]=asm/keccak1600-avx512vl.pl
 GENERATE[keccak1600-mmx.S]=asm/keccak1600-mmx.pl
 GENERATE[keccak1600p8-ppc.S]=asm/keccak1600p8-ppc.pl
+
 GENERATE[sha1-thumb.S]=asm/sha1-thumb.pl

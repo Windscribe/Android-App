@@ -2,6 +2,7 @@
 #include "syshead.h"
 #include "networking.h"
 
+#include <assert.h>
 
 static char *iface = "ovpn-dummy0";
 
@@ -11,6 +12,31 @@ net__iface_up(bool up)
     printf("CMD: ip link set %s %s\n", iface, up ? "up" : "down");
 
     return net_iface_up(NULL, iface, up);
+}
+
+static int
+net__iface_new(const char *name, const char *type)
+{
+    return net_iface_new(NULL, name, type, NULL);
+}
+
+static int
+net__iface_type(const char *name, const char *type)
+{
+    char ret_type[IFACE_TYPE_LEN_MAX];
+    int ret = net_iface_type(NULL, name, ret_type);
+    if (ret == 0)
+    {
+        assert(strcmp(type, ret_type) == 0);
+    }
+
+    return ret;
+}
+
+static int
+net__iface_del(const char *name)
+{
+    return net_iface_del(NULL, name);
 }
 
 static int
@@ -35,7 +61,7 @@ net__addr_v4_add(const char *addr_str, int prefixlen)
 
     addr = ntohl(addr);
 
-    printf("CMD: ip addr add %s/%d dev %s\n", addr_str, prefixlen, iface);
+    printf("CMD: ip addr add %s/%d dev %s broadcast +\n", addr_str, prefixlen, iface);
 
     return net_addr_v4_add(NULL, iface, &addr, prefixlen);
 }
@@ -84,12 +110,10 @@ net__route_v4_add(const char *dst_str, int prefixlen, int metric)
     printf("\n");
 
     return net_route_v4_add(NULL, &dst, prefixlen, NULL, iface, 0, metric);
-
 }
 
 static int
-net__route_v4_add_gw(const char *dst_str, int prefixlen, const char *gw_str,
-                     int metric)
+net__route_v4_add_gw(const char *dst_str, int prefixlen, const char *gw_str, int metric)
 {
     in_addr_t dst, gw;
     int ret;
@@ -114,8 +138,7 @@ net__route_v4_add_gw(const char *dst_str, int prefixlen, const char *gw_str,
     dst = ntohl(dst);
     gw = ntohl(gw);
 
-    printf("CMD: ip route add %s/%d dev %s via %s", dst_str, prefixlen, iface,
-           gw_str);
+    printf("CMD: ip route add %s/%d dev %s via %s", dst_str, prefixlen, iface, gw_str);
     if (metric > 0)
     {
         printf(" metric %d", metric);
@@ -150,12 +173,10 @@ net__route_v6_add(const char *dst_str, int prefixlen, int metric)
     printf("\n");
 
     return net_route_v6_add(NULL, &dst, prefixlen, NULL, iface, 0, metric);
-
 }
 
 static int
-net__route_v6_add_gw(const char *dst_str, int prefixlen, const char *gw_str,
-                     int metric)
+net__route_v6_add_gw(const char *dst_str, int prefixlen, const char *gw_str, int metric)
 {
     struct in6_addr dst, gw;
     int ret;
@@ -177,8 +198,7 @@ net__route_v6_add_gw(const char *dst_str, int prefixlen, const char *gw_str,
         return -1;
     }
 
-    printf("CMD: ip -6 route add %s/%d dev %s via %s", dst_str, prefixlen,
-           iface, gw_str);
+    printf("CMD: ip -6 route add %s/%d dev %s via %s", dst_str, prefixlen, iface, gw_str);
     if (metric > 0)
     {
         printf(" metric %d", metric);
@@ -191,7 +211,7 @@ net__route_v6_add_gw(const char *dst_str, int prefixlen, const char *gw_str,
 static void
 usage(char *name)
 {
-    printf("Usage: %s <0-7>\n", name);
+    printf("Usage: %s <0-8>\n", name);
 }
 
 int
@@ -242,6 +262,14 @@ main(int argc, char *argv[])
 
         case 7:
             return net__route_v6_add_gw("2001:cafe:babe::", 48, "2001::2", 600);
+
+        /* following tests are standalone and do not print any CMD= */
+        case 8:
+            assert(net__iface_new("dummy0815", "dummy") == 0);
+            assert(net__iface_type("dummy0815", "dummy") == 0);
+            assert(net__iface_del("dummy0815") == 0);
+            assert(net__iface_type("dummy0815", NULL) == -ENODEV);
+            return 0;
 
         default:
             printf("invalid test: %d\n", test);

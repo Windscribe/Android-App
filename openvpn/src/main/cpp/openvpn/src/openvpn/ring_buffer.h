@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
  *                2019 Lev Stipakov <lev@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -36,12 +36,13 @@
  * Values below are taken from Wireguard Windows client
  * https://github.com/WireGuard/wireguard-go/blob/master/tun/wintun/ring_windows.go#L14
  */
-#define WINTUN_RING_CAPACITY        0x800000
-#define WINTUN_RING_TRAILING_BYTES  0x10000
-#define WINTUN_MAX_PACKET_SIZE      0xffff
-#define WINTUN_PACKET_ALIGN         4
+#define WINTUN_RING_CAPACITY       0x800000
+#define WINTUN_RING_TRAILING_BYTES 0x10000
+#define WINTUN_MAX_PACKET_SIZE     0xffff
+#define WINTUN_PACKET_ALIGN        4
 
-#define TUN_IOCTL_REGISTER_RINGS CTL_CODE(51820U, 0x970U, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)
+#define TUN_IOCTL_REGISTER_RINGS \
+    CTL_CODE(51820U, 0x970U, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)
 
 /**
  * Wintun ring buffer
@@ -92,14 +93,12 @@ struct TUN_PACKET
  *                            that data is available for reading in send ring
  * @param receive_tail_moved  event set by openvpn to signal wintun
  *                            that data has been written to receive ring
- * @return                    true if registration is successful, false otherwise - use GetLastError()
+ * @return                    true if registration is successful, false otherwise - use
+ * GetLastError()
  */
-static bool
-register_ring_buffers(HANDLE device,
-                      struct tun_ring *send_ring,
-                      struct tun_ring *receive_ring,
-                      HANDLE send_tail_moved,
-                      HANDLE receive_tail_moved)
+static inline bool
+register_ring_buffers(HANDLE device, struct tun_ring *send_ring, struct tun_ring *receive_ring,
+                      HANDLE send_tail_moved, HANDLE receive_tail_moved)
 {
     struct tun_register_rings rr;
     BOOL res;
@@ -115,8 +114,8 @@ register_ring_buffers(HANDLE device,
     rr.receive.ring_size = sizeof(struct tun_ring);
     rr.receive.tail_moved = receive_tail_moved;
 
-    res = DeviceIoControl(device, TUN_IOCTL_REGISTER_RINGS, &rr, sizeof(rr),
-      NULL, 0, &bytes_returned, NULL);
+    res = DeviceIoControl(device, TUN_IOCTL_REGISTER_RINGS, &rr, sizeof(rr), NULL, 0,
+                          &bytes_returned, NULL);
 
     return res != FALSE;
 }

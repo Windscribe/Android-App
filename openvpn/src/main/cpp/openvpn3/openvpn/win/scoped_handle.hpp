@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 // scoped HANDLE for windows
 
@@ -29,97 +19,100 @@
 #include <openvpn/common/size.hpp>
 #include <openvpn/win/handle.hpp>
 
-namespace openvpn {
-  namespace Win {
-    class ScopedHANDLE
+namespace openvpn::Win {
+class ScopedHANDLE
+{
+    ScopedHANDLE(const ScopedHANDLE &) = delete;
+    ScopedHANDLE &operator=(const ScopedHANDLE &) = delete;
+
+  public:
+    typedef HANDLE base_type;
+
+    ScopedHANDLE()
+        : handle(Handle::undefined())
     {
-      ScopedHANDLE(const ScopedHANDLE&) = delete;
-      ScopedHANDLE& operator=(const ScopedHANDLE&) = delete;
+    }
 
-    public:
-      typedef HANDLE base_type;
+    explicit ScopedHANDLE(HANDLE h)
+        : handle(h)
+    {
+    }
 
-      ScopedHANDLE() : handle(Handle::undefined()) {}
+    HANDLE release()
+    {
+        const HANDLE ret = handle;
+        handle = nullptr;
+        return ret;
+    }
 
-      explicit ScopedHANDLE(HANDLE h)
-	: handle(h) {}
+    bool defined() const
+    {
+        return Handle::defined(handle);
+    }
 
-      HANDLE release()
-      {
-	const HANDLE ret = handle;
-	handle = nullptr;
-	return ret;
-      }
+    HANDLE operator()() const
+    {
+        return handle;
+    }
 
-      bool defined() const
-      {
-	return Handle::defined(handle);
-      }
+    HANDLE *ref()
+    {
+        return &handle;
+    }
 
-      HANDLE operator()() const
-      {
-	return handle;
-      }
+    void reset(HANDLE h)
+    {
+        close();
+        handle = h;
+    }
 
-      HANDLE* ref()
-      {
-	return &handle;
-      }
+    void reset()
+    {
+        close();
+    }
 
-      void reset(HANDLE h)
-      {
-	close();
-	handle = h;
-      }
+    // unusual semantics: replace handle without closing it first
+    void replace(HANDLE h)
+    {
+        handle = h;
+    }
 
-      void reset()
-      {
-	close();
-      }
+    bool close()
+    {
+        if (defined())
+        {
+            const BOOL ret = ::CloseHandle(handle);
+            // OPENVPN_LOG("**** SH CLOSE hand=" << handle << " ret=" << ret);
+            handle = nullptr;
+            return ret != 0;
+        }
+        else
+            return true;
+    }
 
-      // unusual semantics: replace handle without closing it first
-      void replace(HANDLE h)
-      {
-	handle = h;
-      }
+    ~ScopedHANDLE()
+    {
+        close();
+    }
 
-      bool close()
-      {
-	if (defined())
-	  {
-	    const BOOL ret = ::CloseHandle(handle);
-	    //OPENVPN_LOG("**** SH CLOSE hand=" << handle << " ret=" << ret);
-	    handle = nullptr;
-	    return ret != 0;
-	  }
-	else
-	  return true;
-      }
+    ScopedHANDLE(ScopedHANDLE &&other) noexcept
+    {
+        handle = other.handle;
+        other.handle = nullptr;
+    }
 
-      ~ScopedHANDLE()
-      {
-	close();
-      }
+    ScopedHANDLE &operator=(ScopedHANDLE &&other) noexcept
+    {
+        close();
+        handle = other.handle;
+        other.handle = nullptr;
+        return *this;
+    }
 
-      ScopedHANDLE(ScopedHANDLE&& other) noexcept
-      {
-	handle = other.handle;
-	other.handle = nullptr;
-      }
+  private:
+    HANDLE handle;
+};
 
-      ScopedHANDLE& operator=(ScopedHANDLE&& other) noexcept
-      {
-	close();
-	handle = other.handle;
-	other.handle = nullptr;
-	return *this;
-      }
-
-    private:
-      HANDLE handle;
-    };
-
-  }
-}
+} // namespace openvpn::Win
 
 #endif

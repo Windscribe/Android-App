@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef MBUF_H
@@ -36,14 +35,14 @@
 
 struct multi_instance;
 
-#define MBUF_INDEX(head, offset, size) (((head) + (offset)) & ((size)-1))
+#define MBUF_INDEX(head, offset, size) (((head) + (offset)) & ((size) - 1))
 
 struct mbuf_buffer
 {
     struct buffer buf;
     int refcount;
 
-#define MF_UNICAST (1<<0)
+#define MF_UNICAST (1 << 0)
     unsigned int flags;
 };
 
@@ -91,7 +90,7 @@ mbuf_len(const struct mbuf_set *ms)
 static inline int
 mbuf_maximum_queued(const struct mbuf_set *ms)
 {
-    return (int) ms->max_queued;
+    return (int)ms->max_queued;
 }
 
 struct multi_instance *mbuf_peek_dowork(struct mbuf_set *ms);

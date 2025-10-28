@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -16,7 +16,7 @@
 # include <sys/stat.h>
 #endif
 
-#include "e_os.h"
+#include "internal/e_os.h"
 #include "internal/cryptlib.h"
 #include <stdio.h>
 #include <time.h>
@@ -109,20 +109,18 @@ static int new_dir(X509_LOOKUP *lu)
 {
     BY_DIR *a = OPENSSL_malloc(sizeof(*a));
 
-    if (a == NULL) {
-        ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
+    if (a == NULL)
         return 0;
-    }
 
     if ((a->buffer = BUF_MEM_new()) == NULL) {
-        ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_X509, ERR_R_BN_LIB);
         goto err;
     }
     a->dirs = NULL;
     a->lock = CRYPTO_THREAD_lock_new();
     if (a->lock == NULL) {
         BUF_MEM_free(a->buffer);
-        ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_X509, ERR_R_CRYPTO_LIB);
         goto err;
     }
     lu->method_data = a;
@@ -197,15 +195,13 @@ static int add_cert_dir(BY_DIR *ctx, const char *dir, int type)
             if (ctx->dirs == NULL) {
                 ctx->dirs = sk_BY_DIR_ENTRY_new_null();
                 if (!ctx->dirs) {
-                    ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
+                    ERR_raise(ERR_LIB_X509, ERR_R_CRYPTO_LIB);
                     return 0;
                 }
             }
             ent = OPENSSL_malloc(sizeof(*ent));
-            if (ent == NULL) {
-                ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
+            if (ent == NULL)
                 return 0;
-            }
             ent->dir_type = type;
             ent->hashes = sk_BY_DIR_HASH_new(by_dir_hash_cmp);
             ent->dir = OPENSSL_strndup(ss, len);
@@ -215,7 +211,7 @@ static int add_cert_dir(BY_DIR *ctx, const char *dir, int type)
             }
             if (!sk_BY_DIR_ENTRY_push(ctx->dirs, ent)) {
                 by_dir_entry_free(ent);
-                ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
+                ERR_raise(ERR_LIB_X509, ERR_R_CRYPTO_LIB);
                 return 0;
             }
         }
@@ -270,9 +266,9 @@ static int get_cert_by_subject_ex(X509_LOOKUP *xl, X509_LOOKUP_TYPE type,
         BY_DIR_HASH htmp, *hent;
 
         ent = sk_BY_DIR_ENTRY_value(ctx->dirs, i);
-        j = strlen(ent->dir) + 1 + 8 + 6 + 1 + 1;
+        j = (int)strlen(ent->dir) + 1 + 8 + 6 + 1 + 1;
         if (!BUF_MEM_grow(b, j)) {
-            ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
+            ERR_raise(ERR_LIB_X509, ERR_R_BUF_LIB);
             goto finish;
         }
         if (type == X509_LU_CRL && ent->hashes) {
@@ -347,15 +343,26 @@ static int get_cert_by_subject_ex(X509_LOOKUP *xl, X509_LOOKUP_TYPE type,
 
         /*
          * we have added it to the cache so now pull it out again
+         *
+         * Note: quadratic time find here since the objects won't generally be
+         *       sorted and sorting the would result in O(n^2 log n) complexity.
          */
-        X509_STORE_lock(xl->store_ctx);
-        j = sk_X509_OBJECT_find(xl->store_ctx->objs, &stmp);
-        tmp = sk_X509_OBJECT_value(xl->store_ctx->objs, j);
-        X509_STORE_unlock(xl->store_ctx);
-
-        /* If a CRL, update the last file suffix added for this */
-
-        if (type == X509_LU_CRL) {
+        if (k > 0) {
+            if (!X509_STORE_lock(xl->store_ctx))
+                goto finish;
+            j = sk_X509_OBJECT_find(xl->store_ctx->objs, &stmp);
+            tmp = sk_X509_OBJECT_value(xl->store_ctx->objs, j);
+            X509_STORE_unlock(xl->store_ctx);
+        } else {
+            tmp = NULL;
+        }
+        /*
+         * If a CRL, update the last file suffix added for this.
+         * We don't need to add an entry if k is 0 as this is the initial value.
+         * This avoids the need for a write lock and sort operation in the
+         * simple case where no CRL is present for a hash.
+         */
+        if (type == X509_LU_CRL && k > 0) {
             if (!CRYPTO_THREAD_write_lock(ctx->lock))
                 goto finish;
             /*
@@ -371,7 +378,6 @@ static int get_cert_by_subject_ex(X509_LOOKUP *xl, X509_LOOKUP_TYPE type,
                 hent = OPENSSL_malloc(sizeof(*hent));
                 if (hent == NULL) {
                     CRYPTO_THREAD_unlock(ctx->lock);
-                    ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
                     ok = 0;
                     goto finish;
                 }
@@ -380,10 +386,16 @@ static int get_cert_by_subject_ex(X509_LOOKUP *xl, X509_LOOKUP_TYPE type,
                 if (!sk_BY_DIR_HASH_push(ent->hashes, hent)) {
                     CRYPTO_THREAD_unlock(ctx->lock);
                     OPENSSL_free(hent);
-                    ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
+                    ERR_raise(ERR_LIB_X509, ERR_R_CRYPTO_LIB);
                     ok = 0;
                     goto finish;
                 }
+
+                /*
+                 * Ensure stack is sorted so that subsequent sk_BY_DIR_HASH_find
+                 * will not mutate the stack and therefore require a write lock.
+                 */
+                sk_BY_DIR_HASH_sort(ent->hashes);
             } else if (hent->suffix < k) {
                 hent->suffix = k;
             }
@@ -407,6 +419,14 @@ static int get_cert_by_subject_ex(X509_LOOKUP *xl, X509_LOOKUP_TYPE type,
         }
     }
  finish:
+    /* If we changed anything, resort the objects for faster lookup */
+    if (X509_STORE_lock(xl->store_ctx)) {
+        if (!sk_X509_OBJECT_is_sorted(xl->store_ctx->objs)) {
+            sk_X509_OBJECT_sort(xl->store_ctx->objs);
+        }
+        X509_STORE_unlock(xl->store_ctx);
+    }
+
     BUF_MEM_free(b);
     return ok;
 }

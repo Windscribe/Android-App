@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2019-2025 The OpenSSL Project Authors. All Rights Reserved.
  * Copyright 2019 Red Hat, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
@@ -7,6 +7,7 @@
  * in the file LICENSE in the source distribution or at
  * https://www.openssl.org/source/license.html
  */
+
 
 /*
  * This implements https://csrc.nist.gov/publications/detail/sp/800-108/final
@@ -43,10 +44,13 @@
 #include "prov/provider_ctx.h"
 #include "prov/provider_util.h"
 #include "prov/providercommon.h"
+#include "prov/securitycheck.h"
+#include "internal/e_os.h"
+#include "internal/params.h"
 
-#include "e_os.h"
+#define ossl_min(a, b) ((a) < (b)) ? (a) : (b)
 
-#define MIN(a, b) ((a) < (b)) ? (a) : (b)
+#define KBKDF_MAX_INFOS 5
 
 typedef enum {
     COUNTER = 0,
@@ -60,6 +64,7 @@ typedef struct {
     EVP_MAC_CTX *ctx_init;
 
     /* Names are lowercased versions of those found in SP800-108. */
+    int r;
     unsigned char *ki;
     size_t ki_len;
     unsigned char *label;
@@ -69,11 +74,14 @@ typedef struct {
     unsigned char *iv;
     size_t iv_len;
     int use_l;
+    int is_kmac;
     int use_separator;
+    OSSL_FIPS_IND_DECLARE
 } KBKDF;
 
 /* Definitions needed for typechecking. */
 static OSSL_FUNC_kdf_newctx_fn kbkdf_new;
+static OSSL_FUNC_kdf_dupctx_fn kbkdf_dup;
 static OSSL_FUNC_kdf_freectx_fn kbkdf_free;
 static OSSL_FUNC_kdf_reset_fn kbkdf_reset;
 static OSSL_FUNC_kdf_derive_fn kbkdf_derive;
@@ -100,8 +108,10 @@ static uint32_t be32(uint32_t host)
 
 static void init(KBKDF *ctx)
 {
+    ctx->r = 32;
     ctx->use_l = 1;
     ctx->use_separator = 1;
+    ctx->is_kmac = 0;
 }
 
 static void *kbkdf_new(void *provctx)
@@ -112,12 +122,11 @@ static void *kbkdf_new(void *provctx)
         return NULL;
 
     ctx = OPENSSL_zalloc(sizeof(*ctx));
-    if (ctx == NULL) {
-        ERR_raise(ERR_LIB_PROV, ERR_R_MALLOC_FAILURE);
+    if (ctx == NULL)
         return NULL;
-    }
 
     ctx->provctx = provctx;
+    OSSL_FIPS_IND_INIT(ctx)
     init(ctx);
     return ctx;
 }
@@ -147,12 +156,62 @@ static void kbkdf_reset(void *vctx)
     init(ctx);
 }
 
+static void *kbkdf_dup(void *vctx)
+{
+    const KBKDF *src = (const KBKDF *)vctx;
+    KBKDF *dest;
+
+    dest = kbkdf_new(src->provctx);
+    if (dest != NULL) {
+        dest->ctx_init = EVP_MAC_CTX_dup(src->ctx_init);
+        if (dest->ctx_init == NULL
+                || !ossl_prov_memdup(src->ki, src->ki_len,
+                                     &dest->ki, &dest->ki_len)
+                || !ossl_prov_memdup(src->label, src->label_len,
+                                     &dest->label, &dest->label_len)
+                || !ossl_prov_memdup(src->context, src->context_len,
+                                     &dest->context, &dest->context_len)
+                || !ossl_prov_memdup(src->iv, src->iv_len,
+                                     &dest->iv, &dest->iv_len))
+            goto err;
+        dest->mode = src->mode;
+        dest->r = src->r;
+        dest->use_l = src->use_l;
+        dest->use_separator = src->use_separator;
+        dest->is_kmac = src->is_kmac;
+        OSSL_FIPS_IND_COPY(dest, src)
+    }
+    return dest;
+
+ err:
+    kbkdf_free(dest);
+    return NULL;
+}
+
+#ifdef FIPS_MODULE
+static int fips_kbkdf_key_check_passed(KBKDF *ctx)
+{
+    OSSL_LIB_CTX *libctx = PROV_LIBCTX_OF(ctx->provctx);
+    int key_approved = ossl_kdf_check_key_size(ctx->ki_len);
+
+    if (!key_approved) {
+        if (!OSSL_FIPS_IND_ON_UNAPPROVED(ctx, OSSL_FIPS_IND_SETTABLE0,
+                                         libctx, "KBKDF", "Key size",
+                                         ossl_fips_config_kbkdf_key_check)) {
+            ERR_raise(ERR_LIB_PROV, PROV_R_INVALID_KEY_LENGTH);
+            return 0;
+        }
+    }
+    return 1;
+}
+#endif
+
 /* SP800-108 section 5.1 or section 5.2 depending on mode. */
 static int derive(EVP_MAC_CTX *ctx_init, kbkdf_mode mode, unsigned char *iv,
                   size_t iv_len, unsigned char *label, size_t label_len,
                   unsigned char *context, size_t context_len,
                   unsigned char *k_i, size_t h, uint32_t l, int has_separator,
-                  unsigned char *ko, size_t ko_len)
+                  unsigned char *ko, size_t ko_len, int r)
 {
     int ret = 0;
     EVP_MAC_CTX *ctx = NULL;
@@ -186,7 +245,7 @@ static int derive(EVP_MAC_CTX *ctx_init, kbkdf_mode mode, unsigned char *iv,
         if (mode == FEEDBACK && !EVP_MAC_update(ctx, k_i, k_i_len))
             goto done;
 
-        if (!EVP_MAC_update(ctx, (unsigned char *)&i, 4)
+        if (!EVP_MAC_update(ctx, 4 - (r / 8) + (unsigned char *)&i, r / 8)
             || !EVP_MAC_update(ctx, label, label_len)
             || (has_separator && !EVP_MAC_update(ctx, &zero, 1))
             || !EVP_MAC_update(ctx, context, context_len)
@@ -195,7 +254,7 @@ static int derive(EVP_MAC_CTX *ctx_init, kbkdf_mode mode, unsigned char *iv,
             goto done;
 
         to_write = ko_len - written;
-        memcpy(ko + written, k_i, MIN(to_write, h));
+        memcpy(ko + written, k_i, ossl_min(to_write, h));
         written += h;
 
         k_i_len = h;
@@ -209,6 +268,31 @@ done:
     return ret;
 }
 
+/* This must be run before the key is set */
+static int kmac_init(EVP_MAC_CTX *ctx, const unsigned char *custom, size_t customlen)
+{
+    OSSL_PARAM params[2];
+
+    if (custom == NULL || customlen == 0)
+        return 1;
+    params[0] = OSSL_PARAM_construct_octet_string(OSSL_MAC_PARAM_CUSTOM,
+                                                  (void *)custom, customlen);
+    params[1] = OSSL_PARAM_construct_end();
+    return EVP_MAC_CTX_set_params(ctx, params) > 0;
+}
+
+static int kmac_derive(EVP_MAC_CTX *ctx, unsigned char *out, size_t outlen,
+                       const unsigned char *context, size_t contextlen)
+{
+    OSSL_PARAM params[2];
+
+    params[0] = OSSL_PARAM_construct_size_t(OSSL_MAC_PARAM_SIZE, &outlen);
+    params[1] = OSSL_PARAM_construct_end();
+    return EVP_MAC_CTX_set_params(ctx, params) > 0
+           && EVP_MAC_update(ctx, context, contextlen)
+           && EVP_MAC_final(ctx, out, NULL, outlen);
+}
+
 static int kbkdf_derive(void *vctx, unsigned char *key, size_t keylen,
                         const OSSL_PARAM params[])
 {
@@ -217,6 +301,7 @@ static int kbkdf_derive(void *vctx, unsigned char *key, size_t keylen,
     unsigned char *k_i = NULL;
     uint32_t l = 0;
     size_t h = 0;
+    uint64_t counter_max;
 
     if (!ossl_prov_is_running() || !kbkdf_set_ctx_params(ctx, params))
         return 0;
@@ -240,16 +325,32 @@ static int kbkdf_derive(void *vctx, unsigned char *key, size_t keylen,
         return 0;
     }
 
+    if (ctx->is_kmac) {
+        ret = kmac_derive(ctx->ctx_init, key, keylen,
+                          ctx->context, ctx->context_len);
+        goto done;
+    }
+
     h = EVP_MAC_CTX_get_mac_size(ctx->ctx_init);
     if (h == 0)
         goto done;
+
     if (ctx->iv_len != 0 && ctx->iv_len != h) {
         ERR_raise(ERR_LIB_PROV, PROV_R_INVALID_SEED_LENGTH);
         goto done;
     }
 
+    if (ctx->mode == COUNTER) {
+        /* Fail if keylen is too large for r */
+        counter_max = (uint64_t)1 << (uint64_t)ctx->r;
+        if ((uint64_t)(keylen / h) >= counter_max) {
+            ERR_raise(ERR_LIB_PROV, PROV_R_INVALID_KEY_LENGTH);
+            goto done;
+        }
+    }
+
     if (ctx->use_l != 0)
-        l = be32(keylen * 8);
+        l = be32((uint32_t)(keylen * 8));
 
     k_i = OPENSSL_zalloc(h);
     if (k_i == NULL)
@@ -257,7 +358,7 @@ static int kbkdf_derive(void *vctx, unsigned char *key, size_t keylen,
 
     ret = derive(ctx->ctx_init, ctx->mode, ctx->iv, ctx->iv_len, ctx->label,
                  ctx->label_len, ctx->context, ctx->context_len, k_i, h, l,
-                 ctx->use_separator, key, keylen);
+                 ctx->use_separator, key, keylen, ctx->r);
 done:
     if (ret != 1)
         OPENSSL_cleanse(key, keylen);
@@ -265,122 +366,456 @@ done:
     return ret;
 }
 
-static int kbkdf_set_buffer(unsigned char **out, size_t *out_len,
-                            const OSSL_PARAM *p)
-{
-    if (p->data == NULL || p->data_size == 0)
-        return 1;
+/* Machine generated by util/perl/OpenSSL/paramnames.pm */
+#ifndef kbkdf_set_ctx_params_list
+static const OSSL_PARAM kbkdf_set_ctx_params_list[] = {
+    OSSL_PARAM_octet_string(OSSL_KDF_PARAM_INFO, NULL, 0),
+    OSSL_PARAM_octet_string(OSSL_KDF_PARAM_SALT, NULL, 0),
+    OSSL_PARAM_octet_string(OSSL_KDF_PARAM_KEY, NULL, 0),
+    OSSL_PARAM_octet_string(OSSL_KDF_PARAM_SEED, NULL, 0),
+    OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_DIGEST, NULL, 0),
+    OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_CIPHER, NULL, 0),
+    OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_MAC, NULL, 0),
+    OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_MODE, NULL, 0),
+    OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_PROPERTIES, NULL, 0),
+    OSSL_PARAM_int(OSSL_KDF_PARAM_KBKDF_USE_L, NULL),
+    OSSL_PARAM_int(OSSL_KDF_PARAM_KBKDF_USE_SEPARATOR, NULL),
+    OSSL_PARAM_int(OSSL_KDF_PARAM_KBKDF_R, NULL),
+# if defined(FIPS_MODULE)
+    OSSL_PARAM_int(OSSL_KDF_PARAM_FIPS_KEY_CHECK, NULL),
+# endif
+    OSSL_PARAM_END
+};
+#endif
 
-    OPENSSL_clear_free(*out, *out_len);
-    *out = NULL;
-    return OSSL_PARAM_get_octet_string(p, (void **)out, 0, out_len);
+#ifndef kbkdf_set_ctx_params_st
+struct kbkdf_set_ctx_params_st {
+    OSSL_PARAM *cipher;
+    OSSL_PARAM *digest;
+    OSSL_PARAM *engine;
+# if defined(FIPS_MODULE)
+    OSSL_PARAM *ind_k;
+# endif
+    OSSL_PARAM *info[KBKDF_MAX_INFOS];
+    int num_info;
+    OSSL_PARAM *key;
+    OSSL_PARAM *mac;
+    OSSL_PARAM *mode;
+    OSSL_PARAM *propq;
+    OSSL_PARAM *r;
+    OSSL_PARAM *salt;
+    OSSL_PARAM *seed;
+    OSSL_PARAM *sep;
+    OSSL_PARAM *use_l;
+};
+#endif
+
+#ifndef kbkdf_set_ctx_params_decoder
+static int kbkdf_set_ctx_params_decoder
+    (const OSSL_PARAM *p, struct kbkdf_set_ctx_params_st *r)
+{
+    const char *s;
+
+    memset(r, 0, sizeof(*r));
+    if (p != NULL)
+        for (; (s = p->key) != NULL; p++)
+            switch(s[0]) {
+            default:
+                break;
+            case 'c':
+                if (ossl_likely(strcmp("ipher", s + 1) == 0)) {
+                    /* OSSL_KDF_PARAM_CIPHER */
+                    if (ossl_unlikely(r->cipher != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->cipher = (OSSL_PARAM *)p;
+                }
+                break;
+            case 'd':
+                if (ossl_likely(strcmp("igest", s + 1) == 0)) {
+                    /* OSSL_KDF_PARAM_DIGEST */
+                    if (ossl_unlikely(r->digest != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->digest = (OSSL_PARAM *)p;
+                }
+                break;
+            case 'e':
+                if (ossl_likely(strcmp("ngine", s + 1) == 0)) {
+                    /* OSSL_ALG_PARAM_ENGINE */
+                    if (ossl_unlikely(r->engine != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->engine = (OSSL_PARAM *)p;
+                }
+                break;
+            case 'i':
+                if (ossl_likely(strcmp("nfo", s + 1) == 0)) {
+                    /* OSSL_KDF_PARAM_INFO */
+                    if (ossl_unlikely(r->num_info >= KBKDF_MAX_INFOS)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_TOO_MANY_RECORDS,
+                                       "param %s present >%d times", s, KBKDF_MAX_INFOS);
+                        return 0;
+                    }
+                    r->info[r->num_info++] = (OSSL_PARAM *)p;
+                }
+                break;
+            case 'k':
+                switch(s[1]) {
+                default:
+                    break;
+                case 'e':
+                    switch(s[2]) {
+                    default:
+                        break;
+                    case 'y':
+                        switch(s[3]) {
+                        default:
+                            break;
+                        case '-':
+# if defined(FIPS_MODULE)
+                            if (ossl_likely(strcmp("check", s + 4) == 0)) {
+                                /* OSSL_KDF_PARAM_FIPS_KEY_CHECK */
+                                if (ossl_unlikely(r->ind_k != NULL)) {
+                                    ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                   "param %s is repeated", s);
+                                    return 0;
+                                }
+                                r->ind_k = (OSSL_PARAM *)p;
+                            }
+# endif
+                            break;
+                        case '\0':
+                            if (ossl_unlikely(r->key != NULL)) {
+                                ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                               "param %s is repeated", s);
+                                return 0;
+                            }
+                            r->key = (OSSL_PARAM *)p;
+                        }
+                    }
+                }
+                break;
+            case 'm':
+                switch(s[1]) {
+                default:
+                    break;
+                case 'a':
+                    if (ossl_likely(strcmp("c", s + 2) == 0)) {
+                        /* OSSL_KDF_PARAM_MAC */
+                        if (ossl_unlikely(r->mac != NULL)) {
+                            ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                           "param %s is repeated", s);
+                            return 0;
+                        }
+                        r->mac = (OSSL_PARAM *)p;
+                    }
+                    break;
+                case 'o':
+                    if (ossl_likely(strcmp("de", s + 2) == 0)) {
+                        /* OSSL_KDF_PARAM_MODE */
+                        if (ossl_unlikely(r->mode != NULL)) {
+                            ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                           "param %s is repeated", s);
+                            return 0;
+                        }
+                        r->mode = (OSSL_PARAM *)p;
+                    }
+                }
+                break;
+            case 'p':
+                if (ossl_likely(strcmp("roperties", s + 1) == 0)) {
+                    /* OSSL_KDF_PARAM_PROPERTIES */
+                    if (ossl_unlikely(r->propq != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->propq = (OSSL_PARAM *)p;
+                }
+                break;
+            case 'r':
+                switch(s[1]) {
+                default:
+                    break;
+                case '\0':
+                    if (ossl_unlikely(r->r != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->r = (OSSL_PARAM *)p;
+                }
+                break;
+            case 's':
+                switch(s[1]) {
+                default:
+                    break;
+                case 'a':
+                    if (ossl_likely(strcmp("lt", s + 2) == 0)) {
+                        /* OSSL_KDF_PARAM_SALT */
+                        if (ossl_unlikely(r->salt != NULL)) {
+                            ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                           "param %s is repeated", s);
+                            return 0;
+                        }
+                        r->salt = (OSSL_PARAM *)p;
+                    }
+                    break;
+                case 'e':
+                    if (ossl_likely(strcmp("ed", s + 2) == 0)) {
+                        /* OSSL_KDF_PARAM_SEED */
+                        if (ossl_unlikely(r->seed != NULL)) {
+                            ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                           "param %s is repeated", s);
+                            return 0;
+                        }
+                        r->seed = (OSSL_PARAM *)p;
+                    }
+                }
+                break;
+            case 'u':
+                switch(s[1]) {
+                default:
+                    break;
+                case 's':
+                    switch(s[2]) {
+                    default:
+                        break;
+                    case 'e':
+                        switch(s[3]) {
+                        default:
+                            break;
+                        case '-':
+                            switch(s[4]) {
+                            default:
+                                break;
+                            case 'l':
+                                switch(s[5]) {
+                                default:
+                                    break;
+                                case '\0':
+                                    if (ossl_unlikely(r->use_l != NULL)) {
+                                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                       "param %s is repeated", s);
+                                        return 0;
+                                    }
+                                    r->use_l = (OSSL_PARAM *)p;
+                                }
+                                break;
+                            case 's':
+                                if (ossl_likely(strcmp("eparator", s + 5) == 0)) {
+                                    /* OSSL_KDF_PARAM_KBKDF_USE_SEPARATOR */
+                                    if (ossl_unlikely(r->sep != NULL)) {
+                                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                                       "param %s is repeated", s);
+                                        return 0;
+                                    }
+                                    r->sep = (OSSL_PARAM *)p;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+    return 1;
 }
+#endif
+/* End of machine generated */
 
 static int kbkdf_set_ctx_params(void *vctx, const OSSL_PARAM params[])
 {
     KBKDF *ctx = (KBKDF *)vctx;
-    OSSL_LIB_CTX *libctx = PROV_LIBCTX_OF(ctx->provctx);
-    const OSSL_PARAM *p;
+    OSSL_LIB_CTX *libctx;
+    struct kbkdf_set_ctx_params_st p;
+    const char *s;
 
-    if (params == NULL)
-        return 1;
+    if (ctx == NULL || !kbkdf_set_ctx_params_decoder(params, &p))
+        return 0;
 
-    if (!ossl_prov_macctx_load_from_params(&ctx->ctx_init, params, NULL,
-                                           NULL, NULL, libctx))
+    libctx = PROV_LIBCTX_OF(ctx->provctx);
+
+    if (!OSSL_FIPS_IND_SET_CTX_FROM_PARAM(ctx, OSSL_FIPS_IND_SETTABLE0, p.ind_k))
         return 0;
-    else if (ctx->ctx_init != NULL
-             && !EVP_MAC_is_a(EVP_MAC_CTX_get0_mac(ctx->ctx_init),
-                              OSSL_MAC_NAME_HMAC)
-             && !EVP_MAC_is_a(EVP_MAC_CTX_get0_mac(ctx->ctx_init),
-                              OSSL_MAC_NAME_CMAC)) {
-        ERR_raise(ERR_LIB_PROV, PROV_R_INVALID_MAC);
+
+    if (!ossl_prov_macctx_load(&ctx->ctx_init, p.mac, p.cipher,
+                               p.digest, p.propq, p.engine,
+                               NULL, NULL, NULL, libctx))
         return 0;
+
+    if (ctx->ctx_init != NULL) {
+        ctx->is_kmac = 0;
+        if (EVP_MAC_is_a(EVP_MAC_CTX_get0_mac(ctx->ctx_init),
+                         OSSL_MAC_NAME_KMAC128)
+            || EVP_MAC_is_a(EVP_MAC_CTX_get0_mac(ctx->ctx_init),
+                            OSSL_MAC_NAME_KMAC256)) {
+            ctx->is_kmac = 1;
+        } else if (!EVP_MAC_is_a(EVP_MAC_CTX_get0_mac(ctx->ctx_init),
+                                 OSSL_MAC_NAME_HMAC)
+                   && !EVP_MAC_is_a(EVP_MAC_CTX_get0_mac(ctx->ctx_init),
+                                    OSSL_MAC_NAME_CMAC)) {
+            ERR_raise(ERR_LIB_PROV, PROV_R_INVALID_MAC);
+            return 0;
+        }
     }
 
-    p = OSSL_PARAM_locate_const(params, OSSL_KDF_PARAM_MODE);
-    if (p != NULL && strncasecmp("counter", p->data, p->data_size) == 0) {
-        ctx->mode = COUNTER;
-    } else if (p != NULL
-               && strncasecmp("feedback", p->data, p->data_size) == 0) {
-        ctx->mode = FEEDBACK;
-    } else if (p != NULL) {
-        ERR_raise(ERR_LIB_PROV, PROV_R_INVALID_MODE);
-        return 0;
+    if (p.mode != NULL) {
+        if (!OSSL_PARAM_get_utf8_string_ptr(p.mode, &s))
+            return 0;
+        if (OPENSSL_strncasecmp("counter", s, p.mode->data_size) == 0) {
+            ctx->mode = COUNTER;
+        } else if (OPENSSL_strncasecmp("feedback", s, p.mode->data_size) == 0) {
+            ctx->mode = FEEDBACK;
+        } else {
+            ERR_raise(ERR_LIB_PROV, PROV_R_INVALID_MODE);
+            return 0;
+        }
     }
 
-    p = OSSL_PARAM_locate_const(params, OSSL_KDF_PARAM_KEY);
-    if (p != NULL && !kbkdf_set_buffer(&ctx->ki, &ctx->ki_len, p))
+    if (ossl_param_get1_octet_string_from_param(p.key, &ctx->ki,
+                                                &ctx->ki_len) == 0)
+        return 0;
+#ifdef FIPS_MODULE
+    if (p.key != NULL && !fips_kbkdf_key_check_passed(ctx))
+        return 0;
+#endif
+
+    if (ossl_param_get1_octet_string_from_param(p.salt, &ctx->label,
+                                                &ctx->label_len) == 0)
         return 0;
 
-    p = OSSL_PARAM_locate_const(params, OSSL_KDF_PARAM_SALT);
-    if (p != NULL && !kbkdf_set_buffer(&ctx->label, &ctx->label_len, p))
+    if (ossl_param_get1_concat_octet_string(p.num_info, p.info, &ctx->context,
+                                            &ctx->context_len) == 0)
         return 0;
 
-    p = OSSL_PARAM_locate_const(params, OSSL_KDF_PARAM_INFO);
-    if (p != NULL && !kbkdf_set_buffer(&ctx->context, &ctx->context_len, p))
+    if (ossl_param_get1_octet_string_from_param(p.seed, &ctx->iv,
+                                                &ctx->iv_len) == 0)
         return 0;
 
-    p = OSSL_PARAM_locate_const(params, OSSL_KDF_PARAM_SEED);
-    if (p != NULL && !kbkdf_set_buffer(&ctx->iv, &ctx->iv_len, p))
+    if (p.use_l != NULL && !OSSL_PARAM_get_int(p.use_l, &ctx->use_l))
         return 0;
 
-    p = OSSL_PARAM_locate_const(params, OSSL_KDF_PARAM_KBKDF_USE_L);
-    if (p != NULL && !OSSL_PARAM_get_int(p, &ctx->use_l))
-        return 0;
+    if (p.r != NULL) {
+        int new_r = 0;
 
-    p = OSSL_PARAM_locate_const(params, OSSL_KDF_PARAM_KBKDF_USE_SEPARATOR);
-    if (p != NULL && !OSSL_PARAM_get_int(p, &ctx->use_separator))
+        if (!OSSL_PARAM_get_int(p.r, &new_r))
+            return 0;
+        if (new_r != 8 && new_r != 16 && new_r != 24 && new_r != 32)
+            return 0;
+        ctx->r = new_r;
+    }
+
+    if (p.sep != NULL && !OSSL_PARAM_get_int(p.sep, &ctx->use_separator))
         return 0;
 
     /* Set up digest context, if we can. */
-    if (ctx->ctx_init != NULL && ctx->ki_len != 0
-            && !EVP_MAC_init(ctx->ctx_init, ctx->ki, ctx->ki_len, NULL))
+    if (ctx->ctx_init != NULL && ctx->ki_len != 0) {
+        if ((ctx->is_kmac && !kmac_init(ctx->ctx_init, ctx->label, ctx->label_len))
+            || !EVP_MAC_init(ctx->ctx_init, ctx->ki, ctx->ki_len, NULL))
             return 0;
+    }
     return 1;
 }
 
 static const OSSL_PARAM *kbkdf_settable_ctx_params(ossl_unused void *ctx,
                                                    ossl_unused void *provctx)
 {
-    static const OSSL_PARAM known_settable_ctx_params[] = {
-        OSSL_PARAM_octet_string(OSSL_KDF_PARAM_INFO, NULL, 0),
-        OSSL_PARAM_octet_string(OSSL_KDF_PARAM_SALT, NULL, 0),
-        OSSL_PARAM_octet_string(OSSL_KDF_PARAM_KEY, NULL, 0),
-        OSSL_PARAM_octet_string(OSSL_KDF_PARAM_SEED, NULL, 0),
-        OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_DIGEST, NULL, 0),
-        OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_CIPHER, NULL, 0),
-        OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_MAC, NULL, 0),
-        OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_MODE, NULL, 0),
-        OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_PROPERTIES, NULL, 0),
-        OSSL_PARAM_int(OSSL_KDF_PARAM_KBKDF_USE_L, NULL),
-        OSSL_PARAM_int(OSSL_KDF_PARAM_KBKDF_USE_SEPARATOR, NULL),
-        OSSL_PARAM_END,
-    };
-    return known_settable_ctx_params;
+    return kbkdf_set_ctx_params_list;
 }
+
+/* Machine generated by util/perl/OpenSSL/paramnames.pm */
+#ifndef kbkdf_get_ctx_params_list
+static const OSSL_PARAM kbkdf_get_ctx_params_list[] = {
+    OSSL_PARAM_size_t(OSSL_KDF_PARAM_SIZE, NULL),
+# if defined(FIPS_MODULE)
+    OSSL_PARAM_int(OSSL_KDF_PARAM_FIPS_APPROVED_INDICATOR, NULL),
+# endif
+    OSSL_PARAM_END
+};
+#endif
+
+#ifndef kbkdf_get_ctx_params_st
+struct kbkdf_get_ctx_params_st {
+# if defined(FIPS_MODULE)
+    OSSL_PARAM *ind;
+# endif
+    OSSL_PARAM *size;
+};
+#endif
+
+#ifndef kbkdf_get_ctx_params_decoder
+static int kbkdf_get_ctx_params_decoder
+    (const OSSL_PARAM *p, struct kbkdf_get_ctx_params_st *r)
+{
+    const char *s;
+
+    memset(r, 0, sizeof(*r));
+    if (p != NULL)
+        for (; (s = p->key) != NULL; p++)
+            switch(s[0]) {
+            default:
+                break;
+            case 'f':
+# if defined(FIPS_MODULE)
+                if (ossl_likely(strcmp("ips-indicator", s + 1) == 0)) {
+                    /* OSSL_KDF_PARAM_FIPS_APPROVED_INDICATOR */
+                    if (ossl_unlikely(r->ind != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->ind = (OSSL_PARAM *)p;
+                }
+# endif
+                break;
+            case 's':
+                if (ossl_likely(strcmp("ize", s + 1) == 0)) {
+                    /* OSSL_KDF_PARAM_SIZE */
+                    if (ossl_unlikely(r->size != NULL)) {
+                        ERR_raise_data(ERR_LIB_PROV, PROV_R_REPEATED_PARAMETER,
+                                       "param %s is repeated", s);
+                        return 0;
+                    }
+                    r->size = (OSSL_PARAM *)p;
+                }
+            }
+    return 1;
+}
+#endif
+/* End of machine generated */
 
 static int kbkdf_get_ctx_params(void *vctx, OSSL_PARAM params[])
 {
-    OSSL_PARAM *p;
+    struct kbkdf_get_ctx_params_st p;
+    KBKDF *ctx = (KBKDF *)vctx;
 
-    p = OSSL_PARAM_locate(params, OSSL_KDF_PARAM_SIZE);
-    if (p == NULL)
-        return -2;
+    if (ctx == NULL || !kbkdf_get_ctx_params_decoder(params, &p))
+        return 0;
 
     /* KBKDF can produce results as large as you like. */
-    return OSSL_PARAM_set_size_t(p, SIZE_MAX);
+    if (p.size != NULL && !OSSL_PARAM_set_size_t(p.size, SIZE_MAX))
+        return 0;
+
+    if (!OSSL_FIPS_IND_GET_CTX_FROM_PARAM(ctx, p.ind))
+        return 0;
+    return 1;
 }
 
 static const OSSL_PARAM *kbkdf_gettable_ctx_params(ossl_unused void *ctx,
                                                    ossl_unused void *provctx)
 {
-    static const OSSL_PARAM known_gettable_ctx_params[] =
-        { OSSL_PARAM_size_t(OSSL_KDF_PARAM_SIZE, NULL), OSSL_PARAM_END };
-    return known_gettable_ctx_params;
+    return kbkdf_get_ctx_params_list;
 }
 
 const OSSL_DISPATCH ossl_kdf_kbkdf_functions[] = {
     { OSSL_FUNC_KDF_NEWCTX, (void(*)(void))kbkdf_new },
+    { OSSL_FUNC_KDF_DUPCTX, (void(*)(void))kbkdf_dup },
     { OSSL_FUNC_KDF_FREECTX, (void(*)(void))kbkdf_free },
     { OSSL_FUNC_KDF_RESET, (void(*)(void))kbkdf_reset },
     { OSSL_FUNC_KDF_DERIVE, (void(*)(void))kbkdf_derive },
@@ -390,5 +825,5 @@ const OSSL_DISPATCH ossl_kdf_kbkdf_functions[] = {
     { OSSL_FUNC_KDF_GETTABLE_CTX_PARAMS,
       (void(*)(void))kbkdf_gettable_ctx_params },
     { OSSL_FUNC_KDF_GET_CTX_PARAMS, (void(*)(void))kbkdf_get_ctx_params },
-    { 0, NULL },
+    OSSL_DISPATCH_END,
 };

@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 // A scoped Asio stream that is automatically closed by its destructor.
 
@@ -28,80 +18,88 @@
 
 namespace openvpn {
 
-  template <typename STREAM>
-  class ScopedAsioStream
-  {
-    ScopedAsioStream(const ScopedAsioStream&) = delete;
-    ScopedAsioStream& operator=(const ScopedAsioStream&) = delete;
+template <typename STREAM>
+class ScopedAsioStream
+{
+    ScopedAsioStream(const ScopedAsioStream &) = delete;
+    ScopedAsioStream &operator=(const ScopedAsioStream &) = delete;
 
   public:
-    typedef STREAM* base_type;
+    typedef STREAM *base_type;
 
-    ScopedAsioStream() : obj_(undefined()) {}
-
-    explicit ScopedAsioStream(STREAM *obj)
-      : obj_(obj) {}
-
-    static STREAM* undefined() { return nullptr; }
-
-    STREAM* release()
+    ScopedAsioStream()
+        : obj_(undefined())
     {
-      STREAM* ret = obj_;
-      obj_ = nullptr;
-      //OPENVPN_LOG("**** SAS RELEASE=" << ret);
-      return ret;
     }
 
-    static bool defined_static(STREAM* obj)
+    explicit ScopedAsioStream(STREAM *obj)
+        : obj_(obj)
     {
-      return obj != nullptr;
+    }
+
+    static STREAM *undefined()
+    {
+        return nullptr;
+    }
+
+    STREAM *release()
+    {
+        STREAM *ret = obj_;
+        obj_ = nullptr;
+        // OPENVPN_LOG("**** SAS RELEASE=" << ret);
+        return ret;
+    }
+
+    static bool defined_static(STREAM *obj)
+    {
+        return obj != nullptr;
     }
 
     bool defined() const
     {
-      return defined_static(obj_);
+        return defined_static(obj_);
     }
 
-    STREAM* operator()() const
+    STREAM *operator()() const
     {
-      return obj_;
+        return obj_;
     }
 
-    void reset(STREAM* obj)
+    void reset(STREAM *obj)
     {
-      close();
-      obj_ = obj;
-      //OPENVPN_LOG("**** SAS RESET=" << obj_);
+        close();
+        obj_ = obj;
+        // OPENVPN_LOG("**** SAS RESET=" << obj_);
     }
 
     // unusual semantics: replace obj without closing it first
-    void replace(STREAM* obj)
+    void replace(STREAM *obj)
     {
-      //OPENVPN_LOG("**** SAS REPLACE " << obj_ << " -> " << obj);
-      obj_ = obj;
+        // OPENVPN_LOG("**** SAS REPLACE " << obj_ << " -> " << obj);
+        obj_ = obj;
     }
 
     // return false if close error
     bool close()
     {
-      if (defined())
-	{
-	  //OPENVPN_LOG("**** SAS CLOSE obj=" << obj_);
-	  delete obj_;
-	  obj_ = nullptr;
-	}
-      return true;
+        if (defined())
+        {
+            // OPENVPN_LOG("**** SAS CLOSE obj=" << obj_);
+            delete obj_;
+            obj_ = nullptr;
+        }
+        return true;
     }
 
     ~ScopedAsioStream()
     {
-      //OPENVPN_LOG("**** SAS DESTRUCTOR");
-      close();
+        // OPENVPN_LOG("**** SAS DESTRUCTOR");
+        close();
     }
 
   private:
-    STREAM* obj_;
-  };
+    STREAM *obj_;
+};
 
 } // namespace openvpn
 

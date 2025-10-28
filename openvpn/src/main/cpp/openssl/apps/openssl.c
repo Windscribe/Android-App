@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -7,9 +7,11 @@
  * https://www.openssl.org/source/license.html
  */
 
+#include "internal/e_os.h"
+
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include "internal/common.h"
 #include <openssl/bio.h>
 #include <openssl/crypto.h>
 #include <openssl/trace.h>
@@ -130,8 +132,10 @@ static size_t internal_trace_cb(const char *buf, size_t cnt,
             BIO_printf(bio_err, "ERROR: writing when tracing not started\n");
             return 0;
         }
+        if (cnt > INT_MAX)
+            cnt = INT_MAX;
 
-        ret = BIO_write(trace_data->bio, buf, cnt);
+        ret = BIO_write(trace_data->bio, buf, (int)cnt);
         break;
     case OSSL_TRACE_CTRL_END:
         if (!trace_data->ingroup) {
@@ -157,8 +161,6 @@ static void tracedata_free(tracedata *data)
     OPENSSL_free(data);
 }
 
-static STACK_OF(tracedata) *trace_data_stack;
-
 static void cleanup_trace(void)
 {
     sk_tracedata_pop_free(trace_data_stack, tracedata_free);
@@ -168,14 +170,17 @@ static void setup_trace_category(int category)
 {
     BIO *channel;
     tracedata *trace_data;
+    BIO *bio = NULL;
 
     if (OSSL_trace_enabled(category))
         return;
 
-    channel = BIO_push(BIO_new(BIO_f_prefix()), dup_bio_err(FORMAT_TEXT));
+    bio = BIO_new(BIO_f_prefix());
+    channel = BIO_push(bio, dup_bio_err(FORMAT_TEXT));
     trace_data = OPENSSL_zalloc(sizeof(*trace_data));
 
     if (trace_data == NULL
+        || bio == NULL
         || (trace_data->bio = channel) == NULL
         || OSSL_trace_set_callback(category, internal_trace_cb,
                                    trace_data) == 0
@@ -187,6 +192,7 @@ static void setup_trace_category(int category)
 
         OSSL_trace_set_callback(category, NULL, NULL);
         BIO_free_all(channel);
+        OPENSSL_free(trace_data);
     }
 }
 
@@ -229,6 +235,7 @@ static void setup_trace(const char *str)
 #endif /* OPENSSL_NO_TRACE */
 
 static char *help_argv[] = { "help", NULL };
+static char *version_argv[] = { "version", NULL };
 
 int main(int argc, char *argv[])
 {
@@ -238,7 +245,12 @@ int main(int argc, char *argv[])
     const char *fname;
     ARGS arg;
     int global_help = 0;
+    int global_version = 0;
     int ret = 0;
+    char *sec_mem_char = NULL;
+#ifndef OPENSSL_NO_SECURE_MEMORY
+    char *sec_mem_minsize_char = NULL;
+#endif
 
     arg.argv = NULL;
     arg.size = 0;
@@ -258,6 +270,54 @@ int main(int argc, char *argv[])
 #ifndef OPENSSL_NO_TRACE
     setup_trace(getenv("OPENSSL_TRACE"));
 #endif
+
+    sec_mem_char = getenv("OPENSSL_SEC_MEM");
+    if (sec_mem_char != NULL) {
+#ifndef OPENSSL_NO_SECURE_MEMORY
+        long sec_mem = 0;
+        long sec_mem_minsize = 0;
+        char *end = NULL;
+
+        errno = 0;
+        sec_mem = strtol(sec_mem_char, &end, 0);
+        if (errno != 0 || *end != 0 || end == sec_mem_char) {
+            BIO_printf(bio_err,
+                       "FATAL: could not convert OPENSSL_SEC_MEM (%s) to number\n",
+                       sec_mem_char);
+            ret = EXIT_FAILURE;
+            goto end;
+        }
+
+        /*
+         * Try to fetch the minsize if given, if not use the default value.
+         */
+        sec_mem_minsize_char = getenv("OPENSSL_SEC_MEM_MINSIZE");
+        if (sec_mem_minsize_char != NULL) {
+            errno = 0;
+            sec_mem_minsize = strtol(sec_mem_minsize_char, &end, 0);
+            if (errno != 0 || *end != 0 || end == sec_mem_minsize_char) {
+                BIO_printf(bio_err,
+                           "FATAL: could not convert OPENSSL_SEC_MEM_MINSIZE (%s) to number\n",
+                           sec_mem_minsize_char);
+                ret = 1;
+                goto end;
+            }
+        }
+
+        ret = CRYPTO_secure_malloc_init(sec_mem, sec_mem_minsize);
+        if (ret != 1) {
+            BIO_printf(bio_err,
+                       "FATAL: could not initialize secure memory\n");
+            ERR_print_errors(bio_err);
+            ret = 1;
+            goto end;
+        }
+#else
+        BIO_printf(bio_err,
+                   "FATAL: OPENSSL_SEC_MEM environment variable was set, but "
+                   "openssl was compiled without secure memory support.\n");
+#endif
+    }
 
     if ((fname = "apps_startup", !apps_startup())
             || (fname = "prog_init", (prog = prog_init()) == NULL)) {
@@ -282,17 +342,26 @@ int main(int argc, char *argv[])
         global_help = argc > 1
             && (strcmp(argv[1], "-help") == 0 || strcmp(argv[1], "--help") == 0
                 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--h") == 0);
+        global_version = argc > 1
+            && (strcmp(argv[1], "-version") == 0 || strcmp(argv[1], "--version") == 0
+                || strcmp(argv[1], "-v") == 0 || strcmp(argv[1], "--v") == 0);
+
         argc--;
         argv++;
-        opt_appname(argc == 1 || global_help ? "help" : argv[0]);
+        opt_appname(argc == 1 || global_help ? "help" : global_version ? "version" : argv[0]);
     } else {
         argv[0] = pname;
     }
 
-    /* If there's a command, run with that, otherwise "help". */
-    ret = argc == 0 || global_help
-        ? do_cmd(prog, 1, help_argv)
-        : do_cmd(prog, argc, argv);
+    /*
+     * If there's no command, assume "help". If there's an override for help
+     * or version run those, otherwise run the command given.
+     */
+    ret =  (argc == 0) || global_help
+            ? do_cmd(prog, 1, help_argv)
+            : global_version
+                ? do_cmd(prog, 1, version_argv)
+                : do_cmd(prog, argc, argv);
 
  end:
     OPENSSL_free(default_config_file);
@@ -304,7 +373,10 @@ int main(int argc, char *argv[])
     BIO_free(bio_in);
     BIO_free_all(bio_out);
     apps_shutdown();
-    BIO_free(bio_err);
+    BIO_free_all(bio_err);
+#ifndef OPENSSL_NO_SECURE_MEMORY
+    CRYPTO_secure_malloc_done();
+#endif
     EXIT(ret);
 }
 
@@ -322,7 +394,6 @@ const OPTIONS help_options[] = {
     {"command", 0, 0, "Name of command to display help (optional)"},
     {NULL}
 };
-
 
 int help_main(int argc, char **argv)
 {
@@ -354,7 +425,7 @@ int help_main(int argc, char **argv)
         new_argv[2] = NULL;
         return do_cmd(prog_init(), 2, new_argv);
     }
-    if (opt_num_rest() != 0) {
+    if (!opt_check_rest_arg(NULL)) {
         BIO_printf(bio_err, "Usage: %s\n", prog);
         return 1;
     }
@@ -395,6 +466,7 @@ static int do_cmd(LHASH_OF(FUNCTION) *prog, int argc, char *argv[])
 
     if (argc <= 0 || argv[0] == NULL)
         return 0;
+    memset(&f, 0, sizeof(f));
     f.name = argv[0];
     fp = lh_FUNCTION_retrieve(prog, &f);
     if (fp == NULL) {
@@ -413,12 +485,12 @@ static int do_cmd(LHASH_OF(FUNCTION) *prog, int argc, char *argv[])
             warn_deprecated(fp);
         return fp->func(argc, argv);
     }
-    if ((strncmp(argv[0], "no-", 3)) == 0) {
+    f.name = argv[0];
+    if (CHECK_AND_SKIP_PREFIX(f.name, "no-")) {
         /*
          * User is asking if foo is unsupported, by trying to "run" the
          * no-foo command.  Strange.
          */
-        f.name = argv[0] + 3;
         if (lh_FUNCTION_retrieve(prog, &f) == NULL) {
             BIO_printf(bio_out, "%s\n", argv[0]);
             return 0;
@@ -432,12 +504,12 @@ static int do_cmd(LHASH_OF(FUNCTION) *prog, int argc, char *argv[])
     return 1;
 }
 
-static int function_cmp(const FUNCTION * a, const FUNCTION * b)
+static int function_cmp(const FUNCTION *a, const FUNCTION *b)
 {
     return strncmp(a->name, b->name, 8);
 }
 
-static unsigned long function_hash(const FUNCTION * a)
+static unsigned long function_hash(const FUNCTION *a)
 {
     return OPENSSL_LH_strhash(a->name);
 }

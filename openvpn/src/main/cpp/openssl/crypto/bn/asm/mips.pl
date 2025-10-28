@@ -1,5 +1,5 @@
 #! /usr/bin/env perl
-# Copyright 2010-2020 The OpenSSL Project Authors. All Rights Reserved.
+# Copyright 2010-2025 The OpenSSL Project Authors. All Rights Reserved.
 #
 # Licensed under the Apache License 2.0 (the "License").  You may not use
 # this file except in compliance with the License.  You can obtain a copy
@@ -8,7 +8,7 @@
 
 #
 # ====================================================================
-# Written by Andy Polyakov <appro@openssl.org> for the OpenSSL
+# Written by Andy Polyakov, @dot-asm, initially for use in the OpenSSL
 # project.
 #
 # Rights for redistribution and usage in source and binary forms are
@@ -41,7 +41,7 @@
 # Performance improvement is astonishing! 'apps/openssl speed rsa dsa'
 # goes way over 3 times faster!
 #
-#					<appro@openssl.org>
+#					<https://github.com/dot-asm>
 
 # October 2010
 #
@@ -129,7 +129,7 @@ $code.=<<___;
 
 .rdata
 .asciiz	"mips3.s, Version 1.2"
-.asciiz	"MIPS II/III/IV ISA artwork by Andy Polyakov <appro\@fy.chalmers.se>"
+.asciiz	"MIPS II/III/IV ISA artwork by Andy Polyakov <https://github.com/dot-asm>"
 
 .text
 .set	noat
@@ -802,7 +802,7 @@ $code.=<<___;
 
 #if 0
 /*
- * The bn_div_3_words entry point is re-used for constant-time interface.
+ * The bn_div_3_words entry point is reused for constant-time interface.
  * Implementation is retained as historical reference.
  */
 .align 5
@@ -1089,7 +1089,7 @@ $code.=<<___;
 				# bug)" warning. If anybody out there
 				# has a clue about how to circumvent
 				# this do send me a note.
-				#		<appro\@fy.chalmers.se>
+				#		<https://github.com/dot-asm>
 
 	$LD	$b_0,0($a2)
 	$LD	$a_1,$BNSZ($a1)
@@ -1986,6 +1986,8 @@ $code.=<<___;
 	sltu	$at,$c_2,$t_1
 	$ADDU	$c_3,$t_2,$at
 	$ST	$c_2,$BNSZ($a0)
+	sltu	$at,$c_3,$t_2
+	$ADDU	$c_1,$at
 	mflo	($t_1,$a_2,$a_0)
 	mfhi	($t_2,$a_2,$a_0)
 ___
@@ -2196,6 +2198,8 @@ $code.=<<___;
 	sltu	$at,$c_2,$t_1
 	$ADDU	$c_3,$t_2,$at
 	$ST	$c_2,$BNSZ($a0)
+	sltu	$at,$c_3,$t_2
+	$ADDU	$c_1,$at
 	mflo	($t_1,$a_2,$a_0)
 	mfhi	($t_2,$a_2,$a_0)
 ___

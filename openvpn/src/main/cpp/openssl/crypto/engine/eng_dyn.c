@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2001-2022 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -159,13 +159,11 @@ static int dynamic_set_data_ctx(ENGINE *e, dynamic_data_ctx **ctx)
     dynamic_data_ctx *c = OPENSSL_zalloc(sizeof(*c));
     int ret = 0;
 
-    if (c == NULL) {
-        ERR_raise(ERR_LIB_ENGINE, ERR_R_MALLOC_FAILURE);
+    if (c == NULL)
         return 0;
-    }
     c->dirs = sk_OPENSSL_STRING_new_null();
     if (c->dirs == NULL) {
-        ERR_raise(ERR_LIB_ENGINE, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_ENGINE, ERR_R_CRYPTO_LIB);
         goto end;
     }
     c->DYNAMIC_F1 = "v_check";
@@ -357,13 +355,11 @@ static int dynamic_ctrl(ENGINE *e, int cmd, long i, void *p, void (*f) (void))
         }
         {
             char *tmp_str = OPENSSL_strdup(p);
-            if (tmp_str == NULL) {
-                ERR_raise(ERR_LIB_ENGINE, ERR_R_MALLOC_FAILURE);
+            if (tmp_str == NULL)
                 return 0;
-            }
             if (!sk_OPENSSL_STRING_push(ctx->dirs, tmp_str)) {
                 OPENSSL_free(tmp_str);
-                ERR_raise(ERR_LIB_ENGINE, ERR_R_MALLOC_FAILURE);
+                ERR_raise(ERR_LIB_ENGINE, ERR_R_CRYPTO_LIB);
                 return 0;
             }
         }
@@ -399,6 +395,26 @@ static int int_load(dynamic_data_ctx *ctx)
         OPENSSL_free(merge);
     }
     return 0;
+}
+
+/*
+ * Unfortunately the version checker does not distinguish between
+ * engines built for openssl 1.1.x and openssl 3.x, but loading
+ * an engine that is built for openssl 1.1.x will cause a fatal
+ * error.  Detect such engines, since EVP_PKEY_base_id is exported
+ * as a function in openssl 1.1.x, while it is named EVP_PKEY_get_base_id
+ * in openssl 3.x.  Therefore we take the presence of that symbol
+ * as an indication that the engine will be incompatible.
+ */
+static int using_libcrypto_11(dynamic_data_ctx *ctx)
+{
+    int ret;
+
+    ERR_set_mark();
+    ret = DSO_bind_func(ctx->dynamic_dso, "EVP_PKEY_base_id") != NULL;
+    ERR_pop_to_mark();
+
+    return ret;
 }
 
 static int dynamic_load(ENGINE *e, dynamic_data_ctx *ctx)
@@ -450,9 +466,9 @@ static int dynamic_load(ENGINE *e, dynamic_data_ctx *ctx)
         /*
          * We fail if the version checker veto'd the load *or* if it is
          * deferring to us (by returning its version) and we think it is too
-         * old.
+         * old. Also fail if this is engine for openssl 1.1.x.
          */
-        if (vcheck_res < OSSL_DYNAMIC_OLDEST) {
+        if (vcheck_res < OSSL_DYNAMIC_OLDEST || using_libcrypto_11(ctx)) {
             /* Fail */
             ctx->bind_engine = NULL;
             ctx->v_check = NULL;
@@ -484,7 +500,9 @@ static int dynamic_load(ENGINE *e, dynamic_data_ctx *ctx)
     engine_set_all_null(e);
 
     /* Try to bind the ENGINE onto our own ENGINE structure */
-    if (!ctx->bind_engine(e, ctx->engine_id, &fns)) {
+    if (!engine_add_dynamic_id(e, (ENGINE_DYNAMIC_ID)ctx->bind_engine, 1)
+            || !ctx->bind_engine(e, ctx->engine_id, &fns)) {
+        engine_remove_dynamic_id(e, 1);
         ctx->bind_engine = NULL;
         ctx->v_check = NULL;
         DSO_free(ctx->dynamic_dso);

@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -46,6 +46,12 @@ int ossl_dh_compute_key(unsigned char *key, const BIGNUM *pub_key, DH *dh)
 
     if (BN_num_bits(dh->params.p) > OPENSSL_DH_MAX_MODULUS_BITS) {
         ERR_raise(ERR_LIB_DH, DH_R_MODULUS_TOO_LARGE);
+        goto err;
+    }
+
+    if (dh->params.q != NULL
+        && BN_num_bits(dh->params.q) > OPENSSL_DH_MAX_MODULUS_BITS) {
+        ERR_raise(ERR_LIB_DH, DH_R_Q_TOO_LARGE);
         goto err;
     }
 
@@ -108,7 +114,7 @@ int ossl_dh_compute_key(unsigned char *key, const BIGNUM *pub_key, DH *dh)
 int DH_compute_key(unsigned char *key, const BIGNUM *pub_key, DH *dh)
 {
     int ret = 0, i;
-    volatile size_t npad = 0, mask = 1;
+    volatile int npad = 0, mask = 1;
 
     /* compute the key; ret is constant unless compute_key is external */
 #ifdef FIPS_MODULE
@@ -184,13 +190,16 @@ static int dh_bn_mod_exp(const DH *dh, BIGNUM *r,
                          const BIGNUM *a, const BIGNUM *p,
                          const BIGNUM *m, BN_CTX *ctx, BN_MONT_CTX *m_ctx)
 {
+#ifdef S390X_MOD_EXP
+    return s390x_mod_exp(r, a, p, m, ctx, m_ctx);
+#else
     return BN_mod_exp_mont(r, a, p, m, ctx, m_ctx);
+#endif
 }
 
 static int dh_init(DH *dh)
 {
     dh->flags |= DH_FLAG_CACHE_MONT_P;
-    ossl_ffc_params_init(&dh->params);
     dh->dirty_cnt++;
     return 1;
 }
@@ -258,13 +267,19 @@ static int generate_key(DH *dh)
     int ok = 0;
     int generate_new_key = 0;
 #ifndef FIPS_MODULE
-    unsigned l;
+    int l;
 #endif
     BN_CTX *ctx = NULL;
     BIGNUM *pub_key = NULL, *priv_key = NULL;
 
     if (BN_num_bits(dh->params.p) > OPENSSL_DH_MAX_MODULUS_BITS) {
         ERR_raise(ERR_LIB_DH, DH_R_MODULUS_TOO_LARGE);
+        return 0;
+    }
+
+    if (dh->params.q != NULL
+        && BN_num_bits(dh->params.q) > OPENSSL_DH_MAX_MODULUS_BITS) {
+        ERR_raise(ERR_LIB_DH, DH_R_Q_TOO_LARGE);
         return 0;
     }
 
@@ -312,11 +327,13 @@ static int generate_key(DH *dh)
                 goto err;
 #else
             if (dh->params.q == NULL) {
-                /* secret exponent length, must satisfy 2^(l-1) <= p */
-                if (dh->length != 0
-                    && dh->length >= BN_num_bits(dh->params.p))
+                /* secret exponent length, must satisfy 2^l < (p-1)/2 */
+                l = BN_num_bits(dh->params.p);
+                if (dh->length >= l)
                     goto err;
-                l = dh->length ? dh->length : BN_num_bits(dh->params.p) - 1;
+                l -= 2;
+                if (dh->length != 0 && dh->length < l)
+                    l = dh->length;
                 if (!BN_priv_rand_ex(priv_key, l, BN_RAND_TOP_ONE,
                                      BN_RAND_BOTTOM_ANY, 0, ctx))
                     goto err;
@@ -375,20 +392,17 @@ int ossl_dh_buf2key(DH *dh, const unsigned char *buf, size_t len)
     int err_reason = DH_R_BN_ERROR;
     BIGNUM *pubkey = NULL;
     const BIGNUM *p;
-    size_t p_size;
+    int ret;
 
-    if ((pubkey = BN_bin2bn(buf, len, NULL)) == NULL)
+    if (len > INT_MAX || (pubkey = BN_bin2bn(buf, (int)len, NULL)) == NULL)
         goto err;
     DH_get0_pqg(dh, &p, NULL, NULL);
-    if (p == NULL || (p_size = BN_num_bytes(p)) == 0) {
+    if (p == NULL || BN_num_bytes(p) == 0) {
         err_reason = DH_R_NO_PARAMETERS_SET;
         goto err;
     }
-    /*
-     * As per Section 4.2.8.1 of RFC 8446 fail if DHE's
-     * public key is of size not equal to size of p
-     */
-    if (BN_is_zero(pubkey) || p_size != len) {
+    /* Prevent small subgroup attacks per RFC 8446 Section 4.2.8.1 */
+    if (!ossl_dh_check_pub_key_partial(dh, pubkey, &ret)) {
         err_reason = DH_R_INVALID_PUBKEY;
         goto err;
     }
@@ -421,14 +435,15 @@ size_t ossl_dh_key2buf(const DH *dh, unsigned char **pbuf_out, size_t size,
         if (!alloc) {
             if (size >= (size_t)p_size)
                 pbuf = *pbuf_out;
+            if (pbuf == NULL)
+                ERR_raise(ERR_LIB_DH, DH_R_INVALID_SIZE);
         } else {
             pbuf = OPENSSL_malloc(p_size);
         }
 
-        if (pbuf == NULL) {
-            ERR_raise(ERR_LIB_DH, ERR_R_MALLOC_FAILURE);
+        /* Errors raised above */
+        if (pbuf == NULL)
             return 0;
-        }
         /*
          * As per Section 4.2.8.1 of RFC 8446 left pad public
          * key with zeros to the size of p

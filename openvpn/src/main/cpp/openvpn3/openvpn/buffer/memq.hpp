@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 // A queue of buffers, implemented as std::deque<BufferPtr>.
 
@@ -31,65 +21,71 @@
 
 namespace openvpn {
 
-  class MemQBase
-  {
+class MemQBase
+{
   public:
-    MemQBase() : length(0) {}
+    MemQBase()
+        : length(0)
+    {
+    }
 
     size_t size() const
     {
-      return q.size();
+        return q.size();
     }
 
     bool empty() const
     {
-      return q.empty();
+        return q.empty();
     }
 
-    size_t total_length() const { return length; }
+    size_t total_length() const
+    {
+        return length;
+    }
 
     void clear()
     {
-      while (!q.empty())
-	q.pop_back();
-      length = 0;
+        while (!q.empty())
+            q.pop_back();
+        length = 0;
     }
 
-    void write_buf(const BufferPtr& bp)
+    void write_buf(const BufferPtr &bp)
     {
-      q.push_back(bp);
-      length += bp->size();
+        q.push_back(bp);
+        length += bp->size();
     }
 
     BufferPtr read_buf()
     {
-      BufferPtr ret = q.front();
-      q.pop_front();
-      length -= ret->size();
-      return ret;
+        BufferPtr ret = q.front();
+        q.pop_front();
+        length -= ret->size();
+        return ret;
     }
 
-    BufferPtr& peek()
+    BufferPtr &peek()
     {
-      return q.front();
+        return q.front();
     }
 
     void pop()
     {
-      length -= q.front()->size();
-      q.pop_front();
+        length -= q.front()->size();
+        q.pop_front();
     }
 
     void resize(const size_t cap)
     {
-      q.resize(cap);
+        q.resize(cap);
     }
 
   protected:
     typedef std::deque<BufferPtr> q_type;
     size_t length;
     q_type q;
-  };
+};
 
 } // namespace openvpn
 

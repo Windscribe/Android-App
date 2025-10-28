@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2019-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -12,13 +12,13 @@
 # pragma once
 
 /*
- * IS_LITTLE_ENDIAN and IS_BIG_ENDIAN can be used to detect the endiannes
+ * IS_LITTLE_ENDIAN and IS_BIG_ENDIAN can be used to detect the endianness
  * at compile time. To use it, DECLARE_IS_ENDIAN must be used to declare
  * a variable.
  *
  * L_ENDIAN and B_ENDIAN can be used at preprocessor time. They can be set
  * in the configarion using the lib_cppflags variable. If neither is
- * set, it will fall back to code works with either endianness.
+ * set, it will fall back to code that works with either endianness.
  */
 
 # if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2019-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -16,6 +16,7 @@
 #include <openssl/core_names.h>
 #include <openssl/params.h>
 #include <openssl/err.h>
+#include <openssl/proverr.h>
 #ifndef FIPS_MODULE
 # include <openssl/engine.h>
 #endif
@@ -59,10 +60,8 @@ static void *mac_newctx(void *provctx, const char *propq, const char *macname)
         return NULL;
 
     pmacctx->libctx = PROV_LIBCTX_OF(provctx);
-    if (propq != NULL && (pmacctx->propq = OPENSSL_strdup(propq)) == NULL) {
-        ERR_raise(ERR_LIB_PROV, ERR_R_MALLOC_FAILURE);
+    if (propq != NULL && (pmacctx->propq = OPENSSL_strdup(propq)) == NULL)
         goto err;
-    }
 
     mac = EVP_MAC_fetch(pmacctx->libctx, macname, propq);
     if (mac == NULL)
@@ -101,13 +100,20 @@ static int mac_digest_sign_init(void *vpmacctx, const char *mdname, void *vkey,
     const char *ciphername = NULL, *engine = NULL;
 
     if (!ossl_prov_is_running()
-            || pmacctx == NULL
-            || vkey == NULL
-            || !ossl_mac_key_up_ref(vkey))
+        || pmacctx == NULL)
         return 0;
 
-    ossl_mac_key_free(pmacctx->key);
-    pmacctx->key = vkey;
+    if (pmacctx->key == NULL && vkey == NULL) {
+        ERR_raise(ERR_LIB_PROV, PROV_R_NO_KEY_SET);
+        return 0;
+    }
+
+    if (vkey != NULL) {
+        if (!ossl_mac_key_up_ref(vkey))
+            return 0;
+        ossl_mac_key_free(pmacctx->key);
+        pmacctx->key = vkey;
+    }
 
     if (pmacctx->key->cipher.cipher != NULL)
         ciphername = (char *)EVP_CIPHER_get0_name(pmacctx->key->cipher.cipher);
@@ -116,12 +122,11 @@ static int mac_digest_sign_init(void *vpmacctx, const char *mdname, void *vkey,
         engine = (char *)ENGINE_get_id(pmacctx->key->cipher.engine);
 #endif
 
-    if (!ossl_prov_set_macctx(pmacctx->macctx, NULL,
+    if (!ossl_prov_set_macctx(pmacctx->macctx,
                               (char *)ciphername,
                               (char *)mdname,
                               (char *)engine,
-                              pmacctx->key->properties,
-                              NULL, 0))
+                              pmacctx->key->properties))
         return 0;
 
     if (!EVP_MAC_init(pmacctx->macctx, pmacctx->key->priv_key,
@@ -250,7 +255,7 @@ MAC_SETTABLE_CTX_PARAMS(cmac, "CMAC")
           (void (*)(void))mac_set_ctx_params }, \
         { OSSL_FUNC_SIGNATURE_SETTABLE_CTX_PARAMS, \
           (void (*)(void))mac_##funcname##_settable_ctx_params }, \
-        { 0, NULL } \
+        OSSL_DISPATCH_END \
     };
 
 MAC_SIGNATURE_FUNCTIONS(hmac)

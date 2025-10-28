@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -7,7 +7,10 @@
  * https://www.openssl.org/source/license.html
  */
 
-/* callback functions used by s_client, s_server, and s_time */
+/*
+ * callback functions used by s_client, s_server, and s_time,
+ * as well as other common logic for those apps
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> /* for memcpy() and strcmp() */
@@ -76,26 +79,36 @@ int verify_callback(int ok, X509_STORE_CTX *ctx)
     }
     switch (err) {
     case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT:
-        BIO_puts(bio_err, "issuer= ");
-        X509_NAME_print_ex(bio_err, X509_get_issuer_name(err_cert),
-                           0, get_nameopt());
-        BIO_puts(bio_err, "\n");
+        if (err_cert != NULL) {
+            BIO_puts(bio_err, "issuer= ");
+            X509_NAME_print_ex(bio_err, X509_get_issuer_name(err_cert),
+                               0, get_nameopt());
+            BIO_puts(bio_err, "\n");
+        }
         break;
     case X509_V_ERR_CERT_NOT_YET_VALID:
     case X509_V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD:
-        BIO_printf(bio_err, "notBefore=");
-        ASN1_TIME_print(bio_err, X509_get0_notBefore(err_cert));
-        BIO_printf(bio_err, "\n");
+        if (err_cert != NULL) {
+            BIO_printf(bio_err, "notBefore=");
+            ASN1_TIME_print(bio_err, X509_get0_notBefore(err_cert));
+            BIO_printf(bio_err, "\n");
+        }
         break;
     case X509_V_ERR_CERT_HAS_EXPIRED:
     case X509_V_ERR_ERROR_IN_CERT_NOT_AFTER_FIELD:
-        BIO_printf(bio_err, "notAfter=");
-        ASN1_TIME_print(bio_err, X509_get0_notAfter(err_cert));
-        BIO_printf(bio_err, "\n");
+        if (err_cert != NULL) {
+            BIO_printf(bio_err, "notAfter=");
+            ASN1_TIME_print(bio_err, X509_get0_notAfter(err_cert));
+            BIO_printf(bio_err, "\n");
+        }
         break;
     case X509_V_ERR_NO_EXPLICIT_POLICY:
         if (!verify_args.quiet)
             policies_print(ctx);
+        break;
+    case X509_V_ERR_OCSP_NO_RESPONSE:
+        if (!verify_args.quiet)
+            BIO_printf(bio_err, "no OCSP response(s) for certificate(s) found.\n");
         break;
     }
     if (err == X509_V_OK && ok == 2 && !verify_args.quiet)
@@ -146,6 +159,7 @@ int set_cert_key_stuff(SSL_CTX *ctx, X509 *cert, EVP_PKEY *key,
                        STACK_OF(X509) *chain, int build_chain)
 {
     int chflags = chain ? SSL_BUILD_CHAIN_FLAG_CHECK : 0;
+
     if (cert == NULL)
         return 1;
     if (SSL_CTX_use_certificate(ctx, cert) <= 0) {
@@ -199,6 +213,7 @@ static void ssl_print_client_cert_types(BIO *bio, SSL *s)
     const unsigned char *p;
     int i;
     int cert_type_num = SSL_get0_certificate_types(s, &p);
+
     if (!cert_type_num)
         return;
     BIO_puts(bio, "Client Certificate Types: ");
@@ -228,32 +243,34 @@ static const char *get_sigtype(int nid)
     case EVP_PKEY_DSA:
         return "DSA";
 
-     case EVP_PKEY_EC:
+    case EVP_PKEY_EC:
         return "ECDSA";
 
-     case NID_ED25519:
-        return "Ed25519";
+    case NID_ED25519:
+        return "ed25519";
 
-     case NID_ED448:
-        return "Ed448";
+    case NID_ED448:
+        return "ed448";
 
-     case NID_id_GostR3410_2001:
+    case NID_id_GostR3410_2001:
         return "gost2001";
 
-     case NID_id_GostR3410_2012_256:
+    case NID_id_GostR3410_2012_256:
         return "gost2012_256";
 
-     case NID_id_GostR3410_2012_512:
+    case NID_id_GostR3410_2012_512:
         return "gost2012_512";
 
     default:
-        return NULL;
+        /* Try to output provider-registered sig alg name */
+        return OBJ_nid2sn(nid);
     }
 }
 
 static int do_print_sigalgs(BIO *out, SSL *s, int shared)
 {
     int i, nsig, client;
+
     client = SSL_is_server(s) ? 0 : 1;
     if (shared)
         nsig = SSL_get_shared_sigalgs(s, 0, NULL, NULL, NULL, NULL, NULL);
@@ -279,6 +296,26 @@ static int do_print_sigalgs(BIO *out, SSL *s, int shared)
             SSL_get_sigalgs(s, i, &sign_nid, &hash_nid, NULL, &rsign, &rhash);
         if (i)
             BIO_puts(out, ":");
+        switch (rsign | rhash << 8) {
+        case 0x0809:
+            BIO_puts(out, "rsa_pss_pss_sha256");
+            continue;
+        case 0x080a:
+            BIO_puts(out, "rsa_pss_pss_sha384");
+            continue;
+        case 0x080b:
+            BIO_puts(out, "rsa_pss_pss_sha512");
+            continue;
+        case 0x081a:
+            BIO_puts(out, "ecdsa_brainpoolP256r1_sha256");
+            continue;
+        case 0x081b:
+            BIO_puts(out, "ecdsa_brainpoolP384r1_sha384");
+            continue;
+        case 0x081c:
+            BIO_puts(out, "ecdsa_brainpoolP512r1_sha512");
+            continue;
+        }
         sstr = get_sigtype(sign_nid);
         if (sstr)
             BIO_printf(out, "%s", sstr);
@@ -295,14 +332,18 @@ static int do_print_sigalgs(BIO *out, SSL *s, int shared)
 
 int ssl_print_sigalgs(BIO *out, SSL *s)
 {
+    const char *name;
     int nid;
+
     if (!SSL_is_server(s))
         ssl_print_client_cert_types(out, s);
     do_print_sigalgs(out, s, 0);
     do_print_sigalgs(out, s, 1);
     if (SSL_get_peer_signature_nid(s, &nid) && nid != NID_undef)
         BIO_printf(out, "Peer signing digest: %s\n", OBJ_nid2sn(nid));
-    if (SSL_get_peer_signature_type_nid(s, &nid))
+    if (SSL_get0_peer_signature_name(s, &name))
+        BIO_printf(out, "Peer signature type: %s\n", name);
+    else if (SSL_get_peer_signature_type_nid(s, &nid))
         BIO_printf(out, "Peer signature type: %s\n", get_sigtype(nid));
     return 1;
 }
@@ -312,6 +353,7 @@ int ssl_print_point_formats(BIO *out, SSL *s)
 {
     int i, nformats;
     const char *pformats;
+
     nformats = SSL_get0_ec_point_formats(s, &pformats);
     if (nformats <= 0)
         return 1;
@@ -381,14 +423,26 @@ int ssl_print_groups(BIO *out, SSL *s, int noshared)
 
 int ssl_print_tmp_key(BIO *out, SSL *s)
 {
+    const char *keyname;
     EVP_PKEY *key;
 
-    if (!SSL_get_peer_tmp_key(s, &key))
+    if (!SSL_get_peer_tmp_key(s, &key)) {
+        if (SSL_version(s) == TLS1_3_VERSION)
+            BIO_printf(out, "Negotiated TLS1.3 group: %s\n",
+                       SSL_group_to_name(s, SSL_get_negotiated_group(s)));
         return 1;
-    BIO_puts(out, "Server Temp Key: ");
+    }
+
+    BIO_puts(out, "Peer Temp Key: ");
     switch (EVP_PKEY_get_id(key)) {
     case EVP_PKEY_RSA:
         BIO_printf(out, "RSA, %d bits\n", EVP_PKEY_get_bits(key));
+        break;
+
+    case EVP_PKEY_KEYMGMT:
+        if ((keyname = EVP_PKEY_get0_type_name(key)) == NULL)
+            keyname = "?";
+        BIO_printf(out, "%s\n", keyname);
         break;
 
     case EVP_PKEY_DH:
@@ -419,12 +473,15 @@ long bio_dump_callback(BIO *bio, int cmd, const char *argp, size_t len,
                        int argi, long argl, int ret, size_t *processed)
 {
     BIO *out;
+    BIO_MMSG_CB_ARGS *mmsgargs;
+    size_t i;
 
     out = (BIO *)BIO_get_callback_arg(bio);
     if (out == NULL)
         return ret;
 
-    if (cmd == (BIO_CB_READ | BIO_CB_RETURN)) {
+    switch (cmd) {
+    case (BIO_CB_READ | BIO_CB_RETURN):
         if (ret > 0 && processed != NULL) {
             BIO_printf(out, "read from %p [%p] (%zu bytes => %zu (0x%zX))\n",
                        (void *)bio, (void *)argp, len, *processed, *processed);
@@ -433,7 +490,9 @@ long bio_dump_callback(BIO *bio, int cmd, const char *argp, size_t len,
             BIO_printf(out, "read from %p [%p] (%zu bytes => %d)\n",
                        (void *)bio, (void *)argp, len, ret);
         }
-    } else if (cmd == (BIO_CB_WRITE | BIO_CB_RETURN)) {
+        break;
+
+    case (BIO_CB_WRITE | BIO_CB_RETURN):
         if (ret > 0 && processed != NULL) {
             BIO_printf(out, "write to %p [%p] (%zu bytes => %zu (0x%zX))\n",
                        (void *)bio, (void *)argp, len, *processed, *processed);
@@ -442,6 +501,53 @@ long bio_dump_callback(BIO *bio, int cmd, const char *argp, size_t len,
             BIO_printf(out, "write to %p [%p] (%zu bytes => %d)\n",
                        (void *)bio, (void *)argp, len, ret);
         }
+        break;
+
+    case (BIO_CB_RECVMMSG | BIO_CB_RETURN):
+        mmsgargs = (BIO_MMSG_CB_ARGS *)argp;
+        if (ret > 0) {
+            for (i = 0; i < *(mmsgargs->msgs_processed); i++) {
+                BIO_MSG *msg = (BIO_MSG *)((char *)mmsgargs->msg
+                                           + (i * mmsgargs->stride));
+
+                BIO_printf(out, "read from %p [%p] (%zu bytes => %zu (0x%zX))\n",
+                           (void *)bio, (void *)msg->data, msg->data_len,
+                           msg->data_len, msg->data_len);
+                if (msg->data_len <= INT_MAX)
+                    BIO_dump(out, msg->data, (int)msg->data_len);
+            }
+        } else if (mmsgargs->num_msg > 0) {
+            BIO_MSG *msg = mmsgargs->msg;
+
+            BIO_printf(out, "read from %p [%p] (%zu bytes => %d)\n",
+                       (void *)bio, (void *)msg->data, msg->data_len, ret);
+        }
+        break;
+
+    case (BIO_CB_SENDMMSG | BIO_CB_RETURN):
+        mmsgargs = (BIO_MMSG_CB_ARGS *)argp;
+        if (ret > 0) {
+            for (i = 0; i < *(mmsgargs->msgs_processed); i++) {
+                BIO_MSG *msg = (BIO_MSG *)((char *)mmsgargs->msg
+                                           + (i * mmsgargs->stride));
+
+                BIO_printf(out, "write to %p [%p] (%zu bytes => %zu (0x%zX))\n",
+                           (void *)bio, (void *)msg->data, msg->data_len,
+                           msg->data_len, msg->data_len);
+                if (msg->data_len <= INT_MAX)
+                    BIO_dump(out, msg->data, (int)msg->data_len);
+            }
+        } else if (mmsgargs->num_msg > 0) {
+            BIO_MSG *msg = mmsgargs->msg;
+
+            BIO_printf(out, "write to %p [%p] (%zu bytes => %d)\n",
+                       (void *)bio, (void *)msg->data, msg->data_len, ret);
+        }
+        break;
+
+    default:
+        /* do nothing */
+        break;
     }
     return ret;
 }
@@ -545,6 +651,7 @@ static STRINT_PAIR handshakes[] = {
     {", CertificateStatus", SSL3_MT_CERTIFICATE_STATUS},
     {", SupplementalData", SSL3_MT_SUPPLEMENTAL_DATA},
     {", KeyUpdate", SSL3_MT_KEY_UPDATE},
+    {", CompressedCertificate", SSL3_MT_COMPRESSED_CERTIFICATE},
 #ifndef OPENSSL_NO_NEXTPROTONEG
     {", NextProto", SSL3_MT_NEXT_PROTO},
 #endif
@@ -638,7 +745,7 @@ void msg_cb(int write_p, int version, int content_type, const void *buf,
     (void)BIO_flush(bio);
 }
 
-static STRINT_PAIR tlsext_types[] = {
+static const STRINT_PAIR tlsext_types[] = {
     {"server name", TLSEXT_TYPE_server_name},
     {"max fragment length", TLSEXT_TYPE_max_fragment_length},
     {"client certificate URL", TLSEXT_TYPE_client_certificate_url},
@@ -657,6 +764,8 @@ static STRINT_PAIR tlsext_types[] = {
     {"session ticket", TLSEXT_TYPE_session_ticket},
     {"renegotiation info", TLSEXT_TYPE_renegotiate},
     {"signed certificate timestamps", TLSEXT_TYPE_signed_certificate_timestamp},
+    {"client cert type", TLSEXT_TYPE_client_cert_type},
+    {"server cert type", TLSEXT_TYPE_server_cert_type},
     {"TLS padding", TLSEXT_TYPE_padding},
 #ifdef TLSEXT_TYPE_next_proto_neg
     {"next protocol", TLSEXT_TYPE_next_proto_neg},
@@ -671,12 +780,14 @@ static STRINT_PAIR tlsext_types[] = {
 #ifdef TLSEXT_TYPE_extended_master_secret
     {"extended master secret", TLSEXT_TYPE_extended_master_secret},
 #endif
+    {"compress certificate", TLSEXT_TYPE_compress_certificate},
     {"key share", TLSEXT_TYPE_key_share},
     {"supported versions", TLSEXT_TYPE_supported_versions},
     {"psk", TLSEXT_TYPE_psk},
     {"psk kex modes", TLSEXT_TYPE_psk_kex_modes},
     {"certificate authorities", TLSEXT_TYPE_certificate_authorities},
     {"post handshake auth", TLSEXT_TYPE_post_handshake_auth},
+    {"early_data", TLSEXT_TYPE_early_data},
     {NULL}
 };
 
@@ -895,6 +1006,7 @@ static int set_cert_cb(SSL *ssl, void *arg)
     SSL_EXCERT *exc = arg;
 #ifdef CERT_CB_TEST_RETRY
     static int retry_cnt;
+
     if (retry_cnt < 5) {
         retry_cnt++;
         BIO_printf(bio_err,
@@ -983,7 +1095,7 @@ void ssl_excert_free(SSL_EXCERT *exc)
     while (exc) {
         X509_free(exc->cert);
         EVP_PKEY_free(exc->key);
-        sk_X509_pop_free(exc->chain, X509_free);
+        OSSL_STACK_OF_X509_free(exc->chain);
         curr = exc;
         exc = exc->next;
         OPENSSL_free(curr);
@@ -993,6 +1105,7 @@ void ssl_excert_free(SSL_EXCERT *exc)
 int load_excert(SSL_EXCERT **pexc)
 {
     SSL_EXCERT *exc = *pexc;
+
     if (exc == NULL)
         return 1;
     /* If nothing in list, free and set to NULL */
@@ -1098,6 +1211,7 @@ static void print_raw_cipherlist(SSL *s)
     const unsigned char *rlist;
     static const unsigned char scsv_id[] = { 0, 0xFF };
     size_t i, rlistlen, num;
+
     if (!SSL_is_server(s))
         return;
     num = SSL_get0_raw_cipherlist(s, NULL);
@@ -1151,7 +1265,7 @@ static char *hexencode(const unsigned char *data, size_t len)
 void print_verify_detail(SSL *s, BIO *bio)
 {
     int mdpth;
-    EVP_PKEY *mspki;
+    EVP_PKEY *mspki = NULL;
     long verify_err = SSL_get_verify_result(s);
 
     if (verify_err == X509_V_OK) {
@@ -1186,52 +1300,56 @@ void print_verify_detail(SSL *s, BIO *bio)
             hexdata = hexencode(data + dlen - TLSA_TAIL_SIZE, TLSA_TAIL_SIZE);
         else
             hexdata = hexencode(data, dlen);
-        BIO_printf(bio, "DANE TLSA %d %d %d %s%s %s at depth %d\n",
+        BIO_printf(bio, "DANE TLSA %d %d %d %s%s ",
                    usage, selector, mtype,
-                   (dlen > TLSA_TAIL_SIZE) ? "..." : "", hexdata,
-                   (mspki != NULL) ? "signed the certificate" :
-                   mdpth ? "matched TA certificate" : "matched EE certificate",
-                   mdpth);
+                   (dlen > TLSA_TAIL_SIZE) ? "..." : "", hexdata);
+        if (SSL_get0_peer_rpk(s) == NULL)
+            BIO_printf(bio, "%s certificate at depth %d\n",
+                       (mspki != NULL) ? "signed the peer" :
+                       mdpth ? "matched the TA" : "matched the EE", mdpth);
+        else
+            BIO_printf(bio, "matched the peer raw public key\n");
         OPENSSL_free(hexdata);
     }
 }
 
 void print_ssl_summary(SSL *s)
 {
+    const char *sigalg;
     const SSL_CIPHER *c;
-    X509 *peer;
+    X509 *peer = SSL_get0_peer_certificate(s);
+    EVP_PKEY *peer_rpk = SSL_get0_peer_rpk(s);
+    int nid;
 
     BIO_printf(bio_err, "Protocol version: %s\n", SSL_get_version(s));
     print_raw_cipherlist(s);
     c = SSL_get_current_cipher(s);
     BIO_printf(bio_err, "Ciphersuite: %s\n", SSL_CIPHER_get_name(c));
     do_print_sigalgs(bio_err, s, 0);
-    peer = SSL_get0_peer_certificate(s);
     if (peer != NULL) {
-        int nid;
-
         BIO_puts(bio_err, "Peer certificate: ");
         X509_NAME_print_ex(bio_err, X509_get_subject_name(peer),
                            0, get_nameopt());
         BIO_puts(bio_err, "\n");
         if (SSL_get_peer_signature_nid(s, &nid))
             BIO_printf(bio_err, "Hash used: %s\n", OBJ_nid2sn(nid));
-        if (SSL_get_peer_signature_type_nid(s, &nid))
-            BIO_printf(bio_err, "Signature type: %s\n", get_sigtype(nid));
+        if (SSL_get0_peer_signature_name(s, &sigalg))
+            BIO_printf(bio_err, "Signature type: %s\n", sigalg);
+        print_verify_detail(s, bio_err);
+    } else if (peer_rpk != NULL) {
+        BIO_printf(bio_err, "Peer used raw public key\n");
+        if (SSL_get0_peer_signature_name(s, &sigalg))
+            BIO_printf(bio_err, "Signature type: %s\n", sigalg);
         print_verify_detail(s, bio_err);
     } else {
-        BIO_puts(bio_err, "No peer certificate\n");
+        BIO_puts(bio_err, "No peer certificate or raw public key\n");
     }
 #ifndef OPENSSL_NO_EC
     ssl_print_point_formats(bio_err, s);
     if (SSL_is_server(s))
         ssl_print_groups(bio_err, s, 1);
-    else
-        ssl_print_tmp_key(bio_err, s);
-#else
-    if (!SSL_is_server(s))
-        ssl_print_tmp_key(bio_err, s);
 #endif
+    ssl_print_tmp_key(bio_err, s);
 }
 
 int config_ctx(SSL_CONF_CTX *cctx, STACK_OF(OPENSSL_STRING) *str,
@@ -1275,6 +1393,7 @@ static int add_crls_store(X509_STORE *st, STACK_OF(X509_CRL) *crls)
 int ssl_ctx_add_crls(SSL_CTX *ctx, STACK_OF(X509_CRL) *crls, int crl_download)
 {
     X509_STORE *st;
+
     st = SSL_CTX_get_cert_store(ctx);
     add_crls_store(st, crls);
     if (crl_download)
@@ -1291,6 +1410,7 @@ int ssl_load_stores(SSL_CTX *ctx,
 {
     X509_STORE *vfy = NULL, *ch = NULL;
     int rv = 0;
+
     if (vfyCApath != NULL || vfyCAfile != NULL || vfyCAstore != NULL) {
         vfy = X509_STORE_new();
         if (vfy == NULL)
@@ -1302,7 +1422,8 @@ int ssl_load_stores(SSL_CTX *ctx,
         if (vfyCAstore != NULL && !X509_STORE_load_store(vfy, vfyCAstore))
             goto err;
         add_crls_store(vfy, crls);
-        SSL_CTX_set1_verify_cert_store(ctx, vfy);
+        if (SSL_CTX_set1_verify_cert_store(ctx, vfy) == 0)
+            goto err;
         if (crl_download)
             store_setup_crl_download(vfy);
     }
@@ -1316,7 +1437,8 @@ int ssl_load_stores(SSL_CTX *ctx,
             goto err;
         if (chCAstore != NULL && !X509_STORE_load_store(ch, chCAstore))
             goto err;
-        SSL_CTX_set1_chain_cert_store(ctx, ch);
+        if (SSL_CTX_set1_chain_cert_store(ctx, ch) == 0)
+            goto err;
     }
     rv = 1;
  err:
@@ -1367,6 +1489,7 @@ static int security_callback_debug(const SSL *s, const SSL_CTX *ctx,
     int rv, show_bits = 1, cert_md = 0;
     const char *nm;
     int show_nm;
+
     rv = sdb->old_cb(s, ctx, op, bits, nid, other, ex);
     if (rv == 1 && sdb->verbose < 2)
         return 1;
@@ -1420,14 +1543,18 @@ static int security_callback_debug(const SSL *s, const SSL_CTX *ctx,
         {
             if (cert_md) {
                 int sig_nid = X509_get_signature_nid(other);
+
                 BIO_puts(sdb->out, OBJ_nid2sn(sig_nid));
             } else {
                 EVP_PKEY *pkey = X509_get0_pubkey(other);
-                const char *algname = "";
-                EVP_PKEY_asn1_get0_info(NULL, NULL, NULL, NULL,
-                                        &algname, EVP_PKEY_get0_asn1(pkey));
-                BIO_printf(sdb->out, "%s, bits=%d",
-                           algname, EVP_PKEY_get_bits(pkey));
+
+                if (pkey == NULL) {
+                    BIO_printf(sdb->out, "Public key missing");
+                } else {
+                    BIO_printf(sdb->out, "%s, bits=%d",
+                               EVP_PKEY_get0_type_name(pkey),
+                               EVP_PKEY_get_bits(pkey));
+                }
             }
             break;
         }
@@ -1537,9 +1664,31 @@ void print_ca_names(BIO *bio, SSL *s)
         return;
     }
 
-    BIO_printf(bio, "---\nAcceptable %s certificate CA names\n",cs);
+    BIO_printf(bio, "---\nAcceptable %s certificate CA names\n", cs);
     for (i = 0; i < sk_X509_NAME_num(sk); i++) {
         X509_NAME_print_ex(bio, sk_X509_NAME_value(sk, i), 0, get_nameopt());
         BIO_write(bio, "\n", 1);
     }
+}
+
+void ssl_print_secure_renegotiation_notes(BIO *bio, SSL *s)
+{
+    if (SSL_VERSION_ALLOWS_RENEGOTIATION(s)) {
+        BIO_printf(bio, "Secure Renegotiation IS%s supported\n",
+                   SSL_get_secure_renegotiation_support(s) ? "" : " NOT");
+    } else {
+        BIO_printf(bio, "This TLS version forbids renegotiation.\n");
+    }
+}
+
+int progress_cb(EVP_PKEY_CTX *ctx)
+{
+    BIO *b = EVP_PKEY_CTX_get_app_data(ctx);
+    int p = EVP_PKEY_CTX_get_keygen_info(ctx, 0);
+    static const char symbols[] = ".+*\n";
+    char c = (p >= 0 && (size_t)p <= sizeof(symbols) - 1) ? symbols[p] : '?';
+
+    BIO_write(b, &c, 1);
+    (void)BIO_flush(b);
+    return 1;
 }

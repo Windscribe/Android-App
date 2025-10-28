@@ -35,6 +35,18 @@ static int name##_get_params(OSSL_PARAM params[])                              \
 { OSSL_FUNC_DIGEST_GETTABLE_PARAMS,                                            \
   (void (*)(void))ossl_digest_default_gettable_params }
 
+# define PROV_FUNC_DIGEST_FINAL(name, dgstsize, fin)                           \
+static OSSL_FUNC_digest_final_fn name##_internal_final;                        \
+static int name##_internal_final(void *ctx, unsigned char *out, size_t *outl,  \
+                                 size_t outsz)                                 \
+{                                                                              \
+    if (ossl_prov_is_running() && outsz >= dgstsize && fin(out, ctx)) {        \
+        *outl = dgstsize;                                                      \
+        return 1;                                                              \
+    }                                                                          \
+    return 0;                                                                  \
+}
+
 # define PROV_DISPATCH_FUNC_DIGEST_CONSTRUCT_START(                            \
     name, CTX, blksize, dgstsize, flags, upd, fin)                             \
 static OSSL_FUNC_digest_newctx_fn name##_newctx;                               \
@@ -58,16 +70,13 @@ static void *name##_dupctx(void *ctx)                                          \
         *ret = *in;                                                            \
     return ret;                                                                \
 }                                                                              \
-static OSSL_FUNC_digest_final_fn name##_internal_final;                        \
-static int name##_internal_final(void *ctx, unsigned char *out, size_t *outl,  \
-                                 size_t outsz)                                 \
+static void name##_copyctx(void *voutctx, void *vinctx)                        \
 {                                                                              \
-    if (ossl_prov_is_running() && outsz >= dgstsize && fin(out, ctx)) {        \
-        *outl = dgstsize;                                                      \
-        return 1;                                                              \
-    }                                                                          \
-    return 0;                                                                  \
+    CTX *outctx = (CTX *)voutctx;                                              \
+    CTX *inctx = (CTX *)vinctx;                                                \
+    *outctx = *inctx;                                                          \
 }                                                                              \
+PROV_FUNC_DIGEST_FINAL(name, dgstsize, fin)                                    \
 PROV_FUNC_DIGEST_GET_PARAM(name, blksize, dgstsize, flags)                     \
 const OSSL_DISPATCH ossl_##name##_functions[] = {                              \
     { OSSL_FUNC_DIGEST_NEWCTX, (void (*)(void))name##_newctx },                \
@@ -75,6 +84,7 @@ const OSSL_DISPATCH ossl_##name##_functions[] = {                              \
     { OSSL_FUNC_DIGEST_FINAL, (void (*)(void))name##_internal_final },         \
     { OSSL_FUNC_DIGEST_FREECTX, (void (*)(void))name##_freectx },              \
     { OSSL_FUNC_DIGEST_DUPCTX, (void (*)(void))name##_dupctx },                \
+    { OSSL_FUNC_DIGEST_COPYCTX, (void (*)(void))name##_copyctx },              \
     PROV_DISPATCH_FUNC_DIGEST_GET_PARAMS(name)
 
 # define PROV_DISPATCH_FUNC_DIGEST_CONSTRUCT_END                               \

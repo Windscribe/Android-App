@@ -4,8 +4,6 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#elif defined(_MSC_VER)
-#include "config-msvc.h"
 #endif
 
 #include "syshead.h"
@@ -13,10 +11,10 @@
 #include "misc.h"
 #include "run_command.h"
 #include "lladdr.h"
+#include "proto.h"
 
 int
-set_lladdr(openvpn_net_ctx_t *ctx, const char *ifname, const char *lladdr,
-           const struct env_set *es)
+set_lladdr(openvpn_net_ctx_t *ctx, const char *ifname, const char *lladdr, const struct env_set *es)
 {
     int r;
 
@@ -26,34 +24,23 @@ set_lladdr(openvpn_net_ctx_t *ctx, const char *ifname, const char *lladdr,
     }
 
 #if defined(TARGET_LINUX)
-    uint8_t addr[ETH_ALEN];
+    uint8_t addr[OPENVPN_ETH_ALEN];
 
     sscanf(lladdr, MAC_FMT, MAC_SCAN_ARG(addr));
     r = (net_addr_ll_set(ctx, ifname, addr) == 0);
 #else /* if defined(TARGET_LINUX) */
     struct argv argv = argv_new();
 #if defined(TARGET_SOLARIS)
-    argv_printf(&argv,
-                "%s %s ether %s",
-                IFCONFIG_PATH,
-                ifname, lladdr);
+    argv_printf(&argv, "%s %s ether %s", IFCONFIG_PATH, ifname, lladdr);
 #elif defined(TARGET_OPENBSD)
-    argv_printf(&argv,
-                "%s %s lladdr %s",
-                IFCONFIG_PATH,
-                ifname, lladdr);
+    argv_printf(&argv, "%s %s lladdr %s", IFCONFIG_PATH, ifname, lladdr);
 #elif defined(TARGET_DARWIN)
-    argv_printf(&argv,
-                "%s %s lladdr %s",
-                IFCONFIG_PATH,
-                ifname, lladdr);
+    argv_printf(&argv, "%s %s lladdr %s", IFCONFIG_PATH, ifname, lladdr);
 #elif defined(TARGET_FREEBSD)
-    argv_printf(&argv,
-                "%s %s ether %s",
-                IFCONFIG_PATH,
-                ifname, lladdr);
+    argv_printf(&argv, "%s %s ether %s", IFCONFIG_PATH, ifname, lladdr);
 #else  /* if defined(TARGET_SOLARIS) */
-    msg(M_WARN, "Sorry, but I don't know how to configure link layer addresses on this operating system.");
+    msg(M_WARN,
+        "Sorry, but I don't know how to configure link layer addresses on this operating system.");
     return -1;
 #endif /* if defined(TARGET_SOLARIS) */
     argv_msg(M_INFO, &argv);

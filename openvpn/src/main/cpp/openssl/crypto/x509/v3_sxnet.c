@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1999-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -78,6 +78,8 @@ static int sxnet_i2r(X509V3_EXT_METHOD *method, SXNET *sx, BIO *out,
     for (i = 0; i < sk_SXNETID_num(sx->ids); i++) {
         id = sk_SXNETID_value(sx->ids, i);
         tmp = i2s_ASN1_INTEGER(NULL, id->zone);
+        if (tmp == NULL)
+            return 0;
         BIO_printf(out, "\n%*sZone: %s, User: ", indent, "", tmp);
         OPENSSL_free(tmp);
         ASN1_STRING_print(out, id->user);
@@ -101,8 +103,10 @@ static SXNET *sxnet_v2i(X509V3_EXT_METHOD *method, X509V3_CTX *ctx,
     int i;
     for (i = 0; i < sk_CONF_VALUE_num(nval); i++) {
         cnf = sk_CONF_VALUE_value(nval, i);
-        if (!SXNET_add_id_asc(&sx, cnf->name, cnf->value, -1))
+        if (!SXNET_add_id_asc(&sx, cnf->name, cnf->value, -1)) {
+            SXNET_free(sx);
             return NULL;
+	}
     }
     return sx;
 }
@@ -121,7 +125,11 @@ int SXNET_add_id_asc(SXNET **psx, const char *zone, const char *user, int userle
         ERR_raise(ERR_LIB_X509V3, X509V3_R_ERROR_CONVERTING_ZONE);
         return 0;
     }
-    return SXNET_add_id_INTEGER(psx, izone, user, userlen);
+    if (!SXNET_add_id_INTEGER(psx, izone, user, userlen)) {
+        ASN1_INTEGER_free(izone);
+        return 0;
+    }
+    return 1;
 }
 
 /* Add an id given the zone as an unsigned long */
@@ -133,12 +141,15 @@ int SXNET_add_id_ulong(SXNET **psx, unsigned long lzone, const char *user,
 
     if ((izone = ASN1_INTEGER_new()) == NULL
         || !ASN1_INTEGER_set(izone, lzone)) {
-        ERR_raise(ERR_LIB_X509V3, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_X509V3, ERR_R_ASN1_LIB);
         ASN1_INTEGER_free(izone);
         return 0;
     }
-    return SXNET_add_id_INTEGER(psx, izone, user, userlen);
-
+    if (!SXNET_add_id_INTEGER(psx, izone, user, userlen)) {
+        ASN1_INTEGER_free(izone);
+        return 0;
+    }
+    return 1;
 }
 
 /*
@@ -157,41 +168,51 @@ int SXNET_add_id_INTEGER(SXNET **psx, ASN1_INTEGER *zone, const char *user,
         return 0;
     }
     if (userlen == -1)
-        userlen = strlen(user);
+        userlen = (int)strlen(user);
     if (userlen > 64) {
         ERR_raise(ERR_LIB_X509V3, X509V3_R_USER_TOO_LONG);
         return 0;
     }
     if (*psx == NULL) {
-        if ((sx = SXNET_new()) == NULL)
+        if ((sx = SXNET_new()) == NULL) {
+            ERR_raise(ERR_LIB_X509V3, ERR_R_ASN1_LIB);
             goto err;
-        if (!ASN1_INTEGER_set(sx->version, 0))
+        }
+        if (!ASN1_INTEGER_set(sx->version, 0)) {
+            ERR_raise(ERR_LIB_X509V3, ERR_R_ASN1_LIB);
             goto err;
-        *psx = sx;
+        }
     } else
         sx = *psx;
     if (SXNET_get_id_INTEGER(sx, zone)) {
         ERR_raise(ERR_LIB_X509V3, X509V3_R_DUPLICATE_ZONE_ID);
+        if (*psx == NULL)
+            SXNET_free(sx);
         return 0;
     }
 
-    if ((id = SXNETID_new()) == NULL)
+    if ((id = SXNETID_new()) == NULL) {
+        ERR_raise(ERR_LIB_X509V3, ERR_R_ASN1_LIB);
         goto err;
-    if (userlen == -1)
-        userlen = strlen(user);
+    }
 
-    if (!ASN1_OCTET_STRING_set(id->user, (const unsigned char *)user, userlen))
+    if (!ASN1_OCTET_STRING_set(id->user, (const unsigned char *)user, userlen)){
+        ERR_raise(ERR_LIB_X509V3, ERR_R_ASN1_LIB);
         goto err;
-    if (!sk_SXNETID_push(sx->ids, id))
+    }
+    if (!sk_SXNETID_push(sx->ids, id)) {
+        ERR_raise(ERR_LIB_X509V3, ERR_R_CRYPTO_LIB);
         goto err;
+    }
+    ASN1_INTEGER_free(id->zone);
     id->zone = zone;
+    *psx = sx;
     return 1;
 
  err:
-    ERR_raise(ERR_LIB_X509V3, ERR_R_MALLOC_FAILURE);
     SXNETID_free(id);
-    SXNET_free(sx);
-    *psx = NULL;
+    if (*psx == NULL)
+        SXNET_free(sx);
     return 0;
 }
 
@@ -216,7 +237,7 @@ ASN1_OCTET_STRING *SXNET_get_id_ulong(SXNET *sx, unsigned long lzone)
 
     if ((izone = ASN1_INTEGER_new()) == NULL
         || !ASN1_INTEGER_set(izone, lzone)) {
-        ERR_raise(ERR_LIB_X509V3, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_X509V3, ERR_R_ASN1_LIB);
         ASN1_INTEGER_free(izone);
         return NULL;
     }

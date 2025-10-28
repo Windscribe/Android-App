@@ -893,7 +893,7 @@ bn_mul8x_mont_neon:
 
 	vst1.32	{d10[0]}, [r7, :32]		@ top-most bit
 	sub	r3,r3,r5,lsl#2			@ rewind r3
-	subs	r1,sp,#0				@ clear carry flag
+	subs	r1,sp,#0				@ set carry flag
 	add	r2,sp,r5,lsl#2
 
 .LNEON_sub:
@@ -952,8 +952,9 @@ bn_mul8x_mont_neon:
 	bx    lr						@ bx lr
 .size	bn_mul8x_mont_neon,.-bn_mul8x_mont_neon
 #endif
-.asciz	"Montgomery multiplication for ARMv4/NEON, CRYPTOGAMS by <appro@openssl.org>"
+.asciz	"Montgomery multiplication for ARMv4/NEON, CRYPTOGAMS by <https://github.com/dot-asm>"
 .align	2
 #if __ARM_MAX_ARCH__>=7
-.comm	OPENSSL_armcap_P,4,4
+.extern	OPENSSL_armcap_P
+.hidden	OPENSSL_armcap_P
 #endif

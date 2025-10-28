@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef OPENVPN_BUFFER_BUFLIST_H
 #define OPENVPN_BUFFER_BUFLIST_H
@@ -30,9 +20,9 @@
 
 namespace openvpn {
 
-  template <template <typename...> class COLLECTION>
-  struct BufferCollection : public COLLECTION<BufferPtr>
-  {
+template <template <typename...> class COLLECTION>
+struct BufferCollection : public COLLECTION<BufferPtr>
+{
     using COLLECTION<BufferPtr>::size;
     using COLLECTION<BufferPtr>::front;
     using COLLECTION<BufferPtr>::empty;
@@ -40,83 +30,83 @@ namespace openvpn {
     using COLLECTION<BufferPtr>::emplace_back;
 
     BufferPtr join(const size_t headroom,
-		   const size_t tailroom,
-		   const bool size_1_optim) const
+                   const size_t tailroom,
+                   const bool size_1_optim) const
     {
-      // special optimization if list contains
-      // a single element that satisfies our
-      // headroom/tailroom constraints.
-      if (size_1_optim
-	  && size() == 1
-	  && front()->offset() >= headroom
-	  && front()->remaining() >= tailroom)
-	return front();
+        // special optimization if list contains
+        // a single element that satisfies our
+        // headroom/tailroom constraints.
+        if (size_1_optim
+            && size() == 1
+            && front()->offset() >= headroom
+            && front()->remaining() >= tailroom)
+            return front();
 
-      // first pass -- measure total size
-      const size_t size = join_size();
+        // first pass -- measure total size
+        const size_t size = join_size();
 
-      // allocate buffer
-      BufferPtr big = new BufferAllocated(size + headroom + tailroom, 0);
-      big->init_headroom(headroom);
+        // allocate buffer
+        auto big = BufferAllocatedRc::Create(size + headroom + tailroom);
+        big->init_headroom(headroom);
 
-      // second pass -- copy data
-      for (auto &b : *this)
-	big->write(b->c_data(), b->size());
+        // second pass -- copy data
+        for (auto &b : *this)
+            big->write(b->c_data(), b->size());
 
-      return big;
+        return big;
     }
 
     BufferPtr join() const
     {
-      return join(0, 0, true);
+        return join(0, 0, true);
     }
 
     size_t join_size() const
     {
-      size_t size = 0;
-      for (auto &b : *this)
-	size += b->size();
-      return size;
+        size_t size = 0;
+        for (auto &b : *this)
+            size += b->size();
+        return size;
     }
 
     std::string to_string() const
     {
-      BufferPtr bp = join();
-      return buf_to_string(*bp);
+        BufferPtr bp = join();
+        return buf_to_string(*bp);
     }
 
     BufferCollection copy() const
     {
-      BufferCollection ret;
-      for (auto &b : *this)
-	ret.emplace_back(new BufferAllocated(*b));
-      return ret;
+        BufferCollection ret;
+        for (auto &b : *this)
+            ret.emplace_back(BufferAllocatedRc::Create(*b));
+        return ret;
     }
 
-    void put_consume(BufferAllocated& buf, const size_t tailroom = 0)
+    void put_consume(BufferAllocated &buf, const size_t tailroom = 0)
     {
-      const size_t s = buf.size();
-      if (!s)
-	return;
-      if (!empty())
-	{
-	  // special optimization if buf data fits in
-	  // back() unused tail capacity -- if so, append
-	  // buf to existing back().
-	  BufferPtr& b = back();
-	  const size_t r = b->remaining(tailroom);
-	  if (s < r)
-	    {
-	      b->write(buf.read_alloc(s), s);
-	      return;
-	    }
-	}
-      emplace_back(new BufferAllocated(std::move(buf)));
+        const size_t s = buf.size();
+        if (!s)
+            return;
+        if (!empty())
+        {
+            // special optimization if buf data fits in
+            // back() unused tail capacity -- if so, append
+            // buf to existing back().
+            BufferPtr &b = back();
+            const size_t r = b->remaining(tailroom);
+            if (s < r)
+            {
+                b->write(buf.read_alloc(s), s);
+                return;
+            }
+        }
+        emplace_back(BufferAllocatedRc::Create(std::move(buf)));
     }
-  };
+};
 
-  typedef BufferCollection<std::list> BufferList;
-  typedef BufferCollection<std::vector> BufferVector;
-}
+typedef BufferCollection<std::list> BufferList;
+typedef BufferCollection<std::vector> BufferVector;
+} // namespace openvpn
 
 #endif

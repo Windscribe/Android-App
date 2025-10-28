@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 // Non-cryptographic random number generator
 
@@ -32,86 +22,80 @@
 
 namespace openvpn {
 
-  class MTRand : public RandomAPI
-  {
+class MTRand : public WeakRandomAPI
+{
   public:
     OPENVPN_EXCEPTION(mtrand_error);
 
     typedef RCPtr<MTRand> Ptr;
     typedef std::mt19937_64 rand_type;
 
-    MTRand(RandomAPI& seed)
-      : rng(gen_seed(seed))
+    MTRand(RandomAPI &seed)
+        : rng(gen_seed(seed))
     {
     }
 
     MTRand()
-      : rng(gen_seed())
+        : rng(gen_seed())
     {
     }
 
     MTRand(const rand_type::result_type seed)
-      : rng(seed)
+        : rng(seed)
     {
     }
 
     // Random algorithm name
-    virtual std::string name() const
+    std::string name() const override
     {
-      return "MTRand";
-    }
-
-    // Return true if algorithm is crypto-strength
-    virtual bool is_crypto() const
-    {
-      return false;
+        return "MTRand";
     }
 
     // Fill buffer with random bytes
-    virtual void rand_bytes(unsigned char *buf, size_t size)
+    void rand_bytes(unsigned char *buf, size_t size) override
     {
-      if (!rndbytes(buf, size))
-	throw mtrand_error("rand_bytes failed");
+        if (!rndbytes(buf, size))
+            throw mtrand_error("rand_bytes failed");
     }
 
     // Like rand_bytes, but don't throw exception.
     // Return true on successs, false on fail.
-    virtual bool rand_bytes_noexcept(unsigned char *buf, size_t size)
+    bool rand_bytes_noexcept(unsigned char *buf, size_t size) override
     {
-      return rndbytes(buf, size);
+        return rndbytes(buf, size);
     }
 
     rand_type::result_type rand()
     {
-      return rng();
+        return rng();
     }
 
   private:
     bool rndbytes(unsigned char *buf, size_t size)
     {
-      while (size--)
-	*buf++ = rbs.get_byte(rng);
-      return true;
+        while (size--)
+            *buf++ = rbs.get_byte(rng);
+        return true;
     }
 
-    static rand_type::result_type gen_seed(RandomAPI& seed)
+    static rand_type::result_type gen_seed(RandomAPI &seed)
     {
-      return seed.rand_get<rand_type::result_type>();
+        return seed.rand_get<rand_type::result_type>();
     }
 
     static rand_type::result_type gen_seed()
     {
-      std::random_device rd;
-      RandomByteStore<decltype(rd)> rbs;
-      rand_type::result_type ret;
-      rbs.fill(ret, rd);
-      return ret;
+        std::random_device rd;
+        RandomByteStore<decltype(rd)> rbs;
+        rand_type::result_type ret;
+        rbs.fill(ret, rd);
+        return ret;
     }
 
     rand_type rng;
     RandomByteStore<rand_type> rbs;
-  };
+};
 
-}
+} // namespace openvpn
 
 #endif

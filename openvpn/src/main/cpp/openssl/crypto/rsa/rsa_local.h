@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2006-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -93,8 +93,7 @@ struct rsa_st {
     BN_MONT_CTX *_method_mod_n;
     BN_MONT_CTX *_method_mod_p;
     BN_MONT_CTX *_method_mod_q;
-    BN_BLINDING *blinding;
-    BN_BLINDING *mt_blinding;
+    void *blindings_sa;
     CRYPTO_RWLOCK *lock;
 
     int dirty_cnt;
@@ -150,6 +149,10 @@ struct rsa_meth_st {
 /* Macros to test if a pkey or ctx is for a PSS key */
 #define pkey_is_pss(pkey) (pkey->ameth->pkey_id == EVP_PKEY_RSA_PSS)
 #define pkey_ctx_is_pss(ctx) (ctx->pmeth->pkey_id == EVP_PKEY_RSA_PSS)
+int ossl_rsa_multiprime_derive(RSA *rsa, int bits, int primes,
+                                 BIGNUM *e_value,
+                                 STACK_OF(BIGNUM) *factors, STACK_OF(BIGNUM) *exps,
+                                 STACK_OF(BIGNUM) *coeffs);
 
 RSA_PSS_PARAMS *ossl_rsa_pss_params_create(const EVP_MD *sigmd,
                                            const EVP_MD *mgf1md, int saltlen);
@@ -192,5 +195,7 @@ int ossl_rsa_fips186_4_gen_prob_primes(RSA *rsa, RSA_ACVP_TEST *test,
 int ossl_rsa_padding_add_PKCS1_type_2_ex(OSSL_LIB_CTX *libctx, unsigned char *to,
                                          int tlen, const unsigned char *from,
                                          int flen);
+void ossl_rsa_free_blinding(RSA *rsa);
+void *ossl_rsa_alloc_blinding(void);
 
 #endif /* OSSL_CRYPTO_RSA_LOCAL_H */

@@ -18,12 +18,12 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
- * @file Alternative method to query for user input, using systemd
+ * @file
+ * Alternative method to query for user input, using systemd
  *
  */
 
@@ -50,9 +50,7 @@ check_systemd_running(void)
      * mounted, as well as the systemd-ask-password executable
      * being available */
 
-    return (sd_booted() > 0)
-           && (stat(SYSTEMD_ASK_PASSWORD_PATH, &c) == 0);
-
+    return (sd_booted() > 0) && (stat(SYSTEMD_ASK_PASSWORD_PATH, &c) == 0);
 }
 
 static bool
@@ -71,6 +69,7 @@ get_console_input_systemd(const char *prompt, const bool echo, char *input, cons
     }
 #endif
     argv_printf_cat(&argv, "--icon network-vpn");
+    argv_printf_cat(&argv, "--timeout=0");
     argv_printf_cat(&argv, "%s", prompt);
 
     if ((std_out = openvpn_popen(&argv, NULL)) < 0)
@@ -78,7 +77,7 @@ get_console_input_systemd(const char *prompt, const bool echo, char *input, cons
         return false;
     }
     memset(input, 0, capacity);
-    if (read(std_out, input, capacity-1) != 0)
+    if (read(std_out, input, capacity - 1) != 0)
     {
         chomp(input);
         ret = true;
@@ -96,9 +95,9 @@ get_console_input_systemd(const char *prompt, const bool echo, char *input, cons
  *
  */
 bool
-query_user_exec(void)
+query_user_exec_systemd(void)
 {
-    bool ret = true;  /* Presume everything goes okay */
+    bool ret = true; /* Presume everything goes okay */
     int i;
 
     /* If systemd is not available, use the default built-in mechanism */
@@ -111,7 +110,7 @@ query_user_exec(void)
     for (i = 0; i < QUERY_USER_NUMSLOTS && query_user[i].response != NULL; i++)
     {
         if (!get_console_input_systemd(query_user[i].prompt, query_user[i].echo,
-                                       query_user[i].response, query_user[i].response_len) )
+                                       query_user[i].response, query_user[i].response_len))
         {
             /* Force the final result state to failed on failure */
             ret = false;

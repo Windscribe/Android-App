@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2019-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -322,14 +322,17 @@ static int generate_q_fips186_4(BN_CTX *ctx, BIGNUM *q, const EVP_MD *evpmd,
     unsigned char *pmd;
     OSSL_LIB_CTX *libctx = ossl_bn_get_libctx(ctx);
 
+    if (mdsize <= 0)
+        goto err;
+
     /* find q */
     for (;;) {
-        if(!BN_GENCB_call(cb, 0, m++))
+        if (!BN_GENCB_call(cb, 0, m++))
             goto err;
 
         /* A.1.1.2 Step (5) : generate seed with size seed_len */
         if (generate_seed
-                && RAND_bytes_ex(libctx, seed, seedlen, 0) < 0)
+                && RAND_bytes_ex(libctx, seed, seedlen, 0) <= 0)
             goto err;
         /*
          * A.1.1.2 Step (6) AND
@@ -435,7 +438,7 @@ static int generate_q_fips186_2(BN_CTX *ctx, BIGNUM *q, const EVP_MD *evpmd,
         }
         if (r != 0)
             goto err; /* Exit if error */
-        /* Try another iteration if it wasnt prime - was in old code.. */
+        /* Try another iteration if it wasn't prime - was in old code.. */
         generate_seed = 1;
     }
 err:
@@ -553,7 +556,7 @@ int ossl_ffc_params_FIPS186_4_gen_verify(OSSL_LIB_CTX *libctx,
 
     if (N == 0)
         N = mdsize * 8;
-    qsize = N >> 3;
+    qsize = (int)(N >> 3);
 
     /*
      * A.1.1.2 Step (1) AND
@@ -621,7 +624,7 @@ int ossl_ffc_params_FIPS186_4_gen_verify(OSSL_LIB_CTX *libctx,
         p = params->p;
         q = params->q;
         goto g_only;
-        /* otherwise fall thru to validate p & q */
+        /* otherwise fall through to validate p & q */
     }
 
     /* p & q will be used for generation and validation */
@@ -657,7 +660,7 @@ int ossl_ffc_params_FIPS186_4_gen_verify(OSSL_LIB_CTX *libctx,
     }
 
     /* A.1.1.2 Step (11): max loop count = 4L - 1 */
-    counter = 4 * L - 1;
+    counter = (int)(4 * L - 1);
     /* Validation requires the counter to be supplied */
     if (verify) {
         /* A.1.1.3 Step (4) : if (counter > (4L -1)) return INVALID */
@@ -673,10 +676,10 @@ int ossl_ffc_params_FIPS186_4_gen_verify(OSSL_LIB_CTX *libctx,
      * A.1.1.3 Step (10)
      * n = floor(L / hash_outlen) - 1
      */
-    n = (L - 1 ) / (mdsize << 3);
+    n = (int)((L - 1) / (mdsize << 3));
 
     /* Calculate 2^(L-1): Used in step A.1.1.2 Step (11.3) */
-    if (!BN_lshift(test, BN_value_one(), L - 1))
+    if (!BN_lshift(test, BN_value_one(), (int)(L - 1)))
         goto err;
 
     for (;;) {
@@ -688,13 +691,13 @@ int ossl_ffc_params_FIPS186_4_gen_verify(OSSL_LIB_CTX *libctx,
             *res = FFC_CHECK_Q_MISMATCH;
             goto err;
         }
-        if(!BN_GENCB_call(cb, 2, 0))
+        if (!BN_GENCB_call(cb, 2, 0))
             goto err;
-        if(!BN_GENCB_call(cb, 3, 0))
+        if (!BN_GENCB_call(cb, 3, 0))
             goto err;
 
         memcpy(seed_tmp, seed, seedlen);
-        r = generate_p(ctx, md, counter, n, seed_tmp, seedlen, q, p, L,
+        r = generate_p(ctx, md, counter, n, seed_tmp, seedlen, q, p, (int)L,
                        cb, &pcounter, res);
         if (r > 0)
             break; /* found p */
@@ -814,6 +817,7 @@ int ossl_ffc_params_FIPS186_2_gen_verify(OSSL_LIB_CTX *libctx,
     BIGNUM *r0, *test, *tmp, *g = NULL, *q = NULL, *p = NULL;
     BN_MONT_CTX *mont = NULL;
     EVP_MD *md = NULL;
+    int md_size;
     size_t qsize;
     int n = 0, m = 0;
     int counter = 0, pcounter = 0, use_random_seed;
@@ -842,8 +846,11 @@ int ossl_ffc_params_FIPS186_2_gen_verify(OSSL_LIB_CTX *libctx,
     }
     if (md == NULL)
         goto err;
+    md_size = EVP_MD_get_size(md);
+    if (md_size <= 0)
+        goto err;
     if (N == 0)
-        N = EVP_MD_get_size(md) * 8;
+        N = md_size * 8;
     qsize = N >> 3;
 
     /*
@@ -891,7 +898,7 @@ int ossl_ffc_params_FIPS186_2_gen_verify(OSSL_LIB_CTX *libctx,
     if (test == NULL)
         goto err;
 
-    if (!BN_lshift(test, BN_value_one(), L - 1))
+    if (!BN_lshift(test, BN_value_one(), (int)(L - 1)))
         goto err;
 
     if (!verify) {
@@ -922,7 +929,7 @@ int ossl_ffc_params_FIPS186_2_gen_verify(OSSL_LIB_CTX *libctx,
         p = params->p;
         q = params->q;
         goto g_only;
-        /* otherwise fall thru to validate p and q */
+        /* otherwise fall through to validate p and q */
     }
 
     use_random_seed = (seed_in == NULL);
@@ -937,8 +944,8 @@ int ossl_ffc_params_FIPS186_2_gen_verify(OSSL_LIB_CTX *libctx,
             goto err;
 
         /* step 6 */
-        n = (L - 1) / 160;
-        counter = 4 * L - 1; /* Was 4096 */
+        n = (int)((L - 1) / 160);
+        counter = (int)(4 * L - 1); /* Was 4096 */
         /* Validation requires the counter to be supplied */
         if (verify) {
             if (params->pcounter > counter) {
@@ -948,7 +955,7 @@ int ossl_ffc_params_FIPS186_2_gen_verify(OSSL_LIB_CTX *libctx,
             counter = params->pcounter;
         }
 
-        rv = generate_p(ctx, md, counter, n, buf, qsize, q, p, L, cb,
+        rv = generate_p(ctx, md, counter, n, buf, qsize, q, p, (int)L, cb,
                         &pcounter, res);
         if (rv > 0)
             break; /* found it */

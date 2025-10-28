@@ -611,16 +611,22 @@ arm64_clang_asflags := \
   -no-integrated-as \
 
 arm64_cflags := \
+  -DBSAES_ASM \
   -DECP_NISTZ256_ASM \
+  -DECP_SM2P256_ASM \
   -DKECCAK1600_ASM \
+  -DMD5_ASM \
   -DOPENSSL_BN_ASM_MONT \
   -DOPENSSL_CPUID_OBJ \
   -DOPENSSL_PIC \
+  -DOPENSSL_SM3_ASM \
   -DPOLY1305_ASM \
   -DSHA1_ASM \
   -DSHA256_ASM \
   -DSHA512_ASM \
+  -DSM4_ASM \
   -DVPAES_ASM \
+  -DVPSM4_ASM \
 
 arm64_src_files := \
   crypto/aes/asm/aesv8-armx-64.S \
@@ -653,6 +659,7 @@ x86_cflags := \
   -DOPENSSL_IA32_SSE2 \
   -DOPENSSL_PIC \
   -DPOLY1305_ASM \
+  -DRC4_ASM \
   -DSHA1_ASM \
   -DSHA256_ASM \
   -DSHA512_ASM \
@@ -702,10 +709,13 @@ x86_64_cflags := \
   -DOPENSSL_CPUID_OBJ \
   -DOPENSSL_IA32_SSE2 \
   -DOPENSSL_PIC \
+  -DOPENSSL_SM3_ASM \
   -DPOLY1305_ASM \
+  -DRC4_ASM \
   -DSHA1_ASM \
   -DSHA256_ASM \
   -DSHA512_ASM \
+  -DSM4_ASM \
   -DVPAES_ASM \
   -DX25519_ASM \
 

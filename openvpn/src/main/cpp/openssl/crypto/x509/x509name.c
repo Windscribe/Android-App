@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2020 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -49,9 +49,12 @@ int X509_NAME_get_text_by_OBJ(const X509_NAME *name, const ASN1_OBJECT *obj,
 
 int X509_NAME_entry_count(const X509_NAME *name)
 {
+    int ret;
+
     if (name == NULL)
         return 0;
-    return sk_X509_NAME_ENTRY_num(name->entries);
+    ret = sk_X509_NAME_ENTRY_num(name->entries);
+    return ret > 0 ? ret : 0;
 }
 
 int X509_NAME_get_index_by_NID(const X509_NAME *name, int nid, int lastpos)
@@ -222,7 +225,7 @@ int X509_NAME_add_entry(X509_NAME *name, const X509_NAME_ENTRY *ne, int loc,
         goto err;
     new_name->set = set;
     if (!sk_X509_NAME_ENTRY_insert(sk, new_name, loc)) {
-        ERR_raise(ERR_LIB_X509, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_X509, ERR_R_CRYPTO_LIB);
         goto err;
     }
     if (inc) {
@@ -323,7 +326,7 @@ int X509_NAME_ENTRY_set_data(X509_NAME_ENTRY *ne, int type,
                                       len, type,
                                       OBJ_obj2nid(ne->object)) ? 1 : 0;
     if (len < 0)
-        len = strlen((const char *)bytes);
+        len = (int)strlen((const char *)bytes);
     i = ASN1_STRING_set(ne->value, bytes, len);
     if (!i)
         return 0;

@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 // A helper macro for setting up an arbitrary class
 // to support stringstream concatenation using <<
@@ -28,13 +18,13 @@
 #include <ostream>
 #include <string>
 
-#define OPENVPN_OSTREAM(TYPE, METH) \
-    template <typename Elem, typename Traits> \
-    std::basic_ostream<Elem, Traits>& operator<<( \
-      std::basic_ostream<Elem, Traits>& os, const TYPE& addr) \
-    { \
-      os << addr.METH(); \
-      return os; \
+#define OPENVPN_OSTREAM(TYPE, METH)                             \
+    template <typename Elem, typename Traits>                   \
+    std::basic_ostream<Elem, Traits> &operator<<(               \
+        std::basic_ostream<Elem, Traits> &os, const TYPE &addr) \
+    {                                                           \
+        os << addr.METH();                                      \
+        return os;                                              \
     }
 
 #endif // OPENVPN_COMMON_OSTREAM_H

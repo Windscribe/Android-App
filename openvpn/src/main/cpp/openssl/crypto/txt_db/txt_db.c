@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2018 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -21,7 +21,6 @@ TXT_DB *TXT_DB_read(BIO *in, int num)
 {
     TXT_DB *ret = NULL;
     int esc = 0;
-    long ln = 0;
     int i, add, n;
     int size = BUFSIZE;
     int offset = 0;
@@ -41,9 +40,9 @@ TXT_DB *TXT_DB_read(BIO *in, int num)
     ret->qual = NULL;
     if ((ret->data = sk_OPENSSL_PSTRING_new_null()) == NULL)
         goto err;
-    if ((ret->index = OPENSSL_malloc(sizeof(*ret->index) * num)) == NULL)
+    if ((ret->index = OPENSSL_malloc_array(num, sizeof(*ret->index))) == NULL)
         goto err;
-    if ((ret->qual = OPENSSL_malloc(sizeof(*(ret->qual)) * num)) == NULL)
+    if ((ret->qual = OPENSSL_malloc_array(num, sizeof(*(ret->qual)))) == NULL)
         goto err;
     for (i = 0; i < num; i++) {
         ret->index[i] = NULL;
@@ -61,12 +60,11 @@ TXT_DB *TXT_DB_read(BIO *in, int num)
         }
         buf->data[offset] = '\0';
         BIO_gets(in, &(buf->data[offset]), size - offset);
-        ln++;
         if (buf->data[offset] == '\0')
             break;
         if ((offset == 0) && (buf->data[0] == '#'))
             continue;
-        i = strlen(&(buf->data[offset]));
+        i = (int)strlen(&(buf->data[offset]));
         offset += i;
         if (buf->data[offset - 1] != '\n')
             continue;
@@ -80,7 +78,6 @@ TXT_DB *TXT_DB_read(BIO *in, int num)
         p += add;
         n = 0;
         pp[n++] = p;
-        i = 0;
         f = buf->data;
 
         esc = 0;
@@ -204,7 +201,7 @@ long TXT_DB_write(BIO *out, TXT_DB *db)
         l = 0;
         for (j = 0; j < nn; j++) {
             if (pp[j] != NULL)
-                l += strlen(pp[j]);
+                l += (long)strlen(pp[j]);
         }
         if (!BUF_MEM_grow_clean(buf, (int)(l * 2 + nn)))
             goto err;
@@ -223,7 +220,7 @@ long TXT_DB_write(BIO *out, TXT_DB *db)
             *(p++) = '\t';
         }
         p[-1] = '\n';
-        j = p - buf->data;
+        j = (long)(p - buf->data);
         if (BIO_write(out, buf->data, (int)j) != j)
             goto err;
         tot += j;

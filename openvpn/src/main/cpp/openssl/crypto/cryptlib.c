@@ -1,5 +1,5 @@
 /*
- * Copyright 1998-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1998-2025 The OpenSSL Project Authors. All Rights Reserved.
  * Copyright (c) 2002, Oracle and/or its affiliates. All rights reserved
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
@@ -8,11 +8,11 @@
  * https://www.openssl.org/source/license.html
  */
 
-#include "e_os.h"
+#include "internal/e_os.h"
 #include "crypto/cryptlib.h"
 #include <openssl/safestack.h>
 
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(OPENSSL_SYS_UEFI)
 # include <tchar.h>
 # include <signal.h>
 # ifdef __WATCOMC__
@@ -60,7 +60,7 @@ int OPENSSL_isservice(void)
     }
 
     if (_OPENSSL_isservice.p != (void *)-1)
-        return (*_OPENSSL_isservice.f) ();
+        return (int)((*_OPENSSL_isservice.f)());
 
     h = GetProcessWindowStation();
     if (h == NULL)
@@ -144,7 +144,7 @@ void OPENSSL_showfatal(const char *fmta, ...)
                 fmt = (const TCHAR *)L"no stack?";
                 break;
             }
-            if (!MultiByteToWideChar(CP_ACP, 0, fmta, len_0, fmtw, len_0))
+            if (!MultiByteToWideChar(CP_ACP, 0, fmta, (int)len_0, fmtw, (int)len_0))
                 for (i = 0; i < len_0; i++)
                     fmtw[i] = (WCHAR)fmta[i];
             for (i = 0; i < len_0; i++) {
@@ -256,7 +256,7 @@ void OPENSSL_die(const char *message, const char *file, int line)
 {
     OPENSSL_showfatal("%s:%d: OpenSSL internal error: %s\n",
                       file, line, message);
-#if !defined(_WIN32)
+#if !defined(_WIN32) || defined(OPENSSL_SYS_UEFI)
     abort();
 #else
     /*

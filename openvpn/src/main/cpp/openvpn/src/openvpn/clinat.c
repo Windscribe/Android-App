@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,26 +17,22 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#elif defined(_MSC_VER)
-#include "config-msvc.h"
 #endif
 
 #include "syshead.h"
 
 #include "clinat.h"
 #include "proto.h"
-#include "socket.h"
+#include "socket_util.h"
 #include "memdbg.h"
 
 static bool
-add_entry(struct client_nat_option_list *dest,
-          const struct client_nat_entry *e)
+add_entry(struct client_nat_option_list *dest, const struct client_nat_entry *e)
 {
     if (dest->n >= MAX_CLIENT_NAT)
     {
@@ -51,7 +47,7 @@ add_entry(struct client_nat_option_list *dest,
 }
 
 void
-print_client_nat_list(const struct client_nat_option_list *list, int msglevel)
+print_client_nat_list(const struct client_nat_option_list *list, msglvl_t msglevel)
 {
     struct gc_arena gc = gc_new();
     int i;
@@ -62,9 +58,7 @@ print_client_nat_list(const struct client_nat_option_list *list, int msglevel)
         for (i = 0; i < list->n; ++i)
         {
             const struct client_nat_entry *e = &list->entries[i];
-            msg(msglevel, "  CNAT[%d] t=%d %s/%s/%s",
-                i,
-                e->type,
+            msg(msglevel, "  CNAT[%d] t=%d %s/%s/%s", i, e->type,
                 print_in_addr_t(e->network, IA_NET_ORDER, &gc),
                 print_in_addr_t(e->netmask, IA_NET_ORDER, &gc),
                 print_in_addr_t(e->foreign_network, IA_NET_ORDER, &gc));
@@ -105,12 +99,9 @@ copy_client_nat_option_list(struct client_nat_option_list *dest,
 }
 
 void
-add_client_nat_to_option_list(struct client_nat_option_list *dest,
-                              const char *type,
-                              const char *network,
-                              const char *netmask,
-                              const char *foreign_network,
-                              int msglevel)
+add_client_nat_to_option_list(struct client_nat_option_list *dest, const char *type,
+                              const char *network, const char *netmask, const char *foreign_network,
+                              msglvl_t msglevel)
 {
     struct client_nat_entry e;
     bool ok;
@@ -168,7 +159,7 @@ print_checksum(struct openvpn_iphdr *iph, const char *prefix)
 #endif
 
 static void
-print_pkt(struct openvpn_iphdr *iph, const char *prefix, const int direction, const int msglevel)
+print_pkt(struct openvpn_iphdr *iph, const char *prefix, const int direction, const msglvl_t msglevel)
 {
     struct gc_arena gc = gc_new();
 
@@ -182,9 +173,7 @@ print_pkt(struct openvpn_iphdr *iph, const char *prefix, const int direction, co
         dirstr = "IN";
     }
 
-    msg(msglevel, "** CNAT %s %s %s -> %s",
-        dirstr,
-        prefix,
+    msg(msglevel, "** CNAT %s %s %s -> %s", dirstr, prefix,
         print_in_addr_t(iph->saddr, IA_NET_ORDER, &gc),
         print_in_addr_t(iph->daddr, IA_NET_ORDER, &gc));
 
@@ -192,16 +181,11 @@ print_pkt(struct openvpn_iphdr *iph, const char *prefix, const int direction, co
 }
 
 void
-client_nat_transform(const struct client_nat_option_list *list,
-                     struct buffer *ipbuf,
+client_nat_transform(const struct client_nat_option_list *list, struct buffer *ipbuf,
                      const int direction)
 {
-    struct ip_tcp_udp_hdr *h = (struct ip_tcp_udp_hdr *) BPTR(ipbuf);
-    int i;
-    uint32_t addr, *addr_ptr;
-    const uint32_t *from, *to;
-    int accumulate = 0;
-    unsigned int amask;
+    struct ip_tcp_udp_hdr *h = (struct ip_tcp_udp_hdr *)BPTR(ipbuf);
+    int32_t accumulate = 0;
     unsigned int alog = 0;
 
     if (check_debug_level(D_CLIENT_NAT))
@@ -209,8 +193,11 @@ client_nat_transform(const struct client_nat_option_list *list,
         print_pkt(&h->ip, "BEFORE", direction, D_CLIENT_NAT);
     }
 
-    for (i = 0; i < list->n; ++i)
+    for (int i = 0; i < list->n; ++i)
     {
+        uint32_t addr, *addr_ptr;
+        const uint32_t *from, *to;
+        unsigned int amask;
         const struct client_nat_entry *e = &list->entries[i]; /* current NAT rule */
         if (e->type ^ direction)
         {

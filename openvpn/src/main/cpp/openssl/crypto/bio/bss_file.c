@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -11,7 +11,7 @@
 /*
  * Following definition aliases fopen to fopen64 on above mentioned
  * platforms. This makes it possible to open and sequentially access files
- * larger than 2GB from 32-bit application. It does not allow to traverse
+ * larger than 2GB from 32-bit application. It does not allow one to traverse
  * them beyond 2GB with fseek/ftell, but on the other hand *no* 32-bit
  * platform permits that, not with fseek/ftell. Not to mention that breaking
  * 2GB limit for seeking would require surgery to *our* API. But sequential
@@ -139,9 +139,9 @@ static int file_read(BIO *b, char *out, int outl)
 
     if (b->init && (out != NULL)) {
         if (b->flags & BIO_FLAGS_UPLINK_INTERNAL)
-            ret = UP_fread(out, 1, (int)outl, b->ptr);
+            ret = (int)UP_fread(out, 1, outl, b->ptr);
         else
-            ret = fread(out, 1, (int)outl, (FILE *)b->ptr);
+            ret = (int)fread(out, 1, outl, (FILE *)b->ptr);
         if (ret == 0
             && (b->flags & BIO_FLAGS_UPLINK_INTERNAL
                 ? UP_ferror((FILE *)b->ptr) : ferror((FILE *)b->ptr))) {
@@ -160,9 +160,9 @@ static int file_write(BIO *b, const char *in, int inl)
 
     if (b->init && (in != NULL)) {
         if (b->flags & BIO_FLAGS_UPLINK_INTERNAL)
-            ret = UP_fwrite(in, (int)inl, 1, b->ptr);
+            ret = (int)UP_fwrite(in, inl, 1, b->ptr);
         else
-            ret = fwrite(in, (int)inl, 1, (FILE *)b->ptr);
+            ret = (int)fwrite(in, inl, 1, (FILE *)b->ptr);
         if (ret)
             ret = inl;
         /* ret=fwrite(in,1,(int)inl,(FILE *)b->ptr); */
@@ -235,15 +235,6 @@ static long file_ctrl(BIO *b, int cmd, long num, void *ptr)
                 _setmode(fd, _O_TEXT);
             else
                 _setmode(fd, _O_BINARY);
-            /*
-             * Reports show that ftell() isn't trustable in text mode.
-             * This has been confirmed as a bug in the Universal C RTL, see
-             * https://developercommunity.visualstudio.com/content/problem/425878/fseek-ftell-fail-in-text-mode-for-unix-style-text.html
-             * The suggested work-around from Microsoft engineering is to
-             * turn off buffering until the bug is resolved.
-             */
-            if ((num & BIO_FP_TEXT) != 0)
-                setvbuf((FILE *)ptr, NULL, _IONBF, 0);
 # elif defined(OPENSSL_SYS_MSDOS)
             int fd = fileno((FILE *)ptr);
             /* Set correct text/binary mode */
@@ -296,7 +287,7 @@ static long file_ctrl(BIO *b, int cmd, long num, void *ptr)
         if (fp == NULL) {
             ERR_raise_data(ERR_LIB_SYS, get_last_sys_error(),
                            "calling fopen(%s, %s)",
-                           ptr, p);
+                           (const char *)ptr, p);
             ERR_raise(ERR_LIB_BIO, ERR_R_SYS_LIB);
             ret = 0;
             break;
@@ -357,17 +348,19 @@ static int file_gets(BIO *bp, char *buf, int size)
             goto err;
     }
     if (buf[0] != '\0')
-        ret = strlen(buf);
+        ret = (int)strlen(buf);
  err:
     return ret;
 }
 
 static int file_puts(BIO *bp, const char *str)
 {
-    int n, ret;
+    int ret;
+    size_t n = strlen(str);
 
-    n = strlen(str);
-    ret = file_write(bp, str, n);
+    if (n > INT_MAX)
+        return -1;
+    ret = file_write(bp, str, (int)n);
     return ret;
 }
 

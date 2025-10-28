@@ -542,6 +542,7 @@ SHA3_squeeze:
 	ret
 .size	SHA3_squeeze,.-SHA3_squeeze
 
+.section .rodata
 .align	64
 rhotates_left:
 	.quad	3,	18,	36,	41	# [2][0] [4][0] [1][0] [3][0]
@@ -576,4 +577,4 @@ iotas:
 	.quad	0x0000000080000001, 0x0000000080000001, 0x0000000080000001, 0x0000000080000001
 	.quad	0x8000000080008008, 0x8000000080008008, 0x8000000080008008, 0x8000000080008008
 
-.asciz	"Keccak-1600 absorb and squeeze for AVX512VL, CRYPTOGAMS by <appro@openssl.org>"
+.asciz	"Keccak-1600 absorb and squeeze for AVX512VL, CRYPTOGAMS by <https://github.com/dot-asm>"

@@ -559,5 +559,5 @@ gcm_ghash_neon:
 	bx	lr					@ bx lr
 .size	gcm_ghash_neon,.-gcm_ghash_neon
 #endif
-.asciz  "GHASH for ARMv4/NEON, CRYPTOGAMS by <appro@openssl.org>"
+.asciz  "GHASH for ARMv4/NEON, CRYPTOGAMS by <https://github.com/dot-asm>"
 .align  2

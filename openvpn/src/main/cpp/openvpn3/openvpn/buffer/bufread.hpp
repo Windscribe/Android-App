@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef OPENVPN_BUFFER_BUFREAD_H
 #define OPENVPN_BUFFER_BUFREAD_H
@@ -34,34 +24,34 @@
 #include <openvpn/buffer/buflist.hpp>
 
 namespace openvpn {
-  OPENVPN_EXCEPTION(buf_read_error);
+OPENVPN_EXCEPTION(buf_read_error);
 
-  inline bool buf_read(const int fd, Buffer& buf, const std::string& title)
-  {
+inline bool buf_read(const int fd, Buffer &buf, const std::string &title)
+{
     const ssize_t status = ::read(fd, buf.data_end(), buf.remaining(0));
     if (status < 0)
-      {
-	const int eno = errno;
-	OPENVPN_THROW(buf_read_error, "on " << title << " : " << strerror_str(eno));
-      }
+    {
+        const int eno = errno;
+        OPENVPN_THROW(buf_read_error, "on " << title << " : " << strerror_str(eno));
+    }
     else if (!status)
-      return false;
+        return false;
     buf.inc_size(status);
     return true;
-  }
+}
 
-  inline BufferList buf_read(const int fd, const std::string& title)
-  {
+inline BufferList buf_read(const int fd, const std::string &title)
+{
     BufferList buflist;
     while (true)
-      {
-	BufferAllocated buf(1024, 0);
-	if (!buf_read(fd, buf, title))
-	  break;
-	buflist.put_consume(buf);
-      }
+    {
+        BufferAllocated buf(1024);
+        if (!buf_read(fd, buf, title))
+            break;
+        buflist.put_consume(buf);
+    }
     return buflist;
-  }
 }
+} // namespace openvpn
 
 #endif

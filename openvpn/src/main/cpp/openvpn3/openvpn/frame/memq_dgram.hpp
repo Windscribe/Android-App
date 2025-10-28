@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 // A queue of datagram buffers for handling sequences of UDP packets
 
@@ -31,46 +21,55 @@
 
 namespace openvpn {
 
-  class MemQDgram : public MemQBase {
+class MemQDgram : public MemQBase
+{
   public:
     OPENVPN_SIMPLE_EXCEPTION(frame_uninitialized);
 
-    MemQDgram() {}
-    explicit MemQDgram(const Frame::Ptr& frame) : frame_(frame) {}
-    void set_frame(const Frame::Ptr& frame) { frame_ = frame; }
+    MemQDgram()
+    {
+    }
+    explicit MemQDgram(const Frame::Ptr &frame)
+        : frame_(frame)
+    {
+    }
+    void set_frame(const Frame::Ptr &frame)
+    {
+        frame_ = frame;
+    }
 
     size_t pending() const
     {
-      return empty() ? 0 : q.front()->size();
+        return empty() ? 0 : q.front()->size();
     }
 
     void write(const unsigned char *data, size_t size)
     {
-      if (frame_)
-	{
-	  const Frame::Context& fc = (*frame_)[Frame::READ_BIO_MEMQ_STREAM];
-	  q.push_back(fc.copy(data, size));
-	  length += size;
-	}
-      else
-	throw frame_uninitialized();
+        if (frame_)
+        {
+            const Frame::Context &fc = (*frame_)[Frame::READ_BIO_MEMQ_STREAM];
+            q.push_back(fc.copy(data, size));
+            length += size;
+        }
+        else
+            throw frame_uninitialized();
     }
 
     size_t read(unsigned char *data, size_t len)
     {
-      BufferPtr& b = q.front();
-      if (len > b->size())
-	len = b->size();
-      b->read(data, len);
-      if (b->empty())
-	q.pop_front();
-      length -= len;
-      return len;
+        BufferPtr &b = q.front();
+        if (len > b->size())
+            len = b->size();
+        b->read(data, len);
+        if (b->empty())
+            q.pop_front();
+        length -= len;
+        return len;
     }
 
   private:
     Frame::Ptr frame_;
-  };
+};
 
 } // namespace openvpn
 

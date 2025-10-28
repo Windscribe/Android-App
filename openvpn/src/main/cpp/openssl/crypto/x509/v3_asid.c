@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2006-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -169,8 +169,11 @@ int X509v3_asid_add_inherit(ASIdentifiers *asid, int which)
     if (*choice == NULL) {
         if ((*choice = ASIdentifierChoice_new()) == NULL)
             return 0;
-        if (((*choice)->u.inherit = ASN1_NULL_new()) == NULL)
+        if (((*choice)->u.inherit = ASN1_NULL_new()) == NULL) {
+            ASIdentifierChoice_free(*choice);
+            *choice = NULL;
             return 0;
+        }
         (*choice)->type = ASIdentifierChoice_inherit;
     }
     return (*choice)->type == ASIdentifierChoice_inherit;
@@ -196,18 +199,23 @@ int X509v3_asid_add_id_or_range(ASIdentifiers *asid,
     default:
         return 0;
     }
-    if (*choice != NULL && (*choice)->type == ASIdentifierChoice_inherit)
+    if (*choice != NULL && (*choice)->type != ASIdentifierChoice_asIdsOrRanges)
         return 0;
     if (*choice == NULL) {
         if ((*choice = ASIdentifierChoice_new()) == NULL)
             return 0;
         (*choice)->u.asIdsOrRanges = sk_ASIdOrRange_new(ASIdOrRange_cmp);
-        if ((*choice)->u.asIdsOrRanges == NULL)
+        if ((*choice)->u.asIdsOrRanges == NULL) {
+            ASIdentifierChoice_free(*choice);
+            *choice = NULL;
             return 0;
+        }
         (*choice)->type = ASIdentifierChoice_asIdsOrRanges;
     }
     if ((aor = ASIdOrRange_new()) == NULL)
         return 0;
+    if (!sk_ASIdOrRange_reserve((*choice)->u.asIdsOrRanges, 1))
+        goto err;
     if (max == NULL) {
         aor->type = ASIdOrRange_id;
         aor->u.id = min;
@@ -220,7 +228,8 @@ int X509v3_asid_add_id_or_range(ASIdentifiers *asid,
         ASN1_INTEGER_free(aor->u.range->max);
         aor->u.range->max = max;
     }
-    if (!(sk_ASIdOrRange_push((*choice)->u.asIdsOrRanges, aor)))
+    /* Cannot fail due to the reservation above */
+    if (!ossl_assert(sk_ASIdOrRange_push((*choice)->u.asIdsOrRanges, aor)))
         goto err;
     return 1;
 
@@ -301,14 +310,14 @@ static int ASIdentifierChoice_is_canonical(ASIdentifierChoice *choice)
         if ((bn == NULL && (bn = BN_new()) == NULL) ||
             ASN1_INTEGER_to_BN(a_max, bn) == NULL ||
             !BN_add_word(bn, 1)) {
-            ERR_raise(ERR_LIB_X509V3, ERR_R_MALLOC_FAILURE);
+            ERR_raise(ERR_LIB_X509V3, ERR_R_BN_LIB);
             goto done;
         }
 
         if ((a_max_plus_one =
                 BN_to_ASN1_INTEGER(bn, orig = a_max_plus_one)) == NULL) {
             a_max_plus_one = orig;
-            ERR_raise(ERR_LIB_X509V3, ERR_R_MALLOC_FAILURE);
+            ERR_raise(ERR_LIB_X509V3, ERR_R_ASN1_LIB);
             goto done;
         }
 
@@ -422,14 +431,14 @@ static int ASIdentifierChoice_canonize(ASIdentifierChoice *choice)
         if ((bn == NULL && (bn = BN_new()) == NULL) ||
             ASN1_INTEGER_to_BN(a_max, bn) == NULL ||
             !BN_add_word(bn, 1)) {
-            ERR_raise(ERR_LIB_X509V3, ERR_R_MALLOC_FAILURE);
+            ERR_raise(ERR_LIB_X509V3, ERR_R_BN_LIB);
             goto done;
         }
 
         if ((a_max_plus_one =
                  BN_to_ASN1_INTEGER(bn, orig = a_max_plus_one)) == NULL) {
             a_max_plus_one = orig;
-            ERR_raise(ERR_LIB_X509V3, ERR_R_MALLOC_FAILURE);
+            ERR_raise(ERR_LIB_X509V3, ERR_R_ASN1_LIB);
             goto done;
         }
 
@@ -440,10 +449,8 @@ static int ASIdentifierChoice_canonize(ASIdentifierChoice *choice)
             ASRange *r;
             switch (a->type) {
             case ASIdOrRange_id:
-                if ((r = OPENSSL_malloc(sizeof(*r))) == NULL) {
-                    ERR_raise(ERR_LIB_X509V3, ERR_R_MALLOC_FAILURE);
+                if ((r = OPENSSL_malloc(sizeof(*r))) == NULL)
                     goto done;
-                }
                 r->min = a_min;
                 r->max = b_max;
                 a->type = ASIdOrRange_range;
@@ -517,7 +524,7 @@ static void *v2i_ASIdentifiers(const struct v3_ext_method *method,
     int i;
 
     if ((asid = ASIdentifiers_new()) == NULL) {
-        ERR_raise(ERR_LIB_X509V3, ERR_R_MALLOC_FAILURE);
+        ERR_raise(ERR_LIB_X509V3, ERR_R_X509V3_LIB);
         return NULL;
     }
 
@@ -538,6 +545,11 @@ static void *v2i_ASIdentifiers(const struct v3_ext_method *method,
             goto err;
         }
 
+        if (val->value == NULL) {
+            ERR_raise(ERR_LIB_X509V3, X509V3_R_EXTENSION_VALUE_ERROR);
+            goto err;
+        }
+
         /*
          * Handle inheritance.
          */
@@ -552,20 +564,20 @@ static void *v2i_ASIdentifiers(const struct v3_ext_method *method,
         /*
          * Number, range, or mistake, pick it apart and figure out which.
          */
-        i1 = strspn(val->value, "0123456789");
+        i1 = (int)strspn(val->value, "0123456789");
         if (val->value[i1] == '\0') {
             is_range = 0;
         } else {
             is_range = 1;
-            i2 = i1 + strspn(val->value + i1, " \t");
+            i2 = i1 + (int)strspn(val->value + i1, " \t");
             if (val->value[i2] != '-') {
                 ERR_raise(ERR_LIB_X509V3, X509V3_R_INVALID_ASNUMBER);
                 X509V3_conf_add_error_name_value(val);
                 goto err;
             }
             i2++;
-            i2 = i2 + strspn(val->value + i2, " \t");
-            i3 = i2 + strspn(val->value + i2, "0123456789");
+            i2 = i2 + (int)strspn(val->value + i2, " \t");
+            i3 = i2 + (int)strspn(val->value + i2, "0123456789");
             if (val->value[i3] != '\0') {
                 ERR_raise(ERR_LIB_X509V3, X509V3_R_INVALID_ASRANGE);
                 X509V3_conf_add_error_name_value(val);
@@ -578,21 +590,19 @@ static void *v2i_ASIdentifiers(const struct v3_ext_method *method,
          */
         if (!is_range) {
             if (!X509V3_get_value_int(val, &min)) {
-                ERR_raise(ERR_LIB_X509V3, ERR_R_MALLOC_FAILURE);
+                ERR_raise(ERR_LIB_X509V3, ERR_R_X509V3_LIB);
                 goto err;
             }
         } else {
             char *s = OPENSSL_strdup(val->value);
-            if (s == NULL) {
-                ERR_raise(ERR_LIB_X509V3, ERR_R_MALLOC_FAILURE);
+            if (s == NULL)
                 goto err;
-            }
             s[i1] = '\0';
             min = s2i_ASN1_INTEGER(NULL, s);
             max = s2i_ASN1_INTEGER(NULL, s + i2);
             OPENSSL_free(s);
             if (min == NULL || max == NULL) {
-                ERR_raise(ERR_LIB_X509V3, ERR_R_MALLOC_FAILURE);
+                ERR_raise(ERR_LIB_X509V3, ERR_R_X509V3_LIB);
                 goto err;
             }
             if (ASN1_INTEGER_cmp(min, max) > 0) {
@@ -601,7 +611,7 @@ static void *v2i_ASIdentifiers(const struct v3_ext_method *method,
             }
         }
         if (!X509v3_asid_add_id_or_range(asid, which, min, max)) {
-            ERR_raise(ERR_LIB_X509V3, ERR_R_MALLOC_FAILURE);
+            ERR_raise(ERR_LIB_X509V3, ERR_R_X509V3_LIB);
             goto err;
         }
         min = max = NULL;
@@ -689,15 +699,28 @@ static int asid_contains(ASIdOrRanges *parent, ASIdOrRanges *child)
  */
 int X509v3_asid_subset(ASIdentifiers *a, ASIdentifiers *b)
 {
-    return (a == NULL ||
-            a == b ||
-            (b != NULL &&
-             !X509v3_asid_inherits(a) &&
-             !X509v3_asid_inherits(b) &&
-             asid_contains(b->asnum->u.asIdsOrRanges,
-                           a->asnum->u.asIdsOrRanges) &&
-             asid_contains(b->rdi->u.asIdsOrRanges,
-                           a->rdi->u.asIdsOrRanges)));
+    int subset;
+
+    if (a == NULL || a == b)
+        return 1;
+
+    if (b == NULL)
+        return 0;
+
+    if (X509v3_asid_inherits(a) || X509v3_asid_inherits(b))
+        return 0;
+
+    subset = a->asnum == NULL
+             || (b->asnum != NULL
+                 && asid_contains(b->asnum->u.asIdsOrRanges,
+                                  a->asnum->u.asIdsOrRanges));
+    if (!subset)
+        return 0;
+
+    return a->rdi == NULL
+           || (b->rdi != NULL
+               && asid_contains(b->rdi->u.asIdsOrRanges,
+                                a->rdi->u.asIdsOrRanges));
 }
 
 /*

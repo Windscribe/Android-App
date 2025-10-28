@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 // IPv6 header
 
@@ -32,19 +22,19 @@
 
 namespace openvpn {
 
-  struct IPv6Header
-  {
-    std::uint8_t    version_prio;
+struct IPv6Header
+{
+    std::uint8_t version_prio;
 
-    std::uint8_t    flow_lbl[3];
+    std::uint8_t flow_lbl[3];
 
-    std::uint16_t   payload_len;
-    std::uint8_t    nexthdr;
-    std::uint8_t    hop_limit;
+    std::uint16_t payload_len;
+    std::uint8_t nexthdr;
+    std::uint8_t hop_limit;
 
     struct in6_addr saddr;
     struct in6_addr daddr;
-  };
-}
+};
+} // namespace openvpn
 
 #pragma pack(pop)

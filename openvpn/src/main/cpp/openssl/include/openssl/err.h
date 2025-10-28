@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2023 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -323,15 +323,27 @@ static ossl_unused ossl_inline int ERR_COMMON_ERROR(unsigned long errcode)
 # define ERR_R_DSA_LIB          (ERR_LIB_DSA/* 10 */ | ERR_RFLAG_COMMON)
 # define ERR_R_X509_LIB         (ERR_LIB_X509/* 11 */ | ERR_RFLAG_COMMON)
 # define ERR_R_ASN1_LIB         (ERR_LIB_ASN1/* 13 */ | ERR_RFLAG_COMMON)
+# define ERR_R_CONF_LIB         (ERR_LIB_CONF/* 14 */ | ERR_RFLAG_COMMON)
 # define ERR_R_CRYPTO_LIB       (ERR_LIB_CRYPTO/* 15 */ | ERR_RFLAG_COMMON)
 # define ERR_R_EC_LIB           (ERR_LIB_EC/* 16 */ | ERR_RFLAG_COMMON)
+# define ERR_R_SSL_LIB          (ERR_LIB_SSL/* 20 */ | ERR_RFLAG_COMMON)
 # define ERR_R_BIO_LIB          (ERR_LIB_BIO/* 32 */ | ERR_RFLAG_COMMON)
 # define ERR_R_PKCS7_LIB        (ERR_LIB_PKCS7/* 33 */ | ERR_RFLAG_COMMON)
 # define ERR_R_X509V3_LIB       (ERR_LIB_X509V3/* 34 */ | ERR_RFLAG_COMMON)
+# define ERR_R_PKCS12_LIB       (ERR_LIB_PKCS12/* 35 */ | ERR_RFLAG_COMMON)
+# define ERR_R_RAND_LIB         (ERR_LIB_RAND/* 36 */ | ERR_RFLAG_COMMON)
+# define ERR_R_DSO_LIB          (ERR_LIB_DSO/* 37 */ | ERR_RFLAG_COMMON)
 # define ERR_R_ENGINE_LIB       (ERR_LIB_ENGINE/* 38 */ | ERR_RFLAG_COMMON)
 # define ERR_R_UI_LIB           (ERR_LIB_UI/* 40 */ | ERR_RFLAG_COMMON)
 # define ERR_R_ECDSA_LIB        (ERR_LIB_ECDSA/* 42 */ | ERR_RFLAG_COMMON)
 # define ERR_R_OSSL_STORE_LIB   (ERR_LIB_OSSL_STORE/* 44 */ | ERR_RFLAG_COMMON)
+# define ERR_R_CMS_LIB          (ERR_LIB_CMS/* 46 */ | ERR_RFLAG_COMMON)
+# define ERR_R_TS_LIB           (ERR_LIB_TS/* 47 */ | ERR_RFLAG_COMMON)
+# define ERR_R_CT_LIB           (ERR_LIB_CT/* 50 */ | ERR_RFLAG_COMMON)
+# define ERR_R_PROV_LIB         (ERR_LIB_PROV/* 57 */ | ERR_RFLAG_COMMON)
+# define ERR_R_ESS_LIB          (ERR_LIB_ESS/* 54 */ | ERR_RFLAG_COMMON)
+# define ERR_R_CMP_LIB          (ERR_LIB_CMP/* 58 */ | ERR_RFLAG_COMMON)
+# define ERR_R_OSSL_ENCODER_LIB (ERR_LIB_OSSL_ENCODER/* 59 */ | ERR_RFLAG_COMMON)
 # define ERR_R_OSSL_DECODER_LIB (ERR_LIB_OSSL_DECODER/* 60 */ | ERR_RFLAG_COMMON)
 
 /* Other common error codes, range 256..2^ERR_RFLAGS_OFFSET-1 */
@@ -360,7 +372,7 @@ typedef struct ERR_string_data_st {
 } ERR_STRING_DATA;
 
 DEFINE_LHASH_OF_INTERNAL(ERR_STRING_DATA);
-#define lh_ERR_STRING_DATA_new(hfn, cmp) ((LHASH_OF(ERR_STRING_DATA) *)OPENSSL_LH_new(ossl_check_ERR_STRING_DATA_lh_hashfunc_type(hfn), ossl_check_ERR_STRING_DATA_lh_compfunc_type(cmp)))
+#define lh_ERR_STRING_DATA_new(hfn, cmp) ((LHASH_OF(ERR_STRING_DATA) *)OPENSSL_LH_set_thunks(OPENSSL_LH_new(ossl_check_ERR_STRING_DATA_lh_hashfunc_type(hfn), ossl_check_ERR_STRING_DATA_lh_compfunc_type(cmp)), lh_ERR_STRING_DATA_hash_thunk, lh_ERR_STRING_DATA_comp_thunk, lh_ERR_STRING_DATA_doall_thunk, lh_ERR_STRING_DATA_doall_arg_thunk))
 #define lh_ERR_STRING_DATA_free(lh) OPENSSL_LH_free(ossl_check_ERR_STRING_DATA_lh_type(lh))
 #define lh_ERR_STRING_DATA_flush(lh) OPENSSL_LH_flush(ossl_check_ERR_STRING_DATA_lh_type(lh))
 #define lh_ERR_STRING_DATA_insert(lh, ptr) ((ERR_STRING_DATA *)OPENSSL_LH_insert(ossl_check_ERR_STRING_DATA_lh_type(lh), ossl_check_ERR_STRING_DATA_lh_plain_type(ptr)))
@@ -484,6 +496,14 @@ int ERR_get_next_error_library(void);
 int ERR_set_mark(void);
 int ERR_pop_to_mark(void);
 int ERR_clear_last_mark(void);
+int ERR_count_to_mark(void);
+int ERR_pop(void);
+
+ERR_STATE *OSSL_ERR_STATE_new(void);
+void OSSL_ERR_STATE_save(ERR_STATE *es);
+void OSSL_ERR_STATE_save_to_mark(ERR_STATE *es);
+void OSSL_ERR_STATE_restore(const ERR_STATE *es);
+void OSSL_ERR_STATE_free(ERR_STATE *es);
 
 #ifdef  __cplusplus
 }

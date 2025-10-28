@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2019-2025 The OpenSSL Project Authors. All Rights Reserved.
  * Copyright (c) 2019, Oracle and/or its affiliates.  All rights reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
@@ -14,12 +14,11 @@
 #include <openssl/err.h>
 #include "internal/propertyerr.h"
 #include "internal/property.h"
+#include "internal/numbers.h"
 #include "crypto/ctype.h"
 #include "internal/nelem.h"
 #include "property_local.h"
-#include "e_os.h"
-
-OSSL_PROPERTY_IDX ossl_property_true, ossl_property_false;
+#include "internal/e_os.h"
 
 DEFINE_STACK_OF(OSSL_PROPERTY_DEFINITION)
 
@@ -47,7 +46,7 @@ static int match(const char *t[], const char m[], size_t m_len)
 {
     const char *s = *t;
 
-    if (strncasecmp(s, m, m_len) == 0) {
+    if (OPENSSL_strncasecmp(s, m, m_len) == 0) {
         *t = skip_space(s + m_len);
         return 1;
     }
@@ -99,9 +98,18 @@ static int parse_number(const char *t[], OSSL_PROPERTY_DEFINITION *res)
     const char *s = *t;
     int64_t v = 0;
 
-    if (!ossl_isdigit(*s))
-        return 0;
     do {
+        if (!ossl_isdigit(*s)) {
+            ERR_raise_data(ERR_LIB_PROP, PROP_R_NOT_A_DECIMAL_DIGIT,
+                           "HERE-->%s", *t);
+            return 0;
+        }
+        /* overflow check */
+        if (v > ((INT64_MAX - (*s - '0')) / 10)) {
+            ERR_raise_data(ERR_LIB_PROP, PROP_R_PARSE_FAILED,
+                           "Property %s overflows", *t);
+            return 0;
+        }
         v = v * 10 + (*s++ - '0');
     } while (ossl_isdigit(*s));
     if (!ossl_isspace(*s) && *s != '\0' && *s != ',') {
@@ -119,15 +127,27 @@ static int parse_hex(const char *t[], OSSL_PROPERTY_DEFINITION *res)
 {
     const char *s = *t;
     int64_t v = 0;
+    int sval;
 
-    if (!ossl_isxdigit(*s))
-        return 0;
     do {
+        if (ossl_isdigit(*s)) {
+            sval = *s - '0';
+        } else if (ossl_isxdigit(*s)) {
+            sval = ossl_tolower(*s) - 'a' + 10;
+        } else {
+            ERR_raise_data(ERR_LIB_PROP, PROP_R_NOT_AN_HEXADECIMAL_DIGIT,
+                           "%s", *t);
+            return 0;
+        }
+
+        if (v > ((INT64_MAX - sval) / 16)) {
+            ERR_raise_data(ERR_LIB_PROP, PROP_R_PARSE_FAILED,
+                           "Property %s overflows", *t);
+            return 0;
+        }
+
         v <<= 4;
-        if (ossl_isdigit(*s))
-            v += *s - '0';
-        else
-            v += ossl_tolower(*s) - 'a';
+        v += sval;
     } while (ossl_isxdigit(*++s));
     if (!ossl_isspace(*s) && *s != '\0' && *s != ',') {
         ERR_raise_data(ERR_LIB_PROP, PROP_R_NOT_AN_HEXADECIMAL_DIGIT,
@@ -145,9 +165,18 @@ static int parse_oct(const char *t[], OSSL_PROPERTY_DEFINITION *res)
     const char *s = *t;
     int64_t v = 0;
 
-    if (*s == '9' || *s == '8' || !ossl_isdigit(*s))
-        return 0;
     do {
+        if (*s == '9' || *s == '8' || !ossl_isdigit(*s)) {
+            ERR_raise_data(ERR_LIB_PROP, PROP_R_NOT_AN_OCTAL_DIGIT,
+                           "HERE-->%s", *t);
+            return 0;
+        }
+        if (v > ((INT64_MAX - (*s - '0')) / 8)) {
+            ERR_raise_data(ERR_LIB_PROP, PROP_R_PARSE_FAILED,
+                           "Property %s overflows", *t);
+            return 0;
+        }
+
         v = (v << 3) + (*s - '0');
     } while (ossl_isdigit(*++s) && *s != '9' && *s != '8');
     if (!ossl_isspace(*s) && *s != '\0' && *s != ',') {
@@ -215,11 +244,10 @@ static int parse_unquoted(OSSL_LIB_CTX *ctx, const char *t[],
         return 0;
     }
     v[i] = 0;
-    if (err) {
+    if (err)
         ERR_raise_data(ERR_LIB_PROP, PROP_R_STRING_TOO_LONG, "HERE-->%s", *t);
-    } else {
-        res->v.str_val = ossl_property_value(ctx, v, create);
-    }
+    else if ((res->v.str_val = ossl_property_value(ctx, v, create)) == 0)
+        err = 1;
     *t = skip_space(s);
     res->type = OSSL_PROPERTY_TYPE_STRING;
     return !err;
@@ -277,12 +305,16 @@ static void pd_free(OSSL_PROPERTY_DEFINITION *pd)
 /*
  * Convert a stack of property definitions and queries into a fixed array.
  * The items are sorted for efficient query.  The stack is not freed.
+ * This function also checks for duplicated names and returns an error if
+ * any exist.
  */
 static OSSL_PROPERTY_LIST *
-stack_to_property_list(STACK_OF(OSSL_PROPERTY_DEFINITION) *sk)
+stack_to_property_list(OSSL_LIB_CTX *ctx,
+                       STACK_OF(OSSL_PROPERTY_DEFINITION) *sk)
 {
     const int n = sk_OSSL_PROPERTY_DEFINITION_num(sk);
     OSSL_PROPERTY_LIST *r;
+    OSSL_PROPERTY_IDX prev_name_idx = 0;
     int i;
 
     r = OPENSSL_malloc(sizeof(*r)
@@ -294,6 +326,16 @@ stack_to_property_list(STACK_OF(OSSL_PROPERTY_DEFINITION) *sk)
         for (i = 0; i < n; i++) {
             r->properties[i] = *sk_OSSL_PROPERTY_DEFINITION_value(sk, i);
             r->has_optional |= r->properties[i].optional;
+
+            /* Check for duplicated names */
+            if (i > 0 && r->properties[i].name_idx == prev_name_idx) {
+                OPENSSL_free(r);
+                ERR_raise_data(ERR_LIB_PROP, PROP_R_PARSE_FAILED,
+                               "Duplicated name `%s'",
+                               ossl_property_name_str(ctx, prev_name_idx));
+                return NULL;
+            }
+            prev_name_idx = r->properties[i].name_idx;
         }
         r->num_properties = n;
     }
@@ -338,7 +380,7 @@ OSSL_PROPERTY_LIST *ossl_parse_property(OSSL_LIB_CTX *ctx, const char *defn)
         } else {
             /* A name alone means a true Boolean */
             prop->type = OSSL_PROPERTY_TYPE_STRING;
-            prop->v.str_val = ossl_property_true;
+            prop->v.str_val = OSSL_PROPERTY_TRUE;
         }
 
         if (!sk_OSSL_PROPERTY_DEFINITION_push(sk, prop))
@@ -351,7 +393,7 @@ OSSL_PROPERTY_LIST *ossl_parse_property(OSSL_LIB_CTX *ctx, const char *defn)
                        "HERE-->%s", s);
         goto err;
     }
-    res = stack_to_property_list(sk);
+    res = stack_to_property_list(ctx, sk);
 
 err:
     OPENSSL_free(prop);
@@ -397,7 +439,7 @@ OSSL_PROPERTY_LIST *ossl_parse_query(OSSL_LIB_CTX *ctx, const char *s,
             /* A name alone is a Boolean comparison for true */
             prop->oper = OSSL_PROPERTY_OPER_EQ;
             prop->type = OSSL_PROPERTY_TYPE_STRING;
-            prop->v.str_val = ossl_property_true;
+            prop->v.str_val = OSSL_PROPERTY_TRUE;
             goto skip_value;
         }
         if (!parse_value(ctx, &s, prop, create_values))
@@ -414,7 +456,7 @@ skip_value:
                        "HERE-->%s", s);
         goto err;
     }
-    res = stack_to_property_list(sk);
+    res = stack_to_property_list(ctx, sk);
 
 err:
     OPENSSL_free(prop);
@@ -471,9 +513,9 @@ int ossl_property_match_count(const OSSL_PROPERTY_LIST *query,
                 return -1;
         } else if (q[i].type != OSSL_PROPERTY_TYPE_STRING
                    || (oper == OSSL_PROPERTY_OPER_EQ
-                       && q[i].v.str_val != ossl_property_false)
+                       && q[i].v.str_val != OSSL_PROPERTY_FALSE)
                    || (oper == OSSL_PROPERTY_OPER_NE
-                       && q[i].v.str_val == ossl_property_false)) {
+                       && q[i].v.str_val == OSSL_PROPERTY_FALSE)) {
             if (!q[i].optional)
                 return -1;
         } else {
@@ -525,8 +567,7 @@ OSSL_PROPERTY_LIST *ossl_property_merge(const OSSL_PROPERTY_LIST *a,
         r->has_optional |= copy->optional;
     }
     r->num_properties = n;
-    if (n != t)
-        r = OPENSSL_realloc(r, sizeof(*r) + (n - 1) * sizeof(r->properties[0]));
+
     return r;
 }
 
@@ -546,9 +587,13 @@ int ossl_property_parse_init(OSSL_LIB_CTX *ctx)
         if (ossl_property_name(ctx, predefined_names[i], 1) == 0)
             goto err;
 
-    /* Pre-populate the two Boolean values */
-    if ((ossl_property_true = ossl_property_value(ctx, "yes", 1)) == 0
-        || (ossl_property_false = ossl_property_value(ctx, "no", 1)) == 0)
+    /*
+     * Pre-populate the two Boolean values. We must do them before any other
+     * values and in this order so that we get the same index as the global
+     * OSSL_PROPERTY_TRUE and OSSL_PROPERTY_FALSE values
+     */
+    if ((ossl_property_value(ctx, "yes", 1) != OSSL_PROPERTY_TRUE)
+        || (ossl_property_value(ctx, "no", 1) != OSSL_PROPERTY_FALSE))
         goto err;
 
     return 1;
@@ -562,7 +607,7 @@ static void put_char(char ch, char **buf, size_t *remain, size_t *needed)
         ++*needed;
         return;
     }
-    if(*remain == 1)
+    if (*remain == 1)
         **buf = '\0';
     else
         **buf = ch;
@@ -573,24 +618,50 @@ static void put_char(char ch, char **buf, size_t *remain, size_t *needed)
 
 static void put_str(const char *str, char **buf, size_t *remain, size_t *needed)
 {
-    size_t olen, len;
+    size_t olen, len, i;
+    char quote = '\0';
+    int quotes;
 
     len = olen = strlen(str);
     *needed += len;
 
-    if (*remain == 0)
-        return;
+    /*
+     * Check to see if we need quotes or not.
+     * Characters that are legal in a PropertyName don't need quoting.
+     * We simply assume all others require quotes.
+     */
+    for (i = 0; i < len; i++)
+        if (!ossl_isalnum(str[i]) && str[i] != '.' && str[i] != '_') {
+            /* Default to single quotes ... */
+            if (quote == '\0')
+                quote = '\'';
+            /* ... but use double quotes if a single is present */
+            if (str[i] == '\'')
+                quote = '"';
+        }
 
-    if(*remain < len + 1)
+    quotes = quote != '\0';
+    if (*remain <= (size_t)quotes) {
+        *needed += 2 * quotes;
+        return;
+    }
+
+    if (quotes)
+        put_char(quote, buf, remain, needed);
+
+    if (*remain < len + 1 + quotes)
         len = *remain - 1;
 
-    if(len > 0) {
-        strncpy(*buf, str, len);
+    if (len > 0) {
+        memcpy(*buf, str, len);
         *buf += len;
         *remain -= len;
     }
 
-    if(len < olen && *remain == 1) {
+    if (quotes)
+        put_char(quote, buf, remain, needed);
+
+    if (len < olen && *remain == 1) {
         **buf = '\0';
         ++*buf;
         --*remain;

@@ -4,13 +4,14 @@
 #include <stdarg.h>
 #include <string.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
 
 
 static void
 test_true(void **state)
 {
-    (void) state;
+    (void)state;
 }
 
 

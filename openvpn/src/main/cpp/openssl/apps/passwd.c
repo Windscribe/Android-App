@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2000-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -241,7 +241,7 @@ int passwd_main(int argc, char **argv)
             passwds = passwds_static;
             if (in == NULL) {
                 if (EVP_read_pw_string
-                    (passwd_malloc, passwd_malloc_size, "Password: ",
+                    (passwd_malloc, (int)passwd_malloc_size, "Password: ",
                      !(passed_salt || in_noverify)) != 0)
                     goto end;
             }
@@ -269,7 +269,7 @@ int passwd_main(int argc, char **argv)
 
         assert(passwd != NULL);
         do {
-            int r = BIO_gets(in, passwd, pw_maxlen + 1);
+            int r = BIO_gets(in, passwd, (int)(pw_maxlen + 1));
             if (r > 0) {
                 char *c = (strchr(passwd, '\n'));
                 if (c != NULL) {
@@ -369,8 +369,7 @@ static char *md5crypt(const char *passwd, const char *magic, const char *salt)
     if (magic_len > 0)
         salt_out += 2 + magic_len;
 
-    if (salt_len > 8)
-        goto err;
+    assert(salt_len <= 8);
 
     md = EVP_MD_CTX_new();
     if (md == NULL
@@ -396,21 +395,21 @@ static char *md5crypt(const char *passwd, const char *magic, const char *salt)
         || !EVP_DigestFinal_ex(md2, buf, NULL))
         goto err;
 
-    for (i = passwd_len; i > sizeof(buf); i -= sizeof(buf)) {
+    for (i = (unsigned int)passwd_len; i > sizeof(buf); i -= sizeof(buf)) {
         if (!EVP_DigestUpdate(md, buf, sizeof(buf)))
             goto err;
     }
     if (!EVP_DigestUpdate(md, buf, i))
         goto err;
 
-    n = passwd_len;
+    n = (int)passwd_len;
     while (n) {
         if (!EVP_DigestUpdate(md, (n & 1) ? "\0" : passwd, 1))
             goto err;
         n >>= 1;
     }
     if (!EVP_DigestFinal_ex(md, buf, NULL))
-        return NULL;
+        goto err;
 
     for (i = 0; i < 1000; i++) {
         if (!EVP_DigestInit_ex(md2, EVP_md5(), NULL))
@@ -589,7 +588,8 @@ static char *shacrypt(const char *passwd, const char *magic, const char *salt)
     OPENSSL_strlcat(out_buf, ascii_dollar, sizeof(out_buf));
     if (rounds_custom) {
         char tmp_buf[80]; /* "rounds=999999999" */
-        sprintf(tmp_buf, "rounds=%u", rounds);
+
+        BIO_snprintf(tmp_buf, sizeof(tmp_buf), "rounds=%u", rounds);
 #ifdef CHARSET_EBCDIC
         /* In case we're really on a ASCII based platform and just pretend */
         if (tmp_buf[0] != 0x72)  /* ASCII 'r' */
@@ -601,7 +601,7 @@ static char *shacrypt(const char *passwd, const char *magic, const char *salt)
     OPENSSL_strlcat(out_buf, ascii_salt, sizeof(out_buf));
 
     /* assert "$5$rounds=999999999$......salt......" */
-    if (strlen(out_buf) > 3 + 17 * rounds_custom + salt_len )
+    if (strlen(out_buf) > 3 + 17 * rounds_custom + salt_len)
         goto err;
 
     md = EVP_MD_CTX_new();
@@ -636,7 +636,7 @@ static char *shacrypt(const char *passwd, const char *magic, const char *salt)
         n >>= 1;
     }
     if (!EVP_DigestFinal_ex(md, buf, NULL))
-        return NULL;
+        goto err;
 
     /* P sequence */
     if (!EVP_DigestInit_ex(md2, sha, NULL))
@@ -647,7 +647,7 @@ static char *shacrypt(const char *passwd, const char *magic, const char *salt)
             goto err;
 
     if (!EVP_DigestFinal_ex(md2, temp_buf, NULL))
-        return NULL;
+        goto err;
 
     if ((p_bytes = OPENSSL_zalloc(passwd_len)) == NULL)
         goto err;
@@ -664,7 +664,7 @@ static char *shacrypt(const char *passwd, const char *magic, const char *salt)
             goto err;
 
     if (!EVP_DigestFinal_ex(md2, temp_buf, NULL))
-        return NULL;
+        goto err;
 
     if ((s_bytes = OPENSSL_zalloc(salt_len)) == NULL)
         goto err;
@@ -706,15 +706,14 @@ static char *shacrypt(const char *passwd, const char *magic, const char *salt)
     cp = out_buf + strlen(out_buf);
     *cp++ = ascii_dollar[0];
 
-# define b64_from_24bit(B2, B1, B0, N)                                   \
+# define b64_from_24bit(B2, B1, B0, N)                                  \
     do {                                                                \
         unsigned int w = ((B2) << 16) | ((B1) << 8) | (B0);             \
         int i = (N);                                                    \
-        while (i-- > 0)                                                 \
-            {                                                           \
-                *cp++ = cov_2char[w & 0x3f];                            \
-                w >>= 6;                                                \
-            }                                                           \
+        while (i-- > 0) {                                               \
+            *cp++ = cov_2char[w & 0x3f];                                \
+            w >>= 6;                                                    \
+        }                                                               \
     } while (0)
 
     switch (magic[0]) {
@@ -798,7 +797,7 @@ static int do_passwd(int passed_salt, char **salt_p, char **salt_malloc_p,
 
         if (*salt_malloc_p == NULL)
             *salt_p = *salt_malloc_p = app_malloc(saltlen + 1, "salt buffer");
-        if (RAND_bytes((unsigned char *)*salt_p, saltlen) <= 0)
+        if (RAND_bytes((unsigned char *)*salt_p, (int)saltlen) <= 0)
             goto end;
 
         for (i = 0; i < saltlen; i++)

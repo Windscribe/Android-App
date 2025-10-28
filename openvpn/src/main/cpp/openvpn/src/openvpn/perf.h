@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /*
@@ -35,27 +34,27 @@
 /*
  * Metrics
  */
-#define PERF_BIO_READ_PLAINTEXT     0
-#define PERF_BIO_WRITE_PLAINTEXT    1
-#define PERF_BIO_READ_CIPHERTEXT    2
-#define PERF_BIO_WRITE_CIPHERTEXT   3
-#define PERF_TLS_MULTI_PROCESS      4
-#define PERF_IO_WAIT                5
-#define PERF_EVENT_LOOP             6
-#define PERF_MULTI_CREATE_INSTANCE  7
-#define PERF_MULTI_CLOSE_INSTANCE   8
-#define PERF_MULTI_SHOW_STATS       9
-#define PERF_MULTI_BCAST            10
-#define PERF_MULTI_MCAST            11
-#define PERF_SCRIPT                 12
-#define PERF_READ_IN_LINK           13
-#define PERF_PROC_IN_LINK           14
-#define PERF_READ_IN_TUN            15
-#define PERF_PROC_IN_TUN            16
-#define PERF_PROC_OUT_LINK          17
-#define PERF_PROC_OUT_TUN           18
-#define PERF_PROC_OUT_TUN_MTCP      19
-#define PERF_N                      20
+#define PERF_BIO_READ_PLAINTEXT    0
+#define PERF_BIO_WRITE_PLAINTEXT   1
+#define PERF_BIO_READ_CIPHERTEXT   2
+#define PERF_BIO_WRITE_CIPHERTEXT  3
+#define PERF_TLS_MULTI_PROCESS     4
+#define PERF_IO_WAIT               5
+#define PERF_EVENT_LOOP            6
+#define PERF_MULTI_CREATE_INSTANCE 7
+#define PERF_MULTI_CLOSE_INSTANCE  8
+#define PERF_MULTI_SHOW_STATS      9
+#define PERF_MULTI_BCAST           10
+#define PERF_MULTI_MCAST           11
+#define PERF_SCRIPT                12
+#define PERF_READ_IN_LINK          13
+#define PERF_PROC_IN_LINK          14
+#define PERF_READ_IN_TUN           15
+#define PERF_PROC_IN_TUN           16
+#define PERF_PROC_OUT_LINK         17
+#define PERF_PROC_OUT_TUN          18
+#define PERF_PROC_OUT_TUN_MTCP     19
+#define PERF_N                     20
 
 #ifdef ENABLE_PERFORMANCE_METRICS
 
@@ -64,7 +63,7 @@
 /*
  * Stack size
  */
-#define STACK_N               64
+#define STACK_N 64
 
 void perf_push(int type);
 

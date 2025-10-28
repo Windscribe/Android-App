@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2025 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,14 +17,11 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#elif defined(_MSC_VER)
-#include "config-msvc.h"
 #endif
 
 #include "syshead.h"
@@ -43,12 +40,14 @@ size_t
 array_mult_safe(const size_t m1, const size_t m2, const size_t extra)
 {
     const size_t limit = 0xFFFFFFFF;
-    unsigned long long res = (unsigned long long)m1 * (unsigned long long)m2 + (unsigned long long)extra;
-    if (unlikely(m1 > limit) || unlikely(m2 > limit) || unlikely(extra > limit) || unlikely(res > (unsigned long long)limit))
+    unsigned long long res =
+        (unsigned long long)m1 * (unsigned long long)m2 + (unsigned long long)extra;
+    if (unlikely(m1 > limit) || unlikely(m2 > limit) || unlikely(extra > limit)
+        || unlikely(res > (unsigned long long)limit))
     {
         msg(M_FATAL, "attempted allocation of excessively large array");
     }
-    return (size_t) res;
+    return (size_t)res;
 }
 
 void
@@ -99,9 +98,9 @@ alloc_buf_gc(size_t size, struct gc_arena *gc)
     buf.offset = 0;
     buf.len = 0;
 #ifdef DMALLOC
-    buf.data = (uint8_t *) gc_malloc_debug(size, false, gc, file, line);
+    buf.data = (uint8_t *)gc_malloc_debug(size, false, gc, file, line);
 #else
-    buf.data = (uint8_t *) gc_malloc(size, false, gc);
+    buf.data = (uint8_t *)gc_malloc(size, false, gc);
 #endif
     if (size)
     {
@@ -122,9 +121,9 @@ clone_buf(const struct buffer *buf)
     ret.offset = buf->offset;
     ret.len = buf->len;
 #ifdef DMALLOC
-    ret.data = (uint8_t *) openvpn_dmalloc(file, line, buf->capacity);
+    ret.data = (uint8_t *)openvpn_dmalloc(file, line, buf->capacity);
 #else
-    ret.data = (uint8_t *) malloc(buf->capacity);
+    ret.data = (uint8_t *)malloc(buf->capacity);
 #endif
     check_malloc_return(ret.data);
     memcpy(BPTR(&ret), BPTR(buf), BLEN(buf));
@@ -153,7 +152,7 @@ buf_debug_file(const struct buffer *buf)
     return buf->debug_file;
 }
 
-#else  /* ifdef BUF_INIT_TRACKING */
+#else /* ifdef BUF_INIT_TRACKING */
 
 #define buf_debug_line(buf) 0
 #define buf_debug_file(buf) "[UNDEF]"
@@ -255,7 +254,7 @@ buf_printf(struct buffer *buf, const char *format, ...)
             stat = vsnprintf((char *)ptr, cap, format, arglist);
             va_end(arglist);
             *(buf->data + buf->capacity - 1) = 0; /* windows vsnprintf needs this */
-            buf->len += (int) strlen((char *)ptr);
+            buf->len += (int)strlen((char *)ptr);
             if (stat >= 0 && stat < cap)
             {
                 ret = true;
@@ -273,62 +272,13 @@ buf_puts(struct buffer *buf, const char *str)
     int cap = buf_forward_capacity(buf);
     if (cap > 0)
     {
-        strncpynt((char *)ptr,str, cap);
+        strncpynt((char *)ptr, str, cap);
         *(buf->data + buf->capacity - 1) = 0; /* windows vsnprintf needs this */
-        buf->len += (int) strlen((char *)ptr);
+        buf->len += (int)strlen((char *)ptr);
         ret = true;
     }
     return ret;
 }
-
-
-/*
- * This is necessary due to certain buggy implementations of snprintf,
- * that don't guarantee null termination for size > 0.
- *
- * Return false on overflow.
- *
- * This functionality is duplicated in src/openvpnserv/common.c
- * Any modifications here should be done to the other place as well.
- */
-
-bool
-openvpn_snprintf(char *str, size_t size, const char *format, ...)
-{
-    va_list arglist;
-    int len = -1;
-    if (size > 0)
-    {
-        va_start(arglist, format);
-        len = vsnprintf(str, size, format, arglist);
-        va_end(arglist);
-        str[size - 1] = 0;
-    }
-    return (len >= 0 && len < size);
-}
-
-/*
- * openvpn_swprintf() is currently only used by Windows code paths
- * and when enabled for all platforms it will currently break older
- * OpenBSD versions lacking vswprintf(3) support in their libc.
- */
-
-#ifdef _WIN32
-bool
-openvpn_swprintf(wchar_t *const str, const size_t size, const wchar_t *const format, ...)
-{
-    va_list arglist;
-    int len = -1;
-    if (size > 0)
-    {
-        va_start(arglist, format);
-        len = vswprintf(str, size, format, arglist);
-        va_end(arglist);
-        str[size - 1] = L'\0';
-    }
-    return (len >= 0 && len < size);
-}
-#endif
 
 /*
  * write a string to the end of a buffer that was
@@ -339,29 +289,11 @@ buf_catrunc(struct buffer *buf, const char *str)
 {
     if (buf_forward_capacity(buf) <= 1)
     {
-        int len = (int) strlen(str) + 1;
+        size_t len = strlen(str) + 1;
         if (len < buf_forward_capacity_total(buf))
         {
-            strncpynt((char *)(buf->data + buf->capacity - len), str, len);
+            memcpy(buf->data + buf->capacity - len, str, len);
         }
-    }
-}
-
-/*
- * convert a multi-line output to one line
- */
-void
-convert_to_one_line(struct buffer *buf)
-{
-    uint8_t *cp = BPTR(buf);
-    int len = BLEN(buf);
-    while (len--)
-    {
-        if (*cp == '\n')
-        {
-            *cp = '|';
-        }
-        ++cp;
     }
 }
 
@@ -369,15 +301,14 @@ bool
 buffer_write_file(const char *filename, const struct buffer *buf)
 {
     bool ret = false;
-    int fd = platform_open(filename, O_CREAT | O_TRUNC | O_WRONLY,
-                           S_IRUSR | S_IWUSR);
+    int fd = platform_open(filename, O_CREAT | O_TRUNC | O_WRONLY, S_IRUSR | S_IWUSR);
     if (fd == -1)
     {
         msg(M_ERRNO, "Cannot open file '%s' for write", filename);
         return false;
     }
 
-    const int size = write(fd, BPTR(buf), BLEN(buf));
+    const ssize_t size = write(fd, BPTR(buf), BLEN(buf));
     if (size != BLEN(buf))
     {
         msg(M_ERRNO, "Write error on file '%s'", filename);
@@ -410,12 +341,12 @@ gc_malloc(size_t size, bool clear, struct gc_arena *a)
     {
         struct gc_entry *e;
 #ifdef DMALLOC
-        e = (struct gc_entry *) openvpn_dmalloc(file, line, size + sizeof(struct gc_entry));
+        e = (struct gc_entry *)openvpn_dmalloc(file, line, size + sizeof(struct gc_entry));
 #else
-        e = (struct gc_entry *) malloc(size + sizeof(struct gc_entry));
+        e = (struct gc_entry *)malloc(size + sizeof(struct gc_entry));
 #endif
         check_malloc_return(e);
-        ret = (char *) e + sizeof(struct gc_entry);
+        ret = (char *)e + sizeof(struct gc_entry);
         e->next = a->list;
         a->list = e;
     }
@@ -431,7 +362,40 @@ gc_malloc(size_t size, bool clear, struct gc_arena *a)
 #ifndef ZERO_BUFFER_ON_ALLOC
     if (clear)
 #endif
-    memset(ret, 0, size);
+        memset(ret, 0, size);
+    return ret;
+}
+
+void *
+gc_realloc(void *ptr, size_t size, struct gc_arena *a)
+{
+    void *ret = realloc(ptr, size);
+    check_malloc_return(ret);
+    if (a)
+    {
+        if (ptr && ptr != ret)
+        {
+            /* find the old entry and modify it if realloc changed
+             * the pointer */
+            struct gc_entry_special *e = NULL;
+            for (e = a->list_special; e != NULL; e = e->next)
+            {
+                if (e->addr == ptr)
+                {
+                    break;
+                }
+            }
+            ASSERT(e);
+            ASSERT(e->addr == ptr);
+            e->addr = ret;
+        }
+        else if (!ptr)
+        {
+            /* sets e->addr to newptr */
+            gc_addspecial(ret, free, a);
+        }
+    }
+
     return ret;
 }
 
@@ -476,9 +440,9 @@ gc_addspecial(void *addr, void (*free_function)(void *), struct gc_arena *a)
     ASSERT(a);
     struct gc_entry_special *e;
 #ifdef DMALLOC
-    e = (struct gc_entry_special *) openvpn_dmalloc(file, line, sizeof(struct gc_entry_special));
+    e = (struct gc_entry_special *)openvpn_dmalloc(file, line, sizeof(struct gc_entry_special));
 #else
-    e = (struct gc_entry_special *) malloc(sizeof(struct gc_entry_special));
+    e = (struct gc_entry_special *)malloc(sizeof(struct gc_entry_special));
 #endif
     check_malloc_return(e);
     e->free_fnc = free_function;
@@ -516,15 +480,15 @@ gc_transfer(struct gc_arena *dest, struct gc_arena *src)
  */
 
 char *
-format_hex_ex(const uint8_t *data, int size, int maxoutput,
-              unsigned int space_break_flags, const char *separator,
-              struct gc_arena *gc)
+format_hex_ex(const uint8_t *data, int size, int maxoutput, unsigned int space_break_flags,
+              const char *separator, struct gc_arena *gc)
 {
     const size_t bytes_per_hexblock = space_break_flags & FHE_SPACE_BREAK_MASK;
     const size_t separator_len = separator ? strlen(separator) : 0;
     static_assert(INT_MAX <= SIZE_MAX, "Code assumes INT_MAX <= SIZE_MAX");
-    const size_t out_len = maxoutput > 0 ? maxoutput :
-                           ((size * 2) + ((size / bytes_per_hexblock) * separator_len) + 2);
+    const size_t out_len = maxoutput > 0
+                               ? maxoutput
+                               : ((size * 2) + ((size / bytes_per_hexblock) * separator_len) + 2);
 
     struct buffer out = alloc_buf_gc(out_len, gc);
     for (int i = 0; i < size; ++i)
@@ -568,13 +532,13 @@ buf_rmtail(struct buffer *buf, uint8_t remove)
 void
 buf_null_terminate(struct buffer *buf)
 {
-    char *last = (char *) BLAST(buf);
+    char *last = (char *)BLAST(buf);
     if (last && *last == '\0') /* already terminated? */
     {
         return;
     }
 
-    if (!buf_safe(buf, 1))   /* make space for trailing null */
+    if (!buf_safe(buf, 1)) /* make space for trailing null */
     {
         buf_inc_len(buf, -1);
     }
@@ -591,12 +555,12 @@ buf_chomp(struct buffer *buf)
 {
     while (true)
     {
-        char *last = (char *) BLAST(buf);
+        char *last = (char *)BLAST(buf);
         if (!last)
         {
             break;
         }
-        if (char_class(*last, CC_CRLF|CC_NULL))
+        if (char_class(*last, CC_CRLF | CC_NULL))
         {
             if (!buf_inc_len(buf, -1))
             {
@@ -693,9 +657,9 @@ string_alloc(const char *str, struct gc_arena *gc)
         if (gc)
         {
 #ifdef DMALLOC
-            ret = (char *) gc_malloc_debug(n, false, gc, file, line);
+            ret = (char *)gc_malloc_debug(n, false, gc, file, line);
 #else
-            ret = (char *) gc_malloc(n, false, gc);
+            ret = (char *)gc_malloc(n, false, gc);
 #endif
         }
         else
@@ -754,7 +718,7 @@ print_argv(const char **p, struct gc_arena *gc, const unsigned int flags)
 {
     struct buffer out = alloc_buf_gc(256, gc);
     int i = 0;
-    for (;; )
+    for (;;)
     {
         const char *cp = *p++;
         if (!cp)
@@ -793,9 +757,9 @@ string_alloc_buf(const char *str, struct gc_arena *gc)
     ASSERT(str);
 
 #ifdef DMALLOC
-    buf_set_read(&buf, (uint8_t *) string_alloc_debug(str, gc, file, line), strlen(str) + 1);
+    buf_set_read(&buf, (uint8_t *)string_alloc_debug(str, gc, file, line), strlen(str) + 1);
 #else
-    buf_set_read(&buf, (uint8_t *) string_alloc(str, gc), strlen(str) + 1);
+    buf_set_read(&buf, (uint8_t *)string_alloc(str, gc), strlen(str) + 1);
 #endif
 
     if (buf.len > 0) /* Don't count trailing '\0' as part of length */
@@ -814,7 +778,7 @@ bool
 buf_string_match_head_str(const struct buffer *src, const char *match)
 {
     const size_t size = strlen(match);
-    if (size < 0 || size > src->len)
+    if (size > src->len)
     {
         return false;
     }
@@ -868,24 +832,28 @@ buf_parse(struct buffer *buf, const int delim, char *line, const int size)
 
     do
     {
-        c = buf_read_u8(buf);
+        c = buf_peek_u8(buf);
         if (c < 0)
         {
             eol = true;
+            line[n] = 0;
+            break;
         }
-        if (c <= 0 || c == delim)
+        if (c == delim)
         {
-            c = 0;
+            buf_advance(buf, 1);
+            line[n] = 0;
+            break;
         }
-        if (n >= size)
+        if (n >= (size - 1))
         {
             break;
         }
-        line[n++] = c;
-    }
-    while (c);
+        buf_advance(buf, 1);
+        line[n++] = (char)c;
+    } while (c);
 
-    line[size-1] = '\0';
+    line[size - 1] = '\0';
     return !(eol && !strlen(line));
 }
 
@@ -946,7 +914,8 @@ char_class(const unsigned char c, const unsigned int flags)
     {
         return true;
     }
-    if ((flags & CC_PRINT) && (c >= 32 && c != 127)) /* allow ascii non-control and UTF-8, consider DEL to be a control */
+    /* allow ascii non-control and UTF-8, consider DEL to be a control */
+    if ((flags & CC_PRINT) && (c >= 32 && c != 127))
     {
         return true;
     }
@@ -1074,7 +1043,8 @@ string_class(const char *str, const unsigned int inclusive, const unsigned int e
  * Guaranteed to not increase string length.
  */
 bool
-string_mod(char *str, const unsigned int inclusive, const unsigned int exclusive, const char replace)
+string_mod(char *str, const unsigned int inclusive, const unsigned int exclusive,
+           const char replace)
 {
     const char *in = str;
     bool ret = true;
@@ -1105,12 +1075,26 @@ string_mod(char *str, const unsigned int inclusive, const unsigned int exclusive
     return ret;
 }
 
+bool
+string_check_buf(struct buffer *buf, const unsigned int inclusive, const unsigned int exclusive)
+{
+    ASSERT(buf);
+
+    for (int i = 0; i < BLEN(buf); i++)
+    {
+        char c = BSTR(buf)[i];
+
+        if (!char_inc_exc(c, inclusive, exclusive))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 const char *
-string_mod_const(const char *str,
-                 const unsigned int inclusive,
-                 const unsigned int exclusive,
-                 const char replace,
-                 struct gc_arena *gc)
+string_mod_const(const char *str, const unsigned int inclusive, const unsigned int exclusive,
+                 const char replace, struct gc_arena *gc)
 {
     if (str)
     {
@@ -1142,50 +1126,23 @@ string_replace_leading(char *str, const char match, const char replace)
     }
 }
 
-#ifdef CHARACTER_CLASS_DEBUG
-
-#define CC_INCLUDE    (CC_PRINT)
-#define CC_EXCLUDE    (0)
-#define CC_REPLACE    ('.')
-
-void
-character_class_debug(void)
-{
-    char buf[256];
-
-    while (fgets(buf, sizeof(buf), stdin) != NULL)
-    {
-        string_mod(buf, CC_INCLUDE, CC_EXCLUDE, CC_REPLACE);
-        printf("%s", buf);
-    }
-}
-
-#endif
-
 #ifdef VERIFY_ALIGNMENT
 void
 valign4(const struct buffer *buf, const char *file, const int line)
 {
     if (buf && buf->len)
     {
-        int msglevel = D_ALIGN_DEBUG;
-        const unsigned int u = (unsigned int) BPTR(buf);
+        msglvl_t msglevel = D_ALIGN_DEBUG;
+        const unsigned int u = (unsigned int)BPTR(buf);
 
-        if (u & (PAYLOAD_ALIGN-1))
+        if (u & (PAYLOAD_ALIGN - 1))
         {
             msglevel = D_ALIGN_ERRORS;
         }
 
         msg(msglevel, "%sAlignment at %s/%d ptr=" ptr_format " OLC=%d/%d/%d I=%s/%d",
-            (msglevel == D_ALIGN_ERRORS) ? "ERROR: " : "",
-            file,
-            line,
-            (ptr_type)buf->data,
-            buf->offset,
-            buf->len,
-            buf->capacity,
-            buf_debug_file(buf),
-            buf_debug_line(buf));
+            (msglevel == D_ALIGN_ERRORS) ? "ERROR: " : "", file, line, (ptr_type)buf->data,
+            buf->offset, buf->len, buf->capacity, buf_debug_file(buf), buf_debug_line(buf));
     }
 }
 #endif /* ifdef VERIFY_ALIGNMENT */
@@ -1194,11 +1151,10 @@ valign4(const struct buffer *buf, const char *file, const int line)
  * struct buffer_list
  */
 struct buffer_list *
-buffer_list_new(const int max_size)
+buffer_list_new(void)
 {
     struct buffer_list *ret;
     ALLOC_OBJ_CLEAR(ret, struct buffer_list);
-    ret->max_size = max_size;
     ret->size = 0;
     return ret;
 }
@@ -1240,7 +1196,7 @@ buffer_list_push(struct buffer_list *ol, const char *str)
     if (str)
     {
         const size_t len = strlen((const char *)str);
-        struct buffer_entry *e = buffer_list_push_data(ol, str, len+1);
+        struct buffer_entry *e = buffer_list_push_data(ol, str, len + 1);
         if (e)
         {
             e->buf.len = (int)len; /* Don't count trailing '\0' as part of length */
@@ -1252,7 +1208,7 @@ struct buffer_entry *
 buffer_list_push_data(struct buffer_list *ol, const void *data, size_t size)
 {
     struct buffer_entry *e = NULL;
-    if (data && (!ol->max_size || ol->size < ol->max_size))
+    if (data)
     {
         ALLOC_OBJ_CLEAR(e, struct buffer_entry);
 
@@ -1289,8 +1245,7 @@ buffer_list_peek(struct buffer_list *ol)
 }
 
 void
-buffer_list_aggregate_separator(struct buffer_list *bl, const size_t max_len,
-                                const char *sep)
+buffer_list_aggregate_separator(struct buffer_list *bl, const size_t max_len, const char *sep)
 {
     const size_t sep_len = strlen(sep);
     struct buffer_entry *more = bl->head;
@@ -1379,10 +1334,10 @@ buffer_list_file(const char *fn, int max_line_len)
 
     if (fp)
     {
-        char *line = (char *) malloc(max_line_len);
+        char *line = (char *)malloc(max_line_len);
         if (line)
         {
-            bl = buffer_list_new(0);
+            bl = buffer_list_new();
             while (fgets(line, max_line_len, fp) != NULL)
             {
                 buffer_list_push(bl, line);

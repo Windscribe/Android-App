@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 // This file describes the basic set of OpenVPN client events, including the
 // normal events leading up to a connection as well as error events.
@@ -34,454 +24,772 @@
 #include <openvpn/common/rc.hpp>
 #include <openvpn/transport/protocol.hpp>
 
-namespace openvpn {
-  namespace ClientEvent {
-    enum Type {
-      // normal events including disconnected, connected, and other transitional events
-      DISCONNECTED=0,
-      CONNECTED,
-      RECONNECTING,
-      AUTH_PENDING,
-      RESOLVE,
-      WAIT,
-      WAIT_PROXY,
-      CONNECTING,
-      GET_CONFIG,
-      ASSIGN_IP,
-      ADD_ROUTES,
-      ECHO_OPT,
-      INFO,
-      WARN,
-      PAUSE,
-      RESUME,
-      RELAY,
-      COMPRESSION_ENABLED,
-      UNSUPPORTED_FEATURE,
+#ifdef HAVE_JSON
+#include <openvpn/common/jsonhelper.hpp>
+#endif
 
-      // start of nonfatal errors, must be marked by NONFATAL_ERROR_START below
-      TRANSPORT_ERROR,
-      TUN_ERROR,
-      CLIENT_RESTART,
+namespace openvpn::ClientEvent {
+enum Type
+{
+    // normal events including disconnected, connected, and other transitional events
+    DISCONNECTED = 0,
+    CONNECTED,
+    RECONNECTING,
+    AUTH_PENDING,
+    RESOLVE,
+    WAIT,
+    WAIT_PROXY,
+    CONNECTING,
+    GET_CONFIG,
+    ASSIGN_IP,
+    ADD_ROUTES,
+    ECHO_OPT,
+    INFO,
+    CUSTOM_CONTROL,
+#ifdef HAVE_JSON
+    INFO_JSON,
+#endif
+    WARN,
+    PAUSE,
+    RESUME,
+    RELAY,
+    COMPRESSION_ENABLED,
+    UNSUPPORTED_FEATURE,
 
-      // start of errors, must be marked by FATAL_ERROR_START below
-      AUTH_FAILED,
-      CERT_VERIFY_FAIL,
-      TLS_VERSION_MIN,
-      CLIENT_HALT,
-      CLIENT_SETUP,
-      TUN_HALT,
-      CONNECTION_TIMEOUT,
-      INACTIVE_TIMEOUT,
-      DYNAMIC_CHALLENGE,
-      PROXY_NEED_CREDS,
-      PROXY_ERROR,
-      TUN_SETUP_FAILED,
-      TUN_IFACE_CREATE,
-      TUN_IFACE_DISABLED,
-      EPKI_ERROR,          // EPKI refers to External PKI errors, i.e. errors in accessing external
-      EPKI_INVALID_ALIAS,  //    certificates or keys.
-      RELAY_ERROR,
+    // start of nonfatal errors, must be marked by NONFATAL_ERROR_START below
+    TRANSPORT_ERROR,
+    TUN_ERROR,
+    CLIENT_RESTART,
 
-      N_TYPES
-    };
+    // start of errors, must be marked by FATAL_ERROR_START below
+    AUTH_FAILED,
+    CERT_VERIFY_FAIL,
+    TLS_VERSION_MIN,
+    TLS_ALERT_PROTOCOL_VERSION,
+    TLS_ALERT_UNKNOWN_CA,
+    TLS_ALERT_MISC,
+    TLS_ALERT_HANDSHAKE_FAILURE,
+    TLS_ALERT_CERTIFICATE_EXPIRED,
+    TLS_ALERT_CERTIFICATE_REVOKED,
+    TLS_ALERT_BAD_CERTIFICATE,
+    TLS_ALERT_UNSUPPORTED_CERTIFICATE,
+    TLS_SIGALG_DISALLOWED_OR_UNSUPPORTED,
+    CLIENT_HALT,
+    CLIENT_SETUP,
+    TUN_HALT,
+    CONNECTION_TIMEOUT,
+    INACTIVE_TIMEOUT,
+    DYNAMIC_CHALLENGE,
+    PROXY_NEED_CREDS,
+    PROXY_ERROR,
+    TUN_SETUP_FAILED,
+    TUN_IFACE_CREATE,
+    TUN_IFACE_DISABLED,
+    EPKI_ERROR,         // EPKI refers to External PKI errors, i.e. errors in accessing external
+    EPKI_INVALID_ALIAS, //    certificates or keys.
+    RELAY_ERROR,
+    COMPRESS_ERROR,
+    NTLM_MISSING_CRYPTO,
+    SESSION_EXPIRED,
+    NEED_CREDS,
 
-    enum {
-      NONFATAL_ERROR_START = TRANSPORT_ERROR, // start of nonfatal errors that automatically reconnect
-      FATAL_ERROR_START    = AUTH_FAILED,     // start of fatal errors
-    };
+    N_TYPES
+};
 
-    inline const char *event_name(const Type type)
+enum
+{
+    NONFATAL_ERROR_START = TRANSPORT_ERROR, // start of nonfatal errors that automatically reconnect
+    FATAL_ERROR_START = AUTH_FAILED,        // start of fatal errors
+};
+
+inline const char *event_name(const Type type)
+{
+    static const char *names[] = {
+        "DISCONNECTED",
+        "CONNECTED",
+        "RECONNECTING",
+        "AUTH_PENDING",
+        "RESOLVE",
+        "WAIT",
+        "WAIT_PROXY",
+        "CONNECTING",
+        "GET_CONFIG",
+        "ASSIGN_IP",
+        "ADD_ROUTES",
+        "ECHO",
+        "INFO",
+        "CUSTOM_CONTROL",
+#ifdef HAVE_JSON
+        "INFO_JSON",
+#endif
+        "WARN",
+        "PAUSE",
+        "RESUME",
+        "RELAY",
+        "COMPRESSION_ENABLED",
+        "UNSUPPORTED_FEATURE",
+
+        // nonfatal errors
+        "TRANSPORT_ERROR",
+        "TUN_ERROR",
+        "CLIENT_RESTART",
+
+        // fatal errors
+        "AUTH_FAILED",
+        "CERT_VERIFY_FAIL",
+        "TLS_VERSION_MIN",
+        "TLS_ALERT_PROTOCOL_VERSION",
+        "TLS_ALERT_UNKNOWN_CA",
+        "TLS_ALERT_MISC",
+        "TLS_ALERT_HANDSHAKE_FAILURE",
+        "TLS_ALERT_CERTIFICATE_EXPIRED",
+        "TLS_ALERT_CERTIFICATE_REVOKED",
+        "TLS_ALERT_BAD_CERTIFICATE",
+        "TLS_ALERT_UNSUPPORTED_CERTIFICATE",
+        "TLS_SIGALG_DISALLOWED_OR_UNSUPPORTED",
+        "CLIENT_HALT",
+        "CLIENT_SETUP",
+        "TUN_HALT",
+        "CONNECTION_TIMEOUT",
+        "INACTIVE_TIMEOUT",
+        "DYNAMIC_CHALLENGE",
+        "PROXY_NEED_CREDS",
+        "PROXY_ERROR",
+        "TUN_SETUP_FAILED",
+        "TUN_IFACE_CREATE",
+        "TUN_IFACE_DISABLED",
+        "EPKI_ERROR",
+        "EPKI_INVALID_ALIAS",
+        "RELAY_ERROR",
+        "COMPRESS_ERROR",
+        "NTLM_MISSING_CRYPTO",
+        "SESSION_EXPIRED",
+        "NEED_CREDS"};
+
+    static_assert(N_TYPES == array_size(names), "event names array inconsistency");
+    if (type < N_TYPES)
+        return names[type];
+    else
+        return "UNKNOWN_EVENT_TYPE";
+}
+
+struct Connected;
+
+// The base class for all events.
+class Base : public RC<thread_safe_refcount>
+{
+  public:
+    typedef RCPtr<Base> Ptr;
+    virtual ~Base() = default;
+    Base(Type id)
+        : id_(id)
     {
-      static const char *names[] = {
-	"DISCONNECTED",
-	"CONNECTED",
-	"RECONNECTING",
-	"AUTH_PENDING",
-	"RESOLVE",
-	"WAIT",
-	"WAIT_PROXY",
-	"CONNECTING",
-	"GET_CONFIG",
-	"ASSIGN_IP",
-	"ADD_ROUTES",
-	"ECHO",
-	"INFO",
-	"WARN",
-	"PAUSE",
-	"RESUME",
-	"RELAY",
-	"COMPRESSION_ENABLED",
-	"UNSUPPORTED_FEATURE",
-
-	// nonfatal errors
-	"TRANSPORT_ERROR",
-	"TUN_ERROR",
-	"CLIENT_RESTART",
-
-	// fatal errors
-	"AUTH_FAILED",
-	"CERT_VERIFY_FAIL",
-	"TLS_VERSION_MIN",
-	"CLIENT_HALT",
-	"CLIENT_SETUP",
-	"TUN_HALT",
-	"CONNECTION_TIMEOUT",
-	"INACTIVE_TIMEOUT",
-	"DYNAMIC_CHALLENGE",
-	"PROXY_NEED_CREDS",
-	"PROXY_ERROR",
-	"TUN_SETUP_FAILED",
-	"TUN_IFACE_CREATE",
-	"TUN_IFACE_DISABLED",
-	"EPKI_ERROR",
-	"EPKI_INVALID_ALIAS",
-	"RELAY_ERROR",
-      };
-
-      static_assert(N_TYPES == array_size(names), "event names array inconsistency");
-      if (type < N_TYPES)
-	return names[type];
-      else
-	return "UNKNOWN_EVENT_TYPE";
     }
 
-    struct Connected;
-
-    // The base class for all events.
-    class Base : public RC<thread_safe_refcount>
+    Type id() const
     {
-    public:
-      typedef RCPtr<Base> Ptr;
-      Base(Type id) : id_(id) {}
+        return id_;
+    }
 
-      Type id() const { return id_; }
-
-      const char *name() const
-      {
-	return event_name(id_);
-      }
-
-      bool is_error() const
-      {
-	return int(id_) >= NONFATAL_ERROR_START;
-      }
-
-      bool is_fatal() const
-      {
-	return int(id_) >= FATAL_ERROR_START;
-      }
-
-      virtual std::string render() const
-      {
-	return "";
-      }
-
-      const Connected* connected_cast() const
-      {
-	if (id_ == CONNECTED)
-	  return (const Connected*)this;
-	else
-	  return nullptr;
-      }
-
-    private:
-      Type id_;
-    };
-
-    // Specific client events.  Some events have no additional data attached to them,
-    // while other events (such as Connected) have many additional data fields.
-
-    struct Resolve : public Base
+    const char *name() const
     {
-      Resolve() : Base(RESOLVE) {}
-    };
+        return event_name(id_);
+    }
 
-    struct Wait : public Base
+    bool is_error() const
     {
-      Wait() : Base(WAIT) {}
-    };
+        return int(id_) >= NONFATAL_ERROR_START;
+    }
 
-    struct WaitProxy : public Base
+    bool is_fatal() const
     {
-      WaitProxy() : Base(WAIT_PROXY) {}
-    };
+        return int(id_) >= FATAL_ERROR_START;
+    }
 
-    struct Connecting : public Base
+    virtual std::string render() const
     {
-      Connecting() : Base(CONNECTING) {}
-    };
+        return "";
+    }
 
-    struct Reconnecting : public Base
+    const Connected *connected_cast() const
     {
-      Reconnecting() : Base(RECONNECTING) {}
-    };
+        if (id_ == CONNECTED)
+            return (const Connected *)this;
+        else
+            return nullptr;
+    }
 
-    struct GetConfig : public Base
+  private:
+    Type id_;
+};
+
+// Specific client events.  Some events have no additional data attached to them,
+// while other events (such as Connected) have many additional data fields.
+
+struct Resolve : public Base
+{
+    Resolve()
+        : Base(RESOLVE)
     {
-      GetConfig() : Base(GET_CONFIG) {}
-    };
+    }
+};
 
-    struct AssignIP : public Base
+struct Wait : public Base
+{
+    Wait()
+        : Base(WAIT)
     {
-      AssignIP() : Base(ASSIGN_IP) {}
-    };
+    }
+};
 
-    struct AddRoutes : public Base
+struct WaitProxy : public Base
+{
+    WaitProxy()
+        : Base(WAIT_PROXY)
     {
-      AddRoutes() : Base(ADD_ROUTES) {}
-    };
+    }
+};
 
-    struct Resume : public Base
+struct Connecting : public Base
+{
+    Connecting()
+        : Base(CONNECTING)
     {
-      Resume() : Base(RESUME) {}
-    };
+    }
+};
 
-    struct Relay : public Base
+struct Reconnecting : public Base
+{
+    Reconnecting()
+        : Base(RECONNECTING)
     {
-      Relay() : Base(RELAY) {}
-    };
+    }
+};
 
-    struct Disconnected : public Base
+struct GetConfig : public Base
+{
+    GetConfig()
+        : Base(GET_CONFIG)
     {
-      Disconnected() : Base(DISCONNECTED) {}
-    };
+    }
+};
 
-    struct ConnectionTimeout : public Base
+struct AssignIP : public Base
+{
+    AssignIP()
+        : Base(ASSIGN_IP)
     {
-      ConnectionTimeout() : Base(CONNECTION_TIMEOUT) {}
-    };
+    }
+};
 
-    struct InactiveTimeout : public Base
+struct AddRoutes : public Base
+{
+    AddRoutes()
+        : Base(ADD_ROUTES)
     {
-      InactiveTimeout() : Base(INACTIVE_TIMEOUT) {}
-    };
+    }
+};
 
-    struct TLSVersionMinFail : public Base
+struct Resume : public Base
+{
+    Resume()
+        : Base(RESUME)
     {
-      TLSVersionMinFail() : Base(TLS_VERSION_MIN) {}
-    };
+    }
+};
 
-    struct UnsupportedFeature : public Base
+struct Relay : public Base
+{
+    Relay()
+        : Base(RELAY)
     {
-      typedef RCPtr<UnsupportedFeature> Ptr;
+    }
+};
 
-      UnsupportedFeature(const std::string& name_arg, const std::string& reason_arg, bool critical_arg)
-	: Base(UNSUPPORTED_FEATURE),
-	  name(name_arg),
-	  reason(reason_arg),
-	  critical(critical_arg) {}
-
-      std::string name;
-      std::string reason;
-      bool critical;
-
-      virtual std::string render() const
-      {
-	std::ostringstream out;
-	out << "name: " << name << ", reason: " << reason << ", critical: " << critical;
-	return out.str();
-      }
-    };
-
-    struct Connected : public Base
+struct Disconnected : public Base
+{
+    Disconnected()
+        : Base(DISCONNECTED)
     {
-      typedef RCPtr<Connected> Ptr;
+    }
+};
 
-      Connected() : Base(CONNECTED) {}
-
-      std::string user;
-      std::string server_host;
-      std::string server_port;
-      std::string server_proto;
-      std::string server_ip;
-      std::string vpn_ip4;
-      std::string vpn_ip6;
-      std::string vpn_gw4;
-      std::string vpn_gw6;
-      std::string client_ip;
-      std::string tun_name;
-
-      virtual std::string render() const
-      {
-	std::ostringstream out;
-	// eg. "godot@foo.bar.gov:443 (1.2.3.4) via TCPv4 on tun0/5.5.1.1"
-	if (!user.empty())
-	  out << user << '@';
-	if (server_host.find_first_of(':') == std::string::npos)
-	  out << server_host;
-	else
-	  out << '[' << server_host << ']';
-	out << ':' << server_port
-	    << " (" << server_ip << ") via " << client_ip << '/' << server_proto
-	    << " on " << tun_name << '/' << vpn_ip4 << '/' << vpn_ip6
-	    << " gw=[" << vpn_gw4 << '/' << vpn_gw6 << ']';
-	return out.str();
-      }
-    };
-
-    struct ReasonBase : public Base {
-      ReasonBase(const Type id, const std::string& reason_arg)
-	: Base(id),
-	  reason(reason_arg)
-      {
-      }
-
-      ReasonBase(const Type id, std::string&& reason_arg)
-	: Base(id),
-	  reason(std::move(reason_arg))
-      {
-      }
-
-      virtual std::string render() const
-      {
-	return reason;
-      }
-
-      std::string reason;
-    };
-
-    struct AuthFailed : public ReasonBase
+struct ConnectionTimeout : public Base
+{
+    ConnectionTimeout()
+        : Base(CONNECTION_TIMEOUT)
     {
-      AuthFailed(std::string reason) : ReasonBase(AUTH_FAILED, std::move(reason)) {}
-    };
+    }
+};
 
-    struct CertVerifyFail : public ReasonBase
+struct InactiveTimeout : public Base
+{
+    InactiveTimeout()
+        : Base(INACTIVE_TIMEOUT)
     {
-      CertVerifyFail(std::string reason) : ReasonBase(CERT_VERIFY_FAIL, std::move(reason)) {}
-    };
+    }
+};
 
-    struct ClientHalt : public ReasonBase
+struct TLSMinVersion : public Base
+{
+    TLSMinVersion()
+        : Base(TLS_VERSION_MIN)
     {
-      ClientHalt(std::string reason) : ReasonBase(CLIENT_HALT, std::move(reason)) {}
-    };
+    }
+};
 
-    struct ClientRestart : public ReasonBase
+struct TLSVersionMinFail : public Base
+{
+    TLSVersionMinFail()
+        : Base(TLS_VERSION_MIN)
     {
-      ClientRestart(std::string reason) : ReasonBase(CLIENT_RESTART, std::move(reason)) {}
-    };
+    }
+};
 
-    struct TunHalt : public ReasonBase
+struct TLSAlertProtocolVersion : public Base
+{
+    TLSAlertProtocolVersion()
+        : Base(TLS_ALERT_PROTOCOL_VERSION)
     {
-      TunHalt(std::string reason) : ReasonBase(TUN_HALT, std::move(reason)) {}
-    };
+    }
+};
 
-    struct RelayError : public ReasonBase
+struct TLSAlertHandshakeFailure : public Base
+{
+    TLSAlertHandshakeFailure()
+        : Base(TLS_ALERT_HANDSHAKE_FAILURE)
     {
-      RelayError(std::string reason) : ReasonBase(RELAY_ERROR, std::move(reason)) {}
-    };
+    }
+};
 
-    struct DynamicChallenge : public ReasonBase
+struct TLSAlertCertificateExpire : public Base
+{
+    TLSAlertCertificateExpire()
+        : Base(TLS_ALERT_CERTIFICATE_EXPIRED)
     {
-      DynamicChallenge(std::string reason) : ReasonBase(DYNAMIC_CHALLENGE, std::move(reason)) {}
-    };
+    }
+};
 
-    struct Pause : public ReasonBase
+struct TLSAlertCertificateRevoked : public Base
+{
+    TLSAlertCertificateRevoked()
+        : Base(TLS_ALERT_CERTIFICATE_REVOKED)
     {
-      Pause(std::string reason) : ReasonBase(PAUSE, std::move(reason)) {}
-    };
+    }
+};
 
-    struct ProxyError : public ReasonBase
+struct TLSAlertBadCertificate : public Base
+{
+    TLSAlertBadCertificate()
+        : Base(TLS_ALERT_BAD_CERTIFICATE)
     {
-      ProxyError(std::string reason) : ReasonBase(PROXY_ERROR, std::move(reason)) {}
-    };
+    }
+};
 
-    struct ProxyNeedCreds : public ReasonBase
+struct TLSAlertUnsupportedCertificate : public Base
+{
+    TLSAlertUnsupportedCertificate()
+        : Base(TLS_ALERT_UNSUPPORTED_CERTIFICATE)
     {
-      ProxyNeedCreds(std::string reason) : ReasonBase(PROXY_NEED_CREDS, std::move(reason)) {}
-    };
+    }
+};
 
-    struct TransportError : public ReasonBase
+struct TLSSigAlgDisallowedOrUnsupported : public Base
+{
+    TLSSigAlgDisallowedOrUnsupported()
+        : Base(TLS_SIGALG_DISALLOWED_OR_UNSUPPORTED)
     {
-      TransportError(std::string reason) : ReasonBase(TRANSPORT_ERROR, std::move(reason)) {}
-    };
+    }
+};
 
-    struct TunSetupFailed : public ReasonBase
+struct TLSAlertProtocolUnknownCA : public Base
+{
+    TLSAlertProtocolUnknownCA()
+        : Base(TLS_ALERT_UNKNOWN_CA)
     {
-      TunSetupFailed(std::string reason) : ReasonBase(TUN_SETUP_FAILED, std::move(reason)) {}
-    };
+    }
+};
 
-    struct TunIfaceCreate : public ReasonBase
+
+
+#ifdef HAVE_JSON
+
+struct InfoJSON : public Base
+{
+    typedef RCPtr<InfoJSON> Ptr;
+
+    InfoJSON(std::string msg_type_arg,
+             Json::Value jdata_arg)
+        : Base(INFO_JSON),
+          msg_type(std::move(msg_type_arg)),
+          jdata(std::move(jdata_arg))
     {
-      TunIfaceCreate(std::string reason) : ReasonBase(TUN_IFACE_CREATE, std::move(reason)) {}
-    };
+    }
 
-    struct TunIfaceDisabled : public ReasonBase
+    virtual std::string render() const
     {
-      TunIfaceDisabled(std::string reason) : ReasonBase(TUN_IFACE_DISABLED, std::move(reason)) {}
-    };
+        BufferAllocated buf(512, BufAllocFlags::GROW);
+        buf_append_string(buf, msg_type);
+        buf_append_string(buf, ":");
+        json::format_compact(jdata, buf);
+        return buf_to_string(buf);
+    }
 
-    struct TunError : public ReasonBase
+    std::string msg_type;
+    Json::Value jdata;
+};
+
+#endif
+
+struct UnsupportedFeature : public Base
+{
+    typedef RCPtr<UnsupportedFeature> Ptr;
+
+    UnsupportedFeature(const std::string &name_arg, const std::string &reason_arg, bool critical_arg)
+        : Base(UNSUPPORTED_FEATURE),
+          name(name_arg),
+          reason(reason_arg),
+          critical(critical_arg)
     {
-      TunError(std::string reason) : ReasonBase(TUN_ERROR, std::move(reason)) {}
-    };
+    }
 
-    struct EpkiError : public ReasonBase
+    std::string name;
+    std::string reason;
+    bool critical;
+
+    std::string render() const override
     {
-      EpkiError(std::string reason) : ReasonBase(EPKI_ERROR, std::move(reason)) {}
-    };
+        std::ostringstream out;
+        out << "name: " << name << ", reason: " << reason << ", critical: " << critical;
+        return out.str();
+    }
+};
 
-    struct EpkiInvalidAlias : public ReasonBase
+struct Connected : public Base
+{
+    typedef RCPtr<Connected> Ptr;
+
+    Connected()
+        : Base(CONNECTED)
     {
-      EpkiInvalidAlias(std::string reason) : ReasonBase(EPKI_INVALID_ALIAS, std::move(reason)) {}
-    };
+    }
 
-    struct Echo : public ReasonBase
+    std::string user;
+    std::string server_host;
+    std::string server_port;
+    std::string server_proto;
+    std::string server_ip;
+    std::string vpn_ip4;
+    std::string vpn_ip6;
+    std::string vpn_gw4;
+    std::string vpn_gw6;
+    std::string vpn_mtu;
+    std::string client_ip;
+    std::string tun_name;
+    std::uint32_t vpn_interface_index = static_cast<uint32_t>(-1);
+
+    std::string render() const override
     {
-      Echo(std::string value) : ReasonBase(ECHO_OPT, std::move(value)) {}
-    };
+        std::ostringstream out;
+        // eg. "godot@foo.bar.gov:443 (1.2.3.4) via TCPv4 on tun0/5.5.1.1"
+        if (!user.empty())
+            out << user << '@';
+        if (server_host.find_first_of(':') == std::string::npos)
+            out << server_host;
+        else
+            out << '[' << server_host << ']';
+        out << ':' << server_port
+            << " (" << server_ip << ") via " << client_ip << '/' << server_proto
+            << " on " << tun_name << '/' << vpn_ip4 << '/' << vpn_ip6
+            << " gw=[" << vpn_gw4 << '/' << vpn_gw6 << ']'
+            << " mtu=" << vpn_mtu;
+        if (vpn_interface_index != static_cast<uint32_t>(-1))
+            out << " vpn_interface_index=" << vpn_interface_index;
+        return out.str();
+    }
+};
 
-    struct Info : public ReasonBase
+struct NeedCreds : public Base
+{
+    NeedCreds()
+        : Base(NEED_CREDS)
     {
-      Info(std::string value) : ReasonBase(INFO, std::move(value)) {}
-    };
+    }
+};
 
-    struct AuthPending : public ReasonBase
+struct ReasonBase : public Base
+{
+    ReasonBase(const Type id, const std::string &reason_arg)
+        : Base(id),
+          reason(reason_arg)
     {
-      int timeout;
-      AuthPending(int timeout, std::string value): ReasonBase(AUTH_PENDING, std::move(value)), timeout(timeout) {}
-    };
+    }
 
-    struct Warn : public ReasonBase
+    ReasonBase(const Type id, std::string &&reason_arg)
+        : Base(id),
+          reason(std::move(reason_arg))
     {
-      Warn(std::string value) : ReasonBase(WARN, std::move(value)) {}
-    };
+    }
 
-    class ClientSetup : public ReasonBase
+    std::string render() const override
     {
-    public:
-      ClientSetup(const std::string& status, const std::string& message)
-	: ReasonBase(CLIENT_SETUP, make(status, message))
-      {
-      }
+        return reason;
+    }
 
-    private:
-      static std::string make(const std::string& status, const std::string& message)
-      {
-	std::string ret;
-	ret += status;
-	if (!status.empty() && !message.empty())
-	  ret += ": ";
-	ret += message;
-	return ret;
-      }
-    };
+    std::string reason;
+};
 
-    struct CompressionEnabled : public ReasonBase
+/* thrown if no other of the TLSAlert* events are matching */
+struct TLSAlertMisc : public ReasonBase
+{
+    TLSAlertMisc(std::string reason)
+        : ReasonBase(TLS_ALERT_MISC, std::move(reason))
     {
-       CompressionEnabled(std::string msg)
-         : ReasonBase(COMPRESSION_ENABLED, std::move(msg))
-       {
-       }
-    };
+    }
+};
 
-    class Queue : public RC<thread_unsafe_refcount>
+struct AuthFailed : public ReasonBase
+{
+    AuthFailed(std::string reason)
+        : ReasonBase(AUTH_FAILED, std::move(reason))
     {
-    public:
-      typedef RCPtr<Queue> Ptr;
+    }
+};
 
-      virtual void add_event(Base::Ptr event) = 0;
-    };
-  }
-}
+struct SessionExpired : public ReasonBase
+{
+    SessionExpired(std::string reason)
+        : ReasonBase(SESSION_EXPIRED, std::move(reason))
+    {
+    }
+};
+
+struct CertVerifyFail : public ReasonBase
+{
+    CertVerifyFail(std::string reason)
+        : ReasonBase(CERT_VERIFY_FAIL, std::move(reason))
+    {
+    }
+};
+
+struct ClientHalt : public ReasonBase
+{
+    ClientHalt(std::string reason)
+        : ReasonBase(CLIENT_HALT, std::move(reason))
+    {
+    }
+};
+
+struct ClientRestart : public ReasonBase
+{
+    ClientRestart(std::string reason)
+        : ReasonBase(CLIENT_RESTART, std::move(reason))
+    {
+    }
+};
+
+struct TunHalt : public ReasonBase
+{
+    TunHalt(std::string reason)
+        : ReasonBase(TUN_HALT, std::move(reason))
+    {
+    }
+};
+
+struct RelayError : public ReasonBase
+{
+    RelayError(std::string reason)
+        : ReasonBase(RELAY_ERROR, std::move(reason))
+    {
+    }
+};
+
+struct CompressError : public ReasonBase
+{
+    CompressError(std::string reason)
+        : ReasonBase(COMPRESS_ERROR, std::move(reason))
+    {
+    }
+};
+
+struct DynamicChallenge : public ReasonBase
+{
+    DynamicChallenge(std::string reason)
+        : ReasonBase(DYNAMIC_CHALLENGE, std::move(reason))
+    {
+    }
+};
+
+struct Pause : public ReasonBase
+{
+    Pause(std::string reason)
+        : ReasonBase(PAUSE, std::move(reason))
+    {
+    }
+};
+
+struct ProxyError : public ReasonBase
+{
+    ProxyError(std::string reason)
+        : ReasonBase(PROXY_ERROR, std::move(reason))
+    {
+    }
+};
+
+struct NtlmMissingCryptoError : public ReasonBase
+{
+    NtlmMissingCryptoError(std::string reason)
+        : ReasonBase(NTLM_MISSING_CRYPTO, std::move(reason))
+    {
+    }
+};
+
+
+struct ProxyNeedCreds : public ReasonBase
+{
+    ProxyNeedCreds(std::string reason)
+        : ReasonBase(PROXY_NEED_CREDS, std::move(reason))
+    {
+    }
+};
+
+struct TransportError : public ReasonBase
+{
+    TransportError(std::string reason)
+        : ReasonBase(TRANSPORT_ERROR, std::move(reason))
+    {
+    }
+};
+
+struct TunSetupFailed : public ReasonBase
+{
+    TunSetupFailed(std::string reason)
+        : ReasonBase(TUN_SETUP_FAILED, std::move(reason))
+    {
+    }
+};
+
+struct TunIfaceCreate : public ReasonBase
+{
+    TunIfaceCreate(std::string reason)
+        : ReasonBase(TUN_IFACE_CREATE, std::move(reason))
+    {
+    }
+};
+
+struct TunIfaceDisabled : public ReasonBase
+{
+    TunIfaceDisabled(std::string reason)
+        : ReasonBase(TUN_IFACE_DISABLED, std::move(reason))
+    {
+    }
+};
+
+struct TunError : public ReasonBase
+{
+    TunError(std::string reason)
+        : ReasonBase(TUN_ERROR, std::move(reason))
+    {
+    }
+};
+
+struct EpkiError : public ReasonBase
+{
+    EpkiError(std::string reason)
+        : ReasonBase(EPKI_ERROR, std::move(reason))
+    {
+    }
+};
+
+struct EpkiInvalidAlias : public ReasonBase
+{
+    EpkiInvalidAlias(std::string reason)
+        : ReasonBase(EPKI_INVALID_ALIAS, std::move(reason))
+    {
+    }
+};
+
+struct Echo : public ReasonBase
+{
+    Echo(std::string value)
+        : ReasonBase(ECHO_OPT, std::move(value))
+    {
+    }
+};
+
+struct Info : public ReasonBase
+{
+    Info(std::string value)
+        : ReasonBase(INFO, std::move(value))
+    {
+    }
+};
+
+/**
+ * Message to signal a custom app control message from the peer
+ */
+struct AppCustomControlMessage : public Base
+{
+    AppCustomControlMessage(std::string protocol, std::string message)
+        : Base(CUSTOM_CONTROL), protocol(std::move(protocol)), custommessage(std::move(message))
+    {
+    }
+    std::string protocol;
+    std::string custommessage;
+};
+
+struct AuthPending : public ReasonBase
+{
+    int timeout;
+    AuthPending(int timeout, std::string value)
+        : ReasonBase(AUTH_PENDING, std::move(value)), timeout(timeout)
+    {
+    }
+};
+
+struct Warn : public ReasonBase
+{
+    Warn(std::string value)
+        : ReasonBase(WARN, std::move(value))
+    {
+    }
+};
+
+class ClientSetup : public ReasonBase
+{
+  public:
+    ClientSetup(const std::string &status, const std::string &message)
+        : ReasonBase(CLIENT_SETUP, make(status, message))
+    {
+    }
+
+  private:
+    static std::string make(const std::string &status, const std::string &message)
+    {
+        std::string ret;
+        ret += status;
+        if (!status.empty() && !message.empty())
+            ret += ": ";
+        ret += message;
+        return ret;
+    }
+};
+
+struct CompressionEnabled : public ReasonBase
+{
+    CompressionEnabled(std::string msg)
+        : ReasonBase(COMPRESSION_ENABLED, std::move(msg))
+    {
+    }
+};
+
+class Queue : public RC<thread_unsafe_refcount>
+{
+  public:
+    typedef RCPtr<Queue> Ptr;
+
+    virtual void add_event(Base::Ptr event) = 0;
+};
+} // namespace openvpn::ClientEvent
 
 #endif // OPENVPN_CLIENT_CLIEVENT_H

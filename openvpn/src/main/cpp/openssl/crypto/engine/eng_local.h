@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2001-2023 The OpenSSL Project Authors. All Rights Reserved.
  * Copyright (c) 2002, Oracle and/or its affiliates. All rights reserved
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
@@ -31,8 +31,8 @@ extern CRYPTO_RWLOCK *global_engine_lock;
                (void *)(e), (isfunct ? "funct" : "struct"),             \
                ((isfunct)                                               \
                 ? ((e)->funct_ref - (diff))                             \
-                : ((e)->struct_ref - (diff))),                          \
-               ((isfunct) ? (e)->funct_ref : (e)->struct_ref),          \
+                : (eng_struct_ref(e) - (diff))),                        \
+               ((isfunct) ? (e)->funct_ref : eng_struct_ref(e)),        \
                (OPENSSL_FILE), (OPENSSL_LINE))
 
 /*
@@ -46,8 +46,8 @@ typedef struct st_engine_cleanup_item {
     ENGINE_CLEANUP_CB *cb;
 } ENGINE_CLEANUP_ITEM;
 DEFINE_STACK_OF(ENGINE_CLEANUP_ITEM)
-void engine_cleanup_add_first(ENGINE_CLEANUP_CB *cb);
-void engine_cleanup_add_last(ENGINE_CLEANUP_CB *cb);
+int engine_cleanup_add_first(ENGINE_CLEANUP_CB *cb);
+int engine_cleanup_add_last(ENGINE_CLEANUP_CB *cb);
 
 /* We need stacks of ENGINEs for use in eng_table.c */
 DEFINE_STACK_OF(ENGINE)
@@ -99,6 +99,11 @@ void engine_pkey_asn1_meths_free(ENGINE *e);
 extern CRYPTO_ONCE engine_lock_init;
 DECLARE_RUN_ONCE(do_engine_lock_init)
 
+typedef void (*ENGINE_DYNAMIC_ID)(void);
+int engine_add_dynamic_id(ENGINE *e, ENGINE_DYNAMIC_ID dynamic_id,
+                          int not_locked);
+void engine_remove_dynamic_id(ENGINE *e, int not_locked);
+
 /*
  * This is a structure for storing implementations of various crypto
  * algorithms and functions.
@@ -143,10 +148,22 @@ struct engine_st {
     /* Used to maintain the linked-list of engines. */
     struct engine_st *prev;
     struct engine_st *next;
+    /* Used to maintain the linked-list of dynamic engines. */
+    struct engine_st *prev_dyn;
+    struct engine_st *next_dyn;
+    ENGINE_DYNAMIC_ID dynamic_id;
 };
 
 typedef struct st_engine_pile ENGINE_PILE;
 
-DEFINE_LHASH_OF(ENGINE_PILE);
+DEFINE_LHASH_OF_EX(ENGINE_PILE);
+
+static ossl_unused ossl_inline int eng_struct_ref(ENGINE *e)
+{
+    int res;
+
+    CRYPTO_GET_REF(&e->struct_ref, &res);
+    return res;
+}
 
 #endif                          /* OSSL_CRYPTO_ENGINE_ENG_LOCAL_H */

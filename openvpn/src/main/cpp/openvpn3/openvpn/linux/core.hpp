@@ -4,20 +4,10 @@
 //               packet encryption, packet authentication, and
 //               packet compression.
 //
-//    Copyright (C) 2012-2020 OpenVPN Inc.
+//    Copyright (C) 2012- OpenVPN Inc.
 //
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License Version 3
-//    as published by the Free Software Foundation.
+//    SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-only WITH openvpn3-openssl-exception
 //
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program in the COPYING file.
-//    If not, see <http://www.gnu.org/licenses/>.
 
 // Linux method for binding a thread to a particular core.
 
@@ -30,11 +20,11 @@
 
 namespace openvpn {
 
-  inline int bind_to_core(const int core_id)
-  {
+inline int bind_to_core(const int core_id)
+{
     const int num_cores = n_cores();
     if (core_id >= num_cores)
-      return EINVAL;
+        return EINVAL;
 
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
@@ -42,23 +32,23 @@ namespace openvpn {
 
     pthread_t current_thread = pthread_self();
     return pthread_setaffinity_np(current_thread, sizeof(cpu_set_t), &cpuset);
-  }
+}
 
-  inline int exclude_from_core(const int core_id)
-  {
+inline int exclude_from_core(const int core_id)
+{
     const int num_cores = n_cores();
     if (num_cores <= 1 || core_id >= num_cores)
-      return EINVAL;
+        return EINVAL;
 
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     for (int i = 0; i < num_cores; ++i)
-      if (i != core_id)
-	CPU_SET(i, &cpuset);
+        if (i != core_id)
+            CPU_SET(i, &cpuset);
 
     pthread_t current_thread = pthread_self();
     return pthread_setaffinity_np(current_thread, sizeof(cpu_set_t), &cpuset);
-  }
 }
+} // namespace openvpn
 
 #endif
