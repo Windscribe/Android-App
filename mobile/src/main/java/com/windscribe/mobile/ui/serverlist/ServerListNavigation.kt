@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.connection.BridgeApiViewModel
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.home.HomeViewmodel
@@ -57,11 +58,11 @@ data class ServerTabIcon(
 fun ServerListNavigation(
     modifier: Modifier,
     viewModel: ServerViewModel,
-    connectionViewmodel: ConnectionViewmodel,
+    bridgeApiViewModel: BridgeApiViewModel,
     onTabSelected: (Int) -> Unit
 ) {
     val selectedType by viewModel.selectedServerListType.collectAsState()
-    val favouriteAnimationCounter by connectionViewmodel.favouriteIconAnimation.collectAsState()
+    val favouriteAnimationCounter by bridgeApiViewModel.favouriteIconAnimation.collectAsState()
     var animateFavIcon by remember { mutableStateOf(false) }
 
     LaunchedEffect(favouriteAnimationCounter) {

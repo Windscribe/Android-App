@@ -9,6 +9,8 @@ import com.windscribe.mobile.ui.auth.AppStartViewModelImpl
 import com.windscribe.mobile.ui.auth.EmergencyConnectViewModal
 import com.windscribe.mobile.ui.auth.LoginViewModel
 import com.windscribe.mobile.ui.auth.SignupViewModel
+import com.windscribe.mobile.ui.connection.BridgeApiViewModel
+import com.windscribe.mobile.ui.connection.BridgeApiViewModelImpl
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.connection.ConnectionViewmodelImpl
 import com.windscribe.mobile.ui.home.HomeViewmodel
@@ -170,9 +172,7 @@ class ComposeModule {
                         autoConnectionManager,
                         userRepository,
                         serverListRepository,
-                        decoyTrafficController,
-                        apiCallManager,
-                        bridgeApiRepository
+                        decoyTrafficController
                     ) as T
                 } else if (modelClass.isAssignableFrom(ConfigViewmodel::class.java)) {
                     return ConfigViewmodelImpl(localDbInterface, latencyRepository) as T
@@ -216,9 +216,17 @@ class ComposeModule {
                     return NetworkDetailViewModelImpl(localDbInterface, apiCallManager, appPreferenceHelper, networkInfoManager, windVpnController, vpnConnectionStateManager, portMapRepository) as T
                 } else if (modelClass.isAssignableFrom(SplitTunnelViewModel::class.java)) {
                     return SplitTunnelViewModelImpl(appPreferenceHelper) as T
-                }
-                else if (modelClass.isAssignableFrom(EmailViewModel::class.java)) {
+                } else if (modelClass.isAssignableFrom(EmailViewModel::class.java)) {
                     return EmailViewModelImpl(apiCallManager, userRepository, workManager) as T
+                } else if (modelClass.isAssignableFrom(BridgeApiViewModel::class.java)) {
+                    return BridgeApiViewModelImpl(
+                        bridgeApiRepository,
+                        locationRepository,
+                        localDbInterface,
+                        apiCallManager,
+                        ipRepository,
+                        appPreferenceHelper
+                    ) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
             }

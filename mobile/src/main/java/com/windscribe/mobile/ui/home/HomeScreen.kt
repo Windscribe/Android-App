@@ -69,12 +69,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.AnimatedIPAddress
 import com.windscribe.mobile.ui.common.AppConnectButton
 import com.windscribe.mobile.ui.common.LocationImage
 import com.windscribe.mobile.ui.common.fitsInOneLine
+import com.windscribe.mobile.ui.connection.BridgeApiViewModel
 import com.windscribe.mobile.ui.connection.ConnectionUIState
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.connection.LocationInfoState
@@ -96,7 +98,9 @@ import com.windscribe.mobile.ui.theme.font26
 import com.windscribe.mobile.ui.theme.font9
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.backend.Util
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 @Composable
@@ -104,14 +108,15 @@ fun HomeScreen(
     serverViewModel: ServerViewModel?,
     connectionViewmodel: ConnectionViewmodel?,
     configViewmodel: ConfigViewmodel?,
-    homeViewmodel: HomeViewmodel?
+    homeViewmodel: HomeViewmodel?,
+    bridgeApiViewModel: BridgeApiViewModel?
 ) {
-    if (serverViewModel == null || connectionViewmodel == null || configViewmodel == null || homeViewmodel == null) {
+    if (serverViewModel == null || connectionViewmodel == null || configViewmodel == null || homeViewmodel == null || bridgeApiViewModel == null) {
         return
     }
     HandleToast(connectionViewmodel)
     HandleGoto(connectionViewmodel, homeViewmodel)
-    CompactUI(serverViewModel, connectionViewmodel, configViewmodel, homeViewmodel)
+    CompactUI(serverViewModel, connectionViewmodel, configViewmodel, homeViewmodel, bridgeApiViewModel)
 }
 
 @Composable
@@ -280,15 +285,16 @@ private fun CompactUI(
     serverViewModel: ServerViewModel,
     connectionViewmodel: ConnectionViewmodel,
     configViewmodel: ConfigViewmodel,
-    homeViewmodel: HomeViewmodel
+    homeViewmodel: HomeViewmodel,
+    bridgeApiViewModel: BridgeApiViewModel
 ) {
     val searchState by serverViewModel.showSearchView.collectAsState()
     Background {
         ConnectedBackground(connectionViewmodel)
         Column {
             Spacer(modifier = Modifier.height(36.dp))
-            LocationImage(connectionViewmodel, homeViewmodel)
-            ServerListScreen(serverViewModel, connectionViewmodel, configViewmodel, homeViewmodel)
+            LocationImage(connectionViewmodel, homeViewmodel, bridgeApiViewModel)
+            ServerListScreen(serverViewModel, connectionViewmodel, bridgeApiViewModel,configViewmodel, homeViewmodel)
         }
         Column {
             Header(connectionViewmodel, homeViewmodel)
@@ -297,7 +303,7 @@ private fun CompactUI(
             LocationName(connectionViewmodel)
             Spacer(modifier = Modifier.weight(1.0f))
         }
-        IPContextMenu(connectionViewmodel)
+        IPContextMenu(bridgeApiViewModel)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -437,17 +443,18 @@ private fun LocationName(connectionViewmodel: ConnectionViewmodel) {
 @Composable
 internal fun BoxScope.NetworkInfoSheet(
     connectionViewmodel: ConnectionViewmodel,
-    homeViewmodel: HomeViewmodel
+    homeViewmodel: HomeViewmodel,
+    bridgeApiViewModel: BridgeApiViewModel
 ) {
-    val showContextMenu by connectionViewmodel.ipContextMenuState.collectAsState()
-    val isBridgeApiReady by connectionViewmodel.bridgeApiReady.collectAsState()
+    val showContextMenu by bridgeApiViewModel.ipContextMenuState.collectAsState()
+    val isBridgeApiReady by bridgeApiViewModel.bridgeApiReady.collectAsState()
     val hideIp by homeViewmodel.hideIp.collectAsState()
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .align(Alignment.BottomCenter)
             .offset(y = (-66).dp)
-            .padding(end = 12.dp)
+            .padding(end = 8.dp)
     ) {
         NetworkNameSheet(connectionViewmodel, homeViewmodel)
         Row(
@@ -499,11 +506,11 @@ internal fun BoxScope.NetworkInfoSheet(
                         .alpha(if (isBridgeApiReady) 1.0f else 0.5f)
                         .size(24.dp)
                         .onGloballyPositioned { layoutCoordinates ->
-                            connectionViewmodel.onIpContextMenuPosition(layoutCoordinates.boundsInWindow().topLeft)
+                            bridgeApiViewModel.onIpContextMenuPosition(layoutCoordinates.boundsInWindow().topLeft)
                         }
                         .hapticClickable {
                             if (isBridgeApiReady) {
-                                connectionViewmodel.setContextMenuState(true)
+                                bridgeApiViewModel.setContextMenuState(true)
                             }
                         }
                 )
@@ -676,9 +683,10 @@ private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Home
 }
 
 @Composable
-private fun IPContextMenu(connectionViewModel: ConnectionViewmodel) {
-    val ipContextMenuState by connectionViewModel.ipContextMenuState.collectAsState()
-    val hasPinnedIp by connectionViewModel.hasPinnedIp.collectAsState()
+private fun IPContextMenu(bridgeApiViewModel: BridgeApiViewModel) {
+    val context = LocalContext.current
+    val ipContextMenuState by bridgeApiViewModel.ipContextMenuState.collectAsState()
+    val hasPinnedIp by bridgeApiViewModel.hasPinnedIp.collectAsState()
     val density = LocalDensity.current
     val menuWidth = 80.dp
 
@@ -707,20 +715,34 @@ private fun IPContextMenu(connectionViewModel: ConnectionViewmodel) {
                     icon = if (hasPinnedIp) R.drawable.ic_fav_selected else R.drawable.ic_fav,
                     contentDescription = if (hasPinnedIp) "Marked as Favourite" else "Mark as Favourite",
                     onClick = {
-                        connectionViewModel.onPinIPClick()
+                        bridgeApiViewModel.onPinIPClick(
+                            onSuccess = { isPinned, message ->
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            },
+                            onError = { message ->
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            }
+                        )
                     }
                 )
                 IPMenuItem(
                     icon = R.drawable.refresh,
                     contentDescription = "Refresh IP",
                     onClick = {
-                        connectionViewModel.onRotateIpClick()
+                        bridgeApiViewModel.onRotateIpClick(
+                            onSuccess = { message ->
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            },
+                            onError = { message ->
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            }
+                        )
                     }
                 )
                 IPMenuItem(
                     icon = R.drawable.ic_search_location_close,
                     contentDescription = "Close Menu",
-                    onClick = { connectionViewModel.setContextMenuState(false) }
+                    onClick = { bridgeApiViewModel.setContextMenuState(false) }
                 )
             }
         }
@@ -787,6 +809,6 @@ private fun Dots(modifier: Modifier) {
 @MultiDevicePreview
 private fun HomeScreenPreview() {
     PreviewWithNav {
-        HomeScreen(null, null, null, null)
+        HomeScreen(null, null, null, null, null)
     }
 }

@@ -26,6 +26,7 @@ import com.windscribe.mobile.ui.auth.NoEmailAttentionScreen
 import com.windscribe.mobile.ui.auth.SignupScreen
 import com.windscribe.mobile.ui.auth.SignupViewModel
 import com.windscribe.mobile.ui.connection.AllProtocolFailedScreen
+import com.windscribe.mobile.ui.connection.BridgeApiViewModel
 import com.windscribe.mobile.ui.connection.ConnectionChangeScreen
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.connection.DebugLogSentScreen
@@ -345,13 +346,14 @@ private fun AddHomeScreenRoute() {
             serverViewModel = viewModel(factory = it.getViewModelFactory()),
             connectionViewModel = viewModel(factory = it.getViewModelFactory()),
             configViewModel = viewModel(factory = it.getViewModelFactory()),
-            homeViewModel = viewModel(factory = it.getViewModelFactory())
+            homeViewModel = viewModel(factory = it.getViewModelFactory()),
+            bridgeApiViewModel = viewModel(factory = it.getViewModelFactory())
         )
     }
     Log.i("AppStartViewModel", "Adding home screen.")
     viewModels?.let {
-        HomeScreen(it.serverViewModel, it.connectionViewModel, it.configViewModel, it.homeViewModel)
-    } ?: HomeScreen(null, null, null, null)
+        HomeScreen(it.serverViewModel, it.connectionViewModel, it.configViewModel, it.homeViewModel, it.bridgeApiViewModel)
+    } ?: HomeScreen(null, null, null, null, null)
 }
 
 @Composable
@@ -377,5 +379,6 @@ data class ViewModels(
     val serverViewModel: ServerViewModel,
     val connectionViewModel: ConnectionViewmodel,
     val configViewModel: ConfigViewmodel,
-    val homeViewModel: HomeViewmodel
+    val homeViewModel: HomeViewmodel,
+    val bridgeApiViewModel: BridgeApiViewModel
 )
