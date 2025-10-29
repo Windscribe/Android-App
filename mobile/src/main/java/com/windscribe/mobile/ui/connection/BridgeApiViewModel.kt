@@ -12,11 +12,15 @@ import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.serverlist.entity.Favourite
+import com.windscribe.mobile.ui.home.HomeGoto
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -29,11 +33,13 @@ abstract class BridgeApiViewModel : ViewModel() {
     abstract val favouriteIconAnimation: StateFlow<Int>
     abstract val bridgeApiReady: StateFlow<Boolean>
     abstract val ipState: StateFlow<String>
+    abstract val goto: SharedFlow<HomeGoto>
 
     abstract fun onIpContextMenuPosition(position: Offset)
     abstract fun setContextMenuState(state: Boolean)
-    abstract fun onPinIPClick(onSuccess: (Boolean, String) -> Unit, onError: (String) -> Unit)
-    abstract fun onRotateIpClick(onSuccess: (String) -> Unit, onError: (String) -> Unit)
+    abstract fun onPinIPClick(onSuccess: (Boolean, String) -> Unit)
+    abstract fun onRotateIpClick(onSuccess: (String) -> Unit)
+    abstract fun onGoToHandled()
 }
 
 class BridgeApiViewModelImpl @Inject constructor(
@@ -61,6 +67,9 @@ class BridgeApiViewModelImpl @Inject constructor(
 
     private val _ipState: MutableStateFlow<String> = MutableStateFlow("")
     override val ipState: StateFlow<String> = _ipState
+
+    private val _goto = MutableSharedFlow<HomeGoto>(replay = 0)
+    override val goto: SharedFlow<HomeGoto> = _goto
 
     init {
         observePinnedIpChanges()
@@ -119,7 +128,7 @@ class BridgeApiViewModelImpl @Inject constructor(
         }
     }
 
-    override fun onPinIPClick(onSuccess: (Boolean, String) -> Unit, onError: (String) -> Unit) {
+    override fun onPinIPClick(onSuccess: (Boolean, String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             setContextMenuState(false)
             val selectedCity = locationRepository.selectedCity.value
@@ -130,14 +139,14 @@ class BridgeApiViewModelImpl @Inject constructor(
                     val message = if (currentlyPinned) "IP unpinned successfully" else "IP pinned successfully"
                     onSuccess(currentlyPinned, message)
                 } else {
-                    val errorMessage = if (currentlyPinned) "IP Unpinning failed" else "IP Pinning failed"
-                    onError(errorMessage)
+                    val errorMessage = if (currentlyPinned) "Could not unpin IP" else "Could not pin IP"
+                    _goto.emit(HomeGoto.IpActionError(errorMessage))
                 }
             }
         }
     }
 
-    override fun onRotateIpClick(onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+    override fun onRotateIpClick(onSuccess: (String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             setContextMenuState(false)
             val result = performRotateIpAction()
@@ -145,9 +154,15 @@ class BridgeApiViewModelImpl @Inject constructor(
                 if (result) {
                     onSuccess("IP rotated successfully")
                 } else {
-                    onError("IP Rotation failed")
+                    _goto.emit(HomeGoto.IpActionError("Could not rotate IP"))
                 }
             }
+        }
+    }
+
+    override fun onGoToHandled() {
+        viewModelScope.launch {
+            _goto.emit(HomeGoto.None)
         }
     }
 
@@ -201,22 +216,22 @@ class BridgeApiViewModelImpl @Inject constructor(
     private suspend fun performRotateIpAction(): Boolean {
         return when (val result = result<String> { api.rotateIp() }) {
             is CallResult.Success -> {
-                logger.info("Rotate IP request successful: ${result.data}")
                 val currentIp = _ipState.value
                 ipRepository.update()
+
                 // Wait for IP state to change
                 val ipChanged = withTimeoutOrNull(5000) {
-                    _ipState.collectLatest { newIp ->
-                        if (newIp != currentIp && !newIp.contains("--")) {
-                            logger.info("IP changed from $currentIp to $newIp")
-                            return@collectLatest
-                        }
+                    _ipState.first { newIp ->
+                        newIp != currentIp && !newIp.contains("--")
                     }
-                }
-                if (ipChanged == null) {
+                } != null
+
+                if (ipChanged) {
+                    logger.info("IP changed from $currentIp to ${_ipState.value}")
+                } else {
                     logger.warn("IP state did not change within timeout")
                 }
-                true
+                ipChanged
             }
             is CallResult.Error -> {
                 logger.error("Rotate IP request failed: ${result.errorMessage}")

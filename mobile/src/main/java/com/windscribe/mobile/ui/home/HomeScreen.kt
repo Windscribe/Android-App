@@ -115,23 +115,26 @@ fun HomeScreen(
         return
     }
     HandleToast(connectionViewmodel)
-    HandleGoto(connectionViewmodel, homeViewmodel)
+    HandleGoto(connectionViewmodel, homeViewmodel, bridgeApiViewModel)
     CompactUI(serverViewModel, connectionViewmodel, configViewmodel, homeViewmodel, bridgeApiViewModel)
 }
 
 @Composable
-fun HandleGoto(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
+fun HandleGoto(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeViewmodel, bridgeApiViewModel: BridgeApiViewModel) {
     val connectionGoto by connectionViewmodel.goto.collectAsState(initial = null)
     val homeGoto by homeViewmodel.goto.collectAsState(initial = null)
-    HandleGotoAction(goto = connectionGoto, homeViewmodel, connectionViewmodel)
-    HandleGotoAction(goto = homeGoto, homeViewmodel, connectionViewmodel)
+    val bridgeApiGoto by bridgeApiViewModel.goto.collectAsState(initial = null)
+    HandleGotoAction(goto = connectionGoto, homeViewmodel, connectionViewmodel, bridgeApiViewModel)
+    HandleGotoAction(goto = homeGoto, homeViewmodel, connectionViewmodel, bridgeApiViewModel)
+    HandleGotoAction(goto = bridgeApiGoto, homeViewmodel, connectionViewmodel, bridgeApiViewModel)
 }
 
 @Composable
 private fun HandleGotoAction(
     goto: HomeGoto?,
     homeViewmodel: HomeViewmodel,
-    connectionViewmodel: ConnectionViewmodel
+    connectionViewmodel: ConnectionViewmodel,
+    bridgeApiViewModel: BridgeApiViewModel
 ) {
     val context = LocalContext.current
     val navController = LocalNavController.current
@@ -227,6 +230,7 @@ private fun HandleGotoAction(
     if (didNavigate) {
         connectionViewmodel.onGoToHandled()
         homeViewmodel.onGoToHandled()
+        bridgeApiViewModel.onGoToHandled()
     }
 }
 
@@ -718,9 +722,6 @@ private fun IPContextMenu(bridgeApiViewModel: BridgeApiViewModel) {
                         bridgeApiViewModel.onPinIPClick(
                             onSuccess = { isPinned, message ->
                                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                            },
-                            onError = { message ->
-                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                             }
                         )
                     }
@@ -731,9 +732,6 @@ private fun IPContextMenu(bridgeApiViewModel: BridgeApiViewModel) {
                     onClick = {
                         bridgeApiViewModel.onRotateIpClick(
                             onSuccess = { message ->
-                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                            },
-                            onError = { message ->
                                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                             }
                         )

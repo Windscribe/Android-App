@@ -135,7 +135,7 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract val goto: SharedFlow<HomeGoto>
     abstract val newFeedCount: StateFlow<Int>
     abstract fun onConnectButtonClick()
-    abstract fun onCityClick(city: City)
+    abstract fun onCityClick(city: City, isFav: Boolean = false)
     abstract fun onStaticIpClick(staticRegion: StaticRegion)
     abstract fun onConfigClick(config: ConfigFile)
     abstract val toastMessage: StateFlow<ToastMessage>
@@ -622,7 +622,7 @@ class ConnectionViewmodelImpl @Inject constructor(
         }
     }
 
-    override fun onCityClick(city: City) {
+    override fun onCityClick(city: City, isFav: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val isPro = userRepository.user.value?.isPro ?: false
@@ -634,6 +634,18 @@ class ConnectionViewmodelImpl @Inject constructor(
                 val serverStatus = cityAndRegion.region.status
                 val eligibleToConnect =
                     checkEligibility(cityAndRegion.city.pro, false, serverStatus)
+                if (isFav) {
+                    val favourite = localdb.getFavouritesAsync().firstOrNull { it.id == city.id }
+                    // Only check for pinned node if this favourite has a pinned IP
+                    if (favourite?.pinnedIp != null && favourite.pinnedNodeIp != null) {
+                        val nodeExists = city.nodes.any { it.hostname == favourite.pinnedNodeIp }
+                        if (!nodeExists) {
+                            logger.warn("Pinned node IP ${favourite.pinnedNodeIp} not found in city ${city.id} nodes")
+                            _goto.emit(HomeGoto.IpActionError("Pinned IP is no longer available for this location"))
+                            return@launch
+                        }
+                    }
+                }
                 if (eligibleToConnect) {
                     preferences.globalUserConnectionPreference = true
                     preferences.setConnectingToStaticIP(false)
