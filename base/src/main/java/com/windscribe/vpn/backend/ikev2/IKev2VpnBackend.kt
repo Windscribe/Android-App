@@ -24,6 +24,7 @@ import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
+import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -49,8 +50,9 @@ class IKev2VpnBackend @Inject constructor(
         val proxyDNSManager: ProxyDNSManager,
         private val apiManager: IApiCallManager,
         localDbInterface: LocalDbInterface,
-        bridgeAPI: WSNetBridgeAPI
-) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager, localDbInterface, bridgeAPI), VpnStateListener {
+        bridgeAPI: WSNetBridgeAPI,
+        resourceHelper: ResourceHelper
+) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager, localDbInterface, bridgeAPI, resourceHelper), VpnStateListener {
 
     private var vpnService: VpnStateService? = null
     private val stateServiceChannel = Channel<VpnStateService>()

@@ -14,6 +14,7 @@ import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VpnBackend
 import com.windscribe.vpn.backend.VpnBackend.Companion.DISCONNECT_DELAY
+import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.NetworkInfoManager
@@ -42,8 +43,9 @@ class OpenVPNBackend @Inject constructor(
     val proxyDNSManager: ProxyDNSManager,
     apiManager: IApiCallManager,
     localDbInterface: LocalDbInterface,
-    bridgeAPI: WSNetBridgeAPI
-) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager, localDbInterface, bridgeAPI),
+    bridgeAPI: WSNetBridgeAPI,
+    resourceHelper: ResourceHelper
+) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager, localDbInterface, bridgeAPI, resourceHelper),
     VpnStatus.StateListener, VpnStatus.ByteCountListener {
 
     override var active = false

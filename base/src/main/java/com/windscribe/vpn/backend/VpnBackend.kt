@@ -7,6 +7,7 @@ package com.windscribe.vpn.backend
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.GetMyIpResponse
+import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.commonutils.Ext.result
@@ -43,7 +44,8 @@ abstract class VpnBackend(
     private val advanceParameterRepository: AdvanceParameterRepository,
     private val apiManager: IApiCallManager,
     protected val localDbInterface: LocalDbInterface,
-    private val bridgeAPI: WSNetBridgeAPI
+    private val bridgeAPI: WSNetBridgeAPI,
+    private val resourceHelper: ResourceHelper
 ) : NetworkInfoListener {
 
     val vpnLogger: Logger = LoggerFactory.getLogger("vpn")
@@ -140,17 +142,29 @@ abstract class VpnBackend(
 
         connectivityTestJob = mainScope.launch {
             try {
+                // Check if we need to worry about IP pinning
+                val selectedCity = preferencesHelper.selectedCity
+                val selectedIp = preferencesHelper.selectedIp
+
+                // First: Check if selected city is in favourites and has a pinned node IP
+                val favourite = localDbInterface.getFavouritesAsync().firstOrNull {
+                    it.id == selectedCity
+                }
+                val shouldCheckPinning = favourite != null && favourite.pinnedNodeIp != null
+
+                // Second: If we care about pinning, check if the pinnedNodeIp matches selectedIp
+                val hasPinnedNodeMismatch = shouldCheckPinning && favourite.pinnedNodeIp != selectedIp
+
+                val ip = favourite?.pinnedIp
+                var ipPinningFailed = false
+
                 withTimeout(15_000) { // 15 seconds total timeout
                     // Initial delay before first attempt
                     delay(startDelay)
 
-                    // Check if pinned IP is available and pin it before connectivity test
-                    val ip = localDbInterface.getFavouritesAsync().firstOrNull {
-                        it.pinnedNodeIp == preferencesHelper.selectedIp
-                    }?.pinnedIp
-
+                    // Pin IP if available
                     if (ip != null) {
-                        vpnLogger.info("Pinning IP: $ip")
+                        vpnLogger.info("Pinning IP: $ip for node: $selectedIp")
                         bridgeAPI.setIgnoreSslErrors(true)
                         bridgeAPI.setConnectedState(true)
                         val pinResult = result<Any> {
@@ -162,6 +176,7 @@ abstract class VpnBackend(
                             }
                             is CallResult.Error -> {
                                 vpnLogger.error("Failed to pin IP: ${pinResult.errorMessage}")
+                                ipPinningFailed = true
                             }
                         }
                     }
@@ -190,6 +205,11 @@ abstract class VpnBackend(
                                     )
                                     connectivityTestPassed(userIp)
                                     success = true
+                                    if (hasPinnedNodeMismatch || ipPinningFailed) {
+                                        val title = resourceHelper.getString(com.windscribe.vpn.R.string.could_not_pin_ip)
+                                        val description = resourceHelper.getString(com.windscribe.vpn.R.string.favourite_node_not_available)
+                                        appContext.applicationInterface.showPinnedNodeErrorDialog(title, description)
+                                    }
                                 } else {
                                     lastError = "Invalid IP address: $userIp"
                                     vpnLogger.info("Failed Attempt: $attemptCount - $lastError")

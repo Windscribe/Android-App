@@ -21,7 +21,10 @@ import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.vpn.constants.NetworkKeyConstants
 
 @Composable
-fun IpActionResultDialog(message: String?) {
+fun IpActionResultDialog(
+    message: String?,
+    description: String? = null
+) {
     val navController = LocalNavController.current
     val activity = navController.context as? AppStartActivity
     PopupContainer {
@@ -30,7 +33,7 @@ fun IpActionResultDialog(message: String?) {
         Spacer(modifier = Modifier.height(25.dp))
         PopupTitle(message ?: "")
         Spacer(Modifier.height(25.dp))
-        PopupDescription("Try again later or go to our Status page for more info")
+        PopupDescription(description ?: stringResource(com.windscribe.vpn.R.string.check_status_description))
         Spacer(Modifier.height(32.dp))
         PopupPrimaryActionButton(modifier = Modifier, "Check Location Status") {
             activity?.openUrl(NetworkKeyConstants.NODE_STATUS_URL)

@@ -199,6 +199,13 @@
     <string name="check_status">Check status</string>
     <string name="under_maintenance">This Location is Under Maintenance</string>
     <string name="check_status_description">Try again later or go to our Status page for more info</string>
+    <string name="could_not_pin_ip">Could not pin IP</string>
+    <string name="could_not_unpin_ip">Could not unpin IP</string>
+    <string name="could_not_rotate_ip">Could not rotate IP</string>
+    <string name="ip_pinned_successfully">IP pinned successfully</string>
+    <string name="ip_unpinned_successfully">IP unpinned successfully</string>
+    <string name="ip_rotated_successfully">IP rotated successfully</string>
+    <string name="favourite_node_not_available">We could not set your favourite IP for this location.  Try again later.</string>
     <string name="added_to_favourites">Added to favourites</string>
     <string name="add_vpn_config">Add Custom Config</string>
     <string name="general">General</string>

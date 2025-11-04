@@ -59,6 +59,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
@@ -111,7 +112,8 @@ class ComposeModule {
         decoyTrafficController: DecoyTrafficController,
         portMapRepository: com.windscribe.vpn.repository.PortMapRepository,
         logRepository: LogRepository,
-        bridgeApiRepository: BridgeApiRepository
+        bridgeApiRepository: BridgeApiRepository,
+        resourceHelper: ResourceHelper
     ): ViewModelProvider.Factory {
         return object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -172,7 +174,8 @@ class ComposeModule {
                         autoConnectionManager,
                         userRepository,
                         serverListRepository,
-                        decoyTrafficController
+                        decoyTrafficController,
+                        resourceHelper
                     ) as T
                 } else if (modelClass.isAssignableFrom(ConfigViewmodel::class.java)) {
                     return ConfigViewmodelImpl(localDbInterface, latencyRepository) as T
@@ -225,7 +228,8 @@ class ComposeModule {
                         localDbInterface,
                         apiCallManager,
                         ipRepository,
-                        appPreferenceHelper
+                        appPreferenceHelper,
+                        resourceHelper
                     ) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")

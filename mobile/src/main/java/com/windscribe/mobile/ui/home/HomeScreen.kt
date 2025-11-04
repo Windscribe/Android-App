@@ -218,7 +218,10 @@ private fun HandleGotoAction(
         }
 
         is HomeGoto.IpActionError -> {
-            navController.currentBackStackEntry?.savedStateHandle?.set("message", goto.message)
+            navController.currentBackStackEntry?.savedStateHandle?.apply {
+                set("message", goto.message)
+                set("description", goto.description)
+            }
             navController.navigate(Screen.IpActionResult.route)
             didNavigate = true
         }

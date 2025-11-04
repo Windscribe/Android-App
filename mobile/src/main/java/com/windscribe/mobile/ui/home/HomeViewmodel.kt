@@ -33,7 +33,7 @@ sealed class HomeGoto {
     data class EditCustomConfig(val id: Int, val connect: Boolean) : HomeGoto()
     object MainMenu : HomeGoto()
     object None : HomeGoto()
-    data class IpActionError(val message: String) : HomeGoto()
+    data class IpActionError(val message: String, val description: String) : HomeGoto()
 }
 
 sealed class UserState() {

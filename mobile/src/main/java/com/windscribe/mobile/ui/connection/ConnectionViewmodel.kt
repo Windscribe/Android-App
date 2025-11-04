@@ -20,6 +20,7 @@ import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
+import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.FlagIconResource
@@ -161,7 +162,8 @@ class ConnectionViewmodelImpl @Inject constructor(
     private val autoConnectionManager: AutoConnectionManager,
     private val userRepository: UserRepository,
     private val serverListRepository: ServerListRepository,
-    private val decoyTrafficController: DecoyTrafficController
+    private val decoyTrafficController: DecoyTrafficController,
+    private val resourceHelper: ResourceHelper
 ) :
     ConnectionViewmodel() {
     private val _connectionUIState = MutableStateFlow<ConnectionUIState>(ConnectionUIState.Idle)
@@ -641,7 +643,9 @@ class ConnectionViewmodelImpl @Inject constructor(
                         val nodeExists = city.nodes.any { it.hostname == favourite.pinnedNodeIp }
                         if (!nodeExists) {
                             logger.warn("Pinned node IP ${favourite.pinnedNodeIp} not found in city ${city.id} nodes")
-                            _goto.emit(HomeGoto.IpActionError("Pinned IP is no longer available for this location"))
+                            val errorMessage = resourceHelper.getString(com.windscribe.vpn.R.string.could_not_pin_ip)
+                            val errorDescription = resourceHelper.getString(com.windscribe.vpn.R.string.check_status_description)
+                            _goto.emit(HomeGoto.IpActionError(errorMessage, errorDescription))
                             return@launch
                         }
                     }

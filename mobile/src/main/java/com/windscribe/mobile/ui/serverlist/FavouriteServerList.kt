@@ -149,7 +149,7 @@ private fun ListItemView(
                 interactionSource,
                 indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)
             ) {
-                connectionViewmodel.onCityClick(item.city)
+                connectionViewmodel.onCityClick(item.city, true)
             }.padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

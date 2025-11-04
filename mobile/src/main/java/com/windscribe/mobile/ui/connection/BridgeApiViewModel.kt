@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext.result
+import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.BridgeApiRepository
 import com.windscribe.vpn.repository.CallResult
@@ -48,7 +49,8 @@ class BridgeApiViewModelImpl @Inject constructor(
     private val localdb: LocalDbInterface,
     private val api: IApiCallManager,
     private val ipRepository: IpRepository,
-    private val preferences: PreferencesHelper
+    private val preferences: PreferencesHelper,
+    private val resourceHelper: ResourceHelper
 ) : BridgeApiViewModel() {
 
     private val logger = LoggerFactory.getLogger("BridgeApiViewModel")
@@ -136,11 +138,14 @@ class BridgeApiViewModelImpl @Inject constructor(
             val result = performPinIpAction(selectedCity, currentlyPinned)
             withContext(Dispatchers.Main) {
                 if (result) {
-                    val message = if (currentlyPinned) "IP unpinned successfully" else "IP pinned successfully"
+                    val messageResId = if (currentlyPinned) com.windscribe.vpn.R.string.ip_unpinned_successfully else com.windscribe.vpn.R.string.ip_pinned_successfully
+                    val message = resourceHelper.getString(messageResId)
                     onSuccess(currentlyPinned, message)
                 } else {
-                    val errorMessage = if (currentlyPinned) "Could not unpin IP" else "Could not pin IP"
-                    _goto.emit(HomeGoto.IpActionError(errorMessage))
+                    val errorMessageResId = if (currentlyPinned) com.windscribe.vpn.R.string.could_not_unpin_ip else com.windscribe.vpn.R.string.could_not_pin_ip
+                    val errorMessage = resourceHelper.getString(errorMessageResId)
+                    val errorDescription = resourceHelper.getString(com.windscribe.vpn.R.string.favourite_node_not_available)
+                    _goto.emit(HomeGoto.IpActionError(errorMessage, errorDescription))
                 }
             }
         }
@@ -152,9 +157,12 @@ class BridgeApiViewModelImpl @Inject constructor(
             val result = performRotateIpAction()
             withContext(Dispatchers.Main) {
                 if (result) {
-                    onSuccess("IP rotated successfully")
+                    val message = resourceHelper.getString(com.windscribe.vpn.R.string.ip_rotated_successfully)
+                    onSuccess(message)
                 } else {
-                    _goto.emit(HomeGoto.IpActionError("Could not rotate IP"))
+                    val errorMessage = resourceHelper.getString(com.windscribe.vpn.R.string.could_not_rotate_ip)
+                    val errorDescription = resourceHelper.getString(com.windscribe.vpn.R.string.check_status_description)
+                    _goto.emit(HomeGoto.IpActionError(errorMessage, errorDescription))
                 }
             }
         }

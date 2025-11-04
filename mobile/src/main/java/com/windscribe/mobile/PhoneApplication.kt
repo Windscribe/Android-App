@@ -65,4 +65,17 @@ class PhoneApplication : Windscribe(), Windscribe.ApplicationInterface {
             activeActivity?.supportFragmentManager?.popBackStack()
         }
     }
+
+    override fun showPinnedNodeErrorDialog(title: String, description: String) {
+        if (activeActivity is AppStartActivity) {
+            val activity = activeActivity as AppStartActivity
+            activity.runOnUiThread {
+                activity.navController.currentBackStackEntry?.savedStateHandle?.apply {
+                    set("message", title)
+                    set("description", description)
+                }
+                activity.navController.navigate(Screen.IpActionResult.route)
+            }
+        }
+    }
 }

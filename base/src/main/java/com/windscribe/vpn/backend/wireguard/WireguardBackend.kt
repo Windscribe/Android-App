@@ -26,6 +26,7 @@ import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
 import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.backend.utils.VPNProfileCreator
+import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes.EXPIRED_OR_BANNED_ACCOUNT
 import com.windscribe.vpn.localdatabase.LocalDbInterface
@@ -82,7 +83,8 @@ class WireguardBackend @Inject constructor(
     val wgConfigRepository: com.windscribe.vpn.repository.WgConfigRepository,
     private val wsNet: WSNet,
     private val apiManager: IApiCallManager,
-    bridgeAPI: WSNetBridgeAPI
+    bridgeAPI: WSNetBridgeAPI,
+    resourceHelper: ResourceHelper
 ) : VpnBackend(
     scope,
     vpnStateManager,
@@ -91,7 +93,8 @@ class WireguardBackend @Inject constructor(
     advanceParameterRepository,
     apiManager,
     localDbInterface,
-    bridgeAPI
+    bridgeAPI,
+    resourceHelper
 ) {
 
     var service: WireGuardWrapperService? = null
