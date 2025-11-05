@@ -603,6 +603,12 @@ open class ApiCallManager @Inject constructor(
                 apiErrorResponse.errorMessage = "WSNet: All fallback domains have failed."
                 continuation.resume(GenericResponseClass(null, apiErrorResponse))
             }
+            5 -> {
+                val apiErrorResponse = ApiErrorResponse()
+                apiErrorResponse.errorCode = 5
+                apiErrorResponse.errorMessage = "WSNet: Bridge Api failed."
+                continuation.resume(GenericResponseClass(null, apiErrorResponse))
+            }
 
             else -> {
                 try {

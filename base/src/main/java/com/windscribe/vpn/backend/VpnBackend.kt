@@ -161,12 +161,12 @@ abstract class VpnBackend(
                 withTimeout(15_000) { // 15 seconds total timeout
                     // Initial delay before first attempt
                     delay(startDelay)
-
+                    bridgeAPI.setCurrentHost(selectedIp)
+                    bridgeAPI.setIgnoreSslErrors(true)
+                    bridgeAPI.setConnectedState(true)
                     // Pin IP if available
                     if (ip != null) {
                         vpnLogger.info("Pinning IP: $ip for node: $selectedIp")
-                        bridgeAPI.setIgnoreSslErrors(true)
-                        bridgeAPI.setConnectedState(true)
                         val pinResult = result<Any> {
                             apiManager.pinIp(ip)
                         }
