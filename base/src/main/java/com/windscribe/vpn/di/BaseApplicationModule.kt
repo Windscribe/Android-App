@@ -15,6 +15,7 @@ import com.windscribe.vpn.api.ApiCallManager
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.AppPreferenceHelper
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.apppreference.SafeAppPreferences
 import com.windscribe.vpn.apppreference.SecurePreferences
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
@@ -563,7 +564,7 @@ open class BaseApplicationModule {
     @Provides
     @Singleton
     fun providesAppPreference(): AppPreferences {
-        return AppPreferences(windscribeApp)
+        return SafeAppPreferences(windscribeApp)
     }
 
     @Provides
