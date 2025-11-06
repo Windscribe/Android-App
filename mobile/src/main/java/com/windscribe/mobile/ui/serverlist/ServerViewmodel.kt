@@ -235,16 +235,12 @@ class ServerViewModelImpl(
                 if (state != null) {
                     val latencyMap = state.data.associateBy { it.id }
                     sortedBy { item ->
-                        // Calculate average latency across cities
-                        val (latencySum, count) = item.cities.fold(0 to 0) { acc, city ->
-                            val time = latencyMap[city.id]?.time ?: -1
-                            if (time > 0) {
-                                acc.first + time to acc.second + 1
-                            } else {
-                                acc
-                            }
-                        }
-                        if (count > 0) latencySum / count else Int.MAX_VALUE
+                        // Find lowest latency across cities in region
+                        val minLatency = item.cities.mapNotNull { city ->
+                            val time = latencyMap[city.id]?.time
+                            if (time != null && time > 0) time else null
+                        }.minOrNull()
+                        minLatency ?: Int.MAX_VALUE
                     }
                 } else {
                     this
