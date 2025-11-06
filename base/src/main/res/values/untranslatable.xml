@@ -149,6 +149,7 @@
 <!--        <item>Português (Brasil)</item>-->
         <item>Português (Portugal)</item>
         <item>Pусский</item>
+        <item>Slovenčina</item>
         <item>Türkçe</item>
         <item>Українська</item>
 <!--        <item>اردو</item>-->
@@ -175,6 +176,7 @@
         <item>pt</item>
 <!--        <item>pt-BR</item>-->
         <item>ru</item>
+        <item>sk</item>
         <item>tr</item>
         <item>uk</item>
 <!--        <item>ur</item>-->
