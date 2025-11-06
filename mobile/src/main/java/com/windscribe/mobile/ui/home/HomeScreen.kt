@@ -2,6 +2,7 @@ package com.windscribe.mobile.ui.home
 
 import NetworkNameSheet
 import ServerListScreen
+import android.R.attr.contentDescription
 import android.annotation.SuppressLint
 import android.os.Build
 import android.widget.Toast
@@ -71,6 +72,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImagePainter.State.Empty.painter
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.AnimatedIPAddress
 import com.windscribe.mobile.ui.common.AppConnectButton
@@ -98,6 +100,7 @@ import com.windscribe.mobile.ui.theme.font26
 import com.windscribe.mobile.ui.theme.font9
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.backend.Util
+import com.windscribe.vpn.model.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -663,6 +666,20 @@ private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Home
                     },
                 contentScale = ContentScale.FillHeight,
             )
+            val userState by homeViewmodel.userState.collectAsState()
+            if (userState is UserState.Pro) {
+                Spacer(modifier = Modifier.width(12.dp))
+                Image(
+                    painter = painterResource(R.drawable.header_pro_icon),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .clickable {
+                            navController.navigate(Screen.Newsfeed.route)
+                        },
+                    contentScale = ContentScale.FillHeight,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+            }
             val newsfeedCount by connectionViewmodel.newFeedCount.collectAsState()
             if (newsfeedCount > 0) {
                 Box(
