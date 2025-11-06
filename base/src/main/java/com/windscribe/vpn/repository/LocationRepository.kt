@@ -141,6 +141,9 @@ class LocationRepository @Inject constructor(
     }
 
     private fun pickBestCityId(cities: List<City>): Int {
+        if (cities.isEmpty()) {
+            return -1
+        }
         fun haversine(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
             val earthRadius = 6371.0 // Earth's radius in kilometers
             val dLat = Math.toRadians(lat2 - lat1)

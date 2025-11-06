@@ -25,9 +25,15 @@ abstract class PingTimeDao {
         val freeUser = Windscribe.appContext.preference.userStatus == 0
         return if (freeUser) {
             val time = getLowestPingForFreeUserAsync(false)
+            if (time <= 0) {
+                throw Exception("No valid pings available for free user")
+            }
             getFreePingIdFromTimeAsync(false, time)
         } else {
             val time = getLowestPingAsync()
+            if (time <= 0) {
+                throw Exception("No valid pings available")
+            }
             getPingIdFromTimeAsync(time)
         }
     }
