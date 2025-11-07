@@ -35,7 +35,7 @@ fun IpActionResultDialog(
         Spacer(Modifier.height(25.dp))
         PopupDescription(description ?: stringResource(com.windscribe.vpn.R.string.check_status_description))
         Spacer(Modifier.height(32.dp))
-        PopupPrimaryActionButton(modifier = Modifier, "Check Location Status") {
+        PopupPrimaryActionButton(modifier = Modifier, stringResource(com.windscribe.vpn.R.string.check_location_status)) {
             activity?.openUrl(NetworkKeyConstants.NODE_STATUS_URL)
             navController.popBackStack()
         }

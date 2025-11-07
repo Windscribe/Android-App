@@ -558,4 +558,13 @@
     <string name="none">Κανένα</string>
     <string name="free">Δωρεάν</string>
     <string name="upgrade_to_pro">Αναβαθμίστε στο Pro</string>
+    <string name="could_not_pin_ip">Δεν ήταν δυνατή η καρφίτσωση του IP</string>
+    <string name="could_not_unpin_ip">Δεν ήταν δυνατή η αποκαρφίτσωση του IP</string>
+    <string name="could_not_rotate_ip">Δεν ήταν δυνατή η εναλλαγή του IP</string>
+    <string name="ip_pinned_successfully">Το IP καρφιτσώθηκε με επιτυχία</string>
+    <string name="ip_unpinned_successfully">Το IP αποκαρφιτσώθηκε με επιτυχία</string>
+    <string name="ip_rotated_successfully">Το IP άλλαξε με επιτυχία</string>
+    <string name="favourite_node_not_available">Δεν ήταν δυνατή η ρύθμιση της αγαπημένης σας IP για αυτήν την τοποθεσία. Δοκιμάστε ξανά αργότερα.</string>
+    <string name="aggressive_rekeying">Επιθετική επαναδημιουργία κλειδιών</string>
+    <string name="aggressive_rekeying_description">Εναλλαγή WireGuard PSK ασφαλούς κβαντικής κάθε νέας σύνδεσης διακομιστή</string>
 </resources>

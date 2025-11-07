@@ -197,6 +197,7 @@
     <string name="add_profile">Add VPN Profile</string>
     <string name="add_static_ip">Add Static IP</string>
     <string name="check_status">Check status</string>
+    <string name="check_location_status">Check Location Status</string>
     <string name="under_maintenance">This Location is Under Maintenance</string>
     <string name="check_status_description">Try again later or go to our Status page for more info</string>
     <string name="could_not_pin_ip">Could not pin IP</string>

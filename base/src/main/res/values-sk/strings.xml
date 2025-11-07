@@ -197,6 +197,7 @@
     <string name="add_profile">Pridať VPN profil</string>
     <string name="add_static_ip">Pridať statickú IP</string>
     <string name="check_status">Skontrolovať stav</string>
+    <string name="check_location_status">Skontrolovať stav polohy</string>
     <string name="under_maintenance">Táto poloha je v údržbe</string>
     <string name="check_status_description">Skúste znova neskôr alebo navštívte našu stránku stavu pre viac informácií</string>
     <string name="could_not_pin_ip">Nepodarilo sa pripnúť IP</string>
