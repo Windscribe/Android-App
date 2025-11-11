@@ -14,6 +14,8 @@ import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.serverlist.entity.Favourite
 import com.windscribe.mobile.ui.home.HomeGoto
+import com.windscribe.vpn.backend.utils.SelectedLocationType
+import com.windscribe.vpn.commonutils.WindUtilities
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -108,6 +110,10 @@ class BridgeApiViewModelImpl @Inject constructor(
     private fun observeBridgeApi() {
         viewModelScope.launch(Dispatchers.IO) {
             bridgeApiRepository.apiAvailable.collectLatest {
+                if (WindUtilities.getSourceTypeBlocking() != SelectedLocationType.CityLocation) {
+                    _bridgeApiReady.emit(false)
+                    return@collectLatest
+                }
                 _bridgeApiReady.emit(it)
                 if (_ipContextMenuState.value.first && !it) {
                     setContextMenuState(false)
