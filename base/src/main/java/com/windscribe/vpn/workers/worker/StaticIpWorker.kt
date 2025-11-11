@@ -25,6 +25,7 @@ class StaticIpWorker(context: Context, params: WorkerParameters) : CoroutineWork
     override suspend fun doWork(): Result {
         if(!userRepository.loggedIn())return Result.failure()
         try {
+            staticIpRepository.updateFromApi()
             staticIpRepository.load()
             logger.debug("Successfully updated static ip list.")
             return Result.success()
