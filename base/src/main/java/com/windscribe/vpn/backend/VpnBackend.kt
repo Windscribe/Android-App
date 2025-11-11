@@ -136,7 +136,7 @@ abstract class VpnBackend(
         connectivityTestJob?.cancel()
         connectivityTestJob = null
         vpnLogger.info("Starting connectivity test.")
-        val startDelay = advanceParameterRepository.getTunnelStartDelay() ?: 2000L
+        val startDelay = advanceParameterRepository.getTunnelStartDelay() ?: 500L
         val retryDelay = advanceParameterRepository.getTunnelTestRetryDelay() ?: 500L
         val maxAttempts = advanceParameterRepository.getTunnelTestAttempts() ?: 3
 
