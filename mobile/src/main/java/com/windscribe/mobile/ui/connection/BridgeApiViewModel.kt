@@ -110,11 +110,7 @@ class BridgeApiViewModelImpl @Inject constructor(
     private fun observeBridgeApi() {
         viewModelScope.launch(Dispatchers.IO) {
             bridgeApiRepository.apiAvailable.collectLatest {
-                if (WindUtilities.getSourceTypeBlocking() != SelectedLocationType.CityLocation) {
-                    _bridgeApiReady.emit(false)
-                } else {
-                    _bridgeApiReady.emit(it)
-                }
+                _bridgeApiReady.emit(it)
                 if (_ipContextMenuState.value.first && !it) {
                     setContextMenuState(false)
                 }
