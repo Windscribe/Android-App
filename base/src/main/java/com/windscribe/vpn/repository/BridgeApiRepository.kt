@@ -1,6 +1,10 @@
 package com.windscribe.vpn.repository
 
 import android.util.Log
+import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.backend.utils.SelectedLocationType
+import com.windscribe.vpn.commonutils.WindUtilities
+import com.wsnet.lib.WSNet
 import com.wsnet.lib.WSNetBridgeAPI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,13 +31,17 @@ class BridgeApiRepository @Inject constructor(
     private fun observeBridgeApi() {
         bridgeAPI.setApiAvailableCallback { ready ->
             scope.launch {
+                if (ready) {
+                    appContext.preference.wsNetSettings = WSNet.instance().currentPersistentSettings()
+                }
                 val location = locationRepository.getSelectedCityAndRegion()
                 if (location == null) return@launch
                 val user = userRepository.user.value ?: return@launch
                 val proUser = user.isPro
                 val alcList = user.alcList?.split(",") ?: emptyList()
                 val alc = alcList.contains(location.region.countryCode)
-                _apiAvailable.emit(ready && (proUser || alc))
+                val cityLocation = WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CityLocation
+                _apiAvailable.emit(ready && cityLocation && (proUser || alc))
             }
         }
     }
