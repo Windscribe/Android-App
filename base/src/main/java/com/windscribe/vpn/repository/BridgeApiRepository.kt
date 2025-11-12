@@ -32,16 +32,22 @@ class BridgeApiRepository @Inject constructor(
         bridgeAPI.setApiAvailableCallback { ready ->
             scope.launch {
                 if (ready) {
-                    appContext.preference.wsNetSettings = WSNet.instance().currentPersistentSettings()
+                    appContext.preference.wsNetSettings =
+                        WSNet.instance().currentPersistentSettings()
                 }
                 val location = locationRepository.getSelectedCityAndRegion()
-                if (location == null) return@launch
+                if (location == null) {
+                    _apiAvailable.emit(false)
+                    return@launch
+                }
                 val user = userRepository.user.value ?: return@launch
                 val proUser = user.isPro
                 val alcList = user.alcList?.split(",") ?: emptyList()
                 val alc = alcList.contains(location.region.countryCode)
-                val cityLocation = WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CityLocation
-                _apiAvailable.emit(ready && cityLocation && (proUser || alc))
+                val cityLocation =
+                    WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CityLocation
+                val activate = ready && cityLocation && (proUser || alc)
+                _apiAvailable.emit(activate)
             }
         }
     }
