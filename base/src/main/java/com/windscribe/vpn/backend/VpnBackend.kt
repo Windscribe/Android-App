@@ -132,6 +132,10 @@ abstract class VpnBackend(
     In TCP and stealth protocol.
      */
     fun testConnectivity() {
+        if (connectivityTestJob?.isActive == true) {
+            vpnLogger.debug("Connectivity test already running, skipping new test.")
+            return
+        }
         connectionJob?.cancel()
         connectivityTestJob?.cancel()
         connectivityTestJob = null
