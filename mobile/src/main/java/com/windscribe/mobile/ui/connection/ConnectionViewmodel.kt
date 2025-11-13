@@ -204,6 +204,11 @@ class ConnectionViewmodelImpl @Inject constructor(
     private var mediaPlayer: MediaPlayer? = null
     private val logger = LoggerFactory.getLogger("ConnectionViewmodel")
 
+    private var lastCityClickTime = 0L
+    private var lastStaticIpClickTime = 0L
+    private var lastConfigClickTime = 0L
+    private val debounceMillis = 1500L
+
 
     init {
         fetchLastLocation()
@@ -625,6 +630,13 @@ class ConnectionViewmodelImpl @Inject constructor(
     }
 
     override fun onCityClick(city: City, isFav: Boolean) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastCityClickTime < debounceMillis) {
+            logger.debug("Ignoring city click, debounce time not elapsed")
+            return
+        }
+        lastCityClickTime = currentTime
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val isPro = userRepository.user.value?.isPro ?: false
@@ -670,6 +682,13 @@ class ConnectionViewmodelImpl @Inject constructor(
     }
 
     override fun onStaticIpClick(staticRegion: StaticRegion) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastStaticIpClickTime < debounceMillis) {
+            logger.debug("Ignoring static IP click, debounce time not elapsed")
+            return
+        }
+        lastStaticIpClickTime = currentTime
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val eligibleToConnect = checkEligibility(1, true, 1)
@@ -693,6 +712,13 @@ class ConnectionViewmodelImpl @Inject constructor(
     }
 
     override fun onConfigClick(config: ConfigFile) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastConfigClickTime < debounceMillis) {
+            logger.debug("Ignoring config click, debounce time not elapsed")
+            return
+        }
+        lastConfigClickTime = currentTime
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 locationRepository.setSelectedCity(config.getPrimaryKey())
