@@ -90,27 +90,25 @@ fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionVie
                 AddButtonWithDetails(null, com.windscribe.vpn.R.string.no_favourites, R.drawable.ic_location_fav) { }
             } else {
                 val isRefreshing by viewModel.refreshState.collectAsState()
-                Box {
-                    Column(Modifier.fillMaxSize()) {
-                        Text(
-                            text = stringResource(com.windscribe.vpn.R.string.favourite),
-                            style = font12,
-                            color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f),
-                            modifier = Modifier.padding(start = 8.dp, top = 16.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        PullToRefreshBox(
-                            isRefreshing = isRefreshing,
-                            onRefresh = {
-                                viewModel.refresh(ServerListType.Fav)
-                            },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            LazyColumn(modifier = Modifier.fillMaxSize().padding(start = 8.dp), lazyListState) {
-                                items(list, key = { it.id }) { item ->
-                                    ListItemView(item, viewModel, connectionViewmodel, homeViewmodel)
-                                }
-                            }
+                PullToRefreshBox(
+                    isRefreshing = isRefreshing,
+                    onRefresh = {
+                        viewModel.refresh(ServerListType.Fav)
+                    },
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    LazyColumn(modifier = Modifier.fillMaxSize().padding(start = 8.dp), lazyListState) {
+                        item {
+                            Text(
+                                text = stringResource(com.windscribe.vpn.R.string.favourite),
+                                style = font12,
+                                color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f),
+                                modifier = Modifier.padding(start = 0.dp, top = 16.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                        items(list, key = { it.id }) { item ->
+                            ListItemView(item, viewModel, connectionViewmodel, homeViewmodel)
                         }
                     }
                 }

@@ -115,7 +115,6 @@ fun AllServerList(
                 is ListState.Success -> {
                     val lazyListState = rememberLazyListState()
                     HandleScrollHaptic(lazyListState, homeViewmodel)
-                    LocationCount(viewModel)
                     val list = (state as ListState.Success).data
                     PullToRefreshBox(
                         isRefreshing = isRefreshing,
@@ -126,6 +125,7 @@ fun AllServerList(
                     ) {
                         LazyColumn(state = lazyListState) {
                             item {
+                                LocationCount(viewModel)
                                 Spacer(modifier = Modifier.height(8.dp))
                                 bestLocation?.let {
                                     BestLocation(

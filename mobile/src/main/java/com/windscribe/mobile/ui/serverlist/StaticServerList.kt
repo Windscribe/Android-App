@@ -103,18 +103,8 @@ fun StaticIPServerList(
                         activity.openUrl(NetworkKeyConstants.URL_ADD_STATIC_IP)
                     }
                 } else {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(scrollState)
-                    ) {
-                        Text(
-                            text = stringResource(com.windscribe.vpn.R.string.static_ip),
-                            style = font12,
-                            color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.7f),
-                            modifier = Modifier.padding(start = 8.dp, top = 16.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
+                    val deviceName = list.first().staticItem.deviceName
+                    Column(Modifier.fillMaxSize()) {
                         PullToRefreshBox(
                             isRefreshing = isRefreshing,
                             onRefresh = {
@@ -122,13 +112,21 @@ fun StaticIPServerList(
                             },
                             modifier = Modifier.weight(1f)
                         ) {
-                            LazyColumn(state = lazyListState) {
+                            LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
+                                item {
+                                    Text(
+                                        text = stringResource(com.windscribe.vpn.R.string.static_ip),
+                                        style = font12,
+                                        color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.7f),
+                                        modifier = Modifier.padding(start = 8.dp, top = 16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
                                 items(list, key = { it.id }) { item ->
                                     ListItemView(item, viewModel, connectionViewModel)
                                 }
                             }
                         }
-                        val deviceName = list.first().staticItem.deviceName
                         AddButton(com.windscribe.vpn.R.string.add_static_ip, deviceName) {
                             activity.openUrl(NetworkKeyConstants.URL_ADD_STATIC_IP)
                         }

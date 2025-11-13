@@ -126,13 +126,6 @@ private fun SuccessView(
         } else {
             Column(Modifier
                 .fillMaxSize()) {
-                Text(
-                    text = stringResource(com.windscribe.vpn.R.string.custom_configs),
-                    style = font12,
-                    color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f),
-                    modifier = Modifier.padding(start = 16.dp, top = 16.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
                 PullToRefreshBox(
                     isRefreshing = isRefreshing,
                     onRefresh = {
@@ -140,7 +133,16 @@ private fun SuccessView(
                     },
                     modifier = Modifier.weight(1.0f)
                 ) {
-                    LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize().padding(start = 16.dp)) {
+                        item {
+                            Text(
+                                text = stringResource(com.windscribe.vpn.R.string.custom_configs),
+                                style = font12,
+                                color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f),
+                                modifier = Modifier.padding(start = 0.dp, top = 16.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
                         items(list, key = { it.id }) { item ->
                             CustomConfigItem(item, viewModel, connectionViewModel, configViewmodel)
                         }
