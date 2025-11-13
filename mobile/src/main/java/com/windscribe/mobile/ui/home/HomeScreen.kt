@@ -44,6 +44,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -459,6 +460,19 @@ internal fun BoxScope.NetworkInfoSheet(
     val showContextMenu by bridgeApiViewModel.ipContextMenuState.collectAsState()
     val isBridgeApiReady by bridgeApiViewModel.bridgeApiReady.collectAsState()
     val hideIp by homeViewmodel.hideIp.collectAsState()
+    var showIpAndIcon by remember { mutableStateOf(true) }
+
+    LaunchedEffect(showContextMenu.first) {
+        if (showContextMenu.first) {
+            // Menu opened, hide IP and icon immediately
+            showIpAndIcon = false
+        } else {
+            // Menu closed, wait for animation to finish before showing IP and icon
+            delay(600)
+            showIpAndIcon = true
+        }
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -472,7 +486,7 @@ internal fun BoxScope.NetworkInfoSheet(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (!showContextMenu.first) {
+            if (!showContextMenu.first && showIpAndIcon) {
                 Box(
                     modifier = Modifier
                         .pointerInput(Unit) {
@@ -508,12 +522,12 @@ internal fun BoxScope.NetworkInfoSheet(
                     }
                 }
             }
-            if (!showContextMenu.first) {
+            if (!showContextMenu.first && showIpAndIcon) {
                 Image(
                     painter = painterResource(R.drawable.ic_context),
                     contentDescription = null,
                     modifier = Modifier
-                        .alpha(if (isBridgeApiReady) 1.0f else 0.5f)
+                        .alpha(if (isBridgeApiReady) 1.0f else 0.3f)
                         .size(24.dp)
                         .onGloballyPositioned { layoutCoordinates ->
                             bridgeApiViewModel.onIpContextMenuPosition(layoutCoordinates.boundsInWindow().topLeft)
