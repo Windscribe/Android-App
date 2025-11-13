@@ -165,7 +165,11 @@ abstract class VpnBackend(
                 withTimeout(15_000) { // 15 seconds total timeout
                     // Initial delay before first attempt
                     delay(startDelay)
-                    bridgeAPI.setCurrentHost(selectedIp)
+                    if (protocolInformation?.protocol == "wg") {
+                        bridgeAPI.setCurrentHost(selectedIp)
+                    } else {
+                        bridgeAPI.setCurrentHost("")
+                    }
                     bridgeAPI.setIgnoreSslErrors(true)
                     bridgeAPI.setConnectedState(true)
                     // Pin IP if available
