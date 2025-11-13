@@ -71,6 +71,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImagePainter.State.Empty.painter
@@ -371,7 +372,7 @@ private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
         }
         Text(
             text = "${Util.getProtocolLabel(state.protocolInfo?.protocol ?: "")}  ${state.protocolInfo?.port}",
-            style = font12.copy(fontWeight = FontWeight.Bold),
+            style = font12.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp),
             color = containerColor
         )
         Spacer(modifier = Modifier.width(4.dp))

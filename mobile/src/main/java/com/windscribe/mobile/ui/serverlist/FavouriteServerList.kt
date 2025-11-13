@@ -150,7 +150,7 @@ private fun ListItemView(
                 indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)
             ) {
                 connectionViewmodel.onCityClick(item.city, true)
-            }.padding(horizontal = 8.dp),
+            }.padding(start = 0.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         SplitBorderCircle(
@@ -161,7 +161,7 @@ private fun ListItemView(
             userState !is UserState.Pro && item.city.pro == 1,
             showLocationLoad
         )
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
             ServerNodeName("${item.city.nodeName} ${item.city.nickName}", Modifier)
             Text(
