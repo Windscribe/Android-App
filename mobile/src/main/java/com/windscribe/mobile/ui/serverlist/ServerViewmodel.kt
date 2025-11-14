@@ -498,6 +498,7 @@ class ServerViewModelImpl(
                 ServerListType.Config -> latencyRepository.updateConfigLatencies()
             }
             latencyRepository.latencyEvent.first()
+            delay(100)
             _refreshState.emit(false)
         }
     }
