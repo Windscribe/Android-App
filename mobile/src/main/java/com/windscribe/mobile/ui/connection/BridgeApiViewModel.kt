@@ -37,6 +37,7 @@ abstract class BridgeApiViewModel : ViewModel() {
     abstract val bridgeApiReady: StateFlow<Boolean>
     abstract val ipState: StateFlow<String>
     abstract val goto: SharedFlow<HomeGoto>
+    abstract val isRotatingIp: StateFlow<Boolean>
 
     abstract fun onIpContextMenuPosition(position: Offset)
     abstract fun setContextMenuState(state: Boolean)
@@ -74,6 +75,9 @@ class BridgeApiViewModelImpl @Inject constructor(
 
     private val _goto = MutableSharedFlow<HomeGoto>(replay = 0)
     override val goto: SharedFlow<HomeGoto> = _goto
+
+    private val _isRotatingIp = MutableStateFlow(false)
+    override val isRotatingIp: StateFlow<Boolean> = _isRotatingIp
 
     init {
         observePinnedIpChanges()
@@ -224,29 +228,34 @@ class BridgeApiViewModelImpl @Inject constructor(
     }
 
     private suspend fun performRotateIpAction(): Boolean {
-        return when (val result = result<String> { api.rotateIp() }) {
-            is CallResult.Success -> {
-                val currentIp = _ipState.value
-                ipRepository.update()
+        _isRotatingIp.emit(true)
+        return try {
+            when (val result = result<String> { api.rotateIp() }) {
+                is CallResult.Success -> {
+                    val currentIp = _ipState.value
+                    ipRepository.update()
 
-                // Wait for IP state to change
-                val ipChanged = withTimeoutOrNull(5000) {
-                    _ipState.first { newIp ->
-                        newIp != currentIp && !newIp.contains("--")
+                    // Wait for IP state to change
+                    val ipChanged = withTimeoutOrNull(5000) {
+                        _ipState.first { newIp ->
+                            newIp != currentIp && !newIp.contains("--")
+                        }
+                    } != null
+
+                    if (ipChanged) {
+                        logger.info("IP changed from $currentIp to ${_ipState.value}")
+                    } else {
+                        logger.warn("IP state did not change within timeout")
                     }
-                } != null
-
-                if (ipChanged) {
-                    logger.info("IP changed from $currentIp to ${_ipState.value}")
-                } else {
-                    logger.warn("IP state did not change within timeout")
+                    ipChanged
                 }
-                ipChanged
+                is CallResult.Error -> {
+                    logger.error("Rotate IP request failed: ${result.errorMessage}")
+                    false
+                }
             }
-            is CallResult.Error -> {
-                logger.error("Rotate IP request failed: ${result.errorMessage}")
-                false
-            }
+        } finally {
+            _isRotatingIp.emit(false)
         }
     }
 }

@@ -500,6 +500,7 @@ internal fun BoxScope.NetworkInfoSheet(
                 ) {
                     AnimatedIPAddress(
                         connectionViewmodel = connectionViewmodel,
+                        bridgeApiViewModel = bridgeApiViewModel,
                         style = font16,
                         color = AppColors.white,
                         modifier = Modifier.graphicsLayer {

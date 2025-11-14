@@ -23,36 +23,45 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.windscribe.mobile.ui.connection.BridgeApiViewModel
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import kotlinx.coroutines.delay
 
 @Composable
 fun AnimatedIPAddress(
     connectionViewmodel: ConnectionViewmodel,
+    bridgeApiViewModel: BridgeApiViewModel,
     modifier: Modifier = Modifier,
     style: TextStyle = TextStyle(fontSize = 20.sp),
     color: Color = Color.Black,
 ) {
     val ipAddress by connectionViewmodel.ipState.collectAsState()
     val shouldAnimate by connectionViewmodel.shouldAnimateIp.collectAsState()
+    val isRotatingIp by bridgeApiViewModel.isRotatingIp.collectAsState()
 
-    if (ipAddress.contains("--")) {
+    val animationTrigger = remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(shouldAnimate) {
+        if (shouldAnimate) {
+            animationTrigger.intValue++
+        }
+    }
+
+    if (ipAddress.contains("--") && !isRotatingIp) {
         Text(text = ipAddress, style = style, color = color, modifier = modifier)
     } else {
-        val animationTrigger = remember { mutableIntStateOf(0) }
-
-        LaunchedEffect(shouldAnimate) {
-            if (shouldAnimate) {
-                animationTrigger.intValue++
-            }
+        val displayIp = if (isRotatingIp && ipAddress.contains("--")) {
+            "000.000.000.000" // Placeholder to animate
+        } else {
+            ipAddress
         }
 
-        key(ipAddress) {
+        key(displayIp, isRotatingIp) {
             Row(modifier = modifier) {
                 var digitIndex = 0
-                val totalDigits = ipAddress.count { it.isDigit() }
-                ipAddress.forEachIndexed { index, char ->
-                    key("$ipAddress-$index-$char") {
+                val totalDigits = displayIp.count { it.isDigit() }
+                displayIp.forEachIndexed { index, char ->
+                    key("$displayIp-$index-$char-$isRotatingIp") {
                         if (char.isDigit()) {
                             val currentDigitIndex = digitIndex++
                             val isLastDigit = currentDigitIndex == totalDigits - 1
@@ -61,7 +70,8 @@ fun AnimatedIPAddress(
                                 animationTrigger = animationTrigger.intValue,
                                 style = style,
                                 color = color,
-                                onAnimationComplete = if (isLastDigit) {
+                                isRotating = isRotatingIp,
+                                onAnimationComplete = if (isLastDigit && !isRotatingIp) {
                                     { connectionViewmodel.onIpAnimationComplete() }
                                 } else null
                             )
@@ -91,6 +101,7 @@ private fun AnimatedDigit(
     animationTrigger: Int,
     style: TextStyle,
     color: Color,
+    isRotating: Boolean = false,
     onAnimationComplete: (() -> Unit)? = null
 ) {
     var previousDigit by remember { mutableIntStateOf(targetDigit) }
@@ -98,8 +109,42 @@ private fun AnimatedDigit(
     val itemHeight = style.fontSize.value * 1.5f
     val randomDelay = remember(animationTrigger) { (0..40).random().toLong() }
 
+    // Continuous animation when rotating
+    LaunchedEffect(isRotating) {
+        if (isRotating) {
+            while (isRotating) {
+                val currentValue = animatedValue.value
+                animatedValue.animateTo(
+                    targetValue = currentValue + 10f,
+                    animationSpec = tween(
+                        durationMillis = 300,
+                        easing = LinearOutSlowInEasing
+                    )
+                )
+            }
+            // When rotation stops, animate to the final target digit
+            val from = animatedValue.value
+            val currentMod = from.toInt() % 10
+            val diff = if (targetDigit >= currentMod) {
+                targetDigit - currentMod
+            } else {
+                (10 - currentMod) + targetDigit
+            }
+            animatedValue.animateTo(
+                targetValue = from + diff,
+                animationSpec = tween(
+                    durationMillis = 500,
+                    easing = LinearOutSlowInEasing
+                )
+            )
+            animatedValue.snapTo(targetDigit.toFloat())
+            previousDigit = targetDigit
+            onAnimationComplete?.invoke()
+        }
+    }
+
     LaunchedEffect(animationTrigger) {
-        if (animationTrigger > 0) {
+        if (animationTrigger > 0 && !isRotating) {
             delay(randomDelay)
 
             val from = animatedValue.value
@@ -121,7 +166,7 @@ private fun AnimatedDigit(
             animatedValue.snapTo(targetDigit.toFloat())
             previousDigit = targetDigit
             onAnimationComplete?.invoke()
-        } else if (targetDigit != previousDigit) {
+        } else if (targetDigit != previousDigit && !isRotating) {
             animatedValue.snapTo(targetDigit.toFloat())
             previousDigit = targetDigit
         }
