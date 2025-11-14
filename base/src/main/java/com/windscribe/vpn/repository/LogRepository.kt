@@ -11,6 +11,7 @@ import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.WindUtilities
+import com.windscribe.vpn.constants.AdvanceParamKeys
 import com.windscribe.vpn.constants.PreferencesKeyConstants
 import java.io.BufferedReader
 import java.io.File
@@ -29,11 +30,11 @@ class LogRepository @Inject constructor(
     fun getDebugFilePath(): String {
         val advanceParams = parseAdvanceParams(preferencesHelper.advanceParamText)
         return when {
-            advanceParams["showStrongSwanLog"].toBoolean() -> {
+            advanceParams[AdvanceParamKeys.SHOW_STRONG_SWAN_LOG].toBoolean() -> {
                 "${appContext.filesDir}/charon.log"
             }
 
-            advanceParams["showWgLog"].toBoolean() -> {
+            advanceParams[AdvanceParamKeys.SHOW_WG_LOG].toBoolean() -> {
                 "${appContext.filesDir}/wireguard_log.txt"
             }
 
