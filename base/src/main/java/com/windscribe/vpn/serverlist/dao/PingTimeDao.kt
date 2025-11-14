@@ -51,5 +51,16 @@ abstract class PingTimeDao {
     abstract suspend fun getPingIdFromTimeAsync(pingTime: Int): Int
 
     @Insert(onConflict = REPLACE)
-    abstract suspend fun addPing(pingTime: PingTime)
+    abstract suspend fun insertPing(pingTime: PingTime)
+
+    @Query("SELECT ping_time FROM PingTime WHERE ping_id = :pingId LIMIT 1")
+    abstract suspend fun getExistingPingTime(pingId: Int): Int?
+
+    suspend fun addPing(pingTime: PingTime) {
+        val existingPingTime = getExistingPingTime(pingTime.ping_id)
+        val shouldUpdate = pingTime.pingTime > 0 || existingPingTime == null || (existingPingTime <= 0)
+        if (shouldUpdate) {
+            insertPing(pingTime)
+        }
+    }
 }
