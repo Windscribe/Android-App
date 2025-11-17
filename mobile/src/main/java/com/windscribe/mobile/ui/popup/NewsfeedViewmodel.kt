@@ -100,30 +100,34 @@ class NewsfeedViewmodel @Inject constructor(
 
     private fun createNotificationItem(notification: WindNotification): NewsfeedItem {
         val newsfeedAction = notification.action
-        var message: String = notification.notificationMessage
+        val message: String = notification.notificationMessage
 
-        // Find the last <p> tag
-        val bodyEndIndex = message.lastIndexOf("<p")
-        if (bodyEndIndex > 0) {
-            val body = message.substring(0, bodyEndIndex)
-            val pTag = message.substring(bodyEndIndex)
-            if (pTag.contains("ncta")) {
-                // Extract the <a> tag URL if present
-                val linkRegex = "<a\\s+href=\"(.*?)\".*?>(.*?)<\\/a>".toRegex()
-                val match = linkRegex.find(pTag)
-                if (match != null) {
-                    val url = match.groupValues[1]
-                    val label = match.groupValues[2]
-                    return NewsfeedItem(
-                        id = notification.notificationId,
-                        title = Html.fromHtml(notification.notificationTitle.uppercase(Locale.getDefault()))
-                            .toString(),
-                        message = Html.fromHtml(body).toString().trim(),
-                        date = formatDate(notification.notificationDate),
-                        action = Action.Url(label, url)
-                    )
-                }
-                message = body
+        // Check if message contains an 'ncta' class link
+        if (message.contains("ncta")) {
+            // Extract the <a> tag URL if present (handles both href first or class first)
+            val linkRegex = "<a\\s+([^>]*?)class=['\"]ncta['\"]([^>]*?)>(.*?)</a>".toRegex()
+            val match = linkRegex.find(message)
+            if (match != null) {
+                val allAttributes = match.groupValues[1] + match.groupValues[2]
+                val label = match.groupValues[3]
+
+                // Extract href from attributes
+                val hrefRegex = "href=['\"]([^'\"]+)['\"]".toRegex()
+                val hrefMatch = hrefRegex.find(allAttributes)
+                val url = hrefMatch?.groupValues?.get(1) ?: ""
+
+                logger.debug("Extracted action button - URL: $url, Label: $label")
+
+                // Remove the action link from the message body
+                val body = message.replace(linkRegex, "").trim()
+                return NewsfeedItem(
+                    id = notification.notificationId,
+                    title = Html.fromHtml(notification.notificationTitle.uppercase(Locale.getDefault()))
+                        .toString(),
+                    message = Html.fromHtml(body).toString().trim(),
+                    date = formatDate(notification.notificationDate),
+                    action = Action.Url(label, url)
+                )
             }
         }
         val htmlBody = Html.fromHtml(message).toString().trim()
