@@ -45,7 +45,10 @@ class NotificationRepository @Inject constructor(
                         } catch (e: Exception) {
                             logger.debug("Failed add pop notification. $e")
                         }
+                        // Clear old notifications before inserting new ones to avoid orphaned data
+                        localDbInterface.clearWindNotifications()
                         localDbInterface.insertWindNotifications(it)
+                        logger.debug("Replaced notifications cache with ${it.size} items from API")
                     }
                 }
             }
