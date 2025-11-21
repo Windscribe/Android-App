@@ -70,7 +70,6 @@ import com.windscribe.vpn.serverlist.dao.StaticRegionDao
 import com.windscribe.vpn.services.review.WindscribeReviewManagerImpl
 import com.windscribe.vpn.services.sso.GoogleSignInManager
 import com.windscribe.vpn.state.AppLifeCycleObserver
-import com.windscribe.vpn.state.DNSStateManager
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.NetworkInfoManager
@@ -210,12 +209,6 @@ open class BaseApplicationModule {
     @Singleton
     fun provideDeviceStateManager(scope: CoroutineScope): DeviceStateManager {
         return DeviceStateManager(scope)
-    }
-
-    @Provides
-    @Singleton
-    fun provideDNSStateManager(scope: CoroutineScope, wsNet: WSNet): DNSStateManager {
-        return DNSStateManager(scope, wsNet)
     }
 
     @Provides
