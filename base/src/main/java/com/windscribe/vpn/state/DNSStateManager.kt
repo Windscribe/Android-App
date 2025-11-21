@@ -74,8 +74,8 @@ class DNSStateManager @Inject constructor(
         scope.launch {
             try {
                 val linkProperties = connectivityManager?.getLinkProperties(network)
-                val dnsServersList = linkProperties?.dnsServers?.map { it.hostAddress } ?: emptyList()
-                
+                val dnsServersList = linkProperties?.dnsServers?.mapNotNull { it.hostAddress } ?: emptyList()
+
                 if (dnsServersList != _dnsServers.value) {
                     _dnsServers.emit(dnsServersList)
                     setDnsOnWSNet(dnsServersList)
@@ -92,8 +92,8 @@ class DNSStateManager @Inject constructor(
             try {
                 val activeNetwork = connectivityManager?.activeNetwork
                 val linkProperties = connectivityManager?.getLinkProperties(activeNetwork)
-                val dnsServersList = linkProperties?.dnsServers?.map { it.hostAddress } ?: emptyList()
-                
+                val dnsServersList = linkProperties?.dnsServers?.mapNotNull { it.hostAddress } ?: emptyList()
+
                 _dnsServers.emit(dnsServersList)
                 setDnsOnWSNet(dnsServersList)
             } catch (e: Exception) {
