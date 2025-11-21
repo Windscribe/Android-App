@@ -31,8 +31,21 @@ class DNSStateManager @Inject constructor(
     
     private var _dnsServers = MutableStateFlow<List<String>>(emptyList())
 
+    // Cache the DNS resolver to maintain a strong reference and prevent GC
+    private var dnsResolver: com.wsnet.lib.WSNetDnsResolver? = null
+
     @RequiresApi(Build.VERSION_CODES.M)
     fun init(context: Context) {
+        // Initialize and cache the DNS resolver with a strong reference
+        try {
+            if (WSNet.isValid()) {
+                dnsResolver = wsNet.dnsResolver()
+                logger.info("DNS resolver initialized and cached")
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to initialize DNS resolver", e)
+        }
+
         connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         
         networkCallback = object : ConnectivityManager.NetworkCallback() {
@@ -124,7 +137,19 @@ class DNSStateManager @Inject constructor(
             validDnsAddresses.add("76.76.2.0")
             validDnsAddresses.add("1.1.1.1")
             logger.info("Setting DNS servers to $validDnsAddresses")
-            wsNet.dnsResolver().setDnsServers(validDnsAddresses.toTypedArray())
+            // Use the cached DNS resolver to avoid WeakGlobal reference issues
+            val resolver = dnsResolver
+            if (resolver != null) {
+                resolver.setDnsServers(validDnsAddresses.toTypedArray())
+            } else {
+                logger.warn("DNS resolver not initialized, attempting to reinitialize")
+                try {
+                    dnsResolver = wsNet.dnsResolver()
+                    dnsResolver?.setDnsServers(validDnsAddresses.toTypedArray())
+                } catch (e: Exception) {
+                    logger.error("Failed to reinitialize DNS resolver", e)
+                }
+            }
         } catch (e: Exception) {
             logger.error("Error setting DNS servers on WSNet", e)
         }
@@ -136,5 +161,6 @@ class DNSStateManager @Inject constructor(
         }
         connectivityManager = null
         networkCallback = null
+        dnsResolver = null
     }
 }
