@@ -1,0 +1,4 @@
+v3.95(TV)
+* Upgraded OpenVPN and OpenSSL
+* Fixed app crash caused by reaching the maximum number of file descriptors
+* Minor bug fixes
