@@ -5,7 +5,6 @@ import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -53,7 +52,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import androidx.compose.ui.window.Dialog
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.NextButton
@@ -75,6 +73,7 @@ import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.R
+import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -790,7 +789,11 @@ private fun HandleGoto(viewModel: AccountViewModel?) {
                 (goto as AccountGoTo.Error).message,
                 Toast.LENGTH_SHORT
             ).show()
-
+            is AccountGoTo.Upgrade -> {
+                val startIntent = UpgradeActivity.getStartIntent(activity)
+                startIntent.putExtra(PROMO_EXTRA, (goto as AccountGoTo.Upgrade).promoAction)
+                activity?.startActivity(startIntent)
+            }
             else -> {}
         }
     }
