@@ -44,11 +44,16 @@ sealed interface DateType {
 }
 
 sealed class AccountState {
-    open val emailState: EmailState = NoEmail
-    open val username: String = ""
-
-    object Loading : AccountState()
-    object Ghost : AccountState()
+    abstract val emailState: EmailState
+    abstract val username: String
+    object Loading : AccountState() {
+        override val emailState = NoEmail
+        override val username = ""
+    }
+    object Ghost : AccountState() {
+        override val emailState = NoEmail
+        override val username = ""
+    }
     data class Account(
         val type: AccountType,
         override val username: String,
