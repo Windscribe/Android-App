@@ -100,9 +100,32 @@ class NewsfeedViewmodel @Inject constructor(
 
     private fun createNotificationItem(notification: WindNotification): NewsfeedItem {
         val newsfeedAction = notification.action
-        val message: String = notification.notificationMessage
+        var message: String = notification.notificationMessage
 
-        // Check if message contains an 'ncta' class link
+        // Priority 1: Check for NewsfeedAction from API
+        if (newsfeedAction != null) {
+            // Remove URL from message if it exists
+            if (message.contains("ncta")) {
+                val linkRegex = "<a\\s+([^>]*?)class=['\"]ncta['\"]([^>]*?)>(.*?)</a>".toRegex()
+                val body = message.replace(linkRegex, "").trim()
+                if (body != message) {
+                    logger.debug("Found both action and URL, prioritizing action and removing URL from message")
+                    message = body
+                }
+            }
+
+            val htmlBody = Html.fromHtml(message).toString().trim()
+            return NewsfeedItem(
+                id = notification.notificationId,
+                title = Html.fromHtml(notification.notificationTitle)
+                    .toString(),
+                message = htmlBody,
+                date = formatDate(notification.notificationDate),
+                action = Action.Newsfeed(newsfeedAction)
+            )
+        }
+
+        // Priority 2: Check for URL in HTML message
         if (message.contains("ncta")) {
             // Extract the <a> tag URL if present (handles both href first or class first)
             val linkRegex = "<a\\s+([^>]*?)class=['\"]ncta['\"]([^>]*?)>(.*?)</a>".toRegex()
@@ -130,6 +153,8 @@ class NewsfeedViewmodel @Inject constructor(
                 )
             }
         }
+
+        // Priority 3: No action
         val htmlBody = Html.fromHtml(message).toString().trim()
         return NewsfeedItem(
             id = notification.notificationId,
@@ -137,7 +162,7 @@ class NewsfeedViewmodel @Inject constructor(
                 .toString(),
             message = htmlBody,
             date = formatDate(notification.notificationDate),
-            action = if (newsfeedAction == null) Action.None else Action.Newsfeed(newsfeedAction)
+            action = Action.None
         )
     }
 

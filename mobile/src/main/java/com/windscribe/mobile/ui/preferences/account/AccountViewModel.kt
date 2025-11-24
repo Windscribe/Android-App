@@ -9,6 +9,7 @@ import com.windscribe.mobile.ui.preferences.account.EmailState.NoEmail
 import com.windscribe.mobile.ui.preferences.account.EmailState.UnconfirmedEmail
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.ClaimVoucherCodeResponse
+import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.api.response.VerifyExpressLoginResponse
 import com.windscribe.vpn.api.response.WebSession
 import com.windscribe.vpn.commonutils.Ext.result
@@ -25,29 +26,34 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.util.Locale
 
-sealed class AccountType {
-    object Pro : AccountType()
-    data class Free(val data: String) : AccountType()
-    data class AlcCustom(val data: String) : AccountType()
-    object Unlimited : AccountType()
+sealed interface AccountType {
+    object Pro : AccountType
+    data class Free(val data: String) : AccountType
+    data class AlcCustom(val data: String) : AccountType
+    object Unlimited : AccountType
 }
 
-sealed class DateType {
-    open val date: String = ""
-
-    data class Expiry(override val date: String) : DateType()
-    data class Reset(override val date: String) : DateType()
+sealed interface DateType {
+    val date: String
+    data class Expiry(override val date: String) : DateType
+    data class Reset(override val date: String) : DateType
 }
 
 sealed class AccountState {
-    open val emailState: EmailState = NoEmail
-    open val username: String = ""
-
-    object Loading : AccountState()
-    object Ghost : AccountState()
+    abstract val emailState: EmailState
+    abstract val username: String
+    object Loading : AccountState() {
+        override val emailState = NoEmail
+        override val username = ""
+    }
+    object Ghost : AccountState() {
+        override val emailState = NoEmail
+        override val username = ""
+    }
     data class Account(
         val type: AccountType,
         override val username: String,
@@ -66,6 +72,7 @@ sealed class EmailState {
 sealed class AccountGoTo {
     data class ManageAccount(val url: String) : AccountGoTo()
     data class Error(val message: String) : AccountGoTo()
+    data class Upgrade(val promoAction: PushNotificationAction) : AccountGoTo()
     object None : AccountGoTo()
 }
 
@@ -162,17 +169,17 @@ class AccountViewModelImpl(
     }
 
     override fun onManageAccountClicked() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             _showProgress.value = true
-            val result = result<WebSession> { api.getWebSession() }
+            val result = withContext(Dispatchers.IO) {
+                result<WebSession> { api.getWebSession() }
+            }
+            _showProgress.value = false
             when (result) {
                 is CallResult.Error -> {
-                    _showProgress.value = false
                     _goTo.emit(AccountGoTo.Error(result.errorMessage))
                 }
-
                 is CallResult.Success<WebSession> -> {
-                    _showProgress.value = false
                     _goTo.emit(AccountGoTo.ManageAccount("${NetworkKeyConstants.URL_MY_ACCOUNT}${result.data.tempSession}"))
                 }
             }
@@ -188,10 +195,11 @@ class AccountViewModelImpl(
     private val successMessage = "Sweet, you should be all good to go now."
 
     override fun onEnterLazyLoginCode(code: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             _showProgress.value = true
-            val result = result<VerifyExpressLoginResponse> { api.verifyExpressLoginCode(code) }
-            delay(3000)
+            val result = withContext(Dispatchers.IO) {
+                result<VerifyExpressLoginResponse> { api.verifyExpressLoginCode(code) }
+            }
             _showProgress.value = false
             when (result) {
                 is CallResult.Error -> {
@@ -216,29 +224,89 @@ class AccountViewModelImpl(
     }
 
     override fun onEnterVoucherCode(code: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             _showProgress.value = true
-            val result = result<ClaimVoucherCodeResponse> { api.claimVoucherCode(code) }
-            delay(3000)
+            val result = withContext(Dispatchers.IO) {
+                result<ClaimVoucherCodeResponse> { api.claimVoucherCode(code) }
+            }
             _showProgress.value = false
-            when (result) {
-                is CallResult.Error -> {
-                    _alertState.emit(AlertState.Error(ToastMessage.Raw(result.errorMessage)))
-                }
+            handleVoucherCodeResponse(code, result)
+        }
+    }
 
-                is CallResult.Success<ClaimVoucherCodeResponse> -> {
-                    logger.debug("Claimed voucher code: {}", result.data)
-                    if (result.data.isClaimed) {
-                        _alertState.emit(AlertState.Success(ToastMessage.Localized(com.windscribe.vpn.R.string.voucher_code_is_applied)))
-                        workManager.updateSession()
-                    } else if (result.data.emailRequired == true) {
-                        _alertState.emit(AlertState.Error(ToastMessage.Localized(com.windscribe.vpn.R.string.confirmed_email_required)))
-                    } else if (result.data.isUsed) {
-                        _alertState.emit(AlertState.Error(ToastMessage.Localized(com.windscribe.vpn.R.string.voucher_code_used_already)))
-                    } else {
-                        _alertState.emit(AlertState.Error(ToastMessage.Localized(com.windscribe.vpn.R.string.voucher_code_is_invalid)))
-                    }
-                }
+    private suspend fun handleVoucherCodeResponse(
+        code: String,
+        result: CallResult<ClaimVoucherCodeResponse>
+    ) {
+        when (result) {
+            is CallResult.Error -> {
+                _alertState.emit(AlertState.Error(ToastMessage.Raw(result.errorMessage)))
+            }
+
+            is CallResult.Success<ClaimVoucherCodeResponse> -> {
+                handleVoucherCodeSuccessfulResponse(code, result.data)
+            }
+        }
+    }
+
+    private suspend fun handleVoucherCodeSuccessfulResponse(
+        code: String,
+        response: ClaimVoucherCodeResponse
+    ) {
+        logger.debug("Voucher code:{} returned:{}", code, response)
+        val isClaimed = response.isClaimed
+        val newPlanId = response.newPlanId
+        val promoDiscount = response.promoDiscount
+        val emailRequired = response.emailRequired == true
+        val isUsed = response.isUsed
+        when {
+            isClaimed && newPlanId != null -> {
+                _alertState.emit(
+                    AlertState.Success(
+                        ToastMessage.Localized(
+                            com.windscribe.vpn.R.string.voucher_code_is_applied
+                        )
+                    )
+                )
+                workManager.updateSession()
+            }
+
+            isClaimed && promoDiscount != null -> {
+                _goTo.emit(
+                    AccountGoTo.Upgrade(
+                        PushNotificationAction("", code, "promo")
+                    )
+                )
+            }
+
+            emailRequired -> {
+                _alertState.emit(
+                    AlertState.Error(
+                        ToastMessage.Localized(
+                            com.windscribe.vpn.R.string.confirmed_email_required
+                        )
+                    )
+                )
+            }
+
+            isUsed -> {
+                _alertState.emit(
+                    AlertState.Error(
+                        ToastMessage.Localized(
+                            com.windscribe.vpn.R.string.voucher_code_used_already
+                        )
+                    )
+                )
+            }
+
+            else -> {
+                _alertState.emit(
+                    AlertState.Error(
+                        ToastMessage.Localized(
+                            com.windscribe.vpn.R.string.voucher_code_is_invalid
+                        )
+                    )
+                )
             }
         }
     }

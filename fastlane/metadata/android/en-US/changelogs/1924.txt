@@ -1,0 +1,8 @@
+v3.95(Mobile)
+* Added IP pinning and rotation
+* Sorted regions based on the lowest-latency city
+* Added Pro badge to the header
+* Fixed app crash caused by reaching the maximum number of file descriptors
+* Fixed issue where Newsfeed actions couldn't be clicked
+* Added Slovak and Greek language support
+* Upgraded OpenVPN and OpenSSL

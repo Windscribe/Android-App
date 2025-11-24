@@ -23,5 +23,8 @@ interface WindNotificationDao {
     suspend fun getWindNotificationsAsync(): List<WindNotification>
 
     @Query("Delete from WindNotification")
+    suspend fun cleanAsync()
+
+    @Query("Delete from WindNotification")
     fun clean()
 }

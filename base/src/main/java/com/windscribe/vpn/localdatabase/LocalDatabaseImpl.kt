@@ -230,6 +230,10 @@ class LocalDatabaseImpl @Inject constructor(
         windNotificationDao.insert(windNotifications)
     }
 
+    override suspend fun clearWindNotifications() {
+        windNotificationDao.cleanAsync()
+    }
+
     override suspend fun getAllStaticRegions(): List<StaticRegion> {
         return staticRegionsDao.getAllStaticRegions()
     }

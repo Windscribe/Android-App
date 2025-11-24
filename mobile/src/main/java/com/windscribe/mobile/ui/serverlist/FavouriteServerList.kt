@@ -148,7 +148,7 @@ private fun ListItemView(
                 indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)
             ) {
                 connectionViewmodel.onCityClick(item.city, true)
-            }.padding(start = 0.dp, end = 8.dp),
+            }.padding(start = 8.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         SplitBorderCircle(
