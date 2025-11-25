@@ -7,8 +7,8 @@ cd tools/bin || exit
 export ANDROID_NDK_HOME="$ANDROID_NDK"
 git clone https://github.com/Windscribe/Desktop-App.git
 cd Desktop-App || exit
-## WSNet 2.17.5
-git checkout f87f1a6af99159b1c0e54c43411911c90e1d9a53
+## WSNet 2.18.8
+git checkout 7a7cf5f073defb7002a71f1032052b9e2f2f5939
 cd libs/wsnet/tools || exit
 ./build_android.sh > /dev/null 2>&1
 cp wsnet.aar "$DST_DIR"
