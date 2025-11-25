@@ -123,8 +123,9 @@ class AppStartActivity : AppCompatActivity() {
     private fun setLanguage() {
         val newLocale = appContext.getSavedLocale()
         Locale.setDefault(newLocale)
-        val config = Configuration()
+        val config = Configuration(baseContext.resources.configuration)
         config.locale = newLocale
+        config.fontScale = 1.0f
         appContext.resources.updateConfiguration(config, baseContext.resources.displayMetrics)
         resources.updateConfiguration(config, baseContext.resources.displayMetrics)
     }
