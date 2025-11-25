@@ -29,7 +29,7 @@ android {
         minSdkVersion rootProject.appMinSdk
         targetSdkVersion rootProject.appTargetSdk
         versionName System.getenv().getOrDefault("VERSION_NAME", rootProject.appVersionName)
-        versionCode 1924
+        versionCode 1929
         vectorDrawables.useSupportLibrary = true
 
         testInstrumentationRunner "com.windscribe.vpn.CustomRunner"
