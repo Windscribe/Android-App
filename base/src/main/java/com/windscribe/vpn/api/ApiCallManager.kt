@@ -454,26 +454,6 @@ open class ApiCallManager @Inject constructor(
         }
     }
 
-    override suspend fun wgConnect(
-        clientPublicKey: String,
-        hostname: String,
-        deviceId: String
-    ): GenericResponseClass<WgConnectResponse?, ApiErrorResponse?> {
-        checkSession()
-        return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.wgConfigsConnect(
-                preferencesHelper.sessionHash,
-                clientPublicKey,
-                hostname,
-                deviceId,
-                WG_CONNECT_DEFAULT_TTL.toString()
-            ) { code, json ->
-                buildResponse(continuation, code, json, WgConnectResponse::class.java)
-            }
-            continuation.invokeOnCancellation { callback.cancel() }
-        }
-    }
-
     override suspend fun wgInit(
         clientPublicKey: String,
         deleteOldestKey: Boolean
