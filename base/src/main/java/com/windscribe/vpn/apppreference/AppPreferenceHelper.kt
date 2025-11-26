@@ -691,7 +691,7 @@ class AppPreferenceHelper(
         if (isSuggested()) {
             return Pair(suggestedProtocol!!, suggestedPort!!)
         }
-        return Pair(PreferencesKeyConstants.PROTO_IKev2, DEFAULT_IKEV2_PORT)
+        return Pair(PreferencesKeyConstants.PROTO_WIRE_GUARD, DEFAULT_WIRE_GUARD_PORT)
     }
 
     override fun getDefaultNetworkInfo(networkName: String): NetworkInfo {

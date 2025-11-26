@@ -335,9 +335,9 @@ open class WindVpnController @Inject constructor(
         // use default protocol if list protocol is not ready yet.
         if (autoConnectionManager.listOfProtocols.isEmpty()) {
             return ProtocolInformation(
-                PROTO_IKev2,
-                PreferencesKeyConstants.DEFAULT_IKEV2_PORT,
-                "IKEv2 is an IPsec based tunneling protocol.",
+                PROTO_WIRE_GUARD,
+                PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT,
+                "WireGuard is a modern, high-performance VPN protocol.",
                 ProtocolConnectionStatus.Disconnected
             )
         }

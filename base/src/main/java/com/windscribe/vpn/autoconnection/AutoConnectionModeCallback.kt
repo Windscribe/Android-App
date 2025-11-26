@@ -6,4 +6,5 @@ interface AutoConnectionModeCallback {
     fun onSendLogClicked() {}
     fun onContactSupportClick() {}
     fun onSetAsPreferredClicked() {}
+    fun onSwitchToAutoMode() {}
 }

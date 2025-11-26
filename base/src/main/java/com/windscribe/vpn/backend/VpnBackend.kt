@@ -102,16 +102,12 @@ abstract class VpnBackend(
     }
 
     fun startConnectionJob() {
-        val preferredProtocolOn = networkInfoManager.networkInfo?.isPreferredOn ?: false
-        if (preferredProtocolOn.not() && preferencesHelper.getResponseString(
-                PreferencesKeyConstants.CONNECTION_MODE_KEY
-            ) != PreferencesKeyConstants.CONNECTION_MODE_AUTO
-        ) {
-            vpnLogger.debug("Manual connection mode selected without preferred protocol.")
-            return
-        }
         connectionJob = mainScope.launch {
-            delay(CONNECTING_WAIT)
+            if (protocolInformation?.protocol == "wg") {
+                delay(WG_CONNECTING_WAIT)
+            } else {
+                delay(CONNECTING_WAIT)
+            }
             connectionTimeout()
         }
     }
