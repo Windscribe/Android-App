@@ -1,0 +1,3 @@
+v3.96(Mobile)
+* Hashed based wg ip.
+* Minor bug fixes
