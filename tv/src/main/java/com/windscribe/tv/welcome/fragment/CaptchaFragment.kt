@@ -13,8 +13,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
+import androidx.viewpager2.widget.ViewPager2
 import com.windscribe.tv.R
 import com.windscribe.tv.databinding.FragmentCaptchaBinding
 import org.slf4j.LoggerFactory
@@ -28,6 +30,7 @@ class CaptchaFragment : Fragment(),  WelcomeActivityCallback {
     private var username: String? = null
     private var email: String? = null
     private var isSignup: Boolean = false
+    private lateinit var carouselHelper: CarouselHelper
     private val logger = LoggerFactory.getLogger("basic")
     override fun onAttach(context: Context) {
         if (activity is FragmentCallback) {
@@ -87,6 +90,13 @@ class CaptchaFragment : Fragment(),  WelcomeActivityCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Setup carousel
+        carouselHelper = CarouselHelper(requireContext())
+        val viewPager = binding.root.findViewById<ViewPager2>(R.id.feature_carousel)
+        val indicators = binding.root.findViewById<LinearLayout>(R.id.carousel_indicators)
+        carouselHelper.setupCarousel(viewPager, indicators)
+
         username = arguments?.getString("username")
         password = arguments?.getString("password")
         email = arguments?.getString("email")
@@ -140,6 +150,21 @@ class CaptchaFragment : Fragment(),  WelcomeActivityCallback {
     override fun setLoginError(error: String) {
         binding.error.visibility = View.VISIBLE
         binding.error.text = error
+    }
+
+    override fun onResume() {
+        super.onResume()
+        carouselHelper.onResume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        carouselHelper.onPause()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        carouselHelper.onDestroy()
     }
 
     private fun resetButtonTextColor() {

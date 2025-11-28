@@ -8,8 +8,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
+import androidx.viewpager2.widget.ViewPager2
 import com.windscribe.tv.R
 import com.windscribe.tv.databinding.FragmentTwoFactorBinding
 
@@ -18,6 +20,7 @@ class TwoFactorFragment : Fragment() {
     private var fragmentCallBack: FragmentCallback? = null
     private var password: String? = null
     private var username: String? = null
+    private lateinit var carouselHelper: CarouselHelper
     override fun onAttach(context: Context) {
         if (activity is FragmentCallback) {
             fragmentCallBack = activity as FragmentCallback?
@@ -34,6 +37,13 @@ class TwoFactorFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Setup carousel
+        carouselHelper = CarouselHelper(requireContext())
+        val viewPager = binding.root.findViewById<ViewPager2>(R.id.feature_carousel)
+        val indicators = binding.root.findViewById<LinearLayout>(R.id.carousel_indicators)
+        carouselHelper.setupCarousel(viewPager, indicators)
+
         username = arguments?.getString("username")
         password = arguments?.getString("password")
         binding.twoFaContainer.requestFocus()
@@ -72,6 +82,21 @@ class TwoFactorFragment : Fragment() {
     fun setTwoFaError(error: String?) {
         binding.error.visibility = View.VISIBLE
         binding.error.text = error
+    }
+
+    override fun onResume() {
+        super.onResume()
+        carouselHelper.onResume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        carouselHelper.onPause()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        carouselHelper.onDestroy()
     }
 
     private fun resetButtonTextColor() {

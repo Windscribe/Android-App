@@ -16,7 +16,7 @@
             android:id="@+id/right_container"
             android:layout_width="368dp"
             android:layout_height="match_parent"
-            android:background="@color/colorDeepBlue90"
+            android:background="@drawable/side_background"
             android:paddingBottom="21dp"
             app:layout_constraintEnd_toEndOf="parent">
 
