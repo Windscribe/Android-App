@@ -346,7 +346,9 @@ class WelcomeActivity :
         username: String,
         password: String,
         secureToken: String,
-        captchaArt: String
+        captchaArt: String,
+        email: String?,
+        isSignup: Boolean
     ) {
         val fragment: Fragment = CaptchaFragment()
         val bundle = Bundle()
@@ -354,6 +356,8 @@ class WelcomeActivity :
         bundle.putString("password", password)
         bundle.putString("secureToken", secureToken)
         bundle.putString("captchaArt", captchaArt)
+        bundle.putString("email", email)
+        bundle.putBoolean("isSignup", isSignup)
         fragment.arguments = bundle
         val direction = GravityCompat
             .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)

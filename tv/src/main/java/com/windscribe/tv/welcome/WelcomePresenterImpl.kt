@@ -223,7 +223,9 @@ class WelcomePresenterImpl @Inject constructor(
                                     username,
                                     password,
                                     result.data.token,
-                                    captchaArt
+                                    captchaArt,
+                                    email,
+                                    true
                                 )
                             } else {
                                 logger.info("Starting signup without captcha")

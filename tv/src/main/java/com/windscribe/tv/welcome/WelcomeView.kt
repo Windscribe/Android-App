@@ -25,5 +25,5 @@ interface WelcomeView {
     fun showNoEmailAttentionFragment()
     fun showToast(message: String)
     fun updateCurrentProcess(currentCall: String)
-    fun captchaReceived(username: String, password: String, secureToken: String, captchaArt: String)
+    fun captchaReceived(username: String, password: String, secureToken: String, captchaArt: String, email: String? = null, isSignup: Boolean = false)
 }

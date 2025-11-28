@@ -19,12 +19,15 @@ import com.windscribe.tv.R
 import com.windscribe.tv.databinding.FragmentCaptchaBinding
 import org.slf4j.LoggerFactory
 import kotlin.io.encoding.ExperimentalEncodingApi
+import androidx.core.graphics.createBitmap
 
 class CaptchaFragment : Fragment(),  WelcomeActivityCallback {
     private lateinit var binding: FragmentCaptchaBinding
     private var fragmentCallBack: FragmentCallback? = null
     private var password: String? = null
     private var username: String? = null
+    private var email: String? = null
+    private var isSignup: Boolean = false
     private val logger = LoggerFactory.getLogger("basic")
     override fun onAttach(context: Context) {
         if (activity is FragmentCallback) {
@@ -71,16 +74,9 @@ class CaptchaFragment : Fragment(),  WelcomeActivityCallback {
         // Use actual character height for line spacing
         val lineSpacing = charHeight * 1.2f  // 20% extra for line spacing
         val totalHeight = (lineSpacing * lines.size).toInt()
-        
-        // Generous padding for TV display
         val padding = 80
-        val bitmap = Bitmap.createBitmap(
-            calculatedWidth + padding, 
-            totalHeight + padding, 
-            Bitmap.Config.ARGB_8888
-        )
+        val bitmap = createBitmap(calculatedWidth + padding, totalHeight + padding)
         val canvas = Canvas(bitmap)
-        canvas.drawColor(Color.BLACK)
         var y = charHeight + (padding / 2)
         for (line in lines) {
             canvas.drawText(line, (padding / 2).toFloat(), y, paint)
@@ -93,6 +89,8 @@ class CaptchaFragment : Fragment(),  WelcomeActivityCallback {
         super.onViewCreated(view, savedInstanceState)
         username = arguments?.getString("username")
         password = arguments?.getString("password")
+        email = arguments?.getString("email")
+        isSignup = arguments?.getBoolean("isSignup", false) ?: false
         val captchaArt = arguments?.getString("captchaArt")
         val captchaText = decodeBase64ToArt(captchaArt!!)
         val token = arguments?.getString("secureToken")
@@ -100,6 +98,10 @@ class CaptchaFragment : Fragment(),  WelcomeActivityCallback {
             val bitmap = createAsciiArtBitmap(text)
             binding.asciiView.setImageBitmap(bitmap)
         }
+
+        // Update button text based on flow
+        binding.loginSignUp.text = if (isSignup) getString(com.windscribe.vpn.R.string.text_sign_up) else getString(com.windscribe.vpn.R.string.text_login)
+
         binding.back.setOnClickListener {
             fragmentCallBack?.onBackButtonPressed()
         }
@@ -110,11 +112,18 @@ class CaptchaFragment : Fragment(),  WelcomeActivityCallback {
             resetButtonTextColor()
         }
         binding.loginSignUp.setOnClickListener {
-            username?.let {
+            username?.let { user ->
                 password?.let { pass ->
-                    fragmentCallBack?.onLoginButtonClick(
-                        it, pass, "", token, binding.captchaSolution.text.toString()
-                    )
+                    val captchaSolution = binding.captchaSolution.text.toString()
+                    if (isSignup) {
+                        fragmentCallBack?.onSignUpButtonClick(
+                            user, pass, email, true, token, captchaSolution
+                        )
+                    } else {
+                        fragmentCallBack?.onLoginButtonClick(
+                            user, pass, "", token, captchaSolution
+                        )
+                    }
                 }
             }
         }
