@@ -206,8 +206,11 @@ open class WindVpnController @Inject constructor(
         appContext.preference.saveCredentials(
             PreferencesKeyConstants.STATIC_IP_CREDENTIAL, staticRegion.credentials
         )
+        val coordinatesArray = staticRegion.coordinates?.split(",".toRegex())?.toTypedArray()
         val location = LastSelectedLocation(
-            staticRegion.id, staticRegion.cityName, staticRegion.staticIp, staticRegion.countryCode
+            staticRegion.id, staticRegion.cityName, staticRegion.staticIp, staticRegion.countryCode,
+            coordinatesArray?.get(0),
+            coordinatesArray?.get(1)
         )
         val vpnParameters = VPNParameters(
             node.ip,

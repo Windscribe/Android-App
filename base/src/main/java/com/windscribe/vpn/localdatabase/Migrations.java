@@ -85,6 +85,16 @@ public class Migrations {
         }
     };
 
+    public static final Migration migration_36_37 = new Migration(36, 37) {
+        @Override
+        public void migrate(@NonNull final SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE StaticRegion"
+                    + " ADD COLUMN gps TEXT");
+            invalidateData();
+            logger.debug("Migrated database from version:36 to version:37");
+        }
+    };
+
     private static void invalidateData() {
         Windscribe.getAppContext().getPreference().setMigrationRequired(true);
     }
