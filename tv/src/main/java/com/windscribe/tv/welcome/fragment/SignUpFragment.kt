@@ -10,10 +10,8 @@ import android.text.method.PasswordTransformationMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
-import androidx.viewpager2.widget.ViewPager2
 import com.windscribe.tv.R
 import com.windscribe.tv.databinding.FragmentSignUpBinding
 
@@ -22,7 +20,6 @@ class SignUpFragment : Fragment(), WelcomeActivityCallback {
     private lateinit var binding: FragmentSignUpBinding
     private var isAccountSetUpLayout = false
     private var fragmentCallBack: FragmentCallback? = null
-    private lateinit var carouselHelper: CarouselHelper
     override fun onAttach(context: Context) {
         if (activity is FragmentCallback) {
             fragmentCallBack = activity as FragmentCallback?
@@ -49,13 +46,6 @@ class SignUpFragment : Fragment(), WelcomeActivityCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Setup carousel
-        carouselHelper = CarouselHelper(requireContext())
-        val viewPager = binding.root.findViewById<ViewPager2>(R.id.feature_carousel)
-        val indicators = binding.root.findViewById<LinearLayout>(R.id.carousel_indicators)
-        carouselHelper.setupCarousel(viewPager, indicators)
-
         if (isAccountSetUpLayout) {
             binding.title.text = getString(com.windscribe.vpn.R.string.account_set_up)
             binding.forgotPassword.visibility = View.GONE
@@ -99,13 +89,10 @@ class SignUpFragment : Fragment(), WelcomeActivityCallback {
                     binding.passwordEdit.text.toString(), "", true
                 )
             } else {
-//                fragmentCallBack?.onAuthSignUpClick(
-//                    binding.usernameEdit.text.toString(),
-//                    binding.passwordEdit.text.toString(), ""
-//                )
                 fragmentCallBack?.onAuthSignUpClick(
                     binding.usernameEdit.text.toString(),
-                    binding.passwordEdit.text.toString(), ""
+                    binding.passwordEdit.text.toString(),
+                    null
                 )
             }
         }
@@ -147,21 +134,6 @@ class SignUpFragment : Fragment(), WelcomeActivityCallback {
     override fun setUsernameError(error: String) {
         binding.error.visibility = View.VISIBLE
         binding.error.text = error
-    }
-
-    override fun onResume() {
-        super.onResume()
-        carouselHelper.onResume()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        carouselHelper.onPause()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        carouselHelper.onDestroy()
     }
 
     private fun resetButtonTextColor() {

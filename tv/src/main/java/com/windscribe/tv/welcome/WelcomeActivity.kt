@@ -350,20 +350,15 @@ class WelcomeActivity :
         email: String?,
         isSignup: Boolean
     ) {
-        val fragment: Fragment = CaptchaFragment()
-        val bundle = Bundle()
-        bundle.putString("username", username)
-        bundle.putString("password", password)
-        bundle.putString("secureToken", secureToken)
-        bundle.putString("captchaArt", captchaArt)
-        bundle.putString("email", email)
-        bundle.putBoolean("isSignup", isSignup)
-        fragment.arguments = bundle
-        val direction = GravityCompat
-            .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
-        fragment.enterTransition =
-            Slide(direction).addTarget(R.id.welcome_container)
-        replaceFragment(fragment, true)
+        val dialog = CaptchaFragment.newInstance(
+            username,
+            password,
+            secureToken,
+            captchaArt,
+            email,
+            isSignup
+        )
+        dialog.show(supportFragmentManager, "CaptchaDialog")
     }
 
     override fun onAuthSignUpClick(username: String, password: String, email: String?) {
