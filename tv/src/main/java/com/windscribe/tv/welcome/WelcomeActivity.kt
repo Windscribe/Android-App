@@ -346,20 +346,23 @@ class WelcomeActivity :
         username: String,
         password: String,
         secureToken: String,
-        captchaArt: String
+        captchaArt: String,
+        email: String?,
+        isSignup: Boolean
     ) {
-        val fragment: Fragment = CaptchaFragment()
-        val bundle = Bundle()
-        bundle.putString("username", username)
-        bundle.putString("password", password)
-        bundle.putString("secureToken", secureToken)
-        bundle.putString("captchaArt", captchaArt)
-        fragment.arguments = bundle
-        val direction = GravityCompat
-            .getAbsoluteGravity(GravityCompat.END, resources.configuration.layoutDirection)
-        fragment.enterTransition =
-            Slide(direction).addTarget(R.id.welcome_container)
-        replaceFragment(fragment, true)
+        // Dismiss any existing captcha dialog first
+        val existingDialog = supportFragmentManager.findFragmentByTag("CaptchaDialog") as? CaptchaFragment
+        existingDialog?.dismiss()
+
+        val dialog = CaptchaFragment.newInstance(
+            username,
+            password,
+            secureToken,
+            captchaArt,
+            email,
+            isSignup
+        )
+        dialog.show(supportFragmentManager, "CaptchaDialog")
     }
 
     override fun onAuthSignUpClick(username: String, password: String, email: String?) {
