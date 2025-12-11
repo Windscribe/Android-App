@@ -149,6 +149,10 @@ class CaptchaFragment : DialogFragment() {
             }
         }
 
+        binding.refreshButton.setOnFocusChangeListener { _, hasFocus ->
+            binding.refreshButton.alpha = if (hasFocus) 1.0f else 0.6f
+        }
+
         binding.back.setOnClickListener {
             dismiss()
         }

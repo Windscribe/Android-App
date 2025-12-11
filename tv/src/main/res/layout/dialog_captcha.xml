@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2021 Windscribe Limited.
+  -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="388dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/popup_background"
+    android:padding="32dp">
+
+    <!-- Captcha Image Container -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/captcha_container"
+        android:layout_width="258dp"
+        android:layout_height="102dp"
+        android:padding="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/asciiView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="ASCII Captcha"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Refresh Button -->
+    <ImageView
+        android:id="@+id/refresh_button"
+        android:layout_width="@dimen/reg_50"
+        android:layout_height="@dimen/reg_50"
+        android:layout_marginStart="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Refresh Captcha"
+        android:focusable="true"
+        android:src="@drawable/ic_refresh"
+        app:layout_constraintBottom_toBottomOf="@id/captcha_container"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/captcha_container"/>
+
+    <!-- Instruction Text -->
+    <TextView
+        android:id="@+id/instruction_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/ibm_plex_sans_bold"
+        android:gravity="center"
+        android:text="Type the word above"
+        android:textColor="@color/colorWhite"
+        android:textSize="@dimen/text_size_18"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/captcha_container" />
+
+    <!-- Input Field -->
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/captcha_solution"
+        style="@style/Input_EditText"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/input_focused"
+        android:focusable="true"
+        android:gravity="center"
+        android:hint="Enter code here"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:padding="12dp"
+        android:textColor="@color/colorWhite"
+        android:textColorHint="@color/colorWhite50"
+        android:textCursorDrawable="@drawable/color_cursor"
+        android:textSize="@dimen/text_size_16"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/instruction_text" />
+
+    <!-- Verify Button -->
+    <Button
+        android:id="@+id/verify_button"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/login_main_btn_background"
+        android:fontFamily="@font/ibm_plex_sans_bold"
+        android:text="Verify"
+        android:textColor="@color/colorWhite"
+        android:textSize="@dimen/text_size_16"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/captcha_solution" />
+
+    <!-- Back Button -->
+    <TextView
+        android:id="@+id/back"
+        style="@style/LabelButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/back_uppercase"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/verify_button" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
