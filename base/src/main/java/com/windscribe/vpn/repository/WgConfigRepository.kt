@@ -1,6 +1,5 @@
 package com.windscribe.vpn.repository
 
-import android.util.Base64
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import com.windscribe.vpn.api.IApiCallManager
@@ -18,7 +17,6 @@ import com.wireguard.crypto.KeyPair
 import kotlinx.coroutines.delay
 import org.slf4j.LoggerFactory
 import java.io.Serializable
-import java.security.MessageDigest
 import javax.inject.Singleton
 
 /**
@@ -116,8 +114,7 @@ class WgConfigRepository(
                 val userPublicKey =
                     KeyPair(Key.fromBase64(wgInitResponse.data.privateKey)).publicKey.toBase64()
                 logger.debug("Requesting WireGuard connect for $hostname")
-                val wgConnectResponse = getWireGuardLANIPFromPublicKey(userPublicKey)
-                when (wgConnectResponse) {
+                when (val wgConnectResponse = wgConnect(hostname, userPublicKey)) {
                     is CallResult.Success -> {
                         createRemoteParams(
                             wgInitResponse.data,
@@ -137,25 +134,6 @@ class WgConfigRepository(
                 wgInitResponse
             }
         }
-    }
-
-    private fun getWireGuardLANIPFromPublicKey(wgPublicKey: String): CallResult<WgConnectConfig>{
-        val pub: ByteArray = try {
-            Base64.decode(wgPublicKey, Base64.DEFAULT)
-        } catch (e: IllegalArgumentException) {
-            logger.error("Invalid base64 public key: $wgPublicKey", e)
-            return CallResult.Error(errorMessage = "Failed to decode base64 public key: $wgPublicKey")
-        }
-        val digest = MessageDigest.getInstance("SHA-256").digest(pub)
-        val v = ((digest[0].toInt() and 0xFF) shl 24) or
-                ((digest[1].toInt() and 0xFF) shl 16) or
-                ((digest[2].toInt() and 0xFF) shl 8) or
-                (digest[3].toInt() and 0xFF)
-        val maskedV = v and 0x003FFFFF
-        val octet2 = 64 or ((maskedV shr 16) and 0xFF)
-        val octet3 = (maskedV shr 8) and 0xFF
-        val octet4 = maskedV and 0xFF
-        return CallResult.Success(WgConnectConfig("100.$octet2.$octet3.$octet4", "10.255.255.1"))
     }
 
     /// Validates user account status
@@ -183,6 +161,51 @@ class WgConfigRepository(
         }
     }
 
+    /// Pulls second half of wireguard configuration(Address, DNS)
+    private suspend fun wgConnect(
+        hostname: String,
+        userPublicKey: String
+    ): CallResult<WgConnectConfig> {
+        val deviceId = getDeviceIdForStaticIp()
+
+        // Initial delay
+        delay(100)
+
+        // Try wgConnect with retry logic
+        var response = apiManager.wgConnect(userPublicKey, hostname, deviceId)
+        if (response.errorClass?.errorCode == ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP) {
+            logger.debug("Retrying WireGuard connect - Error: Unable to select WireGuard IP")
+            response = apiManager.wgConnect(userPublicKey, hostname, deviceId)
+        }
+
+        val callResult = result<WgConnectResponse> {
+            response
+        }
+
+        return when (callResult) {
+            is CallResult.Success -> CallResult.Success(callResult.data.config)
+            is CallResult.Error -> callResult
+        }
+    }
+
+    /// Generates device id for static ip
+    private fun getDeviceIdForStaticIp(): String {
+        return if (preferenceHelper.isConnectingToStaticIp) {
+            runCatching {
+                preferenceHelper.getDeviceUUID()
+                    ?: throw Exception("Failed to get device UUID")
+            }.getOrElse { exception ->
+                logger.debug("Error getting device UUID: ${exception.message}")
+                ""
+            }.also { deviceId ->
+                if (deviceId.isNotEmpty()) {
+                    logger.debug("Adding device ID to WireGuard connect: $deviceId")
+                }
+            }
+        } else {
+            ""
+        }
+    }
     private fun createRemoteParams(
         localParams: WgLocalParams,
         serverPublicKey: String,

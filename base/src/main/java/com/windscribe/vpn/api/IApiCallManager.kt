@@ -102,6 +102,11 @@ interface IApiCallManager {
         deleteOldestKey: Boolean
     ): GenericResponseClass<WgInitResponse?, ApiErrorResponse?>
 
+    suspend fun wgConnect(
+        clientPublicKey: String,
+        hostname: String,
+        deviceId: String
+    ): GenericResponseClass<WgConnectResponse?, ApiErrorResponse?>
     suspend fun sendDecoyTraffic(
         url: String,
         data: String,
