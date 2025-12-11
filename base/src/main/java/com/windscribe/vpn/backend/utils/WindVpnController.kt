@@ -159,7 +159,7 @@ open class WindVpnController @Inject constructor(
             logger.debug("Forcing node to {}", nodes[forcedNodeIndex])
             randomIndex = forcedNodeIndex
         }
-        val selectedNode: Node = pinnedNode ?: nodes[randomIndex]
+        val selectedNode: Node = if(pinnedNode != null && attempt == 0) pinnedNode else nodes[randomIndex]
         logger.debug("{}", selectedNode)
         lastUsedRandomIndex = randomIndex
         val coordinatesArray = city.coordinates.split(",".toRegex()).toTypedArray()
