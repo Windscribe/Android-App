@@ -18,6 +18,7 @@ sealed class Screen(val route: String) {
     object SetupPreferredProtocol : Screen("setup_preferred_protocol")
     object DebugLogSent : Screen("debug_log_sent")
     object AllProtocolFailed : Screen("all_protocol_failed")
+    object ManualModeFailed : Screen("manual_mode_failed")
     object OverlayDialog: Screen("overlay_dialog")
     object MainMenu: Screen("main_menu")
     object General: Screen("general")

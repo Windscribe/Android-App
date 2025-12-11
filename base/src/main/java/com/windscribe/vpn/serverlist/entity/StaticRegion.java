@@ -7,6 +7,7 @@ package com.windscribe.vpn.serverlist.entity;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.room.ColumnInfo;
 import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -89,6 +90,11 @@ public class StaticRegion {
     @SerializedName("status")
     @Expose
     private Integer status;
+
+    @SerializedName("gps")
+    @Expose
+    @ColumnInfo(name = "gps")
+    private String coordinates;
 
     public String getCityName() {
         return cityName;
@@ -227,6 +233,15 @@ public class StaticRegion {
     public Integer getStatus() { return status; }
 
     public void setStatus(@Nullable Integer status) { this.status = status; }
+
+    @Nullable
+    public String getCoordinates() {
+        return coordinates;
+    }
+
+    public void setCoordinates(String coordinates) {
+        this.coordinates = coordinates;
+    }
 
     @NonNull
     @Override

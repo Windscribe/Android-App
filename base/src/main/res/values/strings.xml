@@ -571,4 +571,7 @@ last chosen location.</string>
     <string name="upgrade_to_pro">Upgrade to Pro</string>
     <string name="aggressive_rekeying">Aggressive Rekeying</string>
     <string name="aggressive_rekeying_description">Quantum safe WireGuard PSK rotation on every new server connection</string>
+    <string name="manual_connection_mode_failed_title">Manual connection mode failed</string>
+    <string name="manual_connection_mode_failed_description">We couldn’t connect you on this network. Automatic connection mode recommended for best results. Switch connection mode to Auto?</string>
+    <string name="switch_to_auto">Switch to Auto</string>
 </resources>

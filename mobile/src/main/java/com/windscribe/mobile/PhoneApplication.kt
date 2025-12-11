@@ -53,6 +53,7 @@ class PhoneApplication : Windscribe(), Windscribe.ApplicationInterface {
                     FragmentType.SetupAsPreferredProtocol -> activity.navController.navigate(Screen.SetupPreferredProtocol.route)
                     FragmentType.DebugLogSent -> activity.navController.navigate(Screen.DebugLogSent.route)
                     FragmentType.AllProtocolFailed -> activity.navController.navigate(Screen.AllProtocolFailed.route)
+                    FragmentType.ManualModeFailed -> activity.navController.navigate(Screen.ManualModeFailed.route)
                 }
             }
             return true

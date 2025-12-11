@@ -30,6 +30,7 @@ import com.windscribe.mobile.ui.connection.BridgeApiViewModel
 import com.windscribe.mobile.ui.connection.ConnectionChangeScreen
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.connection.DebugLogSentScreen
+import com.windscribe.mobile.ui.connection.ManualModeFailedScreen
 import com.windscribe.mobile.ui.connection.SetupPreferredProtocolScreen
 import com.windscribe.mobile.ui.home.HomeScreen
 import com.windscribe.mobile.ui.home.HomeViewmodel
@@ -304,6 +305,10 @@ private fun NavGraphBuilder.addNavigationScreens() {
     composable(route = Screen.AllProtocolFailed.route) {
         val activity = LocalContext.current as AppStartActivity
         AllProtocolFailedScreen(appStartActivityViewModel = activity.viewmodel)
+    }
+    composable(route = Screen.ManualModeFailed.route) {
+        val activity = LocalContext.current as AppStartActivity
+        ManualModeFailedScreen(appStartActivityViewModel = activity.viewmodel)
     }
     composable(route = Screen.OverlayDialog.route) {
         val activity = LocalContext.current as AppStartActivity

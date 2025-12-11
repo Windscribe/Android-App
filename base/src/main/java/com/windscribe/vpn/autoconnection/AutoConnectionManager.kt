@@ -59,7 +59,6 @@ class AutoConnectionManager(
     private val logger = LoggerFactory.getLogger("vpn")
     var listOfProtocols = ThreadSafeList<ProtocolInformation>()
     private var manualProtocol: ProtocolInformation? = null
-    private var lastKnownProtocolInformation: Pair<String, ProtocolInformation>? = null
     private var preferredProtocol: Pair<String, ProtocolInformation?>? = null
     private val _nextInLineProtocol = MutableStateFlow(listOfProtocols.firstOrNull())
     val nextInLineProtocol: StateFlow<ProtocolInformation?> = _nextInLineProtocol
@@ -130,7 +129,7 @@ class AutoConnectionManager(
                 protocolInformation = protocolInformation,
                 attempt = attempt
             )
-            vpnConnectionStateManager.get().state
+            val vpnState = vpnConnectionStateManager.get().state
                 .first {
                     if (it.connectionId == newConnectionId) {
                         if (it.error?.error == VPNState.ErrorType.AuthenticationError) {
@@ -164,6 +163,27 @@ class AutoConnectionManager(
                         false
                     }
                 }
+
+            // Check if we should retry with different node (only in auto mode)
+            val isAutoMode = preferencesHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY) == PreferencesKeyConstants.CONNECTION_MODE_AUTO
+            val shouldRetryNode = attempt == 0 &&
+                isAutoMode &&
+                vpnState.error?.error in listOf(
+                    VPNState.ErrorType.TimeoutError,
+                    VPNState.ErrorType.ConnectivityTestFailed,
+                    VPNState.ErrorType.AuthenticationError
+                ) &&
+                vpnState.status == VPNState.Status.Disconnected
+
+            if (shouldRetryNode) {
+                logger.info("Retrying with different node for error: ${vpnState.error?.error}")
+                return@runBlocking connectionAttempt(
+                    attempt = 1,
+                    protocolInformation = protocolInformation
+                )
+            }
+
+            vpnState
         }
     }
 
@@ -189,10 +209,22 @@ class AutoConnectionManager(
             stop()
         }
         if (isEnabled) {
-            logger.debug("Engaging auto connect.")
-            listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.type =
-                ProtocolConnectionStatus.Failed
-            engageAutomaticMode()
+            // Check if we should show manual mode failure dialog for specific errors
+            val shouldShowManualModeDialog = connectionResult.error?.error in listOf(
+                VPNState.ErrorType.TimeoutError,
+                VPNState.ErrorType.ConnectivityTestFailed,
+                VPNState.ErrorType.AuthenticationError
+            ) && preferencesHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY) != PreferencesKeyConstants.CONNECTION_MODE_AUTO
+
+            if (shouldShowManualModeDialog) {
+                logger.debug("Manual mode connection failed. Showing switch to auto dialog.")
+                showManualModeFailedDialog()
+            } else {
+                logger.debug("Engaging auto connect.")
+                listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.type =
+                    ProtocolConnectionStatus.Failed
+                engageAutomaticMode()
+            }
         }
     }
 
@@ -234,11 +266,6 @@ class AutoConnectionManager(
         networkInfoManager.networkInfo?.let {
             setupPreferredProtocol(it, appSupportedProtocolOrder)
         }
-        if (preferredProtocol?.second != null) {
-            lastKnownProtocolInformation?.let {
-                appSupportedProtocolOrder = moveProtocolToTop(it.second, appSupportedProtocolOrder)
-            }
-        }
         manualProtocol?.let {
             appSupportedProtocolOrder = moveProtocolToTop(it, appSupportedProtocolOrder)
         }
@@ -249,7 +276,7 @@ class AutoConnectionManager(
             .forEachIterable { it.type = ProtocolConnectionStatus.Disconnected }
         appSupportedProtocolOrder[0].type = ProtocolConnectionStatus.NextUp
         val protocolLog =
-            "Last known: ${lastKnownProtocolInformation ?: ""} Preferred: ${preferredProtocol ?: ""} Manual: ${manualProtocol ?: ""}"
+            "Preferred: ${preferredProtocol ?: ""} Manual: ${manualProtocol ?: ""}"
         if (protocolLog != lastProtocolLog) {
             logger.info(protocolLog)
         }
@@ -332,7 +359,6 @@ class AutoConnectionManager(
                 )
             } else {
                 logger.debug("Showing all protocol failed dialog.")
-                lastKnownProtocolInformation = null
                 reset()
                 showAllProtocolFailedDialog()
             }
@@ -461,7 +487,6 @@ class AutoConnectionManager(
         }
         val netWorkName = networkInfoManager.networkInfo?.networkName
         if (netWorkName != null) {
-            lastKnownProtocolInformation = Pair(netWorkName, protocolInformation)
             logger.debug("Showing set as preferred protocol dialog.")
             val launched = appContext.applicationInterface.launchFragment(
                 emptyList(),
@@ -639,6 +664,37 @@ class AutoConnectionManager(
             preferencesHelper.selectedPort = protocolInformation.port
             preferencesHelper.selectedProtocolType = protocolInformation.type
             _connectedProtocol.emit(protocolInformation)
+        }
+    }
+
+    private fun showManualModeFailedDialog() {
+        val launched = appContext.applicationInterface.launchFragment(
+            emptyList(),
+            FragmentType.ManualModeFailed,
+            autoConnectionModeCallback = object : AutoConnectionModeCallback {
+                override fun onCancel() {
+                    logger.debug("User cancelled manual mode switch. Stopping auto connect.")
+                    stop()
+                }
+
+                override fun onSwitchToAutoMode() {
+                    logger.debug("User switched to auto mode.")
+                    // Switch to auto mode
+                    preferencesHelper.saveResponseStringData(
+                        PreferencesKeyConstants.CONNECTION_MODE_KEY,
+                        PreferencesKeyConstants.CONNECTION_MODE_AUTO
+                    )
+                    reset()
+                    listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.type =
+                        ProtocolConnectionStatus.Failed
+                    scope.launch {
+                        connectInForeground()
+                    }
+                }
+            })
+        if (launched.not()) {
+            logger.debug("App is in background. Stopping auto connect.")
+            stop()
         }
     }
 
