@@ -192,33 +192,33 @@ object Util {
 
     fun getAppSupportedProtocolList(suggestedProtocol: Pair<String, String>? = null): ThreadSafeList<ProtocolInformation> {
         val protocol1 = ProtocolInformation(
-            PreferencesKeyConstants.PROTO_WIRE_GUARD,
-            PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT,
-            appContext.getString(R.string.Wireguard_description),
-            ProtocolConnectionStatus.Disconnected
-        )
-        val protocol2 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_IKev2,
             PreferencesKeyConstants.DEFAULT_IKEV2_PORT,
             appContext.getString(R.string.iKEV2_description),
             ProtocolConnectionStatus.Disconnected
         )
-        val protocol3 = ProtocolInformation(
+        val protocol2 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_UDP,
             PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT,
             appContext.getString(R.string.Udp_description),
             ProtocolConnectionStatus.Disconnected
         )
-        val protocol4 = ProtocolInformation(
+        val protocol3 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_TCP,
             PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT,
             appContext.getString(R.string.Tcp_description),
             ProtocolConnectionStatus.Disconnected
         )
-        val protocol5 = ProtocolInformation(
+        val protocol4 = ProtocolInformation(
             PreferencesKeyConstants.PROTO_STEALTH,
             PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT,
             appContext.getString(R.string.Stealth_description),
+            ProtocolConnectionStatus.Disconnected
+        )
+        val protocol5 = ProtocolInformation(
+            PreferencesKeyConstants.PROTO_WIRE_GUARD,
+            PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT,
+            appContext.getString(R.string.Wireguard_description),
             ProtocolConnectionStatus.Disconnected
         )
         val protocol6 = ProtocolInformation(
