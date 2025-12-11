@@ -350,6 +350,10 @@ class WelcomeActivity :
         email: String?,
         isSignup: Boolean
     ) {
+        // Dismiss any existing captcha dialog first
+        val existingDialog = supportFragmentManager.findFragmentByTag("CaptchaDialog") as? CaptchaFragment
+        existingDialog?.dismiss()
+
         val dialog = CaptchaFragment.newInstance(
             username,
             password,
