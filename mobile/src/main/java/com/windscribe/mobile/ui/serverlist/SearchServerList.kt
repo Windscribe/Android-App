@@ -326,6 +326,7 @@ private fun SearchListNavigation(viewModel: ServerViewModel, homeViewmodel: Home
                 painter = painterResource(R.drawable.ic_search_location_close),
                 contentDescription = "Search",
                 modifier = Modifier.hapticClickable() {
+                    viewModel.clearSearch()
                     viewModel.toggleSearch()
                 },
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor)
