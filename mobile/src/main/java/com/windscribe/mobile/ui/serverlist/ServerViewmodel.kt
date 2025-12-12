@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.serverlist
 
+import android.icu.text.LocaleDisplayNames.UiListItem.getComparator
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -69,6 +70,7 @@ abstract class ServerViewModel : ViewModel() {
     abstract fun deleteFavourite(id: Int)
     abstract fun toggleSearch()
     abstract fun onQueryTextChange(query: String)
+    abstract fun clearSearch()
     abstract fun onExpandStateChanged(id: String, expanded: Boolean)
     abstract fun refresh(serverListType: ServerListType)
 }
@@ -449,6 +451,10 @@ class ServerViewModelImpl(
                 HashMap(searchItems.associate { it.region.name to true })
             _searchListState.emit(ListState.Success(searchItems))
         }
+    }
+
+    override fun clearSearch() {
+        _searchKeyword.value = ""
     }
 
     private fun ServerListItem.filterIfContains(keyword: String): ServerListItem? {
