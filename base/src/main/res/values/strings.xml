@@ -507,7 +507,7 @@ last chosen location.</string>
     <string name="voucher_code_is_applied">Voucher code is applied successfully.</string>
     <string name="voucher_code_is_invalid">Voucher provided is invalid or expired.</string>
     <string name="confirmed_email_required">Confirmed email is required.</string>
-    <string name="voucher_code_used_already">A voucher is already applied to this account or this voucher code is already used.</string>
+    <string name="voucher_code_used_already">A voucher is already applied to this account or the code is already used.</string>
     <string name="power_whitelist_title">Disable Battery Optimization</string>
     <string name="power_whitelist_summary">To maintain a stable connection, please remove Windscribe from battery optimization settings. This ensures uninterrupted service for IKEv2 connections.</string>
     <string name="never_aks_again_for_permission">Don’t ask again</string>
