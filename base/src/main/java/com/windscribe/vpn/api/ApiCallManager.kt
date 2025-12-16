@@ -74,10 +74,10 @@ open class ApiCallManager @Inject constructor(
         }
     }
 
-    override suspend fun checkConnectivityAndIpAddress(): GenericResponseClass<GetMyIpResponse?, ApiErrorResponse?> {
+    override suspend fun getIp(): GenericResponseClass<String?, ApiErrorResponse?> {
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.myIP { code, json ->
-                buildResponse(continuation, code, json, GetMyIpResponse::class.java)
+            val callback =wsNetServerAPI.pingTest(5000) { code, json ->
+                buildResponse(continuation, code, json, String::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
         }

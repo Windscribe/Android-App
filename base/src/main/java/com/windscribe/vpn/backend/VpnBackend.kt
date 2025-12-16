@@ -194,14 +194,14 @@ abstract class VpnBackend(
                         attemptCount++
                         vpnLogger.info("Connectivity test attempt: $attemptCount/$maxAttempts")
 
-                        val result = result<GetMyIpResponse> {
-                            apiManager.checkConnectivityAndIpAddress()
+                        val result = result<String> {
+                            apiManager.getIp()
                         }
 
                         when (result) {
                             is CallResult.Success -> {
-                                val userIp = result.data.userIp
-                                if (userIp != null && Util.validIpAddress(userIp)) {
+                                val userIp = result.data
+                                if (Util.validIpAddress(userIp)) {
                                     val ipAddress = Util.getModifiedIpAddress(userIp.trim())
                                     preferencesHelper.saveResponseStringData(
                                         PreferencesKeyConstants.USER_IP,
