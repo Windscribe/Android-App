@@ -84,7 +84,7 @@ fun SetupPreferredProtocolScreen(appStartActivityViewModel: AppStartActivityView
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
             Spacer(modifier = Modifier.padding(top = 24.dp))
-            NextButton(Modifier, text = stringResource(com.windscribe.vpn.R.string.set_as_preferred), enabled = !isNavigating) {
+            NextButton(Modifier, text = stringResource(com.windscribe.vpn.R.string.set_as_preferred), enabled = true) {
                 if (!isNavigating) {
                     isNavigating = true
                     appStartActivityViewModel.autoConnectionModeCallback?.onSetAsPreferredClicked()
