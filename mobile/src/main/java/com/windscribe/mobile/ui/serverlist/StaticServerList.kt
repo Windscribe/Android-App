@@ -57,6 +57,7 @@ import com.windscribe.mobile.ui.theme.expandedServerItemTextColor
 import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import coil.compose.AsyncImagePainter.State.Empty.painter
 import kotlin.collections.set
 
 
@@ -149,11 +150,6 @@ private fun ListItemView(
             (latencyState as ListState.Success).data.find { it.id == item.id }?.time ?: -1
         } else -1
     )
-    val staticIcon = if (item.staticItem.status == 0) {
-        R.drawable.ic_under_construction
-    } else {
-        R.drawable.ic_location_static
-    }
     val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = Modifier
@@ -168,12 +164,23 @@ private fun ListItemView(
             .padding(start = 8.dp, end = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(staticIcon),
-            contentDescription = "Static IP icon.",
-            modifier = Modifier.size(24.dp),
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor)
-        )
+        if (item.staticItem.status == 0) {
+            Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
+                Image(
+                    painter = painterResource( R.drawable.ic_under_construction),
+                    contentDescription = "Static IP icon.",
+                    modifier = Modifier.size(16.dp),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor)
+                )
+            }
+        } else {
+            Image(
+                painter = painterResource( R.drawable.ic_location_static),
+                contentDescription = "Static IP icon.",
+                modifier = Modifier.size(24.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor)
+            )
+        }
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             ServerNodeName(item.staticItem.cityName, Modifier.padding(0.dp))
