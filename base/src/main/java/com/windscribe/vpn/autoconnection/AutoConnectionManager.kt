@@ -519,13 +519,9 @@ class AutoConnectionManager(
             it.port = protocolInformation.port
             it.isPreferredOn = true
             it.isAutoSecureOn = true
-            if (isEnabled) {
-                continuation?.let { c ->
-                    CoroutineScope(c.context).launch {
-                        localDbInterface.updateNetworkSync(it)
-                        logger.debug("Saved ${protocolInformation.protocol}:${protocolInformation.port} for SSID: ${it.networkName}")
-                    }
-                }
+            scope.launch {
+                localDbInterface.updateNetworkSync(it)
+                logger.debug("Saved ${protocolInformation.protocol}:${protocolInformation.port} for SSID: ${it.networkName}")
             }
             stop()
         } ?: kotlin.run {
