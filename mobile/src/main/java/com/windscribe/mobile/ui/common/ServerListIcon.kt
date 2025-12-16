@@ -1,11 +1,13 @@
 package com.windscribe.mobile.ui.common
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
@@ -29,12 +31,14 @@ fun ServerListIcon(city: City, userState: UserState, angle: Float, color: androi
             iconModifier = Modifier
         )
     } else if (!city.isEnabled(userState is UserState.Pro)) {
-        Image(
-            painter = painterResource(R.drawable.ic_under_construction),
-            contentDescription = "Pro",
-            modifier = Modifier.size(16.dp),
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor)
-        )
+        Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
+            Image(
+                painter = painterResource(R.drawable.ic_under_construction),
+                contentDescription = "Pro",
+                modifier = Modifier.size(15.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.expandedServerItemTextColor)
+            )
+        }
     } else if (city.linkSpeed == "10000") {
         SubLocationSplitBorderCircle(
             firstSectionAngle = angle,

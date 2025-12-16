@@ -691,7 +691,7 @@ class ConnectionViewmodelImpl @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val eligibleToConnect = checkEligibility(1, true, 1)
+                val eligibleToConnect = checkEligibility(1, true, staticRegion.status ?: 1)
                 if (eligibleToConnect) {
                     preferences.globalUserConnectionPreference = true
                     preferences.setConnectingToStaticIP(true)
@@ -806,7 +806,7 @@ class ConnectionViewmodelImpl @Inject constructor(
         if (networkInfo is NetworkInfoState.Unsecured && preferences.whiteListedNetwork != null) {
             preferences.whiteListedNetwork = networkInfo.name
         }
-        if (serverStatus == NetworkKeyConstants.SERVER_STATUS_TEMPORARILY_UNAVAILABLE) {
+        if (serverStatus == NetworkKeyConstants.SERVER_STATUS_TEMPORARILY_UNAVAILABLE || (isStaticIp && serverStatus == 0)) {
             logger.info("Error: Server is temporary unavailable.")
             showToast("Location temporary unavailable.")
             viewModelScope.launch {
