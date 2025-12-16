@@ -222,7 +222,7 @@ public class UpgradeActivity extends BaseActivity
                 try {
                     double originalPrice = Double.parseDouble(originalPriceStr);
                     double localFullPrice = exchangeRateWithCurrency.getSecond() * originalPrice;
-                    String formattedPrice = String.format(Locale.getDefault(), "%.2f", localFullPrice);
+                    String formattedPrice = String.format(Locale.US, "%.2f", localFullPrice);
                     String currency = exchangeRateWithCurrency.getFirst();
                     SpannableString originalPriceSpan = new SpannableString(currency + " " + formattedPrice);
                     originalPriceSpan.setSpan(new StrikethroughSpan(), 0, originalPriceSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -266,7 +266,7 @@ public class UpgradeActivity extends BaseActivity
                 try {
                     double originalPrice = Double.parseDouble(originalPriceStr);
                     double localFullPrice = exchangeRateWithCurrency.getSecond() * originalPrice;
-                    String formattedPrice = String.format(Locale.getDefault(), "%.2f", localFullPrice);
+                    String formattedPrice = String.format(Locale.US, "%.2f", localFullPrice);
                     String currency = exchangeRateWithCurrency.getFirst();
                     SpannableString originalPriceSpan = new SpannableString(currency + " " + formattedPrice);
                     originalPriceSpan.setSpan(new StrikethroughSpan(), 0, originalPriceSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
