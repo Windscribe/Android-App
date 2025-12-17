@@ -771,8 +771,8 @@ open class BaseApplicationModule {
             appContext.resources.configuration.locale.language.substring(0..1)
         }
         WSNet.initialize(
-            "android",
-            "android",
+            getPlatformName(),
+            getPlatformName(),
             WindUtilities.getVersionName(),
             preferencesHelper.getDeviceUUID() ?: "",
             "2.6.0",
@@ -797,6 +797,13 @@ open class BaseApplicationModule {
         return WSNet.instance()
     }
 
+    private fun getPlatformName(): String {
+        return if (appContext.applicationInterface.isTV) {
+            "android-tv"
+        } else {
+            "android"
+        }
+    }
     @Provides
     @Singleton
     fun providesDynamicShortcutManager(
