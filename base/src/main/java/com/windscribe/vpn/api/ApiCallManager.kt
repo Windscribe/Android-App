@@ -563,6 +563,15 @@ open class ApiCallManager @Inject constructor(
         }
     }
 
+    override suspend fun passwordRecovery(email: String?): GenericResponseClass<GenericSuccess?, ApiErrorResponse?> {
+        return suspendCancellableCoroutine { continuation ->
+            val callback = wsNetServerAPI.passwordRecovery(email) { code, json ->
+                buildResponse(continuation, code, json, GenericSuccess::class.java)
+            }
+            continuation.invokeOnCancellation { callback.cancel() }
+        }
+    }
+
     private fun checkSession() {
         if (preferencesHelper.sessionHash == null) {
             throw WindScribeException("User is not logged In.")

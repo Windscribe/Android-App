@@ -104,6 +104,7 @@ class AppStartViewModelImpl @Inject constructor(
 
     private fun handleSuccessfulSsoLogin(sessionAuthHash: String) {
         preferencesHelper.sessionHash = sessionAuthHash
+        preferencesHelper.isSsoLogin = true
         firebaseManager.getFirebaseToken { firebaseToken ->
             viewModelScope.launch(Dispatchers.IO) {
                 userRepository.prepareDashboard(firebaseToken).collect {
