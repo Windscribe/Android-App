@@ -198,7 +198,7 @@ class ComposeModule {
                 } else if (modelClass.isAssignableFrom(GeneralViewModel::class.java)) {
                     return GeneralViewModelImpl(appPreferenceHelper, userRepository) as T
                 } else if (modelClass.isAssignableFrom(AccountViewModel::class.java)) {
-                    return AccountViewModelImpl(userRepository, apiCallManager, workManager) as T
+                    return AccountViewModelImpl(userRepository, apiCallManager, workManager, appPreferenceHelper) as T
                 } else if (modelClass.isAssignableFrom(ConnectionViewModel::class.java)) {
                     return ConnectionViewModelImpl(preferencesHelper = appPreferenceHelper, api = apiCallManager, autoConnectionManager, vpnConnectionStateManager, proxyDNSManager, decoyTrafficController, portMapRepository) as T
                 } else if (modelClass.isAssignableFrom(RobertViewModel::class.java)) {

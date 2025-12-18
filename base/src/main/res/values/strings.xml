@@ -574,4 +574,6 @@ last chosen location.</string>
     <string name="manual_connection_mode_failed_title">Manual connection mode failed</string>
     <string name="manual_connection_mode_failed_description">We couldn’t connect you on this network. Automatic connection mode recommended for best results. Switch connection mode to Auto?</string>
     <string name="switch_to_auto">Switch to Auto</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="password_reset_email_sent">If you provided an email during registration, you will get a password reset link shortly. Be sure to check your Spam folder.</string>
 </resources>

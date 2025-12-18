@@ -63,6 +63,8 @@ import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
+import com.windscribe.mobile.ui.popup.FullScreenDialogState
+import com.windscribe.mobile.ui.popup.HandleFullScreenDialog
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.backgroundColor
 import com.windscribe.mobile.ui.theme.font12
@@ -110,6 +112,13 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
                 Spacer(modifier = Modifier.height(14.dp))
                 ActionButton(stringResource(R.string.edit_account)) {
                     viewModel?.onManageAccountClicked()
+                }
+                val isSsoLogin by viewModel?.isSsoLogin?.collectAsState() ?: remember { mutableStateOf(false) }
+                if (isSsoLogin) {
+                    Spacer(modifier = Modifier.height(14.dp))
+                    ActionButton(stringResource(R.string.reset_password)) {
+                        viewModel?.onResetPasswordClicked()
+                    }
                 }
                 Spacer(modifier = Modifier.height(14.dp))
                 Text(
@@ -168,26 +177,28 @@ private fun HandleAlertState(viewModel: AccountViewModel?) {
     }
     var showVoucherDialog by remember { mutableStateOf(false) }
     var showLazyLoginDialog by remember { mutableStateOf(false) }
+    var fullScreenDialogState by remember { mutableStateOf<FullScreenDialogState>(FullScreenDialogState.None) }
+
     LaunchedEffect(alertState) {
         when (alertState) {
             is AlertState.Error -> {
                 val result = (alertState as AlertState.Error).message
-                if (result is ToastMessage.Raw) {
-                    Toast.makeText(activity, result.message, Toast.LENGTH_SHORT).show()
+                val message = when (result) {
+                    is ToastMessage.Raw -> result.message
+                    is ToastMessage.Localized -> activity?.getString(result.message) ?: ""
+                    else -> ""
                 }
-                if (result is ToastMessage.Localized) {
-                    Toast.makeText(activity, result.message, Toast.LENGTH_SHORT).show()
-                }
+                fullScreenDialogState = FullScreenDialogState.Error(message)
             }
 
             is AlertState.Success -> {
                 val result = (alertState as AlertState.Success).message
-                if (result is ToastMessage.Raw) {
-                    Toast.makeText(activity, result.message, Toast.LENGTH_SHORT).show()
+                val message = when (result) {
+                    is ToastMessage.Raw -> result.message
+                    is ToastMessage.Localized -> activity?.getString(result.message) ?: ""
+                    else -> ""
                 }
-                if (result is ToastMessage.Localized) {
-                    Toast.makeText(activity, result.message, Toast.LENGTH_SHORT).show()
-                }
+                fullScreenDialogState = FullScreenDialogState.Success(message)
             }
 
             is AlertState.LazyLogin -> {
@@ -201,6 +212,15 @@ private fun HandleAlertState(viewModel: AccountViewModel?) {
             else -> {}
         }
     }
+
+    HandleFullScreenDialog(
+        state = fullScreenDialogState,
+        onDismiss = {
+            fullScreenDialogState = FullScreenDialogState.None
+            viewModel?.onDialogDismiss()
+        }
+    )
+
     if (showVoucherDialog) {
         TextFieldDialog(onDismiss = {
             showVoucherDialog = false
@@ -807,6 +827,7 @@ private fun AccountScreenPreview(accountState: AccountState) {
             override val accountState: StateFlow<AccountState> = MutableStateFlow(accountState)
             override val alertState: StateFlow<AlertState> = MutableStateFlow(AlertState.None)
             override val isGhostAccount: StateFlow<Boolean> = MutableStateFlow(false)
+            override val isSsoLogin: StateFlow<Boolean> = MutableStateFlow(false)
         }
         AccountScreen(viewModel)
     }

@@ -800,4 +800,9 @@ class AppPreferenceHelper(
         set(value) {
             preference.put(PreferencesKeyConstants.CONNECTED_CUSTOM_SOUND, value)
         }
+    override var isSsoLogin: Boolean
+        get() = preference.getBoolean(PreferencesKeyConstants.IS_SSO_LOGIN, false)
+        set(value) {
+            preference.put(PreferencesKeyConstants.IS_SSO_LOGIN, value)
+        }
 }

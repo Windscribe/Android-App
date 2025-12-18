@@ -9,6 +9,7 @@ import com.windscribe.mobile.ui.preferences.account.EmailState.NoEmail
 import com.windscribe.mobile.ui.preferences.account.EmailState.UnconfirmedEmail
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.ClaimVoucherCodeResponse
+import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.api.response.VerifyExpressLoginResponse
 import com.windscribe.vpn.api.response.WebSession
@@ -89,8 +90,10 @@ abstract class AccountViewModel : ViewModel() {
     abstract val accountState: StateFlow<AccountState>
     abstract val alertState: StateFlow<AlertState>
     abstract val isGhostAccount: StateFlow<Boolean>
+    abstract val isSsoLogin: StateFlow<Boolean>
     open val goTo: SharedFlow<AccountGoTo> = MutableSharedFlow(replay = 0)
     open fun onManageAccountClicked() {}
+    open fun onResetPasswordClicked() {}
     open fun onLazyLoginClicked() {}
     open fun onVoucherCodeClicked() {}
     open fun onEnterLazyLoginCode(code: String) {}
@@ -101,7 +104,8 @@ abstract class AccountViewModel : ViewModel() {
 class AccountViewModelImpl(
     val userRepository: UserRepository,
     val api: IApiCallManager,
-    val workManager: WindScribeWorkManager
+    val workManager: WindScribeWorkManager,
+    val preferencesHelper: com.windscribe.vpn.apppreference.PreferencesHelper
 ) :
     AccountViewModel() {
     private val _showProgress = MutableStateFlow(false)
@@ -113,10 +117,13 @@ class AccountViewModelImpl(
     private val logger = LoggerFactory.getLogger("basic")
     private val _isGhostAccount = MutableStateFlow(false)
     override val isGhostAccount: StateFlow<Boolean> = _isGhostAccount
+    private val _isSsoLogin = MutableStateFlow(false)
+    override val isSsoLogin: StateFlow<Boolean> = _isSsoLogin
 
 
     init {
         loadAccountInfo()
+        _isSsoLogin.value = preferencesHelper.isSsoLogin
     }
 
     private fun loadAccountInfo() {
@@ -181,6 +188,31 @@ class AccountViewModelImpl(
                 }
                 is CallResult.Success<WebSession> -> {
                     _goTo.emit(AccountGoTo.ManageAccount("${NetworkKeyConstants.URL_MY_ACCOUNT}${result.data.tempSession}"))
+                }
+            }
+        }
+    }
+
+    override fun onResetPasswordClicked() {
+        viewModelScope.launch {
+            val state = accountState.value.emailState
+            if (state is NoEmail || state is UnconfirmedEmail) {
+                _alertState.emit(AlertState.Success(ToastMessage.Raw("No confirmed email added.")))
+                return@launch
+            }
+            _showProgress.value = true
+            val result = withContext(Dispatchers.IO) {
+                result<GenericSuccess> { api.passwordRecovery((state as Email).email)}
+            }
+            _showProgress.value = false
+            when (result) {
+                is CallResult.Error -> {
+                    _alertState.emit(AlertState.Error(ToastMessage.Raw(result.errorMessage)))
+                }
+                is CallResult.Success<GenericSuccess> -> {
+                    preferencesHelper.isSsoLogin = false
+                    _isSsoLogin.value = false
+                    _alertState.emit(AlertState.Success(ToastMessage.Localized(com.windscribe.vpn.R.string.password_reset_email_sent)))
                 }
             }
         }
