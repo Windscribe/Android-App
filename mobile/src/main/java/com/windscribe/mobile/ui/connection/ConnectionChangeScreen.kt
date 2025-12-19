@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -50,6 +51,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun ConnectionChangeScreen(appStartActivityViewModel: AppStartActivityViewModel? = null, protocolFailed: Boolean) {
     val navController = LocalNavController.current
+    var isNavigating by remember { mutableStateOf(false) }
     val lazyListState = rememberLazyListState()
     val icon = if (protocolFailed) {
         R.drawable.ic_attention_icon
@@ -69,12 +71,13 @@ fun ConnectionChangeScreen(appStartActivityViewModel: AppStartActivityViewModel?
     var countdown by remember { mutableIntStateOf(10) }
     LaunchedEffect(protocolFailed) {
         if (protocolFailed) {
-            while (countdown > 0) {
+            while (countdown > 0 && !isNavigating) {
                 delay(1000)
                 countdown--
             }
             val nextUpProtocol = appStartActivityViewModel?.protocolInformationList?.firstOrNull()
-            if (nextUpProtocol != null) {
+            if (nextUpProtocol != null && !isNavigating) {
+                isNavigating = true
                 appStartActivityViewModel.autoConnectionModeCallback?.onProtocolSelect(nextUpProtocol)
                 navController.popBackStack()
             }
@@ -123,15 +126,24 @@ fun ConnectionChangeScreen(appStartActivityViewModel: AppStartActivityViewModel?
             Spacer(modifier = Modifier.padding(top = 8.dp))
             for (i in appStartActivityViewModel?.protocolInformationList ?: emptyList()) {
                 ProtocolItemView(timeleft = countdown, i, onSelected = {
-                    appStartActivityViewModel?.autoConnectionModeCallback?.onProtocolSelect(i)
-                    navController.popBackStack()
+                    if (!isNavigating) {
+                        isNavigating = true
+                        appStartActivityViewModel?.autoConnectionModeCallback?.onProtocolSelect(i)
+                        navController.popBackStack()
+                    }
                 })
             }
 
-            TextButton(onClick = {
-                appStartActivityViewModel?.autoConnectionModeCallback?.onCancel()
-                navController.popBackStack()
-            }) {
+            TextButton(
+                onClick = {
+                    if (!isNavigating) {
+                        isNavigating = true
+                        appStartActivityViewModel?.autoConnectionModeCallback?.onCancel()
+                        navController.popBackStack()
+                    }
+                },
+                enabled = !isNavigating
+            ) {
                 Text(
                     stringResource(com.windscribe.vpn.R.string.cancel),
                     style = font16,
@@ -150,8 +162,11 @@ fun ConnectionChangeScreen(appStartActivityViewModel: AppStartActivityViewModel?
                 .statusBarsPadding()
                 .size(32.dp)
                 .clickable {
-                    appStartActivityViewModel?.autoConnectionModeCallback?.onCancel()
-                    navController.popBackStack()
+                    if (!isNavigating) {
+                        isNavigating = true
+                        appStartActivityViewModel?.autoConnectionModeCallback?.onCancel()
+                        navController.popBackStack()
+                    }
                 },
             colorFilter = ColorFilter.tint(AppColors.white)
         )
