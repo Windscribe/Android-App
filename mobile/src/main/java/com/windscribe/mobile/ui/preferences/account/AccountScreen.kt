@@ -90,6 +90,9 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
             false
         )
     }
+    val accountState by viewModel?.accountState?.collectAsState() ?: remember {
+        mutableStateOf(AccountState.Loading)
+    }
     val scrollState = rememberScrollState()
     PreferenceBackground {
         Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
@@ -114,7 +117,7 @@ fun AccountScreen(viewModel: AccountViewModel? = null) {
                     viewModel?.onManageAccountClicked()
                 }
                 val isSsoLogin by viewModel?.isSsoLogin?.collectAsState() ?: remember { mutableStateOf(false) }
-                if (isSsoLogin) {
+                if (isSsoLogin && accountState.emailState is EmailState.Email) {
                     Spacer(modifier = Modifier.height(14.dp))
                     ActionButton(stringResource(R.string.reset_password)) {
                         viewModel?.onResetPasswordClicked()
