@@ -68,7 +68,7 @@ class LocationRepository @Inject constructor(
     suspend fun getBestLocationAsync(): CityAndRegion {
         val locationId = runCatching { getLowestPingLocation() }
             .getOrElse { getRandomLocation() }
-        return localDbInterface.getCityAndRegion(locationId)
+        return localDbInterface.getCityAndRegion(locationId) ?: throw Exception("Best location not found")
     }
 
     suspend fun updateLocation(): Int {
@@ -184,7 +184,8 @@ class LocationRepository @Inject constructor(
 
     private suspend fun isCityAvailable(id: Int, userPro: Int): Boolean {
         return runCatching {
-            val cityAndRegion = localDbInterface.getCityAndRegion(id)
+            val cityAndRegion = localDbInterface.getCityAndRegion(id) ?: return@runCatching false
+            if (cityAndRegion.region == null) return@runCatching false
             val isLocationPro = cityAndRegion.city.pro == 1
             val isUserPro = userPro == 1
 

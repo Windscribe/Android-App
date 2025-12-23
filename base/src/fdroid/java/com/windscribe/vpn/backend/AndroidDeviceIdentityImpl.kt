@@ -45,7 +45,10 @@ class AndroidDeviceIdentityImpl(): AndroidDeviceIdentity {
 
     private fun setLanIp() {
         try {
-            val interfaces: Enumeration<NetworkInterface> = NetworkInterface.getNetworkInterfaces()
+            val interfaces: Enumeration<NetworkInterface>? = NetworkInterface.getNetworkInterfaces()
+            if (interfaces == null) {
+                return
+            }
             while (interfaces.hasMoreElements()) {
                 val iface: NetworkInterface = interfaces.nextElement()
                 val addresses: Enumeration<InetAddress> = iface.inetAddresses
@@ -57,6 +60,8 @@ class AndroidDeviceIdentityImpl(): AndroidDeviceIdentity {
                 }
             }
         } catch (ignored: SocketException) {
+        } catch (ignored: NullPointerException) {
+            // On some devices, NetworkInterface.getNetworkInterfaces() or childs field can be null
         }
     }
     private fun formatAsHostname(hostName: String): String {

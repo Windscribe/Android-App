@@ -139,7 +139,7 @@ open class WindVpnController @Inject constructor(
     private suspend fun createVpnProfileFromCity(
         selectedCity: Int, config: ProtocolInformation, attempt: Int = 0, hostname: String?
     ): String {
-        val cityAndRegion = localDbInterface.getCityAndRegion(selectedCity)
+        val cityAndRegion = localDbInterface.getCityAndRegion(selectedCity) ?: throw Exception("City not found in database: $selectedCity")
         val city = cityAndRegion.city
         val nodes = city.getNodes()
         val pinnedIp = localDbInterface.getFavouritesAsync().firstOrNull { it.id == selectedCity && it.pinnedNodeIp != null }?.pinnedNodeIp

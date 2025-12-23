@@ -200,6 +200,10 @@ class BridgeApiViewModelImpl @Inject constructor(
             is CallResult.Success -> {
                 try {
                     val city = localdb.getCityAndRegion(selectedCity)
+                    if (city == null) {
+                        logger.error("City not found in database: $selectedCity")
+                        return false
+                    }
                     val nodeIp = preferences.selectedIp
                     localdb.addToFavouritesAsync(Favourite(city.city.id, ip, nodeIp))
                     logger.info("Pin IP request successful: ${result.data} $ip with nodeIp: $nodeIp")

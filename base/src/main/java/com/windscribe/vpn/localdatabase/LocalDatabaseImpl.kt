@@ -188,13 +188,13 @@ class LocalDatabaseImpl @Inject constructor(
         preferenceChangeObserver.postCityServerChange()
     }
 
-    override fun getCityAndRegion(cityId: Int): CityAndRegion {
+    override fun getCityAndRegion(cityId: Int): CityAndRegion? {
         return cityAndRegionDao.getCityAndRegion(cityId)
     }
 
     override fun getCountryCode(cityId: Int): String {
         return runCatching {
-            cityAndRegionDao.getCityAndRegion(cityId).region.countryCode
+            cityAndRegionDao.getCityAndRegion(cityId)?.region?.countryCode ?: ""
         }.getOrDefault("")
     }
 

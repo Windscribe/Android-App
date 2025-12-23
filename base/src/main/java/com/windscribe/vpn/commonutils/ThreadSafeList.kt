@@ -28,7 +28,7 @@ class ThreadSafeList<T> : MutableList<T> {
     }
 
     override fun iterator(): MutableIterator<T> {
-        return synchronized(lock) { list.iterator() }
+        return synchronized(lock) { list.toMutableList().iterator() }
     }
 
     override fun lastIndexOf(element: T): Int {
@@ -52,11 +52,11 @@ class ThreadSafeList<T> : MutableList<T> {
     }
 
     override fun listIterator(): MutableListIterator<T> {
-        return synchronized(lock) { list.listIterator() }
+        return synchronized(lock) { list.toMutableList().listIterator() }
     }
 
     override fun listIterator(index: Int): MutableListIterator<T> {
-        return synchronized(lock) { list.listIterator(index) }
+        return synchronized(lock) { list.toMutableList().listIterator(index) }
     }
 
     override fun removeAll(elements: Collection<T>): Boolean {

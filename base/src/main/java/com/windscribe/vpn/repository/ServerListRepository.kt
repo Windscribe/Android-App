@@ -211,9 +211,10 @@ class ServerListRepository @Inject constructor(
     }
 
     private fun buildLocationsJson(regions: List<RegionAndCities>) {
-        val customLocationData = CustomLocationsData(regions.map { region ->
+        val customLocationData = CustomLocationsData(regions.mapNotNull { region ->
+            if (region.region == null) return@mapNotNull null
             val cities = region.cities.map { CustomCity(it.id, it.nodeName, it.nickName) }
-            return@map CustomRegion(region.region.id, region.region.name, cities)
+            return@mapNotNull CustomRegion(region.region.id, region.region.name, cities)
         })
         _locationJsonToExport.value = Gson().toJson(customLocationData)
     }

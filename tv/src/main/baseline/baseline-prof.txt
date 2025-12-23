@@ -1,0 +1,365 @@
+# Comprehensive Baseline Profile for Windscribe VPN TV App
+# This profile covers all critical startup and navigation paths for Android TV
+# Generated for optimal cold start and 10-foot UI experience
+
+# ============================================================================
+# SECTION 1: APPLICATION & SPLASH STARTUP (Highest Priority)
+# ============================================================================
+
+# Application class - First code executed
+Lcom/windscribe/vpn/Windscribe;
+Lcom/windscribe/vpn/Windscribe;->onCreate()V
+Lcom/windscribe/vpn/Windscribe;->onLowMemory()V
+
+# Dagger dependency injection - Critical for startup
+Lcom/windscribe/vpn/di/ApplicationComponent;
+Lcom/windscribe/vpn/di/DaggerApplicationComponent;
+Lcom/windscribe/vpn/di/DaggerApplicationComponent$Builder;
+Lcom/windscribe/vpn/di/BaseApplicationModule;
+
+# Splash Activity - Entry point for TV app
+Lcom/windscribe/tv/splash/SplashActivity;
+Lcom/windscribe/tv/splash/SplashActivity;->onCreate(Landroid/os/Bundle;)V
+Lcom/windscribe/tv/splash/SplashActivity;->onStart()V
+Lcom/windscribe/tv/splash/SplashPresenter;
+Lcom/windscribe/tv/splash/SplashPresenterImpl;
+
+# Base Activity - Parent for all TV activities
+Lcom/windscribe/tv/base/BaseActivity;
+Lcom/windscribe/tv/base/BaseActivity;->onCreate(Landroid/os/Bundle;)V
+
+# Activity Component - Dagger injection per activity
+Lcom/windscribe/tv/di/ActivityComponent;
+Lcom/windscribe/tv/di/DaggerActivityComponent;
+Lcom/windscribe/tv/di/DaggerActivityComponent$Builder;
+Lcom/windscribe/tv/di/ActivityModule;
+
+# ============================================================================
+# SECTION 2: WELCOME & AUTHENTICATION FLOW
+# ============================================================================
+
+# Welcome Activity - First screen for unauthenticated users
+Lcom/windscribe/tv/welcome/WelcomeActivity;
+Lcom/windscribe/tv/welcome/WelcomeActivity;->onCreate(Landroid/os/Bundle;)V
+Lcom/windscribe/tv/welcome/WelcomePresenter;
+Lcom/windscribe/tv/welcome/WelcomePresenterImpl;
+Lcom/windscribe/tv/welcome/WelcomeView;
+
+# Emergency Connect
+Lcom/windscribe/tv/welcome/EmergencyConnectActivity;
+
+# ============================================================================
+# SECTION 3: MAIN WINDSCRIBE ACTIVITY (Home Screen for Logged-In Users)
+# ============================================================================
+
+# Main TV Activity - Core VPN control interface
+Lcom/windscribe/tv/windscribe/WindscribeActivity;
+Lcom/windscribe/tv/windscribe/WindscribeActivity;->onCreate(Landroid/os/Bundle;)V
+Lcom/windscribe/tv/windscribe/WindscribeActivity;->onResume()V
+Lcom/windscribe/tv/windscribe/WindscribeActivity;->onPause()V
+Lcom/windscribe/tv/windscribe/WindscribePresenter;
+Lcom/windscribe/tv/windscribe/WindscribePresenterImpl;
+Lcom/windscribe/tv/windscribe/WindscribeView;
+
+# Windscribe Fragments
+Lcom/windscribe/tv/windscribe/WindscribeFragment;
+
+# ============================================================================
+# SECTION 4: SERVER LIST & LOCATION SELECTION
+# ============================================================================
+
+# Server List Overlay - Location picker
+Lcom/windscribe/tv/serverlist/overlay/OverlayActivity;
+Lcom/windscribe/tv/serverlist/overlay/OverlayActivity;->onCreate(Landroid/os/Bundle;)V
+Lcom/windscribe/tv/serverlist/overlay/OverlayPresenter;
+Lcom/windscribe/tv/serverlist/overlay/OverlayPresenterImpl;
+Lcom/windscribe/tv/serverlist/overlay/OverlayView;
+
+# Server Detail Activity
+Lcom/windscribe/tv/serverlist/detail/DetailActivity;
+Lcom/windscribe/tv/serverlist/detail/DetailActivity;->onCreate(Landroid/os/Bundle;)V
+Lcom/windscribe/tv/serverlist/detail/DetailPresenter;
+Lcom/windscribe/tv/serverlist/detail/DetailPresenterImpl;
+Lcom/windscribe/tv/serverlist/detail/DetailView;
+
+# Server List Fragments
+Lcom/windscribe/tv/serverlist/ServerListFragment;
+Lcom/windscribe/tv/serverlist/customconfigs/CustomConfigFragment;
+
+# ============================================================================
+# SECTION 5: SETTINGS & PREFERENCES
+# ============================================================================
+
+# Settings Activity - Main settings interface
+Lcom/windscribe/tv/settings/SettingActivity;
+Lcom/windscribe/tv/settings/SettingActivity;->onCreate(Landroid/os/Bundle;)V
+Lcom/windscribe/tv/settings/SettingsPresenter;
+Lcom/windscribe/tv/settings/SettingsPresenterImpl;
+Lcom/windscribe/tv/settings/SettingsView;
+
+# Settings Fragments
+Lcom/windscribe/tv/settings/SettingsFragment;
+Lcom/windscribe/tv/settings/AccountFragment;
+Lcom/windscribe/tv/settings/GeneralFragment;
+Lcom/windscribe/tv/settings/ConnectionFragment;
+Lcom/windscribe/tv/settings/NetworkOptionsFragment;
+Lcom/windscribe/tv/settings/NetworkDetailFragment;
+Lcom/windscribe/tv/settings/ProtocolFragment;
+Lcom/windscribe/tv/settings/RobertFragment;
+Lcom/windscribe/tv/settings/SplitTunnelingFragment;
+Lcom/windscribe/tv/settings/AdvanceParamsFragment;
+Lcom/windscribe/tv/settings/DebugFragment;
+Lcom/windscribe/tv/settings/HelpFragment;
+Lcom/windscribe/tv/settings/AboutUsFragment;
+
+# Split Tunneling Help
+Lcom/windscribe/tv/settings/SplitTunnelingHelpActivity;
+
+# ============================================================================
+# SECTION 6: EMAIL & ACCOUNT MANAGEMENT
+# ============================================================================
+
+# Add Email Activity
+Lcom/windscribe/tv/email/AddEmailActivity;
+Lcom/windscribe/tv/email/AddEmailActivity;->onCreate(Landroid/os/Bundle;)V
+Lcom/windscribe/tv/email/AddEmailPresenter;
+Lcom/windscribe/tv/email/AddEmailPresenterImpl;
+Lcom/windscribe/tv/email/AddEmailView;
+
+# Confirm Email Activity
+Lcom/windscribe/tv/confirmemail/ConfirmActivity;
+Lcom/windscribe/tv/confirmemail/ConfirmActivity;->onCreate(Landroid/os/Bundle;)V
+Lcom/windscribe/tv/confirmemail/ConfirmEmailPresenter;
+Lcom/windscribe/tv/confirmemail/ConfirmEmailPresenterImpl;
+Lcom/windscribe/tv/confirmemail/ConfirmEmailView;
+
+# ============================================================================
+# SECTION 7: POPUPS & DIALOGS
+# ============================================================================
+
+# News Feed
+Lcom/windscribe/tv/news/NewsFeedActivity;
+Lcom/windscribe/tv/news/NewsFeedActivity;->onCreate(Landroid/os/Bundle;)V
+Lcom/windscribe/tv/news/NewsFeedPresenter;
+Lcom/windscribe/tv/news/NewsFeedPresenterImpl;
+Lcom/windscribe/tv/news/NewsFeedView;
+
+# Disconnect Alert
+Lcom/windscribe/tv/disconnectalert/DisconnectActivity;
+Lcom/windscribe/tv/disconnectalert/DisconnectActivity;->onCreate(Landroid/os/Bundle;)V
+
+# Get More Data
+Lcom/windscribe/tv/moredata/GetMoreDataActivity;
+Lcom/windscribe/tv/moredata/GetMoreDataActivity;->onCreate(Landroid/os/Bundle;)V
+
+# Rate My App
+Lcom/windscribe/tv/rate/RateMyAppActivity;
+Lcom/windscribe/tv/rate/RateMyAppActivity;->onCreate(Landroid/os/Bundle;)V
+Lcom/windscribe/tv/rate/RateMyAppPresenter;
+Lcom/windscribe/tv/rate/RateMyAppPresenterImpl;
+Lcom/windscribe/tv/rate/RateMyAppView;
+
+# Help Activity
+Lcom/windscribe/tv/support/HelpActivity;
+
+# ============================================================================
+# SECTION 8: CUSTOM VIEWS & ADAPTERS
+# ============================================================================
+
+# Custom TV Views
+Lcom/windscribe/tv/customview/CustomDialog;
+Lcom/windscribe/tv/customview/CustomProgressDialog;
+
+# Adapters
+Lcom/windscribe/tv/adapter/ServerAdapter;
+Lcom/windscribe/tv/adapter/RegionAdapter;
+
+# ============================================================================
+# SECTION 9: BASE MODULE - REPOSITORIES & STATE (Shared with Mobile)
+# ============================================================================
+
+# User Repository
+Lcom/windscribe/vpn/repository/UserRepository;
+Lcom/windscribe/vpn/repository/UserRepository;-><init>(Lkotlinx/coroutines/CoroutineScope;Lcom/windscribe/vpn/api/IApiCallManager;Lcom/windscribe/vpn/localdatabase/LocalDbInterface;Lcom/windscribe/vpn/apppreference/PreferencesHelper;)V
+
+# Server List Repository
+Lcom/windscribe/vpn/repository/ServerListRepository;
+Lcom/windscribe/vpn/repository/ServerListRepository;-><init>(Lkotlinx/coroutines/CoroutineScope;Lcom/windscribe/vpn/api/IApiCallManager;Lcom/windscribe/vpn/localdatabase/LocalDbInterface;Lcom/windscribe/vpn/apppreference/PreferencesHelper;)V
+
+# Location Repository
+Lcom/windscribe/vpn/repository/LocationRepository;
+
+# Connection Data Repository
+Lcom/windscribe/vpn/repository/ConnectionDataRepository;
+
+# Static IP Repository
+Lcom/windscribe/vpn/repository/StaticIpRepository;
+
+# Latency Repository
+Lcom/windscribe/vpn/repository/LatencyRepository;
+
+# Emergency Connect Repository
+Lcom/windscribe/vpn/repository/EmergencyConnectRepository;
+
+# Notification Repository
+Lcom/windscribe/vpn/repository/NotificationRepository;
+
+# VPN State Management
+Lcom/windscribe/vpn/state/VPNConnectionStateManager;
+Lcom/windscribe/vpn/state/VPNConnectionStateManager;->isVPNConnected()Z
+Lcom/windscribe/vpn/state/VPNConnectionStateManager;->setState(Lcom/windscribe/vpn/state/DeviceStateEvent;)V
+
+# App Lifecycle
+Lcom/windscribe/vpn/state/AppLifeCycleObserver;
+Lcom/windscribe/vpn/state/AppLifeCycleObserver;->onAppForegrounded()V
+Lcom/windscribe/vpn/state/AppLifeCycleObserver;->onAppBackgrounded()V
+
+# Preferences Helper
+Lcom/windscribe/vpn/apppreference/PreferencesHelper;
+Lcom/windscribe/vpn/apppreference/AppPreferencesImpl;
+
+# ============================================================================
+# SECTION 10: VPN CONTROLLER & BACKEND
+# ============================================================================
+
+# VPN Controller
+Lcom/windscribe/vpn/backend/VPNController;
+Lcom/windscribe/vpn/backend/VPNController;->connect(Lcom/windscribe/vpn/serverlist/entity/ServerCredentials;)V
+Lcom/windscribe/vpn/backend/VPNController;->disconnect()V
+Lcom/windscribe/vpn/backend/VPNController;->disconnectAsync()V
+
+# VPN State
+Lcom/windscribe/vpn/state/VPNConnectionState;
+
+# ============================================================================
+# SECTION 11: DATABASE (Room)
+# ============================================================================
+
+# Database instance
+Lcom/windscribe/vpn/localdatabase/WindscribeDatabase;
+Lcom/windscribe/vpn/localdatabase/WindscribeDatabase_Impl;
+Lcom/windscribe/vpn/localdatabase/LocalDbInterface;
+Lcom/windscribe/vpn/localdatabase/LocalDatabaseImpl;
+
+# DAOs - Critical for data access
+Lcom/windscribe/vpn/serverlist/dao/RegionAndCitiesDao;
+Lcom/windscribe/vpn/serverlist/dao/RegionAndCitiesDao_Impl;
+Lcom/windscribe/vpn/serverlist/dao/CityDao;
+Lcom/windscribe/vpn/serverlist/dao/CityDao_Impl;
+Lcom/windscribe/vpn/serverlist/dao/RegionDao;
+Lcom/windscribe/vpn/serverlist/dao/RegionDao_Impl;
+Lcom/windscribe/vpn/serverlist/dao/ServerStatusDao;
+Lcom/windscribe/vpn/serverlist/dao/ServerStatusDao_Impl;
+Lcom/windscribe/vpn/serverlist/dao/StaticRegionDao;
+Lcom/windscribe/vpn/serverlist/dao/StaticRegionDao_Impl;
+Lcom/windscribe/vpn/serverlist/dao/FavouriteDao;
+Lcom/windscribe/vpn/serverlist/dao/FavouriteDao_Impl;
+
+# Entity classes
+Lcom/windscribe/vpn/serverlist/entity/City;
+Lcom/windscribe/vpn/serverlist/entity/Region;
+Lcom/windscribe/vpn/serverlist/entity/RegionAndCities;
+Lcom/windscribe/vpn/serverlist/entity/StaticRegion;
+Lcom/windscribe/vpn/serverlist/entity/Favourite;
+Lcom/windscribe/vpn/serverlist/entity/ServerCredentials;
+
+# ============================================================================
+# SECTION 12: API & NETWORKING
+# ============================================================================
+
+# API Manager
+Lcom/windscribe/vpn/api/IApiCallManager;
+Lcom/windscribe/vpn/api/ApiCallManager;
+Lcom/windscribe/vpn/api/ApiCallManager;-><init>(Lcom/windscribe/vpn/api/WSNetServerAPI;Lcom/windscribe/vpn/apppreference/PreferencesHelper;)V
+
+# WSNet API
+Lcom/windscribe/vpn/api/WSNetServerAPI;
+
+# ============================================================================
+# SECTION 13: ANDROID LEANBACK (TV Framework)
+# ============================================================================
+
+# Leanback Components - TV specific UI
+Landroidx/leanback/app/BrowseSupportFragment;
+Landroidx/leanback/app/DetailsSupportFragment;
+Landroidx/leanback/app/GuidedStepSupportFragment;
+Landroidx/leanback/widget/ArrayObjectAdapter;
+Landroidx/leanback/widget/ListRowPresenter;
+Landroidx/leanback/widget/ItemBridgeAdapter;
+Landroidx/leanback/widget/Presenter;
+Landroidx/leanback/widget/VerticalGridView;
+Landroidx/leanback/widget/BaseGridView;
+
+# ============================================================================
+# SECTION 14: LIFECYCLE & VIEWMODEL
+# ============================================================================
+
+# ViewModel (if used)
+Landroidx/lifecycle/ViewModel;
+Landroidx/lifecycle/ViewModelProvider;
+Landroidx/lifecycle/ViewModelProvider$Factory;
+
+# Lifecycle
+Landroidx/lifecycle/Lifecycle;
+Landroidx/lifecycle/LifecycleOwner;
+Landroidx/lifecycle/LifecycleObserver;
+Landroidx/lifecycle/ProcessLifecycleOwner;
+
+# ============================================================================
+# SECTION 15: KOTLIN COROUTINES & FLOW
+# ============================================================================
+
+# Coroutines Core
+Lkotlinx/coroutines/CoroutineScope;
+Lkotlinx/coroutines/Dispatchers;
+Lkotlinx/coroutines/flow/StateFlow;
+Lkotlinx/coroutines/flow/MutableStateFlow;
+Lkotlinx/coroutines/flow/SharedFlow;
+Lkotlinx/coroutines/flow/MutableSharedFlow;
+Lkotlinx/coroutines/flow/FlowKt;
+
+# ============================================================================
+# SECTION 16: DAGGER DEPENDENCY INJECTION
+# ============================================================================
+
+Ldagger/internal/DoubleCheck;
+Ldagger/internal/InstanceFactory;
+Ldagger/internal/Factory;
+Ldagger/internal/Preconditions;
+Ldagger/Lazy;
+
+# ============================================================================
+# SECTION 17: IMAGE LOADING (GLIDE for TV)
+# ============================================================================
+
+Lcom/bumptech/glide/Glide;
+Lcom/bumptech/glide/RequestManager;
+Lcom/bumptech/glide/RequestBuilder;
+Lcom/bumptech/glide/request/RequestOptions;
+
+# ============================================================================
+# SECTION 18: ANDROID FRAMEWORK COMPONENTS
+# ============================================================================
+
+# RecyclerView (used in TV layouts)
+Landroidx/recyclerview/widget/RecyclerView;
+Landroidx/recyclerview/widget/RecyclerView$Adapter;
+Landroidx/recyclerview/widget/RecyclerView$ViewHolder;
+Landroidx/recyclerview/widget/LinearLayoutManager;
+
+# AppCompat
+Landroidx/appcompat/app/AppCompatActivity;
+Landroidx/appcompat/app/AppCompatDelegate;
+
+# ============================================================================
+# SECTION 19: UTILITIES & HELPERS
+# ============================================================================
+
+# Wind Utilities
+Lcom/windscribe/vpn/commonutils/WindUtilities;
+
+# Preferences Keys
+Lcom/windscribe/vpn/constants/PreferencesKeyConstants;
+
+# Network Utils
+Lcom/windscribe/vpn/commonutils/NetworkUtils;

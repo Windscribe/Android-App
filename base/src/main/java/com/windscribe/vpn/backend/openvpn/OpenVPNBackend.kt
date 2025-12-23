@@ -110,10 +110,20 @@ class OpenVPNBackend @Inject constructor(
         } else {
             vpnLogger.info("Sending start event to OpenVPN service")
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Windscribe.appContext.startForegroundService(ovpnService)
-        } else {
-            Windscribe.appContext.startService(ovpnService)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Windscribe.appContext.startForegroundService(ovpnService)
+            } else {
+                Windscribe.appContext.startService(ovpnService)
+            }
+        } catch (e: Exception) {
+            vpnLogger.error("Failed to start OpenVPN service: ${e.message}")
+            scope.launch {
+                disconnect(VPNState.Error(
+                    error = VPNState.ErrorType.GenericError,
+                    message = "Failed to start VPN service: ${e.message}"
+                ))
+            }
         }
     }
 

@@ -13,7 +13,7 @@ interface CityAndRegionDao {
 
     @Transaction
     @Query("Select * from City where city_id=:cityId limit 1")
-    fun getCityAndRegion(cityId: Int): CityAndRegion
+    fun getCityAndRegion(cityId: Int): CityAndRegion?
 
     @Query("Select region_id From city where city_id=:cityId limit 1")
     suspend fun getRegionIdFromCityAsync(cityId: Int): Int

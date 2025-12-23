@@ -99,8 +99,9 @@ fun SignupScreen(
         val message = (signupState as? SignupState.Registering)?.message ?: ""
         AppProgressBar(showProgressBar, message = message)
         if (signupState is SignupState.Captcha) {
+            val captchaRequest = (signupState as SignupState.Captcha).request
             CaptchaDebugDialog(
-                (signupState as SignupState.Captcha).request, onCancel = {
+                captchaRequest, onCancel = {
                     viewModel?.dismissCaptcha()
                 },
                 onSolutionSubmit = { t1, t2 ->
@@ -109,7 +110,7 @@ fun SignupScreen(
                         CaptchaSolution(
                             t1,
                             t2,
-                            (signupState as SignupState.Captcha).request.secureToken
+                            captchaRequest.secureToken
                         )
                     )
                 })

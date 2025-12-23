@@ -12,20 +12,18 @@ import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.SocketException
 import java.util.*
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit.SECONDS
 
 class AndroidDeviceIdentityImpl(): AndroidDeviceIdentity {
 
     override var deviceHostName: String? = null
     override var deviceMacAddress: String? = null
     override var deviceLanIp: String? = null
-    private var lock = CountDownLatch(1)
 
     override fun load() {
         loadHostname()
         setLanIp()
-        setMacAddress()
+        // MAC address loading is async and happens in background
+        setMacAddressAsync()
     }
     /**
      * Android does not provide direct api access to device hostname.
@@ -52,7 +50,10 @@ class AndroidDeviceIdentityImpl(): AndroidDeviceIdentity {
 
     private fun setLanIp() {
         try {
-            val interfaces: Enumeration<NetworkInterface> = NetworkInterface.getNetworkInterfaces()
+            val interfaces: Enumeration<NetworkInterface>? = NetworkInterface.getNetworkInterfaces()
+            if (interfaces == null) {
+                return
+            }
             while (interfaces.hasMoreElements()) {
                 val iface: NetworkInterface = interfaces.nextElement()
                 val addresses: Enumeration<InetAddress> = iface.inetAddresses
@@ -64,6 +65,8 @@ class AndroidDeviceIdentityImpl(): AndroidDeviceIdentity {
                 }
             }
         } catch (ignored: SocketException) {
+        } catch (ignored: NullPointerException) {
+            // On some devices, NetworkInterface.getNetworkInterfaces() or childs field can be null
         }
     }
 
@@ -71,12 +74,11 @@ class AndroidDeviceIdentityImpl(): AndroidDeviceIdentity {
      * Android does not provide access to mac address.
      * For workaround google play services uuid is formatted as mac address
      * is used. Requires: com.google.android.gms:play-services-appset:16.0.2
-     * Never call from Main Thread
+     * This method is async and does not block - MAC address will be set when available.
      */
-    private fun setMacAddress() {
+    private fun setMacAddressAsync() {
         val client = AppSet.getClient(appContext)
         val task: Task<AppSetIdInfo> = client.appSetIdInfo
-        lock.await(1, SECONDS)
         task.addOnSuccessListener {
             val leastSignificant48Bits =
                     UUID.fromString(it.id).leastSignificantBits and 0xFFFFFFFFFFFFL
@@ -84,10 +86,9 @@ class AndroidDeviceIdentityImpl(): AndroidDeviceIdentity {
                     leastSignificant48Bits.toString(16).toUpperCase(Locale.ROOT).padStart(12, '0')
             val formattedMacAddress = formatAsMacAddress(hexadecimalValue)
             deviceMacAddress = formattedMacAddress
-            lock.countDown()
         }
         task.addOnFailureListener {
-            lock.countDown()
+            // MAC address not available, leave as null
         }
     }
 

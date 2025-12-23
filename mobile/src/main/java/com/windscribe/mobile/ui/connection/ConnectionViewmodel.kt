@@ -620,7 +620,11 @@ class ConnectionViewmodelImpl @Inject constructor(
                 SelectedLocationType.CityLocation -> {
                     try {
                         val location = localdb.getCityAndRegion(selectedLocation.cityId)
-                        onCityClick(location.city)
+                        if (location != null) {
+                            onCityClick(location.city)
+                        } else {
+                            showToast("Unable to find selected location in database. Update server list.")
+                        }
                     } catch (e: Exception) {
                         showToast("Unable to find selected location in database. Update server list.")
                     }
@@ -645,6 +649,10 @@ class ConnectionViewmodelImpl @Inject constructor(
                     return@launch
                 }
                 val cityAndRegion = localdb.getCityAndRegion(city.id)
+                if (cityAndRegion == null) {
+                    showToast("Unable to find selected location in database. Update server list.")
+                    return@launch
+                }
                 val serverStatus = cityAndRegion.region.status
                 val eligibleToConnect =
                     checkEligibility(cityAndRegion.city.pro, false, serverStatus)

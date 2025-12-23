@@ -127,20 +127,32 @@ class NetworkWhiteListService : Service(), NetworkInfoListener {
         fun startService(context: Context) {
             val startIntent = Intent(context, NetworkWhiteListService::class.java)
             startIntent.action = UNSECURED_NETWORK_ACTION
-            if (VERSION.SDK_INT >= VERSION_CODES.O) {
-                context.startForegroundService(startIntent)
-            } else {
-                context.startService(startIntent)
+            try {
+                if (VERSION.SDK_INT >= VERSION_CODES.O) {
+                    context.startForegroundService(startIntent)
+                } else {
+                    context.startService(startIntent)
+                }
+            } catch (e: Exception) {
+                // Android 12+ may throw ForegroundServiceStartNotAllowedException
+                // when app is in background. Log and ignore.
+                LoggerFactory.getLogger(TAG).debug("Failed to start NetworkWhiteListService: ${e.message}")
             }
         }
 
         fun stopService(context: Context) {
             val startIntent = Intent(context, NetworkWhiteListService::class.java)
             startIntent.action = DISCONNECT_ACTION
-            if (VERSION.SDK_INT >= VERSION_CODES.O) {
-                context.startForegroundService(startIntent)
-            } else {
-                context.startService(startIntent)
+            try {
+                if (VERSION.SDK_INT >= VERSION_CODES.O) {
+                    context.startForegroundService(startIntent)
+                } else {
+                    context.startService(startIntent)
+                }
+            } catch (e: Exception) {
+                // Android 12+ may throw ForegroundServiceStartNotAllowedException
+                // when app is in background. Log and ignore.
+                LoggerFactory.getLogger(TAG).debug("Failed to stop NetworkWhiteListService: ${e.message}")
             }
         }
     }
