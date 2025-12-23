@@ -53,6 +53,11 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent == null || intent.action == VpnService.SERVICE_INTERFACE) {
             logger.debug("System relaunched service, starting shortcut state manager")
+            // Call startForeground before stopSelf to prevent ForegroundServiceDidNotStartInTimeException
+            startSafeForeground(
+                NotificationConstants.SERVICE_NOTIFICATION_ID,
+                windNotificationBuilder.buildNotification(Connecting)
+            )
             shortcutStateManager.connect()
             stopSelf()
             return START_NOT_STICKY

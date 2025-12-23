@@ -92,21 +92,20 @@ fun LoginScreen(
         val message = (loginState as? LoginState.LoggingIn)?.message ?: ""
         AppProgressBar(showProgressBar, message = message)
         if (loginState is LoginState.Captcha) {
+            val captchaRequest = (loginState as LoginState.Captcha).request
             CaptchaDebugDialog(
-                (loginState as LoginState.Captcha).request, onCancel = {
+                captchaRequest, onCancel = {
                     viewModel?.dismissCaptcha()
                 },
                 onSolutionSubmit = { t1, t2 ->
                     Log.i("LoginScreen", "onSolutionSubmit: $t1, $t2")
-                    if (loginState is LoginState.Captcha) {
-                        viewModel?.onCaptchaSolutionReceived(
-                            CaptchaSolution(
-                                t1,
-                                t2,
-                                (loginState as LoginState.Captcha).request.secureToken
-                            )
+                    viewModel?.onCaptchaSolutionReceived(
+                        CaptchaSolution(
+                            t1,
+                            t2,
+                            captchaRequest.secureToken
                         )
-                    }
+                    )
                 })
         }
     }

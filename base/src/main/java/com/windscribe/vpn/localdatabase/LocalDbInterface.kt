@@ -42,7 +42,7 @@ interface LocalDbInterface {
     suspend fun insertWindNotifications(windNotifications: List<WindNotification>)
     suspend fun clearWindNotifications()
     suspend fun updateUserStatus(userStatusTable: UserStatusTable?)
-    fun getCityAndRegion(cityId: Int): CityAndRegion
+    fun getCityAndRegion(cityId: Int): CityAndRegion?
     fun getConfigs(): Flow<List<ConfigFile>>
     fun getFavourites(): Flow<List<Favourite>>
     suspend fun getCityByIDAsync(cityID: Int): City

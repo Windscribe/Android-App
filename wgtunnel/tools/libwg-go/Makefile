@@ -45,7 +45,9 @@ $(BUILDDIR)/go-$(GO_VERSION)/.prepared: $(GRADLE_USER_HOME)/caches/golang/$(GO_T
 	tar -C "$(dir $@)" --strip-components=1 -xzf "$^" && \
 	patch -p1 -f -N -r- -d "$(dir $@)" < goruntime-boottime-over-monotonic.diff && \
 	touch "$@"'
-LD_FLAGS := -s -w \
+# Keep debug symbols for crash reporting (symbols will be extracted by Android Gradle Plugin)
+# Removed -s -w flags to preserve symbols for Google Play Console symbolication
+LD_FLAGS := \
   -X github.com/Control-D-Inc/ctrld/cmd/cli.version=$(CD_TAG) \
   -X github.com/Control-D-Inc/ctrld/cmd/cli.commit=$(CD_COMMIT) \
   -X golang.zx2c4.com/wireguard/ipc.socketDirectory=/data/data/$(ANDROID_PACKAGE_NAME)/cache/wireguard \

@@ -103,7 +103,7 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
         return runCatching {
             when (WindUtilities.getSourceTypeBlocking()) {
                 SelectedLocationType.CityLocation -> {
-                    val cityAndRegion = db.getCityAndRegion(id)
+                    val cityAndRegion = db.getCityAndRegion(id) ?: throw Exception("City not found")
                     Pair(
                         LastSelectedLocation(
                             cityAndRegion.city.id,

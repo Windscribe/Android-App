@@ -50,7 +50,7 @@ class BridgeApiRepository @Inject constructor(
                 WSNet.instance().currentPersistentSettings()
         }
         val location = locationRepository.getSelectedCityAndRegion()
-        if (location == null) {
+        if (location == null || location.region == null) {
             _apiAvailable.emit(false)
             return
         }

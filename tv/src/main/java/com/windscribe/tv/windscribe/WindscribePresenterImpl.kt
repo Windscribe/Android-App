@@ -161,7 +161,12 @@ class WindscribePresenterImpl @Inject constructor(
                 val cityAndRegion = withContext(Dispatchers.IO) {
                     localDbInterface.getCityAndRegion(cityID)
                 }
-                attemptConnection(cityAndRegion)
+                if (cityAndRegion != null) {
+                    attemptConnection(cityAndRegion)
+                } else {
+                    logger.debug("Could not find selected location in database.")
+                    windscribeView.showToast("Could not find selected location in database.")
+                }
             } catch (_: Exception) {
                 logger.debug("Could not find selected location in database.")
                 windscribeView.showToast("Error")

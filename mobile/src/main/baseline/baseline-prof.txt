@@ -1,0 +1,410 @@
+# Comprehensive Baseline Profile for Windscribe VPN Mobile App
+# This profile covers all critical startup and user journey paths
+# Generated for optimal cold start and navigation performance
+
+# ============================================================================
+# SECTION 1: APPLICATION & ACTIVITY STARTUP (Highest Priority)
+# ============================================================================
+
+# Application class - First code executed
+Lcom/windscribe/vpn/Windscribe;
+Lcom/windscribe/vpn/Windscribe;->onCreate()V
+Lcom/windscribe/vpn/Windscribe;->onLowMemory()V
+
+# Dagger dependency injection - Critical for startup
+Lcom/windscribe/vpn/di/ApplicationComponent;
+Lcom/windscribe/vpn/di/DaggerApplicationComponent;
+Lcom/windscribe/vpn/di/DaggerApplicationComponent$Builder;
+Lcom/windscribe/vpn/di/BaseApplicationModule;
+Lcom/windscribe/vpn/di/BaseApplicationModule_ProvideApplicationContextFactory;
+
+# Main Activity - Entry point
+Lcom/windscribe/mobile/ui/AppStartActivity;
+Lcom/windscribe/mobile/ui/AppStartActivity;->onCreate(Landroid/os/Bundle;)V
+Lcom/windscribe/mobile/ui/AppStartActivity;->onResume()V
+Lcom/windscribe/mobile/ui/AppStartActivity;->onPause()V
+Lcom/windscribe/mobile/ui/AppStartActivityViewModel;
+Lcom/windscribe/mobile/ui/AppStartActivityViewModelImpl;
+
+# Compose Component - Dagger injection for Compose
+Lcom/windscribe/mobile/di/ComposeComponent;
+Lcom/windscribe/mobile/di/DaggerComposeComponent;
+Lcom/windscribe/mobile/di/DaggerComposeComponent$Builder;
+Lcom/windscribe/mobile/di/ComposeModule;
+
+# ============================================================================
+# SECTION 2: NAVIGATION & THEME (Critical for First Frame)
+# ============================================================================
+
+# Navigation system
+Lcom/windscribe/mobile/ui/nav/NavigationStackKt;
+Lcom/windscribe/mobile/ui/nav/NavigationStackKt;->NavigationStack(Lcom/windscribe/mobile/ui/nav/Screen;Landroidx/compose/runtime/Composer;I)V
+Lcom/windscribe/mobile/ui/nav/Screen;
+Lcom/windscribe/mobile/ui/nav/Screen$Start;
+Lcom/windscribe/mobile/ui/nav/Screen$Home;
+Lcom/windscribe/mobile/ui/nav/Screen$Login;
+Lcom/windscribe/mobile/ui/nav/Screen$Signup;
+
+# Theme system - Loaded immediately
+Lcom/windscribe/mobile/ui/theme/AndroidThemeKt;
+Lcom/windscribe/mobile/ui/theme/AndroidThemeKt;->AndroidTheme(ZLkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+Lcom/windscribe/mobile/ui/theme/AppColors;
+Lcom/windscribe/mobile/ui/theme/AppTypography;
+Lcom/windscribe/mobile/ui/theme/ColorSchemeKt;
+Lcom/windscribe/mobile/ui/theme/ThemeKt;
+
+# ============================================================================
+# SECTION 3: AUTHENTICATION FLOW (Cold Start - No Session)
+# ============================================================================
+
+# Welcome/Start Screen
+Lcom/windscribe/mobile/ui/auth/AppStartScreenKt;
+Lcom/windscribe/mobile/ui/auth/AppStartScreenKt;->AppStartScreen(Landroidx/compose/material3/windowsizeclass/WindowSizeClass;Lcom/windscribe/mobile/ui/auth/AppStartViewModel;Landroidx/compose/runtime/Composer;II)V
+Lcom/windscribe/mobile/ui/auth/AppStartViewModel;
+Lcom/windscribe/mobile/ui/auth/AppStartViewModelImpl;
+
+# Login Screen
+Lcom/windscribe/mobile/ui/auth/LoginScreenKt;
+Lcom/windscribe/mobile/ui/auth/LoginScreenKt;->LoginScreen(Landroidx/compose/material3/windowsizeclass/WindowSizeClass;Lcom/windscribe/mobile/ui/auth/LoginViewModel;Landroidx/compose/runtime/Composer;II)V
+Lcom/windscribe/mobile/ui/auth/LoginViewModel;
+Lcom/windscribe/mobile/ui/auth/LoginViewModelImpl;
+
+# Signup Screen
+Lcom/windscribe/mobile/ui/auth/SignupScreenKt;
+Lcom/windscribe/mobile/ui/auth/SignupScreenKt;->SignupScreen(Landroidx/compose/material3/windowsizeclass/WindowSizeClass;Lcom/windscribe/mobile/ui/auth/SignupViewModel;Landroidx/compose/runtime/Composer;II)V
+Lcom/windscribe/mobile/ui/auth/SignupViewModel;
+Lcom/windscribe/mobile/ui/auth/SignupViewModelImpl;
+
+# Emergency Connect
+Lcom/windscribe/mobile/ui/auth/EmergencyConnectScreenKt;
+Lcom/windscribe/mobile/ui/auth/EmergencyConnectViewModal;
+Lcom/windscribe/mobile/ui/auth/EmergencyConnectViewModalImpl;
+
+# ============================================================================
+# SECTION 4: HOME SCREEN (Cold Start - With Session)
+# ============================================================================
+
+# Home Screen - Most common user entry point
+Lcom/windscribe/mobile/ui/home/HomeScreenKt;
+Lcom/windscribe/mobile/ui/home/HomeScreenKt;->HomeScreen(Lcom/windscribe/mobile/ui/serverlist/ServerViewModel;Lcom/windscribe/mobile/ui/connection/ConnectionViewmodel;Lcom/windscribe/mobile/ui/serverlist/ConfigViewmodel;Lcom/windscribe/mobile/ui/home/HomeViewmodel;Lcom/windscribe/mobile/ui/connection/BridgeApiViewModel;Landroidx/compose/runtime/Composer;II)V
+
+# Home ViewModel
+Lcom/windscribe/mobile/ui/home/HomeViewmodel;
+Lcom/windscribe/mobile/ui/home/HomeViewmodelImpl;
+Lcom/windscribe/mobile/ui/home/HomeViewmodelImpl;-><init>(Lcom/windscribe/vpn/repository/UserRepository;Lcom/windscribe/vpn/apppreference/PreferencesHelper;Lcom/windscribe/vpn/repository/ConnectionDataRepository;Lcom/windscribe/vpn/commonutils/WindUtilities;)V
+
+# Connection ViewModel - Critical for VPN state
+Lcom/windscribe/mobile/ui/connection/ConnectionViewmodel;
+Lcom/windscribe/mobile/ui/connection/ConnectionViewmodelImpl;
+Lcom/windscribe/mobile/ui/connection/ConnectionViewmodelImpl;-><init>(Lcom/windscribe/vpn/repository/LocationRepository;Lcom/windscribe/vpn/repository/ConnectionDataRepository;Lcom/windscribe/vpn/repository/UserRepository;Lcom/windscribe/vpn/apppreference/PreferencesHelper;Lcom/windscribe/vpn/state/VPNConnectionStateManager;Lcom/windscribe/vpn/commonutils/WindUtilities;)V
+
+# Server ViewModel - Loads server lists
+Lcom/windscribe/mobile/ui/serverlist/ServerViewModel;
+Lcom/windscribe/mobile/ui/serverlist/ServerViewModelImpl;
+Lcom/windscribe/mobile/ui/serverlist/ServerViewModelImpl;-><init>(Lcom/windscribe/vpn/repository/ServerListRepository;Lcom/windscribe/vpn/repository/StaticIpRepository;Lcom/windscribe/vpn/repository/LatencyRepository;Lcom/windscribe/vpn/repository/LocationRepository;Lcom/windscribe/vpn/repository/UserRepository;Lcom/windscribe/vpn/apppreference/PreferencesHelper;)V
+
+# Config ViewModel
+Lcom/windscribe/mobile/ui/serverlist/ConfigViewmodel;
+Lcom/windscribe/mobile/ui/serverlist/ConfigViewmodelImpl;
+
+# Bridge API ViewModel - IP pinning
+Lcom/windscribe/mobile/ui/connection/BridgeApiViewModel;
+Lcom/windscribe/mobile/ui/connection/BridgeApiViewModelImpl;
+
+# ============================================================================
+# SECTION 5: SERVER LIST & LOCATION SELECTION
+# ============================================================================
+
+# Server List Screen
+Lcom/windscribe/mobile/ui/serverlist/ServerListScreenKt;
+Lcom/windscribe/mobile/ui/serverlist/ServerListScreenKt;->ServerListScreen(Lcom/windscribe/mobile/ui/serverlist/ServerViewModel;Lcom/windscribe/mobile/ui/connection/ConnectionViewmodel;Lcom/windscribe/mobile/ui/serverlist/ConfigViewmodel;Landroidx/compose/runtime/Composer;I)V
+
+# ============================================================================
+# SECTION 6: MAIN MENU & PREFERENCES (High Traffic)
+# ============================================================================
+
+# Main Menu - Entry to all settings
+Lcom/windscribe/mobile/ui/preferences/main/MainMenuScreenKt;
+Lcom/windscribe/mobile/ui/preferences/main/MainMenuScreenKt;->MainMenuScreen(Lcom/windscribe/mobile/ui/preferences/main/MainMenuViewModel;Lcom/windscribe/mobile/ui/home/HomeViewmodel;Landroidx/compose/runtime/Composer;I)V
+Lcom/windscribe/mobile/ui/preferences/main/MainMenuViewModel;
+Lcom/windscribe/mobile/ui/preferences/main/MainMenuViewModelImpl;
+
+# General Settings
+Lcom/windscribe/mobile/ui/preferences/general/GeneralScreenKt;
+Lcom/windscribe/mobile/ui/preferences/general/GeneralViewModel;
+Lcom/windscribe/mobile/ui/preferences/general/GeneralViewModelImpl;
+
+# Account Screen
+Lcom/windscribe/mobile/ui/preferences/account/AccountScreenKt;
+Lcom/windscribe/mobile/ui/preferences/account/AccountViewModel;
+Lcom/windscribe/mobile/ui/preferences/account/AccountViewModelImpl;
+
+# Connection Preferences
+Lcom/windscribe/mobile/ui/preferences/connection/ConnectionScreenKt;
+Lcom/windscribe/mobile/ui/preferences/connection/ConnectionViewModel;
+Lcom/windscribe/mobile/ui/preferences/connection/ConnectionViewModelImpl;
+
+# R.O.B.E.R.T Settings
+Lcom/windscribe/mobile/ui/preferences/robert/RobertScreenKt;
+Lcom/windscribe/mobile/ui/preferences/robert/RobertViewModel;
+Lcom/windscribe/mobile/ui/preferences/robert/RobertViewModelImpl;
+
+# Advanced Settings
+Lcom/windscribe/mobile/ui/preferences/advance/AdvanceScreenKt;
+Lcom/windscribe/mobile/ui/preferences/advance/AdvanceViewModel;
+Lcom/windscribe/mobile/ui/preferences/advance/AdvanceViewModelImpl;
+
+# Split Tunneling
+Lcom/windscribe/mobile/ui/preferences/split_tunnel/SplitTunnelScreenKt;
+Lcom/windscribe/mobile/ui/preferences/split_tunnel/SplitTunnelViewModel;
+Lcom/windscribe/mobile/ui/preferences/split_tunnel/SplitTunnelViewModelImpl;
+
+# Network Options
+Lcom/windscribe/mobile/ui/preferences/network_options/NetworkOptionsScreenKt;
+Lcom/windscribe/mobile/ui/preferences/network_options/NetworkOptionsViewModel;
+Lcom/windscribe/mobile/ui/preferences/network_options/NetworkOptionsViewModelImpl;
+
+# Network Details
+Lcom/windscribe/mobile/ui/preferences/network_details/NetworkDetailScreenKt;
+Lcom/windscribe/mobile/ui/preferences/network_details/NetworkDetailViewModel;
+Lcom/windscribe/mobile/ui/preferences/network_details/NetworkDetailViewModelImpl;
+
+# Look and Feel
+Lcom/windscribe/mobile/ui/preferences/lipstick/LookAndFeelScreenKt;
+Lcom/windscribe/mobile/ui/preferences/lipstick/LipstickViewmodel;
+Lcom/windscribe/mobile/ui/preferences/lipstick/LipstickViewmodelImpl;
+
+# Help/Support
+Lcom/windscribe/mobile/ui/preferences/help/HelpScreenKt;
+Lcom/windscribe/mobile/ui/preferences/help/HelpViewModel;
+Lcom/windscribe/mobile/ui/preferences/help/HelpViewModelImpl;
+
+# Debug Settings
+Lcom/windscribe/mobile/ui/preferences/debug/DebugScreenKt;
+Lcom/windscribe/mobile/ui/preferences/debug/DebugViewModel;
+Lcom/windscribe/mobile/ui/preferences/debug/DebugViewModelImpl;
+
+# ============================================================================
+# SECTION 7: POPUPS & DIALOGS
+# ============================================================================
+
+# Newsfeed
+Lcom/windscribe/mobile/ui/popup/NewsfeedScreenKt;
+Lcom/windscribe/mobile/ui/popup/NewsfeedViewmodel;
+Lcom/windscribe/mobile/ui/popup/NewsfeedViewmodelImpl;
+
+# Custom Config Editor
+Lcom/windscribe/mobile/ui/popup/EditCustomConfigScreenKt;
+Lcom/windscribe/mobile/ui/popup/EditCustomConfigViewmodel;
+Lcom/windscribe/mobile/ui/popup/EditCustomConfigViewmodelImpl;
+
+# Share Link
+Lcom/windscribe/mobile/ui/popup/ShareLinkScreenKt;
+Lcom/windscribe/mobile/ui/popup/SharedLinkViewmodel;
+Lcom/windscribe/mobile/ui/popup/SharedLinkViewmodelImpl;
+
+# Power Whitelist
+Lcom/windscribe/mobile/ui/popup/PowerWhitelistScreenKt;
+Lcom/windscribe/mobile/ui/popup/PowerWhitelistViewmodel;
+Lcom/windscribe/mobile/ui/popup/PowerWhitelistViewmodelImpl;
+
+# ============================================================================
+# SECTION 8: CONNECTION FLOW & ERROR HANDLING
+# ============================================================================
+
+# Connection Change Screen
+Lcom/windscribe/mobile/ui/connection/ConnectionChangeScreenKt;
+
+# Protocol Failed Screens
+Lcom/windscribe/mobile/ui/connection/AllProtocolFailedScreenKt;
+Lcom/windscribe/mobile/ui/connection/ManualModeFailedScreenKt;
+Lcom/windscribe/mobile/ui/connection/SetupPreferredProtocolScreenKt;
+Lcom/windscribe/mobile/ui/connection/DebugLogSentScreenKt;
+
+# ============================================================================
+# SECTION 9: BASE MODULE - REPOSITORIES & STATE MANAGEMENT
+# ============================================================================
+
+# User Repository
+Lcom/windscribe/vpn/repository/UserRepository;
+Lcom/windscribe/vpn/repository/UserRepository;-><init>(Lkotlinx/coroutines/CoroutineScope;Lcom/windscribe/vpn/api/IApiCallManager;Lcom/windscribe/vpn/localdatabase/LocalDbInterface;Lcom/windscribe/vpn/apppreference/PreferencesHelper;)V
+
+# Server List Repository
+Lcom/windscribe/vpn/repository/ServerListRepository;
+Lcom/windscribe/vpn/repository/ServerListRepository;-><init>(Lkotlinx/coroutines/CoroutineScope;Lcom/windscribe/vpn/api/IApiCallManager;Lcom/windscribe/vpn/localdatabase/LocalDbInterface;Lcom/windscribe/vpn/apppreference/PreferencesHelper;)V
+
+# Location Repository
+Lcom/windscribe/vpn/repository/LocationRepository;
+
+# Connection Data Repository
+Lcom/windscribe/vpn/repository/ConnectionDataRepository;
+
+# Static IP Repository
+Lcom/windscribe/vpn/repository/StaticIpRepository;
+
+# Latency Repository
+Lcom/windscribe/vpn/repository/LatencyRepository;
+
+# VPN State Management
+Lcom/windscribe/vpn/state/VPNConnectionStateManager;
+Lcom/windscribe/vpn/state/VPNConnectionStateManager;->isVPNConnected()Z
+Lcom/windscribe/vpn/state/VPNConnectionStateManager;->setState(Lcom/windscribe/vpn/state/DeviceStateEvent;)V
+
+# App Lifecycle
+Lcom/windscribe/vpn/state/AppLifeCycleObserver;
+Lcom/windscribe/vpn/state/AppLifeCycleObserver;->onAppForegrounded()V
+Lcom/windscribe/vpn/state/AppLifeCycleObserver;->onAppBackgrounded()V
+
+# Preferences Helper
+Lcom/windscribe/vpn/apppreference/PreferencesHelper;
+Lcom/windscribe/vpn/apppreference/AppPreferencesImpl;
+
+# ============================================================================
+# SECTION 10: DATABASE (Room)
+# ============================================================================
+
+# Database instance
+Lcom/windscribe/vpn/localdatabase/WindscribeDatabase;
+Lcom/windscribe/vpn/localdatabase/WindscribeDatabase_Impl;
+Lcom/windscribe/vpn/localdatabase/LocalDbInterface;
+Lcom/windscribe/vpn/localdatabase/LocalDatabaseImpl;
+
+# DAOs - Critical for data access
+Lcom/windscribe/vpn/serverlist/dao/RegionAndCitiesDao;
+Lcom/windscribe/vpn/serverlist/dao/RegionAndCitiesDao_Impl;
+Lcom/windscribe/vpn/serverlist/dao/CityDao;
+Lcom/windscribe/vpn/serverlist/dao/CityDao_Impl;
+Lcom/windscribe/vpn/serverlist/dao/RegionDao;
+Lcom/windscribe/vpn/serverlist/dao/RegionDao_Impl;
+Lcom/windscribe/vpn/serverlist/dao/ServerStatusDao;
+Lcom/windscribe/vpn/serverlist/dao/ServerStatusDao_Impl;
+
+# ============================================================================
+# SECTION 11: API & NETWORKING
+# ============================================================================
+
+# API Manager
+Lcom/windscribe/vpn/api/IApiCallManager;
+Lcom/windscribe/vpn/api/ApiCallManager;
+Lcom/windscribe/vpn/api/ApiCallManager;-><init>(Lcom/windscribe/vpn/api/WSNetServerAPI;Lcom/windscribe/vpn/apppreference/PreferencesHelper;)V
+
+# ============================================================================
+# SECTION 12: COMPOSE RUNTIME & FRAMEWORK
+# ============================================================================
+
+# Compose Core
+Landroidx/compose/runtime/ComposerKt;
+Landroidx/compose/runtime/Recomposer;
+Landroidx/compose/runtime/Composer;
+Landroidx/compose/runtime/ComposerImpl;
+Landroidx/compose/ui/platform/AndroidComposeView;
+Landroidx/compose/ui/platform/AndroidCompositionLocals_androidKt;
+Landroidx/compose/runtime/CompositionLocalKt;
+
+# Compose State Management
+Landroidx/compose/runtime/State;
+Landroidx/compose/runtime/MutableState;
+Landroidx/compose/runtime/SnapshotStateKt;
+Landroidx/compose/runtime/snapshots/Snapshot;
+
+# ============================================================================
+# SECTION 13: MATERIAL3 UI COMPONENTS
+# ============================================================================
+
+# Core Material3 Components
+Landroidx/compose/material3/ButtonKt;
+Landroidx/compose/material3/TextKt;
+Landroidx/compose/material3/SurfaceKt;
+Landroidx/compose/material3/ScaffoldKt;
+Landroidx/compose/material3/TopAppBarKt;
+Landroidx/compose/material3/IconButtonKt;
+Landroidx/compose/material3/TextFieldKt;
+Landroidx/compose/material3/CardKt;
+Landroidx/compose/material3/DividerKt;
+Landroidx/compose/material3/SwitchKt;
+Landroidx/compose/material3/CheckboxKt;
+Landroidx/compose/material3/RadioButtonKt;
+Landroidx/compose/material3/ProgressIndicatorKt;
+
+# Material3 Theme
+Landroidx/compose/material3/MaterialTheme;
+Landroidx/compose/material3/ColorScheme;
+Landroidx/compose/material3/Typography;
+
+# ============================================================================
+# SECTION 14: COMPOSE FOUNDATION & LAYOUT
+# ============================================================================
+
+# Foundation Components
+Landroidx/compose/foundation/BackgroundKt;
+Landroidx/compose/foundation/BorderKt;
+Landroidx/compose/foundation/ClickableKt;
+Landroidx/compose/foundation/ScrollKt;
+Landroidx/compose/foundation/ImageKt;
+Landroidx/compose/foundation/lazy/LazyListKt;
+Landroidx/compose/foundation/lazy/LazyDslKt;
+
+# Layout Components
+Landroidx/compose/foundation/layout/BoxKt;
+Landroidx/compose/foundation/layout/ColumnKt;
+Landroidx/compose/foundation/layout/RowKt;
+Landroidx/compose/foundation/layout/SpacerKt;
+Landroidx/compose/foundation/layout/PaddingKt;
+Landroidx/compose/foundation/layout/SizeKt;
+Landroidx/compose/foundation/layout/OffsetKt;
+
+# ============================================================================
+# SECTION 15: NAVIGATION COMPOSE
+# ============================================================================
+
+Landroidx/navigation/compose/NavHostKt;
+Landroidx/navigation/compose/NavHostControllerKt;
+Landroidx/navigation/compose/NavGraphBuilderKt;
+Landroidx/navigation/NavController;
+Landroidx/navigation/NavGraph;
+Landroidx/navigation/NavBackStackEntry;
+
+# ============================================================================
+# SECTION 16: LIFECYCLE & VIEWMODEL
+# ============================================================================
+
+# ViewModel
+Landroidx/lifecycle/ViewModel;
+Landroidx/lifecycle/ViewModelProvider;
+Landroidx/lifecycle/ViewModelProvider$Factory;
+Landroidx/lifecycle/viewmodel/compose/ViewModelKt;
+
+# Lifecycle
+Landroidx/lifecycle/Lifecycle;
+Landroidx/lifecycle/LifecycleOwner;
+Landroidx/lifecycle/LifecycleObserver;
+
+# ============================================================================
+# SECTION 17: KOTLIN COROUTINES & FLOW
+# ============================================================================
+
+# Coroutines Core
+Lkotlinx/coroutines/CoroutineScope;
+Lkotlinx/coroutines/flow/StateFlow;
+Lkotlinx/coroutines/flow/MutableStateFlow;
+Lkotlinx/coroutines/flow/SharedFlow;
+Lkotlinx/coroutines/flow/MutableSharedFlow;
+Lkotlinx/coroutines/flow/FlowKt;
+
+# ============================================================================
+# SECTION 18: DAGGER DEPENDENCY INJECTION
+# ============================================================================
+
+Ldagger/internal/DoubleCheck;
+Ldagger/internal/InstanceFactory;
+Ldagger/internal/Factory;
+Ldagger/internal/Preconditions;
+Ldagger/Lazy;
+
+# ============================================================================
+# SECTION 19: IMAGE LOADING (COIL)
+# ============================================================================
+
+Lcoil/compose/AsyncImageKt;
+Lcoil/ImageLoader;
+Lcoil/request/ImageRequest;

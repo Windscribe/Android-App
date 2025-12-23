@@ -143,7 +143,7 @@ class LatencyRepository @Inject constructor(
 
     suspend fun updateStreamingServerLatencies(): Boolean {
         val cities = localDbInterface.getAllRegionAsync().filter {
-            it.region.locationType == "streaming"
+            it.region?.locationType == "streaming"
         }.map { it.cities }.reduce { l1, l2 -> l1.plus(l2) }
         val pingJobs = cities.map { pingJobAsync(it) }
         val cityPings = runCatching {

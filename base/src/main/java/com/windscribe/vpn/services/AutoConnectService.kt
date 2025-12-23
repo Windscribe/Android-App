@@ -58,6 +58,8 @@ class AutoConnectService : Service(), NetworkInfoListener {
 
     private var logger = LoggerFactory.getLogger("vpn")
 
+    private var onStartCommandCalled = false
+
     companion object {
         var isAutoConnectingServiceRunning = false
     }
@@ -70,7 +72,11 @@ class AutoConnectService : Service(), NetworkInfoListener {
             vpnConnectionStateManager.state.collectLatest {
                 if (it.status == VPNState.Status.Connected || it.status == VPNState.Status.Connecting) {
                     logger.debug("VPN connection is successful. Stopping auto connect service.")
-                    stopAutoConnectService()
+                    // Only stop if onStartCommand was already called (meaning startForeground was called)
+                    // This prevents ForegroundServiceDidNotStartInTimeException race condition
+                    if (onStartCommandCalled) {
+                        stopAutoConnectService()
+                    }
                 }
             }
         }
@@ -94,6 +100,7 @@ class AutoConnectService : Service(), NetworkInfoListener {
         notification.contentIntent = null
         notification.actions = null
         startSafeForeground(NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID, notification)
+        onStartCommandCalled = true
         return if (canAccessNetworkName()) {
             logger.debug("Auto connect service started and waiting for network changes.")
             START_STICKY
@@ -122,10 +129,17 @@ class AutoConnectService : Service(), NetworkInfoListener {
 fun Context.startAutoConnectService() {
     if (AutoConnectService.isAutoConnectingServiceRunning.not()) {
         val intent = Intent(this, AutoConnectService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent)
-        } else {
-            startService(intent)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
+        } catch (e: Exception) {
+            // Android 12+ may throw ForegroundServiceStartNotAllowedException
+            // when app is in background. Log and ignore - service will start
+            // when user brings app to foreground or on next network change.
+            LoggerFactory.getLogger("vpn").debug("Failed to start AutoConnectService: ${e.message}")
         }
     }
 }
