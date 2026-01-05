@@ -1,0 +1,8 @@
+v3.97(Mobile)
+* Improved start up time.
+* Added Reset password for Sso accounts.
+* Added back domain for tunnel tests.
+* Fixed preferred protocol fails to set from change protocol popup.
+* Fixed IP address overlapping network name.
+* Fixed disabled Static IP won't show as disabled in server list.
+* Fixed Incorrect yearly pricing + discount in Turkey.

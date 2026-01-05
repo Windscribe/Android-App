@@ -1,0 +1,5 @@
+v3.97(TV)
+* Improved start up time.
+* Added back domain for tunnel tests.
+* Fixed Incorrect yearly pricing + discount in Turkey.
+* Captcha support.
