@@ -101,6 +101,11 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
         viewModelScope.launch {
             preferenceHelper.saveSplitRoutingMode(mode.key)
             _selectedModeKey.value = mode.key
+            // Auto-select/unselect Windscribe app based on mode
+            when (mode.key) {
+                "Inclusive" -> addWindscribeToList(true)
+                "Exclusive" -> addWindscribeToList(false)
+            }
         }
     }
 
@@ -158,6 +163,15 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
             val updatedState = _isSplitTunnelEnabled.value.not()
             _isSplitTunnelEnabled.emit(updatedState)
             preferenceHelper.splitTunnelToggle = updatedState
+
+            // Auto-select/unselect Windscribe app when turning ON split tunneling
+            if (updatedState) {
+                val currentMode = _selectedModeKey.value
+                when (currentMode) {
+                    "Inclusive" -> addWindscribeToList(true)
+                    "Exclusive" -> addWindscribeToList(false)
+                }
+            }
         }
     }
 
@@ -196,5 +210,44 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
             matchesSearch && matchesSystemFilter
         }
         _filteredApps.emit(filtered)
+    }
+
+    private suspend fun addWindscribeToList(checked: Boolean) {
+        val pm = appContext.packageManager
+        val packageName = appContext.packageName
+        try {
+            val applicationInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+            val windscribeApp = InstalledAppsData(
+                pm.getApplicationLabel(applicationInfo).toString(),
+                applicationInfo.packageName,
+                pm.getApplicationIcon(applicationInfo)
+            )
+            windscribeApp.isSystemApp = false
+
+            // Update saved apps
+            val savedApps = preferenceHelper.installedApps().toMutableList()
+            if (checked) {
+                // Add to list if not already present
+                if (!savedApps.contains(packageName)) {
+                    savedApps.add(packageName)
+                }
+            } else {
+                // Remove from list
+                savedApps.remove(packageName)
+            }
+            preferenceHelper.saveInstalledApps(savedApps)
+
+            // Update in-memory app list
+            val currentApps = _apps.value.toMutableList()
+            val appIndex = currentApps.indexOfFirst { it.packageName == packageName }
+            if (appIndex != -1) {
+                currentApps[appIndex].isChecked = checked
+                val newAppsList = createNewAppsList(currentApps)
+                newAppsList[appIndex].isChecked = checked
+                emitUpdatedLists(newAppsList)
+            }
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+        }
     }
 }
