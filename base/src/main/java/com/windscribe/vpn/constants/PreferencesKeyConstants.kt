@@ -111,6 +111,7 @@ object PreferencesKeyConstants {
     const val INCLUSIVE_MODE = "Inclusive"
     const val SPLIT_ROUTING_MODE = "split_routing_mode"
     const val SPLIT_TUNNEL_TOGGLE = "tunnel_toggle"
+    const val SHOW_SYSTEM_APPS = "show_system_apps"
     const val AUTO_START_ON_BOOT = "auto_start_boot"
     const val INSTALLED_APPS_DATA = "installed_app_data"
     const val LAST_CONNECTION_USING_SPLIT = "last_connection_using_split"
