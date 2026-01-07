@@ -123,136 +123,275 @@ private fun NavGraphBuilder.addNavigationScreens() {
     composable(route = Screen.Home.route) { AddHomeScreenRoute() }
     composable(route = Screen.NoEmailAttention.route) { NoEmailAttentionScreen(false) {} }
 
-    composable(route = Screen.Newsfeed.route, enterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }, exitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }) {
+    composable(route = Screen.Newsfeed.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
         val homeViewModel = getViewModel(HomeViewmodel::class.java)
         ViewModelRoute(NewsfeedViewmodel::class.java) {
             NewsfeedScreen(it, homeViewModel)
         }
     }
-    composable(route = Screen.MainMenu.route, enterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }, exitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }) {
+    composable(route = Screen.MainMenu.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
         val homeViewModel = getViewModel(HomeViewmodel::class.java)
         ViewModelRoute(MainMenuViewModel::class.java) {
             MainMenuScreen(it, homeViewModel)
         }
     }
-    composable(route = Screen.General.route, enterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }, exitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }) {
+    composable(route = Screen.General.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
         ViewModelRoute(GeneralViewModel::class.java) {
             GeneralScreen(it)
         }
     }
-    composable(route = Screen.Account.route, enterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }, exitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }) {
+    composable(route = Screen.Account.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
         ViewModelRoute(AccountViewModel::class.java) {
             AccountScreen(it)
         }
     }
-    composable(route = Screen.Connection.route, enterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }, exitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }) {
+    composable(route = Screen.Connection.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
         ViewModelRoute(ConnectionViewModel::class.java) {
             ConnectionScreen(it)
         }
     }
-    composable(route = Screen.Robert.route, enterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }, exitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }) {
+    composable(route = Screen.Robert.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
         ViewModelRoute(RobertViewModel::class.java) {
             RobertScreen(it)
         }
     }
-    composable(route = Screen.LookAndFeel.route, enterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }, exitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }) {
+    composable(route = Screen.LookAndFeel.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
         ViewModelRoute(LipstickViewmodel::class.java) {
             LookAndFeelScreen(it)
         }
     }
-    composable(route = Screen.HelpMe.route, enterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }, exitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }) {
+    composable(route = Screen.HelpMe.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
         ViewModelRoute(HelpViewModel::class.java) {
             HelpScreen(it)
         }
     }
-    composable(route = Screen.About.route, enterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }, exitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }) { AboutScreen() }
+    composable(route = Screen.About.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) { AboutScreen() }
     composable(route = Screen.PowerWhitelist.route) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             ViewModelRoute(PowerWhitelistViewmodel::class.java) { PowerWhitelistScreen(it) }
         }
     }
-    composable(route = Screen.Ticket.route, enterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }, exitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }) {
+    composable(route = Screen.Ticket.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
         ViewModelRoute(TicketViewModel::class.java) {
             TicketScreen(it)
         }
     }
-    composable(route = Screen.Advance.route, enterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }, exitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }) {
+    composable(route = Screen.Advance.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
         ViewModelRoute(AdvanceViewModel::class.java) {
             AdvanceScreen(it)
         }
     }
-    composable(route = Screen.Debug.route, enterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }, exitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }) {
+    composable(route = Screen.Debug.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
         ViewModelRoute(DebugViewModel::class.java) {
             DebugScreen(it)
         }
     }
-    composable(route = Screen.SplitTunnel.route, enterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }, exitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }) {
+    composable(route = Screen.SplitTunnel.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
         ViewModelRoute(SplitTunnelViewModel::class.java) {
             SplitTunnelScreen(it)
         }
     }
-    composable(route = Screen.NetworkOptions.route, enterTransition = {
-        slideInHorizontally(initialOffsetX = { -it })
-    }, exitTransition = {
-        slideOutHorizontally(targetOffsetX = { it })
-    }) {
+    composable(route = Screen.NetworkOptions.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
         ViewModelRoute(NetworkOptionsViewModel::class.java) {
             NetworkOptionsScreen(it)
         }
     }
-    composable(route = Screen.NetworkDetails.route) {
+    composable(route = Screen.NetworkDetails.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
         val navController = LocalNavController.current
         val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
         val data = savedStateHandle?.get<String>("network_name")
