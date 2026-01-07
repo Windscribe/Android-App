@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -53,7 +54,9 @@ fun NetworkOptionsScreen(viewModel: NetworkOptionsViewModel? = null) {
         )
     }
     PreferenceBackground {
-        Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 16.dp, horizontal = 16.dp)) {
             PreferencesNavBar(stringResource(R.string.network_options)) {
                 navController.popBackStack()
             }

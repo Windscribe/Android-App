@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -48,29 +49,35 @@ fun NetworkDetailScreen(viewModel: NetworkDetailViewModel? = null) {
     }
     val isMyNetwork by viewModel?.isMyNetwork?.collectAsState()
         ?: remember { mutableStateOf(false) }
-    if (networkDetail == null) {
-        return
-    }
+
     PreferenceBackground {
-        Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 16.dp, horizontal = 16.dp)) {
             PreferencesNavBar(stringResource(R.string.network_options)) {
                 navController.popBackStack()
             }
-            Spacer(modifier = Modifier.height(20.dp))
-            SwitchItemView(
-                title = R.string.auto_secure,
-                icon = com.windscribe.mobile.R.drawable.ic_wifi,
-                description = R.string.auto_secure_description,
-                networkDetail!!.isAutoSecureOn,
-                onSelect = {
-                    viewModel?.onAutoSecureChanged()
+
+            if (networkDetail == null) {
+                // Loading state - keeps the screen visible during animation
+                Spacer(modifier = Modifier.weight(1f))
+            } else {
+                Spacer(modifier = Modifier.height(20.dp))
+                SwitchItemView(
+                    title = R.string.auto_secure,
+                    icon = com.windscribe.mobile.R.drawable.ic_wifi,
+                    description = R.string.auto_secure_description,
+                    networkDetail!!.isAutoSecureOn,
+                    onSelect = {
+                        viewModel?.onAutoSecureChanged()
+                    }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                PreferredProtocol(viewModel, networkDetail)
+                Spacer(modifier = Modifier.height(16.dp))
+                if (!isMyNetwork) {
+                    ForgetNetwork(viewModel)
                 }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            PreferredProtocol(viewModel, networkDetail)
-            Spacer(modifier = Modifier.height(16.dp))
-            if (!isMyNetwork) {
-                ForgetNetwork(viewModel)
             }
         }
     }
