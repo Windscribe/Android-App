@@ -338,9 +338,18 @@ open class BaseApplicationModule {
         scope: CoroutineScope,
         preferencesHelper: PreferencesHelper,
         localDbInterface: LocalDbInterface,
-        userRepository: Lazy<UserRepository>
+        userRepository: Lazy<UserRepository>,
+        wsNet: WSNet,
+        advanceParameterRepository: AdvanceParameterRepository
     ): LocationRepository {
-        return LocationRepository(scope, preferencesHelper, localDbInterface, userRepository)
+        return LocationRepository(
+            scope,
+            preferencesHelper,
+            localDbInterface,
+            userRepository,
+            wsNet.pingManager(),
+            advanceParameterRepository
+        )
     }
 
     @Provides
