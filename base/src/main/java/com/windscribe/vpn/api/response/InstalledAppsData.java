@@ -19,6 +19,8 @@ public class InstalledAppsData implements Comparable<InstalledAppsData> {
 
     private String packageName;
 
+    private boolean systemApp = false;
+
     public InstalledAppsData(String appName, String packageName, Drawable appIconDrawable) {
         this.appName = appName;
         this.packageName = packageName;
@@ -60,6 +62,14 @@ public class InstalledAppsData implements Comparable<InstalledAppsData> {
 
     public void setChecked(boolean checked) {
         this.checked = checked;
+    }
+
+    public boolean isSystemApp() {
+        return systemApp;
+    }
+
+    public void setSystemApp(boolean systemApp) {
+        this.systemApp = systemApp;
     }
 }
 

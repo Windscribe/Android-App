@@ -87,10 +87,49 @@ fun SplitTunnelScreen(viewModel: SplitTunnelViewModel? = null) {
             Spacer(modifier = Modifier.height(14.dp))
             AppsTitle()
             Spacer(modifier = Modifier.height(8.dp))
+            ShowSystemAppsToggle(viewModel)
+            Spacer(modifier = Modifier.height(8.dp))
             Search(viewModel)
             Apps(viewModel)
         }
         PreferenceProgressBar(showProgress)
+    }
+}
+
+@Composable
+private fun ShowSystemAppsToggle(viewModel: SplitTunnelViewModel? = null) {
+    val showSystemApps by viewModel?.showSystemApps?.collectAsState()
+        ?: remember { mutableStateOf(false) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .background(
+                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                shape = RoundedCornerShape(8.dp)
+            )
+            .clickable { viewModel?.onShowSystemAppsToggle() }
+            .padding(start = 16.dp, end = 0.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = stringResource(R.string.show_system_apps),
+            color = MaterialTheme.colorScheme.primaryTextColor,
+            style = font16.copy(fontWeight = FontWeight.Medium),
+            textAlign = TextAlign.Start,
+            modifier = Modifier.weight(1f)
+        )
+        Checkbox(
+            showSystemApps,
+            onCheckedChange = {
+                viewModel?.onShowSystemAppsToggle()
+            },
+            colors = CheckboxDefaults.colors(
+                checkmarkColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
+                checkedColor = MaterialTheme.colorScheme.primaryTextColor,
+                uncheckedColor = MaterialTheme.colorScheme.preferencesSubtitleColor
+            ),
+        )
     }
 }
 
@@ -279,6 +318,7 @@ private fun SplitTunnelScreenApps() {
         override val filteredApps: StateFlow<List<InstalledAppsData>> = MutableStateFlow(apps)
         override val isSplitTunnelEnabled: StateFlow<Boolean> = MutableStateFlow(true)
         override val searchKeyword: StateFlow<String> = MutableStateFlow("")
+        override val showSystemApps: StateFlow<Boolean> = MutableStateFlow(false)
     }
     PreviewWithNav {
         SplitTunnelScreen(viewmodel)

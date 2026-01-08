@@ -337,6 +337,11 @@ class AppPreferenceHelper(
         set(toggle) {
             preference.put(PreferencesKeyConstants.SPLIT_TUNNEL_TOGGLE, toggle)
         }
+    override var showSystemApps: Boolean
+        get() = preference.getBoolean(PreferencesKeyConstants.SHOW_SYSTEM_APPS, false)
+        set(show) {
+            preference.put(PreferencesKeyConstants.SHOW_SYSTEM_APPS, show)
+        }
     override var userName: String
         get() = preference.getString(PreferencesKeyConstants.USER_NAME, "na") ?: "na"
         set(userName) {

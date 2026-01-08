@@ -69,6 +69,7 @@ interface PreferencesHelper {
     val showLatencyInMS: Boolean
     val splitRoutingMode: String
     var splitTunnelToggle: Boolean
+    var showSystemApps: Boolean
     var userName: String
     var userStatus: Int
     var whitelistOverride: Boolean
