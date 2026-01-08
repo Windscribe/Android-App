@@ -13,32 +13,39 @@ import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.serverlist.entity.City
 import com.windscribe.vpn.serverlist.entity.CityAndRegion
 import com.windscribe.vpn.serverlist.entity.Node
+import com.wsnet.lib.WSNetPingManager
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 import org.slf4j.LoggerFactory
 import java.util.TimeZone
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.resume
 import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.pow
-import kotlin.math.sin
-import kotlin.math.sqrt
 
 @Singleton
 class LocationRepository @Inject constructor(
     private val scope: CoroutineScope,
     private val preferencesHelper: PreferencesHelper,
     private val localDbInterface: LocalDbInterface,
-    private val userRepository: Lazy<UserRepository>
+    private val userRepository: Lazy<UserRepository>,
+    private val pingManager: WSNetPingManager,
+    private val advanceParameterRepository: AdvanceParameterRepository
 ) {
     private val logger = LoggerFactory.getLogger("data")
     private var _selectedCityEvents = MutableStateFlow(preferencesHelper.selectedCity)
     val selectedCity: StateFlow<Int> = _selectedCityEvents
+
+    // Cache for best location to avoid duplicate ping operations
+    private var cachedTimezoneBasedLocationId: Int? = null
 
     init {
         setSelectedCity()
@@ -140,40 +147,72 @@ class LocationRepository @Inject constructor(
         }.getOrDefault(-1)
     }
 
-    private fun pickBestCityId(cities: List<City>): Int {
+    private suspend fun pickBestCityId(cities: List<City>): Int {
+        // Return cached result if available
+        cachedTimezoneBasedLocationId?.let {
+            return it
+        }
+
         if (cities.isEmpty()) {
             return -1
         }
-        fun haversine(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-            val earthRadius = 6371.0 // Earth's radius in kilometers
-            val dLat = Math.toRadians(lat2 - lat1)
-            val dLon = Math.toRadians(lon2 - lon1)
-            val a = sin(dLat / 2).pow(2.0) +
-                    cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(dLon / 2).pow(2.0)
-            val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-            return earthRadius * c
-        }
         val userTimeZone = TimeZone.getDefault()
         val userOffsetMinutes = userTimeZone.getOffset(System.currentTimeMillis()) / (1000 * 60)
-        var bestCity: City? = null
-        var smallestTimeDifference = Int.MAX_VALUE
-        var smallestDistance = Double.MAX_VALUE
-        for (city in cities) {
+        data class CityWithTimeDiff(val city: City, val timeDiffMinutes: Int, val tzScore: Int)
+
+        val citiesWithTimezone = cities.map { city ->
             val cityTimeZone = TimeZone.getTimeZone(city.tz)
             val cityOffsetMinutes = cityTimeZone.getOffset(System.currentTimeMillis()) / (1000 * 60)
             val timeDifference = abs(userOffsetMinutes - cityOffsetMinutes)
-            val coordinates = city.coordinates.split(",")
-            val cityLatitude = coordinates[0].toDouble()
-            val cityLongitude = coordinates[1].toDouble()
-            val distance = haversine(cityLatitude, cityLongitude, cityLatitude, cityLongitude)
-            if (timeDifference < smallestTimeDifference ||
-                (timeDifference == smallestTimeDifference && distance < smallestDistance)) {
-                bestCity = city
-                smallestTimeDifference = timeDifference
-                smallestDistance = distance
+            val tzScore = when {
+                city.tz == userTimeZone.id -> 3
+                city.tz.contains("/") -> 2
+                else -> 1
+            }
+            CityWithTimeDiff(city, timeDifference, tzScore)
+        }
+        val sortedByTimezone = citiesWithTimezone.sortedWith(
+            compareBy<CityWithTimeDiff> { it.timeDiffMinutes }
+                .thenByDescending { it.tzScore }
+        )
+        val topCitiesToPing = sortedByTimezone.take(10)
+        val context = currentCoroutineContext()
+        val pingJobs = topCitiesToPing.map { cityWithDiff ->
+            CoroutineScope(context).async {
+                val city = cityWithDiff.city
+                val pingResult = pingCity(city)
+                Pair(city, pingResult)
             }
         }
-        return bestCity?.id ?: -1
+        val pingResults = pingJobs.awaitAll()
+        val successfulPings = pingResults.filter { it.second >= 0 }
+        val bestCityId = if (successfulPings.isEmpty()) {
+            topCitiesToPing.firstOrNull()?.city?.id ?: -1
+        } else {
+            val bestCity = successfulPings.minByOrNull { it.second }?.first
+            bestCity?.id ?: -1
+        }
+
+        // Cache the result
+        if (bestCityId != -1) {
+            cachedTimezoneBasedLocationId = bestCityId
+        }
+
+        return bestCityId
+    }
+
+    private suspend fun pingCity(city: City): Int {
+        val ip = city.pingIp ?: return -1
+        val host = city.pingHost ?: return -1
+        if (ip.isEmpty() || host.isEmpty()) return -1
+        return withTimeoutOrNull(500) {
+            suspendCancellableCoroutine { continuation ->
+                val pingType = advanceParameterRepository.pingType()
+                pingManager.ping(ip, host, pingType) { _, _, latency, _ ->
+                    continuation.resume(latency)
+                }
+            }
+        } ?: -1
     }
 
     private fun ipAvailable(ip: String?, nodes: List<Node>): Boolean {
