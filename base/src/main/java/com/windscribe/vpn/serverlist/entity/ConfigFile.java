@@ -7,6 +7,7 @@ package com.windscribe.vpn.serverlist.entity;
 
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
@@ -66,6 +67,7 @@ public class ConfigFile implements Serializable {
         this.name = name;
     }
 
+    @Nullable
     public String getPassword() {
         return password;
     }
@@ -90,6 +92,7 @@ public class ConfigFile implements Serializable {
         this.type = type;
     }
 
+    @Nullable
     public String getUsername() {
         return username;
     }
