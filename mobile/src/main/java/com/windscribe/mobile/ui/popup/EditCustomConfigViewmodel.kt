@@ -65,13 +65,14 @@ class EditCustomConfigViewmodelImpl(
                 val config = localDbInterface.getConfigFileAsync(id)
                 _configState.emit(EditConfigState.Success(config))
                 _name.emit(config.name)
-                _username.emit(config.username)
-                _password.emit(config.password)
+                _username.emit(config.username ?: "")
+                _password.emit(config.password ?: "")
                 _isRemember.emit(config.isRemember)
                 _connect.emit(connect)
                 val configType = WindUtilities.getConfigType(config.content)
                 _isOpenVPN.emit(configType == WindUtilities.ConfigType.OpenVPN)
             } catch (e: Exception) {
+                logger.error(e.toString())
                 _configState.emit(EditConfigState.Error)
             }
         }
