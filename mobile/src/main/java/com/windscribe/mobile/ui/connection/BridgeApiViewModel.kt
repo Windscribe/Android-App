@@ -239,19 +239,26 @@ class BridgeApiViewModelImpl @Inject constructor(
                     val currentIp = _ipState.value
                     ipRepository.update()
 
-                    // Wait for IP state to change
-                    val ipChanged = withTimeoutOrNull(5000) {
+                    // Wait for IP repository to complete the update
+                    val ipUpdated = withTimeoutOrNull(5000) {
                         _ipState.first { newIp ->
-                            newIp != currentIp && !newIp.contains("--")
+                            !newIp.contains("--") // Wait for valid IP (may be same as before)
                         }
                     } != null
 
-                    if (ipChanged) {
-                        logger.info("IP changed from $currentIp to ${_ipState.value}")
+                    val newIp = _ipState.value
+                    if (ipUpdated) {
+                        if (newIp != currentIp) {
+                            logger.info("IP changed from $currentIp to $newIp")
+                        } else {
+                            logger.info("IP rotated successfully (same IP reassigned: $newIp)")
+                        }
                     } else {
-                        logger.warn("IP state did not change within timeout")
+                        logger.warn("IP state update timed out, but rotation API succeeded")
                     }
-                    ipChanged
+
+                    // Trust the API response - rotation succeeded even if IP is the same
+                    true
                 }
                 is CallResult.Error -> {
                     logger.error("Rotate IP request failed: ${result.errorMessage}")
