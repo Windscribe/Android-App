@@ -8,7 +8,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -19,7 +26,6 @@ import androidx.compose.ui.unit.sp
 import com.windscribe.mobile.ui.connection.BridgeApiViewModel
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import kotlinx.coroutines.delay
-import kotlin.random.Random
 
 @Composable
 fun AnimatedIPAddress(
@@ -36,73 +42,56 @@ fun AnimatedIPAddress(
     val animationTrigger = remember { mutableIntStateOf(0) }
 
     LaunchedEffect(shouldAnimate) {
-        if (shouldAnimate) animationTrigger.intValue++
-    }
-
-    // Fast-path: no animation, static IP
-    if (!isRotatingIp && ipAddress.contains("--")) {
-        Text(ipAddress, style = style, color = color, modifier = modifier)
-        return
-    }
-
-    val displayIp = remember(ipAddress, isRotatingIp) {
-        if (isRotatingIp && ipAddress.contains("--")) {
-            "000.000.000.000"
-        } else ipAddress
-    }
-
-    // Stable callback (VERY important)
-    val onAnimationCompleteStable = remember(connectionViewmodel) {
-        { connectionViewmodel.onIpAnimationComplete() }
-    }
-
-    // Precompute digit positions (no mutation in composition)
-    val digitIndices = remember(displayIp) {
-        displayIp.mapIndexedNotNull { index, c ->
-            if (c.isDigit()) index else null
+        if (shouldAnimate) {
+            animationTrigger.intValue++
         }
     }
-    val lastDigitIndex = digitIndices.lastOrNull()
 
-    Row(modifier = modifier) {
-        displayIp.forEachIndexed { index, char ->
-            key(index) {
-                if (char.isDigit()) {
-                    AnimatedDigit(
-                        targetDigit = char.digitToInt(),
-                        animationTrigger = animationTrigger.intValue,
-                        style = style,
-                        color = color,
-                        isRotating = isRotatingIp,
-                        onAnimationComplete =
-                            if (index == lastDigitIndex && !isRotatingIp)
-                                onAnimationCompleteStable
-                            else null
-                    )
-                } else {
-                    Separator(char, style, color)
+    if (ipAddress.contains("--") && !isRotatingIp) {
+        Text(text = ipAddress, style = style, color = color, modifier = modifier)
+    } else {
+        val displayIp = if (isRotatingIp && ipAddress.contains("--")) {
+            "000.000.000.000" // Placeholder to animate
+        } else {
+            ipAddress
+        }
+
+        key(displayIp, isRotatingIp) {
+            Row(modifier = modifier) {
+                var digitIndex = 0
+                val totalDigits = displayIp.count { it.isDigit() }
+                displayIp.forEachIndexed { index, char ->
+                    key("$displayIp-$index-$char-$isRotatingIp") {
+                        if (char.isDigit()) {
+                            val currentDigitIndex = digitIndex++
+                            val isLastDigit = currentDigitIndex == totalDigits - 1
+                            AnimatedDigit(
+                                targetDigit = char.digitToInt(),
+                                animationTrigger = animationTrigger.intValue,
+                                style = style,
+                                color = color,
+                                isRotating = isRotatingIp,
+                                onAnimationComplete = if (isLastDigit && !isRotatingIp) {
+                                    { connectionViewmodel.onIpAnimationComplete() }
+                                } else null
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier.height((style.fontSize.value * 1.5f).dp),
+                                contentAlignment = Alignment.BottomCenter
+                            ) {
+                                Text(
+                                    text = char.toString(),
+                                    style = style,
+                                    color = color,
+                                    modifier = Modifier.offset(y = (-1).dp)
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun Separator(
-    char: Char,
-    style: TextStyle,
-    color: Color
-) {
-    Box(
-        modifier = Modifier.height((style.fontSize.value * 1.5f).dp),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        Text(
-            text = char.toString(),
-            style = style,
-            color = color,
-            modifier = Modifier.offset(y = (-1).dp)
-        )
     }
 }
 
@@ -112,54 +101,72 @@ private fun AnimatedDigit(
     animationTrigger: Int,
     style: TextStyle,
     color: Color,
-    isRotating: Boolean,
-    onAnimationComplete: (() -> Unit)?
+    isRotating: Boolean = false,
+    onAnimationComplete: (() -> Unit)? = null
 ) {
-    val animatedValue = remember { Animatable(targetDigit.toFloat()) }
     var previousDigit by remember { mutableIntStateOf(targetDigit) }
-
+    val animatedValue = remember { Animatable(targetDigit.toFloat()) }
     val itemHeight = style.fontSize.value * 1.5f
-    val randomDelay = remember(animationTrigger) { Random.nextLong(0, 40) }
+    val randomDelay = remember(animationTrigger) { (0..40).random().toLong() }
 
-    // Continuous rotation mode
+    // Continuous animation when rotating
     LaunchedEffect(isRotating) {
-        if (!isRotating) return@LaunchedEffect
-
-        while (isRotating) {
+        if (isRotating) {
+            while (isRotating) {
+                val currentValue = animatedValue.value
+                animatedValue.animateTo(
+                    targetValue = currentValue + 10f,
+                    animationSpec = tween(
+                        durationMillis = 300,
+                        easing = LinearOutSlowInEasing
+                    )
+                )
+            }
+            // When rotation stops, animate to the final target digit
+            val from = animatedValue.value
+            val currentMod = from.toInt() % 10
+            val diff = if (targetDigit >= currentMod) {
+                targetDigit - currentMod
+            } else {
+                (10 - currentMod) + targetDigit
+            }
             animatedValue.animateTo(
-                animatedValue.value + 10f,
-                animationSpec = tween(300, easing = LinearOutSlowInEasing)
+                targetValue = from + diff,
+                animationSpec = tween(
+                    durationMillis = 500,
+                    easing = LinearOutSlowInEasing
+                )
             )
+            animatedValue.snapTo(targetDigit.toFloat())
+            previousDigit = targetDigit
+            onAnimationComplete?.invoke()
         }
     }
 
-    // Final settle after rotation OR normal change animation
-    LaunchedEffect(animationTrigger, isRotating) {
-        if (isRotating || animationTrigger == 0) return@LaunchedEffect
+    LaunchedEffect(animationTrigger) {
+        if (animationTrigger > 0 && !isRotating) {
+            delay(randomDelay)
 
-        delay(randomDelay)
-
-        val from = animatedValue.value
-        val currentMod = from.toInt() % 10
-        val diff =
-            if (targetDigit >= currentMod)
+            val from = animatedValue.value
+            val currentMod = from.toInt() % 10
+            val diff = if (targetDigit >= currentMod) {
                 targetDigit - currentMod
-            else
-                10 - currentMod + targetDigit
+            } else {
+                (10 - currentMod) + targetDigit
+            }
 
-        animatedValue.animateTo(
-            from + 30f + diff,
-            animationSpec = tween(750, easing = LinearOutSlowInEasing)
-        )
+            animatedValue.animateTo(
+                targetValue = from + 30f + diff,
+                animationSpec = tween(
+                    durationMillis = 750,
+                    easing = LinearOutSlowInEasing
+                )
+            )
 
-        animatedValue.snapTo(targetDigit.toFloat())
-        previousDigit = targetDigit
-        onAnimationComplete?.invoke()
-    }
-
-    // Snap-only update when digit changes without animation
-    LaunchedEffect(targetDigit, isRotating) {
-        if (!isRotating && targetDigit != previousDigit) {
+            animatedValue.snapTo(targetDigit.toFloat())
+            previousDigit = targetDigit
+            onAnimationComplete?.invoke()
+        } else if (targetDigit != previousDigit && !isRotating) {
             animatedValue.snapTo(targetDigit.toFloat())
             previousDigit = targetDigit
         }
@@ -171,19 +178,19 @@ private fun AnimatedDigit(
             .clipToBounds(),
         contentAlignment = Alignment.Center
     ) {
-        val value = animatedValue.value
-        val floor = value.toInt()
-        val delta = value - floor
+        val currentValue = animatedValue.value
+        val currentFloor = currentValue.toInt()
+        val delta = currentValue - currentFloor
 
         Text(
-            text = (floor % 10).toString(),
+            text = (currentFloor % 10).toString(),
             style = style,
             color = color,
             modifier = Modifier.offset(y = (-delta * itemHeight).dp)
         )
 
         Text(
-            text = ((floor + 1) % 10).toString(),
+            text = ((currentFloor + 1) % 10).toString(),
             style = style,
             color = color,
             modifier = Modifier.offset(y = ((1 - delta) * itemHeight).dp)
