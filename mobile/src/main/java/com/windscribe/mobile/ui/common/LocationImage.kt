@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -177,18 +178,20 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
                     animationSpec = tween(durationMillis = 600),
                     label = "overlay_alpha"
                 )
+                val overlayBrush = remember {
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            AppColors.darkBlueAccent,
+                            Color.Transparent
+                        )
+                    )
+                }
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .alpha(overlayAlpha)
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    AppColors.darkBlueAccent.copy(alpha = 1.0f),
-                                    Color.Transparent
-                                )
-                            )
-                        )
+                        .graphicsLayer {
+                            alpha = overlayAlpha
+                        }.background(brush = overlayBrush)
                 )
             }
         }

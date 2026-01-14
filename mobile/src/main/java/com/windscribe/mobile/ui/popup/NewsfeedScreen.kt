@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -212,10 +213,10 @@ private fun NotificationItem(
             Image(
                 painter = painterResource(R.drawable.ic_expand_small),
                 contentDescription = null,
-                alpha = if (expanded.value) 1f else 0.4f,
-                modifier = Modifier
-                    .rotate(rotationAngle)
-                    .hapticClickable() { expanded.value = !expanded.value }
+                modifier =Modifier.graphicsLayer {
+                    rotationZ = rotationAngle
+                    alpha = if (expanded.value) 1f else 0.4f
+                }.hapticClickable() { expanded.value = !expanded.value }
             )
         }
         Text(
