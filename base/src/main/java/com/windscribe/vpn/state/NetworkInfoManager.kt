@@ -4,83 +4,73 @@
 
 package com.windscribe.vpn.state
 
+import android.R.attr.name
+import android.util.Log
 import com.windscribe.vpn.apppreference.PreferencesHelper
-import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.constants.PreferencesKeyConstants
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
-import com.windscribe.vpn.state.DeviceStateManager.DeviceStateListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.concurrent.ConcurrentLinkedQueue
 import javax.inject.Singleton
 
 @Singleton
-class NetworkInfoManager(private val preferencesHelper: PreferencesHelper, private val localDbInterface: LocalDbInterface, deviceStateManager: DeviceStateManager) :
-        DeviceStateListener {
+class NetworkInfoManager(
+    private val preferencesHelper: PreferencesHelper,
+    private val localDbInterface: LocalDbInterface,
+    private val deviceStateManager: DeviceStateManager
+) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    var networkInfo: NetworkInfo? = null
-        private set
-    private val listeners = ConcurrentLinkedQueue<NetworkInfoListener>()
-    fun addNetworkInfoListener(networkInfoListener: NetworkInfoListener) {
-        listeners.add(networkInfoListener)
-    }
 
-    override fun onNetworkStateChanged() {
-        reloadCurrentNetwork(false)
-    }
+    private val _networkInfo = MutableStateFlow<NetworkInfo?>(null)
+    val networkInfo: StateFlow<NetworkInfo?> = _networkInfo.asStateFlow()
 
-    fun reload(userReload: Boolean = false) {
-        reloadCurrentNetwork(userReload)
-    }
-
-    fun removeNetworkInfoListener(networkInfoListener: NetworkInfoListener) {
-        listeners.remove(networkInfoListener)
-    }
-
-    private fun reloadCurrentNetwork(userReload: Boolean) {
+    fun reload() {
         scope.launch {
+            val currentDetail = deviceStateManager.networkDetail.value
+            if (currentDetail == null) {
+                _networkInfo.emit(null)
+                return@launch
+            }
             try {
-                val name = withContext(Dispatchers.IO) {
-                    WindUtilities.getNetworkName()
-                }
-
                 var network = withContext(Dispatchers.IO) {
-                    localDbInterface.getNetwork(name)
+                    localDbInterface.getNetwork(currentDetail.name)
                 }
 
                 if (network == null) {
                     withContext(Dispatchers.IO) {
-                        localDbInterface.addNetwork(preferencesHelper.getDefaultNetworkInfo(name))
+                        localDbInterface.addNetwork(preferencesHelper.getDefaultNetworkInfo(currentDetail.name))
                     }
                     network = withContext(Dispatchers.IO) {
-                        localDbInterface.getNetwork(name)
+                        localDbInterface.getNetwork(currentDetail.name)
                     }
                 }
-
-                networkInfo = network
-                for (listener in listeners) {
-                    listener.onNetworkInfoUpdate(networkInfo, userReload)
-                }
+                _networkInfo.emit(network)
             } catch (e: Exception) {
-                networkInfo = null
-                for (listener in listeners) {
-                    listener.onNetworkInfoUpdate(null, userReload)
-                }
+                Log.e("NetworkInfoManager", "Error reloading network: ${e.message}")
+                _networkInfo.emit(null)
             }
         }
     }
 
     init {
-        deviceStateManager.addListener(this)
+        scope.launch {
+            deviceStateManager.networkDetail.collect { detail ->
+                if (detail != null) {
+                    Log.i("NetworkInfoManager", "Network changed: ${detail.name} (${detail.type})")
+                    reload()
+                } else {
+                    // No network detail available (offline or no network name)
+                    Log.i("NetworkInfoManager", "Network detail unavailable")
+                    _networkInfo.emit(null)
+                }
+            }
+        }
     }
-}
-
-interface NetworkInfoListener {
-
-    fun onNetworkInfoUpdate(networkInfo: NetworkInfo?, userReload: Boolean)
 }

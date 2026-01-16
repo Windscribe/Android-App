@@ -49,7 +49,7 @@ class NetworkOptionsViewModelImpl(
                     _allNetworks.value = emptyList()
                 } else {
                     Log.i("NetworkOptionsViewModel", "loadNetworks: $it")
-                    val currentNetwork = networkInfoManager.networkInfo?.networkName
+                    val currentNetwork = networkInfoManager.networkInfo.value?.networkName
                     _allNetworks.value = it.filter { it.networkName != currentNetwork }
                     _currentNetwork.value = it.find { it.networkName == currentNetwork }
                 }

@@ -69,12 +69,6 @@
             </intent-filter>
         </service>
         <service
-            android:foregroundServiceType="systemExempted"
-            android:name=".services.NetworkWhiteListService"
-            android:enabled="true"
-            android:exported="true"
-            tools:ignore="ForegroundServicePermission" />
-        <service
             android:name=".services.DisconnectService"
             android:exported="true" />
         <service

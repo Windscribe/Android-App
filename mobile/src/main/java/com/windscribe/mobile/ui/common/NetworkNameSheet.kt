@@ -50,6 +50,7 @@ import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
+import com.windscribe.vpn.Windscribe.Companion.appContext
 
 internal enum class PermissionDialogType {
     ForegroundLocation, BackgroundLocation, None
@@ -73,6 +74,9 @@ fun RowScope.NetworkNameSheet(connectionViewmodel: ConnectionViewmodel, homeView
     if (showPermissionRequest) {
         RequestLocationPermissions {
             showPermissionRequest = false
+            // Refresh network detail now that we have location permission
+            appContext.deviceStateManager.refreshNetworkDetail()
+
             navController.currentBackStackEntry?.savedStateHandle?.set(
                 "network_name",
                 networkInfo.name

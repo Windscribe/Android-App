@@ -1,99 +1,58 @@
 package com.windscribe.vpn.repository
 
-import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.api.response.WgConnectConfig
-import com.windscribe.vpn.api.response.WgConnectResponse
 import com.windscribe.vpn.api.response.WgInitResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext.result
-import com.windscribe.vpn.constants.NetworkErrorCodes
-import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP
+import com.windscribe.vpn.commonutils.WireguardUtil
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_WG_UNABLE_TO_GENERATE_PSK
+import com.windscribe.vpn.constants.NetworkErrorCodes.EXPIRED_OR_BANNED_ACCOUNT
+import com.windscribe.vpn.exceptions.InvalidVPNConfigException
 import com.wireguard.crypto.Key
 import com.wireguard.crypto.KeyPair
 import kotlinx.coroutines.delay
 import org.slf4j.LoggerFactory
 import java.io.Serializable
+import java.security.PublicKey
+import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Repository for loading and managing WireGuard configuration
- * This repository handles the complete lifecycle of WireGuard connections including:
- * - Key pair generation and management
- * - Connection configuration assembly
+ * Repository for managing WireGuard VPN configuration lifecycle.
+ *
+ * Responsibilities:
+ * - WireGuard key pair generation and secure caching
+ * - Dynamic IP address allocation based on public key hashing
+ * - Remote configuration assembly for tunnel establishment
+ * - User account validation for connection authorization
+ *
+ * @property apiManager API interface for WireGuard initialization and session management
+ * @property preferenceHelper Secure storage for WireGuard local parameters
  */
 @Singleton
-class WgConfigRepository(
+class WgConfigRepository @Inject constructor(
     private val apiManager: IApiCallManager,
     private val preferenceHelper: PreferencesHelper
 ) {
-    private val logger = LoggerFactory.getLogger("wg-config")
+    private val logger = LoggerFactory.getLogger(TAG)
 
     /**
-     * Deletes all cached WireGuard keys and PSK state.
-     * Called when user logs out or resets connection.
-     */
-    fun deleteKeys() {
-        logger.debug("Deleting cached WireGuard parameters")
-        preferenceHelper.wgLocalParams = null
-    }
-    /**
-     * Generates or retrieves WireGuard key pair and initial PSK.
-     * If keys already exist, returns cached params. Otherwise generates new keypair and calls wgInit API.
+     * Retrieves complete WireGuard configuration for establishing a VPN connection.
      *
-     * @param forceInit If true, forces generation of new keys even if cached params exist
-     * @return CallResult containing local WireGuard parameters (private key, allowed IPs, PSK)
-     */
-    private suspend fun generateKeys(forceInit: Boolean): CallResult<WgLocalParams> {
-        return preferenceHelper.wgLocalParams?.let { existingParams ->
-            return@let CallResult.Success(existingParams)
-        } ?: run {
-            logger.debug("Generating new WireGuard key pair")
-            val keyPair = KeyPair()
-            val publicKey = keyPair.publicKey.toBase64()
-
-            // Initial delay
-            delay(100)
-
-            // Try wgInit with retry logic
-            var response = apiManager.wgInit(publicKey, forceInit)
-            if (response.errorClass?.errorCode == ERROR_WG_UNABLE_TO_GENERATE_PSK) {
-                logger.debug("Retrying WireGuard init - Error: WireGuard utility failure")
-                response = apiManager.wgInit(publicKey, forceInit)
-            }
-
-            val callResult = result<WgInitResponse> {
-                response
-            }
-
-            when (callResult) {
-                is CallResult.Success -> {
-                    val localParams = WgLocalParams(
-                        keyPair.privateKey.toBase64(),
-                        callResult.data.config.allowedIPs,
-                        callResult.data.config.preSharedKey
-                    )
-                    preferenceHelper.wgLocalParams = localParams
-                    CallResult.Success(localParams)
-                }
-
-                is CallResult.Error -> callResult
-            }
-        }
-    }
-
-    /**
-     * Gets the complete WireGuard configuration needed to establish a connection.
-     * This is the main entry point for retrieving WireGuard parameters.
+     * Flow:
+     * 1. Validates user account status (optional)
+     * 2. Generates or retrieves cached WireGuard keys
+     * 3. Derives deterministic LAN IP from public key
+     * 4. Assembles remote parameters with server configuration
      *
-     * @param hostname The server hostname to connect to
-     * @param serverPublicKey The server's WireGuard public key
-     * @param forceInit If true, forces regeneration of keys even if cached
-     * @param checkUserAccountStatus If true, validates user account status before proceeding
-     * @return CallResult containing complete WireGuard parameters or an error
+     * @param hostname Target server hostname for connection
+     * @param serverPublicKey Server's WireGuard public key
+     * @param forceInit Forces regeneration of keys, ignoring cache
+     * @param checkUserAccountStatus Validates account status before proceeding
+     * @return [CallResult.Success] with [WgRemoteParams] or [CallResult.Error]
      */
     suspend fun getWgParams(
         hostname: String,
@@ -101,129 +60,214 @@ class WgConfigRepository(
         forceInit: Boolean = false,
         checkUserAccountStatus: Boolean = false
     ): CallResult<WgRemoteParams> {
+        // Validate user account if required
         if (checkUserAccountStatus) {
-            val userStatusResult = validateUserAccountStatus()
-            if (userStatusResult is CallResult.Error) {
-                return userStatusResult
+            validateUserAccountStatus().takeIf { it is CallResult.Error }?.let { error ->
+                return error as CallResult.Error
             }
         }
 
-        return when (val wgInitResponse =
-            generateKeys(forceInit)) {
-            is CallResult.Success -> {
-                val userPublicKey =
-                    KeyPair(Key.fromBase64(wgInitResponse.data.privateKey)).publicKey.toBase64()
-                logger.debug("Requesting WireGuard connect for $hostname")
-                when (val wgConnectResponse = wgConnect(hostname, userPublicKey)) {
-                    is CallResult.Success -> {
-                        createRemoteParams(
-                            wgInitResponse.data,
-                            serverPublicKey,
-                            wgConnectResponse.data
+        // Generate or retrieve local WireGuard parameters
+        val localParams = generateKeys(forceInit).getOrElse { error ->
+            logger.debug("Failed to generate keys (forceInit=$forceInit): ${error.errorMessage}")
+            return error
+        }
+
+        // Derive public key from private key
+        val userPublicKey = KeyPair(Key.fromBase64(localParams.privateKey))
+            .publicKey
+            .toBase64()
+
+        logger.debug("Requesting WireGuard configuration for hostname: $hostname")
+
+        // Generate LAN IP from public key
+        val connectConfig = generateLanIpAddress(userPublicKey, localParams.hashedCIDR)
+            .getOrElse { return it }
+
+        return createRemoteParams(localParams, serverPublicKey, connectConfig)
+    }
+
+    /**
+     * Clears all cached WireGuard parameters.
+     *
+     * Should be invoked on:
+     * - User logout
+     * - Connection reset
+     * - Key rotation requirement
+     */
+    fun deleteKeys() {
+        logger.debug("Clearing cached WireGuard parameters")
+        preferenceHelper.wgLocalParams = null
+    }
+
+    /**
+     * Generates or retrieves cached WireGuard key pair and PSK.
+     *
+     * Caching behavior:
+     * - Returns cached params if available with valid hashedCIDR (unless forceInit=true)
+     * - Reuses existing keypair if hashedCIDR is missing (refreshes server params only)
+     * - Generates fresh keypair when forced or no cached params exist
+     *
+     * Additional features:
+     * - Implements rate limiting delay before server initialization
+     * - Automatic retry on PSK generation failures
+     * - Persists hashedCIDR for deterministic IP allocation
+     *
+     * @param forceInit Bypasses cache and generates fresh keys
+     * @return [CallResult.Success] with [WgLocalParams] or [CallResult.Error]
+     */
+    private suspend fun generateKeys(forceInit: Boolean): CallResult<WgLocalParams> {
+        // Return cached params if available and not forcing init
+        val wgLocalParams = preferenceHelper.wgLocalParams
+        if (!forceInit && wgLocalParams?.hashedCIDR != null) {
+            logger.debug("Using cached WireGuard parameters")
+            return CallResult.Success(wgLocalParams)
+        }
+        val keyPair = if (wgLocalParams != null && wgLocalParams.hashedCIDR == null && !forceInit) {
+            logger.debug("Refreshing WireGuard key pair due to missing CIDR")
+            KeyPair(Key.fromBase64(wgLocalParams.privateKey))
+        } else {
+            logger.debug("Generating new WireGuard key pair")
+            KeyPair()
+        }
+        val publicKey = keyPair.publicKey.toBase64()
+
+        // Brief delay for rate limiting
+        delay(INIT_DELAY_MS)
+
+        // Initialize with server (with retry on PSK generation failure)
+        val initResponse = performWgInitWithRetry(publicKey, forceInit)
+            .getOrElse { return it }
+
+        // Create and cache local params
+        return WgLocalParams(
+            privateKey = keyPair.privateKey.toBase64(),
+            allowedIPs = initResponse.config.allowedIPs,
+            preSharedKey = initResponse.config.preSharedKey,
+            hashedCIDR = initResponse.config.hashedCIDR
+        ).also { params ->
+            preferenceHelper.wgLocalParams = params
+            logger.debug("Cached new WireGuard local parameters")
+        }.let { CallResult.Success(it) }
+    }
+
+    /**
+     * Performs WireGuard initialization with automatic retry on PSK failure.
+     */
+    private suspend fun performWgInitWithRetry(
+        publicKey: String,
+        forceInit: Boolean
+    ): CallResult<WgInitResponse> {
+        var response = apiManager.wgInit(publicKey, forceInit)
+
+        // Retry once on PSK generation failure
+        if (response.errorClass?.errorCode == ERROR_WG_UNABLE_TO_GENERATE_PSK) {
+            logger.debug("Retrying WireGuard init due to PSK generation failure")
+            response = apiManager.wgInit(publicKey, forceInit)
+        }
+
+        return result { response }
+    }
+
+    /**
+     * Generates deterministic LAN IP address from WireGuard public key.
+     *
+     * Uses SHA-256 hash of public key to derive IP within CIDR range,
+     * ensuring consistent IP allocation for the same public key.
+     *
+     * @param publicKey Base64-encoded WireGuard public key
+     * @param hashedCIDR CIDR range for IP allocation (e.g., ["100.64.0.0/10"]), defaults to legacy CIDR if null
+     * @return [CallResult.Success] with [WgConnectConfig] or [CallResult.Error]
+     */
+    private fun generateLanIpAddress(
+        publicKey: String,
+        hashedCIDR: List<String>?
+    ): CallResult<WgConnectConfig> {
+        val cidr = hashedCIDR?.takeIf { it.isNotEmpty() } ?: throw InvalidVPNConfigException(CallResult.Error(errorMessage = "Invalid CIDR range"))
+
+        logger.debug("Generating LAN IP for public key: $publicKey using CIDR: ${cidr[0]}")
+
+        return runCatching {
+            val ipAddress = WireguardUtil.generateWireguardIP(publicKey, cidr[0])
+            logger.debug("Generated IP: $ipAddress from CIDR: ${cidr[0]}")
+            WgConnectConfig(address = ipAddress, dns = DEFAULT_DNS)
+        }.fold(
+            onSuccess = { CallResult.Success(it) },
+            onFailure = { exception ->
+                logger.error("IP generation failed: ${exception.message}", exception)
+                CallResult.Error(errorMessage = "Failed to generate WireGuard IP: ${exception.message}")
+            }
+        )
+    }
+
+    /**
+     * Validates user account status for VPN access eligibility.
+     *
+     * @return [CallResult.Success] if account is active, [CallResult.Error] if expired/banned
+     */
+    private suspend fun validateUserAccountStatus(): CallResult<Unit> {
+        logger.debug("Validating user account status")
+
+        return result<UserSessionResponse> {
+            apiManager.getSessionGeneric(null)
+        }.fold(
+            onSuccess = { session ->
+                when (session.userAccountStatus) {
+                    ACCOUNT_STATUS_ACTIVE -> {
+                        CallResult.Success(Unit)
+                    }
+                    else -> {
+                        logger.debug("Account validation failed - status: ${session.userAccountStatus}")
+                        CallResult.Error(
+                            code = EXPIRED_OR_BANNED_ACCOUNT,
+                            errorMessage = "Account is expired or banned"
                         )
                     }
-
-                    is CallResult.Error -> {
-                        wgConnectResponse
-                    }
                 }
+            },
+            onError = { error ->
+                logger.debug("Failed to retrieve user session: ${error.errorMessage}")
+                error
             }
-
-            is CallResult.Error -> {
-                logger.debug("Error generating keys (forceInit=$forceInit): ${wgInitResponse.errorMessage}")
-                wgInitResponse
-            }
-        }
+        )
     }
 
-    /// Validates user account status
-    private suspend fun validateUserAccountStatus(): CallResult<Unit> {
-        logger.debug("Checking user account status")
-        return when (val userSessionResponse = result<UserSessionResponse> {
-            apiManager.getSessionGeneric(null)
-        }) {
-            is CallResult.Success -> {
-                if (userSessionResponse.data.userAccountStatus != 1) {
-                    logger.debug("User account is expired/banned: ${userSessionResponse.data.userAccountStatus}")
-                    CallResult.Error(
-                        NetworkErrorCodes.EXPIRED_OR_BANNED_ACCOUNT,
-                        "User account banned or expired"
-                    )
-                } else {
-                    CallResult.Success(Unit)
-                }
-            }
-
-            is CallResult.Error -> {
-                logger.debug("Error getting user session: ${userSessionResponse.errorMessage}")
-                userSessionResponse
-            }
-        }
-    }
-
-    /// Pulls second half of wireguard configuration(Address, DNS)
-    private suspend fun wgConnect(
-        hostname: String,
-        userPublicKey: String
-    ): CallResult<WgConnectConfig> {
-        val deviceId = getDeviceIdForStaticIp()
-
-        // Initial delay
-        delay(100)
-
-        // Try wgConnect with retry logic
-        var response = apiManager.wgConnect(userPublicKey, hostname, deviceId)
-        if (response.errorClass?.errorCode == ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP) {
-            logger.debug("Retrying WireGuard connect - Error: Unable to select WireGuard IP")
-            response = apiManager.wgConnect(userPublicKey, hostname, deviceId)
-        }
-
-        val callResult = result<WgConnectResponse> {
-            response
-        }
-
-        return when (callResult) {
-            is CallResult.Success -> CallResult.Success(callResult.data.config)
-            is CallResult.Error -> callResult
-        }
-    }
-
-    /// Generates device id for static ip
-    private fun getDeviceIdForStaticIp(): String {
-        return if (preferenceHelper.isConnectingToStaticIp) {
-            runCatching {
-                preferenceHelper.getDeviceUUID()
-                    ?: throw Exception("Failed to get device UUID")
-            }.getOrElse { exception ->
-                logger.debug("Error getting device UUID: ${exception.message}")
-                ""
-            }.also { deviceId ->
-                if (deviceId.isNotEmpty()) {
-                    logger.debug("Adding device ID to WireGuard connect: $deviceId")
-                }
-            }
-        } else {
-            ""
-        }
-    }
+    /**
+     * Assembles complete remote parameters for WireGuard tunnel configuration.
+     */
     private fun createRemoteParams(
         localParams: WgLocalParams,
         serverPublicKey: String,
         connectConfig: WgConnectConfig
-    ): CallResult<WgRemoteParams> {
-        val remoteParams = WgRemoteParams(
-            localParams.allowedIPs,
-            localParams.preSharedKey,
-            localParams.privateKey,
-            serverPublicKey,
-            connectConfig.address,
-            connectConfig.dns
-        )
-        logger.debug("Created WireGuard remote params: {}", remoteParams)
-        return CallResult.Success(remoteParams)
+    ): CallResult<WgRemoteParams> = WgRemoteParams(
+        allowedIPs = localParams.allowedIPs,
+        preSharedKey = localParams.preSharedKey,
+        privateKey = localParams.privateKey,
+        serverPublicKey = serverPublicKey,
+        address = connectConfig.address,
+        dns = connectConfig.dns
+    ).also { params ->
+        logger.debug("Assembled remote WireGuard parameters: {}", params)
+    }.let { CallResult.Success(it) }
+
+    companion object {
+        private const val TAG = "wg-config"
+        private const val DEFAULT_DNS = "10.255.255.1"
+        private const val INIT_DELAY_MS = 100L
+        private const val ACCOUNT_STATUS_ACTIVE = 1
     }
 }
 
+/**
+ * Remote WireGuard configuration parameters for tunnel establishment.
+ *
+ * @property allowedIPs IP ranges routed through VPN (typically "0.0.0.0/0")
+ * @property preSharedKey Pre-shared key for post-quantum security
+ * @property privateKey User's WireGuard private key
+ * @property serverPublicKey Server's WireGuard public key
+ * @property address Assigned LAN IP address within VPN subnet
+ * @property dns DNS server IP for VPN queries
+ */
 data class WgRemoteParams(
     val allowedIPs: String,
     val preSharedKey: String,
@@ -232,21 +276,39 @@ data class WgRemoteParams(
     val address: String,
     val dns: String
 ) {
-    override fun toString(): String {
-        return "WgRemoteParams(allowedIPs='$allowedIPs', preSharedKey='${preSharedKey.takeLast(8)}', privateKey='${
-            privateKey.takeLast(8)
-        }', serverPublicKey='$serverPublicKey', address='$address', dns='$dns')"
+    override fun toString(): String = buildString {
+        append("WgRemoteParams(")
+        append("allowedIPs='$allowedIPs', ")
+        append("preSharedKey='${preSharedKey.maskSensitive()}', ")
+        append("privateKey='${privateKey.maskSensitive()}', ")
+        append("serverPublicKey='$serverPublicKey', ")
+        append("address='$address', ")
+        append("dns='$dns'")
+        append(")")
     }
+
+    private fun String.maskSensitive(visibleChars: Int = 8): String =
+        if (length > visibleChars) "***${takeLast(visibleChars)}" else "***"
 }
 
+/**
+ * Local WireGuard parameters cached for reuse across connections.
+ *
+ * @property privateKey User's WireGuard private key (base64)
+ * @property allowedIPs IP ranges routed through VPN
+ * @property preSharedKey Pre-shared key for added security layer
+ * @property hashedCIDR CIDR range(s) for deterministic IP allocation (defaults to 100.64.0.0/10 for legacy compatibility)
+ */
 data class WgLocalParams(
     @SerializedName("privateKey")
-    @Expose
     val privateKey: String,
+
     @SerializedName("allowedIPs")
-    @Expose
     val allowedIPs: String,
+
     @SerializedName("preSharedKey")
-    @Expose
-    var preSharedKey: String
+    val preSharedKey: String,
+
+    @SerializedName("HashedCIDR")
+    val hashedCIDR: List<String>?
 ) : Serializable

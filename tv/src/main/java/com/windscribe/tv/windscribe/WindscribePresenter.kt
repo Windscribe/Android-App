@@ -18,11 +18,11 @@ interface WindscribePresenter {
     fun onDisconnectIntentReceived()
     fun onHotStart()
     fun onMenuButtonClicked()
-    fun onNetworkStateChanged()
     suspend fun observeVPNState()
     fun observeUserState(windscribeActivity: WindscribeActivity)
     suspend fun observeConnectedProtocol()
     suspend fun observeServerList()
     suspend fun observeSelectedLocation()
     suspend fun observeDisconnectedProtocol()
+    suspend fun observeNetworkEvents()
 }

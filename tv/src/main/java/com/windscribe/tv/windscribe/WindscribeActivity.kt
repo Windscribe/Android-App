@@ -44,18 +44,12 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.*
 import com.windscribe.vpn.constants.AnimConstants
 import com.windscribe.vpn.constants.NotificationConstants
-import com.windscribe.vpn.state.DeviceStateManager
-import com.windscribe.vpn.state.DeviceStateManager.DeviceStateListener
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
-class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
-    FocusAwareConstraintLayout.OnWindowResizeListener {
-
-    @Inject
-    lateinit var deviceStateManager: DeviceStateManager
+class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintLayout.OnWindowResizeListener {
 
     @Inject
     lateinit var preferenceChangeObserver: PreferenceChangeObserver
@@ -96,7 +90,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
             mainLogger.info("Disconnect intent received...")
             windscribePresenter.onDisconnectIntentReceived()
         }
-        deviceStateManager.addListener(this)
     }
 
     override fun onResume() {
@@ -121,12 +114,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
                 windscribePresenter.connectWithSelectedLocation(cityID)
             }
         }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        mainLogger.info("Activity on stop method,un-registering network and vpn status listener")
-        deviceStateManager.removeListener(this)
     }
 
     override fun onDestroy() {
@@ -594,7 +581,8 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         activityScope { windscribePresenter.observeSelectedLocation() }
         activityScope { windscribePresenter.observeDisconnectedProtocol() }
         activityScope { windscribePresenter.observeConnectedProtocol() }
-        windscribePresenter.observeUserState(this)
+        activityScope { windscribePresenter.observeVPNState() }
+        activityScope { windscribePresenter.observeNetworkEvents() }
     }
 
     private fun setFocusListener() {
@@ -610,10 +598,6 @@ class WindscribeActivity : BaseActivity(), WindscribeView, DeviceStateListener,
         val startIntent = Intent(this, OverlayActivity::class.java)
         startActivityForResult(startIntent, overlayStartRequestCode)
         overridePendingTransition(anim.slide_up, anim.slide_down)
-    }
-
-    override fun onNetworkStateChanged() {
-        windscribePresenter.onNetworkStateChanged()
     }
 
     companion object {

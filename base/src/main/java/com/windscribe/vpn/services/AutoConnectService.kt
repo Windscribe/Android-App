@@ -19,7 +19,6 @@ import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.UserRepository
-import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
@@ -27,11 +26,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
-class AutoConnectService : Service(), NetworkInfoListener {
+class AutoConnectService : Service() {
 
     @Inject
     lateinit var autoConnectionManager: AutoConnectionManager
@@ -56,7 +56,7 @@ class AutoConnectService : Service(), NetworkInfoListener {
 
     private var serviceScope = CoroutineScope(Dispatchers.Main + Job())
 
-    private var logger = LoggerFactory.getLogger("vpn")
+    private var logger = LoggerFactory.getLogger("auto-connect-service")
 
     private var onStartCommandCalled = false
 
@@ -67,7 +67,7 @@ class AutoConnectService : Service(), NetworkInfoListener {
     override fun onCreate() {
         isAutoConnectingServiceRunning = true
         appContext.serviceComponent.inject(this)
-        networkInfoManager.addNetworkInfoListener(this)
+
         serviceScope.launch {
             vpnConnectionStateManager.state.collectLatest {
                 if (it.status == VPNState.Status.Connected || it.status == VPNState.Status.Connecting) {
@@ -80,13 +80,30 @@ class AutoConnectService : Service(), NetworkInfoListener {
                 }
             }
         }
+
+        // Observe network info changes via flow
+        serviceScope.launch {
+            networkInfoManager.networkInfo.collectLatest { networkInfo ->
+                if (preferencesHelper.autoConnect) {
+                    if (networkInfo?.isAutoSecureOn == true && vpnConnectionStateManager.state.value.status == VPNState.Status.Disconnected && userRepository.user.value?.accountStatus == User.AccountStatus.Okay) {
+                        logger.debug("Auto secured turned on for SSID: ${networkInfo.networkName} and connecting to VPN")
+                        vpnController.connectAsync()
+                    } else if (networkInfo?.isAutoSecureOn == false && vpnConnectionStateManager.state.value.status == VPNState.Status.Connected) {
+                        logger.debug("Auto secured turned off for SSID: ${networkInfo.networkName} and disconnecting from VPN.")
+                        vpnController.disconnectAsync()
+                    }
+                } else {
+                    stopAutoConnectService()
+                }
+            }
+        }
+
         super.onCreate()
     }
 
     override fun onDestroy() {
         logger.debug("Auto connect service on exit.")
         serviceScope.coroutineContext.cancelChildren()
-        kotlin.runCatching { networkInfoManager.removeNetworkInfoListener(this) }
         isAutoConnectingServiceRunning = false
         super.onDestroy()
     }
@@ -108,20 +125,6 @@ class AutoConnectService : Service(), NetworkInfoListener {
             logger.debug("Location permissions are denied, stopping auto connect service.")
             stopAutoConnectService()
             START_NOT_STICKY
-        }
-    }
-
-    override fun onNetworkInfoUpdate(networkInfo: NetworkInfo?, userReload: Boolean) {
-        if (preferencesHelper.autoConnect) {
-            if (networkInfo?.isAutoSecureOn == true && vpnConnectionStateManager.state.value.status == VPNState.Status.Disconnected && userRepository.user.value?.accountStatus == User.AccountStatus.Okay) {
-                logger.debug("Auto secured turned on for SSID: ${networkInfo.networkName} and connecting to VPN")
-                vpnController.connectAsync()
-            } else if (networkInfo?.isAutoSecureOn == false && vpnConnectionStateManager.state.value.status == VPNState.Status.Connected) {
-                logger.debug("Auto secured turned off for SSID: ${networkInfo.networkName} and disconnecting from VPN.")
-                vpnController.disconnectAsync()
-            }
-        } else {
-            stopAutoConnectService()
         }
     }
 }

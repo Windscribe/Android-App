@@ -761,7 +761,6 @@ open class BaseApplicationModule {
     fun providesWsNet(
         preferencesHelper: PreferencesHelper,
         deviceStateManager: DeviceStateManager,
-        vpnBackendHolder: Lazy<VpnBackendHolder>,
         advanceParameterRepository: AdvanceParameterRepository
     ): WSNet {
         WSNet.setLogger({
@@ -790,19 +789,12 @@ open class BaseApplicationModule {
             systemLanguageCode,
             preferencesHelper.wsNetSettings
         )
-        val networkListener = object : DeviceStateManager.DeviceStateListener {
-            override fun onNetworkStateChanged() {
-                super.onNetworkStateChanged()
-                WSNet.instance().setConnectivityState(WindUtilities.isOnline())
-            }
-        }
         advanceParameterRepository.getCountryOverride()?.let { override ->
             WSNet.instance().advancedParameters().setCountryOverrideValue(override)
         }
-        WSNet.instance().setConnectivityState(WindUtilities.isOnline())
+        deviceStateManager.updateNetworkStatus()
         WSNet.instance().advancedParameters().isAPIExtraTLSPadding =
             preferencesHelper.isAntiCensorshipOn
-        deviceStateManager.addListener(networkListener)
         return WSNet.instance()
     }
 

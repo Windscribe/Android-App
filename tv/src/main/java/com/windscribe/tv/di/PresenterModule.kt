@@ -43,6 +43,7 @@ import com.windscribe.vpn.repository.LogRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
 import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
@@ -72,6 +73,7 @@ abstract class PresenterModule {
             vpnConnectionStateManager: VPNConnectionStateManager,
             vpnController: com.windscribe.vpn.backend.utils.WindVpnController,
             workManager: WindScribeWorkManager,
+            deviceStateManager: DeviceStateManager,
             resourceHelper: ResourceHelper
         ): WindscribePresenter {
             return WindscribePresenterImpl(
@@ -87,6 +89,7 @@ abstract class PresenterModule {
                 vpnConnectionStateManager,
                 vpnController,
                 workManager,
+                deviceStateManager,
                 resourceHelper
             )
         }

@@ -13,6 +13,7 @@ import com.windscribe.vpn.repository.EmergencyConnectRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.repository.WgConfigRepository
+import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
@@ -20,17 +21,18 @@ import kotlinx.coroutines.delay
 import java.util.*
 
 class TestWindVpnController(
-        scope: CoroutineScope,
-        preferencesHelper: PreferencesHelper,
-        vpnProfileCreator: VPNProfileCreator,
-        private val vpnConnectionStateManager: VPNConnectionStateManager,
-        vpnBackendHolder: VpnBackendHolder,
-        locationRepository: LocationRepository,
-        autoConnectionManager: AutoConnectionManager,
-        wgConfigRepository: WgConfigRepository,
-        advanceParameterRepository: Lazy<AdvanceParameterRepository>,
-        emergencyConnectRepository: EmergencyConnectRepository,
-        localDbInterface: LocalDbInterface
+    scope: CoroutineScope,
+    preferencesHelper: PreferencesHelper,
+    vpnProfileCreator: VPNProfileCreator,
+    private val vpnConnectionStateManager: VPNConnectionStateManager,
+    vpnBackendHolder: VpnBackendHolder,
+    locationRepository: LocationRepository,
+    autoConnectionManager: AutoConnectionManager,
+    wgConfigRepository: WgConfigRepository,
+    advanceParameterRepository: Lazy<AdvanceParameterRepository>,
+    emergencyConnectRepository: EmergencyConnectRepository,
+    deviceStateManager: DeviceStateManager,
+    localDbInterface: LocalDbInterface
 ) : WindVpnController(
     scope,
     preferencesHelper,
@@ -42,7 +44,8 @@ class TestWindVpnController(
     advanceParameterRepository,
     autoConnectionManager,
     emergencyConnectRepository,
-    localDbInterface
+    localDbInterface,
+    deviceStateManager
 ) {
     var mockState: VPNState = VPNState(VPNState.Status.Disconnected)
     override suspend fun launchVPNService(

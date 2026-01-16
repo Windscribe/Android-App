@@ -73,6 +73,7 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.constants.FeatureExplainer
 import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_AUTO
 import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_MANUAL
@@ -271,6 +272,8 @@ private fun ConnectionItem(title: Int, screen: Screen) {
     if (showPermissionRequest) {
         RequestLocationPermissions {
             showPermissionRequest = false
+            // Refresh network detail now that we have location permission
+            appContext.deviceStateManager.refreshNetworkDetail()
             navController.navigate(Screen.NetworkOptions.route)
         }
     }

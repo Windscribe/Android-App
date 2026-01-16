@@ -62,8 +62,8 @@ class OpenVPNBackend @Inject constructor(
             }
         }
         VpnStatus.addByteCountListener(this)
-        networkInfoManager.addNetworkInfoListener(this)
         active = true
+        startNetworkInfoObserver()
         vpnLogger.info("Open VPN backend activated.")
     }
 
@@ -71,7 +71,7 @@ class OpenVPNBackend @Inject constructor(
         VpnStatus.removeLogListener {}
         VpnStatus.removeStateListener(this)
         VpnStatus.removeByteCountListener(this)
-        networkInfoManager.removeNetworkInfoListener(this)
+        stopNetworkInfoObserver()
         active = false
         vpnLogger.info("Open VPN backend deactivated.")
     }
