@@ -145,6 +145,46 @@ open class Windscribe : MultiDexApplication() {
             firebaseManager.initialise()
         }
         deviceStateManager.init(this)
+        // Initialize whitelisted network from preferences
+        deviceStateManager.setWhitelistedNetwork(preference.whiteListedNetwork)
+
+        // Sync preferences when network changes (auto-clear whitelist)
+        applicationScope.launch {
+            var previousNetwork: String? = null
+            deviceStateManager.networkDetail.collect { detail ->
+                val currentNetwork = detail?.name
+
+                // Clear preferences whitelist when network changes
+                if (previousNetwork != null && previousNetwork != currentNetwork && preference.whiteListedNetwork != null) {
+                    preference.whiteListedNetwork = null
+                    logger.debug("Network changed from $previousNetwork to $currentNetwork - cleared preferences whitelist")
+                }
+
+                // Start AutoConnectService if needed when network changes
+                if (previousNetwork != null && previousNetwork != currentNetwork && currentNetwork != null) {
+                    applicationScope.launch {
+                        try {
+                            val networkInfo = windscribeDatabase.networkInfoDao().getNetwork(currentNetwork)
+                            val isVpnActive = vpnConnectionStateManager.isVPNActive()
+
+                            // Start service if: auto-secure ON, VPN not active, and autoConnect enabled
+                            if (networkInfo?.isAutoSecureOn == true &&
+                                !isVpnActive &&
+                                preference.autoConnect &&
+                                canAccessNetworkName()) {
+                                logger.debug("Network changed to auto-secure ON network - starting AutoConnectService")
+                                startAutoConnectService()
+                            }
+                        } catch (e: Exception) {
+                            logger.debug("Error checking network for AutoConnectService: ${e.message}")
+                        }
+                    }
+                }
+
+                previousNetwork = currentNetwork
+            }
+        }
+
         mockLocationManager.init()
         reviewManager.handleAppReview()
         applicationScope.launch {

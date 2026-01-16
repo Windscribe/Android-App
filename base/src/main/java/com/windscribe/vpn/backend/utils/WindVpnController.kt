@@ -267,6 +267,15 @@ open class WindVpnController @Inject constructor(
     }
 
     /**
+     * Disconnects VPN with custom error (for system-initiated disconnects)
+     */
+    fun disconnectAsync(waitForNextProtocol: Boolean = false, reconnecting: Boolean = false, error: VPNState.Error?) {
+        scope.launch {
+            disconnect(waitForNextProtocol, reconnecting, error)
+        }
+    }
+
+    /**
      * Connects or reconnect to the VPN
      */
     open suspend fun connect(
@@ -306,7 +315,9 @@ open class WindVpnController @Inject constructor(
             logger.debug("Connecting to VPN with connectionId: $connectionId")
             setLocationToConnect()
             vpnConnectionStateManager.setState(VPNState(Connecting, connectionId = connectionId))
-            saveWhiteListedNetwork(false)
+            // Clear whitelist - user wants VPN, so enable future auto-connect
+            preferencesHelper.whiteListedNetwork = null
+            deviceStateManager.setWhitelistedNetwork(null)
             val protocolInformation = selectedProtocol?.let {
                 autoConnectionManager.setSelectedProtocol(it)
                 return@let it
@@ -322,15 +333,6 @@ open class WindVpnController @Inject constructor(
                 logger.debug(e.message)
                 disconnect()
             }
-        }
-    }
-
-    private fun saveWhiteListedNetwork(reset: Boolean) {
-        if (reset) {
-            preferencesHelper.whiteListedNetwork = null
-        } else {
-            val networkName = deviceStateManager.networkDetail.value?.name
-            preferencesHelper.whiteListedNetwork = networkName
         }
     }
 
@@ -373,14 +375,24 @@ open class WindVpnController @Inject constructor(
         reconnecting: Boolean = false,
         error: VPNState.Error? = null
     ) {
-        logger.debug("Disconnecting from VPN: Waiting for next protocol: $waitForNextProtocol Reconnecting: $reconnecting")
+        logger.debug("Disconnecting from VPN: Waiting for next protocol: $waitForNextProtocol Reconnecting: $reconnecting Error: ${error?.error}")
         if (WindStunnelUtility.isStunnelRunning) {
             WindStunnelUtility.stopLocalTunFromAppContext(appContext)
         }
         vpnBackendHolder.disconnect(error)
-        if (reconnecting.not()) {
-            saveWhiteListedNetwork(true)
+
+        // Only whitelist on user-initiated disconnect (not system errors or reconnecting)
+        val isUserDisconnect = error?.error == VPNState.ErrorType.UserDisconnect
+        if (!reconnecting && isUserDisconnect) {
+            // Whitelist current network - user doesn't want VPN here, block future auto-connect
+            val networkName = deviceStateManager.getCurrentNetworkName()
+            preferencesHelper.whiteListedNetwork = networkName
+            deviceStateManager.setWhitelistedNetwork(networkName)
+            logger.debug("User disconnected - whitelisted network: $networkName")
+        } else {
+            logger.debug("System disconnect (reconnecting=$reconnecting, error=${error?.error}) - not whitelisting")
         }
+
         if (vpnConnectionStateManager.state.value.status != Disconnected) {
             // Force disconnect if state did not change to disconnect
             vpnConnectionStateManager.setState(VPNState(Disconnected, error = error), true)
@@ -390,9 +402,35 @@ open class WindVpnController @Inject constructor(
     }
 
     private fun checkForReconnect() {
-        if (appContext.preference.autoConnect && appContext.canAccessNetworkName()) {
-            appContext.preference.globalUserConnectionPreference = true
-            appContext.startAutoConnectService()
+        if (!appContext.canAccessNetworkName()) {
+            return
+        }
+
+        // Check if we should start AutoConnectService
+        scope.launch {
+            val currentNetworkName = deviceStateManager.getCurrentNetworkName()
+            val isWhitelisted = deviceStateManager.isCurrentNetworkWhitelisted.value
+
+            if (currentNetworkName == null) {
+                // No network name (cellular?), start service to handle network changes
+                appContext.preference.globalUserConnectionPreference = true
+                appContext.startAutoConnectService()
+                logger.debug("Starting AutoConnectService - no network name available")
+                return@launch
+            }
+
+            val networkInfo = localDbInterface.getNetwork(currentNetworkName)
+
+            // Only start AutoConnectService if:
+            // 1. Auto-secure is OFF (service will reconnect when network changes to ON network)
+            // 2. Network is not whitelisted (might need to reconnect on this network)
+            if (networkInfo?.isAutoSecureOn == false || !isWhitelisted) {
+                appContext.preference.globalUserConnectionPreference = true
+                appContext.startAutoConnectService()
+                logger.debug("Starting AutoConnectService - auto-secure=${networkInfo?.isAutoSecureOn}, whitelisted=$isWhitelisted")
+            } else {
+                logger.debug("Not starting AutoConnectService - auto-secure ON and whitelisted (service will start on network change)")
+            }
         }
     }
 

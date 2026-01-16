@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.backend
 
+import android.R.attr.name
 import android.util.Log
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
@@ -100,10 +101,13 @@ abstract class VpnBackend(
             vpnLogger.debug("Already handling network change, ignoring duplicate event.")
             return
         }
-        // Check if VPN is connected and network requires different protocol/port
+
         val vpnState = stateManager.state.value
+
+        // IMPORTANT: Protocol/port switching on network change requires autoConnect to be enabled
+        // This ensures we only auto-switch protocols when user has auto-connect features enabled
         if (vpnState.status == VPNState.Status.Connected &&
-            preferencesHelper.autoConnect &&
+            preferencesHelper.autoConnect &&  // ← Protocol switching is an "auto" feature
             networkInfo?.isAutoSecureOn == true &&
             networkInfo.isPreferredOn &&
             networkInfo.protocol != null &&
@@ -118,12 +122,15 @@ abstract class VpnBackend(
             if (currentProtocol != networkProtocol || currentPort != networkPort) {
                 isHandlingNetworkChange = true
                 vpnLogger.debug("Network change detected while connected. Current: $currentProtocol:$currentPort, Required: $networkProtocol:$networkPort. Reconnecting with correct protocol/port...")
-                appContext.vpnController.connectAsync()
+                // System disconnect to change protocol - don't whitelist
+                appContext.vpnController.disconnectAsync(error = null)
             }
         }
         if (networkInfo?.isAutoSecureOn == false && vpnState.status == VPNState.Status.Connected) {
             isHandlingNetworkChange = true
-            appContext.vpnController.disconnectAsync()
+            vpnLogger.debug("Auto-secure OFF for ${networkInfo.networkName} - system disconnecting")
+            // System disconnect due to auto-secure OFF - don't whitelist
+            appContext.vpnController.disconnectAsync(error = null)
         }
     }
 

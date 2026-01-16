@@ -19,12 +19,14 @@ import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
@@ -44,6 +46,9 @@ class AutoConnectService : Service() {
 
     @Inject
     lateinit var vpnConnectionStateManager: VPNConnectionStateManager
+
+    @Inject
+    lateinit var deviceStateManager: DeviceStateManager
 
     @Inject
     lateinit var vpnController: WindVpnController
@@ -84,16 +89,20 @@ class AutoConnectService : Service() {
         // Observe network info changes via flow
         serviceScope.launch {
             networkInfoManager.networkInfo.collectLatest { networkInfo ->
-                if (preferencesHelper.autoConnect) {
-                    if (networkInfo?.isAutoSecureOn == true && vpnConnectionStateManager.state.value.status == VPNState.Status.Disconnected && userRepository.user.value?.accountStatus == User.AccountStatus.Okay) {
-                        logger.debug("Auto secured turned on for SSID: ${networkInfo.networkName} and connecting to VPN")
-                        vpnController.connectAsync()
-                    } else if (networkInfo?.isAutoSecureOn == false && vpnConnectionStateManager.state.value.status == VPNState.Status.Connected) {
-                        logger.debug("Auto secured turned off for SSID: ${networkInfo.networkName} and disconnecting from VPN.")
-                        vpnController.disconnectAsync()
-                    }
-                } else {
-                    stopAutoConnectService()
+                val isWhitelisted = deviceStateManager.isCurrentNetworkWhitelisted.value
+                logger.debug("Network: ${networkInfo?.networkName}, AutoSecure: ${networkInfo?.isAutoSecureOn}, Whitelisted: $isWhitelisted")
+
+                if (networkInfo?.isAutoSecureOn == true &&
+                    !isWhitelisted &&
+                    vpnConnectionStateManager.state.value.status == VPNState.Status.Disconnected &&
+                    userRepository.user.value?.accountStatus == User.AccountStatus.Okay) {
+                    logger.debug("Auto secure ON for ${networkInfo.networkName} (not whitelisted) - connecting to VPN")
+                    vpnController.connectAsync()
+                } else if (networkInfo?.isAutoSecureOn == true && isWhitelisted) {
+                    logger.debug("Auto secure ON for ${networkInfo.networkName} but network is whitelisted - skipping auto-connect")
+                } else if (networkInfo?.isAutoSecureOn == false && vpnConnectionStateManager.state.value.status == VPNState.Status.Connected) {
+                    logger.debug("Auto secure OFF for ${networkInfo.networkName} - disconnecting from VPN")
+                    vpnController.disconnectAsync()
                 }
             }
         }

@@ -66,6 +66,13 @@ class DeviceStateManager @Inject constructor(
     private val _networkDetail = MutableStateFlow<NetworkDetail?>(null)
     val networkDetail: StateFlow<NetworkDetail?> = _networkDetail.asStateFlow()
 
+    // Whitelisted network state - indicates if current network is whitelisted
+    private val _isCurrentNetworkWhitelisted = MutableStateFlow(false)
+    val isCurrentNetworkWhitelisted: StateFlow<Boolean> = _isCurrentNetworkWhitelisted.asStateFlow()
+
+    // Store the whitelisted network name for comparison
+    private var whitelistedNetworkName: String? = null
+
     private var context: Context? = null
     private var connectivityManager: ConnectivityManager? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
@@ -167,12 +174,55 @@ class DeviceStateManager @Inject constructor(
 
         if (force || currentDetail != detail) {
             _networkDetail.emit(detail)
+
+            // Clear whitelist when network changes (so user can auto-connect when returning to network)
+            if (currentDetail?.name != detail?.name && whitelistedNetworkName != null) {
+                logger.info("Network changed from ${currentDetail?.name} to ${detail?.name} - clearing whitelist")
+                whitelistedNetworkName = null
+            }
         }
+
+        // Update whitelisted network state
+        updateWhitelistedNetworkState(detail)
 
         // Log only if something changed
         if (force || currentOnline != online || currentDetail != detail) {
             logger.info("Network: online={}, {}", online, detail ?: "no detail")
         }
+    }
+
+    /**
+     * Updates the whitelisted network state by comparing current network with stored whitelist.
+     */
+    private suspend fun updateWhitelistedNetworkState(currentNetworkDetail: NetworkDetail?) {
+        val isWhitelisted = currentNetworkDetail?.name != null &&
+                           currentNetworkDetail.name == whitelistedNetworkName
+
+        if (_isCurrentNetworkWhitelisted.value != isWhitelisted) {
+            _isCurrentNetworkWhitelisted.emit(isWhitelisted)
+            logger.debug("Whitelisted network state changed: $isWhitelisted (current: ${currentNetworkDetail?.name}, whitelisted: $whitelistedNetworkName)")
+        }
+    }
+
+    /**
+     * Sets the whitelisted network name and updates the state.
+     * Pass null to clear the whitelist.
+     * @param networkName The network name to whitelist, or null to clear
+     */
+    fun setWhitelistedNetwork(networkName: String?) {
+        whitelistedNetworkName = networkName
+        logger.info("Whitelisted network set to: $networkName")
+        scope.launch {
+            updateWhitelistedNetworkState(_networkDetail.value)
+        }
+    }
+
+    /**
+     * Convenience method: marks the current network as whitelisted.
+     * @return The network name that was whitelisted, or null if no network available
+     */
+    fun getCurrentNetworkName(): String? {
+        return _networkDetail.value?.name
     }
 
     /**

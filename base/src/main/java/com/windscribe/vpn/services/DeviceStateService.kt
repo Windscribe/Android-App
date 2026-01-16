@@ -85,13 +85,14 @@ class DeviceStateService : JobIntentWorkAroundService() {
     }
 
     private fun resetConnectState(networkInfo: NetworkInfo) {
-        logger.info("SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred Protocols: ${networkInfo.isPreferredOn} ${networkInfo.protocol} ${networkInfo.port} | Whitelisted network: ${preferencesHelper.whiteListedNetwork} | Connect Intent: ${preferencesHelper.globalUserConnectionPreference}")
-        if (networkInfo.isAutoSecureOn.not() && preferencesHelper.whiteListedNetwork != networkInfo.networkName && vpnConnectionStateManager.state.value.status == VPNState.Status.Connected) {
-            logger.debug("${networkInfo.networkName} is unsecured. Starting network whitelist service.")
-            vpnController.disconnectAsync(true)
-        }
-        if (vpnConnectionStateManager.state.value.status == VPNState.Status.Connected && preferencesHelper.whiteListedNetwork != networkInfo.networkName) {
-            preferencesHelper.whiteListedNetwork = null
+        val isWhitelisted = preferencesHelper.whiteListedNetwork == networkInfo.networkName
+        logger.info("SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred: ${networkInfo.isPreferredOn} ${networkInfo.protocol}:${networkInfo.port} | Whitelisted: $isWhitelisted | GlobalIntent: ${preferencesHelper.globalUserConnectionPreference}")
+
+        // If network has auto-secure OFF and VPN is connected, disconnect
+        if (networkInfo.isAutoSecureOn.not() && vpnConnectionStateManager.state.value.status == VPNState.Status.Connected) {
+            logger.debug("${networkInfo.networkName} has auto-secure OFF - system disconnecting")
+            // System disconnect - don't whitelist (already handled by VpnBackend)
+            vpnController.disconnectAsync(waitForNextProtocol = false, error = null)
         }
     }
 
