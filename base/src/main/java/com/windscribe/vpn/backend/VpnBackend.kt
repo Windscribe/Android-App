@@ -4,6 +4,7 @@
 
 package com.windscribe.vpn.backend
 
+import android.util.Log
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.GetMyIpResponse
@@ -16,7 +17,6 @@ import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.CallResult
-import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 import javax.inject.Singleton
 import com.wsnet.lib.WSNetBridgeAPI
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 
 /**
  * Base class for Interfacing with VPN Modules.
@@ -46,9 +48,9 @@ abstract class VpnBackend(
     protected val localDbInterface: LocalDbInterface,
     private val bridgeAPI: WSNetBridgeAPI,
     private val resourceHelper: ResourceHelper
-) : NetworkInfoListener {
+) {
 
-    val vpnLogger: Logger = LoggerFactory.getLogger("vpn")
+    val vpnLogger: Logger = LoggerFactory.getLogger("vpn_backend")
     var connectionJob: Job? = null
     var reconnecting = false
     var protocolInformation: ProtocolInformation? = null
@@ -57,6 +59,7 @@ abstract class VpnBackend(
     private var isHandlingNetworkChange = false
 
     private var connectivityTestJob: Job? = null
+    private var networkInfoObserverJob: Job? = null
 
     init {
         mainScope.launch {
@@ -72,7 +75,26 @@ abstract class VpnBackend(
         }
     }
 
-    override fun onNetworkInfoUpdate(networkInfo: NetworkInfo?, userReload: Boolean) {
+    protected fun startNetworkInfoObserver() {
+        if (networkInfoObserverJob?.isActive == true) {
+            vpnLogger.debug("Already handling running..")
+            return
+        }
+        networkInfoObserverJob = mainScope.launch {
+            networkInfoManager.networkInfo
+                .collectLatest { networkInfo ->
+                    vpnLogger.debug("Network Info: $networkInfo")
+                    handleNetworkInfoUpdate(networkInfo)
+                }
+        }
+    }
+
+    protected fun stopNetworkInfoObserver() {
+        networkInfoObserverJob?.cancel()
+        networkInfoObserverJob = null
+    }
+
+    private fun handleNetworkInfoUpdate(networkInfo: NetworkInfo?) {
         // Prevent duplicate processing of network changes
         if (isHandlingNetworkChange) {
             vpnLogger.debug("Already handling network change, ignoring duplicate event.")
@@ -98,6 +120,10 @@ abstract class VpnBackend(
                 vpnLogger.debug("Network change detected while connected. Current: $currentProtocol:$currentPort, Required: $networkProtocol:$networkPort. Reconnecting with correct protocol/port...")
                 appContext.vpnController.connectAsync()
             }
+        }
+        if (networkInfo?.isAutoSecureOn == false && vpnState.status == VPNState.Status.Connected) {
+            isHandlingNetworkChange = true
+            appContext.vpnController.disconnectAsync()
         }
     }
 
@@ -142,22 +168,13 @@ abstract class VpnBackend(
 
         connectivityTestJob = mainScope.launch {
             try {
-                // Check if we need to worry about IP pinning
-                val selectedCity = preferencesHelper.selectedCity
+                val pinnedLocation = getPinnedIpForSelectedCity()
                 val selectedIp = preferencesHelper.selectedIp
-
-                // First: Check if selected city is in favourites and has a pinned node IP
-                val favourite = localDbInterface.getFavouritesAsync().firstOrNull {
-                    it.id == selectedCity
-                }
-                val shouldCheckPinning = favourite != null && favourite.pinnedNodeIp != null
-
-                // Second: If we care about pinning, check if the pinnedNodeIp matches selectedIp
-                val hasPinnedNodeMismatch = shouldCheckPinning && favourite.pinnedNodeIp != selectedIp
-
-                val ip = favourite?.pinnedIp
+                val shouldCheckPinning = pinnedLocation?.second != null
+                val hasPinnedNodeMismatch =
+                    shouldCheckPinning && pinnedLocation.second != selectedIp
+                val ip = pinnedLocation?.first
                 var ipPinningFailed = false
-
                 withTimeout(15_000) { // 15 seconds total timeout
                     // Initial delay before first attempt
                     delay(startDelay)
@@ -178,6 +195,7 @@ abstract class VpnBackend(
                             is CallResult.Success -> {
                                 vpnLogger.info("IP pinned successfully")
                             }
+
                             is CallResult.Error -> {
                                 vpnLogger.error("Failed to pin IP: ${pinResult.errorMessage}")
                                 ipPinningFailed = true
@@ -210,9 +228,14 @@ abstract class VpnBackend(
                                     connectivityTestPassed(userIp)
                                     success = true
                                     if (hasPinnedNodeMismatch || ipPinningFailed) {
-                                        val title = resourceHelper.getString(com.windscribe.vpn.R.string.could_not_pin_ip)
-                                        val description = resourceHelper.getString(com.windscribe.vpn.R.string.favourite_node_not_available)
-                                        appContext.applicationInterface.showPinnedNodeErrorDialog(title, description)
+                                        val title =
+                                            resourceHelper.getString(com.windscribe.vpn.R.string.could_not_pin_ip)
+                                        val description =
+                                            resourceHelper.getString(com.windscribe.vpn.R.string.favourite_node_not_available)
+                                        appContext.applicationInterface.showPinnedNodeErrorDialog(
+                                            title,
+                                            description
+                                        )
                                     }
                                 } else {
                                     lastError = "Invalid IP address: $userIp"
@@ -298,6 +321,15 @@ abstract class VpnBackend(
                 reconnecting = false
             }
         }
+    }
+
+    suspend fun getPinnedIpForSelectedCity(): Pair<String, String>? {
+        val selectedCity = preferencesHelper.selectedCity
+        val favourite = localDbInterface.getFavouritesAsync().firstOrNull {
+            it.id == selectedCity
+        }
+        if (favourite == null) return null
+        return Pair(favourite.pinnedIp, favourite.pinnedNodeIp)
     }
 
     abstract var active: Boolean

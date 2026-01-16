@@ -20,7 +20,6 @@ import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.ConnectionDataRepository
-import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.Lazy
@@ -30,6 +29,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -52,8 +52,7 @@ class AutoConnectionManager(
     private val localDbInterface: LocalDbInterface,
     private val apiManager: IApiCallManager,
     private val preferencesHelper: PreferencesHelper
-
-    ) : NetworkInfoListener {
+) {
 
     private var continuation: CancellableContinuation<Boolean>? = null
     private val logger = LoggerFactory.getLogger("vpn")
@@ -67,7 +66,6 @@ class AutoConnectionManager(
     private var lastProtocolLog = String()
 
     init {
-        networkInfoManager.addNetworkInfoListener(this@AutoConnectionManager)
         scope.launch {
             vpnConnectionStateManager.get().state.collectLatest { vpnState ->
                 vpnState.protocolInformation?.let { protocolInformation ->
@@ -88,16 +86,19 @@ class AutoConnectionManager(
                 }
             }
         }
-    }
 
-    override fun onNetworkInfoUpdate(networkInfo: NetworkInfo?, userReload: Boolean) {
-        if (isEnabled) return
-        listOfProtocols.firstOrNull {
-            it.protocol == networkInfo?.protocol
-        }?.let { protocolInfo ->
-            networkInfo?.let { info ->
-                preferredProtocol = Pair(info.networkName, protocolInfo)
-                reset()
+        // Observe network info changes via flow
+        scope.launch {
+            networkInfoManager.networkInfo.collectLatest { networkInfo ->
+                if (isEnabled) return@collectLatest
+                listOfProtocols.firstOrNull {
+                    it.protocol == networkInfo?.protocol
+                }?.let { protocolInfo ->
+                    networkInfo?.let { info ->
+                        preferredProtocol = Pair(info.networkName, protocolInfo)
+                        reset()
+                    }
+                }
             }
         }
     }
@@ -263,7 +264,7 @@ class AutoConnectionManager(
         } else {
             manualProtocol = null
         }
-        networkInfoManager.networkInfo?.let {
+        networkInfoManager.networkInfo.value?.let {
             setupPreferredProtocol(it, appSupportedProtocolOrder)
         }
         manualProtocol?.let {
@@ -480,12 +481,12 @@ class AutoConnectionManager(
     }
 
     private fun saveNetworkForFutureUse(protocolInformation: ProtocolInformation) {
-        if (networkInfoManager.networkInfo?.isPreferredOn == true) {
+        if (networkInfoManager.networkInfo.value?.isPreferredOn == true) {
             logger.debug("Preferred protocol for this network is already set. existing auto connect.")
             stop()
             return
         }
-        val netWorkName = networkInfoManager.networkInfo?.networkName
+        val netWorkName = networkInfoManager.networkInfo.value?.networkName
         if (netWorkName != null) {
             logger.debug("Showing set as preferred protocol dialog.")
             val launched = appContext.applicationInterface.launchFragment(
@@ -514,7 +515,7 @@ class AutoConnectionManager(
     private var isEnabled: Boolean = false
 
     private fun setProtocolAsPreferred(protocolInformation: ProtocolInformation) {
-        networkInfoManager.networkInfo?.let {
+        networkInfoManager.networkInfo.value?.let {
             it.protocol = protocolInformation.protocol
             it.port = protocolInformation.port
             it.isPreferredOn = true
@@ -565,7 +566,7 @@ class AutoConnectionManager(
                                     listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
                                         ProtocolConnectionStatus.Connected
                                     logger.debug("Successfully found a working protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
-                                    if ((networkInfoManager.networkInfo?.port != protocolInformation.port && networkInfoManager.networkInfo?.protocol != protocolInformation.protocol) || networkInfoManager.networkInfo?.isPreferredOn == false) {
+                                    if ((networkInfoManager.networkInfo.value?.port != protocolInformation.port && networkInfoManager.networkInfo.value?.protocol != protocolInformation.protocol) || networkInfoManager.networkInfo.value?.isPreferredOn == false) {
                                         saveNetworkForFutureUse(protocolInformation)
                                     }
                                 } else if (connectionResult.error?.showError == true) {
@@ -627,7 +628,7 @@ class AutoConnectionManager(
                                     listOfProtocols.firstOrNull { it.protocol == protocolInformation.protocol }?.type =
                                         ProtocolConnectionStatus.Connected
                                     logger.debug("Successfully found a working protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
-                                    if ((networkInfoManager.networkInfo?.port != protocolInformation.port && networkInfoManager.networkInfo?.protocol != protocolInformation.protocol) || networkInfoManager.networkInfo?.isPreferredOn == false) {
+                                    if ((networkInfoManager.networkInfo.value?.port != protocolInformation.port && networkInfoManager.networkInfo.value?.protocol != protocolInformation.protocol) || networkInfoManager.networkInfo.value?.isPreferredOn == false) {
                                         saveNetworkForFutureUse(protocolInformation)
                                     }
                                 } else if (connectionResult.error?.showError == true) {

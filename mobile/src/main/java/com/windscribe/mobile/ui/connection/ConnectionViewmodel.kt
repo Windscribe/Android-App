@@ -29,7 +29,6 @@ import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
-import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LocationRepository
@@ -40,7 +39,6 @@ import com.windscribe.vpn.serverlist.entity.City
 import com.windscribe.vpn.serverlist.entity.CityAndRegion
 import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.StaticRegion
-import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
@@ -194,7 +192,6 @@ class ConnectionViewmodelImpl @Inject constructor(
     private var preferenceChangeListener: OnTrayPreferenceChangeListener? = null
 
     private val lastLocationState: MutableStateFlow<LastSelectedLocation?> = MutableStateFlow(null)
-    private var networkListener: NetworkInfoListener? = null
     private val _aspectRatio = MutableStateFlow(1)
     override val aspectRatio: StateFlow<Int> = _aspectRatio
     private val _isSingleLineLocationName = MutableStateFlow(true)
@@ -336,8 +333,8 @@ class ConnectionViewmodelImpl @Inject constructor(
     }
 
     private fun fetchNetworkState() {
-        networkListener = object : NetworkInfoListener {
-            override fun onNetworkInfoUpdate(networkInfo: NetworkInfo?, userReload: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            networkInfoManager.networkInfo.collect { networkInfo ->
                 if (networkInfo == null) {
                     _isPreferredProtocolEnabled.value = false
                     _networkInfoState.value = NetworkInfoState.Unknown
@@ -355,8 +352,6 @@ class ConnectionViewmodelImpl @Inject constructor(
                 }
             }
         }
-        networkInfoManager.addNetworkInfoListener(networkListener!!)
-        networkInfoManager.reload(true)
     }
 
     private fun fetchIPState() {
@@ -872,7 +867,6 @@ class ConnectionViewmodelImpl @Inject constructor(
     }
 
     override fun onCleared() {
-        networkInfoManager.removeNetworkInfoListener(networkListener!!)
         preferences.removeObserver(preferenceChangeListener!!)
         viewModelScope.launch {
             _goto.emit(HomeGoto.None)

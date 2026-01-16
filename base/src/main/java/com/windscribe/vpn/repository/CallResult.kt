@@ -20,3 +20,40 @@ fun getNetworkError(code: Int): ApiFailure? {
         else -> null
     }
 }
+
+/**
+ * Transforms [CallResult] to extract data or throw exception on error.
+ *
+ * Usage: `val data = callResult.getOrElse { error -> return error }`
+ */
+inline fun <T> CallResult<T>.getOrElse(
+    onError: (CallResult.Error) -> CallResult.Error
+): T = when (this) {
+    is CallResult.Success -> data
+    is CallResult.Error -> throw GetOrElseException(onError(this))
+}
+
+/**
+ * Folds [CallResult] into a single result type by applying transformation functions.
+ *
+ * Usage:
+ * ```
+ * result.fold(
+ *     onSuccess = { data -> CallResult.Success(data.transformed()) },
+ *     onError = { error -> error }
+ * )
+ * ```
+ */
+inline fun <T, R> CallResult<T>.fold(
+    onSuccess: (T) -> CallResult<R>,
+    onError: (CallResult.Error) -> CallResult<R>
+): CallResult<R> = when (this) {
+    is CallResult.Success -> onSuccess(data)
+    is CallResult.Error -> onError(this)
+}
+
+/**
+ * Exception for control flow in [getOrElse].
+ * @suppress Not intended for direct use.
+ */
+class GetOrElseException(val error: CallResult.Error) : Exception()

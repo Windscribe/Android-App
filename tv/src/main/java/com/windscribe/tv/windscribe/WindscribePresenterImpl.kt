@@ -43,6 +43,7 @@ import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.serverlist.entity.*
+import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import kotlinx.coroutines.CoroutineScope
@@ -72,6 +73,7 @@ class WindscribePresenterImpl @Inject constructor(
     private val vpnConnectionStateManager: VPNConnectionStateManager,
     private val vpnController: WindVpnController,
     private val workManager: WindScribeWorkManager,
+    private val deviceStateManager: DeviceStateManager,
     private val resourceHelper: ResourceHelper
 ) : WindscribePresenter, ConnectionStateAnimationListener {
 
@@ -347,14 +349,16 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.openMenuActivity()
     }
 
-    override fun onNetworkStateChanged() {
-        if (!vpnConnectionStateManager.isVPNActive()) {
-            logger.debug("Network state changed & vpn is not active, getting ip address...")
-            setIPAddress()
-            if (WindUtilities.isOnline() && !vpnConnectionStateManager.isVPNActive() && preferencesHelper.pingTestRequired) {
-                workManager.updateNodeLatencies()
-            }
-        }
+   override suspend fun observeNetworkEvents() {
+       deviceStateManager.isOnline.collect { isOnline ->
+           if (!isOnline) {
+               logger.debug("Network state changed & vpn is not active, getting ip address...")
+               setIPAddress()
+               if (WindUtilities.isOnline() && !vpnConnectionStateManager.isVPNActive() && preferencesHelper.pingTestRequired) {
+                   workManager.updateNodeLatencies()
+               }
+           }
+       }
     }
 
     private fun vpnConnecting() {

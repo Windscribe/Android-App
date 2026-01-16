@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class BridgeApiRepository @Inject constructor(
@@ -46,8 +47,17 @@ class BridgeApiRepository @Inject constructor(
 
     private suspend fun checkAndEmitApiAvailability(ready: Boolean) {
         if (ready) {
-            appContext.preference.wsNetSettings =
-                WSNet.instance().currentPersistentSettings()
+            // Call native method on Main thread where JNI environment is properly attached
+            val settings = withContext(Dispatchers.Main) {
+                try {
+                    WSNet.instance().currentPersistentSettings()
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            settings?.let {
+                appContext.preference.wsNetSettings = it
+            }
         }
         val location = locationRepository.getSelectedCityAndRegion()
         if (location == null || location.region == null) {

@@ -4,23 +4,15 @@
 
 package com.windscribe.vpn.commonutils
 
-import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
-import android.net.wifi.WifiManager
-import android.os.Build
-import androidx.core.content.ContextCompat
 import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.utils.SelectedLocationType
-import com.windscribe.vpn.exceptions.BackgroundLocationPermissionNotAvailable
-import com.windscribe.vpn.exceptions.NoLocationPermissionException
-import com.windscribe.vpn.exceptions.NoNetworkException
-import com.windscribe.vpn.exceptions.WindScribeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -62,59 +54,6 @@ object WindUtilities {
         } else {
             ConfigType.OpenVPN
         }
-    }
-
-    @Throws(WindScribeException::class)
-    fun getNetworkName(): String {
-        val connectivityManager = appContext
-            .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo = connectivityManager.activeNetworkInfo
-            ?: throw NoNetworkException("No network is connected")
-
-        if (!hasLocationPermission()) {
-            throw NoLocationPermissionException("No location permission provided")
-        }
-
-        val quoteReplacedNetworkName = when (networkInfo.type) {
-            ConnectivityManager.TYPE_WIFI -> {
-                val wifiManager = appContext.applicationContext
-                    .getSystemService(Context.WIFI_SERVICE) as? WifiManager
-                wifiManager?.connectionInfo?.ssid?.replace("\"", "") ?: "Unknown"
-            }
-
-            ConnectivityManager.TYPE_MOBILE -> {
-                networkInfo.extraInfo?.replace("\"", "") ?: "Unknown"
-            }
-
-            else -> "Unknown"
-        }
-
-        val networkName = when (networkInfo.type) {
-            ConnectivityManager.TYPE_WIFI -> quoteReplacedNetworkName
-            ConnectivityManager.TYPE_MOBILE -> {
-                if (quoteReplacedNetworkName.contains(".")) {
-                    val parts = quoteReplacedNetworkName.split(".", limit = 3)
-                    if (parts.size > 1) {
-                        parts[1].uppercase()
-                    } else {
-                        quoteReplacedNetworkName.uppercase()
-                    }
-                } else {
-                    quoteReplacedNetworkName.uppercase()
-                }
-            }
-
-            ConnectivityManager.TYPE_ETHERNET -> "Ethernet"
-            else -> "Unknown"
-        }
-
-        if (networkName == "<unknown ssid>") {
-            throw BackgroundLocationPermissionNotAvailable(
-                "App tried to access network name in the background and Location permission is only available for while in use."
-            )
-        }
-
-        return networkName
     }
 
     fun getSourceTypeBlocking(): SelectedLocationType {
@@ -179,16 +118,5 @@ object WindUtilities {
     fun isOnline(): Boolean {
         val activeNetworkInfo = getUnderLayNetworkInfo()
         return activeNetworkInfo?.isConnected == true
-    }
-
-    private fun hasLocationPermission(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            ContextCompat.checkSelfPermission(
-                appContext,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
     }
 }

@@ -12,9 +12,9 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
+import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,7 +40,10 @@ class DeviceStateService : JobIntentWorkAroundService() {
     @Inject
     lateinit var localDbInterface: LocalDbInterface
 
-    private val logger = LoggerFactory.getLogger("vpn")
+    @Inject
+    lateinit var deviceStateManager: DeviceStateManager
+
+    private val logger = LoggerFactory.getLogger("device-state-service")
     private val stateBoolean = AtomicBoolean()
     override fun onCreate() {
         super.onCreate()
@@ -51,22 +54,13 @@ class DeviceStateService : JobIntentWorkAroundService() {
     override fun onHandleWork(intent: Intent) {
         if (stateBoolean.getAndSet(false)) {
             val networkInfo = WindUtilities.getUnderLayNetworkInfo()
-            if (networkInfo != null) {
-                logger.info("Network: ${networkInfo.detailedState} | VPN: ${vpnConnectionStateManager.state.value.status.name}")
-            }
             if (networkInfo != null && networkInfo.isConnected && vpnConnectionStateManager.isVPNActive()) {
                 logger.info("New network detected. VPN is connected. Checking for SSID.")
-                getNetworkName()
+                val networkName = deviceStateManager.networkDetail.value?.name
+                if (networkName != null) {
+                    addToKnownNetworks(networkName)
+                }
             }
-        }
-    }
-
-    private fun getNetworkName() {
-        try {
-            val networkName = WindUtilities.getNetworkName()
-            addToKnownNetworks(networkName)
-        } catch (e: WindScribeException) {
-            logger.debug(e.message)
         }
     }
 

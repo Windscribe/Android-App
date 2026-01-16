@@ -20,9 +20,7 @@ import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
 import com.windscribe.vpn.backend.VpnBackend.Companion.DISCONNECT_DELAY
 import com.windscribe.vpn.localdatabase.LocalDbInterface
-import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.AdvanceParameterRepository
-import com.windscribe.vpn.state.NetworkInfoListener
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -61,8 +59,8 @@ class IKev2VpnBackend @Inject constructor(
 
     override fun activate() {
         bindToStateService()
-        networkInfoManager.addNetworkInfoListener(this)
         active = true
+        startNetworkInfoObserver()
         vpnLogger.debug("Ikev2 backend activated.")
     }
 
@@ -75,7 +73,7 @@ class IKev2VpnBackend @Inject constructor(
             } catch (e: Exception) {
             }
         }
-        networkInfoManager.removeNetworkInfoListener(this)
+        stopNetworkInfoObserver()
         active = false
         vpnLogger.debug("Ikev2 backend deactivated.")
     }

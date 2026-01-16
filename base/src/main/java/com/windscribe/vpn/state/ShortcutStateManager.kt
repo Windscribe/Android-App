@@ -52,7 +52,7 @@ class ShortcutStateManager(
                 userRepository.reload(it) { user ->
                     if (user.accountStatus == User.AccountStatus.Okay) {
                         logger.debug("Loading network info.")
-                        networkInfoManager.reload(false)
+                        networkInfoManager.reload()
                         logger.debug("Loading connection info.")
                         autoConnectionManager.reset()
                         initilized = true

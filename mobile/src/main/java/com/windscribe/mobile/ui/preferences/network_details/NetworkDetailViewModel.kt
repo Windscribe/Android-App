@@ -137,7 +137,7 @@ class NetworkDetailViewModelImpl(
                         _networkDetail.value = networkInfo
                     }
                     
-                    val isMine = networkInfo?.networkName == networkNetworkManager.networkInfo?.networkName
+                    val isMine = networkInfo?.networkName == networkNetworkManager.networkInfo.value?.networkName
                     if (isMyNetwork.value != isMine) {
                         logger.debug("isMyNetwork changed to: $isMine")
                         isMyNetwork.value = isMine
@@ -259,7 +259,7 @@ class NetworkDetailViewModelImpl(
     }
 
     override fun onCleared() {
-        networkNetworkManager.reload(true)
+        networkNetworkManager.reload()
         super.onCleared()
     }
 }

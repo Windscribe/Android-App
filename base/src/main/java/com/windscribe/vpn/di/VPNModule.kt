@@ -10,6 +10,7 @@ import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.EmergencyConnectRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.WgConfigRepository
+import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.Lazy
 import dagger.Module
@@ -32,7 +33,8 @@ class VPNModule {
         advanceParameterRepository: Lazy<AdvanceParameterRepository>,
         emergencyConnectRepository: EmergencyConnectRepository,
         localDbInterface: LocalDbInterface,
-        preferencesHelper: PreferencesHelper
+        preferencesHelper: PreferencesHelper,
+        deviceStateManager: DeviceStateManager
     ): WindVpnController {
         return WindVpnController(
             coroutineScope,
@@ -45,7 +47,8 @@ class VPNModule {
             advanceParameterRepository,
             autoConnectionManager,
             emergencyConnectRepository,
-            localDbInterface
+            localDbInterface,
+            deviceStateManager
         )
     }
 }
