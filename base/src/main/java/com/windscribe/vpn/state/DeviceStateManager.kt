@@ -107,8 +107,10 @@ class DeviceStateManager @Inject constructor(
         registerNetworkCallback()
         registerScreenStateReceiver()
 
-        // Trigger initial network state check through debounced flow
-        handleNetworkChange()
+        // Immediately get initial network state (bypass debounce for fast startup)
+        scope.launch {
+            processNetworkChange(force = true)
+        }
     }
 
     private fun registerNetworkCallback() {

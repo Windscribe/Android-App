@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.slf4j.LoggerFactory
 import javax.inject.Singleton
 
 @Singleton
@@ -27,6 +28,7 @@ class NetworkInfoManager(
 ) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private val logger = LoggerFactory.getLogger("network-info-manager")
 
     private val _networkInfo = MutableStateFlow<NetworkInfo?>(null)
     val networkInfo: StateFlow<NetworkInfo?> = _networkInfo.asStateFlow()
@@ -53,7 +55,7 @@ class NetworkInfoManager(
                 }
                 _networkInfo.emit(network)
             } catch (e: Exception) {
-                Log.e("NetworkInfoManager", "Error reloading network: ${e.message}")
+                logger.error("Error reloading network: ${e.message}")
                 _networkInfo.emit(null)
             }
         }
@@ -63,11 +65,11 @@ class NetworkInfoManager(
         scope.launch {
             deviceStateManager.networkDetail.collect { detail ->
                 if (detail != null) {
-                    Log.i("NetworkInfoManager", "Network changed: ${detail.name} (${detail.type})")
+                    logger.info("Network changed: ${detail.name} (${detail.type})")
                     reload()
                 } else {
                     // No network detail available (offline or no network name)
-                    Log.i("NetworkInfoManager", "Network detail unavailable")
+                    logger.info("Network detail unavailable")
                     _networkInfo.emit(null)
                 }
             }

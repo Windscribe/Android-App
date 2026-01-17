@@ -351,6 +351,32 @@ class AppPreferencesImpl @Inject constructor(
 4. Centralized state management
 5. Server/location selection logic
 
+## Key Systems Documentation
+
+### Auto-Secure Network Whitelist System
+
+See [AUTO_SECURE_WHITELIST.md](AUTO_SECURE_WHITELIST.md) for comprehensive documentation on the auto-secure whitelist system.
+
+**Quick Summary**: Session-based mechanism that prevents VPN auto-connection after user manually disconnects on a network with auto-secure enabled. Whitelist automatically clears when user changes networks, allowing auto-connect to resume when they return.
+
+**Key Behaviors**:
+- User disconnect on auto-secure ON network → Network whitelisted, auto-connect blocked (while on that network)
+- Network change → Whitelist cleared, auto-connect resumes normally
+- Return to network → Auto-connect works (whitelist was cleared when user left)
+- System disconnect (protocol change, auto-secure OFF) → No whitelist, auto-reconnect continues
+
+**Main Components**:
+- `DeviceStateManager` (base/state/) - Whitelist state tracking, network change detection
+- `WindVpnController` (base/backend/utils/) - Whitelist set/clear logic, service optimization
+- `AutoConnectService` (base/services/) - Whitelist check before auto-connect
+- `VpnBackend` (base/backend/) - System disconnect handling (protocol switching)
+- `Windscribe.kt` (base/) - Network change observer, preference sync
+
+**Important Notes**:
+- Protocol/port switching on network change requires `autoConnect` setting enabled (it's an "auto" feature)
+- Whitelist is session-based: only active while on the same network
+- System disconnects always pass `error = null` to prevent whitelisting
+
 ## Migration Status
 
 - **TV Module**: 100% Kotlin

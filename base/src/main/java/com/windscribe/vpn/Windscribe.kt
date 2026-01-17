@@ -77,7 +77,7 @@ open class Windscribe : MultiDexApplication() {
         fun showPinnedNodeErrorDialog(title: String, description: String) {}
     }
 
-    private val logger = LoggerFactory.getLogger("app")
+    private val logger = LoggerFactory.getLogger("windscribe-main")
     var activeActivity: AppCompatActivity? = null
     lateinit var applicationInterface: ApplicationInterface
 
