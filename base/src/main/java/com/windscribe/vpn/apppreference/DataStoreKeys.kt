@@ -4,7 +4,9 @@
 package com.windscribe.vpn.apppreference
 
 import androidx.datastore.preferences.core.*
+import com.windscribe.vpn.constants.BillingConstants
 import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.constants.RateDialogConstants
 import com.windscribe.vpn.constants.VpnPreferenceConstants
 
 /**
@@ -114,6 +116,10 @@ object DataStoreKeys {
     // Purchase & Review
     val PURCHASE_FLOW_STATE_KEY = stringPreferencesKey(PreferencesKeyConstants.PURCHASE_FLOW_STATE_KEY)
     val ALREADY_SHOWN_SHARE_APP_LINK = booleanPreferencesKey(PreferencesKeyConstants.ALREADY_SHOWN_SHARE_APP_LINK)
+    val PURCHASED_ITEM = stringPreferencesKey(BillingConstants.PURCHASED_ITEM)
+    val AMAZON_PURCHASED_ITEM = stringPreferencesKey(BillingConstants.AMAZON_PURCHASED_ITEM)
+    val CURRENT_STATUS_KEY = intPreferencesKey(RateDialogConstants.CURRENT_STATUS_KEY)
+    val LAST_UPDATE_TIME = stringPreferencesKey(RateDialogConstants.LAST_UPDATE_TIME)
 
     // Network Configuration
     val ALC_LIST = stringPreferencesKey(PreferencesKeyConstants.ALC_LIST)
@@ -145,6 +151,14 @@ object DataStoreKeys {
     // Complex types (JSON serialized)
     val INSTALLED_APPS_DATA = stringPreferencesKey(PreferencesKeyConstants.INSTALLED_APPS_DATA)
     val WG_CONNECT_API_FAIL_OVER_STATE = stringPreferencesKey(PreferencesKeyConstants.WG_CONNECT_API_FAIL_OVER_STATE)
+    val USER_IP = stringPreferencesKey(PreferencesKeyConstants.USER_IP)
+    val GET_SESSION = stringPreferencesKey(PreferencesKeyConstants.GET_SESSION)
+    val PORT_MAP = stringPreferencesKey(PreferencesKeyConstants.PORT_MAP)
+    val ROBERT_FILTERS = stringPreferencesKey(PreferencesKeyConstants.ROBERT_FILTERS)
+    val FAVORITE_SERVER_LIST = stringPreferencesKey(PreferencesKeyConstants.FAVORITE_SERVER_LIST)
+    // App Lifecycle & Installation
+    val NEW_INSTALLATION = stringPreferencesKey(PreferencesKeyConstants.NEW_INSTALLATION)
+    val CONNECTION_MODE_KEY = stringPreferencesKey(PreferencesKeyConstants.CONNECTION_MODE_KEY)
 
     // SSO
     val IS_SSO_LOGIN = booleanPreferencesKey(PreferencesKeyConstants.IS_SSO_LOGIN)
@@ -152,5 +166,4 @@ object DataStoreKeys {
     // Dynamic keys (per-user, per-network, etc.)
     fun previousAccountStatus(userName: String) = intPreferencesKey("${userName}${PreferencesKeyConstants.PREVIOUS_ACCOUNT_STATUS}")
     fun previousUserStatus(userName: String) = intPreferencesKey("${userName}${PreferencesKeyConstants.PREVIOUS_USER_STATUS}")
-    fun notificationShown(notificationId: String) = booleanPreferencesKey(notificationId)
 }

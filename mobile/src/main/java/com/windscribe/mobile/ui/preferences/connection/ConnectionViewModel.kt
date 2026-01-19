@@ -164,13 +164,12 @@ class ConnectionViewModelImpl(
                     buildProtocolInfo()
                 }
             }
-            val connectionMode =
-                preferencesHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY)
+            val connectionMode = preferencesHelper.connectionMode
             if (connectionMode != null) {
                 _mode.emit(connectionMode)
             }
-            val dnsMode = preferencesHelper.getResponseString(PreferencesKeyConstants.DNS_MODE)
-            if (dnsMode != null) {
+            val dnsMode = preferencesHelper.dnsMode
+            if (dnsMode.isNotEmpty()) {
                 _dnsMode.emit(dnsMode)
             }
         }
@@ -218,10 +217,7 @@ class ConnectionViewModelImpl(
 
     override fun onProtocolSelected(protocol: DropDownStringItem) {
         viewModelScope.launch {
-            preferencesHelper.saveResponseStringData(
-                PreferencesKeyConstants.PROTOCOL_KEY,
-                protocol.key
-            )
+            preferencesHelper.saveProtocol(protocol.key)
             _selectedProtocol.emit(protocol.key)
             autoConnectionManager.reset()
             buildProtocolInfo()
@@ -237,50 +233,32 @@ class ConnectionViewModelImpl(
 
             PROTO_UDP -> {
                 logger.info("Saving selected udp port...")
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.SAVED_UDP_PORT,
-                    port
-                )
+                preferencesHelper.saveUDPPort(port)
             }
 
             PROTO_TCP -> {
                 logger.info("Saving selected tcp port...")
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.SAVED_TCP_PORT,
-                    port
-                )
+                preferencesHelper.saveTCPPort(port)
             }
 
             PROTO_STEALTH -> {
                 logger.info("Saving selected stealth port...")
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.SAVED_STEALTH_PORT,
-                    port
-                )
+                preferencesHelper.saveStealthPort(port)
             }
 
             PROTO_WS_TUNNEL -> {
                 logger.info("Saving selected ws tunnel port...")
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.SAVED_WS_TUNNEL_PORT,
-                    port
-                )
+                preferencesHelper.saveWSTunnelPort(port)
             }
 
             PROTO_WIRE_GUARD -> {
                 logger.info("Saving selected wire guard port...")
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.SAVED_WIRE_GUARD_PORT,
-                    port
-                )
+                preferencesHelper.saveWireGuardPort(port)
             }
 
             else -> {
                 logger.info("Saving default port (udp)...")
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.SAVED_UDP_PORT,
-                    port
-                )
+                preferencesHelper.saveUDPPort(port)
             }
         }
     }
@@ -298,10 +276,7 @@ class ConnectionViewModelImpl(
     override fun onModeSelected(mode: String) {
         viewModelScope.launch {
             _mode.emit(mode)
-            preferencesHelper.saveResponseStringData(
-                PreferencesKeyConstants.CONNECTION_MODE_KEY,
-                mode
-            )
+            preferencesHelper.connectionMode = mode
         }
     }
 

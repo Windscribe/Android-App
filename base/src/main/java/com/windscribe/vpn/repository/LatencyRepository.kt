@@ -90,7 +90,7 @@ class LatencyRepository @Inject constructor(
     }
 
     suspend fun updateAllServerLatencies(): Boolean {
-        val currentIp = preferencesHelper.getResponseString(PreferencesKeyConstants.USER_IP)
+        val currentIp = preferencesHelper.userIP
         val validPings = localDbInterface.getAllPingsAsync().filter {
             val isSameIp = currentIp == it.ip
             val isWithinTimeLimit = (System.currentTimeMillis() - it.updatedAt).toDuration(DurationUnit.MILLISECONDS).inWholeMinutes <= MINIMUM_PING_VALIDATION_MINUTES
@@ -215,7 +215,7 @@ class LatencyRepository @Inject constructor(
             setRegionId(regionId)
             setStatic(isStatic)
             setUpdatedAt(System.currentTimeMillis())
-            preferencesHelper.getResponseString(PreferencesKeyConstants.USER_IP)?.let {
+            preferencesHelper.userIP?.let {
                 setIp(it)
             }
         }

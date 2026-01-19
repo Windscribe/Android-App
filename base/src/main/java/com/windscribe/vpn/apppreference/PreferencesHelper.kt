@@ -49,8 +49,6 @@ interface PreferencesHelper {
     fun getPreviousAccountStatus(userNameKey: String): Int
     fun getPreviousUserStatus(userNameKey: String): Int
     val purchaseFlowState: String
-    fun getResponseInt(key: String, defaultValue: Int): Int
-    fun getResponseString(key: String): String?
     val savedLanguage: String
     val savedProtocol: String
     val savedSTEALTHPort: String
@@ -93,21 +91,23 @@ interface PreferencesHelper {
     var advanceParamText: String
     var wsNetSettings: String
     fun nextProtocol(protocol: String?)
-    fun removeResponseData(key: String?)
     fun requiredReconnect(): Boolean
     fun saveIKEv2Port(port: String?)
+    fun saveTCPPort(port: String?)
+    fun saveUDPPort(port: String?)
+    fun saveStealthPort(port: String?)
+    fun saveWSTunnelPort(port: String?)
     fun saveInstalledApps(installedAppsSaved: List<String>)
     fun saveLastSelectedServerTabIndex(index: Int)
     fun savePortMapVersion(version: Int)
     fun savePurchaseFlowState(state: String?)
-    fun saveResponseIntegerData(key: String, value: Int)
-    fun saveResponseStringData(key: String, value: String)
     fun saveCredentials(key: String, value: ServerCredentialsResponse)
     fun getCredentials(key: String): ServerCredentialsResponse?
     fun saveOpenVPNServerConfig(value: String)
     fun getOpenVPNServerConfig():String?
     fun saveSelection(selection: String?)
     fun saveSplitRoutingMode(mode: String?)
+    fun saveProtocol(protocol: String?)
     fun saveWireGuardPort(port: String?)
     fun setAlwaysOn(status: Boolean)
     fun setAuthFailedConnectionAttemptCount(numberOfAttempts: Int?)
@@ -160,4 +160,16 @@ interface PreferencesHelper {
     var customDisconnectedSound: String?
     var customConnectedSound: String?
     var isSsoLogin: Boolean
+    var userIP: String?
+    var connectionMode: String?
+    var newInstallation: String?
+    var getSession: String?
+    var portMap: String?
+    var robertFilters: String?
+    var favoriteServerList: String?
+    var purchasedItem: String?
+    var amazonPurchasedItem: String?
+    var rateDialogStatus: Int
+    var rateDialogLastUpdateTime: String?
+    fun setUserLanguage(language: String)
 }

@@ -42,10 +42,7 @@ class WindscribeReviewManagerImpl(
                             appContext.activeActivity?.let { activity ->
                                 val flow = reviewManager.launchReviewFlow(activity, reviewInfo)
                                 flow.addOnCompleteListener { _ ->
-                                    preferencesHelper.saveResponseStringData(
-                                        RateDialogConstants.LAST_UPDATE_TIME,
-                                        Date().time.toString()
-                                    )
+                                    preferencesHelper.rateDialogLastUpdateTime = Date().time.toString()
                                     logger.debug("Review flow completed.")
                                 }
                             }
@@ -67,8 +64,7 @@ class WindscribeReviewManagerImpl(
     }
 
     private fun notAlreadyShown(): Boolean {
-        val time =
-            preferencesHelper.getResponseString(RateDialogConstants.LAST_UPDATE_TIME) ?: return true
+        val time = preferencesHelper.rateDialogLastUpdateTime ?: return true
         return try {
             val difference = Date().time - time.toLong()
             val days = TimeUnit.DAYS.convert(difference, TimeUnit.MILLISECONDS)

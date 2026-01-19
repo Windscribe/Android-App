@@ -51,9 +51,7 @@ class IpRepository(
                     is CallResult.Error -> loadIpFromStorage()
                     is CallResult.Success -> {
                         val ipAddress = getModifiedIpAddress(result.data.trim())
-                        preferenceHelper.saveResponseStringData(
-                            PreferencesKeyConstants.USER_IP, ipAddress
-                        )
+                        preferenceHelper.userIP = ipAddress
                         _state.emit(RepositoryState.Success(ipAddress))
                     }
                 }
@@ -64,7 +62,7 @@ class IpRepository(
     }
 
     private suspend fun loadIpFromStorage() {
-        preferenceHelper.getResponseString(PreferencesKeyConstants.USER_IP)?.let {
+        preferenceHelper.userIP?.let {
             _state.emit(RepositoryState.Success(it))
         } ?: kotlin.run {
             _state.emit(RepositoryState.Error("No saved ip found."))

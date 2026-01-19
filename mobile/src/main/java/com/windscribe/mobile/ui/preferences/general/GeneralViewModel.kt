@@ -65,7 +65,7 @@ class GeneralViewModelImpl(
 
     override fun onLanguageItemSelected(item: DropDownStringItem) {
         viewModelScope.launch {
-            preferenceHelper.saveResponseStringData(PreferencesKeyConstants.USER_LANGUAGE, item.key)
+            preferenceHelper.setUserLanguage(item.key)
             _reloadApp.emit(true)
         }
     }

@@ -174,29 +174,19 @@ class SettingsPresenterImp @Inject constructor(
     }
 
     override fun onConnectionModeAutoClicked() {
-        if (CONNECTION_MODE_AUTO != (preferencesHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY)
-                ?: CONNECTION_MODE_AUTO)
-        ) {
+        if (CONNECTION_MODE_AUTO != (preferencesHelper.connectionMode ?: CONNECTION_MODE_AUTO)) {
             activityScope.launch {
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.CONNECTION_MODE_KEY, CONNECTION_MODE_AUTO
-                )
+                preferencesHelper.connectionMode = CONNECTION_MODE_AUTO
                 preferencesHelper.nextProtocol(null)
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.PROTOCOL_KEY, PROTO_IKev2
-                )
+                preferencesHelper.saveProtocol(PROTO_IKev2)
             }
             settingView.setupLayoutForAutoMode()
         }
     }
 
     override fun onConnectionModeManualClicked() {
-        if (CONNECTION_MODE_MANUAL != (preferencesHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY)
-                ?: CONNECTION_MODE_AUTO)
-        ) {
-            preferencesHelper.saveResponseStringData(
-                PreferencesKeyConstants.CONNECTION_MODE_KEY, CONNECTION_MODE_MANUAL
-            )
+        if (CONNECTION_MODE_MANUAL != (preferencesHelper.connectionMode ?: CONNECTION_MODE_AUTO)) {
+            preferencesHelper.connectionMode = CONNECTION_MODE_MANUAL
             settingView.setupLayoutForManualMode()
             val savedProtocol = preferencesHelper.savedProtocol
             setProtocolAdapter(savedProtocol)
@@ -266,9 +256,7 @@ class SettingsPresenterImp @Inject constructor(
         if (savedLanguage == selectedLanguage) {
             logger.info("Language selected is same as saved. No action taken...")
         } else {
-            preferencesHelper.saveResponseStringData(
-                PreferencesKeyConstants.USER_LANGUAGE, selectedLanguage
-            )
+            preferencesHelper.setUserLanguage(selectedLanguage)
             settingView.reloadApp()
         }
     }
@@ -294,30 +282,22 @@ class SettingsPresenterImp @Inject constructor(
 
                 PROTO_UDP -> {
                     logger.info("Saving selected udp port...")
-                    preferencesHelper.saveResponseStringData(
-                        PreferencesKeyConstants.SAVED_UDP_PORT, port
-                    )
+                    preferencesHelper.saveUDPPort(port)
                 }
 
                 PROTO_TCP -> {
                     logger.info("Saving selected tcp port...")
-                    preferencesHelper.saveResponseStringData(
-                        PreferencesKeyConstants.SAVED_TCP_PORT, port
-                    )
+                    preferencesHelper.saveTCPPort(port)
                 }
 
                 PROTO_STEALTH -> {
                     logger.info("Saving selected stealth port...")
-                    preferencesHelper.saveResponseStringData(
-                        PreferencesKeyConstants.SAVED_STEALTH_PORT, port
-                    )
+                    preferencesHelper.saveStealthPort(port)
                 }
 
                 PROTO_WS_TUNNEL -> {
                     logger.info("Saving selected ws port...")
-                    preferencesHelper.saveResponseStringData(
-                        PreferencesKeyConstants.SAVED_WS_TUNNEL_PORT, port
-                    )
+                    preferencesHelper.saveWSTunnelPort(port)
                 }
 
                 PROTO_WIRE_GUARD -> {
@@ -327,9 +307,7 @@ class SettingsPresenterImp @Inject constructor(
 
                 else -> {
                     logger.info("Saving default port (udp)...")
-                    preferencesHelper.saveResponseStringData(
-                        PreferencesKeyConstants.SAVED_UDP_PORT, port
-                    )
+                    preferencesHelper.saveUDPPort(port)
                 }
             }
         }
@@ -344,9 +322,7 @@ class SettingsPresenterImp @Inject constructor(
                 logger.debug("Protocol re-selected is same as saved. No action taken...")
             } else {
                 logger.info("Saving selected protocol...")
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.PROTOCOL_KEY, protocolFromHeading
-                )
+                preferencesHelper.saveProtocol(protocolFromHeading)
                 setPortMapAdapter(protocol)
             }
         }
@@ -497,9 +473,7 @@ class SettingsPresenterImp @Inject constructor(
     }
 
     override fun setupLayoutBasedOnConnectionMode() {
-        val savedConnectionMode =
-            preferencesHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY)
-                ?: CONNECTION_MODE_AUTO
+        val savedConnectionMode = preferencesHelper.connectionMode ?: CONNECTION_MODE_AUTO
         if (CONNECTION_MODE_MANUAL == savedConnectionMode) {
             settingView.setupLayoutForManualMode()
             logger.info(

@@ -228,10 +228,7 @@ abstract class VpnBackend(
                                 val userIp = result.data
                                 if (Util.validIpAddress(userIp)) {
                                     val ipAddress = Util.getModifiedIpAddress(userIp.trim())
-                                    preferencesHelper.saveResponseStringData(
-                                        PreferencesKeyConstants.USER_IP,
-                                        ipAddress
-                                    )
+                                    preferencesHelper.userIP = ipAddress
                                     connectivityTestPassed(userIp)
                                     success = true
                                     if (hasPinnedNodeMismatch || ipPinningFailed) {
@@ -321,7 +318,7 @@ abstract class VpnBackend(
         } else {
             vpnLogger.info("Connectivity test failed in background.")
             // Consider it connected and will fetch ip on app launch.
-            preferencesHelper.removeResponseData(PreferencesKeyConstants.USER_IP)
+            preferencesHelper.userIP = null
             updateState(VPNState(VPNState.Status.Connected))
             mainScope.launch {
                 delay(500)

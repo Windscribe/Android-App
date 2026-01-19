@@ -35,7 +35,7 @@ class PortMapRepository @Inject constructor(
         }
 
         // Try to load from preferences
-        val cachedJson = preferencesHelper.getResponseString(PreferencesKeyConstants.PORT_MAP)
+        val cachedJson = preferencesHelper.portMap
         val cachedResult = runCatching {
             Gson().fromJson(cachedJson, PortMapResponse::class.java)
         }.onSuccess { cachedPortMap = it }
@@ -92,10 +92,7 @@ class PortMapRepository @Inject constructor(
 
             is CallResult.Success -> {
                 preferencesHelper.savePortMapVersion(NetworkKeyConstants.PORT_MAP_VERSION)
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.PORT_MAP,
-                    Gson().toJson(result.data)
-                )
+                preferencesHelper.portMap = Gson().toJson(result.data)
                 cachedPortMap = result.data
                 Result.success(result.data)
             }

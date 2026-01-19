@@ -98,10 +98,7 @@ class ConnectionDataRepository @Inject constructor(
             when (portMapResult) {
                 is CallResult.Success -> {
                     saveSuggestedProtocolPort(portMapResult.data)
-                    preferencesHelper.saveResponseStringData(
-                        PreferencesKeyConstants.PORT_MAP,
-                        Gson().toJson(portMapResult.data)
-                    )
+                    preferencesHelper.portMap = Gson().toJson(portMapResult.data)
                     preferencesHelper.savePortMapVersion(NetworkKeyConstants.PORT_MAP_VERSION)
                 }
 

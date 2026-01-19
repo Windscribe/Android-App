@@ -180,7 +180,7 @@ class WindscribePresenterImpl @Inject constructor(
         activityScope.launch {
             try {
                 val userSessionResponse = withContext(Dispatchers.IO) {
-                    val userSessionString = preferencesHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
+                    val userSessionString = preferencesHelper.getSession
                     com.google.gson.Gson().fromJson(userSessionString, com.windscribe.vpn.api.response.UserSessionResponse::class.java)
                 }
 
@@ -228,7 +228,7 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     private fun lastShownDays(): Boolean {
-        val time = preferencesHelper.getResponseString(RateDialogConstants.LAST_UPDATE_TIME) ?: return true
+        val time = preferencesHelper.rateDialogLastUpdateTime ?: return true
         return try {
             val difference = Date().time - time.toLong()
             val days = TimeUnit.DAYS.convert(difference, MILLISECONDS)
@@ -239,31 +239,24 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     private fun getRateAppPreference(): Int {
-        return preferencesHelper.getResponseInt(
-            RateDialogConstants.CURRENT_STATUS_KEY,
-            RateDialogConstants.STATUS_DEFAULT
-        )
+        val status = preferencesHelper.rateDialogStatus
+        return if (status == 0) RateDialogConstants.STATUS_DEFAULT else status
     }
 
     private fun getLastTimeUpdated(): String {
-        return preferencesHelper.getResponseString(RateDialogConstants.LAST_UPDATE_TIME)
-            ?: Date().time.toString()
+        return preferencesHelper.rateDialogLastUpdateTime ?: Date().time.toString()
     }
 
     private fun saveRateAppPreference(type: Int) {
-        preferencesHelper.saveResponseIntegerData(RateDialogConstants.CURRENT_STATUS_KEY, type)
+        preferencesHelper.rateDialogStatus = type
     }
 
     private fun setRateDialogUpdateTime() {
-        preferencesHelper.saveResponseStringData(
-            RateDialogConstants.LAST_UPDATE_TIME,
-            Date().time.toString()
-        )
+        preferencesHelper.rateDialogLastUpdateTime = Date().time.toString()
     }
 
     override fun init() {
-        val ipAddress = preferencesHelper
-            .getResponseString(PreferencesKeyConstants.USER_IP)
+        val ipAddress = preferencesHelper.userIP
         if (ipAddress != null && vpnConnectionStateManager.isVPNActive()) {
             windscribeView.setIpAddress(ipAddress)
         }

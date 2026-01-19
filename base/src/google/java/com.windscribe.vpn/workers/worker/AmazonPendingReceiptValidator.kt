@@ -52,7 +52,7 @@ class AmazonPendingReceiptValidator(appContext: Context, params: WorkerParameter
     }
 
     private fun getPendingAmazonPurchase(): AmazonPurchase {
-        val json = preferencesHelper.getResponseString(BillingConstants.AMAZON_PURCHASED_ITEM)
+        val json = preferencesHelper.amazonPurchasedItem
                 ?: throw WindScribeException("No amazon purchase found.")
         try {
             return Gson().fromJson(json, AmazonPurchase::class.java)

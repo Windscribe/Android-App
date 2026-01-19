@@ -6,7 +6,6 @@ package com.windscribe.vpn.apppreference
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -218,13 +217,13 @@ class DataStorePreferenceHelper(
     // ============================================================================
 
     override fun clearAllData() {
-        val installation = getResponseString(PreferencesKeyConstants.NEW_INSTALLATION)
+        val installation = newInstallation
         scope.launch {
             dataStore.edit { it.clear() }
         }
         securePreferences.clear()
         if (PreferencesKeyConstants.I_OLD == installation) {
-            saveResponseStringData(PreferencesKeyConstants.NEW_INSTALLATION, PreferencesKeyConstants.I_OLD)
+            newInstallation = PreferencesKeyConstants.I_OLD
         }
     }
 
@@ -686,47 +685,33 @@ class DataStorePreferenceHelper(
         setInt(DataStoreKeys.previousUserStatus(userNameKey), userStatus)
     }
 
-    // Generic Get/Set Methods
-    override fun getResponseInt(key: String, defaultValue: Int): Int = runBlocking {
-        dataStore.data.first()[intPreferencesKey(key)] ?: defaultValue
-    }
-
-    override fun getResponseString(key: String): String? = runBlocking {
-        val default = if (key == PreferencesKeyConstants.CONNECTION_MODE_KEY) {
-            PreferencesKeyConstants.CONNECTION_MODE_AUTO
-        } else {
-            ""
-        }
-        getString(stringPreferencesKey(key), default).takeIf {
-            if (key == PreferencesKeyConstants.CONNECTION_MODE_KEY) true else it.isNotEmpty()
-        }
-    }
-
-    override fun saveResponseIntegerData(key: String, value: Int) {
-        scope.launch {
-            dataStore.edit { it[intPreferencesKey(key)] = value }
-        }
-    }
-
-    override fun saveResponseStringData(key: String, value: String) {
-        setString(stringPreferencesKey(key), value)
-    }
-
-    override fun removeResponseData(key: String?) {
-        if (key != null) {
-            scope.launch {
-                dataStore.edit { it.remove(stringPreferencesKey(key)) }
-            }
-        }
-    }
-
     // Save Methods
     override fun saveIKEv2Port(port: String?) {
         setString(DataStoreKeys.SAVED_IKev2_PORT, port)
     }
 
+    override fun saveTCPPort(port: String?) {
+        setString(DataStoreKeys.SAVED_TCP_PORT, port)
+    }
+
+    override fun saveUDPPort(port: String?) {
+        setString(DataStoreKeys.SAVED_UDP_PORT, port)
+    }
+
+    override fun saveStealthPort(port: String?) {
+        setString(DataStoreKeys.SAVED_STEALTH_PORT, port)
+    }
+
+    override fun saveWSTunnelPort(port: String?) {
+        setString(DataStoreKeys.SAVED_WS_TUNNEL_PORT, port)
+    }
+
     override fun saveWireGuardPort(port: String?) {
         setString(DataStoreKeys.SAVED_WIRE_GUARD_PORT, port)
+    }
+
+    override fun saveProtocol(protocol: String?) {
+        setString(DataStoreKeys.PROTOCOL_KEY, protocol)
     }
 
     override fun saveInstalledApps(installedAppsSaved: List<String>) {
@@ -933,4 +918,55 @@ class DataStorePreferenceHelper(
     override var isSsoLogin: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.IS_SSO_LOGIN, false) }
         set(value) = setBoolean(DataStoreKeys.IS_SSO_LOGIN, value)
+
+    override var userIP: String?
+        get() = runBlocking { getString(DataStoreKeys.USER_IP, "").takeIf { it.isNotEmpty() } }
+        set(value) = setStringSync(DataStoreKeys.USER_IP, value)
+
+    override var connectionMode: String?
+        get() = runBlocking {
+            getString(DataStoreKeys.CONNECTION_MODE_KEY, PreferencesKeyConstants.CONNECTION_MODE_AUTO)
+                .takeIf { it.isNotEmpty() }
+        }
+        set(value) = setString(DataStoreKeys.CONNECTION_MODE_KEY, value)
+
+    override var newInstallation: String?
+        get() = runBlocking { getString(DataStoreKeys.NEW_INSTALLATION, "").takeIf { it.isNotEmpty() } }
+        set(value) = setString(DataStoreKeys.NEW_INSTALLATION, value)
+
+    override var getSession: String?
+        get() = runBlocking { getString(DataStoreKeys.GET_SESSION, "").takeIf { it.isNotEmpty() } }
+        set(value) = setString(DataStoreKeys.GET_SESSION, value)
+
+    override var portMap: String?
+        get() = runBlocking { getString(DataStoreKeys.PORT_MAP, "").takeIf { it.isNotEmpty() } }
+        set(value) = setString(DataStoreKeys.PORT_MAP, value)
+
+    override var robertFilters: String?
+        get() = runBlocking { getString(DataStoreKeys.ROBERT_FILTERS, "").takeIf { it.isNotEmpty() } }
+        set(value) = setString(DataStoreKeys.ROBERT_FILTERS, value)
+
+    override var favoriteServerList: String?
+        get() = runBlocking { getString(DataStoreKeys.FAVORITE_SERVER_LIST, "").takeIf { it.isNotEmpty() } }
+        set(value) = setString(DataStoreKeys.FAVORITE_SERVER_LIST, value)
+
+    override var purchasedItem: String?
+        get() = runBlocking { getString(DataStoreKeys.PURCHASED_ITEM, "").takeIf { it.isNotEmpty() } }
+        set(value) = setString(DataStoreKeys.PURCHASED_ITEM, value)
+
+    override var amazonPurchasedItem: String?
+        get() = runBlocking { getString(DataStoreKeys.AMAZON_PURCHASED_ITEM, "").takeIf { it.isNotEmpty() } }
+        set(value) = setString(DataStoreKeys.AMAZON_PURCHASED_ITEM, value)
+
+    override var rateDialogStatus: Int
+        get() = runBlocking { getInt(DataStoreKeys.CURRENT_STATUS_KEY, 0) }
+        set(value) = setInt(DataStoreKeys.CURRENT_STATUS_KEY, value)
+
+    override var rateDialogLastUpdateTime: String?
+        get() = runBlocking { getString(DataStoreKeys.LAST_UPDATE_TIME, "").takeIf { it.isNotEmpty() } }
+        set(value) = setString(DataStoreKeys.LAST_UPDATE_TIME, value)
+
+    override fun setUserLanguage(language: String) {
+        setString(DataStoreKeys.USER_LANGUAGE, language)
+    }
 }

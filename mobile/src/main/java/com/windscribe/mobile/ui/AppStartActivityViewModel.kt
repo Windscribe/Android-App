@@ -68,9 +68,9 @@ class AppStartActivityViewModelImpl(val preferencesHelper: PreferencesHelper, va
        viewModelScope.launch {
            if (preferencesHelper.isNewApplicationInstance) {
                preferencesHelper.isNewApplicationInstance = false
-               val installation = preferencesHelper.getResponseString(PreferencesKeyConstants.NEW_INSTALLATION)
+               val installation = preferencesHelper.newInstallation
                if (PreferencesKeyConstants.I_NEW == installation) {
-                   preferencesHelper.saveResponseStringData(PreferencesKeyConstants.NEW_INSTALLATION, PreferencesKeyConstants.I_OLD)
+                   preferencesHelper.newInstallation = PreferencesKeyConstants.I_OLD
                    val result = result<String?> { apiCalManager.recordAppInstall() }
                    when(result) {
                        is CallResult.Success -> {

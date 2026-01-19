@@ -276,19 +276,13 @@ open class Windscribe : MultiDexApplication() {
     }
 
     private fun setUpNewInstallation() {
-        if (preference.getResponseString(PreferencesKeyConstants.NEW_INSTALLATION) == null) {
-            preference.saveResponseStringData(
-                PreferencesKeyConstants.NEW_INSTALLATION,
-                PreferencesKeyConstants.I_OLD
-            )
+        if (preference.newInstallation == null) {
+            preference.newInstallation = PreferencesKeyConstants.I_OLD
             // This will be true for legacy app but not beta version users
-            if (preference.getResponseString(PreferencesKeyConstants.CONNECTION_STATUS) == null) {
+            if (preference.connectionStatus == null) {
                 // Only Recording for legacy to new version
-                preference.saveResponseStringData(
-                    PreferencesKeyConstants.NEW_INSTALLATION,
-                    PreferencesKeyConstants.I_NEW
-                )
-                preference.removeResponseData(PreferencesKeyConstants.SESSION_HASH)
+                preference.newInstallation = PreferencesKeyConstants.I_NEW
+                preference.sessionHash = null
             }
         }
     }

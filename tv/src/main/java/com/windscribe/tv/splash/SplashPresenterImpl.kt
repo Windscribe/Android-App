@@ -50,13 +50,10 @@ class SplashPresenterImpl @Inject constructor(
             activityScope.launch(Dispatchers.IO) {
                 preferencesHelper.isNewApplicationInstance = false
             }
-            val installation = preferencesHelper.getResponseString(PreferencesKeyConstants.NEW_INSTALLATION)
+            val installation = preferencesHelper.newInstallation
             if (PreferencesKeyConstants.I_NEW == installation) {
                 // Record new install
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.NEW_INSTALLATION,
-                    PreferencesKeyConstants.I_OLD
-                )
+                preferencesHelper.newInstallation = PreferencesKeyConstants.I_OLD
                 activityScope.launch(Dispatchers.IO) {
                     try {
                         val result = result<String> {

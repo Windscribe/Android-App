@@ -38,7 +38,7 @@ class ShortcutStateManager(
     }
 
     private suspend fun getUserSession(): UserSessionResponse {
-        val session = preferencesHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
+        val session = preferencesHelper.getSession
         return Gson().fromJson(session, UserSessionResponse::class.java)
     }
 

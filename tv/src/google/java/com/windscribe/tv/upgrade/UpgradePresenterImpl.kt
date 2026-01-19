@@ -219,7 +219,7 @@ class UpgradePresenterImpl @Inject constructor(
                         purchase.purchaseToken
             )
         logger.info("Saving purchased product for later update...")
-        preferencesHelper.saveResponseStringData(PURCHASED_ITEM, purchase.originalJson)
+        preferencesHelper.purchasedItem = purchase.originalJson
         onBillingSetupFailed(responseCode)
     }
 
@@ -288,7 +288,7 @@ class UpgradePresenterImpl @Inject constructor(
         mPurchase = purchase
         logger.info("Saving purchased item to process later...")
         upgradeView.showProgressBar("#Verifying purchase...")
-        preferencesHelper.saveResponseStringData(PURCHASED_ITEM, purchase.originalJson)
+        preferencesHelper.purchasedItem = purchase.originalJson
         logger.info("Verifying payment for purchased item: " + purchase.originalJson)
         activityScope.launch(Dispatchers.IO) {
             try {
@@ -310,7 +310,7 @@ class UpgradePresenterImpl @Inject constructor(
 
                         is CallResult.Success -> {
                             logger.info("Payment verification successful. ")
-                            preferencesHelper.removeResponseData(PURCHASED_ITEM)
+                            preferencesHelper.purchasedItem = null
                             // Item purchased and verified
                             logger.info("Setting item purchased to null & upgrading user account")
                             mPurchase = null
@@ -666,7 +666,7 @@ class UpgradePresenterImpl @Inject constructor(
     private fun saveAmazonSubscriptionRecord(amazonPurchase: AmazonPurchase) {
         logger.debug("Saving amazon purchase:{}", amazonPurchase)
         val purchaseJson = Gson().toJson(amazonPurchase)
-        preferencesHelper.saveResponseStringData(AMAZON_PURCHASED_ITEM, purchaseJson)
+        preferencesHelper.amazonPurchasedItem = purchaseJson
     }
 
     private fun showBillingError(errorCode: Int, error: String) {
@@ -762,7 +762,7 @@ class UpgradePresenterImpl @Inject constructor(
 
                         is CallResult.Success -> {
                             logger.info("Payment verification successful.")
-                            preferencesHelper.removeResponseData(AMAZON_PURCHASED_ITEM)
+                            preferencesHelper.amazonPurchasedItem = null
                             // Item purchased and verified
                             logger.info("Setting item purchased to null & upgrading user account")
                             mPurchase = null

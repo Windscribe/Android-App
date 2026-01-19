@@ -67,10 +67,7 @@ class UserRepository(
     ) {
         scope.launch(Dispatchers.IO) {
             response?.let { it ->
-                preferenceHelper.saveResponseStringData(
-                    PreferencesKeyConstants.GET_SESSION,
-                    Gson().toJson(it)
-                )
+                preferenceHelper.getSession = Gson().toJson(it)
                 val newUser = User(it)
                 user.postValue(newUser)
                 _userInfo.emit(newUser)
@@ -79,8 +76,7 @@ class UserRepository(
                 callback?.invoke(newUser)
             } ?: kotlin.run {
                 try {
-                    val cachedSessionResponse =
-                        preferenceHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
+                    val cachedSessionResponse = preferenceHelper.getSession
                     val userSession =
                         Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
                     user.postValue(User(userSession))
@@ -95,8 +91,7 @@ class UserRepository(
     fun synchronizedReload() {
         try {
             logger.debug("Loading user info from cache")
-            val cachedSessionResponse =
-                preferenceHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
+            val cachedSessionResponse = preferenceHelper.getSession
             val userSession =
                 Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
             user.postValue(User(userSession))

@@ -215,7 +215,7 @@ class UpgradePresenterImpl @Inject constructor(
                     purchase.purchaseToken
         )
         presenterLog.info("Saving purchased product for later update...")
-        preferencesHelper.saveResponseStringData(PURCHASED_ITEM, purchase.originalJson)
+        preferencesHelper.purchasedItem = purchase.originalJson
         onBillingSetupFailed(responseCode)
     }
 
@@ -248,7 +248,7 @@ class UpgradePresenterImpl @Inject constructor(
         mPurchase = itemPurchased
         presenterLog.info("Saving purchased item to process later...")
         upgradeView?.showProgressBar("#Verifying purchase...")
-        preferencesHelper.saveResponseStringData(PURCHASED_ITEM, itemPurchased.originalJson)
+        preferencesHelper.purchasedItem = itemPurchased.originalJson
         presenterLog.info("Verifying payment for purchased item: " + itemPurchased.originalJson)
 
         activityScope.launch(Dispatchers.IO) {
@@ -271,7 +271,7 @@ class UpgradePresenterImpl @Inject constructor(
 
                         is CallResult.Success -> {
                             presenterLog.info("Payment verification successful. ")
-                            preferencesHelper.removeResponseData(PURCHASED_ITEM)
+                            preferencesHelper.purchasedItem = null
                             presenterLog.info("Setting item purchased to null & upgrading user account")
                             mPurchase = null
                             upgradeUserAccount()
@@ -557,7 +557,7 @@ class UpgradePresenterImpl @Inject constructor(
     private fun saveAmazonSubscriptionRecord(amazonPurchase: AmazonPurchase) {
         presenterLog.debug("Saving amazon purchase:{}", amazonPurchase)
         val purchaseJson = Gson().toJson(amazonPurchase)
-        preferencesHelper.saveResponseStringData(AMAZON_PURCHASED_ITEM, purchaseJson)
+        preferencesHelper.amazonPurchasedItem = purchaseJson
     }
 
     private fun showBillingError(errorCode: Int, error: String) {
@@ -639,7 +639,7 @@ class UpgradePresenterImpl @Inject constructor(
 
                         is CallResult.Success -> {
                             presenterLog.info("Payment verification successful.")
-                            preferencesHelper.removeResponseData(AMAZON_PURCHASED_ITEM)
+                            preferencesHelper.amazonPurchasedItem = null
                             presenterLog.info("Setting item purchased to null & upgrading user account")
                             mPurchase = null
                             PurchasingService.notifyFulfillment(
