@@ -151,7 +151,7 @@ class NetworkDetailViewModelImpl(
                             logger.info("Auto-connecting VPN for secure network: ${networkInfo.networkName}")
                             vpnController.connectAsync()
                         }
-                        networkInfo?.isAutoSecureOn == false && vpnActive -> {
+                        networkInfo?.isAutoSecureOn == false && vpnActive && isMine -> {
                             logger.info("Auto-disconnecting VPN for non-secure network: ${networkInfo.networkName}")
                             vpnController.disconnectAsync()
                         }

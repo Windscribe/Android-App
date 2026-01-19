@@ -316,7 +316,6 @@ open class WindVpnController @Inject constructor(
             setLocationToConnect()
             vpnConnectionStateManager.setState(VPNState(Connecting, connectionId = connectionId))
             // Clear whitelist - user wants VPN, so enable future auto-connect
-            preferencesHelper.whiteListedNetwork = null
             deviceStateManager.setWhitelistedNetwork(null)
             val protocolInformation = selectedProtocol?.let {
                 autoConnectionManager.setSelectedProtocol(it)
@@ -386,7 +385,6 @@ open class WindVpnController @Inject constructor(
         if (!reconnecting && isUserDisconnect) {
             // Whitelist current network - user doesn't want VPN here, block future auto-connect
             val networkName = deviceStateManager.getCurrentNetworkName()
-            preferencesHelper.whiteListedNetwork = networkName
             deviceStateManager.setWhitelistedNetwork(networkName)
             logger.debug("User disconnected - whitelisted network: $networkName")
         } else {
@@ -412,10 +410,7 @@ open class WindVpnController @Inject constructor(
             val isWhitelisted = deviceStateManager.isCurrentNetworkWhitelisted.value
 
             if (currentNetworkName == null) {
-                // No network name (cellular?), start service to handle network changes
-                appContext.preference.globalUserConnectionPreference = true
-                appContext.startAutoConnectService()
-                logger.debug("Starting AutoConnectService - no network name available")
+                logger.debug("No network name available to start auto connect.")
                 return@launch
             }
 
@@ -424,7 +419,7 @@ open class WindVpnController @Inject constructor(
             // Only start AutoConnectService if:
             // 1. Auto-secure is OFF (service will reconnect when network changes to ON network)
             // 2. Network is not whitelisted (might need to reconnect on this network)
-            if (networkInfo?.isAutoSecureOn == false || !isWhitelisted) {
+            if (networkInfo?.isAutoSecureOn == false || preferencesHelper.autoConnect) {
                 appContext.preference.globalUserConnectionPreference = true
                 appContext.startAutoConnectService()
                 logger.debug("Starting AutoConnectService - auto-secure=${networkInfo?.isAutoSecureOn}, whitelisted=$isWhitelisted")
