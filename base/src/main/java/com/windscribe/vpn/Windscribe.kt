@@ -258,6 +258,9 @@ open class Windscribe : MultiDexApplication() {
                 when (val result = migration.migrate()) {
                     is MigrationResult.Success -> {
                         logger.info("Tray migration completed: ${result.migratedCount} items migrated, ${result.errorCount} errors")
+                        // Reload UserRepository to pick up migrated session data
+                        applicationComponent.userRepository.synchronizedReload()
+                        logger.debug("UserRepository reloaded after migration")
                     }
                     is MigrationResult.AlreadyCompleted -> {
                         logger.debug("Tray migration already completed")
