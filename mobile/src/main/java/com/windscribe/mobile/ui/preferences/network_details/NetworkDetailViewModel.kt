@@ -12,6 +12,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
+import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.Dispatchers
@@ -46,7 +47,8 @@ class NetworkDetailViewModelImpl(
     val networkNetworkManager: NetworkInfoManager,
     val vpnController: WindVpnController,
     val vpnConnectionStateManager: VPNConnectionStateManager,
-    val portMapRepository: PortMapRepository
+    val portMapRepository: PortMapRepository,
+    val deviceStateManager: DeviceStateManager
 ) :
     NetworkDetailViewModel() {
     private val _showProgress = MutableStateFlow(false)
@@ -145,9 +147,9 @@ class NetworkDetailViewModelImpl(
                     
                     val vpnActive = vpnConnectionStateManager.isVPNActive()
                     logger.debug("VPN active: $vpnActive, auto-secure: ${networkInfo?.isAutoSecureOn}, global pref: ${preferencesHelper.globalUserConnectionPreference}")
-                    
+                    val isWhitelisted = deviceStateManager.isCurrentNetworkWhitelisted.value
                     when {
-                        networkInfo?.isAutoSecureOn == true && !vpnActive && preferencesHelper.globalUserConnectionPreference -> {
+                        networkInfo?.isAutoSecureOn == true && !vpnActive && preferencesHelper.globalUserConnectionPreference &&  !isWhitelisted -> {
                             logger.info("Auto-connecting VPN for secure network: ${networkInfo.networkName}")
                             vpnController.connectAsync()
                         }

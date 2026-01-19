@@ -75,6 +75,7 @@ import com.windscribe.vpn.repository.StaticIpRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.services.sso.GoogleSignInManager
+import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
@@ -113,7 +114,8 @@ class ComposeModule {
         portMapRepository: com.windscribe.vpn.repository.PortMapRepository,
         logRepository: LogRepository,
         bridgeApiRepository: BridgeApiRepository,
-        resourceHelper: ResourceHelper
+        resourceHelper: ResourceHelper,
+        deviceStateManager: DeviceStateManager
     ): ViewModelProvider.Factory {
         return object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -217,7 +219,7 @@ class ComposeModule {
                 } else if (modelClass.isAssignableFrom(NetworkOptionsViewModel::class.java)) {
                     return NetworkOptionsViewModelImpl(appPreferenceHelper, networkInfoManager, localDbInterface) as T
                 } else if (modelClass.isAssignableFrom(NetworkDetailViewModel::class.java)) {
-                    return NetworkDetailViewModelImpl(localDbInterface, apiCallManager, appPreferenceHelper, networkInfoManager, windVpnController, vpnConnectionStateManager, portMapRepository) as T
+                    return NetworkDetailViewModelImpl(localDbInterface, apiCallManager, appPreferenceHelper, networkInfoManager, windVpnController, vpnConnectionStateManager, portMapRepository, deviceStateManager) as T
                 } else if (modelClass.isAssignableFrom(SplitTunnelViewModel::class.java)) {
                     return SplitTunnelViewModelImpl(appPreferenceHelper) as T
                 } else if (modelClass.isAssignableFrom(EmailViewModel::class.java)) {
