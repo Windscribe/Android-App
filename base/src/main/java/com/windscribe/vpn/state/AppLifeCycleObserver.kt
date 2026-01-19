@@ -30,7 +30,8 @@ class AppLifeCycleObserver @Inject constructor(
     private val networkInfoManager: NetworkInfoManager,
     private val vpnConnectionStateManager: VPNConnectionStateManager,
     private val proxyDNSManager: ProxyDNSManager,
-    private val wsNet: WSNet
+    private val wsNet: WSNet,
+    private val deviceStateManager: DeviceStateManager
 ) :
     LifecycleObserver {
 
@@ -62,6 +63,8 @@ class AppLifeCycleObserver @Inject constructor(
             }
         }
         appContext.preference.wsNetSettings = wsNet.currentPersistentSettings()
+        // Clear whitelist when app goes to background
+        deviceStateManager.setWhitelistedNetwork(null)
         logger.info("----------App going to background.--------\n")
     }
 

@@ -554,14 +554,16 @@ open class BaseApplicationModule {
         networkInfoManager: NetworkInfoManager,
         vpnConnectionStateManager: VPNConnectionStateManager,
         proxyDNSManager: ProxyDNSManager,
-        wsNet: WSNet
+        wsNet: WSNet,
+        deviceStateManager: DeviceStateManager
     ): AppLifeCycleObserver {
         return AppLifeCycleObserver(
             workManager,
             networkInfoManager,
             vpnConnectionStateManager,
             proxyDNSManager,
-            wsNet
+            wsNet,
+            deviceStateManager
         )
     }
 

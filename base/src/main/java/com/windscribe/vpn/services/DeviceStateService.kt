@@ -85,7 +85,7 @@ class DeviceStateService : JobIntentWorkAroundService() {
     }
 
     private fun resetConnectState(networkInfo: NetworkInfo) {
-        val isWhitelisted = preferencesHelper.whiteListedNetwork == networkInfo.networkName
+        val isWhitelisted = deviceStateManager.isCurrentNetworkWhitelisted.value
         logger.info("SSID: ${networkInfo.networkName} AutoSecure: ${networkInfo.isAutoSecureOn} Preferred: ${networkInfo.isPreferredOn} ${networkInfo.protocol}:${networkInfo.port} | Whitelisted: $isWhitelisted | GlobalIntent: ${preferencesHelper.globalUserConnectionPreference}")
 
         // If network has auto-secure OFF and VPN is connected, disconnect

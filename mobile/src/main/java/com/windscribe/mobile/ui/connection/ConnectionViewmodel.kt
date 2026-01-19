@@ -804,11 +804,6 @@ class ConnectionViewmodelImpl @Inject constructor(
         // Set Static status
         preferences.setConnectingToStaticIP(isStaticIp)
         preferences.setConnectingToConfiguredLocation(false)
-        // Check Network security
-        val networkInfo = _networkInfoState.value
-        if (networkInfo is NetworkInfoState.Unsecured && preferences.whiteListedNetwork != null) {
-            preferences.whiteListedNetwork = networkInfo.name
-        }
         if (serverStatus == NetworkKeyConstants.SERVER_STATUS_TEMPORARILY_UNAVAILABLE || (isStaticIp && serverStatus == 0)) {
             logger.info("Error: Server is temporary unavailable.")
             showToast("Location temporary unavailable.")

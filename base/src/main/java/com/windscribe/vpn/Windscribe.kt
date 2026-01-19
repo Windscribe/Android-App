@@ -145,20 +145,12 @@ open class Windscribe : MultiDexApplication() {
             firebaseManager.initialise()
         }
         deviceStateManager.init(this)
-        // Initialize whitelisted network from preferences
-        deviceStateManager.setWhitelistedNetwork(preference.whiteListedNetwork)
 
-        // Sync preferences when network changes (auto-clear whitelist)
+        // Start AutoConnectService when network changes if needed
         applicationScope.launch {
             var previousNetwork: String? = null
             deviceStateManager.networkDetail.collect { detail ->
                 val currentNetwork = detail?.name
-
-                // Clear preferences whitelist when network changes
-                if (previousNetwork != null && previousNetwork != currentNetwork && preference.whiteListedNetwork != null) {
-                    preference.whiteListedNetwork = null
-                    logger.debug("Network changed from $previousNetwork to $currentNetwork - cleared preferences whitelist")
-                }
 
                 // Start AutoConnectService if needed when network changes
                 if (previousNetwork != null && previousNetwork != currentNetwork && currentNetwork != null) {
