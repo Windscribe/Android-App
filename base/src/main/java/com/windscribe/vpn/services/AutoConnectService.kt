@@ -97,6 +97,7 @@ class AutoConnectService : Service() {
                     vpnConnectionStateManager.state.value.status == VPNState.Status.Disconnected &&
                     userRepository.user.value?.accountStatus == User.AccountStatus.Okay) {
                     logger.debug("Auto secure ON for ${networkInfo.networkName} (not whitelisted) - connecting to VPN")
+                    autoConnectionManager.reset()
                     vpnController.connectAsync()
                 } else if (networkInfo?.isAutoSecureOn == true && isWhitelisted) {
                     logger.debug("Auto secure ON for ${networkInfo.networkName} but network is whitelisted - skipping auto-connect")
