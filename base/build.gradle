@@ -94,9 +94,11 @@ dependencies {
     api "com.google.dagger:dagger:$dagger"
     // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesCore"
+    // DataStore (replaces Tray)
+    api "androidx.datastore:datastore-preferences:1.0.0"
+    api "androidx.datastore:datastore-preferences-core:1.0.0"
     // Supporting libraries
     api 'com.github.seancfoley:ipaddress:5.3.1'
-    api 'com.github.GCX-HCI:tray:v0.12.0'
     // Test
     testImplementation "junit:junit:$JUnit"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'

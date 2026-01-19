@@ -9,6 +9,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.windscribe.vpn.localdatabase.tables.WindNotification
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WindNotificationDao {
@@ -22,9 +23,18 @@ interface WindNotificationDao {
     @Query("Select * from WindNotification order by date DESC")
     suspend fun getWindNotificationsAsync(): List<WindNotification>
 
+    @Query("Select * from WindNotification order by date DESC")
+    fun observeNotifications(): Flow<List<WindNotification>>
+
     @Query("Delete from WindNotification")
     suspend fun cleanAsync()
 
     @Query("Delete from WindNotification")
     fun clean()
+
+    @Query("SELECT isRead FROM WindNotification WHERE id = :notificationId")
+    suspend fun isRead(notificationId: Int): Boolean?
+
+    @Query("UPDATE WindNotification SET isRead = 1 WHERE id = :notificationId")
+    suspend fun markAsRead(notificationId: Int)
 }

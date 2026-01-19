@@ -603,15 +603,22 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     private fun checkForPopNotification(popupNotificationTables: List<PopupNotificationTable>) {
-        for (popupNotification in popupNotificationTables) {
-            val alreadySeen = preferencesHelper
-                .isNotificationAlreadyShown(popupNotification.notificationId.toString())
-            if (!alreadySeen && popupNotification.popUpStatus == 1) {
+        activityScope.launch(Dispatchers.IO) {
+            // Find the first notification that should be shown
+            val notificationToShow = popupNotificationTables.firstOrNull { popupNotification ->
+                val alreadySeen =
+                    localDbInterface.isNotificationRead(popupNotification.notificationId)
+                !alreadySeen && popupNotification.popUpStatus == 1
+            }
+
+            // If we found a notification to show, mark it as shown and open the activity
+            notificationToShow?.let { notification ->
                 logger.info("New popup notification received, showing notification...")
-                preferencesHelper
-                    .saveNotificationId(popupNotification.notificationId.toString())
-                windscribeView.openNewsFeedActivity(true, popupNotification.notificationId)
-                break
+                // Mark popup as shown (set popUpStatus = 0) so it won't show again
+                localDbInterface.markPopupAsShown(notification.notificationId)
+                withContext(Dispatchers.Main) {
+                    windscribeView.openNewsFeedActivity(true, notification.notificationId)
+                }
             }
         }
     }

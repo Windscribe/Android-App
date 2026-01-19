@@ -77,11 +77,9 @@ class NewsfeedViewmodel @Inject constructor(
 
         var firstItemToOpen = -1
         for (wn in newsfeed) {
-            val read = preferencesHelper.isNotificationAlreadyShown(wn.notificationId.toString())
-            if (!read && firstItemToOpen == -1) {
+            if (!wn.isRead && firstItemToOpen == -1) {
                 firstItemToOpen = wn.notificationId
             }
-            wn.isRead = read
         }
 
         if (arguments?.showPopUp == true) {
@@ -199,7 +197,9 @@ class NewsfeedViewmodel @Inject constructor(
     }
 
     fun onExpandClick(itemToExpand: String) {
-        preferencesHelper.saveNotificationId(itemToExpand)
+        viewModelScope.launch {
+            repository.markNotificationAsRead(itemToExpand.toInt())
+        }
     }
 
     fun clearGoToRoute() {

@@ -32,6 +32,7 @@ import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LocationRepository
+import com.windscribe.vpn.repository.NotificationRepository
 import com.windscribe.vpn.repository.RepositoryState
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.UserRepository
@@ -52,7 +53,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
-import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
+import com.windscribe.vpn.apppreference.OnPreferenceChangeListener
 import org.slf4j.LoggerFactory
 import java.io.File
 import javax.inject.Inject
@@ -161,7 +162,8 @@ class ConnectionViewmodelImpl @Inject constructor(
     private val userRepository: UserRepository,
     private val serverListRepository: ServerListRepository,
     private val decoyTrafficController: DecoyTrafficController,
-    private val resourceHelper: ResourceHelper
+    private val resourceHelper: ResourceHelper,
+    private val notificationRepository: NotificationRepository
 ) :
     ConnectionViewmodel() {
     private val _connectionUIState = MutableStateFlow<ConnectionUIState>(ConnectionUIState.Idle)
@@ -189,7 +191,7 @@ class ConnectionViewmodelImpl @Inject constructor(
     override val goto: SharedFlow<HomeGoto> = _goto
     private val _newFeedCount = MutableStateFlow(0)
     override val newFeedCount: StateFlow<Int> = _newFeedCount
-    private var preferenceChangeListener: OnTrayPreferenceChangeListener? = null
+    private var preferenceChangeListener: OnPreferenceChangeListener? = null
 
     private val lastLocationState: MutableStateFlow<LastSelectedLocation?> = MutableStateFlow(null)
     private val _aspectRatio = MutableStateFlow(1)
@@ -213,35 +215,26 @@ class ConnectionViewmodelImpl @Inject constructor(
         fetchNetworkState()
         fetchBestLocation()
         fetchUserPreferences()
+        observeNotificationCount()
         handleConnectionSoundsState()
         handleConnectionHapticFeedback()
         observeCustomLocationNameChanges()
         observeDecoyTrafficChanges()
     }
 
-    private fun fetchNewsfeedCount() {
+    private fun observeNotificationCount() {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val notifications = localdb.getWindNotifications()
-                var count = 0
-                for ((notificationId) in notifications) {
-                    if (!preferences.isNotificationAlreadyShown(notificationId.toString())) {
-                        count++
-                    }
-                }
+            notificationRepository.unreadCount.collect { count ->
                 _newFeedCount.emit(count)
-            } catch (_: Exception) {
-                _newFeedCount.emit(0)
             }
         }
     }
 
     private fun fetchUserPreferences() {
         viewModelScope.launch {
-            preferenceChangeListener = OnTrayPreferenceChangeListener {
+            preferenceChangeListener = OnPreferenceChangeListener {
                 _isAntiCensorshipEnabled.value = preferences.isAntiCensorshipOn
                 _aspectRatio.value = preferences.backgroundAspectRatioOption
-                fetchNewsfeedCount()
             }
             preferences.addObserver(preferenceChangeListener!!)
         }
@@ -339,7 +332,9 @@ class ConnectionViewmodelImpl @Inject constructor(
                     _isPreferredProtocolEnabled.value = false
                     _networkInfoState.value = NetworkInfoState.Unknown
                 } else {
-                    setPreferredProtocolState(connectionUIState.value.protocolInfo)
+                    connectionUIState.value.protocolInfo?.let {
+                        setPreferredProtocolState(it)
+                    }
                     if (networkInfo.isAutoSecureOn) {
                         _networkInfoState.value = NetworkInfoState.Secured(networkInfo.networkName)
                     } else {

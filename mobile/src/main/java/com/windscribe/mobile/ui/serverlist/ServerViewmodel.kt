@@ -33,7 +33,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
+import com.windscribe.vpn.apppreference.OnPreferenceChangeListener
 import java.util.Locale
 import kotlin.collections.map
 
@@ -123,7 +123,7 @@ class ServerViewModelImpl(
         _searchItemsExpandState
     private val _refreshState = MutableStateFlow(false)
     override val refreshState: StateFlow<Boolean> = _refreshState
-    private var preferenceChangeListener: OnTrayPreferenceChangeListener? = null
+    private var preferenceChangeListener: OnPreferenceChangeListener? = null
 
     init {
         fetchAllLists()
@@ -150,9 +150,9 @@ class ServerViewModelImpl(
 
     private fun fetchUserPreferences() {
         viewModelScope.launch {
-            preferenceChangeListener = OnTrayPreferenceChangeListener {
-                val locationOrderChanged = it.count { item -> item.key() == SELECTION_KEY } > 0
-                if (locationOrderChanged) {
+            preferenceChangeListener = OnPreferenceChangeListener { key ->
+                // Refresh lists when selection preference changes (affects sorting)
+                if (key == null || key == SELECTION_KEY) {
                     fetchServerList()
                     fetchFavouriteList()
                     fetchStaticList()

@@ -118,6 +118,7 @@ open class WindVpnController @Inject constructor(
 
     private suspend fun createProfileFromCustomConfig(selectedCity: Int): String {
         val configFile = localDbInterface.getConfigFileAsync(selectedCity)
+        logger.info("Creating profile from custom config $selectedCity $configFile")
         val profile = vpnProfileCreator.createVpnProfileFromConfig(configFile)
         if (!configFile.isRemember) {
             configFile.username = null

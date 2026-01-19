@@ -14,7 +14,7 @@ import com.windscribe.vpn.repository.CallResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
+import com.windscribe.vpn.apppreference.OnPreferenceChangeListener
 import org.slf4j.LoggerFactory
 import kotlin.math.log
 
@@ -55,12 +55,12 @@ class AppStartActivityViewModelImpl(val preferencesHelper: PreferencesHelper, va
     override val hapticFeedback: StateFlow<Boolean> = _hapticFeedback
     private val logger = LoggerFactory.getLogger("ui")
 
-    private val trayPreferenceChangeListener = OnTrayPreferenceChangeListener {
+    private val preferenceChangeListener = OnPreferenceChangeListener {
         _hapticFeedback.value = preferencesHelper.isHapticFeedbackEnabled
     }
 
     init {
-        preferencesHelper.addObserver(trayPreferenceChangeListener)
+        preferencesHelper.addObserver(preferenceChangeListener)
         recordInstall()
     }
 
@@ -108,7 +108,7 @@ class AppStartActivityViewModelImpl(val preferencesHelper: PreferencesHelper, va
     }
 
     override fun onCleared() {
-        preferencesHelper.removeObserver(trayPreferenceChangeListener)
+        preferencesHelper.removeObserver(preferenceChangeListener)
         super.onCleared()
     }
 }

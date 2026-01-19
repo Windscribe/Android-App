@@ -13,10 +13,9 @@ import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.ApiCallManager
 import com.windscribe.vpn.api.IApiCallManager
-import com.windscribe.vpn.apppreference.AppPreferenceHelper
 import com.windscribe.vpn.apppreference.PreferencesHelper
-import com.windscribe.vpn.apppreference.SafeAppPreferences
 import com.windscribe.vpn.apppreference.SecurePreferences
+import com.windscribe.vpn.apppreference.windscribeDataStore
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.TrafficCounter
@@ -85,7 +84,6 @@ import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
-import net.grandcentrix.tray.AppPreferences
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -293,11 +291,12 @@ open class BaseApplicationModule {
     @Provides
     @Singleton
     fun provideNotificationUpdater(
+        scope: CoroutineScope,
         preferencesHelper: PreferencesHelper,
         apiCallManager: IApiCallManager,
         localDbInterface: LocalDbInterface
     ): NotificationRepository {
-        return NotificationRepository(preferencesHelper, apiCallManager, localDbInterface)
+        return NotificationRepository(scope, preferencesHelper, apiCallManager, localDbInterface)
     }
 
     @Provides
@@ -314,10 +313,22 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
+    fun provideDataStore(): androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> {
+        return windscribeApp.windscribeDataStore
+    }
+
+    @Provides
+    @Singleton
     fun providePreferenceHelperInterface(
-        preferences: AppPreferences, securePreferences: SecurePreferences
+        dataStore: androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences>,
+        securePreferences: SecurePreferences,
+        scope: CoroutineScope
     ): PreferencesHelper {
-        return AppPreferenceHelper(preferences, securePreferences)
+        return com.windscribe.vpn.apppreference.DataStorePreferenceHelper(
+            dataStore,
+            securePreferences,
+            scope
+        )
     }
 
     @Provides
@@ -478,7 +489,7 @@ open class BaseApplicationModule {
     @Singleton
     fun provideVpnBackendHolder(
         coroutineScope: CoroutineScope,
-        preferenceHelper: AppPreferenceHelper,
+        preferenceHelper: PreferencesHelper,
         openVPNBackend: OpenVPNBackend,
         iKev2VpnBackend: IKev2VpnBackend,
         wireguardBackend: WireguardBackend
@@ -565,12 +576,6 @@ open class BaseApplicationModule {
             wsNet,
             deviceStateManager
         )
-    }
-
-    @Provides
-    @Singleton
-    fun providesAppPreference(): AppPreferences {
-        return SafeAppPreferences(windscribeApp)
     }
 
     @Provides

@@ -8,7 +8,6 @@ import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.WgLocalParams
-import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
 import java.util.Date
 import javax.inject.Singleton
 
@@ -83,7 +82,6 @@ interface PreferencesHelper {
     var isKeepAliveModeAuto: Boolean
     val isKernelModuleDisabled: Boolean
     var isNewApplicationInstance: Boolean
-    fun isNotificationAlreadyShown(notificationId: String): Boolean
     val isPackageSizeModeAuto: Boolean
     var isReconnecting: Boolean
     var isShowLocationHealthEnabled: Boolean
@@ -100,7 +98,6 @@ interface PreferencesHelper {
     fun saveIKEv2Port(port: String?)
     fun saveInstalledApps(installedAppsSaved: List<String>)
     fun saveLastSelectedServerTabIndex(index: Int)
-    fun saveNotificationId(notificationId: String)
     fun savePortMapVersion(version: Int)
     fun savePurchaseFlowState(state: String?)
     fun saveResponseIntegerData(key: String, value: Int)
@@ -129,7 +126,6 @@ interface PreferencesHelper {
     fun setPreviousUserStatus(userNameKey: String, userStatus: Int)
     fun setReconnectRequired(required: Boolean)
     fun setShowNewsFeedAlert(showAlert: Boolean)
-    fun setStaticAccessIp(key: String, staticAccessIp: String?)
     fun setUserAccountUpdateRequired(required: Boolean)
     fun setUserIntendedDisconnect(userIntendedDisconnect: Boolean)
     fun userIsInGhostMode(): Boolean
@@ -148,8 +144,8 @@ interface PreferencesHelper {
     fun getDefaultNetworkInfo(networkName: String): NetworkInfo
     fun isSuggested(): Boolean
     var locationHash: String?
-    fun addObserver(listener: OnTrayPreferenceChangeListener)
-    fun removeObserver(listener: OnTrayPreferenceChangeListener)
+    fun addObserver(listener: OnPreferenceChangeListener)
+    fun removeObserver(listener: OnPreferenceChangeListener)
     var whenDisconnectedBackgroundOption: Int
     var whenConnectedBackgroundOption: Int
     var backgroundAspectRatioOption: Int

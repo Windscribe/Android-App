@@ -4,7 +4,7 @@
 
 package com.windscribe.vpn.backend
 
-import com.windscribe.vpn.apppreference.AppPreferenceHelper
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.ikev2.IKev2VpnBackend
 import com.windscribe.vpn.backend.openvpn.OpenVPNBackend
@@ -27,7 +27,7 @@ import javax.inject.Singleton
 @Singleton
 class VpnBackendHolder(
         val scope: CoroutineScope,
-        private val preferenceHelper: AppPreferenceHelper,
+        private val preferenceHelper: PreferencesHelper,
         private val iKev2VpnBackend: IKev2VpnBackend,
         private val wireguardBackend: WireguardBackend,
         private val openVPNBackend: OpenVPNBackend

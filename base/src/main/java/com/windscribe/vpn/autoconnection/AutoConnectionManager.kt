@@ -656,10 +656,10 @@ class AutoConnectionManager(
 
     fun setSelectedProtocol(protocolInformation: ProtocolInformation) {
         logger.info("Trying to connect: $protocolInformation")
+        preferencesHelper.selectedProtocol = protocolInformation.protocol
+        preferencesHelper.selectedPort = protocolInformation.port
+        preferencesHelper.selectedProtocolType = protocolInformation.type
         scope.launch {
-            preferencesHelper.selectedProtocol = protocolInformation.protocol
-            preferencesHelper.selectedPort = protocolInformation.port
-            preferencesHelper.selectedProtocolType = protocolInformation.type
             _connectedProtocol.emit(protocolInformation)
         }
     }
