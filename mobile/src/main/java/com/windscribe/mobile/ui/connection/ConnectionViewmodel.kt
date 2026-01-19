@@ -339,6 +339,7 @@ class ConnectionViewmodelImpl @Inject constructor(
                     _isPreferredProtocolEnabled.value = false
                     _networkInfoState.value = NetworkInfoState.Unknown
                 } else {
+                    setPreferredProtocolState(connectionUIState.value.protocolInfo)
                     if (networkInfo.isAutoSecureOn) {
                         _networkInfoState.value = NetworkInfoState.Secured(networkInfo.networkName)
                     } else {
