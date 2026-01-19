@@ -339,10 +339,6 @@ class ConnectionViewmodelImpl @Inject constructor(
                     _isPreferredProtocolEnabled.value = false
                     _networkInfoState.value = NetworkInfoState.Unknown
                 } else {
-                    logger.info("NetworkInfo: $networkInfo")
-                    val protocolInfo = connectionUIState.value.protocolInfo
-                    _isPreferredProtocolEnabled.value =
-                        networkInfo.isPreferredOn && networkInfo.protocol == protocolInfo?.protocol && networkInfo.port == protocolInfo?.port
                     if (networkInfo.isAutoSecureOn) {
                         _networkInfoState.value = NetworkInfoState.Secured(networkInfo.networkName)
                     } else {
@@ -392,6 +388,7 @@ class ConnectionViewmodelImpl @Inject constructor(
                     else -> nextInLineProtocol
                 } ?: Util.getAppSupportedProtocolList().first()
                 val locationInfo = buildLocationInfo()
+                setPreferredProtocolState(protocolInfo)
                 when (state.status) {
                     VPNState.Status.Connected -> ConnectionUIState.Connected(
                         protocolInfo,
@@ -422,6 +419,14 @@ class ConnectionViewmodelImpl @Inject constructor(
             if (state.error?.showError == true && state.error?.message != null) {
                 _toastMessage.emit(ToastMessage.Raw(state.error!!.message))
             }
+        }
+    }
+
+    private fun setPreferredProtocolState(protocolInfo: ProtocolInformation) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val networkInfo = networkInfoManager.networkInfo.value
+            _isPreferredProtocolEnabled.value =
+                networkInfo?.isPreferredOn == true && networkInfo.protocol == protocolInfo.protocol && networkInfo.port == protocolInfo.port
         }
     }
 
