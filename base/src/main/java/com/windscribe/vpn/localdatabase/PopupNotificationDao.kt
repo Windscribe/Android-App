@@ -20,6 +20,12 @@ interface PopupNotificationDao {
     @Insert(onConflict = REPLACE)
     fun insertPopupNotification(popupNotificationTable: PopupNotificationTable)
 
+    @Query("UPDATE notification_table SET popup_status = 0 WHERE notification_id = :notificationId")
+    fun markPopupAsShown(notificationId: Int)
+
+    @Query("SELECT notification_id FROM notification_table WHERE notification_id = :notificationId LIMIT 1")
+    suspend fun getPopupNotificationId(notificationId: Int): Int?
+
     @Query("Delete from notification_table")
     fun clean()
 }

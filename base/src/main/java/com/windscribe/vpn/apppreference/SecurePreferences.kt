@@ -42,6 +42,10 @@ class SecurePreferences(private val app: Windscribe) {
     }
 
     fun putString(key: String, value: String?) {
-        sharedPreferences.edit().putString(key, value).apply()
+        sharedPreferences.edit().putString(key, value).apply()  // ASYNC
+    }
+
+    fun putStringSync(key: String, value: String?) {
+        sharedPreferences.edit().putString(key, value).commit()  // SYNC - blocks until saved
     }
 }

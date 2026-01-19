@@ -168,6 +168,10 @@ class LocalDatabaseImpl @Inject constructor(
         popupNotificationDao.insertPopupNotification(popupNotificationTable)
     }
 
+    override suspend fun popupNotificationExists(notificationId: Int): Boolean {
+        return popupNotificationDao.getPopupNotificationId(notificationId) != null
+    }
+
     override fun clearAllTables() {
         userStatusDao.clean()
         popupNotificationDao.clean()
@@ -224,6 +228,22 @@ class LocalDatabaseImpl @Inject constructor(
 
     override suspend fun getWindNotifications(): List<WindNotification> {
         return windNotificationDao.getWindNotifications()
+    }
+
+    override fun observeNotifications(): Flow<List<WindNotification>> {
+        return windNotificationDao.observeNotifications()
+    }
+
+    override suspend fun isNotificationRead(notificationId: Int): Boolean {
+        return windNotificationDao.isRead(notificationId) ?: false
+    }
+
+    override suspend fun markNotificationAsRead(notificationId: Int) {
+        windNotificationDao.markAsRead(notificationId)
+    }
+
+    override fun markPopupAsShown(notificationId: Int) {
+        popupNotificationDao.markPopupAsShown(notificationId)
     }
 
     override suspend fun insertWindNotifications(windNotifications: List<WindNotification>) {

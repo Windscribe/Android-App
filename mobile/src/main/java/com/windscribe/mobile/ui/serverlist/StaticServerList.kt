@@ -104,7 +104,7 @@ fun StaticIPServerList(
                         activity.openUrl(NetworkKeyConstants.URL_ADD_STATIC_IP)
                     }
                 } else {
-                    val deviceName = list.first().staticItem.deviceName
+                    val deviceName = list.first().staticItem.deviceName ?: ""
                     Column(Modifier.fillMaxSize()) {
                         PullToRefreshBox(
                             isRefreshing = isRefreshing,

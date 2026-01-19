@@ -175,7 +175,8 @@ class ComposeModule {
                         userRepository,
                         serverListRepository,
                         decoyTrafficController,
-                        resourceHelper
+                        resourceHelper,
+                        notificationRepository
                     ) as T
                 } else if (modelClass.isAssignableFrom(ConfigViewmodel::class.java)) {
                     return ConfigViewmodelImpl(localDbInterface, latencyRepository) as T

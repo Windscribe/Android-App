@@ -13,9 +13,13 @@ import android.os.StrictMode.ThreadPolicy.Builder
 import android.os.StrictMode.VmPolicy
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.multidex.MultiDexApplication
+import com.windscribe.vpn.apppreference.MigrationResult
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.apppreference.TrayToDataStoreMigration
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.FragmentType
 import com.windscribe.vpn.autoconnection.ProtocolInformation
@@ -47,6 +51,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.strongswan.android.logic.StrongSwanApplication
 import java.util.Locale
@@ -83,6 +88,9 @@ open class Windscribe : MultiDexApplication() {
 
     @Inject
     lateinit var preference: PreferencesHelper
+
+    @Inject
+    lateinit var dataStore: DataStore<Preferences>
 
     @Inject
     lateinit var appLifeCycleObserver: AppLifeCycleObserver
@@ -133,6 +141,10 @@ open class Windscribe : MultiDexApplication() {
             .build()
         serviceComponent = serviceComponent()
         ProcessLifecycleOwner.get().lifecycle.addObserver(appLifeCycleObserver)
+
+        // Run one-time Tray → DataStore migration
+        runTrayMigration()
+
         preference.isNewApplicationInstance = true
         WindContextWrapper.setAppLocale(this)
         try {
@@ -235,6 +247,31 @@ open class Windscribe : MultiDexApplication() {
             Locale(splits[0], splits[1])
         } else {
             Locale(language)
+        }
+    }
+
+    private fun runTrayMigration() {
+        // Migration MUST complete before app accesses preferences
+        runBlocking {
+            try {
+                val migration = TrayToDataStoreMigration(appContext, dataStore, applicationComponent.localDbInterface)
+                when (val result = migration.migrate()) {
+                    is MigrationResult.Success -> {
+                        logger.info("Tray migration completed: ${result.migratedCount} items migrated, ${result.errorCount} errors")
+                    }
+                    is MigrationResult.AlreadyCompleted -> {
+                        logger.debug("Tray migration already completed")
+                    }
+                    is MigrationResult.NoTrayData -> {
+                        logger.info("No Tray data to migrate (fresh install or already migrated)")
+                    }
+                    is MigrationResult.Error -> {
+                        logger.error("Tray migration failed: ${result.message}")
+                    }
+                }
+            } catch (e: Exception) {
+                logger.error("Unexpected error during Tray migration: ${e.message}", e)
+            }
         }
     }
 

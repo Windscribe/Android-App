@@ -24,6 +24,7 @@ interface LocalDbInterface {
     suspend fun addStaticRegions(staticRegions: List<StaticRegion>)
     suspend fun addToCities(cities: List<City>)
     fun addToPopupNotification(popupNotificationTable: PopupNotificationTable)
+    suspend fun popupNotificationExists(notificationId: Int): Boolean
     suspend fun addToRegions(regions: List<Region>)
     fun clearAllTables()
     suspend fun deleteFavourite(id: Int)
@@ -60,6 +61,10 @@ interface LocalDbInterface {
     fun getCountryCode(cityId: Int): String
     suspend fun getCitiesAsync(): List<City>
     suspend fun getWindNotifications(): List<WindNotification>
+    fun observeNotifications(): Flow<List<WindNotification>>
+    suspend fun isNotificationRead(notificationId: Int): Boolean
+    suspend fun markNotificationAsRead(notificationId: Int)
+    fun markPopupAsShown(notificationId: Int)
     suspend fun getAllStaticRegions(): List<StaticRegion>
     suspend fun getRegionIdFromCityAsync(cityID: Int): Int
     suspend fun getLowestPingIdAsync(): Int

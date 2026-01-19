@@ -32,7 +32,7 @@ import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [ApplicationModule::class, VPNModule::class, PersistentModule::class])
+@Component(modules = [ApplicationModule::class, VPNModule::class])
 interface ApplicationComponent {
     //Main
     val coroutineScope: CoroutineScope

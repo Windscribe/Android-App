@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener
+import com.windscribe.vpn.apppreference.OnPreferenceChangeListener
 import org.slf4j.LoggerFactory
 import java.util.Locale
 
@@ -82,7 +82,7 @@ class HomeViewmodelImpl(
     private val _hideNetworkName = MutableStateFlow(preferences.blurNetworkName)
     override val hideNetworkName: StateFlow<Boolean> = _hideNetworkName
 
-    private val trayPreferenceChangeListener = OnTrayPreferenceChangeListener {
+    private val preferenceChangeListener = OnPreferenceChangeListener {
         viewModelScope.launch(Dispatchers.IO) {
             _hapticFeedbackEnabled.value = preferences.isHapticFeedbackEnabled
             _showLocationLoad.value = preferences.isShowLocationHealthEnabled
@@ -115,7 +115,7 @@ class HomeViewmodelImpl(
     }
 
     private fun fetchUserPreferences() {
-        preferences.addObserver(trayPreferenceChangeListener)
+        preferences.addObserver(preferenceChangeListener)
     }
 
     private fun fetchUserState() {
@@ -204,7 +204,7 @@ class HomeViewmodelImpl(
     }
 
     override fun onCleared() {
-        preferences.removeObserver(trayPreferenceChangeListener)
+        preferences.removeObserver(preferenceChangeListener)
         viewModelScope.launch {
             _goto.emit(HomeGoto.None)
         }
