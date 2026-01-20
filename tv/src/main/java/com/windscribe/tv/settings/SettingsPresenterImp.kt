@@ -177,7 +177,6 @@ class SettingsPresenterImp @Inject constructor(
         if (CONNECTION_MODE_AUTO != (preferencesHelper.connectionMode ?: CONNECTION_MODE_AUTO)) {
             activityScope.launch {
                 preferencesHelper.connectionMode = CONNECTION_MODE_AUTO
-                preferencesHelper.nextProtocol(null)
                 preferencesHelper.savedProtocol = PROTO_IKev2
             }
             settingView.setupLayoutForAutoMode()

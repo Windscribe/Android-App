@@ -30,12 +30,9 @@ import com.windscribe.vpn.billing.GoogleProducts
 import com.windscribe.vpn.billing.PurchaseState
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.BillingConstants
-import com.windscribe.vpn.constants.BillingConstants.AMAZON_PURCHASED_ITEM
 import com.windscribe.vpn.constants.BillingConstants.PLAY_STORE_UPDATE
-import com.windscribe.vpn.constants.BillingConstants.PURCHASED_ITEM
 import com.windscribe.vpn.constants.BillingConstants.PURCHASED_ITEM_NULL
 import com.windscribe.vpn.constants.NetworkErrorCodes
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.WindError.Companion.instance
 import com.windscribe.vpn.exceptions.GenericApiException
