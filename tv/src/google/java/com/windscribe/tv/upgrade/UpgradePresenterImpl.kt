@@ -451,9 +451,7 @@ class UpgradePresenterImpl @Inject constructor(
 
                     is CallResult.Success -> {
                         withContext(Dispatchers.Main) {
-                            preferencesHelper.saveResponseStringData(
-                                PreferencesKeyConstants.GET_SESSION, Gson().toJson(result.data)
-                            )
+                            preferencesHelper.getSession = Gson().toJson(result.data)
                             upgradeView.setEmailStatus(
                                 result.data.userEmail != null,
                                 result.data.emailStatus == UserStatusConstants.EMAIL_STATUS_CONFIRMED
