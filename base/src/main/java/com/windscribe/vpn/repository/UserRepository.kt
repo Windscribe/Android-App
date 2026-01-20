@@ -16,7 +16,7 @@ import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.services.sso.GoogleSignInManager
@@ -208,9 +208,9 @@ class UserRepository(
                 }
                 is CallResult.Success -> {
                     logger.debug("Successfully added token $firebaseToken to ${result.data.userName}.")
-                    if (preferenceHelper.getDeviceUUID() == null) {
+                    if (preferenceHelper.deviceUuid == null) {
                         logger.debug("No device id is found for the current user, generating and saving UUID")
-                        preferenceHelper.setDeviceUUID(UUID.randomUUID().toString())
+                        preferenceHelper.deviceUuid = UUID.randomUUID().toString()
                     }
                 }
             }

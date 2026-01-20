@@ -7,7 +7,7 @@ import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.repository.UserRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -51,7 +51,7 @@ class GeneralViewModelImpl(
         get() = preferenceHelper.selection
 
     override fun onOrderByItemSelected(item: DropDownStringItem) {
-        preferenceHelper.saveSelection(item.key)
+        preferenceHelper.selection = item.key
     }
 
     override val languageItems: List<DropDownStringItem>
@@ -65,7 +65,7 @@ class GeneralViewModelImpl(
 
     override fun onLanguageItemSelected(item: DropDownStringItem) {
         viewModelScope.launch {
-            preferenceHelper.setUserLanguage(item.key)
+            preferenceHelper.savedLanguage = item.key
             _reloadApp.emit(true)
         }
     }
@@ -85,7 +85,7 @@ class GeneralViewModelImpl(
 
     override fun onHapticToggleButtonClicked() {
         val newValue = !_isHapticEnabled.value
-        preferenceHelper.setHapticFeedbackEnabled(newValue)
+        preferenceHelper.isHapticFeedbackEnabled = newValue
         _isHapticEnabled.value = newValue
     }
 

@@ -21,24 +21,24 @@ import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.repository.LogRepository
 import com.windscribe.vpn.commonutils.ResourceHelper
-import com.windscribe.vpn.constants.PreferencesKeyConstants
-import com.windscribe.vpn.constants.PreferencesKeyConstants.BOOT_ALLOW
-import com.windscribe.vpn.constants.PreferencesKeyConstants.BOOT_BLOCK
-import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_AUTO
-import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_MANUAL
-import com.windscribe.vpn.constants.PreferencesKeyConstants.DISABLED_MODE
-import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_CUSTOM
-import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_ROBERT
-import com.windscribe.vpn.constants.PreferencesKeyConstants.EXCLUSIVE_MODE
-import com.windscribe.vpn.constants.PreferencesKeyConstants.INCLUSIVE_MODE
-import com.windscribe.vpn.constants.PreferencesKeyConstants.LAN_ALLOW
-import com.windscribe.vpn.constants.PreferencesKeyConstants.LAN_BLOCK
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_IKev2
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_STEALTH
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_TCP
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_UDP
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WS_TUNNEL
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.BOOT_ALLOW
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.BOOT_BLOCK
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.CONNECTION_MODE_AUTO
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.CONNECTION_MODE_MANUAL
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DISABLED_MODE
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_CUSTOM
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_ROBERT
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.EXCLUSIVE_MODE
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.INCLUSIVE_MODE
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.LAN_ALLOW
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.LAN_BLOCK
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_IKev2
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_STEALTH
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_TCP
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_UDP
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WIRE_GUARD
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WS_TUNNEL
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.localdatabase.LocalDbInterface
@@ -178,7 +178,7 @@ class SettingsPresenterImp @Inject constructor(
             activityScope.launch {
                 preferencesHelper.connectionMode = CONNECTION_MODE_AUTO
                 preferencesHelper.nextProtocol(null)
-                preferencesHelper.saveProtocol(PROTO_IKev2)
+                preferencesHelper.savedProtocol = PROTO_IKev2
             }
             settingView.setupLayoutForAutoMode()
         }
@@ -214,7 +214,7 @@ class SettingsPresenterImp @Inject constructor(
         if ((splitRoutingMode != EXCLUSIVE_MODE) or !splitRouting) {
             activityScope.launch(Dispatchers.IO) {
                 preferencesHelper.splitTunnelToggle = true
-                preferencesHelper.saveSplitRoutingMode(EXCLUSIVE_MODE)
+                preferencesHelper.splitRoutingMode = EXCLUSIVE_MODE
             }
             settingView.setSplitRouteMode(EXCLUSIVE_MODE)
             addWindScribeToList(false)
@@ -227,7 +227,7 @@ class SettingsPresenterImp @Inject constructor(
         if ((splitRoutingMode != INCLUSIVE_MODE) or !splitRouting) {
             activityScope.launch(Dispatchers.IO) {
                 preferencesHelper.splitTunnelToggle = true
-                preferencesHelper.saveSplitRoutingMode(INCLUSIVE_MODE)
+                preferencesHelper.splitRoutingMode = INCLUSIVE_MODE
             }
             settingView.setSplitRouteMode(INCLUSIVE_MODE)
             addWindScribeToList(true)
@@ -237,7 +237,7 @@ class SettingsPresenterImp @Inject constructor(
     override fun onInstalledAppClick(updatedModel: InstalledAppsData?, reloadAdapter: Boolean) {
         activityScope.launch(Dispatchers.IO) {
             try {
-                val apps = preferencesHelper.installedApps()
+                val apps = preferencesHelper.installedApps
                 withContext(Dispatchers.Main) {
                     updatedModel?.let { saveApps(apps, it, reloadAdapter) }
                 }
@@ -256,7 +256,7 @@ class SettingsPresenterImp @Inject constructor(
         if (savedLanguage == selectedLanguage) {
             logger.info("Language selected is same as saved. No action taken...")
         } else {
-            preferencesHelper.setUserLanguage(selectedLanguage)
+            preferencesHelper.savedLanguage = selectedLanguage
             settingView.reloadApp()
         }
     }
@@ -277,37 +277,37 @@ class SettingsPresenterImp @Inject constructor(
             when (getProtocolFromHeading(portMapResponse, protocol)) {
                 PROTO_IKev2 -> {
                     logger.info("Saving selected IKev2 port...")
-                    preferencesHelper.saveIKEv2Port(port)
+                    preferencesHelper.iKEv2Port = port
                 }
 
                 PROTO_UDP -> {
                     logger.info("Saving selected udp port...")
-                    preferencesHelper.saveUDPPort(port)
+                    preferencesHelper.savedUDPPort = port
                 }
 
                 PROTO_TCP -> {
                     logger.info("Saving selected tcp port...")
-                    preferencesHelper.saveTCPPort(port)
+                    preferencesHelper.savedTCPPort = port
                 }
 
                 PROTO_STEALTH -> {
                     logger.info("Saving selected stealth port...")
-                    preferencesHelper.saveStealthPort(port)
+                    preferencesHelper.savedSTEALTHPort = port
                 }
 
                 PROTO_WS_TUNNEL -> {
                     logger.info("Saving selected ws port...")
-                    preferencesHelper.saveWSTunnelPort(port)
+                    preferencesHelper.savedWSTunnelPort = port
                 }
 
                 PROTO_WIRE_GUARD -> {
                     logger.info("Saving selected wire guard port...")
-                    preferencesHelper.saveWireGuardPort(port)
+                    preferencesHelper.wireGuardPort = port
                 }
 
                 else -> {
                     logger.info("Saving default port (udp)...")
-                    preferencesHelper.saveUDPPort(port)
+                    preferencesHelper.savedUDPPort = port
                 }
             }
         }
@@ -322,7 +322,7 @@ class SettingsPresenterImp @Inject constructor(
                 logger.debug("Protocol re-selected is same as saved. No action taken...")
             } else {
                 logger.info("Saving selected protocol...")
-                preferencesHelper.saveProtocol(protocolFromHeading)
+                preferencesHelper.savedProtocol = protocolFromHeading
                 setPortMapAdapter(protocol)
             }
         }
@@ -371,7 +371,7 @@ class SettingsPresenterImp @Inject constructor(
     }
 
     override fun onSortSelected(newSort: String) {
-        preferencesHelper.saveSelection(newSort)
+        preferencesHelper.selection = newSort
         activityScope.launch(Dispatchers.IO) {
             try {
                 val serverStatusUpdateTable =
@@ -652,7 +652,7 @@ class SettingsPresenterImp @Inject constructor(
             list.remove(updatedApp.packageName)
         }
         activityScope.launch(Dispatchers.IO) {
-            preferencesHelper.saveInstalledApps(list)
+            preferencesHelper.installedApps = list
         }
         if (reloadAdapter) {
             installedAppsAdapter?.updateApp(updatedApp.packageName, updatedApp.isChecked)
@@ -725,7 +725,7 @@ class SettingsPresenterImp @Inject constructor(
     private fun setupAppListAdapter() {
         settingView.showProgress(resourceHelper.getString(com.windscribe.vpn.R.string.loading))
         activityScope.launch(Dispatchers.IO) {
-            val apps = preferencesHelper.installedApps()
+            val apps = preferencesHelper.installedApps
             withContext(Dispatchers.Main) {
                 settingView.hideProgress()
                 modifyList(apps)

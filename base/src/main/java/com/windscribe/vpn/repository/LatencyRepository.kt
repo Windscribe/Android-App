@@ -5,7 +5,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.wireguard.WireGuardVpnProfile
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.serverlist.entity.City

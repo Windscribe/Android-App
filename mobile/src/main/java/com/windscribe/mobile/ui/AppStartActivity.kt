@@ -29,7 +29,7 @@ import com.windscribe.mobile.ui.theme.AndroidTheme
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
-import com.windscribe.vpn.constants.PreferencesKeyConstants.DARK_THEME
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DARK_THEME
 import java.util.Locale
 import androidx.core.graphics.toColorInt
 

@@ -31,7 +31,7 @@ import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.BillingConstants
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.constants.RateDialogConstants
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.WindError
@@ -549,7 +549,7 @@ class WindscribePresenterImpl @Inject constructor(
             return
         }
         if (WindUtilities.isOnline()) {
-            preferencesHelper.setConnectingToStaticIP(false)
+            preferencesHelper.isConnectingToStaticIp = false
             selectedLocation = LastSelectedLocation(
                 cityAndRegion.city.getId(),
                 cityAndRegion.city.nodeName,
@@ -572,12 +572,9 @@ class WindscribePresenterImpl @Inject constructor(
     ) {
         if (WindUtilities.isOnline()) {
             logger.info("User clicked on static ip: " + staticRegion.cityName)
-            preferencesHelper.setConnectingToStaticIP(true)
+            preferencesHelper.isConnectingToStaticIp = true
             // Saving static IP credentials
-            preferencesHelper.saveCredentials(
-                PreferencesKeyConstants.STATIC_IP_CREDENTIAL,
-                serverCredentialsResponse
-            )
+            preferencesHelper.staticIpCredentials = serverCredentialsResponse
             selectedLocation = LastSelectedLocation(
                 staticRegion.id, staticRegion.cityName,
                 staticRegion.staticIp, staticRegion.countryCode
@@ -698,7 +695,6 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun disconnectFromVPN() {
         activityScope.launch {
-            preferencesHelper.setUserIntendedDisconnect(true)
             preferencesHelper.globalUserConnectionPreference = false
             preferencesHelper.isReconnecting = false
             vpnController.disconnectAsync()

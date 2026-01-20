@@ -32,10 +32,6 @@ class NewsFeedPresenterImpl @Inject constructor(
 
     override fun init(showPopUp: Boolean, popUpId: Int) {
         activityScope.launch(Dispatchers.IO) {
-            preferencesHelper.setShowNewsFeedAlert(false)
-        }
-
-        activityScope.launch(Dispatchers.IO) {
             try {
                 // Get notifications (this will update from API if needed)
                 val notifications = notificationRepository.getNotifications()

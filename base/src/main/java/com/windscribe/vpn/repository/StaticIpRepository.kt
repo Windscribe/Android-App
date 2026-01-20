@@ -45,7 +45,7 @@ class StaticIpRepository @Inject constructor(
 
     suspend fun updateFromApi() {
         val result = result<StaticIPResponse> {
-            apiCallManager.getStaticIpList(preferencesHelper.getDeviceUUID())
+            apiCallManager.getStaticIpList(preferencesHelper.deviceUuid)
         }
         when (result) {
             is CallResult.Error -> {}

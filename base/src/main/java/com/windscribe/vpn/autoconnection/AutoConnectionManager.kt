@@ -14,7 +14,7 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.ThreadSafeList
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.encoding.encoders.Base64
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo

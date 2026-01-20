@@ -26,7 +26,7 @@ import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.ikev2.CharonVpnServiceWrapper
 import com.windscribe.vpn.backend.ikev2.StrongswanCertificateManager.init
 import com.windscribe.vpn.backend.utils.WindVpnController
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.debug.MainThreadWatchdog
 import com.windscribe.vpn.di.ActivityComponent
 import com.windscribe.vpn.di.ApplicationComponent

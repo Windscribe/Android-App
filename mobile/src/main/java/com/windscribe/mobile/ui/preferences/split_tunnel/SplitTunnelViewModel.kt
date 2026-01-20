@@ -62,7 +62,7 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
     private fun loadApps(initialLoad: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) {
             _showProgress.value = true
-            val savedApps = preferenceHelper.installedApps()
+            val savedApps = preferenceHelper.installedApps
             val pm = appContext.packageManager
             val installedApps =
                 pm.getInstalledApplications(PackageManager.GET_META_DATA)
@@ -99,7 +99,7 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
 
     override fun onModeSelected(mode: DropDownStringItem) {
         viewModelScope.launch {
-            preferenceHelper.saveSplitRoutingMode(mode.key)
+            preferenceHelper.splitRoutingMode = mode.key
             _selectedModeKey.value = mode.key
             // Auto-select/unselect Windscribe app based on mode
             when (mode.key) {
@@ -117,13 +117,13 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
     }
 
     private fun updateSavedApps(app: InstalledAppsData) {
-        val apps = preferenceHelper.installedApps().toMutableList()
+        val apps = preferenceHelper.installedApps.toMutableList()
         if (app.isChecked) {
             apps.remove(app.packageName)
         } else {
             apps.add(app.packageName)
         }
-        preferenceHelper.saveInstalledApps(apps.toList())
+        preferenceHelper.installedApps = apps.toList()
     }
 
     private suspend fun updateAppListInPlace(app: InstalledAppsData) {
@@ -225,7 +225,7 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
             windscribeApp.isSystemApp = false
 
             // Update saved apps
-            val savedApps = preferenceHelper.installedApps().toMutableList()
+            val savedApps = preferenceHelper.installedApps.toMutableList()
             if (checked) {
                 // Add to list if not already present
                 if (!savedApps.contains(packageName)) {
@@ -235,7 +235,7 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
                 // Remove from list
                 savedApps.remove(packageName)
             }
-            preferenceHelper.saveInstalledApps(savedApps)
+            preferenceHelper.installedApps = savedApps
 
             // Update in-memory app list
             val currentApps = _apps.value.toMutableList()

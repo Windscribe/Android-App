@@ -63,8 +63,8 @@ class LocationRepository @Inject constructor(
     private suspend fun getAlternativeLocation(): Int {
         logger.debug("Location is not valid anymore looking for alternatives")
         WindUtilities.deleteProfile(appContext)
-        preferencesHelper.setConnectingToConfiguredLocation(false)
-        preferencesHelper.setConnectingToStaticIP(false)
+        preferencesHelper.isConnectingToConfigured = false
+        preferencesHelper.isConnectingToStaticIp = false
         return runCatching { getSisterLocation() }
             .getOrElse {
                 runCatching { getLowestPingLocation() }

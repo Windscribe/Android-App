@@ -4,11 +4,11 @@
 
 package com.windscribe.vpn.backend.utils
 
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_STEALTH
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_TCP
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_UDP
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WS_TUNNEL
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_STEALTH
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_TCP
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_UDP
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WIRE_GUARD
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WS_TUNNEL
 
 class ProtocolConfig(var protocol: String, var port: String, val type: Type) {
     enum class Type {

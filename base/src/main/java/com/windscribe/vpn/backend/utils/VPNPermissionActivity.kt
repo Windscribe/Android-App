@@ -91,16 +91,16 @@ class VPNPermissionActivity : Activity() {
         val locationTypeInt = intent.getIntExtra(DynamicShortcutManager.RECENT_LOCATION_TYPE_INT, 0)
         when(locationTypeInt) {
             1 -> {
-                appContext.preference.setConnectingToStaticIP(true)
-                appContext.preference.setConnectingToConfiguredLocation(false)
+                appContext.preference.isConnectingToStaticIp = true
+                appContext.preference.isConnectingToConfigured = false
             }
             2 -> {
-                appContext.preference.setConnectingToStaticIP(false)
-                appContext.preference.setConnectingToConfiguredLocation(true)
+                appContext.preference.isConnectingToStaticIp = false
+                appContext.preference.isConnectingToConfigured = true
             }
             else -> {
-                appContext.preference.setConnectingToStaticIP(false)
-                appContext.preference.setConnectingToConfiguredLocation(false)
+                appContext.preference.isConnectingToStaticIp = false
+                appContext.preference.isConnectingToConfigured = false
             }
         }
     }

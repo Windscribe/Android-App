@@ -15,14 +15,14 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.repository.PortMapRepository
-import com.windscribe.vpn.constants.PreferencesKeyConstants
-import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_AUTO
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_IKev2
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_STEALTH
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_TCP
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_UDP
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WS_TUNNEL
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.CONNECTION_MODE_AUTO
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_IKev2
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_STEALTH
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_TCP
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_UDP
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WIRE_GUARD
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WS_TUNNEL
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.exceptions.WindScribeException
@@ -217,7 +217,7 @@ class ConnectionViewModelImpl(
 
     override fun onProtocolSelected(protocol: DropDownStringItem) {
         viewModelScope.launch {
-            preferencesHelper.saveProtocol(protocol.key)
+            preferencesHelper.savedProtocol = protocol.key
             _selectedProtocol.emit(protocol.key)
             autoConnectionManager.reset()
             buildProtocolInfo()
@@ -228,37 +228,37 @@ class ConnectionViewModelImpl(
         when (proto) {
             PROTO_IKev2 -> {
                 logger.info("Saving selected IKev2 port...")
-                preferencesHelper.saveIKEv2Port(port)
+                preferencesHelper.iKEv2Port = port
             }
 
             PROTO_UDP -> {
                 logger.info("Saving selected udp port...")
-                preferencesHelper.saveUDPPort(port)
+                preferencesHelper.savedUDPPort = port
             }
 
             PROTO_TCP -> {
                 logger.info("Saving selected tcp port...")
-                preferencesHelper.saveTCPPort(port)
+                preferencesHelper.savedTCPPort = port
             }
 
             PROTO_STEALTH -> {
                 logger.info("Saving selected stealth port...")
-                preferencesHelper.saveStealthPort(port)
+                preferencesHelper.savedSTEALTHPort = port
             }
 
             PROTO_WS_TUNNEL -> {
                 logger.info("Saving selected ws tunnel port...")
-                preferencesHelper.saveWSTunnelPort(port)
+                preferencesHelper.savedWSTunnelPort = port
             }
 
             PROTO_WIRE_GUARD -> {
                 logger.info("Saving selected wire guard port...")
-                preferencesHelper.saveWireGuardPort(port)
+                preferencesHelper.wireGuardPort = port
             }
 
             else -> {
                 logger.info("Saving default port (udp)...")
-                preferencesHelper.saveUDPPort(port)
+                preferencesHelper.savedUDPPort = port
             }
         }
     }
@@ -328,7 +328,7 @@ class ConnectionViewModelImpl(
     override fun onGPSSpoofingToggleClicked() {
         viewModelScope.launch {
             _gpsSpoofing.emit(!_gpsSpoofing.value)
-            preferencesHelper.setGpsSpoofing(_gpsSpoofing.value)
+            preferencesHelper.isGpsSpoofingOn = _gpsSpoofing.value
         }
     }
 
@@ -355,7 +355,7 @@ class ConnectionViewModelImpl(
     override fun onPacketSizeModeSelected(auto: Boolean) {
         viewModelScope.launch {
             _packetSizeAuto.emit(auto)
-            preferencesHelper.setPacketSizeModeToAuto(auto)
+            preferencesHelper.isPackageSizeModeAuto = auto
         }
     }
 

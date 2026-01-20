@@ -99,7 +99,7 @@ class HomeViewmodelImpl(
     private fun observeConnectionCount() {
         viewModelScope.launch(Dispatchers.IO) {
             vpnConnectionStateManager.connectionCount.collectLatest { count ->
-                val showCount = preferences.getPowerWhiteListDialogCount()
+                val showCount = preferences.powerWhiteListDialogCount
                 val askForPowerWhiteListPermission =
                     count > 1 && !isIgnoringBatteryOptimizations(appContext) && showCount < 3
                 if (askForPowerWhiteListPermission && !isIgnoringBatteryOptimizations(appContext) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

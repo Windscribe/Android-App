@@ -5,9 +5,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.apppreference.PreferencesHelper
-import com.windscribe.vpn.constants.PreferencesKeyConstants.AZ_LIST_SELECTION_MODE
-import com.windscribe.vpn.constants.PreferencesKeyConstants.LATENCY_LIST_SELECTION_MODE
-import com.windscribe.vpn.constants.PreferencesKeyConstants.SELECTION_KEY
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.AZ_LIST_SELECTION_MODE
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.LATENCY_LIST_SELECTION_MODE
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.SELECTION_KEY
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.FavouriteRepository
 import com.windscribe.vpn.repository.FavouriteWithCity
@@ -389,12 +389,12 @@ class ServerViewModelImpl(
     }
 
     override fun setSelectedType(type: ServerListType) {
-        preferencesHelper.saveLastSelectedServerTabIndex(when (type) {
+        preferencesHelper.lastSelectedTabIndex = when (type) {
             ServerListType.All -> 0
             ServerListType.Fav -> 1
             ServerListType.Static -> 2
             ServerListType.Config -> 3
-        })
+        }
         _selectedServerListType.value = type
     }
 

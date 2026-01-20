@@ -38,7 +38,7 @@ class AmazonPendingReceiptValidator(appContext: Context, params: WorkerParameter
             val result = verifyPayment(getPendingAmazonPurchase())
             return if (result) {
                 logger.debug("Successfully verified purchase receipt")
-                preferencesHelper.savePurchaseFlowState(PurchaseState.FINISHED.name)
+                preferencesHelper.purchaseFlowState = PurchaseState.FINISHED.name
                 Windscribe.appContext.workManager.updateSession()
                 Result.success()
             } else {

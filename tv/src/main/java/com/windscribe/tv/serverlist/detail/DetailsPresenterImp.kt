@@ -104,9 +104,6 @@ class DetailsPresenterImp @Inject constructor(
 
     override fun onConnectClick(city: City) {
         logger.debug("Selected group item to connect.")
-        activityScope.launch(Dispatchers.IO) {
-            preferencesHelper.setFutureSelectCity(city.getId())
-        }
         detailView.onNodeSelected(city.getId())
     }
 

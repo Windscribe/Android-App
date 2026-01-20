@@ -6,25 +6,11 @@ package com.windscribe.vpn.constants
 import com.windscribe.vpn.BuildConfig
 
 object NetworkKeyConstants {
-    const val API_HOST_GENERIC = "https://api."
-    const val API_HOST_CHECK_IP = "https://checkip."
-    const val API_HOST_ASSET = "https://assets."
-    const val ALC_QUERY_KEY = "alc"
-    const val BACKUP_HASH_CHAR_SET = "UTF-8"
     const val URL_FORGOT_PASSWORD = "/forgotpassword"
     const val URL_HELP_ME = "/support"
     const val URL_MY_ACCOUNT = "/myaccount?temp_session="
     const val URL_ADD_STATIC_IP = "/staticips"
-    const val FIREBASE_DEVICE_ID_KEY = "gp_device_id"
-    const val ADD_EMAIL_KEY = "email"
-    const val REFERRING_USERNAME = "referring_username"
-    const val ADD_EMAIL_FORCED_KEY = "email_forced"
-    const val POST_LOG_FILE_KEY = "logfile"
-    const val UUID_KEY = "device_id"
-    const val STATIC_IP_TYPE_DATA_CENTER = "dc"
     const val NETWORK_REQUEST_CONNECTION_TIMEOUT: Long = 5
-    const val NETWORK_REQUEST_READ_TIMEOUT: Long = 30
-    const val NETWORK_REQUEST_WRITE_TIMEOUT: Long = 30
     const val SERVER_STATUS_TEMPORARILY_UNAVAILABLE = 2
     const val PING_TEST_3_BAR_UPPER_LIMIT = 150
     const val PING_TEST_2_BAR_UPPER_LIMIT = 500
@@ -46,9 +32,6 @@ object NetworkKeyConstants {
     const val URL_PRIVACY = "/privacy"
     const val URL_BLOG = "https://blog.windscribe.com/"
     const val URL_JOB = "/jobs"
-    const val ROBERT = "/features/robert"
-    var CLOUDFLARE_DOH = "https://cloudflare-dns.com"
-    var GOOGLE_DOH = "https://dns.google"
 
     @JvmField
     var WEB_URL: String? = null

@@ -500,9 +500,9 @@ class WelcomePresenterImpl @Inject constructor(
                 }
                 when (sessionResult) {
                     is CallResult.Success -> {
-                        if (preferencesHelper.getDeviceUUID() == null) {
+                        if (preferencesHelper.deviceUuid == null) {
                             logger.debug("No device id is found for the current user, generating and saving UUID")
-                            preferencesHelper.setDeviceUUID(UUID.randomUUID().toString())
+                            preferencesHelper.deviceUuid = UUID.randomUUID().toString()
                         }
                         userRepository.reload(sessionResult.data)
                     }

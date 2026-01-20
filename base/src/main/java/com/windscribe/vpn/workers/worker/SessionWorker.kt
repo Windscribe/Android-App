@@ -131,7 +131,7 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
         logger.info("User account status: ${user.accountStatus} is VPN Connected: ${vpnStateManager.isVPNConnected()}")
         val shouldDisconnect = when (user.accountStatus) {
             User.AccountStatus.Banned -> vpnStateManager.isVPNConnected()
-            User.AccountStatus.Expired -> vpnStateManager.isVPNConnected() && !preferencesHelper.isConnectingToConfiguredLocation()
+            User.AccountStatus.Expired -> vpnStateManager.isVPNConnected() && !preferencesHelper.isConnectingToConfigured
             else -> false
         }
         if (shouldDisconnect) {

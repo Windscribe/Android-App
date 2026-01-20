@@ -14,8 +14,8 @@ import com.windscribe.tv.sort.ByLatency
 import com.windscribe.tv.sort.ByRegionName
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.ResourceHelper
-import com.windscribe.vpn.constants.PreferencesKeyConstants.AZ_LIST_SELECTION_MODE
-import com.windscribe.vpn.constants.PreferencesKeyConstants.LATENCY_LIST_SELECTION_MODE
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.AZ_LIST_SELECTION_MODE
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.LATENCY_LIST_SELECTION_MODE
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.LatencyRepository

@@ -32,7 +32,7 @@ import com.windscribe.vpn.backend.wireguard.WireguardContextWrapper
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.NotificationConstants
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDatabaseImpl
 import com.windscribe.vpn.localdatabase.LocalDbInterface
@@ -99,20 +99,6 @@ open class BaseApplicationModule {
     private val logger = LoggerFactory.getLogger("wsnet")
 
     open lateinit var windscribeApp: Windscribe
-
-    @Provides
-    @Singleton
-    @Named("accessIpList")
-    fun provideAccessIps(preferencesHelper: PreferencesHelper): List<String> {
-        val accessIpList: MutableList<String> = ArrayList()
-        val accessIp1 = preferencesHelper.getAccessIp(PreferencesKeyConstants.ACCESS_API_IP_1)
-        val accessIp2 = preferencesHelper.getAccessIp(PreferencesKeyConstants.ACCESS_API_IP_2)
-        if (accessIp1 != null && accessIp2 != null) {
-            accessIpList.add(accessIp1)
-            accessIpList.add(accessIp2)
-        }
-        return accessIpList
-    }
 
     @Provides
     @Singleton
@@ -777,8 +763,8 @@ open class BaseApplicationModule {
             }
             logger.debug(msg)
         }, true)
-        if (preferencesHelper.getDeviceUUID() == null) {
-            preferencesHelper.setDeviceUUID(UUID.randomUUID().toString())
+        if (preferencesHelper.deviceUuid == null) {
+            preferencesHelper.deviceUuid = UUID.randomUUID().toString()
         }
         val systemLanguageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             appContext.resources.configuration.locales.get(0).language.substring(0..1)
@@ -789,7 +775,7 @@ open class BaseApplicationModule {
             getPlatformName(),
             getPlatformName(),
             WindUtilities.getVersionName(),
-            preferencesHelper.getDeviceUUID() ?: "",
+            preferencesHelper.deviceUuid ?: "",
             "2.6.0",
             "4",
             DEV,

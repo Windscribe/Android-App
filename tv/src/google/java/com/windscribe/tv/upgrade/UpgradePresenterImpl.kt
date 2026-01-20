@@ -35,7 +35,7 @@ import com.windscribe.vpn.constants.BillingConstants.PLAY_STORE_UPDATE
 import com.windscribe.vpn.constants.BillingConstants.PURCHASED_ITEM
 import com.windscribe.vpn.constants.BillingConstants.PURCHASED_ITEM_NULL
 import com.windscribe.vpn.constants.NetworkErrorCodes
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.errormodel.WindError.Companion.instance
 import com.windscribe.vpn.exceptions.GenericApiException
@@ -466,7 +466,7 @@ class UpgradePresenterImpl @Inject constructor(
     }
 
     override fun setPurchaseFlowState(state: PurchaseState) {
-        preferencesHelper.savePurchaseFlowState(state.name)
+        preferencesHelper.purchaseFlowState = state.name
         logger.debug(
             "Purchase flow: state changed To: " + preferencesHelper.purchaseFlowState
         )
@@ -672,7 +672,7 @@ class UpgradePresenterImpl @Inject constructor(
         upgradeView.showBillingErrorDialog(error)
         if (errorCode == 4005) {
             logger.debug("Purchase flow: Token was already verified once. Ignore")
-            preferencesHelper.savePurchaseFlowState(PurchaseState.FINISHED.name)
+            preferencesHelper.purchaseFlowState = PurchaseState.FINISHED.name
         }
     }
 

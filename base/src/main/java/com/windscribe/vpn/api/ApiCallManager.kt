@@ -24,13 +24,11 @@ import com.windscribe.vpn.api.response.UserRegistrationResponse
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.api.response.VerifyExpressLoginResponse
 import com.windscribe.vpn.api.response.WebSession
-import com.windscribe.vpn.api.response.WgConnectResponse
 import com.windscribe.vpn.api.response.WgInitResponse
 import com.windscribe.vpn.api.response.XPressLoginCodeResponse
 import com.windscribe.vpn.api.response.XPressLoginVerifyResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.NetworkErrorCodes
-import com.windscribe.vpn.constants.VpnPreferenceConstants.WG_CONNECT_DEFAULT_TTL
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.wsnet.lib.WSNetBridgeAPI
 import com.wsnet.lib.WSNetServerAPI

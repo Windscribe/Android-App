@@ -38,7 +38,7 @@ import com.windscribe.tv.welcome.fragment.TwoFactorFragment
 import com.windscribe.tv.welcome.fragment.WelcomeActivityCallback
 import com.windscribe.tv.welcome.fragment.WelcomeFragment
 import com.windscribe.tv.windscribe.WindscribeActivity
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import java.io.File
 import javax.inject.Inject
 
