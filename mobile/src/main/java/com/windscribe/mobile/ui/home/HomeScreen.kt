@@ -85,6 +85,7 @@ import com.windscribe.mobile.ui.connection.ConnectionUIState
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.connection.LocationInfoState
 import com.windscribe.mobile.ui.connection.ToastMessage
+import com.windscribe.mobile.ui.helper.ForceStatusBarIcons
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.helper.getHeaderHeight
@@ -300,6 +301,7 @@ private fun CompactUI(
     homeViewmodel: HomeViewmodel,
     bridgeApiViewModel: BridgeApiViewModel
 ) {
+    ForceStatusBarIcons(true)
     val searchState by serverViewModel.showSearchView.collectAsState()
     Background {
         ConnectedBackground(connectionViewmodel)
