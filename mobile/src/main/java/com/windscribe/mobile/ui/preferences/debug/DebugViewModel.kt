@@ -3,7 +3,7 @@ package com.windscribe.mobile.ui.preferences.debug
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.LogRepository
 import kotlinx.coroutines.Dispatchers

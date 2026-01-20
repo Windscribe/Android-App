@@ -16,7 +16,7 @@ import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.services.sso.GoogleSignInManager
@@ -67,10 +67,7 @@ class UserRepository(
     ) {
         scope.launch(Dispatchers.IO) {
             response?.let { it ->
-                preferenceHelper.saveResponseStringData(
-                    PreferencesKeyConstants.GET_SESSION,
-                    Gson().toJson(it)
-                )
+                preferenceHelper.getSession = Gson().toJson(it)
                 val newUser = User(it)
                 user.postValue(newUser)
                 _userInfo.emit(newUser)
@@ -79,8 +76,7 @@ class UserRepository(
                 callback?.invoke(newUser)
             } ?: kotlin.run {
                 try {
-                    val cachedSessionResponse =
-                        preferenceHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
+                    val cachedSessionResponse = preferenceHelper.getSession
                     val userSession =
                         Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
                     user.postValue(User(userSession))
@@ -95,8 +91,7 @@ class UserRepository(
     fun synchronizedReload() {
         try {
             logger.debug("Loading user info from cache")
-            val cachedSessionResponse =
-                preferenceHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
+            val cachedSessionResponse = preferenceHelper.getSession
             val userSession =
                 Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
             user.postValue(User(userSession))
@@ -213,9 +208,9 @@ class UserRepository(
                 }
                 is CallResult.Success -> {
                     logger.debug("Successfully added token $firebaseToken to ${result.data.userName}.")
-                    if (preferenceHelper.getDeviceUUID() == null) {
+                    if (preferenceHelper.deviceUuid == null) {
                         logger.debug("No device id is found for the current user, generating and saving UUID")
-                        preferenceHelper.setDeviceUUID(UUID.randomUUID().toString())
+                        preferenceHelper.deviceUuid = UUID.randomUUID().toString()
                     }
                 }
             }

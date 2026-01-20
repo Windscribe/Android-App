@@ -13,8 +13,8 @@ import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.utils.LastSelectedLocation
 import com.windscribe.vpn.commonutils.ThreadSafeList
-import com.windscribe.vpn.constants.PreferencesKeyConstants
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.serverlist.entity.Node
 import com.wireguard.config.BadConfigException
@@ -216,7 +216,7 @@ object Util {
             ProtocolConnectionStatus.Disconnected
         )
         val protocol5 = ProtocolInformation(
-            PreferencesKeyConstants.PROTO_WIRE_GUARD,
+            PROTO_WIRE_GUARD,
             PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT,
             appContext.getString(R.string.Wireguard_description),
             ProtocolConnectionStatus.Disconnected
@@ -263,7 +263,7 @@ object Util {
             PreferencesKeyConstants.PROTO_UDP -> "UDP"
             PreferencesKeyConstants.PROTO_TCP -> "TCP"
             PreferencesKeyConstants.PROTO_STEALTH -> "Stealth"
-            PreferencesKeyConstants.PROTO_WIRE_GUARD -> "WireGuard"
+            PROTO_WIRE_GUARD -> "WireGuard"
             PreferencesKeyConstants.PROTO_WS_TUNNEL -> "WStunnel"
             else -> "IKEv2"
         }

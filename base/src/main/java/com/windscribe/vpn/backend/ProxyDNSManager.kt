@@ -4,7 +4,7 @@ import com.windscribe.common.DNSDetails
 import com.windscribe.common.DnsType
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.exceptions.WindScribeException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job

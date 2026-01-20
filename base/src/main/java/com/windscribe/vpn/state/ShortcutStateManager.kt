@@ -5,7 +5,7 @@ import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.utils.WindVpnController
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.UserRepository
 import dagger.Lazy
@@ -38,7 +38,7 @@ class ShortcutStateManager(
     }
 
     private suspend fun getUserSession(): UserSessionResponse {
-        val session = preferencesHelper.getResponseString(PreferencesKeyConstants.GET_SESSION)
+        val session = preferencesHelper.getSession
         return Gson().fromJson(session, UserSessionResponse::class.java)
     }
 

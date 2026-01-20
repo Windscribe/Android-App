@@ -15,7 +15,7 @@ import com.bumptech.glide.Glide
 import com.windscribe.tv.R
 import com.windscribe.tv.serverlist.listeners.NodeClickListener
 import com.windscribe.vpn.commonutils.FlagIconResource
-import com.windscribe.vpn.constants.AnimConstants
+import com.windscribe.vpn.constants.ExtraConstants
 import com.windscribe.vpn.serverlist.entity.RegionAndCities
 import com.windscribe.vpn.serverlist.entity.ServerListData
 
@@ -39,13 +39,13 @@ class ServerAdapter(
                     val valueAnimator: ValueAnimator
                     if (hasFocus) {
                         valueAnimator = ValueAnimator.ofFloat(0.4f, 1.0f)
-                            .setDuration(AnimConstants.FLAG_ITEM_ANIM_DURATION)
+                            .setDuration(ExtraConstants.FLAG_ITEM_ANIM_DURATION)
                         valueAnimator.addUpdateListener { animation: ValueAnimator ->
                             itemView.alpha = (animation.animatedValue as Float)
                         }
                     } else {
                         valueAnimator = ValueAnimator.ofFloat(1.0f, 0.4f)
-                            .setDuration(AnimConstants.FLAG_ITEM_ANIM_DURATION)
+                            .setDuration(ExtraConstants.FLAG_ITEM_ANIM_DURATION)
                         valueAnimator.addUpdateListener { animation: ValueAnimator ->
                             itemView.alpha = (animation.animatedValue as Float)
                         }
@@ -72,14 +72,14 @@ class ServerAdapter(
             val valueAnimator: ValueAnimator
             if (focus) {
                 valueAnimator = ValueAnimator.ofFloat(0.4f, 1.0f)
-                    .setDuration(AnimConstants.FLAG_ITEM_ANIM_DURATION)
+                    .setDuration(ExtraConstants.FLAG_ITEM_ANIM_DURATION)
                 valueAnimator
                     .addUpdateListener { animation: ValueAnimator ->
                         imageView.alpha = (animation.animatedValue as Float)
                     }
             } else {
                 valueAnimator = ValueAnimator.ofFloat(1.0f, 0.4f)
-                    .setDuration(AnimConstants.FLAG_ITEM_ANIM_DURATION)
+                    .setDuration(ExtraConstants.FLAG_ITEM_ANIM_DURATION)
                 valueAnimator
                     .addUpdateListener { animation: ValueAnimator ->
                         imageView.alpha = (animation.animatedValue as Float)
@@ -92,13 +92,13 @@ class ServerAdapter(
             val valueAnimator: ValueAnimator
             if (focus) {
                 valueAnimator = ValueAnimator.ofFloat(0.4f, 1.0f)
-                    .setDuration(AnimConstants.FLAG_ITEM_ANIM_DURATION)
+                    .setDuration(ExtraConstants.FLAG_ITEM_ANIM_DURATION)
                 valueAnimator.addUpdateListener { animation: ValueAnimator ->
                     itemView.alpha = (animation.animatedValue as Float)
                 }
             } else {
                 valueAnimator = ValueAnimator.ofFloat(1.0f, 0.4f)
-                    .setDuration(AnimConstants.FLAG_ITEM_ANIM_DURATION)
+                    .setDuration(ExtraConstants.FLAG_ITEM_ANIM_DURATION)
                 valueAnimator.addUpdateListener { animation: ValueAnimator ->
                     itemView.alpha = (animation.animatedValue as Float)
                 }

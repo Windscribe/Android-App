@@ -6,17 +6,16 @@ package com.windscribe.vpn.apppreference
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
-import com.windscribe.vpn.constants.PreferencesKeyConstants
-import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_IKEV2_PORT
-import com.windscribe.vpn.constants.PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT
-import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_ROBERT
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DEFAULT_IKEV2_PORT
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_ROBERT
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.WgLocalParams
@@ -109,7 +108,7 @@ class DataStorePreferenceHelper(
     ): Boolean {
         return try {
             dataStore.data.first()[key] ?: default
-        } catch (e: ClassCastException) {
+        } catch (_: ClassCastException) {
             // Handle migration case: value stored as String instead of Boolean
             // This can happen with dynamic keys (notifications, etc.) that weren't explicitly migrated
             val stringKey = stringPreferencesKey(key.name)
@@ -218,28 +217,26 @@ class DataStorePreferenceHelper(
     // ============================================================================
 
     override fun clearAllData() {
-        val installation = getResponseString(PreferencesKeyConstants.NEW_INSTALLATION)
+        val installation = newInstallation
         scope.launch {
             dataStore.edit { it.clear() }
         }
         securePreferences.clear()
         if (PreferencesKeyConstants.I_OLD == installation) {
-            saveResponseStringData(PreferencesKeyConstants.NEW_INSTALLATION, PreferencesKeyConstants.I_OLD)
+            newInstallation = PreferencesKeyConstants.I_OLD
         }
     }
 
     override fun clearOldSessionAuth() {
         scope.launch {
-            dataStore.edit { it.remove(stringPreferencesKey(PreferencesKeyConstants.SESSION_HASH)) }
+            dataStore.edit { it.remove(DataStoreKeys.SESSION_HASH) }
         }
     }
 
-    override fun getAccessIp(key: String): String? = runBlocking {
-        dataStore.data.first()[stringPreferencesKey(key)]
-    }
-
-    override val isHapticFeedbackEnabled: Boolean
+    override var isHapticFeedbackEnabled: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.HAPTIC_FEEDBACK, true) }
+        set(value) = setBoolean(DataStoreKeys.HAPTIC_FEEDBACK, value)
+
 
     // User & Session
     override var userName: String
@@ -251,8 +248,11 @@ class DataStorePreferenceHelper(
         set(value) = setInt(DataStoreKeys.USER_STATUS, value)
 
     override var sessionHash: String?
-        get() = securePreferences.getString(PreferencesKeyConstants.SESSION_HASH, null)
-        set(value) = securePreferences.putStringSync(PreferencesKeyConstants.SESSION_HASH, value)  // SYNC - critical auth token
+        get() = securePreferences.getString(SecurePreferencesKeys.SESSION_HASH, null)
+        set(value) = securePreferences.putStringSync(
+            SecurePreferencesKeys.SESSION_HASH,
+            value
+        )  // SYNC - critical auth token
 
     override var loginTime: Date?
         get() = runBlocking {
@@ -277,7 +277,10 @@ class DataStorePreferenceHelper(
                 getDefaultProtoInfo().first
             )
         }
-        set(value) = setStringSync(DataStoreKeys.SELECTED_PROTOCOL, value)  // SYNC - blocks until saved
+        set(value) = setStringSync(
+            DataStoreKeys.SELECTED_PROTOCOL,
+            value
+        )  // SYNC - blocks until saved
 
     override var selectedPort: String
         get() = runBlocking {
@@ -290,7 +293,8 @@ class DataStorePreferenceHelper(
 
     override var selectedIp: String?
         get() = runBlocking {
-            val bestLocationIp2 = dataStore.data.first()[stringPreferencesKey(PreferencesKeyConstants.BEST_LOCATION_IP_2)]
+            val bestLocationIp2 =
+                dataStore.data.first()[stringPreferencesKey(PreferencesKeyConstants.BEST_LOCATION_IP_2)]
             getString(DataStoreKeys.SELECTED_IP, bestLocationIp2 ?: "")
                 .takeIf { it.isNotEmpty() }
         }
@@ -322,47 +326,53 @@ class DataStorePreferenceHelper(
         }
 
     // Protocol Ports
-    override val iKEv2Port: String
+    override var iKEv2Port: String
         get() = runBlocking {
             getString(DataStoreKeys.SAVED_IKev2_PORT, DEFAULT_IKEV2_PORT)
         }
+        set(value) = setString(DataStoreKeys.SAVED_IKev2_PORT, value)
 
-    override val wireGuardPort: String
+    override var wireGuardPort: String
         get() = runBlocking {
             getString(DataStoreKeys.SAVED_WIRE_GUARD_PORT, DEFAULT_WIRE_GUARD_PORT)
         }
+        set(value) = setString(DataStoreKeys.SAVED_WIRE_GUARD_PORT, value)
 
-    override val savedTCPPort: String
+    override var savedTCPPort: String
         get() = runBlocking {
             getString(
                 DataStoreKeys.SAVED_TCP_PORT,
                 PreferencesKeyConstants.DEFAULT_TCP_LEGACY_PORT
             )
         }
+        set(value) = setString(DataStoreKeys.SAVED_TCP_PORT, value)
 
-    override val savedUDPPort: String
+    override var savedUDPPort: String
         get() = runBlocking {
             getString(
                 DataStoreKeys.SAVED_UDP_PORT,
                 PreferencesKeyConstants.DEFAULT_UDP_LEGACY_PORT
             )
         }
+        set(value) = setString(DataStoreKeys.SAVED_UDP_PORT, value)
 
-    override val savedSTEALTHPort: String
+    override var savedSTEALTHPort: String
         get() = runBlocking {
             getString(
                 DataStoreKeys.SAVED_STEALTH_PORT,
                 PreferencesKeyConstants.DEFAULT_STEALTH_LEGACY_PORT
             )
         }
+        set(value) = setString(DataStoreKeys.SAVED_STEALTH_PORT, value)
 
-    override val savedWSTunnelPort: String
+    override var savedWSTunnelPort: String
         get() = runBlocking {
             getString(
                 DataStoreKeys.SAVED_WS_TUNNEL_PORT,
                 PreferencesKeyConstants.DEFAULT_WS_TUNNEL_LEGACY_PORT
             )
         }
+        set(value) = setString(DataStoreKeys.SAVED_WS_TUNNEL_PORT, value)
 
     // App Settings
     override var autoStartOnBoot: Boolean
@@ -378,21 +388,23 @@ class DataStorePreferenceHelper(
         }
         set(value) = setString(DataStoreKeys.SELECTED_THEME, value)
 
-    override val savedLanguage: String
+    override var savedLanguage: String
         get() = runBlocking {
             getString(
                 DataStoreKeys.USER_LANGUAGE,
                 appContext.getAppSupportedSystemLanguage()
             )
         }
+        set(value) = setString(DataStoreKeys.USER_LANGUAGE, value)
 
-    override val savedProtocol: String
+    override var savedProtocol: String
         get() = runBlocking {
             getString(
                 DataStoreKeys.PROTOCOL_KEY,
                 getDefaultProtoInfo().first
             )
         }
+        set(value) = setString(DataStoreKeys.PROTOCOL_KEY, value)
 
     override var notificationStat: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.NOTIFICATION_STAT, false) }
@@ -413,13 +425,14 @@ class DataStorePreferenceHelper(
         get() = runBlocking { getBoolean(DataStoreKeys.SPLIT_TUNNEL_TOGGLE, false) }
         set(value) = setBoolean(DataStoreKeys.SPLIT_TUNNEL_TOGGLE, value)
 
-    override val splitRoutingMode: String
+    override var splitRoutingMode: String
         get() = runBlocking {
             getString(
                 DataStoreKeys.SPLIT_ROUTING_MODE,
                 PreferencesKeyConstants.EXCLUSIVE_MODE
             )
         }
+        set(value) = setString(DataStoreKeys.SPLIT_ROUTING_MODE, value)
 
     override var lanByPass: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.LAN_BY_PASS, false) }
@@ -437,8 +450,9 @@ class DataStorePreferenceHelper(
         get() = runBlocking { getInt(DataStoreKeys.LAST_MTU_VALUE, 1500) }
         set(value) = setInt(DataStoreKeys.LAST_MTU_VALUE, value)
 
-    override val isPackageSizeModeAuto: Boolean
+    override var isPackageSizeModeAuto: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.AUTO_MTU_MODE_KEY, true) }
+        set(value) = setBoolean(DataStoreKeys.AUTO_MTU_MODE_KEY, value)
 
     override var showSystemApps: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.SHOW_SYSTEM_APPS, false) }
@@ -450,7 +464,12 @@ class DataStorePreferenceHelper(
         set(value) = setString(DataStoreKeys.ALC_LIST, value)
 
     override var whiteListedNetwork: String?
-        get() = runBlocking { getString(DataStoreKeys.WHITELISTED_NETWORK, "").takeIf { it.isNotEmpty() } }
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.WHITELISTED_NETWORK,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
         set(value) = setString(DataStoreKeys.WHITELISTED_NETWORK, value)
 
     override var whitelistOverride: Boolean
@@ -471,11 +490,21 @@ class DataStorePreferenceHelper(
         set(value) = setBoolean(DataStoreKeys.BLUR_NETWORK_NAME, value)
 
     override var connectedFlagPath: String?
-        get() = runBlocking { getString(DataStoreKeys.CONNECTED_FLAG_PATH, "").takeIf { it.isNotEmpty() } }
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.CONNECTED_FLAG_PATH,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
         set(value) = setString(DataStoreKeys.CONNECTED_FLAG_PATH, value)
 
     override val disConnectedFlagPath: String?
-        get() = runBlocking { getString(DataStoreKeys.DISCONNECTED_FLAG_PATH, "").takeIf { it.isNotEmpty() } }
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.DISCONNECTED_FLAG_PATH,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
 
     override var flagViewHeight: Int
         get() = runBlocking { getInt(DataStoreKeys.FLAG_VIEW_HEIGHT, 745) }
@@ -522,19 +551,24 @@ class DataStorePreferenceHelper(
         get() = runBlocking { getBoolean(DataStoreKeys.SHOW_LOCATION_HEALTH, false) }
         set(value) = setBoolean(DataStoreKeys.SHOW_LOCATION_HEALTH, value)
 
-    override fun isConnectingToConfiguredLocation(): Boolean = runBlocking {
-        getBoolean(DataStoreKeys.IS_CONNECTING_TO_CONFIGURED_IP, false)
-    }
-
-    override val isConnectingToStaticIp: Boolean
+    override var isConnectingToStaticIp: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.IS_CONNECTING_TO_STATIC_IP, false) }
+        set(value) {
+            setBooleanSync(DataStoreKeys.IS_CONNECTING_TO_STATIC_IP, value)
+        }
+    override var isConnectingToConfigured: Boolean
+        get() = runBlocking { getBoolean(DataStoreKeys.IS_CONNECTING_TO_CONFIGURED_IP, false) }
+        set(value) {
+            setBooleanSync(DataStoreKeys.IS_CONNECTING_TO_CONFIGURED_IP, value)
+        }
 
     // Advanced Features
     override val multipleTunnel: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.MULTIPLE_TUNNELS, false) }
 
-    override val isGpsSpoofingOn: Boolean
+    override var isGpsSpoofingOn: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.GPS_SPOOF_SETTING, false) }
+        set(value) = setBoolean(DataStoreKeys.GPS_SPOOF_SETTING, value)
 
     override val isKernelModuleDisabled: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.DISABLE_KERNEL_MODULE, false) }
@@ -544,7 +578,12 @@ class DataStorePreferenceHelper(
         set(value) = setBoolean(DataStoreKeys.DECOY_TRAFFIC, value)
 
     override var isAntiCensorshipOn: Boolean
-        get() = runBlocking { getBoolean(DataStoreKeys.ANTI_CENSORSHIP, appContext.isRegionRestricted) }
+        get() = runBlocking {
+            getBoolean(
+                DataStoreKeys.ANTI_CENSORSHIP,
+                appContext.isRegionRestricted
+            )
+        }
         set(value) = setBoolean(DataStoreKeys.ANTI_CENSORSHIP, value)
 
     override var fakeTrafficVolume: FakeTrafficVolume
@@ -559,26 +598,30 @@ class DataStorePreferenceHelper(
         get() = runBlocking { getBoolean(DataStoreKeys.ON_CREATE_APPLICATION, true) }
         set(value) = setBoolean(DataStoreKeys.ON_CREATE_APPLICATION, value)
 
-    override val lastSelectedTabIndex: Int
+    override var lastSelectedTabIndex: Int
         get() = runBlocking { getInt(DataStoreKeys.LAST_SELECTED_SERVER_TAB, 0) }
+        set(value) = setInt(DataStoreKeys.LAST_SELECTED_SERVER_TAB, value)
 
-    override val portMapVersion: Int
+    override var portMapVersion: Int
         get() = runBlocking { getInt(DataStoreKeys.PORT_MAP_VERSION, 0) }
+        set(value) = setInt(DataStoreKeys.PORT_MAP_VERSION, value)
 
-    override val purchaseFlowState: String
+    override var purchaseFlowState: String
         get() = runBlocking { getString(DataStoreKeys.PURCHASE_FLOW_STATE_KEY, "FINISHED") }
+        set(value) = setString(DataStoreKeys.PURCHASE_FLOW_STATE_KEY, value)
 
-    override val selection: String
+    override var selection: String
         get() = runBlocking {
             getString(
                 DataStoreKeys.SELECTION_KEY,
                 PreferencesKeyConstants.DEFAULT_LIST_SELECTION_MODE
             )
         }
+        set(value) = setString(DataStoreKeys.SELECTION_KEY, value)
 
     override val oldSessionAuth: String?
         get() = runBlocking {
-            getString(DataStoreKeys.USER_NAME, "")
+            getString(DataStoreKeys.SESSION_HASH, "")
                 .takeIf { it.isNotEmpty() }
         }
 
@@ -601,34 +644,67 @@ class DataStorePreferenceHelper(
         set(value) = setString(DataStoreKeys.DNS_MODE, value)
 
     override var dnsAddress: String?
-        get() = runBlocking { getString(DataStoreKeys.CUSTOM_DNS_ADDRESS, "").takeIf { it.isNotEmpty() } }
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.CUSTOM_DNS_ADDRESS,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
         set(value) = setString(DataStoreKeys.CUSTOM_DNS_ADDRESS, value)
 
     override var suggestedProtocol: String?
-        get() = runBlocking { getString(DataStoreKeys.SUGGESTED_PROTOCOL, "").takeIf { it.isNotEmpty() } }
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.SUGGESTED_PROTOCOL,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
         set(value) = setString(DataStoreKeys.SUGGESTED_PROTOCOL, value)
 
     override var suggestedPort: String?
-        get() = runBlocking { getString(DataStoreKeys.SUGGESTED_PORT, "").takeIf { it.isNotEmpty() } }
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.SUGGESTED_PORT,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
         set(value) = setString(DataStoreKeys.SUGGESTED_PORT, value)
 
     override var locationHash: String?
-        get() = runBlocking { getString(DataStoreKeys.LOCATION_HASH, "").takeIf { it.isNotEmpty() } }
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.LOCATION_HASH,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
         set(value) = setString(DataStoreKeys.LOCATION_HASH, value)
 
     override var alreadyShownShareAppLink: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.ALREADY_SHOWN_SHARE_APP_LINK, false) }
         set(value) = setBoolean(DataStoreKeys.ALREADY_SHOWN_SHARE_APP_LINK, value)
 
-    // Complex Types (JSON serialized)
-    override fun installedApps(): List<String> = runBlocking {
-        val jsonString = getString(DataStoreKeys.INSTALLED_APPS_DATA, "")
-        if (jsonString.isEmpty()) {
-            emptyList()
-        } else {
-            Gson().fromJson(jsonString, object : TypeToken<List<String>>() {}.type)
+    override var deviceUuid: String?
+        get() = runBlocking {
+            getString(DataStoreKeys.DEVICE_ID, "")
+                .takeIf { it.isNotEmpty() }
         }
-    }
+        set(value) = setString(DataStoreKeys.DEVICE_ID, value)
+
+    override var powerWhiteListDialogCount: Int
+        get() = runBlocking { getInt(DataStoreKeys.POWER_WHITE_LIST_POPUP_SHOW_COUNT, 0) }
+        set(value) = setInt(DataStoreKeys.POWER_WHITE_LIST_POPUP_SHOW_COUNT, value)
+
+    // Complex Types (JSON serialized)
+    override var installedApps: List<String>
+        get() = runBlocking {
+            val jsonString = getString(DataStoreKeys.INSTALLED_APPS_DATA, "")
+            if (jsonString.isEmpty()) {
+                emptyList()
+            } else {
+                Gson().fromJson(jsonString, object : TypeToken<List<String>>() {}.type)
+            }
+        }
+        set(value) = setString(DataStoreKeys.INSTALLED_APPS_DATA, Gson().toJson(value))
 
     override var wgConnectApiFailOverState: Map<String, Boolean>
         get() = runBlocking {
@@ -645,29 +721,69 @@ class DataStorePreferenceHelper(
     // Secure Preferences (remain in EncryptedSharedPreferences)
     override var wgLocalParams: WgLocalParams?
         get() {
-            val jsonString = securePreferences.getString(PreferencesKeyConstants.WG_LOCAL_PARAMS, null) ?: return null
+            val jsonString =
+                securePreferences.getString(SecurePreferencesKeys.WG_LOCAL_PARAMS, null)
+                    ?: return null
             return Gson().fromJson(jsonString, WgLocalParams::class.java)
         }
         set(value) {
-            securePreferences.putStringSync(PreferencesKeyConstants.WG_LOCAL_PARAMS, Gson().toJson(value))  // SYNC - critical WireGuard config
+            securePreferences.putStringSync(
+                SecurePreferencesKeys.WG_LOCAL_PARAMS,
+                Gson().toJson(value)
+            )  // SYNC - critical WireGuard config
         }
 
-    override fun saveCredentials(key: String, value: ServerCredentialsResponse) {
-        securePreferences.putStringSync(key, Gson().toJson(value))  // SYNC - critical for VPN connection
-    }
+    // OpenVPN Credentials (stored as JSON in DataStore)
+    override var openVpnCredentials: ServerCredentialsResponse?
+        get() = runBlocking {
+            val json = getString(DataStoreKeys.OPEN_VPN_CREDENTIALS, "")
+            if (json.isEmpty()) null else Gson().fromJson(
+                json,
+                ServerCredentialsResponse::class.java
+            )
+        }
+        set(value) = setStringSync(
+            DataStoreKeys.OPEN_VPN_CREDENTIALS,
+            if (value != null) Gson().toJson(value) else ""
+        )  // SYNC - critical for VPN connection
 
-    override fun getCredentials(key: String): ServerCredentialsResponse? {
-        val json = securePreferences.getString(key, null) ?: return null
-        return Gson().fromJson(json, ServerCredentialsResponse::class.java)
-    }
+    // IKEv2 Credentials (stored as JSON in DataStore)
+    override var ikev2Credentials: ServerCredentialsResponse?
+        get() = runBlocking {
+            val json = getString(DataStoreKeys.IKEV2_CREDENTIALS, "")
+            if (json.isEmpty()) null else Gson().fromJson(
+                json,
+                ServerCredentialsResponse::class.java
+            )
+        }
+        set(value) = setStringSync(
+            DataStoreKeys.IKEV2_CREDENTIALS,
+            if (value != null) Gson().toJson(value) else ""
+        )  // SYNC - critical for VPN connection
 
-    override fun saveOpenVPNServerConfig(value: String) {
-        securePreferences.putStringSync(PreferencesKeyConstants.OPEN_VPN_SERVER_CONFIG, value)  // SYNC - critical VPN config
-    }
+    // Static IP Credentials (stored as JSON in DataStore)
+    override var staticIpCredentials: ServerCredentialsResponse?
+        get() = runBlocking {
+            val json = getString(DataStoreKeys.STATIC_IP_CREDENTIALS, "")
+            if (json.isEmpty()) null else Gson().fromJson(
+                json,
+                ServerCredentialsResponse::class.java
+            )
+        }
+        set(value) = setStringSync(
+            DataStoreKeys.STATIC_IP_CREDENTIALS,
+            if (value != null) Gson().toJson(value) else ""
+        )  // SYNC - critical for VPN connection
 
-    override fun getOpenVPNServerConfig(): String? {
-        return securePreferences.getString(PreferencesKeyConstants.OPEN_VPN_SERVER_CONFIG, null)
-    }
+    // OpenVPN Server Config (base64 encoded server config)
+    override var openVpnServerConfig: String?
+        get() = runBlocking {
+            getString(DataStoreKeys.OPEN_VPN_SERVER_CONFIG, "").takeIf { it.isNotEmpty() }
+        }
+        set(value) = setStringSync(
+            DataStoreKeys.OPEN_VPN_SERVER_CONFIG,
+            value ?: ""
+        )  // SYNC - critical VPN config
 
     // Dynamic Keys (per-user, per-network, etc.)
     override fun getPreviousAccountStatus(userNameKey: String): Int = runBlocking {
@@ -686,158 +802,6 @@ class DataStorePreferenceHelper(
         setInt(DataStoreKeys.previousUserStatus(userNameKey), userStatus)
     }
 
-    // Generic Get/Set Methods
-    override fun getResponseInt(key: String, defaultValue: Int): Int = runBlocking {
-        dataStore.data.first()[intPreferencesKey(key)] ?: defaultValue
-    }
-
-    override fun getResponseString(key: String): String? = runBlocking {
-        val default = if (key == PreferencesKeyConstants.CONNECTION_MODE_KEY) {
-            PreferencesKeyConstants.CONNECTION_MODE_AUTO
-        } else {
-            ""
-        }
-        getString(stringPreferencesKey(key), default).takeIf {
-            if (key == PreferencesKeyConstants.CONNECTION_MODE_KEY) true else it.isNotEmpty()
-        }
-    }
-
-    override fun saveResponseIntegerData(key: String, value: Int) {
-        scope.launch {
-            dataStore.edit { it[intPreferencesKey(key)] = value }
-        }
-    }
-
-    override fun saveResponseStringData(key: String, value: String) {
-        setString(stringPreferencesKey(key), value)
-    }
-
-    override fun removeResponseData(key: String?) {
-        if (key != null) {
-            scope.launch {
-                dataStore.edit { it.remove(stringPreferencesKey(key)) }
-            }
-        }
-    }
-
-    // Save Methods
-    override fun saveIKEv2Port(port: String?) {
-        setString(DataStoreKeys.SAVED_IKev2_PORT, port)
-    }
-
-    override fun saveWireGuardPort(port: String?) {
-        setString(DataStoreKeys.SAVED_WIRE_GUARD_PORT, port)
-    }
-
-    override fun saveInstalledApps(installedAppsSaved: List<String>) {
-        setString(DataStoreKeys.INSTALLED_APPS_DATA, Gson().toJson(installedAppsSaved))
-    }
-
-    override fun saveLastSelectedServerTabIndex(index: Int) {
-        setInt(DataStoreKeys.LAST_SELECTED_SERVER_TAB, index)
-    }
-
-    override fun savePortMapVersion(version: Int) {
-        setInt(DataStoreKeys.PORT_MAP_VERSION, version)
-    }
-
-    override fun savePurchaseFlowState(state: String?) {
-        setString(DataStoreKeys.PURCHASE_FLOW_STATE_KEY, state)
-    }
-
-    override fun saveSelection(selection: String?) {
-        setString(DataStoreKeys.SELECTION_KEY, selection)
-    }
-
-    override fun saveSplitRoutingMode(mode: String?) {
-        setString(DataStoreKeys.SPLIT_ROUTING_MODE, mode)
-    }
-
-    // Set Methods (VPN state - use SYNC for critical connection flags)
-    override fun setAlwaysOn(status: Boolean) {
-        setBoolean(DataStoreKeys.ALWAYS_ON, status)  // ASYNC - system setting, not time-critical
-    }
-
-    override fun setAuthFailedConnectionAttemptCount(numberOfAttempts: Int?) {
-        if (numberOfAttempts != null) {
-            setInt(DataStoreKeys.AUTH_RECONNECT_ATTEMPT_COUNT_KEY, numberOfAttempts)
-        }
-    }
-
-    override fun setChosenProtocol(protocol: String?) {
-        setStringSync(DataStoreKeys.CHOSEN_PROTOCOL, protocol)  // SYNC
-    }
-
-    override fun setConnectingToConfiguredLocation(connectingToConfiguredLocation: Boolean) {
-        setBooleanSync(DataStoreKeys.IS_CONNECTING_TO_CONFIGURED_IP, connectingToConfiguredLocation)  // SYNC
-    }
-
-    override fun setConnectingToStaticIP(connectingToStaticIP: Boolean) {
-        setBooleanSync(DataStoreKeys.IS_CONNECTING_TO_STATIC_IP, connectingToStaticIP)  // SYNC
-    }
-
-    override fun setConnectionAttemptTag() {
-        setString(DataStoreKeys.CONNECTION_ATTEMPT, System.currentTimeMillis().toString())
-    }
-
-    override fun setDeviceUUID(deviceUUID: String?) {
-        setString(DataStoreKeys.DEVICE_ID, deviceUUID)
-    }
-
-    override fun getDeviceUUID(): String? = runBlocking {
-        getString(DataStoreKeys.DEVICE_ID, "")
-            .takeIf { it.isNotEmpty() }
-    }
-
-    override fun setDisconnectedFlagPath(path: String?) {
-        setString(DataStoreKeys.DISCONNECTED_FLAG_PATH, path)
-    }
-
-    override fun setFutureSelectCity(cityId: Int) {
-        setIntSync(DataStoreKeys.FUTURE_SELECTED_CITY, cityId)  // SYNC
-    }
-
-    override fun setGpsSpoofing(spoof: Boolean) {
-        setBoolean(DataStoreKeys.GPS_SPOOF_SETTING, spoof)
-    }
-
-    override fun setHapticFeedbackEnabled(hapticFeedbackEnabled: Boolean) {
-        setBoolean(DataStoreKeys.HAPTIC_FEEDBACK, hapticFeedbackEnabled)
-    }
-
-    override fun setOurIp(ip: Int) {
-        setInt(DataStoreKeys.OUR_IP, ip)
-    }
-
-    override fun setPacketSizeModeToAuto(auto: Boolean) {
-        setBoolean(DataStoreKeys.AUTO_MTU_MODE_KEY, auto)
-    }
-
-    override fun setReconnectRequired(required: Boolean) {
-        setBooleanSync(DataStoreKeys.RECONNECT_REQUIRED, required)  // SYNC
-    }
-
-    override fun setShowNewsFeedAlert(showAlert: Boolean) {
-        setBoolean(DataStoreKeys.NEWS_FEED_ALERT, showAlert)
-    }
-
-    override fun setUserAccountUpdateRequired(required: Boolean) {
-        setBoolean(DataStoreKeys.USER_ACCOUNT_UPDATE_REQUIRED, required)
-    }
-
-    override fun setUserIntendedDisconnect(userIntendedDisconnect: Boolean) {
-        setBooleanSync(DataStoreKeys.USER_INTENDED_DISCONNECT, userIntendedDisconnect)  // SYNC
-    }
-
-    // Helper Methods
-    override fun nextProtocol(protocol: String?) {
-        setString(DataStoreKeys.CHOSEN_PROTOCOL, protocol)
-    }
-
-    override fun requiredReconnect(): Boolean = runBlocking {
-        getBoolean(DataStoreKeys.RECONNECT_REQUIRED, false)
-    }
-
     override fun userIsInGhostMode(): Boolean = userName == "na"
 
     override fun increaseConnectionCount() {
@@ -849,14 +813,6 @@ class DataStorePreferenceHelper(
 
     override fun getConnectionCount(): Int = runBlocking {
         getInt(DataStoreKeys.CONNECTION_COUNT, 0)
-    }
-
-    override fun getPowerWhiteListDialogCount(): Int = runBlocking {
-        getInt(DataStoreKeys.POWER_WHITE_LIST_POPUP_SHOW_COUNT, 0)
-    }
-
-    override fun setPowerWhiteListDialogCount(count: Int) {
-        setInt(DataStoreKeys.POWER_WHITE_LIST_POPUP_SHOW_COUNT, count)
     }
 
     override fun getDefaultProtoInfo(): Pair<String, String> {
@@ -897,11 +853,21 @@ class DataStorePreferenceHelper(
         set(value) = setInt(DataStoreKeys.CONNECTED_BUNDLE_BACKGROUND_OPTION, value)
 
     override var customDisconnectedBackground: String?
-        get() = runBlocking { getString(DataStoreKeys.DISCONNECTED_CUSTOM_BACKGROUND, "").takeIf { it.isNotEmpty() } }
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.DISCONNECTED_CUSTOM_BACKGROUND,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
         set(value) = setString(DataStoreKeys.DISCONNECTED_CUSTOM_BACKGROUND, value)
 
     override var customConnectedBackground: String?
-        get() = runBlocking { getString(DataStoreKeys.CONNECTED_CUSTOM_BACKGROUND, "").takeIf { it.isNotEmpty() } }
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.CONNECTED_CUSTOM_BACKGROUND,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
         set(value) = setString(DataStoreKeys.CONNECTED_CUSTOM_BACKGROUND, value)
 
     // UI Customization - Sound Options
@@ -922,15 +888,105 @@ class DataStorePreferenceHelper(
         set(value) = setInt(DataStoreKeys.CONNECTED_BUNDLE_SOUND_OPTION, value)
 
     override var customDisconnectedSound: String?
-        get() = runBlocking { getString(DataStoreKeys.DISCONNECTED_CUSTOM_SOUND, "").takeIf { it.isNotEmpty() } }
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.DISCONNECTED_CUSTOM_SOUND,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
         set(value) = setString(DataStoreKeys.DISCONNECTED_CUSTOM_SOUND, value)
 
     override var customConnectedSound: String?
-        get() = runBlocking { getString(DataStoreKeys.CONNECTED_CUSTOM_SOUND, "").takeIf { it.isNotEmpty() } }
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.CONNECTED_CUSTOM_SOUND,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
         set(value) = setString(DataStoreKeys.CONNECTED_CUSTOM_SOUND, value)
 
     // SSO
     override var isSsoLogin: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.IS_SSO_LOGIN, false) }
         set(value) = setBoolean(DataStoreKeys.IS_SSO_LOGIN, value)
+
+    override var userIP: String?
+        get() = runBlocking { getString(DataStoreKeys.USER_IP, "").takeIf { it.isNotEmpty() } }
+        set(value) = setStringSync(DataStoreKeys.USER_IP, value)
+
+    override var connectionMode: String?
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.CONNECTION_MODE_KEY,
+                PreferencesKeyConstants.CONNECTION_MODE_AUTO
+            )
+                .takeIf { it.isNotEmpty() }
+        }
+        set(value) = setString(DataStoreKeys.CONNECTION_MODE_KEY, value)
+
+    override var newInstallation: String?
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.NEW_INSTALLATION,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
+        set(value) = setString(DataStoreKeys.NEW_INSTALLATION, value)
+
+    override var getSession: String?
+        get() = runBlocking { getString(DataStoreKeys.GET_SESSION, "").takeIf { it.isNotEmpty() } }
+        set(value) = setString(DataStoreKeys.GET_SESSION, value)
+
+    override var portMap: String?
+        get() = runBlocking { getString(DataStoreKeys.PORT_MAP, "").takeIf { it.isNotEmpty() } }
+        set(value) = setString(DataStoreKeys.PORT_MAP, value)
+
+    override var robertFilters: String?
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.ROBERT_FILTERS,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
+        set(value) = setString(DataStoreKeys.ROBERT_FILTERS, value)
+
+    override var favoriteServerList: String?
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.FAVORITE_SERVER_LIST,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
+        set(value) = setString(DataStoreKeys.FAVORITE_SERVER_LIST, value)
+
+    override var purchasedItem: String?
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.PURCHASED_ITEM,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
+        set(value) = setString(DataStoreKeys.PURCHASED_ITEM, value)
+
+    override var amazonPurchasedItem: String?
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.AMAZON_PURCHASED_ITEM,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
+        set(value) = setString(DataStoreKeys.AMAZON_PURCHASED_ITEM, value)
+
+    override var rateDialogStatus: Int
+        get() = runBlocking { getInt(DataStoreKeys.CURRENT_STATUS_KEY, 0) }
+        set(value) = setInt(DataStoreKeys.CURRENT_STATUS_KEY, value)
+
+    override var rateDialogLastUpdateTime: String?
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.LAST_UPDATE_TIME,
+                ""
+            ).takeIf { it.isNotEmpty() }
+        }
+        set(value) = setString(DataStoreKeys.LAST_UPDATE_TIME, value)
 }

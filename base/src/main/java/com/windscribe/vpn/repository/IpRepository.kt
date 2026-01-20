@@ -6,7 +6,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -51,9 +51,7 @@ class IpRepository(
                     is CallResult.Error -> loadIpFromStorage()
                     is CallResult.Success -> {
                         val ipAddress = getModifiedIpAddress(result.data.trim())
-                        preferenceHelper.saveResponseStringData(
-                            PreferencesKeyConstants.USER_IP, ipAddress
-                        )
+                        preferenceHelper.userIP = ipAddress
                         _state.emit(RepositoryState.Success(ipAddress))
                     }
                 }
@@ -64,7 +62,7 @@ class IpRepository(
     }
 
     private suspend fun loadIpFromStorage() {
-        preferenceHelper.getResponseString(PreferencesKeyConstants.USER_IP)?.let {
+        preferenceHelper.userIP?.let {
             _state.emit(RepositoryState.Success(it))
         } ?: kotlin.run {
             _state.emit(RepositoryState.Error("No saved ip found."))

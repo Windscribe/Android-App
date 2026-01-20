@@ -2,7 +2,7 @@ package com.windscribe.vpn.model
 
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.autoconnection.ProtocolInformation
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.encoding.encoders.Base64
 
 data class OpenVPNConnectionInfo(

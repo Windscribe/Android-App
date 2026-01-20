@@ -31,15 +31,15 @@ class PowerWhitelistViewmodelImpl(private val preferenceHelper: PreferencesHelpe
 
     override fun onLaterClicked() {
         viewModelScope.launch {
-            val count = preferenceHelper.getPowerWhiteListDialogCount()
-            preferenceHelper.setPowerWhiteListDialogCount(count + 1)
+            val count = preferenceHelper.powerWhiteListDialogCount
+            preferenceHelper.powerWhiteListDialogCount = count + 1
             _shouldExit.emit(true)
         }
     }
 
     override fun onNeverAskAgainClicked() {
         viewModelScope.launch {
-            preferenceHelper.setPowerWhiteListDialogCount(3)
+            preferenceHelper.powerWhiteListDialogCount = 3
             _shouldExit.emit(true)
         }
     }

@@ -17,7 +17,7 @@ import com.windscribe.tv.customview.ProgressFragment.Companion.instance
 import com.windscribe.tv.databinding.ActivityAddEmailAddressBinding
 import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.windscribe.WindscribeActivity
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 

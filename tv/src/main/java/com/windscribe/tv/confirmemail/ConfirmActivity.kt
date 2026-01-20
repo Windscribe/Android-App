@@ -16,7 +16,7 @@ import com.windscribe.tv.databinding.ActivityConfirmBinding
 import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.email.AddEmailActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import javax.inject.Inject
 
 class ConfirmActivity : BaseActivity(), ConfirmEmailView {

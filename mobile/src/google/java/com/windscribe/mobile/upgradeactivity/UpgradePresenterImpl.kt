@@ -33,9 +33,7 @@ import com.windscribe.vpn.billing.PurchaseState
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.RegionLocator
 import com.windscribe.vpn.constants.BillingConstants
-import com.windscribe.vpn.constants.BillingConstants.AMAZON_PURCHASED_ITEM
 import com.windscribe.vpn.constants.BillingConstants.PLAY_STORE_UPDATE
-import com.windscribe.vpn.constants.BillingConstants.PURCHASED_ITEM
 import com.windscribe.vpn.constants.BillingConstants.PURCHASED_ITEM_NULL
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.errormodel.WindError.Companion.instance
@@ -215,7 +213,7 @@ class UpgradePresenterImpl @Inject constructor(
                     purchase.purchaseToken
         )
         presenterLog.info("Saving purchased product for later update...")
-        preferencesHelper.saveResponseStringData(PURCHASED_ITEM, purchase.originalJson)
+        preferencesHelper.purchasedItem = purchase.originalJson
         onBillingSetupFailed(responseCode)
     }
 
@@ -248,7 +246,7 @@ class UpgradePresenterImpl @Inject constructor(
         mPurchase = itemPurchased
         presenterLog.info("Saving purchased item to process later...")
         upgradeView?.showProgressBar("#Verifying purchase...")
-        preferencesHelper.saveResponseStringData(PURCHASED_ITEM, itemPurchased.originalJson)
+        preferencesHelper.purchasedItem = itemPurchased.originalJson
         presenterLog.info("Verifying payment for purchased item: " + itemPurchased.originalJson)
 
         activityScope.launch(Dispatchers.IO) {
@@ -271,7 +269,7 @@ class UpgradePresenterImpl @Inject constructor(
 
                         is CallResult.Success -> {
                             presenterLog.info("Payment verification successful. ")
-                            preferencesHelper.removeResponseData(PURCHASED_ITEM)
+                            preferencesHelper.purchasedItem = null
                             presenterLog.info("Setting item purchased to null & upgrading user account")
                             mPurchase = null
                             upgradeUserAccount()
@@ -389,7 +387,7 @@ class UpgradePresenterImpl @Inject constructor(
     }
 
     override fun setPurchaseFlowState(state: PurchaseState) {
-        preferencesHelper.savePurchaseFlowState(state.name)
+        preferencesHelper.purchaseFlowState = state.name
         presenterLog.debug(
             "Purchase flow: state changed To: " + preferencesHelper.purchaseFlowState
         )
@@ -557,7 +555,7 @@ class UpgradePresenterImpl @Inject constructor(
     private fun saveAmazonSubscriptionRecord(amazonPurchase: AmazonPurchase) {
         presenterLog.debug("Saving amazon purchase:{}", amazonPurchase)
         val purchaseJson = Gson().toJson(amazonPurchase)
-        preferencesHelper.saveResponseStringData(AMAZON_PURCHASED_ITEM, purchaseJson)
+        preferencesHelper.amazonPurchasedItem = purchaseJson
     }
 
     private fun showBillingError(errorCode: Int, error: String) {
@@ -565,7 +563,7 @@ class UpgradePresenterImpl @Inject constructor(
         upgradeView?.showBillingError(error)
         if (errorCode == 4005) {
             presenterLog.debug("Purchase flow: Token was already verified once. Ignore")
-            preferencesHelper.savePurchaseFlowState(PurchaseState.FINISHED.name)
+            preferencesHelper.purchaseFlowState = PurchaseState.FINISHED.name
         }
     }
 
@@ -639,7 +637,7 @@ class UpgradePresenterImpl @Inject constructor(
 
                         is CallResult.Success -> {
                             presenterLog.info("Payment verification successful.")
-                            preferencesHelper.removeResponseData(AMAZON_PURCHASED_ITEM)
+                            preferencesHelper.amazonPurchasedItem = null
                             presenterLog.info("Setting item purchased to null & upgrading user account")
                             mPurchase = null
                             PurchasingService.notifyFulfillment(

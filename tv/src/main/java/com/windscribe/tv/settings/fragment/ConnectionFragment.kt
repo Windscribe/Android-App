@@ -21,11 +21,11 @@ import com.windscribe.tv.databinding.FragmentConnectionBinding
 import com.windscribe.tv.listeners.SettingsFragmentListener
 import com.windscribe.tv.serverlist.customviews.State
 import com.windscribe.tv.settings.SettingActivity
-import com.windscribe.vpn.constants.PreferencesKeyConstants.BOOT_ALLOW
-import com.windscribe.vpn.constants.PreferencesKeyConstants.DISABLED_MODE
-import com.windscribe.vpn.constants.PreferencesKeyConstants.EXCLUSIVE_MODE
-import com.windscribe.vpn.constants.PreferencesKeyConstants.INCLUSIVE_MODE
-import com.windscribe.vpn.constants.PreferencesKeyConstants.LAN_ALLOW
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.BOOT_ALLOW
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DISABLED_MODE
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.EXCLUSIVE_MODE
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.INCLUSIVE_MODE
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.LAN_ALLOW
 
 class ConnectionFragment : Fragment() {
     private lateinit var binding: FragmentConnectionBinding

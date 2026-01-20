@@ -15,7 +15,7 @@ import com.windscribe.mobile.R
 import com.windscribe.mobile.di.ActivityComponent
 import com.windscribe.mobile.di.ActivityModule
 import com.windscribe.vpn.Windscribe
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 

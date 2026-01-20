@@ -9,7 +9,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.commonutils.Ext.result
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.repository.CallResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -68,9 +68,9 @@ class AppStartActivityViewModelImpl(val preferencesHelper: PreferencesHelper, va
        viewModelScope.launch {
            if (preferencesHelper.isNewApplicationInstance) {
                preferencesHelper.isNewApplicationInstance = false
-               val installation = preferencesHelper.getResponseString(PreferencesKeyConstants.NEW_INSTALLATION)
+               val installation = preferencesHelper.newInstallation
                if (PreferencesKeyConstants.I_NEW == installation) {
-                   preferencesHelper.saveResponseStringData(PreferencesKeyConstants.NEW_INSTALLATION, PreferencesKeyConstants.I_OLD)
+                   preferencesHelper.newInstallation = PreferencesKeyConstants.I_OLD
                    val result = result<String?> { apiCalManager.recordAppInstall() }
                    when(result) {
                        is CallResult.Success -> {
@@ -104,7 +104,7 @@ class AppStartActivityViewModelImpl(val preferencesHelper: PreferencesHelper, va
     }
 
     override fun enableGpsSpoofing() {
-        preferencesHelper.setGpsSpoofing(true)
+        preferencesHelper.isGpsSpoofingOn = true
     }
 
     override fun onCleared() {

@@ -42,7 +42,7 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.*
-import com.windscribe.vpn.constants.AnimConstants
+import com.windscribe.vpn.constants.ExtraConstants
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -261,9 +261,9 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
             binding.vpn.let {
                 if (state == 1 && it.rotation >= 0.0f && it.rotation < 180.0f) {
                     it.animate().rotation(180.0f).duration =
-                        AnimConstants.BROWSE_WINDOW_ANIM_DURATION
+                        ExtraConstants.BROWSE_WINDOW_ANIM_DURATION
                 } else if (state == 0 && it.rotation == 180f) {
-                    it.animate().rotation(0.0f).duration = AnimConstants.BROWSE_WINDOW_ANIM_DURATION
+                    it.animate().rotation(0.0f).duration = ExtraConstants.BROWSE_WINDOW_ANIM_DURATION
                 }
             }
         }

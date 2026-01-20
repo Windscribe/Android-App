@@ -15,29 +15,20 @@ class RateMyAppPresenterImp @Inject constructor(
     private val firebaseManager: FirebaseManager
 ) : RateMyAppPresenter {
     override fun onAskMeLaterClick() {
-        preferencesHelper.saveResponseStringData(
-            RateDialogConstants.LAST_UPDATE_TIME,
-            Date().time.toString()
-        )
-        preferencesHelper.saveResponseIntegerData(RateDialogConstants.CURRENT_STATUS_KEY, RateDialogConstants.STATUS_ASK_LATER)
+        preferencesHelper.rateDialogLastUpdateTime = Date().time.toString()
+        preferencesHelper.rateDialogStatus = RateDialogConstants.STATUS_ASK_LATER
         rateView.onGoWindScribeActivity()
     }
 
     override fun onNeverAskClick() {
-        preferencesHelper.saveResponseStringData(
-            RateDialogConstants.LAST_UPDATE_TIME,
-            Date().time.toString()
-        )
-        preferencesHelper.saveResponseIntegerData(RateDialogConstants.CURRENT_STATUS_KEY, RateDialogConstants.STATUS_NEVER_ASK)
+        preferencesHelper.rateDialogLastUpdateTime = Date().time.toString()
+        preferencesHelper.rateDialogStatus = RateDialogConstants.STATUS_NEVER_ASK
         rateView.onGoWindScribeActivity()
     }
 
     override fun onRateNowClick() {
-        preferencesHelper.saveResponseStringData(
-            RateDialogConstants.LAST_UPDATE_TIME,
-            Date().time.toString()
-        )
-        preferencesHelper.saveResponseIntegerData(RateDialogConstants.CURRENT_STATUS_KEY, RateDialogConstants.STATUS_ALREADY_ASKED)
+        preferencesHelper.rateDialogLastUpdateTime = Date().time.toString()
+        preferencesHelper.rateDialogStatus = RateDialogConstants.STATUS_ALREADY_ASKED
         if (firebaseManager.isPlayStoreInstalled) {
             rateView.openPlayStoreWithLink()
         } else {

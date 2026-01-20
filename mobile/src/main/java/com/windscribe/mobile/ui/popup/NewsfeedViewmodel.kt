@@ -70,7 +70,6 @@ class NewsfeedViewmodel @Inject constructor(
 
     private suspend fun getNewsfeed() {
         _newsfeedState.value = NewsfeedState.Loading
-        preferencesHelper.setShowNewsFeedAlert(false)
 
         val newsfeed = repository.getNotifications()
         logger.info("Loaded notification data successfully...")

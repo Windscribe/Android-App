@@ -14,7 +14,7 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.ThreadSafeList
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.encoding.encoders.Base64
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
@@ -166,7 +166,7 @@ class AutoConnectionManager(
                 }
 
             // Check if we should retry with different node (only in auto mode)
-            val isAutoMode = preferencesHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY) == PreferencesKeyConstants.CONNECTION_MODE_AUTO
+            val isAutoMode = preferencesHelper.connectionMode == PreferencesKeyConstants.CONNECTION_MODE_AUTO
             val shouldRetryNode = attempt == 0 &&
                 isAutoMode &&
                 vpnState.error?.error in listOf(
@@ -215,7 +215,7 @@ class AutoConnectionManager(
                 VPNState.ErrorType.TimeoutError,
                 VPNState.ErrorType.ConnectivityTestFailed,
                 VPNState.ErrorType.AuthenticationError
-            ) && preferencesHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY) != PreferencesKeyConstants.CONNECTION_MODE_AUTO
+            ) && preferencesHelper.connectionMode != PreferencesKeyConstants.CONNECTION_MODE_AUTO
 
             if (shouldShowManualModeDialog) {
                 logger.debug("Manual mode connection failed. Showing switch to auto dialog.")
@@ -257,7 +257,7 @@ class AutoConnectionManager(
                 Util.getAppSupportedProtocolList()
             }
         }
-        if (preferencesHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY) != PreferencesKeyConstants.CONNECTION_MODE_AUTO) {
+        if (preferencesHelper.connectionMode != PreferencesKeyConstants.CONNECTION_MODE_AUTO) {
             setupManualProtocol(
                 preferencesHelper.savedProtocol, appSupportedProtocolOrder
             )
@@ -674,10 +674,7 @@ class AutoConnectionManager(
                 override fun onSwitchToAutoMode() {
                     logger.debug("User switched to auto mode.")
                     // Switch to auto mode
-                    preferencesHelper.saveResponseStringData(
-                        PreferencesKeyConstants.CONNECTION_MODE_KEY,
-                        PreferencesKeyConstants.CONNECTION_MODE_AUTO
-                    )
+                    preferencesHelper.connectionMode = PreferencesKeyConstants.CONNECTION_MODE_AUTO
                     reset()
                     listOfProtocols.firstOrNull { it.protocol == preferencesHelper.selectedProtocol }?.type =
                         ProtocolConnectionStatus.Failed

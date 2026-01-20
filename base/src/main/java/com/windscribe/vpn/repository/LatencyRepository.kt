@@ -5,7 +5,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.wireguard.WireGuardVpnProfile
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.serverlist.entity.City
@@ -90,7 +90,7 @@ class LatencyRepository @Inject constructor(
     }
 
     suspend fun updateAllServerLatencies(): Boolean {
-        val currentIp = preferencesHelper.getResponseString(PreferencesKeyConstants.USER_IP)
+        val currentIp = preferencesHelper.userIP
         val validPings = localDbInterface.getAllPingsAsync().filter {
             val isSameIp = currentIp == it.ip
             val isWithinTimeLimit = (System.currentTimeMillis() - it.updatedAt).toDuration(DurationUnit.MILLISECONDS).inWholeMinutes <= MINIMUM_PING_VALIDATION_MINUTES
@@ -215,7 +215,7 @@ class LatencyRepository @Inject constructor(
             setRegionId(regionId)
             setStatic(isStatic)
             setUpdatedAt(System.currentTimeMillis())
-            preferencesHelper.getResponseString(PreferencesKeyConstants.USER_IP)?.let {
+            preferencesHelper.userIP?.let {
                 setIp(it)
             }
         }

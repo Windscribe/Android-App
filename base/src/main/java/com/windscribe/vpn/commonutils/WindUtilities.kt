@@ -58,7 +58,7 @@ object WindUtilities {
 
     fun getSourceTypeBlocking(): SelectedLocationType {
         val isConnectingToStatic = appContext.preference.isConnectingToStaticIp
-        val isConnectingToConfigured = appContext.preference.isConnectingToConfiguredLocation()
+        val isConnectingToConfigured = appContext.preference.isConnectingToConfigured
 
         return when {
             isConnectingToConfigured -> SelectedLocationType.CustomConfiguredProfile

@@ -104,9 +104,6 @@ class DetailsPresenterImp @Inject constructor(
 
     override fun onConnectClick(city: City) {
         logger.debug("Selected group item to connect.")
-        activityScope.launch(Dispatchers.IO) {
-            preferencesHelper.setFutureSelectCity(city.getId())
-        }
         detailView.onNodeSelected(city.getId())
     }
 
@@ -187,7 +184,7 @@ class DetailsPresenterImp @Inject constructor(
     private fun setFavouriteStates() {
         activityScope.launch(Dispatchers.IO) {
             try {
-                val jsonString = preferencesHelper.getResponseString(com.windscribe.vpn.constants.PreferencesKeyConstants.FAVORITE_SERVER_LIST)
+                val jsonString = preferencesHelper.favoriteServerList
                 val serverNodeList = com.google.gson.Gson().fromJson<List<ServerNodeListOverLoaded>>(
                     jsonString,
                     object : com.google.gson.reflect.TypeToken<List<ServerNodeListOverLoaded>>() {}.type

@@ -4,8 +4,8 @@ import android.content.Context
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.model.DropDownItem
 import com.windscribe.mobile.ui.model.ThemeItem
-import com.windscribe.vpn.constants.PreferencesKeyConstants.DARK_THEME
-import com.windscribe.vpn.constants.PreferencesKeyConstants.LIGHT_THEME
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DARK_THEME
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.LIGHT_THEME
 import java.io.File
 
 object LookAndFeelHelper {

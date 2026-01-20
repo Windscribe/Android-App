@@ -668,8 +668,8 @@ class ConnectionViewmodelImpl @Inject constructor(
                 }
                 if (eligibleToConnect) {
                     preferences.globalUserConnectionPreference = true
-                    preferences.setConnectingToStaticIP(false)
-                    preferences.setConnectingToConfiguredLocation(false)
+                    preferences.isConnectingToStaticIp = false
+                    preferences.isConnectingToConfigured = false
                     saveLastLocation(cityAndRegion)
                     logger.debug("Attempting to connect")
                     appScope.launch {
@@ -698,8 +698,8 @@ class ConnectionViewmodelImpl @Inject constructor(
                 val eligibleToConnect = checkEligibility(1, true, staticRegion.status ?: 1)
                 if (eligibleToConnect) {
                     preferences.globalUserConnectionPreference = true
-                    preferences.setConnectingToStaticIP(true)
-                    preferences.setConnectingToConfiguredLocation(false)
+                    preferences.isConnectingToStaticIp = true
+                    preferences.isConnectingToConfigured = false
                     saveLastLocation(staticRegion)
                     logger.debug("Attempting to connect..")
                     appScope.launch {
@@ -728,8 +728,8 @@ class ConnectionViewmodelImpl @Inject constructor(
                 locationRepository.setSelectedCity(config.getPrimaryKey())
                 saveLastLocation(config)
                 preferences.globalUserConnectionPreference = true
-                preferences.setConnectingToConfiguredLocation(true)
-                preferences.setConnectingToStaticIP(false)
+                preferences.isConnectingToStaticIp = false
+                preferences.isConnectingToConfigured = true
                 val type = WindUtilities.getConfigType(config.content)
                 if (type == WindUtilities.ConfigType.OpenVPN && (config.username.isNullOrEmpty() || config.password.isNullOrEmpty())) {
                     _goto.emit(HomeGoto.EditCustomConfig(config.getPrimaryKey(), true))
@@ -803,8 +803,8 @@ class ConnectionViewmodelImpl @Inject constructor(
             return false
         }
         // Set Static status
-        preferences.setConnectingToStaticIP(isStaticIp)
-        preferences.setConnectingToConfiguredLocation(false)
+        preferences.isConnectingToStaticIp = isStaticIp
+        preferences.isConnectingToConfigured = false
         if (serverStatus == NetworkKeyConstants.SERVER_STATUS_TEMPORARILY_UNAVAILABLE || (isStaticIp && serverStatus == 0)) {
             logger.info("Error: Server is temporary unavailable.")
             showToast("Location temporary unavailable.")

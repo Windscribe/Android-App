@@ -34,9 +34,9 @@ import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_WG_INVALID_PUBLIC_KE
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_WG_KEY_LIMIT_EXCEEDED
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_WG_UNABLE_TO_GENERATE_PSK
 import com.windscribe.vpn.constants.NetworkErrorCodes.EXPIRED_OR_BANNED_ACCOUNT
-import com.windscribe.vpn.constants.PreferencesKeyConstants
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_IKev2
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_IKev2
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.exceptions.InvalidVPNConfigException
 import com.windscribe.vpn.exceptions.WindScribeException
@@ -186,7 +186,7 @@ open class WindVpnController @Inject constructor(
         val vpnParameters =
             VPNParameters(ikev2Ip, udpIp, tcpIp, stealthIp, hostname, publicKey, city.ovpnX509)
         when (config.protocol) {
-            PreferencesKeyConstants.PROTO_IKev2 -> {
+            PROTO_IKev2 -> {
                 return vpnProfileCreator.createIkEV2Profile(
                     location, vpnParameters, config
                 )
@@ -212,9 +212,7 @@ open class WindVpnController @Inject constructor(
         val staticRegion = localDbInterface.getStaticRegionByIDAsync(staticId)
             ?: throw Exception("Static IP location not found.")
         val node = staticRegion.staticIpNode
-        appContext.preference.saveCredentials(
-            PreferencesKeyConstants.STATIC_IP_CREDENTIAL, staticRegion.credentials
-        )
+        appContext.preference.staticIpCredentials = staticRegion.credentials
         val coordinatesArray = staticRegion.coordinates?.split(",".toRegex())?.toTypedArray()
         val location = LastSelectedLocation(
             staticRegion.id, staticRegion.cityName, staticRegion.staticIp, staticRegion.countryCode,
@@ -231,7 +229,7 @@ open class WindVpnController @Inject constructor(
             staticRegion.ovpnX509
         )
         when (protocolInformation.protocol) {
-            PreferencesKeyConstants.PROTO_IKev2 -> {
+            PROTO_IKev2 -> {
                 return vpnProfileCreator.createIkEV2Profile(
                     location, vpnParameters, protocolInformation
                 )

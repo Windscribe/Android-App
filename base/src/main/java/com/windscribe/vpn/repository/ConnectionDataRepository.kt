@@ -13,7 +13,7 @@ import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_GENERATE_CREDENTIALS
 import com.windscribe.vpn.constants.NetworkKeyConstants
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import dagger.Lazy
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -37,7 +37,7 @@ class ConnectionDataRepository @Inject constructor(
             }
             when (serverConfigResult) {
                 is CallResult.Success -> {
-                    preferencesHelper.saveOpenVPNServerConfig(serverConfigResult.data)
+                    preferencesHelper.openVpnServerConfig = serverConfigResult.data
                 }
 
                 is CallResult.Error -> {
@@ -55,10 +55,7 @@ class ConnectionDataRepository @Inject constructor(
             }
             when (openVpnCredsResult) {
                 is CallResult.Success -> {
-                    preferencesHelper.saveCredentials(
-                        PreferencesKeyConstants.OPEN_VPN_CREDENTIALS,
-                        openVpnCredsResult.data
-                    )
+                    preferencesHelper.openVpnCredentials = openVpnCredsResult.data
                 }
 
                 is CallResult.Error -> {
@@ -76,10 +73,7 @@ class ConnectionDataRepository @Inject constructor(
             }
             when (ikev2CredsResult) {
                 is CallResult.Success -> {
-                    preferencesHelper.saveCredentials(
-                        PreferencesKeyConstants.IKEV2_CREDENTIALS,
-                        ikev2CredsResult.data
-                    )
+                    preferencesHelper.ikev2Credentials = ikev2CredsResult.data
                 }
 
                 is CallResult.Error -> {
@@ -98,11 +92,8 @@ class ConnectionDataRepository @Inject constructor(
             when (portMapResult) {
                 is CallResult.Success -> {
                     saveSuggestedProtocolPort(portMapResult.data)
-                    preferencesHelper.saveResponseStringData(
-                        PreferencesKeyConstants.PORT_MAP,
-                        Gson().toJson(portMapResult.data)
-                    )
-                    preferencesHelper.savePortMapVersion(NetworkKeyConstants.PORT_MAP_VERSION)
+                    preferencesHelper.portMap = Gson().toJson(portMapResult.data)
+                    preferencesHelper.portMapVersion = NetworkKeyConstants.PORT_MAP_VERSION
                 }
 
                 is CallResult.Error -> {

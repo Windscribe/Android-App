@@ -54,7 +54,7 @@ class GooglePendingReceiptValidator(appContext: Context, params: WorkerParameter
             }
             return if (result) {
                 logger.debug("Successfully verified purchase receipt")
-                preferencesHelper.savePurchaseFlowState(PurchaseState.FINISHED.name)
+                preferencesHelper.purchaseFlowState = PurchaseState.FINISHED.name
                 Windscribe.appContext.workManager.updateSession()
                 Result.success()
             } else {
@@ -114,7 +114,7 @@ class GooglePendingReceiptValidator(appContext: Context, params: WorkerParameter
         billingClient?.queryPurchaseHistoryAsync(BillingClient.SkuType.SUBS) { billingResult: BillingResult, purchasesList: List<PurchaseHistoryRecord>? ->
             if (BillingClient.BillingResponseCode.OK == billingResult.responseCode) {
                 if (purchasesList == null || purchasesList.isEmpty()) {
-                    preferencesHelper.savePurchaseFlowState(PurchaseState.FINISHED.name)
+                    preferencesHelper.purchaseFlowState = PurchaseState.FINISHED.name
                     it.resumeWith(kotlin.Result.failure(WindScribeException("No purchase history found.")))
                 } else {
                     it.resumeWith(kotlin.Result.success(purchasesList))

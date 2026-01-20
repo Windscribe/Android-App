@@ -20,11 +20,7 @@ import org.slf4j.LoggerFactory
  * One-time migration utility to migrate all preferences from Tray database (tray.db) to DataStore.
  * This migration reads directly from the SQLite database file without requiring the Tray library.
  */
-class TrayToDataStoreMigration(
-    private val context: Context,
-    private val dataStore: DataStore<Preferences>,
-    private val localDb: LocalDbInterface
-) {
+class TrayToDataStoreMigration(private val context: Context, private val dataStore: DataStore<Preferences>) {
     private val logger = LoggerFactory.getLogger("migration")
 
     companion object {
@@ -56,6 +52,7 @@ class TrayToDataStoreMigration(
             "our_ip",
             "port_map_version",
             "power_white_list_popup_show_count",
+            "rate_dialog_key",
             "selected_city_id",
             "when_connected_background_option",
             "when_connected_sound_option",
@@ -151,6 +148,7 @@ class TrayToDataStoreMigration(
             // Generic response string keys (stored via saveResponseStringData)
             "access_api_ip_1",
             "access_api_ip_2",
+            "amazon_purchase_item",
             "best_location_ip_2",
             "connection_mode",
             "data_left",
@@ -160,9 +158,11 @@ class TrayToDataStoreMigration(
             "favorite_server_list",
             "get_session_data",
             "IKev2_server_credentials",
+            "last_time",
             "loc_rev",
             "new_installation",
             "port_map_data",
+            "purchased_item",
             "robert_filters",
             "robert_settings",
             "server_config",
@@ -225,6 +225,9 @@ class TrayToDataStoreMigration(
             var errorCount = 0
             val notificationIdsToMarkRead = mutableListOf<Int>()
 
+            // Store all keys/values in a map first
+            val allKeys = mutableMapOf<String, String>()
+
             try {
                 // Query all preferences from Tray database
                 // Tray stores preferences in a table with columns: KEY, VALUE, MODULE, CREATED, UPDATED
@@ -244,103 +247,118 @@ class TrayToDataStoreMigration(
 
                 logger.info("Found ${cursor.count} items to migrate from Tray")
 
-                // Migrate all items to DataStore with proper type conversion
-                dataStore.edit { preferences ->
-                    cursor.use { c ->
-                        while (c.moveToNext()) {
-                            try {
-                                val key = c.getString(0) // key column
-                                val value = c.getString(1) // value column
-
-                                if (key != null && value != null) {
-                                    // Migrate using correct type based on key name
-                                    when {
-                                        key in LONG_KEYS -> {
-                                            value.toLongOrNull()?.let {
-                                                preferences[longPreferencesKey(key)] = it
-                                                successCount++
-                                            }
-                                        }
-
-                                        key in INT_KEYS -> {
-                                            value.toIntOrNull()?.let {
-                                                preferences[intPreferencesKey(key)] = it
-                                                successCount++
-                                            }
-                                        }
-
-                                        key in BOOLEAN_KEYS -> {
-                                            val boolValue = when (value.lowercase()) {
-                                                "true", "1" -> true
-                                                "false", "0" -> false
-                                                else -> null
-                                            }
-                                            boolValue?.let {
-                                                preferences[booleanPreferencesKey(key)] = it
-                                                successCount++
-                                            }
-                                        }
-
-                                        key in STRING_KEYS -> {
-                                            preferences[stringPreferencesKey(key)] = value
-                                            successCount++
-                                        }
-                                        // Dynamic keys
-                                        key.endsWith("previous_account_status") || key.endsWith("previous_user_status") -> {
-                                            value.toIntOrNull()?.let {
-                                                preferences[intPreferencesKey(key)] = it
-                                                successCount++
-                                            }
-                                        }
-                                        // Check if this is a notification ID (numeric key + boolean value)
-                                        else -> {
-                                            val notificationId = key.toIntOrNull()
-                                            val isRead = when (value.lowercase()) {
-                                                "true", "1" -> true
-                                                "false", "0" -> false
-                                                else -> null
-                                            }
-
-                                            if (notificationId != null && isRead != null && isRead) {
-                                                notificationIdsToMarkRead.add(notificationId)
-                                                successCount++
-                                            } else {
-                                                // Unknown key - log and ignore
-                                                logger.warn("Unknown key during migration - ignoring: $key = $value")
-                                            }
-                                        }
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                logger.error("Failed to migrate item: ${e.message}")
-                                errorCount++
-                            }
+                // First pass: collect all keys and values
+                cursor.use { c ->
+                    while (c.moveToNext()) {
+                        val key = c.getString(0)
+                        val value = c.getString(1)
+                        if (key != null && value != null) {
+                            allKeys[key] = value
+                        } else if (key != null) {
+                            logger.info("Skipping key with null value: $key")
                         }
                     }
                 }
 
+                // Migrate all items to DataStore with proper type conversion
+                // Use iterator to safely remove items during iteration
+                val keysToRemove = mutableListOf<String>()
+
+                dataStore.edit { preferences ->
+                    allKeys.forEach { (key, value) ->
+                        try {
+                            var migrated = false
+                            when {
+                                key in LONG_KEYS -> {
+                                    value.toLongOrNull()?.let {
+                                        preferences[longPreferencesKey(key)] = it
+                                        successCount++
+                                        migrated = true
+                                    }
+                                }
+
+                                key in INT_KEYS -> {
+                                    value.toIntOrNull()?.let {
+                                        preferences[intPreferencesKey(key)] = it
+                                        successCount++
+                                        migrated = true
+                                    }
+                                }
+
+                                key in BOOLEAN_KEYS -> {
+                                    val boolValue = when (value.lowercase()) {
+                                        "true", "1" -> true
+                                        "false", "0" -> false
+                                        else -> null
+                                    }
+                                    boolValue?.let {
+                                        preferences[booleanPreferencesKey(key)] = it
+                                        successCount++
+                                        migrated = true
+                                    }
+                                }
+
+                                key in STRING_KEYS -> {
+                                    preferences[stringPreferencesKey(key)] = value
+                                    successCount++
+                                    migrated = true
+                                }
+                                // Dynamic keys
+                                key.endsWith("previous_account_status") || key.endsWith("previous_user_status") -> {
+                                    value.toIntOrNull()?.let {
+                                        preferences[intPreferencesKey(key)] = it
+                                        successCount++
+                                        migrated = true
+                                    }
+                                }
+                                // Check if this is a notification ID (numeric key + boolean value)
+                                else -> {
+                                    val notificationId = key.toIntOrNull()
+                                    val isRead = when (value.lowercase()) {
+                                        "true", "1" -> true
+                                        "false", "0" -> false
+                                        else -> null
+                                    }
+
+                                    if (notificationId != null && isRead != null && isRead) {
+                                        notificationIdsToMarkRead.add(notificationId)
+                                        successCount++
+                                        migrated = true
+                                    }
+                                }
+                            }
+
+                            // Track successfully migrated keys for removal
+                            if (migrated) {
+                                keysToRemove.add(key)
+                            }
+                        } catch (e: Exception) {
+                            logger.error("Failed to migrate item $key: ${e.message}")
+                            errorCount++
+                        }
+                    }
+                }
+
+                // Remove migrated keys after iteration completes
+                keysToRemove.forEach { allKeys.remove(it) }
+
                 logger.info("Migration complete: $successCount items migrated, $errorCount errors")
+
+                // Log unmigrated keys summary (whatever remains in allKeys)
+                if (allKeys.isNotEmpty()) {
+                    logger.info("=== UNMIGRATED KEYS (${allKeys.size}) ===")
+                    allKeys.forEach { (key, value) ->
+                        logger.info("  $key = $value")
+                    }
+                    logger.info("=== END UNMIGRATED KEYS ===")
+                }
 
             } finally {
                 db.close()
             }
 
-            // Migrate notification read status to database
-            if (notificationIdsToMarkRead.isNotEmpty()) {
-                logger.info("Migrating ${notificationIdsToMarkRead.size} notification read statuses to database")
-                var migratedCount = 0
-                for (notificationId in notificationIdsToMarkRead) {
-                    try {
-                        localDb.markNotificationAsRead(notificationId)
-                        migratedCount++
-                    } catch (e: Exception) {
-                        // Silently ignore notifications that don't exist in database
-                        logger.debug("Notification $notificationId not found in database, skipping")
-                    }
-                }
-            }
             markMigrationComplete()
-            return MigrationResult.Success(successCount, errorCount)
+            return MigrationResult.Success(successCount, errorCount, allKeys.size, notificationIdsToMarkRead)
 
         } catch (e: Exception) {
             logger.error("Migration failed with exception: ${e.message}", e)
@@ -356,7 +374,12 @@ class TrayToDataStoreMigration(
 }
 
 sealed class MigrationResult {
-    data class Success(val migratedCount: Int, val errorCount: Int) : MigrationResult()
+    data class Success(
+        val migratedCount: Int,
+        val errorCount: Int,
+        val unmigratedCount: Int,
+        val notificationIdsToMarkRead: List<Int> = emptyList()
+    ) : MigrationResult()
     object AlreadyCompleted : MigrationResult()
     object NoTrayData : MigrationResult()
     data class Error(val message: String) : MigrationResult()

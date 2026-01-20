@@ -16,7 +16,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkKeyConstants
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.repository.CallResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -86,7 +86,7 @@ class RobertViewModelImpl(
     }
 
     private fun loadFromDatabase(): List<RobertFilter> {
-        val json = preferencesHelper.getResponseString(PreferencesKeyConstants.ROBERT_FILTERS)
+        val json = preferencesHelper.robertFilters
         if (json == null) {
             return emptyList()
         }
@@ -109,10 +109,7 @@ class RobertViewModelImpl(
 
     private fun saveToDatabase(filters: List<RobertFilter>) {
         val json = Gson().toJson(filters)
-        preferencesHelper.saveResponseStringData(
-            PreferencesKeyConstants.ROBERT_FILTERS,
-            json
-        )
+        preferencesHelper.robertFilters = json
     }
 
     override fun onManageRulesClick() {

@@ -31,8 +31,8 @@ import com.windscribe.vpn.commonutils.WindUtilities.ConfigType.WIRE_GUARD
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_INVALID_DNS_ADDRESS
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_VALID_CONFIG_NOT_FOUND
-import com.windscribe.vpn.constants.PreferencesKeyConstants
-import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_CUSTOM
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_CUSTOM
 import com.windscribe.vpn.exceptions.InvalidVPNConfigException
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.model.OpenVPNConnectionInfo
@@ -150,7 +150,7 @@ class VPNProfileCreator @Inject constructor(
             profile.includedSubnets = includedIps
         }
 
-        val apps: SortedSet<String> = TreeSet(preferencesHelper.installedApps())
+        val apps: SortedSet<String> = TreeSet(preferencesHelper.installedApps)
         profile.setSelectedApps(apps)
         val credentials = getIkev2Credentials()
         profile.username = credentials.first
@@ -211,7 +211,7 @@ class VPNProfileCreator @Inject constructor(
         var ip: String? = null
         try {
             if (PreferencesKeyConstants.PROTO_STEALTH == protocolInformation.protocol) {
-                serverConfig = preferencesHelper.getOpenVPNServerConfig()
+                serverConfig = preferencesHelper.openVpnServerConfig
                 protocol = PROXY_TUNNEL_PROTOCOL
                 ip = PROXY_TUNNEL_ADDRESS
                 proxyIp = vpnParameters.stealthIp
@@ -220,7 +220,7 @@ class VPNProfileCreator @Inject constructor(
                 // port = "1194"
             }
             if (PreferencesKeyConstants.PROTO_WS_TUNNEL == protocolInformation.protocol) {
-                serverConfig = preferencesHelper.getOpenVPNServerConfig()
+                serverConfig = preferencesHelper.openVpnServerConfig
                 port = PROXY_TUNNEL_PORT.toString()
                 protocol = PROXY_TUNNEL_PROTOCOL
                 ip = PROXY_TUNNEL_ADDRESS
@@ -229,7 +229,7 @@ class VPNProfileCreator @Inject constructor(
             if (PreferencesKeyConstants.PROTO_TCP == protocolInformation.protocol) {
                 ip = vpnParameters.tcpIp
                 protocol = "tcp"
-                serverConfig = preferencesHelper.getOpenVPNServerConfig()
+                serverConfig = preferencesHelper.openVpnServerConfig
                 // Append additional anti-censorship options
                 if (preferencesHelper.isAntiCensorshipOn && serverConfig != null) {
                     serverConfig = String(org.spongycastle.util.encoders.Base64.decode(serverConfig))
@@ -243,7 +243,7 @@ class VPNProfileCreator @Inject constructor(
             if (PreferencesKeyConstants.PROTO_UDP == protocolInformation.protocol) {
                 ip = vpnParameters.udpIp
                 protocol = "udp"
-                serverConfig = preferencesHelper.getOpenVPNServerConfig()
+                serverConfig = preferencesHelper.openVpnServerConfig
                 // Append additional anti-censorship options
                 if (preferencesHelper.isAntiCensorshipOn && serverConfig != null) {
                     serverConfig = String(org.spongycastle.util.encoders.Base64.decode(serverConfig))
@@ -275,7 +275,7 @@ class VPNProfileCreator @Inject constructor(
         profile.mPassword = credentials.second
 
         if (preferencesHelper.splitTunnelToggle) {
-            profile.mAllowedAppsVpn = HashSet(preferencesHelper.installedApps())
+            profile.mAllowedAppsVpn = HashSet(preferencesHelper.installedApps)
         }
         if (protocolInformation.protocol == PreferencesKeyConstants.PROTO_STEALTH) {
             if (proxyTunnelManager.running) {
@@ -377,7 +377,7 @@ class VPNProfileCreator @Inject constructor(
         saveSelectedLocation(lastSelectedLocation)
         profile.writeConfigFile(appContext)
         if (preferencesHelper.splitTunnelToggle){
-            profile.mAllowedAppsVpn = HashSet(preferencesHelper.installedApps())
+            profile.mAllowedAppsVpn = HashSet(preferencesHelper.installedApps)
         }
         saveProfile(profile)
         return "Custom Config: ${profile.mServerName} ${profile.mServerPort}"
@@ -402,9 +402,9 @@ class VPNProfileCreator @Inject constructor(
         if (preferencesHelper.splitTunnelToggle) {
             preferencesHelper.lastConnectedUsingSplit = true
             if (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.INCLUSIVE_MODE) {
-                interFaceBuilder.includeApplications(preferencesHelper.installedApps())
+                interFaceBuilder.includeApplications(preferencesHelper.installedApps)
             } else {
-                interFaceBuilder.excludeApplications(preferencesHelper.installedApps())
+                interFaceBuilder.excludeApplications(preferencesHelper.installedApps)
             }
         } else {
             preferencesHelper.lastConnectedUsingSplit = false
@@ -548,9 +548,9 @@ class VPNProfileCreator @Inject constructor(
         if (preferencesHelper.splitTunnelToggle) {
             preferencesHelper.lastConnectedUsingSplit = true
             if (preferencesHelper.splitRoutingMode == PreferencesKeyConstants.INCLUSIVE_MODE) {
-                builder.includeApplications(preferencesHelper.installedApps())
+                builder.includeApplications(preferencesHelper.installedApps)
             } else {
-                builder.excludeApplications(preferencesHelper.installedApps())
+                builder.excludeApplications(preferencesHelper.installedApps)
             }
         } else {
             preferencesHelper.lastConnectedUsingSplit = false
@@ -755,19 +755,15 @@ class VPNProfileCreator @Inject constructor(
     ): ServerCredentialsResponse {
         return when {
             preferencesHelper.isConnectingToStaticIp -> {
-                preferencesHelper.getCredentials(PreferencesKeyConstants.STATIC_IP_CREDENTIAL)
+                preferencesHelper.staticIpCredentials
             }
 
             ikEV2 -> {
-                preferencesHelper.getCredentials(PreferencesKeyConstants.IKEV2_CREDENTIALS)
-                        ?: kotlin.run {
-                            preferencesHelper.setUserAccountUpdateRequired(true)
-                            null
-                        }
+                preferencesHelper.ikev2Credentials
             }
 
             else -> {
-                preferencesHelper.getCredentials(PreferencesKeyConstants.OPEN_VPN_CREDENTIALS)
+                preferencesHelper.openVpnCredentials
             }
         }
                 ?: throw InvalidVPNConfigException(CallResult.Error(ERROR_VALID_CONFIG_NOT_FOUND, "valid server credential not found."))

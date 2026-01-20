@@ -45,7 +45,7 @@ import com.windscribe.mobile.ui.common.ProtocolItemView
 import com.windscribe.mobile.ui.AppStartActivityViewModel
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.autoconnection.ProtocolInformation
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import kotlinx.coroutines.delay
 
 @Composable

@@ -8,7 +8,7 @@ import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.FragmentType
 import com.windscribe.vpn.autoconnection.ProtocolInformation
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 
 class PhoneApplication : Windscribe(), Windscribe.ApplicationInterface {
     override fun onCreate() {

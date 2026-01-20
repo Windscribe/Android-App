@@ -5,7 +5,7 @@ package com.windscribe.vpn.api
 
 import com.google.gson.Gson
 import com.windscribe.vpn.api.response.ApiErrorResponse
-import com.windscribe.vpn.constants.ApiConstants.JSON_RESPONSE_KEY
+import com.windscribe.vpn.constants.ExtraConstants.JSON_RESPONSE_KEY
 import org.json.JSONException
 import org.json.JSONObject
 

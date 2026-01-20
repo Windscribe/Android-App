@@ -75,10 +75,10 @@ import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.constants.FeatureExplainer
-import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_AUTO
-import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_MANUAL
-import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_CUSTOM
-import com.windscribe.vpn.constants.PreferencesKeyConstants.DNS_MODE_ROBERT
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.CONNECTION_MODE_AUTO
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.CONNECTION_MODE_MANUAL
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_CUSTOM
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_ROBERT
 import com.windscribe.vpn.mocklocation.MockLocationManager.Companion.isAppSelectedInMockLocationList
 import com.windscribe.vpn.mocklocation.MockLocationManager.Companion.isDevModeOn
 

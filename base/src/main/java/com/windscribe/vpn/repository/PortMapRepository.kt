@@ -9,7 +9,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkKeyConstants
-import com.windscribe.vpn.constants.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.exceptions.WindScribeException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +35,7 @@ class PortMapRepository @Inject constructor(
         }
 
         // Try to load from preferences
-        val cachedJson = preferencesHelper.getResponseString(PreferencesKeyConstants.PORT_MAP)
+        val cachedJson = preferencesHelper.portMap
         val cachedResult = runCatching {
             Gson().fromJson(cachedJson, PortMapResponse::class.java)
         }.onSuccess { cachedPortMap = it }
@@ -91,11 +91,8 @@ class PortMapRepository @Inject constructor(
             }
 
             is CallResult.Success -> {
-                preferencesHelper.savePortMapVersion(NetworkKeyConstants.PORT_MAP_VERSION)
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.PORT_MAP,
-                    Gson().toJson(result.data)
-                )
+                preferencesHelper.portMapVersion = NetworkKeyConstants.PORT_MAP_VERSION
+                preferencesHelper.portMap = Gson().toJson(result.data)
                 cachedPortMap = result.data
                 Result.success(result.data)
             }

@@ -15,14 +15,14 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.repository.PortMapRepository
-import com.windscribe.vpn.constants.PreferencesKeyConstants
-import com.windscribe.vpn.constants.PreferencesKeyConstants.CONNECTION_MODE_AUTO
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_IKev2
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_STEALTH
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_TCP
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_UDP
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WIRE_GUARD
-import com.windscribe.vpn.constants.PreferencesKeyConstants.PROTO_WS_TUNNEL
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.CONNECTION_MODE_AUTO
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_IKev2
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_STEALTH
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_TCP
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_UDP
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WIRE_GUARD
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WS_TUNNEL
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.exceptions.WindScribeException
@@ -164,13 +164,12 @@ class ConnectionViewModelImpl(
                     buildProtocolInfo()
                 }
             }
-            val connectionMode =
-                preferencesHelper.getResponseString(PreferencesKeyConstants.CONNECTION_MODE_KEY)
+            val connectionMode = preferencesHelper.connectionMode
             if (connectionMode != null) {
                 _mode.emit(connectionMode)
             }
-            val dnsMode = preferencesHelper.getResponseString(PreferencesKeyConstants.DNS_MODE)
-            if (dnsMode != null) {
+            val dnsMode = preferencesHelper.dnsMode
+            if (dnsMode.isNotEmpty()) {
                 _dnsMode.emit(dnsMode)
             }
         }
@@ -218,10 +217,7 @@ class ConnectionViewModelImpl(
 
     override fun onProtocolSelected(protocol: DropDownStringItem) {
         viewModelScope.launch {
-            preferencesHelper.saveResponseStringData(
-                PreferencesKeyConstants.PROTOCOL_KEY,
-                protocol.key
-            )
+            preferencesHelper.savedProtocol = protocol.key
             _selectedProtocol.emit(protocol.key)
             autoConnectionManager.reset()
             buildProtocolInfo()
@@ -232,55 +228,37 @@ class ConnectionViewModelImpl(
         when (proto) {
             PROTO_IKev2 -> {
                 logger.info("Saving selected IKev2 port...")
-                preferencesHelper.saveIKEv2Port(port)
+                preferencesHelper.iKEv2Port = port
             }
 
             PROTO_UDP -> {
                 logger.info("Saving selected udp port...")
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.SAVED_UDP_PORT,
-                    port
-                )
+                preferencesHelper.savedUDPPort = port
             }
 
             PROTO_TCP -> {
                 logger.info("Saving selected tcp port...")
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.SAVED_TCP_PORT,
-                    port
-                )
+                preferencesHelper.savedTCPPort = port
             }
 
             PROTO_STEALTH -> {
                 logger.info("Saving selected stealth port...")
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.SAVED_STEALTH_PORT,
-                    port
-                )
+                preferencesHelper.savedSTEALTHPort = port
             }
 
             PROTO_WS_TUNNEL -> {
                 logger.info("Saving selected ws tunnel port...")
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.SAVED_WS_TUNNEL_PORT,
-                    port
-                )
+                preferencesHelper.savedWSTunnelPort = port
             }
 
             PROTO_WIRE_GUARD -> {
                 logger.info("Saving selected wire guard port...")
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.SAVED_WIRE_GUARD_PORT,
-                    port
-                )
+                preferencesHelper.wireGuardPort = port
             }
 
             else -> {
                 logger.info("Saving default port (udp)...")
-                preferencesHelper.saveResponseStringData(
-                    PreferencesKeyConstants.SAVED_UDP_PORT,
-                    port
-                )
+                preferencesHelper.savedUDPPort = port
             }
         }
     }
@@ -298,10 +276,7 @@ class ConnectionViewModelImpl(
     override fun onModeSelected(mode: String) {
         viewModelScope.launch {
             _mode.emit(mode)
-            preferencesHelper.saveResponseStringData(
-                PreferencesKeyConstants.CONNECTION_MODE_KEY,
-                mode
-            )
+            preferencesHelper.connectionMode = mode
         }
     }
 
@@ -353,7 +328,7 @@ class ConnectionViewModelImpl(
     override fun onGPSSpoofingToggleClicked() {
         viewModelScope.launch {
             _gpsSpoofing.emit(!_gpsSpoofing.value)
-            preferencesHelper.setGpsSpoofing(_gpsSpoofing.value)
+            preferencesHelper.isGpsSpoofingOn = _gpsSpoofing.value
         }
     }
 
@@ -380,7 +355,7 @@ class ConnectionViewModelImpl(
     override fun onPacketSizeModeSelected(auto: Boolean) {
         viewModelScope.launch {
             _packetSizeAuto.emit(auto)
-            preferencesHelper.setPacketSizeModeToAuto(auto)
+            preferencesHelper.isPackageSizeModeAuto = auto
         }
     }
 
