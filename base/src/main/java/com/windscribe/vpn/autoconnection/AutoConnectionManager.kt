@@ -606,9 +606,6 @@ class AutoConnectionManager(
                 }
 
                 override fun onProtocolSelect(protocolInformation: ProtocolInformation) {
-                    listOfProtocols.firstOrNull {
-                        it.type == ProtocolConnectionStatus.Connected || it.type == ProtocolConnectionStatus.NextUp
-                    }?.type = ProtocolConnectionStatus.Disconnected
                     logger.debug("User changed protocol: ${protocolInformation.protocol}:${protocolInformation.port}")
 
                     if (isEnabled) {
