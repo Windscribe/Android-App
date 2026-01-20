@@ -20,6 +20,7 @@ import androidx.multidex.MultiDexApplication
 import com.windscribe.vpn.apppreference.MigrationResult
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.TrayToDataStoreMigration
+import com.windscribe.vpn.apppreference.windscribeDataStore
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.FragmentType
 import com.windscribe.vpn.autoconnection.ProtocolInformation
@@ -134,6 +135,7 @@ open class Windscribe : MultiDexApplication() {
         appContext = this
         registerForegroundActivityObserver()
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
+        runTrayMigrationEarly()
         applicationComponent = getApplicationModuleComponent()
         applicationComponent.inject(this)
         activityComponent = DaggerActivityComponent.builder()
@@ -141,9 +143,7 @@ open class Windscribe : MultiDexApplication() {
             .build()
         serviceComponent = serviceComponent()
         ProcessLifecycleOwner.get().lifecycle.addObserver(appLifeCycleObserver)
-
-        // Run one-time Tray → DataStore migration
-        runTrayMigration()
+        reloadAfterMigration()
 
         preference.isNewApplicationInstance = true
         WindContextWrapper.setAppLocale(this)
@@ -250,21 +250,22 @@ open class Windscribe : MultiDexApplication() {
         }
     }
 
-    private fun runTrayMigration() {
-        // Migration MUST complete before app accesses preferences
+    private var notificationIdsToMigrate: List<Int> = emptyList()
+
+    private fun runTrayMigrationEarly() {
         runBlocking {
             try {
-                val migration = TrayToDataStoreMigration(appContext, dataStore, applicationComponent.localDbInterface)
+                val dataStore = appContext.windscribeDataStore
+                val migration = TrayToDataStoreMigration(appContext, dataStore)
                 when (val result = migration.migrate()) {
                     is MigrationResult.Success -> {
-                        logger.info("Tray migration completed: ${result.migratedCount} items migrated, ${result.errorCount} errors")
-                        // Reload UserRepository to pick up migrated session data
-                        applicationComponent.userRepository.synchronizedReload()
-                        logger.debug("UserRepository reloaded after migration")
+                        logger.info("Tray migration completed: ${result.migratedCount} items migrated, ${result.errorCount} errors, ${result.unmigratedCount} not migrated")
+                        notificationIdsToMigrate = result.notificationIdsToMarkRead
+                        if (notificationIdsToMigrate.isNotEmpty()) {
+                            logger.info("Found ${notificationIdsToMigrate.size} notification read statuses to migrate later")
+                        }
                     }
-                    is MigrationResult.AlreadyCompleted -> {
-                        logger.debug("Tray migration already completed")
-                    }
+                    is MigrationResult.AlreadyCompleted -> { }
                     is MigrationResult.NoTrayData -> {
                         logger.info("No Tray data to migrate (fresh install or already migrated)")
                     }
@@ -274,6 +275,28 @@ open class Windscribe : MultiDexApplication() {
                 }
             } catch (e: Exception) {
                 logger.error("Unexpected error during Tray migration: ${e.message}", e)
+            }
+        }
+    }
+
+    private fun reloadAfterMigration() {
+        if (notificationIdsToMigrate.isNotEmpty()) {
+            applicationScope.launch {
+                try {
+                    logger.info("Migrating ${notificationIdsToMigrate.size} notification read statuses to database")
+                    var migratedCount = 0
+                    for (notificationId in notificationIdsToMigrate) {
+                        try {
+                            applicationComponent.localDbInterface.markNotificationAsRead(notificationId)
+                            migratedCount++
+                        } catch (e: Exception) {
+                            logger.debug("Notification $notificationId not found in database, skipping")
+                        }
+                    }
+                    logger.info("Migrated $migratedCount notification read statuses")
+                } catch (e: Exception) {
+                    logger.error("Error migrating notification read statuses: ${e.message}")
+                }
             }
         }
     }
