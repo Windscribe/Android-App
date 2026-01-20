@@ -404,7 +404,7 @@ class DataStorePreferenceHelper(
                 getDefaultProtoInfo().first
             )
         }
-        set(value) = setString(DataStoreKeys.PROTOCOL_KEY, value)
+        set(value) = setStringSync(DataStoreKeys.PROTOCOL_KEY, value)
 
     override var notificationStat: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.NOTIFICATION_STAT, false) }
