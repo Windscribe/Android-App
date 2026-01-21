@@ -77,3 +77,5 @@
 -keep class com.windscribe.vpn.repository.CallResult { *; }
 -keep class com.windscribe.vpn.repository.CallResult$* { *; }
 -keep class com.windscribe.vpn.api.response.GenericResponseClass { *; }
+-keep class com.windscribe.vpn.serverlist.entity.** { *; }
+-keep class com.windscribe.vpn.api.response.** { *; }
