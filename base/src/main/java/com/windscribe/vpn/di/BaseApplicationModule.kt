@@ -756,13 +756,7 @@ open class BaseApplicationModule {
         deviceStateManager: DeviceStateManager,
         advanceParameterRepository: AdvanceParameterRepository
     ): WSNet {
-        WSNet.setLogger({
-            val msg = it.split(Regex("\\]\\s*")).lastOrNull()?.trim() ?: ""
-            if (msg.contains("6464/latency")) {
-                return@setLogger
-            }
-            logger.debug(msg)
-        }, true)
+        WSNet.setLogger({}, true)
         if (preferencesHelper.deviceUuid == null) {
             preferencesHelper.deviceUuid = UUID.randomUUID().toString()
         }
