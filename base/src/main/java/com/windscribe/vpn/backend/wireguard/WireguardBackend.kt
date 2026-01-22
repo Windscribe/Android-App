@@ -73,7 +73,7 @@ class WireguardBackend @Inject constructor(
     val wgConfigRepository: com.windscribe.vpn.repository.WgConfigRepository,
     private val wsNet: WSNet,
     private val apiManager: IApiCallManager,
-    bridgeAPI: WSNetBridgeAPI,
+    private val bridgeAPI: WSNetBridgeAPI,
     resourceHelper: ResourceHelper
 ) : VpnBackend(
     scope,
@@ -190,13 +190,20 @@ class WireguardBackend @Inject constructor(
     private suspend fun handleHandshakeTimeout() {
         try {
             val pinnedIp = getPinnedIpForSelectedCity()?.first
-            if (pinnedIp != null) {
+            val selectedIp = preferencesHelper.selectedIp
+            if (pinnedIp != null && selectedIp != null) {
+                withContext(Dispatchers.Main) {
+                    bridgeAPI.setConnectedState(false)
+                    bridgeAPI.setCurrentHost(selectedIp)
+                    bridgeAPI.setIgnoreSslErrors(true)
+                    bridgeAPI.setConnectedState(true)
+                }
                 val pinResult = com.windscribe.vpn.commonutils.Ext.result<Any> {
                     apiManager.pinIp(pinnedIp)
                 }
                 when (pinResult) {
                     is CallResult.Success -> {
-                        vpnLogger.info("IP pinned successfully after handshake timeout")
+                        vpnLogger.info("Successfully pinned IP $pinnedIp to server $selectedIp after handshake timeout")
                     }
                     is CallResult.Error -> {
                         vpnLogger.error("Failed to pin IP after handshake timeout: ${pinResult.errorMessage}")
