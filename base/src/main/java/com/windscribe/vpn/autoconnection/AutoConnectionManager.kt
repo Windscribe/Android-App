@@ -369,18 +369,23 @@ class AutoConnectionManager(
     private fun engageConnectionChangeMode() {
         listOfProtocols.filter { it.type == ProtocolConnectionStatus.NextUp }
             .forEachIterable { it.type = ProtocolConnectionStatus.Disconnected }
-        val connectedProtocol =
-            listOfProtocols.firstOrNull { it.type == ProtocolConnectionStatus.Connected }
+
+        // Create a temporary display list with connected protocol at top for UI
+        // Don't modify the actual listOfProtocols to avoid permanent reordering
+        val displayList = ThreadSafeList<ProtocolInformation>()
+        displayList.addAll(listOfProtocols)
+
+        val connectedProtocol = displayList.firstOrNull { it.type == ProtocolConnectionStatus.Connected }
         if (connectedProtocol != null) {
-            val index =
-                listOfProtocols.indexOfFirst { it.type == ProtocolConnectionStatus.Connected }
+            val index = displayList.indexOfFirst { it.type == ProtocolConnectionStatus.Connected }
             if (index != -1) {
-                listOfProtocols.removeAt(index)
-                listOfProtocols.add(0, connectedProtocol)
+                displayList.removeAt(index)
+                displayList.add(0, connectedProtocol)
             }
         }
+
         showConnectionChangeDialog(
-            listOfProtocols,
+            displayList,
             retry = { engageAutomaticMode() })
     }
 
