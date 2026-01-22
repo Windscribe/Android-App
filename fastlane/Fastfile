@@ -113,6 +113,29 @@ end
     )
 
     UI.success("✅ Also published to Internal testing track")
+
+    # Send Slack notification with Internal App Sharing URLs
+    if ENV['SLACK_URL']
+      # Get last 5 commits
+      commit_messages = changelog_from_git_commits(
+        commits_count: 5,
+        pretty: "• %s",
+        merge_commit_filtering: "exclude_merges"
+      )
+
+      slack(
+        message: "✅ New build uploaded to Google Play Internal",
+        slack_url: ENV['SLACK_URL'],
+        payload: {
+          "Version" => ENV['VERSION_NAME'],
+          "Mobile URL" => mobile_share_url,
+          "TV URL" => tv_share_url,
+          "Recent Commits" => commit_messages
+        },
+        default_payloads: [:git_branch, :git_author],
+        success: true
+      )
+    end
 end
 
  desc "Build Signed Apks for all modules."
