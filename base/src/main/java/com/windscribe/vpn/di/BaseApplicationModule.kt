@@ -566,14 +566,6 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun providesWSNetLogManager(
-        scope: CoroutineScope
-    ): com.windscribe.vpn.state.WSNetLogManager {
-        return com.windscribe.vpn.state.WSNetLogManager(scope)
-    }
-
-    @Provides
-    @Singleton
     @Named("ApplicationContext")
     fun providesApplicationContext(): Context {
         return windscribeApp
@@ -764,7 +756,6 @@ open class BaseApplicationModule {
         deviceStateManager: DeviceStateManager,
         advanceParameterRepository: AdvanceParameterRepository
     ): WSNet {
-        WSNet.setLogger({}, true)
         if (preferencesHelper.deviceUuid == null) {
             preferencesHelper.deviceUuid = UUID.randomUUID().toString()
         }
@@ -782,7 +773,9 @@ open class BaseApplicationModule {
             "4",
             DEV,
             systemLanguageCode,
-            preferencesHelper.wsNetSettings
+            preferencesHelper.wsNetSettings,
+            { log -> logWsNetMessage(log) },
+            DEV
         )
         advanceParameterRepository.getCountryOverride()?.let { override ->
             WSNet.instance().advancedParameters().setCountryOverrideValue(override)
@@ -853,5 +846,23 @@ open class BaseApplicationModule {
         apiCallManager: IApiCallManager
     ): com.windscribe.vpn.repository.LogRepository {
         return com.windscribe.vpn.repository.LogRepository(preferencesHelper, apiCallManager)
+    }
+
+    /**
+     * Parses wsnet nested JSON and extracts the actual message.
+     * Input: {"tm":"...","lvl":"debug","mod":"wsnet","msg":"{"tm": "...", "lvl": "info", "mod": "wsnet", "msg": "actual message"}"}
+     * Output: actual message
+     */
+    private fun logWsNetMessage(log: String) {
+        try {
+            if (!log.contains("6464/latency")) {
+                val outerMsg = log.substringAfter("\"msg\":\"").substringBeforeLast("\"}")
+                val unescaped = outerMsg.replace("\\\"", "\"")
+                val actualMsg = unescaped.substringAfter("\"msg\": \"").substringBeforeLast("\"")
+                if (actualMsg.isNotEmpty()) {
+                    logger.debug(actualMsg)
+                }
+            }
+        } catch (_ : Exception) { }
     }
 }
