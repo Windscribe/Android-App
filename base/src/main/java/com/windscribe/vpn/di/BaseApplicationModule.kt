@@ -566,6 +566,14 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
+    fun providesWSNetLogManager(
+        scope: CoroutineScope
+    ): com.windscribe.vpn.state.WSNetLogManager {
+        return com.windscribe.vpn.state.WSNetLogManager(scope)
+    }
+
+    @Provides
+    @Singleton
     @Named("ApplicationContext")
     fun providesApplicationContext(): Context {
         return windscribeApp

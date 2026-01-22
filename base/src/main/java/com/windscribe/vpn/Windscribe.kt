@@ -45,6 +45,7 @@ import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.windscribe.vpn.state.WSNetLogManager
 import com.windscribe.vpn.state.WindscribeReviewManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import de.blinkt.openvpn.core.PRNGFixes
@@ -122,6 +123,10 @@ open class Windscribe : MultiDexApplication() {
 
     @Inject
     lateinit var vpnController: WindVpnController
+
+    @Inject
+    lateinit var wsNetLogManager: WSNetLogManager
+
     lateinit var applicationComponent: ApplicationComponent
     lateinit var activityComponent: ActivityComponent
     lateinit var serviceComponent: ServiceComponent
@@ -157,6 +162,9 @@ open class Windscribe : MultiDexApplication() {
             firebaseManager.initialise()
         }
         deviceStateManager.init(this)
+
+        // Start WSNet log manager to capture logs for app lifecycle
+        wsNetLogManager.start()
 
         // Start AutoConnectService when network changes if needed
         applicationScope.launch {
