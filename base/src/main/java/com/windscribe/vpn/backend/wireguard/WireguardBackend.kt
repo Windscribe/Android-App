@@ -16,12 +16,10 @@ import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
 import com.windscribe.vpn.backend.utils.SelectedLocationType
-import com.windscribe.vpn.backend.utils.VPNProfileCreator
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
-import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.NetworkInfoManager
@@ -31,7 +29,6 @@ import com.wireguard.android.backend.Tunnel.State.DOWN
 import com.wireguard.android.backend.Tunnel.State.TOGGLE
 import com.wireguard.android.backend.Tunnel.State.UP
 import com.wireguard.config.Config
-import com.wsnet.lib.WSNet
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,15 +42,12 @@ import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
 import java.util.*
-import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.toSet
 import kotlin.random.Random
 import com.wsnet.lib.WSNetBridgeAPI
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.withTimeout
 
 
 @Singleton
@@ -62,7 +56,6 @@ class WireguardBackend @Inject constructor(
     var scope: CoroutineScope,
     var networkInfoManager: NetworkInfoManager,
     vpnStateManager: VPNConnectionStateManager,
-    val vpnProfileCreator: VPNProfileCreator,
     val userRepository: Lazy<UserRepository>,
     val deviceStateManager: DeviceStateManager,
     val preferencesHelper: PreferencesHelper,
@@ -71,9 +64,8 @@ class WireguardBackend @Inject constructor(
     localDbInterface: LocalDbInterface,
     val wgLogger: WgLogger,
     val wgConfigRepository: com.windscribe.vpn.repository.WgConfigRepository,
-    private val wsNet: WSNet,
     private val apiManager: IApiCallManager,
-    bridgeAPI: WSNetBridgeAPI,
+    private val bridgeAPI: WSNetBridgeAPI,
     resourceHelper: ResourceHelper
 ) : VpnBackend(
     scope,
@@ -89,21 +81,22 @@ class WireguardBackend @Inject constructor(
 
     var service: WireGuardWrapperService? = null
     private var connectionStateJob: Job? = null
-
     override var active = false
-    private var protectByVPN = AtomicBoolean(false)
     private var wgErrorJob: Job? = null
-    private var handshakeTimeoutJob: Job? = null
 
-    init {
-        wsNet.httpNetworkManager().setWhitelistSocketsCallback { fds ->
-            for (fd in fds) {
-                if (active && protectByVPN.get()) {
-                    service?.protect(fd)
-                }
-            }
-        }
-    }
+    private val testTunnel = WireGuardTunnel(
+        name = appContext.getString(R.string.app_name), config = null, state = DOWN
+    )
+
+    private val pinIpRecovery = PinIpRecovery(
+        scope = scope,
+        wgLogger = wgLogger,
+        apiManager = apiManager,
+        bridgeAPI = bridgeAPI,
+        preferencesHelper = preferencesHelper,
+        deviceStateManager = deviceStateManager,
+        getPinnedIpForSelectedCity = { getPinnedIpForSelectedCity() }
+    )
 
     fun serviceCreated(vpnService: WireGuardWrapperService) {
         vpnLogger.info("WireGuard service created.")
@@ -114,10 +107,6 @@ class WireguardBackend @Inject constructor(
         vpnLogger.info("WireGuard service destroyed.")
         service = null
     }
-
-    private val testTunnel = WireGuardTunnel(
-        name = appContext.getString(R.string.app_name), config = null, state = DOWN
-    )
 
     private var stickyDisconnectEvent = false
     override fun activate() {
@@ -149,71 +138,14 @@ class WireguardBackend @Inject constructor(
         scope.launch {
             wgLogger.captureLogs(appContext)
         }
-        startHandshakeTimeoutListener()
+        pinIpRecovery.start()
         startNetworkInfoObserver()
-    }
-
-    private fun startHandshakeTimeoutListener() {
-        handshakeTimeoutJob = scope.launch {
-            wgLogger.handshakeTimeoutEvent.collect { timeDifference ->
-                vpnLogger.warn("Handshake timeout detected: ${timeDifference}ms. Server may have dropped the peer. Waiting for network recovery...")
-                waitForNetworkAndCallPinIp()
-            }
-        }
-    }
-
-    private suspend fun waitForNetworkAndCallPinIp() {
-        if (deviceStateManager.isOnline.value) {
-            handleHandshakeTimeout()
-            return
-        }
-        try {
-            withTimeout(5_000) { // 5 seconds timeout
-                deviceStateManager.isOnline.collect { isOnline ->
-                    if (isOnline) {
-                        handleHandshakeTimeout()
-                        return@collect
-                    } else {
-                        vpnLogger.debug("Network not available yet, waiting...")
-                    }
-                }
-            }
-        } catch (_: TimeoutCancellationException) {
-            vpnLogger.warn("Timeout waiting for network (5s), calling pin IP anyway")
-            handleHandshakeTimeout()
-        } catch (e: Exception) {
-            vpnLogger.error("Error waiting for network: ${e.message}", e)
-            handleHandshakeTimeout()
-        }
-    }
-
-    private suspend fun handleHandshakeTimeout() {
-        try {
-            val pinnedIp = getPinnedIpForSelectedCity()?.first
-            if (pinnedIp != null) {
-                val pinResult = com.windscribe.vpn.commonutils.Ext.result<Any> {
-                    apiManager.pinIp(pinnedIp)
-                }
-                when (pinResult) {
-                    is CallResult.Success -> {
-                        vpnLogger.info("IP pinned successfully after handshake timeout")
-                    }
-                    is CallResult.Error -> {
-                        vpnLogger.error("Failed to pin IP after handshake timeout: ${pinResult.errorMessage}")
-                    }
-                }
-            } else {
-                vpnLogger.warn("No pinned IP available for handshake timeout recovery")
-            }
-        } catch (e: Exception) {
-            vpnLogger.error("Error handling handshake timeout: ${e.message}", e)
-        }
     }
 
     override fun deactivate() {
         wgErrorJob?.cancel()
         connectionStateJob?.cancel()
-        handshakeTimeoutJob?.cancel()
+        pinIpRecovery.stop()
         wgLogger.stopCapture()
         stopNetworkInfoObserver()
         active = false

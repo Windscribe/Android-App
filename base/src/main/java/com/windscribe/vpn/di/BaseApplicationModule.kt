@@ -566,6 +566,14 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
+    fun providesWSNetLogManager(
+        scope: CoroutineScope
+    ): com.windscribe.vpn.state.WSNetLogManager {
+        return com.windscribe.vpn.state.WSNetLogManager(scope)
+    }
+
+    @Provides
+    @Singleton
     @Named("ApplicationContext")
     fun providesApplicationContext(): Context {
         return windscribeApp
@@ -756,13 +764,7 @@ open class BaseApplicationModule {
         deviceStateManager: DeviceStateManager,
         advanceParameterRepository: AdvanceParameterRepository
     ): WSNet {
-        WSNet.setLogger({
-            val msg = it.split(Regex("\\]\\s*")).lastOrNull()?.trim() ?: ""
-            if (msg.contains("6464/latency")) {
-                return@setLogger
-            }
-            logger.debug(msg)
-        }, true)
+        WSNet.setLogger({}, true)
         if (preferencesHelper.deviceUuid == null) {
             preferencesHelper.deviceUuid = UUID.randomUUID().toString()
         }
