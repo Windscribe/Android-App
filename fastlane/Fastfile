@@ -82,19 +82,37 @@ end
   lane :publishToInternal do
     buildAndSign(task:"clean bundle")
 
+    # Upload to Internal App Sharing first (for quick testing URLs)
+    mobile_share_url = upload_to_play_store_internal_app_sharing(
+      package_name: ENV['PACKAGE_NAME'],
+      aab: "mobile/build/outputs/bundle/googleRelease/mobile-google-release.aab"
+    )
 
-supply(
-  version_name: ENV['VERSION_NAME'],
-  track: "internal",
-  skip_upload_metadata: true,
-  skip_upload_images: true,
-  skip_upload_screenshots: true,
-  aab_paths: Actions.lane_context[SharedValues::GRADLE_ALL_AAB_OUTPUT_PATHS],
-  mapping_paths: [
-    "mobile/build/outputs/mapping/googleRelease/mapping.txt",
-    "tv/build/outputs/mapping/googleRelease/mapping.txt"
-  ]
-)
+    tv_share_url = upload_to_play_store_internal_app_sharing(
+      package_name: ENV['PACKAGE_NAME'],
+      aab: "tv/build/outputs/bundle/googleRelease/tv-google-release.aab"
+    )
+
+    # Print Internal App Sharing URLs
+    UI.success("✅ Internal App Sharing URLs (quick share):")
+    UI.success("📱 Mobile: #{mobile_share_url}")
+    UI.success("📺 TV: #{tv_share_url}")
+
+    # Then upload to Internal track (standard release process)
+    supply(
+      version_name: ENV['VERSION_NAME'],
+      track: "internal",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      aab_paths: Actions.lane_context[SharedValues::GRADLE_ALL_AAB_OUTPUT_PATHS],
+      mapping_paths: [
+        "mobile/build/outputs/mapping/googleRelease/mapping.txt",
+        "tv/build/outputs/mapping/googleRelease/mapping.txt"
+      ]
+    )
+
+    UI.success("✅ Also published to Internal testing track")
 end
 
  desc "Build Signed Apks for all modules."
