@@ -12,6 +12,13 @@ variables:
   SIGN_PROPERTIES_PATH: "${CI_PROJECT_DIR}/config/sign.properties"
   MOBILE_APK_PATH: "${CI_PROJECT_DIR}/mobile/build/outputs/apk/google/release/mobile-google-release.apk"
   TV_APK_PATH: "${CI_PROJECT_DIR}/tv/build/outputs/apk/google/release/tv-google-release.apk"
+  CCACHE_DIR: "${CI_PROJECT_DIR}/.ccache"
+
+cache:
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
+    - .ccache
 
 stages:
   - Test
