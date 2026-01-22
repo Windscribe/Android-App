@@ -51,7 +51,6 @@ class PinIpRecovery(
                 // Only check if we have a pinned IP available for recovery
                 // User might pin IP during an active connection
                 if (getPinnedIpForSelectedCity.invoke() == null) {
-                    vpnLogger.debug("Handshake received but no pinned IP available")
                     lastHandshakeTimestamp = System.currentTimeMillis()
                     return@collect
                 }
@@ -65,8 +64,6 @@ class PinIpRecovery(
                         vpnLogger.warn("Handshake delayed: ${timeSinceLastHandshake / 1000}s since last handshake (> 3 minutes)")
                         vpnLogger.info("Tunnel was unhealthy, attempting IP pinning recovery")
                         waitForNetworkAndPinIp()
-                    } else {
-                        vpnLogger.debug("Handshake received on time: ${timeSinceLastHandshake / 1000}s since last")
                     }
                 } else {
                     vpnLogger.debug("First handshake received")
