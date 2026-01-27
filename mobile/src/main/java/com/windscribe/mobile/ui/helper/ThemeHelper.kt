@@ -11,9 +11,10 @@ import com.windscribe.mobile.ui.theme.DarkColorScheme
 @Composable
 fun ForceStatusBarIcons(forceLight: Boolean = false) {
     val view = LocalView.current
-    val activity = view.context as Activity
+    val activity = view.context as? Activity
     val isDark = MaterialTheme.colorScheme == DarkColorScheme
-
+    if (activity == null) return
+    WindowCompat.setDecorFitsSystemWindows(activity.window, false)
     SideEffect {
         WindowCompat.getInsetsController(activity.window, view)
             .isAppearanceLightStatusBars = if (forceLight) {

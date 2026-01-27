@@ -114,6 +114,8 @@ object DataStoreKeys {
         intPreferencesKey(PreferencesKeyConstants.CONNECTED_BUNDLE_SOUND_OPTION)
     val DISCONNECTED_CUSTOM_SOUND =
         stringPreferencesKey(PreferencesKeyConstants.DISCONNECTED_CUSTOM_SOUND)
+
+    val CUSTOM_ICON = stringPreferencesKey(PreferencesKeyConstants.CUSTOM_ICON)
     val CONNECTED_CUSTOM_SOUND =
         stringPreferencesKey(PreferencesKeyConstants.CONNECTED_CUSTOM_SOUND)
 

@@ -1,13 +1,16 @@
 package com.windscribe.mobile.ui.preferences.lipstick
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.model.DropDownItem
 import com.windscribe.mobile.ui.model.ThemeItem
+import com.windscribe.mobile.ui.preferences.icons.AppIconManager
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.getAspectRatioOptions
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.getBackgroundOptions
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.getBundledBackgroundOptions
@@ -60,11 +63,13 @@ abstract class LipstickViewmodel : ViewModel() {
     abstract fun clearToast()
     abstract fun onThemeItemSelected(theme: ThemeItem)
     abstract val themeItem: StateFlow<ThemeItem>
+    abstract val selectedAppIcon: StateFlow<Int>
 }
 
 class LipstickViewmodelImpl @Inject constructor(
     private val preferenceHelper: PreferencesHelper,
-    private val serverListRepository: ServerListRepository
+    private val serverListRepository: ServerListRepository,
+    private val appIconManager: AppIconManager
 ) :
     LipstickViewmodel() {
     private val _whenDisconnectedBackgroundItem = MutableStateFlow(getBackgroundOptions().first())
@@ -104,12 +109,15 @@ class LipstickViewmodelImpl @Inject constructor(
     override val toastMessage: StateFlow<ToastMessage> = _toastMessage
     private val _themeItem = MutableStateFlow(LookAndFeelHelper.getThemeOptions().first())
     override val themeItem: StateFlow<ThemeItem> = _themeItem
+    private val _selectedAppIcon = MutableStateFlow(com.windscribe.vpn.R.mipmap.ws_launcher)
+    override val selectedAppIcon: StateFlow<Int> = _selectedAppIcon
     private val logger = LoggerFactory.getLogger("LipstickViewmodel")
 
     init {
         loadBackgroundPreferences()
         loadSoundPreferences()
         loadThemePreferences()
+        observeSelectedAppIcon()
     }
 
     private fun loadBackgroundPreferences() {
@@ -308,6 +316,16 @@ class LipstickViewmodelImpl @Inject constructor(
     override fun onResetClick() {
         serverListRepository.deleteLocationsJson()
         showToast("Server list reset successfully!")
+    }
+
+    private fun observeSelectedAppIcon() {
+        viewModelScope.launch {
+            appIconManager.selectedAppIcon.collect { appIcon ->
+                if (appIcon != null) {
+                    _selectedAppIcon.value = appIcon.icon
+                }
+            }
+        }
     }
 
     private fun showToast(message: String) {

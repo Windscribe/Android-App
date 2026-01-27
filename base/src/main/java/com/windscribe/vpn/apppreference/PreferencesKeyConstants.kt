@@ -150,4 +150,6 @@ object PreferencesKeyConstants {
     const val LAST_UPDATE_TIME = "last_time"
     const val PURCHASED_ITEM = "purchased_item"
     const val AMAZON_PURCHASED_ITEM = "amazon_purchase_item"
+
+    const val CUSTOM_ICON = "custom_icon"
 }
