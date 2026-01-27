@@ -57,7 +57,11 @@ class DataStorePreferenceHelper(
                 .distinctUntilChanged() // Only emit when preferences actually change
                 .collect {
                     // Notify all registered listeners
-                    listeners.forEach { listener ->
+                    // Create a defensive copy to avoid ConcurrentModificationException
+                    val listenersCopy = synchronized(listeners) {
+                        listeners.toList()
+                    }
+                    listenersCopy.forEach { listener ->
                         listener.onPreferenceChanged(null) // null = any preference changed
                     }
                 }
@@ -65,13 +69,17 @@ class DataStorePreferenceHelper(
     }
 
     override fun addObserver(listener: OnPreferenceChangeListener) {
-        if (!listeners.contains(listener)) {
-            listeners.add(listener)
+        synchronized(listeners) {
+            if (!listeners.contains(listener)) {
+                listeners.add(listener)
+            }
         }
     }
 
     override fun removeObserver(listener: OnPreferenceChangeListener) {
-        listeners.remove(listener)
+        synchronized(listeners) {
+            listeners.remove(listener)
+        }
     }
 
     // ============================================================================
@@ -989,4 +997,8 @@ class DataStorePreferenceHelper(
             ).takeIf { it.isNotEmpty() }
         }
         set(value) = setString(DataStoreKeys.LAST_UPDATE_TIME, value)
+
+    override var customIcon: String
+        get() = runBlocking { getString(DataStoreKeys.CUSTOM_ICON, "Classic") }
+        set(value) = setStringSync(DataStoreKeys.CUSTOM_ICON, value)
 }

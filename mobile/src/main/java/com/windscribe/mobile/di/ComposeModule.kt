@@ -1,5 +1,6 @@
 package com.windscribe.mobile.di
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.windscribe.mobile.ui.AppStartActivityViewModel
@@ -36,6 +37,9 @@ import com.windscribe.mobile.ui.preferences.general.GeneralViewModel
 import com.windscribe.mobile.ui.preferences.general.GeneralViewModelImpl
 import com.windscribe.mobile.ui.preferences.help.HelpViewModel
 import com.windscribe.mobile.ui.preferences.help.HelpViewModelImpl
+import com.windscribe.mobile.ui.preferences.icons.AppIconManager
+import com.windscribe.mobile.ui.preferences.icons.CustomIconsViewModel
+import com.windscribe.mobile.ui.preferences.icons.CustomIconsViewModelImpl
 import com.windscribe.mobile.ui.preferences.lipstick.LipstickViewmodel
 import com.windscribe.mobile.ui.preferences.lipstick.LipstickViewmodelImpl
 import com.windscribe.mobile.ui.preferences.main.MainMenuViewModel
@@ -54,6 +58,7 @@ import com.windscribe.mobile.ui.serverlist.ConfigViewmodel
 import com.windscribe.mobile.ui.serverlist.ConfigViewmodelImpl
 import com.windscribe.mobile.ui.serverlist.ServerViewModel
 import com.windscribe.mobile.ui.serverlist.ServerViewModelImpl
+import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
@@ -82,6 +87,7 @@ import com.windscribe.vpn.workers.WindScribeWorkManager
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
+import javax.inject.Named
 import kotlin.jvm.java
 
 @Module
@@ -115,7 +121,8 @@ class ComposeModule {
         logRepository: LogRepository,
         bridgeApiRepository: BridgeApiRepository,
         resourceHelper: ResourceHelper,
-        deviceStateManager: DeviceStateManager
+        deviceStateManager: DeviceStateManager,
+        appIconManager: AppIconManager
     ): ViewModelProvider.Factory {
         return object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -207,7 +214,7 @@ class ComposeModule {
                 } else if (modelClass.isAssignableFrom(RobertViewModel::class.java)) {
                     return RobertViewModelImpl(apiCallManager, appPreferenceHelper) as T
                 } else if (modelClass.isAssignableFrom(LipstickViewmodel::class.java)) {
-                    return LipstickViewmodelImpl(appPreferenceHelper, serverListRepository) as T
+                    return LipstickViewmodelImpl(appPreferenceHelper, serverListRepository, appIconManager) as T
                 } else if (modelClass.isAssignableFrom(HelpViewModel::class.java)) {
                     return HelpViewModelImpl(userRepository,logRepository) as T
                 } else if (modelClass.isAssignableFrom(TicketViewModel::class.java)) {
@@ -234,9 +241,17 @@ class ComposeModule {
                         appPreferenceHelper,
                         resourceHelper
                     ) as T
+                } else if (modelClass.isAssignableFrom(CustomIconsViewModel::class.java)) {
+                    return CustomIconsViewModelImpl(appIconManager) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
             }
         }
+    }
+
+    @PerCompose
+    @Provides
+    fun providesAppIconManager(@Named("ApplicationContext") context: Context, preferencesHelper: PreferencesHelper): AppIconManager {
+        return AppIconManager(context, preferencesHelper)
     }
 }

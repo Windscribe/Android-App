@@ -144,4 +144,5 @@ interface PreferencesHelper {
     var amazonPurchasedItem: String?
     var rateDialogStatus: Int
     var rateDialogLastUpdateTime: String?
+    var customIcon: String
 }

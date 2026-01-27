@@ -66,6 +66,8 @@ import com.windscribe.mobile.ui.preferences.general.GeneralViewModel
 import com.windscribe.mobile.ui.preferences.gps_spoofing.GpsSpoofing
 import com.windscribe.mobile.ui.preferences.help.HelpScreen
 import com.windscribe.mobile.ui.preferences.help.HelpViewModel
+import com.windscribe.mobile.ui.preferences.icons.CustomIconsScreen
+import com.windscribe.mobile.ui.preferences.icons.CustomIconsViewModel
 import com.windscribe.mobile.ui.preferences.lipstick.LipstickViewmodel
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelScreen
 import com.windscribe.mobile.ui.preferences.main.MainMenuScreen
@@ -400,6 +402,24 @@ private fun NavGraphBuilder.addNavigationScreens() {
                 it.setNetworkName(networkName)
             }
             NetworkDetailScreen(it)
+        }
+    }
+    composable(route = Screen.CustomIcon.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
+        ViewModelRoute(CustomIconsViewModel::class.java) {
+            CustomIconsScreen(it)
         }
     }
     composable(route = Screen.ShareLink.route) {

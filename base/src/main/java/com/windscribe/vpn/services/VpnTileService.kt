@@ -9,6 +9,7 @@ import android.os.Build.VERSION_CODES
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import androidx.annotation.RequiresApi
+import com.windscribe.vpn.R
 import com.windscribe.vpn.R.drawable
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -84,16 +85,19 @@ class VpnTileService : TileService() {
         when (status) {
             Connected -> {
                 logger.debug("Changing quick tile status to Connected")
-                setTileState(drawable.ic_tile_connect, Tile.STATE_ACTIVE)
+                setTileState(getIcon(), Tile.STATE_ACTIVE)
             }
+
             Disconnected -> {
                 logger.debug("Changing quick tile status to Disconnected")
-                setTileState(drawable.ic_tile_connect, Tile.STATE_INACTIVE)
+                setTileState(getIcon(), Tile.STATE_INACTIVE)
             }
+
             Connecting -> {
                 logger.debug("Changing quick tile status to Connecting")
-                setTileState(drawable.ic_tile_connecting, Tile.STATE_ACTIVE)
+                setTileState(getIcon(true), Tile.STATE_ACTIVE)
             }
+
             else -> {}
         }
     }
@@ -105,5 +109,9 @@ class VpnTileService : TileService() {
             qsTile.updateTile()
         } catch (ignored: Exception) {
         }
+    }
+
+    private fun getIcon(isConnecting: Boolean = false): Int {
+        return if (isConnecting) drawable.ic_tile_connecting else drawable.ic_tile_connect
     }
 }

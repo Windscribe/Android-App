@@ -4,19 +4,18 @@
 
 package com.windscribe.vpn.backend.utils
 
-import android.annotation.TargetApi
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
-import android.os.Build
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.Action
 import androidx.core.app.NotificationCompat.Builder
+import com.windscribe.vpn.R.drawable
 import com.windscribe.vpn.R.mipmap
 import com.windscribe.vpn.R.string
 import com.windscribe.vpn.Windscribe
@@ -24,7 +23,11 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.TrafficCounter
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState.Status
-import com.windscribe.vpn.backend.VPNState.Status.*
+import com.windscribe.vpn.backend.VPNState.Status.Connected
+import com.windscribe.vpn.backend.VPNState.Status.Connecting
+import com.windscribe.vpn.backend.VPNState.Status.Disconnected
+import com.windscribe.vpn.backend.VPNState.Status.ProtocolSwitch
+import com.windscribe.vpn.backend.VPNState.Status.UnsecuredNetwork
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.services.DisconnectService
@@ -38,48 +41,52 @@ import javax.inject.Singleton
 
 @Singleton
 class WindNotificationBuilder @Inject constructor(
-        private val notificationManager: NotificationManager,
-        private val notificationBuilder: Builder,
-        private val vpnConnectionStateManager: VPNConnectionStateManager,
-        private val trafficCounter: TrafficCounter,
-        val scope: CoroutineScope,
-        val serverListRepository: ServerListRepository,
-        private val preferencesHelper: PreferencesHelper
+    private val notificationManager: NotificationManager,
+    private val notificationBuilder: Builder,
+    private val vpnConnectionStateManager: VPNConnectionStateManager,
+    private val trafficCounter: TrafficCounter,
+    val scope: CoroutineScope,
+    val serverListRepository: ServerListRepository,
+    private val preferencesHelper: PreferencesHelper
 ) {
+
+    private companion object {
+        const val DISCONNECT_ACTION_REQUEST_CODE = 200
+        const val CONTENT_INTENT_REQUEST_CODE = 0
+        const val CHANNEL_NAME = "WindScribe"
+        const val CHANNEL_DESCRIPTION =
+            "Provides information about the VPN connection state and serves as permanent notification to keep the VPN service running in the background."
+        const val DISCONNECT_ACTION_LABEL = "Disconnect"
+        const val PROTOCOL_SWITCH_MESSAGE = "Waiting for protocol switch"
+        const val UNSECURED_NETWORK_MESSAGE = "Waiting for secured network"
+    }
 
     private var lastUpdateTime = System.currentTimeMillis()
     private var trafficStats: String? = null
-    private var logger = LoggerFactory.getLogger("vpn")
+    private val logger = LoggerFactory.getLogger("vpn")
 
     fun buildNotification(status: Status): Notification {
         val location = notificationTitle
-        when {
-            status === Connected -> {
-                updateNotification(
-                        mipmap.connected,
-                        Windscribe.appContext.getString(string.connected_to, location), trafficStats
-                )
-            }
-            status === Disconnected -> {
-                updateNotification(
-                        mipmap.disconnected,
-                        Windscribe.appContext.getString(string.connected_lower_case), null
-                )
-            }
-            status === Connecting -> {
-                updateNotification(
-                        mipmap.connecting,
-                        Windscribe.appContext.getString(string.connecting_to, location), null
-                )
-            }
-            status == ProtocolSwitch -> {
-                updateNotification(mipmap.connection_error, "Waiting for protocol switch", null)
-            }
-            status == UnsecuredNetwork -> {
-                updateNotification(mipmap.connection_error, "Waiting for secured network", null)
-            }
-        }
+        val icon = getDefaultIcon(status)
+        val message = getStatusMessage(status, location)
+        val stats = if (status == Connected) trafficStats else null
+
+        updateNotification(icon, message, stats)
         return notificationBuilder.build()
+    }
+
+    private fun getStatusMessage(status: Status, location: String?): String {
+        return when (status) {
+            Connected -> getString(string.connected_to, location)
+            Connecting -> getString(string.connecting_to, location)
+            ProtocolSwitch -> PROTOCOL_SWITCH_MESSAGE
+            UnsecuredNetwork -> UNSECURED_NETWORK_MESSAGE
+            else -> getString(string.connected_lower_case)
+        }
+    }
+
+    private fun getString(resId: Int, vararg formatArgs: Any?): String {
+        return Windscribe.appContext.getString(resId, *formatArgs)
     }
 
     fun cancelNotification(notificationId: Int) {
@@ -91,110 +98,153 @@ class WindNotificationBuilder @Inject constructor(
         }
     }
 
-    private fun updateNotification(iconId: Int?, textUpdate: String?, trafficStats: String?) {
-        if (trafficStats?.isEmpty() == false) {
-            notificationBuilder.setContentText(trafficStats)
-        } else {
-            notificationBuilder.setContentText(null)
+    private fun updateNotification(iconId: Int, textUpdate: String?, trafficStats: String?) {
+        notificationBuilder.apply {
+            setContentText(trafficStats?.takeIf { it.isNotEmpty() })
+            setWhen(lastUpdateTime)
+            setShowWhen(true)
+            setUsesChronometer(true)
+            setSmallIcon(iconId)
+            setContentTitle(textUpdate)
+            setOngoing(true)
         }
-        notificationBuilder.setWhen(lastUpdateTime)
-        notificationBuilder.setShowWhen(true)
-        notificationBuilder.setUsesChronometer(true)
-        iconId?.let { notificationBuilder.setSmallIcon(it) }
-        notificationBuilder.setContentTitle(textUpdate)
-        notificationBuilder.setOngoing(true)
     }
 
     private val notificationTitle: String?
-        get() {
-            return try {
-                Util.getLastSelectedLocation(Windscribe.appContext)?.let {
-                    String.format("%s - %s",serverListRepository.getCustomCityName(it.cityId) ?: it.nodeName, serverListRepository.getCustomCityNickName(it.cityId) ?: it.nickName)
-                }
-            } catch (e: Exception) {
-                null
+        get() = try {
+            Util.getLastSelectedLocation(Windscribe.appContext)?.let { location ->
+                val cityName =
+                    serverListRepository.getCustomCityName(location.cityId) ?: location.nodeName
+                val nickName =
+                    serverListRepository.getCustomCityNickName(location.cityId) ?: location.nickName
+                "$cityName - $nickName"
             }
+        } catch (e: Exception) {
+            logger.debug("Error getting notification title", e)
+            null
         }
 
     private fun setContentIntent() {
-        // Start disconnect service with pending intent to disconnect.
-        val serviceIntent = Intent(Windscribe.appContext, DisconnectService::class.java)
-        val disconnectPendingIntent = PendingIntent
-                .getService(
-                        Windscribe.appContext, 200, serviceIntent,
-                        if (VERSION.SDK_INT >= VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
-                )
-        val action = Action.Builder(
-                mipmap.connected, "Disconnect",
-                disconnectPendingIntent
+        val context = Windscribe.appContext
+
+        val disconnectPendingIntent = createDisconnectPendingIntent(context)
+        val disconnectAction = Action.Builder(
+            mipmap.connected,
+            DISCONNECT_ACTION_LABEL,
+            disconnectPendingIntent
         ).build()
-        notificationBuilder.addAction(action)
-        // Launch App on Notification click.
-        val contentIntent = Windscribe.appContext.applicationInterface.splashIntent
-        contentIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-        val pendingIntent = PendingIntent.getActivity(
-            Windscribe.appContext,
-            0,
+        notificationBuilder.addAction(disconnectAction)
+
+        val contentPendingIntent = createContentPendingIntent(context)
+        notificationBuilder.setContentIntent(contentPendingIntent)
+    }
+
+    private fun createDisconnectPendingIntent(context: Windscribe): PendingIntent {
+        val serviceIntent = Intent(context, DisconnectService::class.java)
+        val flags = if (VERSION.SDK_INT >= VERSION_CODES.M) {
+            PendingIntent.FLAG_IMMUTABLE
+        } else {
+            0
+        }
+        return PendingIntent.getService(
+            context,
+            DISCONNECT_ACTION_REQUEST_CODE,
+            serviceIntent,
+            flags
+        )
+    }
+
+    private fun createContentPendingIntent(context: Windscribe): PendingIntent {
+        val contentIntent = context.applicationInterface.splashIntent.apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        val flags = if (VERSION.SDK_INT >= VERSION_CODES.M) {
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
+        return PendingIntent.getActivity(
+            context,
+            CONTENT_INTENT_REQUEST_CODE,
             contentIntent,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-            else
-                PendingIntent.FLAG_UPDATE_CURRENT
+            flags
         )
-        notificationBuilder.setContentIntent(pendingIntent)
     }
 
-    @RequiresApi(api = VERSION_CODES.LOLLIPOP)
-    private fun setupNotificationLollipop() {
-        notificationBuilder.setSmallIcon(mipmap.connecting)
-                .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
-                .setOnlyAlertOnce(true)
-                .setOngoing(true)
+    private fun setupNotificationLegacy() {
+        notificationBuilder.apply {
+            setSmallIcon(getDefaultIcon(Connecting))
+            setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
+            setOnlyAlertOnce(true)
+            setOngoing(true)
+        }
         setContentIntent()
     }
 
-    @TargetApi(VERSION_CODES.N)
-    private fun setupNotificationNougat() {
-        notificationBuilder.setSmallIcon(mipmap.connecting)
-                .setOnlyAlertOnce(true)
-                .setOngoing(true)
+    @RequiresApi(VERSION_CODES.N)
+    private fun setupNotificationN() {
+        notificationBuilder.apply {
+            setSmallIcon(getDefaultIcon(Connecting))
+            setOnlyAlertOnce(true)
+            setOngoing(true)
+        }
         setContentIntent()
     }
 
-    @RequiresApi(api = 26)
-    private fun setupNotificationOreo() {
+    @RequiresApi(VERSION_CODES.O)
+    private fun setupNotificationO() {
+        createNotificationChannel()
+
+        notificationBuilder.apply {
+            setSmallIcon(getDefaultIcon(Connecting))
+            setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
+            setChannelId(NotificationConstants.NOTIFICATION_CHANNEL_ID)
+            setOnlyAlertOnce(true)
+        }
+        setContentIntent()
+    }
+
+    @RequiresApi(VERSION_CODES.O)
+    private fun createNotificationChannel() {
         val channel = NotificationChannel(
-                NotificationConstants.NOTIFICATION_CHANNEL_ID,
-                "WindScribe", NotificationManager.IMPORTANCE_LOW
-        )
-        channel.description =
-                "Provides information about the VPN connection state and serves as permanent notification to keep the VPN service running in the background."
-        channel.enableLights(true)
+            NotificationConstants.NOTIFICATION_CHANNEL_ID,
+            CHANNEL_NAME,
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = CHANNEL_DESCRIPTION
+            enableLights(true)
+        }
         notificationManager.createNotificationChannel(channel)
-
-        notificationBuilder.setSmallIcon(mipmap.connecting)
-                .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
-                .setChannelId(NotificationConstants.NOTIFICATION_CHANNEL_ID)
-                .setOnlyAlertOnce(true)
-        setContentIntent()
     }
 
     init {
         createDefaultNotification()
+        observeConnectionState()
+        observeTrafficStats()
+    }
+
+    private fun observeConnectionState() {
         scope.launch {
-            vpnConnectionStateManager.state.collectLatest {
-                if (it.status === Disconnected) {
-                    trafficStats = null
-                    lastUpdateTime = System.currentTimeMillis()
-                    notificationManager.cancel(NotificationConstants.SERVICE_NOTIFICATION_ID)
-                } else {
-                    notificationManager.notify(
+            vpnConnectionStateManager.state.collectLatest { state ->
+                when (state.status) {
+                    Disconnected -> {
+                        trafficStats = null
+                        lastUpdateTime = System.currentTimeMillis()
+                        notificationManager.cancel(NotificationConstants.SERVICE_NOTIFICATION_ID)
+                    }
+
+                    else -> {
+                        notificationManager.notify(
                             NotificationConstants.SERVICE_NOTIFICATION_ID,
-                            buildNotification(it.status)
-                    )
+                            buildNotification(state.status)
+                        )
+                    }
                 }
             }
         }
+    }
+
+    private fun observeTrafficStats() {
         scope.launch {
             trafficCounter.trafficStats.collectLatest { traffic ->
                 trafficStats = traffic.text
@@ -209,17 +259,18 @@ class WindNotificationBuilder @Inject constructor(
         }
     }
 
+    private fun getDefaultIcon(status: Status): Int = when (status) {
+        Connecting -> mipmap.connecting
+        Connected -> mipmap.connected
+        ProtocolSwitch, UnsecuredNetwork -> mipmap.connection_error
+        else -> mipmap.disconnected
+    }
+
     private fun createDefaultNotification() {
         when {
-            VERSION.SDK_INT >= VERSION_CODES.O -> {
-                setupNotificationOreo()
-            }
-            VERSION.SDK_INT >= VERSION_CODES.N -> {
-                setupNotificationNougat()
-            }
-            else -> {
-                setupNotificationLollipop()
-            }
+            VERSION.SDK_INT >= VERSION_CODES.O -> setupNotificationO()
+            VERSION.SDK_INT >= VERSION_CODES.N -> setupNotificationN()
+            else -> setupNotificationLegacy()
         }
     }
 }

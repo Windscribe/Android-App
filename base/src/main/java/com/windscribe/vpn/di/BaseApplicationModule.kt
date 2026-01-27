@@ -775,7 +775,7 @@ open class BaseApplicationModule {
             systemLanguageCode,
             preferencesHelper.wsNetSettings,
             { log -> logWsNetMessage(log) },
-            DEV
+            true
         )
         advanceParameterRepository.getCountryOverride()?.let { override ->
             WSNet.instance().advancedParameters().setCountryOverrideValue(override)
