@@ -302,7 +302,7 @@ class DataStorePreferenceHelper(
     override var selectedIp: String?
         get() = runBlocking {
             val bestLocationIp2 =
-                dataStore.data.first()[stringPreferencesKey(PreferencesKeyConstants.BEST_LOCATION_IP_2)]
+                dataStore.data.first()[stringPreferencesKey(PreferencesKeyConstants.SELECTED_IP)]
             getString(DataStoreKeys.SELECTED_IP, bestLocationIp2 ?: "")
                 .takeIf { it.isNotEmpty() }
         }
