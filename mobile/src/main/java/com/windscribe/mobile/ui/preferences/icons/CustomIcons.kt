@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -42,6 +44,8 @@ import com.windscribe.mobile.ui.preferences.icons.AppIconManager.IconConfig
 import com.windscribe.mobile.ui.theme.expandedServerItemTextColor
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
+import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
+import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -64,9 +68,64 @@ private object CustomIconsConstants {
 @Composable
 fun CustomIconsScreen(viewModel: CustomIconsViewModel?) {
     val navController = LocalNavController.current
+    val showDialog by viewModel?.showConfirmDialog?.collectAsState() ?: return
+
     PreferenceBackground {
         AppIconView(viewModel, navController)
     }
+
+    // Show confirmation dialog
+    showDialog?.let { appIcon ->
+        IconChangeConfirmDialog(
+            iconName = appIcon.name,
+            onConfirm = { viewModel.confirmIconChange() },
+            onDismiss = { viewModel.dismissDialog() }
+        )
+    }
+}
+
+@Composable
+private fun IconChangeConfirmDialog(
+    iconName: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
+        title = {
+            Text(
+                text = "Change App Icon?",
+                style = font16.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.primaryTextColor
+            )
+        },
+        text = {
+            Text(
+                text = "Changing the app icon to \"$iconName\" will close the app. You can reopen it from your home screen with the new icon.",
+                style = font12,
+                color = MaterialTheme.colorScheme.primaryTextColor
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    "OK",
+                    style = font16.copy(fontWeight = FontWeight.Medium),
+                    color = MaterialTheme.colorScheme.primaryTextColor
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    "Cancel",
+                    style = font16,
+                    color = MaterialTheme.colorScheme.preferencesSubtitleColor
+                )
+            }
+        }
+    )
 }
 
 
@@ -215,7 +274,12 @@ private fun CustomIconScreenPreview() {
         override val icons: StateFlow<Map<String, AppIcon>>
             get() = MutableStateFlow(previewIcons(context))
 
+        override val showConfirmDialog: StateFlow<AppIcon?>
+            get() = MutableStateFlow(null)
+
         override fun selectIcon(appIcon: AppIcon) {}
+        override fun confirmIconChange() {}
+        override fun dismissDialog() {}
     }
     PreviewWithNav {
         CustomIconsScreen(viewModel)
