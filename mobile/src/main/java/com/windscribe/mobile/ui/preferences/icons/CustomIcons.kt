@@ -4,6 +4,7 @@ import PreferencesNavBar
 import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,7 +33,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.windscribe.mobile.ui.common.PreferenceBackground
@@ -90,8 +93,14 @@ private fun IconChangeConfirmDialog(
     onDismiss: () -> Unit
 ) {
     AlertDialog(
+        shape = RoundedCornerShape(16.dp),
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.preferencesBackgroundColor,
+        modifier = Modifier.border(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.1f),
+            shape = RoundedCornerShape(16.dp)
+        ),
         title = {
             Text(
                 text = "Change App Icon?",
@@ -102,7 +111,7 @@ private fun IconChangeConfirmDialog(
         text = {
             Text(
                 text = "Changing the app icon to \"$iconName\" will close the app. You can reopen it from your home screen with the new icon.",
-                style = font12,
+                style = font12.copy(textAlign = TextAlign.Left),
                 color = MaterialTheme.colorScheme.primaryTextColor
             )
         },
