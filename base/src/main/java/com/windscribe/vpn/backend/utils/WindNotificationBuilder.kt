@@ -34,6 +34,7 @@ import com.windscribe.vpn.services.DisconnectService
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -221,6 +222,7 @@ class WindNotificationBuilder @Inject constructor(
         createDefaultNotification()
         observeConnectionState()
         observeTrafficStats()
+        observeIconChanges()
     }
 
     private fun observeConnectionState() {
@@ -256,6 +258,38 @@ class WindNotificationBuilder @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    private fun observeIconChanges() {
+        scope.launch {
+            preferencesHelper.customIconFlow.distinctUntilChanged().collectLatest {
+                // Icon changed, need to update the notification's PendingIntent
+                val status = vpnConnectionStateManager.state.value.status
+                if (status == Connected && isNotificationActive()) {
+                    notificationBuilder.clearActions()
+                    setContentIntent()
+                    notificationManager.notify(
+                        NotificationConstants.SERVICE_NOTIFICATION_ID,
+                        buildNotification(status)
+                    )
+                }
+            }
+        }
+    }
+
+    private fun isNotificationActive(): Boolean {
+        return try {
+            if (VERSION.SDK_INT >= VERSION_CODES.M) {
+                notificationManager.activeNotifications.any {
+                    it.id == NotificationConstants.SERVICE_NOTIFICATION_ID
+                }
+            } else {
+                return false
+            }
+        } catch (e: Exception) {
+            logger.debug("Failed to check active notifications", e)
+            false
         }
     }
 

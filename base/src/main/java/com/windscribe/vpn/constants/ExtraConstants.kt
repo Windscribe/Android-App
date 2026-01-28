@@ -13,4 +13,5 @@ object ExtraConstants {
 
     // JSON keys
     const val JSON_RESPONSE_KEY = "data"
+    const val DEFAULT_ICON = "Classic"
 }

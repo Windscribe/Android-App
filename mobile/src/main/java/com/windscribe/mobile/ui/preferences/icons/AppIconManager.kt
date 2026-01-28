@@ -3,7 +3,6 @@ package com.windscribe.mobile.ui.preferences.icons
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
-import com.windscribe.vpn.R
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -20,10 +19,39 @@ enum class AppIconCategory {
 
 class AppIconManager(val context: Context, val preferenceManager: PreferencesHelper) {
     var appIcons = mapOf<String, AppIcon>()
-    private val localPackageName = "com.windscribe.mobile.ui.preferences.icons"
     private val _selectedIcon = MutableStateFlow<AppIcon?>(null)
     val selectedAppIcon = _selectedIcon
 
+    companion object {
+        private const val LOCAL_PACKAGE_NAME = "com.windscribe.mobile.ui.preferences.icons"
+
+        /**
+         * Gets the activity class name for a given icon name.
+         * Centralized mapping to keep icon-to-component mapping in one place.
+         */
+        fun getActivityClassName(iconName: String): String {
+            return when (iconName) {
+                "Clock" -> "$LOCAL_PACKAGE_NAME.ClockActivity"
+                "Calculator" -> "$LOCAL_PACKAGE_NAME.CalculatorActivity"
+                "80" -> "$LOCAL_PACKAGE_NAME.EightyActivity"
+                "Vapor" -> "$LOCAL_PACKAGE_NAME.VaporScribeActivity"
+                "Glitch" -> "$LOCAL_PACKAGE_NAME.GlitchScribeActivity"
+                "Neon" -> "$LOCAL_PACKAGE_NAME.NeonActivity"
+                "64" -> "$LOCAL_PACKAGE_NAME.SixtyActivity"
+                "WindPass" -> "$LOCAL_PACKAGE_NAME.PassActivity"
+                "BSVPN" -> "$LOCAL_PACKAGE_NAME.BsActivity"
+                "DickButt" -> "$LOCAL_PACKAGE_NAME.DickButtActivity"
+                else -> "com.windscribe.mobile.ui.AppStartActivity" // Classic/default
+            }
+        }
+
+        /**
+         * Gets the ComponentName for a given icon name and context.
+         */
+        fun getComponentName(context: Context, iconName: String): ComponentName {
+            return ComponentName(context, getActivityClassName(iconName))
+        }
+    }
 
     init {
         appIcons = buildAppIcons(context)
@@ -37,72 +65,61 @@ class AppIconManager(val context: Context, val preferenceManager: PreferencesHel
             IconConfig(
                 "Clock",
                 com.windscribe.mobile.R.mipmap.ic_launcher_clock,
-                "$localPackageName.ClockActivity",
                 AppIconCategory.Discreet
             ),
             IconConfig(
                 "Calculator",
                 com.windscribe.mobile.R.mipmap.ic_launcher_calculator,
-                "$localPackageName.CalculatorActivity",
                 AppIconCategory.Discreet
             ),
             IconConfig(
                 "Classic",
                 com.windscribe.mobile.R.mipmap.ic_launcher_og,
-                "com.windscribe.mobile.ui.AppStartActivity",
                 AppIconCategory.Windscribe
             ),
             IconConfig(
                 "80",
                 com.windscribe.mobile.R.mipmap.ic_launcher_eighty,
-                "$localPackageName.EightyActivity",
                 AppIconCategory.Windscribe
             ),
             IconConfig(
                 "Vapor",
                 com.windscribe.mobile.R.mipmap.ic_launcher_vapor,
-                "$localPackageName.VaporScribeActivity",
                 AppIconCategory.Windscribe
             ),
             IconConfig(
                 "Glitch",
                 com.windscribe.mobile.R.mipmap.ic_launcher_glitch,
-                "$localPackageName.GlitchScribeActivity",
                 AppIconCategory.Windscribe
             ),
             IconConfig(
                 "Neon",
                 com.windscribe.mobile.R.mipmap.ic_launcher_neon,
-                "$localPackageName.NeonActivity",
                 AppIconCategory.Windscribe
             ),
             IconConfig(
                 "64",
                 com.windscribe.mobile.R.mipmap.ic_launcher_sixty,
-                "$localPackageName.SixtyActivity",
                 AppIconCategory.Windscribe
             ),
             IconConfig(
                 "WindPass",
                 com.windscribe.mobile.R.mipmap.ic_launcher_pass,
-                "$localPackageName.PassActivity",
                 AppIconCategory.Other
             ),
             IconConfig(
                 "BSVPN",
                 com.windscribe.mobile.R.mipmap.ic_launcher_bs,
-                "$localPackageName.BsActivity",
                 AppIconCategory.Other
             ),
             IconConfig(
                 "DickButt",
                 com.windscribe.mobile.R.mipmap.ic_launcher_butt,
-                "$localPackageName.DickButtActivity",
                 AppIconCategory.Other
             ),
         )
         return iconConfigs.associate { config ->
-            val component = ComponentName(context, config.activityClassName)
+            val component = getComponentName(context, config.name)
             val appIcon = AppIcon(
                 name = config.name,
                 icon = config.iconRes,
@@ -117,7 +134,6 @@ class AppIconManager(val context: Context, val preferenceManager: PreferencesHel
     data class IconConfig(
         val name: String,
         val iconRes: Int,
-        val activityClassName: String,
         val category: AppIconCategory,
     )
 

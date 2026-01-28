@@ -16,13 +16,16 @@ import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DEFAULT_IKEV2_PORT
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DEFAULT_WIRE_GUARD_PORT
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_ROBERT
+import com.windscribe.vpn.constants.ExtraConstants.DEFAULT_ICON
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.WgLocalParams
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.Date
@@ -226,6 +229,7 @@ class DataStorePreferenceHelper(
 
     override fun clearAllData() {
         val installation = newInstallation
+        val savedCustomIcon = customIcon  // Save custom icon before clearing
         scope.launch {
             dataStore.edit { it.clear() }
         }
@@ -233,6 +237,7 @@ class DataStorePreferenceHelper(
         if (PreferencesKeyConstants.I_OLD == installation) {
             newInstallation = PreferencesKeyConstants.I_OLD
         }
+        customIcon = savedCustomIcon  // Restore custom icon after clearing
     }
 
     override fun clearOldSessionAuth() {
@@ -999,6 +1004,11 @@ class DataStorePreferenceHelper(
         set(value) = setString(DataStoreKeys.LAST_UPDATE_TIME, value)
 
     override var customIcon: String
-        get() = runBlocking { getString(DataStoreKeys.CUSTOM_ICON, "Classic") }
+        get() = runBlocking { getString(DataStoreKeys.CUSTOM_ICON, DEFAULT_ICON) }
         set(value) = setStringSync(DataStoreKeys.CUSTOM_ICON, value)
+
+    override val customIconFlow: Flow<String>
+        get() = dataStore.data.map { preferences ->
+            preferences[DataStoreKeys.CUSTOM_ICON] ?: DEFAULT_ICON
+        }
 }

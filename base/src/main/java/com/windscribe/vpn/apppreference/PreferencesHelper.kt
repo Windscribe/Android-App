@@ -145,4 +145,5 @@ interface PreferencesHelper {
     var rateDialogStatus: Int
     var rateDialogLastUpdateTime: String?
     var customIcon: String
+    val customIconFlow: kotlinx.coroutines.flow.Flow<String>
 }

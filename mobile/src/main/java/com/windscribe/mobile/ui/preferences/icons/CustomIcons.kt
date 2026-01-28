@@ -1,7 +1,6 @@
 package com.windscribe.mobile.ui.preferences.icons
 
 import PreferencesNavBar
-import android.content.ComponentName
 import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -161,7 +160,7 @@ private fun AppIconItemSection(category: AppIconCategory, viewModel: CustomIcons
                 icon = item,
                 isFirst = index == 0,
                 isLast = index == filteredIcons.lastIndex,
-                onClick = { viewModel?.selectIcon(item) }
+                onClick = { viewModel.selectIcon(item) }
             )
             if (index < filteredIcons.lastIndex) {
                 Spacer(modifier = Modifier.height(CustomIconsConstants.ITEM_DIVIDER_HEIGHT))
@@ -288,60 +287,51 @@ private fun CustomIconScreenPreview() {
 
 private fun previewIcons(context: Context): Map<String, AppIcon> {
     val selectedCustomIcon = "Clock"
-    val localPackageName = "com.windscribe.mobile.ui.preferences.icons"
     // List of icon configurations - add or remove items here
     val iconConfigs = listOf(
         IconConfig(
             "Clock",
             com.windscribe.mobile.R.mipmap.ic_launcher_clock,
-            "$localPackageName.ClockActivity",
             AppIconCategory.Discreet
         ),
         IconConfig(
             "Calculator",
             com.windscribe.mobile.R.mipmap.ic_launcher_calculator,
-            "$localPackageName.CalculatorActivity",
             AppIconCategory.Discreet
         ),
         IconConfig(
             "Classic",
             com.windscribe.vpn.R.mipmap.ws_launcher,
-            "com.windscribe.mobile.ui.AppStartActivity",
             AppIconCategory.Windscribe
         ),
         IconConfig(
             "Vapor",
             com.windscribe.mobile.R.mipmap.ic_launcher_vapor,
-            "$localPackageName.VaporScribeActivity",
             AppIconCategory.Windscribe
         ),
         IconConfig(
             "Glitch",
             com.windscribe.mobile.R.mipmap.ic_launcher_glitch,
-            "$localPackageName.GlitchScribeActivity",
             AppIconCategory.Windscribe
         ),
         IconConfig(
             "WindPass",
             com.windscribe.mobile.R.mipmap.ic_launcher_pass,
-            "$localPackageName.PassActivity",
             AppIconCategory.Other
         ),
         IconConfig(
             "BSVpn",
             com.windscribe.mobile.R.mipmap.ic_launcher_bs,
-            "$localPackageName.BsActivity",
             AppIconCategory.Other
         ),
         IconConfig(
             "DickButt",
             com.windscribe.mobile.R.mipmap.ic_launcher_butt,
-            "$localPackageName.DickButtActivity",
             AppIconCategory.Other
         ),
     )
     return iconConfigs.associate { config ->
-        val component = ComponentName(context, config.activityClassName)
+        val component = AppIconManager.getComponentName(context, config.name)
         val appIcon = AppIcon(
             name = config.name,
             icon = config.iconRes,

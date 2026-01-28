@@ -3,6 +3,7 @@ package com.windscribe.mobile
 import android.content.Intent
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.nav.Screen
+import com.windscribe.mobile.ui.preferences.icons.AppIconManager
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
@@ -17,14 +18,28 @@ class PhoneApplication : Windscribe(), Windscribe.ApplicationInterface {
         setTheme()
     }
 
+    /**
+     * Creates an Intent for the active launcher component.
+     * This respects the user's selected app icon (activity-alias).
+     * Uses AppIconManager.getComponentName() to keep icon mapping centralized.
+     */
+    private fun getActiveLauncherIntent(): Intent {
+        val selectedIcon = preference.customIcon
+        val activityClassName = AppIconManager.getActivityClassName(selectedIcon)
+        return Intent().apply {
+            setClassName(appContext.packageName, activityClassName)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+    }
+
     override val homeIntent: Intent
-        get() = Intent(appContext, AppStartActivity::class.java)
+        get() = getActiveLauncherIntent()
     override val splashIntent: Intent
-        get() = Intent(appContext, AppStartActivity::class.java)
+        get() = getActiveLauncherIntent()
     override val upgradeIntent: Intent
         get() = Intent(appContext, UpgradeActivity::class.java)
     override val welcomeIntent: Intent
-        get() = Intent(appContext, AppStartActivity::class.java)
+        get() = getActiveLauncherIntent()
     override val isTV: Boolean
         get() = false
 
