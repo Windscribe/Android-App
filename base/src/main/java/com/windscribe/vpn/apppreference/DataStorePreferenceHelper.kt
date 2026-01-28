@@ -47,43 +47,33 @@ class DataStorePreferenceHelper(
 ) : PreferencesHelper {
 
     // ============================================================================
-    // OBSERVER PATTERN (Flow-based)
+    // REACTIVE FLOWS
     // ============================================================================
 
-    private val listeners = mutableListOf<OnPreferenceChangeListener>()
+    override val isHapticFeedbackEnabledFlow: Flow<Boolean>
+        get() = dataStore.data.map { preferences ->
+            preferences[DataStoreKeys.HAPTIC_FEEDBACK] ?: true
+        }.distinctUntilChanged()
 
-    init {
-        // Observe DataStore changes and notify all listeners
-        scope.launch {
-            dataStore.data
-                .drop(1) // Skip initial value
-                .distinctUntilChanged() // Only emit when preferences actually change
-                .collect {
-                    // Notify all registered listeners
-                    // Create a defensive copy to avoid ConcurrentModificationException
-                    val listenersCopy = synchronized(listeners) {
-                        listeners.toList()
-                    }
-                    listenersCopy.forEach { listener ->
-                        listener.onPreferenceChanged(null) // null = any preference changed
-                    }
-                }
-        }
-    }
+    override val isShowLocationHealthEnabledFlow: Flow<Boolean>
+        get() = dataStore.data.map { preferences ->
+            preferences[DataStoreKeys.SHOW_LOCATION_HEALTH] ?: false
+        }.distinctUntilChanged()
 
-    override fun addObserver(listener: OnPreferenceChangeListener) {
-        synchronized(listeners) {
-            if (!listeners.contains(listener)) {
-                listeners.add(listener)
-            }
-        }
-    }
+    override val isAntiCensorshipOnFlow: Flow<Boolean>
+        get() = dataStore.data.map { preferences ->
+            preferences[DataStoreKeys.ANTI_CENSORSHIP] ?: appContext.isRegionRestricted
+        }.distinctUntilChanged()
 
-    override fun removeObserver(listener: OnPreferenceChangeListener) {
-        synchronized(listeners) {
-            listeners.remove(listener)
-        }
-    }
+    override val backgroundAspectRatioOptionFlow: Flow<Int>
+        get() = dataStore.data.map { preferences ->
+            preferences[DataStoreKeys.ASPECT_RATIO_BACKGROUND_OPTION] ?: 1
+        }.distinctUntilChanged()
+
+    override val selectionFlow: Flow<String>
+        get() = dataStore.data.map { preferences ->
+            preferences[DataStoreKeys.SELECTION_KEY] ?: PreferencesKeyConstants.DEFAULT_LIST_SELECTION_MODE
+        }.distinctUntilChanged()
 
     // ============================================================================
     // DATASTORE HELPER FUNCTIONS

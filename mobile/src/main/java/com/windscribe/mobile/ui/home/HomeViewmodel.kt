@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import com.windscribe.vpn.apppreference.OnPreferenceChangeListener
 import org.slf4j.LoggerFactory
 import java.util.Locale
 
@@ -82,18 +81,25 @@ class HomeViewmodelImpl(
     private val _hideNetworkName = MutableStateFlow(preferences.blurNetworkName)
     override val hideNetworkName: StateFlow<Boolean> = _hideNetworkName
 
-    private val preferenceChangeListener = OnPreferenceChangeListener {
-        viewModelScope.launch(Dispatchers.IO) {
-            _hapticFeedbackEnabled.value = preferences.isHapticFeedbackEnabled
-            _showLocationLoad.value = preferences.isShowLocationHealthEnabled
-        }
-    }
     private val logger = LoggerFactory.getLogger("basic")
 
     init {
         fetchUserState()
         observeConnectionCount()
-        fetchUserPreferences()
+        observePreferences()
+    }
+
+    private fun observePreferences() {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferences.isHapticFeedbackEnabledFlow.collectLatest { isEnabled ->
+                _hapticFeedbackEnabled.value = isEnabled
+            }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            preferences.isShowLocationHealthEnabledFlow.collectLatest { isEnabled ->
+                _showLocationLoad.value = isEnabled
+            }
+        }
     }
 
     private fun observeConnectionCount() {
@@ -112,10 +118,6 @@ class HomeViewmodelImpl(
                 }
             }
         }
-    }
-
-    private fun fetchUserPreferences() {
-        preferences.addObserver(preferenceChangeListener)
     }
 
     private fun fetchUserState() {
@@ -201,14 +203,6 @@ class HomeViewmodelImpl(
     override fun onHideNetworkNameClick() {
         _hideNetworkName.value = !_hideNetworkName.value
         preferences.blurNetworkName = _hideNetworkName.value
-    }
-
-    override fun onCleared() {
-        preferences.removeObserver(preferenceChangeListener)
-        viewModelScope.launch {
-            _goto.emit(HomeGoto.None)
-        }
-        super.onCleared()
     }
 
     override fun onGoToHandled() {

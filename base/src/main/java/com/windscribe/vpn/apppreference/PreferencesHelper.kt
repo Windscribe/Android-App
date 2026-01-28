@@ -13,8 +13,13 @@ import javax.inject.Singleton
 
 @Singleton
 interface PreferencesHelper {
-    fun addObserver(listener: OnPreferenceChangeListener)
-    fun removeObserver(listener: OnPreferenceChangeListener)
+    // Reactive Flow properties for observed preferences
+    val isHapticFeedbackEnabledFlow: kotlinx.coroutines.flow.Flow<Boolean>
+    val isShowLocationHealthEnabledFlow: kotlinx.coroutines.flow.Flow<Boolean>
+    val isAntiCensorshipOnFlow: kotlinx.coroutines.flow.Flow<Boolean>
+    val backgroundAspectRatioOptionFlow: kotlinx.coroutines.flow.Flow<Int>
+    val selectionFlow: kotlinx.coroutines.flow.Flow<String>
+
     fun clearAllData()
     fun clearOldSessionAuth()
     fun getPreviousAccountStatus(userNameKey: String): Int

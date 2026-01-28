@@ -33,7 +33,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.windscribe.vpn.apppreference.OnPreferenceChangeListener
 import java.util.Locale
 import kotlin.collections.map
 
@@ -123,11 +122,10 @@ class ServerViewModelImpl(
         _searchItemsExpandState
     private val _refreshState = MutableStateFlow(false)
     override val refreshState: StateFlow<Boolean> = _refreshState
-    private var preferenceChangeListener: OnPreferenceChangeListener? = null
 
     init {
         fetchAllLists()
-        fetchUserPreferences()
+        observeSelectionPreference()
     }
 
     private fun fetchAllLists() {
@@ -148,17 +146,15 @@ class ServerViewModelImpl(
         )
     }
 
-    private fun fetchUserPreferences() {
-        viewModelScope.launch {
-            preferenceChangeListener = OnPreferenceChangeListener { key ->
-                if (key == SELECTION_KEY) {
-                    fetchServerList()
-                    fetchFavouriteList()
-                    fetchStaticList()
-                    fetchConfigList()
-                }
+    private fun observeSelectionPreference() {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferencesHelper.selectionFlow.collectLatest { _ ->
+                // When selection preference changes, reload all lists to apply new sorting
+                fetchServerList()
+                fetchFavouriteList()
+                fetchStaticList()
+                fetchConfigList()
             }
-            preferencesHelper.addObserver(preferenceChangeListener!!)
         }
     }
 
@@ -506,10 +502,5 @@ class ServerViewModelImpl(
             delay(100)
             _refreshState.emit(false)
         }
-    }
-
-    override fun onCleared() {
-        preferencesHelper.removeObserver(preferenceChangeListener!!)
-        super.onCleared()
     }
 }

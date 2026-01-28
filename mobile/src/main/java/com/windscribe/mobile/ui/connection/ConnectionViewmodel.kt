@@ -53,7 +53,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
-import com.windscribe.vpn.apppreference.OnPreferenceChangeListener
 import org.slf4j.LoggerFactory
 import java.io.File
 import javax.inject.Inject
@@ -191,7 +190,6 @@ class ConnectionViewmodelImpl @Inject constructor(
     override val goto: SharedFlow<HomeGoto> = _goto
     private val _newFeedCount = MutableStateFlow(0)
     override val newFeedCount: StateFlow<Int> = _newFeedCount
-    private var preferenceChangeListener: OnPreferenceChangeListener? = null
 
     private val lastLocationState: MutableStateFlow<LastSelectedLocation?> = MutableStateFlow(null)
     private val _aspectRatio = MutableStateFlow(1)
@@ -231,12 +229,15 @@ class ConnectionViewmodelImpl @Inject constructor(
     }
 
     private fun fetchUserPreferences() {
-        viewModelScope.launch {
-            preferenceChangeListener = OnPreferenceChangeListener {
-                _isAntiCensorshipEnabled.value = preferences.isAntiCensorshipOn
-                _aspectRatio.value = preferences.backgroundAspectRatioOption
+        viewModelScope.launch(Dispatchers.IO) {
+            preferences.isAntiCensorshipOnFlow.collectLatest { isEnabled ->
+                _isAntiCensorshipEnabled.value = isEnabled
             }
-            preferences.addObserver(preferenceChangeListener!!)
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            preferences.backgroundAspectRatioOptionFlow.collectLatest { ratio ->
+                _aspectRatio.value = ratio
+            }
         }
     }
 
@@ -860,13 +861,5 @@ class ConnectionViewmodelImpl @Inject constructor(
         viewModelScope.launch {
             _shouldAnimateIp.emit(false)
         }
-    }
-
-    override fun onCleared() {
-        preferences.removeObserver(preferenceChangeListener!!)
-        viewModelScope.launch {
-            _goto.emit(HomeGoto.None)
-        }
-        super.onCleared()
     }
 }

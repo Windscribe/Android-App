@@ -14,9 +14,8 @@ import com.windscribe.vpn.repository.CallResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import com.windscribe.vpn.apppreference.OnPreferenceChangeListener
+import kotlinx.coroutines.flow.collectLatest
 import org.slf4j.LoggerFactory
-import kotlin.math.log
 
 abstract class DialogCallback {
     abstract fun onDismiss()
@@ -55,13 +54,17 @@ class AppStartActivityViewModelImpl(val preferencesHelper: PreferencesHelper, va
     override val hapticFeedback: StateFlow<Boolean> = _hapticFeedback
     private val logger = LoggerFactory.getLogger("ui")
 
-    private val preferenceChangeListener = OnPreferenceChangeListener {
-        _hapticFeedback.value = preferencesHelper.isHapticFeedbackEnabled
+    init {
+        observePreferences()
+        recordInstall()
     }
 
-    init {
-        preferencesHelper.addObserver(preferenceChangeListener)
-        recordInstall()
+    private fun observePreferences() {
+        viewModelScope.launch {
+            preferencesHelper.isHapticFeedbackEnabledFlow.collectLatest { isEnabled ->
+                _hapticFeedback.value = isEnabled
+            }
+        }
     }
 
     private fun recordInstall() {
@@ -105,10 +108,5 @@ class AppStartActivityViewModelImpl(val preferencesHelper: PreferencesHelper, va
 
     override fun enableGpsSpoofing() {
         preferencesHelper.isGpsSpoofingOn = true
-    }
-
-    override fun onCleared() {
-        preferencesHelper.removeObserver(preferenceChangeListener)
-        super.onCleared()
     }
 }
