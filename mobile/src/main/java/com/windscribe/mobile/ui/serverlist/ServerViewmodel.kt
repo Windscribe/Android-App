@@ -151,8 +151,7 @@ class ServerViewModelImpl(
     private fun fetchUserPreferences() {
         viewModelScope.launch {
             preferenceChangeListener = OnPreferenceChangeListener { key ->
-                // Refresh lists when selection preference changes (affects sorting)
-                if (key == null || key == SELECTION_KEY) {
+                if (key == SELECTION_KEY) {
                     fetchServerList()
                     fetchFavouriteList()
                     fetchStaticList()

@@ -61,7 +61,7 @@ class ServerListRepository @Inject constructor(
     private val preferenceHelper: PreferencesHelper,
     private val favouriteRepository: FavouriteRepository
 ) {
-    private val logger = LoggerFactory.getLogger("data")
+    private val logger = LoggerFactory.getLogger("server_list_repository")
     private var _events = MutableSharedFlow<List<RegionAndCities>>(replay = 1)
     val regions: SharedFlow<List<RegionAndCities>> = _events
     private var _locationJsonToExport = MutableStateFlow("")
@@ -152,8 +152,11 @@ class ServerListRepository @Inject constructor(
                             } else {
                                 null
                             }
-
-                        preferenceHelper.locationHash = hash(jsonString)
+                        val newHash = hash(jsonString)
+                        if (newHash == preferenceHelper.locationHash) {
+                            logger.debug("Server list unchanged, skipping database update")
+                            return
+                        }
                         val dataArray = jsonObject.getJSONArray("data")
                         val regions = Gson().fromJson<List<Region>>(
                             dataArray.toString(),
@@ -162,6 +165,7 @@ class ServerListRepository @Inject constructor(
 
                         // Add to database
                         addToDatabase(regions)
+                        preferenceHelper.locationHash = newHash
                     }
 
                     is CallResult.Error -> {
