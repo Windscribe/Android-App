@@ -152,11 +152,6 @@ class ServerListRepository @Inject constructor(
                             } else {
                                 null
                             }
-                        val newHash = hash(jsonString)
-                        if (newHash == preferenceHelper.locationHash) {
-                            logger.debug("Server list unchanged, skipping database update")
-                            return
-                        }
                         val dataArray = jsonObject.getJSONArray("data")
                         val regions = Gson().fromJson<List<Region>>(
                             dataArray.toString(),
@@ -165,7 +160,6 @@ class ServerListRepository @Inject constructor(
 
                         // Add to database
                         addToDatabase(regions)
-                        preferenceHelper.locationHash = newHash
                     }
 
                     is CallResult.Error -> {
