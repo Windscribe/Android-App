@@ -94,6 +94,32 @@ public class Migrations {
             logger.debug("Migrated database from version:36 to version:37");
         }
     };
+    public static final Migration migration_37_38 = new Migration(37, 38) {
+        @Override
+        public void migrate(@NonNull final SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `UnBlockWgParam` "
+                    + "(`title` TEXT NOT NULL DEFAULT '', "
+                    + "`countries` TEXT NOT NULL DEFAULT '', "
+                    + "`Jc` INTEGER NOT NULL DEFAULT 0, "
+                    + "`Jmin` INTEGER NOT NULL DEFAULT 0, "
+                    + "`Jmax` INTEGER NOT NULL DEFAULT 0, "
+                    + "`S1` INTEGER NOT NULL DEFAULT 0, "
+                    + "`S2` INTEGER NOT NULL DEFAULT 0, "
+                    + "`S3` INTEGER NOT NULL DEFAULT 0, "
+                    + "`S4` INTEGER NOT NULL DEFAULT 0, "
+                    + "`H1` INTEGER NOT NULL DEFAULT 0, "
+                    + "`H2` INTEGER NOT NULL DEFAULT 0, "
+                    + "`H3` INTEGER NOT NULL DEFAULT 0, "
+                    + "`H4` INTEGER NOT NULL DEFAULT 0, "
+                    + "`I1` TEXT NOT NULL DEFAULT '', "
+                    + "`I2` TEXT NOT NULL DEFAULT '', "
+                    + "`I3` TEXT NOT NULL DEFAULT '', "
+                    + "`I4` TEXT NOT NULL DEFAULT '', "
+                    + "PRIMARY KEY(`title`))");
+            invalidateData();
+            logger.debug("Migrated database from version:37 to version:38");
+        }
+    };
 
     private static void invalidateData() {
         Windscribe.getAppContext().getPreference().setMigrationRequired(true);
