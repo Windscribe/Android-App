@@ -41,3 +41,28 @@ fun NextButtonLighter(modifier: Modifier = Modifier,
         )
     }
 }
+
+@Composable
+fun NextButtonLighterNoPadding(modifier: Modifier = Modifier,
+                      text: String,
+                      onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .height(48.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = AppColors.white.copy(alpha = 0.10f),
+            contentColor = AppColors.white,
+            disabledContainerColor = AppColors.white.copy(alpha = 0.10f),
+            disabledContentColor = AppColors.white.copy(alpha = 0.25f)
+        ),
+        interactionSource = interactionSource,
+        shape = RoundedCornerShape(24.dp),
+    ) {
+        Text(
+            text = text,
+            style = font16,
+        )
+    }
+}

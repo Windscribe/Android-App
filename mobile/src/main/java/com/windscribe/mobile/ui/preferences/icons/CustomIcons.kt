@@ -49,6 +49,7 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
+import com.windscribe.vpn.constants.ExtraConstants
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -309,7 +310,7 @@ private fun previewIcons(context: Context): Map<String, AppIcon> {
             AppIconCategory.Discreet
         ),
         IconConfig(
-            "Classic",
+            ExtraConstants.DEFAULT_ICON,
             com.windscribe.vpn.R.mipmap.ws_launcher,
             AppIconCategory.Windscribe
         ),

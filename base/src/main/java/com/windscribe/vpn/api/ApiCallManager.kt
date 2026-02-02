@@ -4,6 +4,7 @@
 package com.windscribe.vpn.api
 
 import com.windscribe.vpn.api.response.AddEmailResponse
+import com.windscribe.vpn.api.response.UnblockWgResponse
 import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.api.response.AuthToken
 import com.windscribe.vpn.api.response.BillingPlanResponse
@@ -74,8 +75,17 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun getIp(): GenericResponseClass<String?, ApiErrorResponse?> {
         return suspendCancellableCoroutine { continuation ->
-            val callback =wsNetServerAPI.pingTest(5000) { code, json ->
+            val callback = wsNetServerAPI.pingTest(5000)  { code, json ->
                 buildResponse(continuation, code, json, String::class.java)
+            }
+            continuation.invokeOnCancellation { callback.cancel() }
+        }
+    }
+
+    override suspend fun getApiIp(): GenericResponseClass<GetMyIpResponse?, ApiErrorResponse?> {
+        return suspendCancellableCoroutine { continuation ->
+            val callback = wsNetServerAPI.myIP  { code, json ->
+                buildResponse(continuation, code, json, GetMyIpResponse::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
         }
@@ -545,6 +555,16 @@ open class ApiCallManager @Inject constructor(
         return suspendCancellableCoroutine { continuation ->
             val callback = wsNetServerAPI.passwordRecovery(email) { code, json ->
                 buildResponse(continuation, code, json, GenericSuccess::class.java)
+            }
+            continuation.invokeOnCancellation { callback.cancel() }
+        }
+    }
+
+    override suspend fun unblockWgParams(): GenericResponseClass<UnblockWgResponse?, ApiErrorResponse?> {
+        checkSession()
+        return suspendCancellableCoroutine { continuation ->
+            val callback = wsNetServerAPI.amneziawgUnblockParams(preferencesHelper.sessionHash) { code, json ->
+                buildResponse(continuation, code, json, UnblockWgResponse::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
         }

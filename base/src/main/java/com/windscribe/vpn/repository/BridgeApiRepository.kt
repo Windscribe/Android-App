@@ -1,6 +1,7 @@
 package com.windscribe.vpn.repository
 
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -16,6 +17,8 @@ import javax.inject.Inject
 
 class BridgeApiRepository @Inject constructor(
     private val scope: CoroutineScope,
+    private val wsnet: WSNet,
+    private val preferencesHelper: PreferencesHelper,
     private val bridgeAPI: WSNetBridgeAPI,
     private val locationRepository: LocationRepository,
     private val userRepository: UserRepository,
@@ -27,6 +30,7 @@ class BridgeApiRepository @Inject constructor(
     init {
         scope.launch(Dispatchers.IO) {
             observeBridgeApi()
+            observeAntiCensorshipStatus()
         }
     }
 
@@ -42,6 +46,16 @@ class BridgeApiRepository @Inject constructor(
             scope.launch {
                 checkAndEmitApiAvailability(ready)
             }
+        }
+    }
+
+    private fun observeAntiCensorshipStatus() {
+        scope.launch {
+          preferencesHelper.isAntiCensorshipOnFlow.collect {
+              if (WSNet.isValid()) {
+                  wsnet.advancedParameters().isAPIExtraTLSPadding = it
+              }
+          }
         }
     }
 

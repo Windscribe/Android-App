@@ -81,6 +81,7 @@ import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_CUSTOM
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_ROBERT
 import com.windscribe.vpn.mocklocation.MockLocationManager.Companion.isAppSelectedInMockLocationList
 import com.windscribe.vpn.mocklocation.MockLocationManager.Companion.isDevModeOn
+import kotlinx.coroutines.flow.map
 
 
 @Composable
@@ -177,14 +178,7 @@ fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 DecoyTrafficMode(viewModel)
                 Spacer(modifier = Modifier.height(16.dp))
-                SwitchItemView(
-                    title = R.string.anti_censorship,
-                    icon = com.windscribe.mobile.R.drawable.ic_anti_censorship_icon,
-                    description = R.string.anti_censorship_explainer,
-                    antiCensorship,
-                    explainer = FeatureExplainer.CIRCUMVENT_CENSORSHIP,
-                    onSelect = { viewModel?.onAntiCensorshipToggleClicked() }
-                )
+                AntiCensorshipMode(viewModel)
             }
         }
     }
@@ -260,6 +254,44 @@ private fun DecoyTrafficMode(viewModel: ConnectionViewModel?) {
                     style = font16,
                     color = MaterialTheme.colorScheme.preferencesSubtitleColor
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AntiCensorshipMode(viewModel: ConnectionViewModel?) {
+    val antiCensorship by viewModel?.antiCensorship?.collectAsState()
+        ?: remember { mutableStateOf(false) }
+    val presets by viewModel?.unblockWgPresets?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
+    val selectedPreset by viewModel?.unblockWgSelectedPreset?.collectAsState() ?: remember { mutableStateOf("") }
+
+    val shape = if (antiCensorship) {
+        RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+    } else {
+        RoundedCornerShape(size = 12.dp)
+    }
+
+    Column {
+        SwitchItemView(
+            title = R.string.anti_censorship,
+            icon = com.windscribe.mobile.R.drawable.ic_anti_censorship_icon,
+            description = R.string.anti_censorship_explainer,
+            antiCensorship,
+            shape = shape,
+            explainer = FeatureExplainer.CIRCUMVENT_CENSORSHIP,
+            onSelect = { viewModel?.onAntiCensorshipToggleClicked() }
+        )
+        if (antiCensorship) {
+            Spacer(modifier = Modifier.height(1.dp))
+            CustomDropDown(
+                R.string.amnezia_preset,
+                presets,
+                selectedPreset,
+                shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+            ) {
+                val index = it.key.toIntOrNull() ?: 0
+                viewModel?.onUnblockWgPresetSelected(it.key)
             }
         }
     }

@@ -489,6 +489,10 @@ last chosen location.</string>
     <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Location permission is required to use this feature. Go to app settings > Permissions > Location and select Allow all the time.]]></string>
     <string name="anti_censorship">Circumvent Censorship</string>
     <string name="anti_censorship_explainer">Connect to the VPN even in hostile environment</string>
+    <string name="amnezia_preset">Configuration</string>
+    <string name="amnezia_preset_description">Choose preset configuration for anti-censorship</string>
+    <string name="amnezia_preset_russian_quick">Russian Quick (No Junk)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
     <string name="auto_connect">Auto-Connect</string>
     <string name="auto_connect_explainer">Connects to last used location when the app launches or joins a network.</string>
     <string name="save">Save</string>
@@ -564,8 +568,8 @@ last chosen location.</string>
     <string name="unblock_full_access">Unlock full access to Windscribe</string>
     <string name="go_pro_for_unlimited_everything">Go Pro for unlimited everything</string>
     <string name="custom_configs">Custom Configs</string>
-    <string name="slide_puzzle_piece_into_place">Drag left puzzle piece into place</string>
-    <string name="complete_puzzle_to_continue">Complete Puzzle to continue"</string>
+    <string name="slide_puzzle_piece_into_place">Slide the left image into the hole on the right</string>
+    <string name="complete_puzzle_to_continue">Complete CAPCHA"</string>
     <string name="none">None</string>
     <string name="free">Free</string>
     <string name="upgrade_to_pro">Upgrade to Pro</string>

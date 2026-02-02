@@ -152,41 +152,6 @@ class WireguardBackend @Inject constructor(
         vpnLogger.debug("WireGuard backend deactivated.")
     }
 
-    @Suppress("UNUSED_VARIABLE")
-    private fun sendUdpStuffingForWireGuard(
-        config: Config
-    ) {
-        try {
-            //Open a port to send the package
-            val socket = DatagramSocket(config.`interface`.listenPort.getOrDefault(0))
-            val localPort = socket.localPort
-            val ntpBuf = ByteArray(48)
-            ntpBuf[0] = 0x23 // ntp ver=4, mode=client
-            ntpBuf[2] = 0x09 // polling interval=9
-            ntpBuf[3] = 0x20 // clock precision
-            // repeat up to 5 times.
-            val rnds = (1..5).random()
-            for (i in 1 until rnds) {
-                for (j in 40..47) {
-                    ntpBuf[j] = Random.nextInt().toByte()
-                }
-                for (k in config.peers) {
-                    k.endpoint.toSet().forEach {
-                        val sendPacket = socket.send(
-                            DatagramPacket(
-                                ntpBuf, ntpBuf.size,
-                                InetAddress.getByName(it.host), it.port
-                            )
-                        )
-                    }
-                }
-            }
-            socket.close()
-        } catch (e: Exception) {
-            vpnLogger.error("Can't send staffing packet! $e")
-        }
-    }
-
     override fun connect(protocolInformation: ProtocolInformation, connectionId: UUID) {
         this.protocolInformation = protocolInformation
         this.connectionId = connectionId
@@ -197,10 +162,7 @@ class WireguardBackend @Inject constructor(
             Util.getProfile<WireGuardVpnProfile>()?.let {
                 withContext(Dispatchers.IO) {
                     val content = WireGuardVpnProfile.createConfigFromString(it.content)
-                    if (preferencesHelper.isAntiCensorshipOn) {
-                        sendUdpStuffingForWireGuard(content)
-                    }
-                    vpnLogger.info("Setting WireGuard state UP.")
+                    vpnLogger.info(it.content)
                     try {
                         backend.setState(testTunnel, UP, content)
                     } catch (e: Exception) {

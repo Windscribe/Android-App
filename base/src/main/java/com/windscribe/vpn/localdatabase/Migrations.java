@@ -107,14 +107,15 @@ public class Migrations {
                     + "`S2` INTEGER NOT NULL DEFAULT 0, "
                     + "`S3` INTEGER NOT NULL DEFAULT 0, "
                     + "`S4` INTEGER NOT NULL DEFAULT 0, "
-                    + "`H1` INTEGER NOT NULL DEFAULT 0, "
-                    + "`H2` INTEGER NOT NULL DEFAULT 0, "
-                    + "`H3` INTEGER NOT NULL DEFAULT 0, "
-                    + "`H4` INTEGER NOT NULL DEFAULT 0, "
+                    + "`H1` TEXT NOT NULL DEFAULT '', "
+                    + "`H2` TEXT NOT NULL DEFAULT '', "
+                    + "`H3` TEXT NOT NULL DEFAULT '', "
+                    + "`H4` TEXT NOT NULL DEFAULT '', "
                     + "`I1` TEXT NOT NULL DEFAULT '', "
                     + "`I2` TEXT NOT NULL DEFAULT '', "
                     + "`I3` TEXT NOT NULL DEFAULT '', "
                     + "`I4` TEXT NOT NULL DEFAULT '', "
+                    + "`I5` TEXT NOT NULL DEFAULT '', "
                     + "PRIMARY KEY(`title`))");
             invalidateData();
             logger.debug("Migrated database from version:37 to version:38");

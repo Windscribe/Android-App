@@ -89,6 +89,8 @@ interface ApplicationComponent {
     val logRepository: LogRepository
     val bridgeApiRepository: BridgeApiRepository
 
+    val unblockWgParamsRepository: UnblockWgParamsRepository
+
     //Inject
     fun inject(app: Windscribe)
     fun inject(serverListWorker: ServerListWorker)
@@ -98,4 +100,5 @@ interface ApplicationComponent {
     fun inject(notificationWorker: NotificationWorker)
     fun inject(robertSyncWorker: RobertSyncWorker)
     fun inject(latencyWorker: LatencyWorker)
+    fun inject(unblockWgParamsWorker: UnblockWgParamsWorker)
 }

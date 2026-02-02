@@ -6,7 +6,6 @@ import android.net.LinkProperties
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.model.DropDownStringItem
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -15,7 +14,6 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.repository.PortMapRepository
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.CONNECTION_MODE_AUTO
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_IKev2
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_STEALTH
@@ -26,6 +24,8 @@ import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WS_TUNNEL
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.exceptions.WindScribeException
+import com.windscribe.vpn.localdatabase.tables.UnBlockWgParam
+import com.windscribe.vpn.repository.UnblockWgParamsRepository
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -72,6 +72,9 @@ abstract class ConnectionViewModel : ViewModel() {
     abstract fun onDecoyTrafficToggleClicked()
     abstract val antiCensorship: StateFlow<Boolean>
     abstract fun onAntiCensorshipToggleClicked()
+    abstract val unblockWgSelectedPreset: StateFlow<String>
+    abstract val unblockWgPresets: StateFlow<List<DropDownStringItem>>
+    abstract fun onUnblockWgPresetSelected(title: String)
     abstract fun onPacketSizeModeSelected(auto: Boolean)
     abstract val packetSize: StateFlow<Int>
     abstract fun onPacketSizeSaved()
@@ -100,6 +103,7 @@ class ConnectionViewModelImpl(
     val proxyDNSManager: ProxyDNSManager,
     val decoyTrafficController: DecoyTrafficController,
     val portMapRepository: PortMapRepository,
+    val unblockWgParamsRepository: UnblockWgParamsRepository
 ) : ConnectionViewModel() {
     private val _showProgress = MutableStateFlow(false)
     override val showProgress: StateFlow<Boolean> = _showProgress
@@ -131,6 +135,9 @@ class ConnectionViewModelImpl(
     override val decoyTraffic: StateFlow<Boolean> = _decoyTraffic
     private val _antiCensorship = MutableStateFlow(preferencesHelper.isAntiCensorshipOn)
     override val antiCensorship: StateFlow<Boolean> = _antiCensorship
+    private val _unblockWgSelectedPreset =
+        MutableStateFlow(unblockWgParamsRepository.getSelectedUnblockWgParam()?.title ?: "")
+    override val unblockWgSelectedPreset: StateFlow<String> = _unblockWgSelectedPreset
     private val _packetSizeAuto = MutableStateFlow(preferencesHelper.isPackageSizeModeAuto)
     override val packetSizeAuto: StateFlow<Boolean> = _packetSizeAuto
     private val _packetSize = MutableStateFlow(preferencesHelper.packetSize)
@@ -147,9 +154,13 @@ class ConnectionViewModelImpl(
     private val _trafficMultiplier = MutableStateFlow("")
     override val trafficMultiplier: StateFlow<String> = _trafficMultiplier
 
+    private val _unblockWgPresets = MutableStateFlow(emptyList<DropDownStringItem>())
+    override val unblockWgPresets: StateFlow<List<DropDownStringItem>> = _unblockWgPresets
+
     init {
         loadPortMapItems()
         setDecoyTrafficParameters()
+        loadUnblockWgPresetItems()
     }
 
     private fun loadPortMapItems() {
@@ -352,6 +363,13 @@ class ConnectionViewModelImpl(
         }
     }
 
+    override fun onUnblockWgPresetSelected(title: String) {
+        viewModelScope.launch {
+            _unblockWgSelectedPreset.emit(title)
+            unblockWgParamsRepository.setSelectedUnblockWgParam(title)
+        }
+    }
+
     override fun onPacketSizeModeSelected(auto: Boolean) {
         viewModelScope.launch {
             _packetSizeAuto.emit(auto)
@@ -496,6 +514,18 @@ class ConnectionViewModelImpl(
                         16572
                     )
                 )
+            }
+        }
+    }
+
+    private fun loadUnblockWgPresetItems() {
+        viewModelScope.launch {
+            unblockWgParamsRepository.unblockWgParams.collectLatest { it ->
+                val selected = it.firstOrNull { it.title == _unblockWgSelectedPreset.value }
+                if (selected == null) {
+                    _unblockWgSelectedPreset.emit(it.firstOrNull()?.title ?: "")
+                }
+                _unblockWgPresets.emit(it.map { DropDownStringItem(it.title) })
             }
         }
     }

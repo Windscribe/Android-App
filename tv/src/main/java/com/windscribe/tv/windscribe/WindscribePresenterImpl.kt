@@ -616,14 +616,14 @@ class WindscribePresenterImpl @Inject constructor(
     private fun setIPAddress() {
         if (WindUtilities.isOnline()) {
             activityScope.launch(Dispatchers.IO) {
-                val result = result<String> {
-                    apiCallManager.getIp()
+                val result = result<GetMyIpResponse> {
+                    apiCallManager.getApiIp()
                 }
                 withContext(Dispatchers.Main) {
                     when (result) {
                         is CallResult.Success -> {
-                            if (validIpAddress(result.data)) {
-                                windscribeView.setIpAddress(getModifiedIpAddress(result.data.trim { it <= ' ' }))
+                            if (validIpAddress(result.data.userIp)) {
+                                windscribeView.setIpAddress(getModifiedIpAddress(result.data.userIp.trim { it <= ' ' }))
                             } else {
                                 logger.info("Server returned error response when getting user ip")
                                 windscribeView.setIpAddress("---.---.---.---")

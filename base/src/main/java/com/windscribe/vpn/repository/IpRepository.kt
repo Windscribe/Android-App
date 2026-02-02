@@ -44,13 +44,13 @@ class IpRepository(
         scope.launch {
             _state.emit(RepositoryState.Loading())
             if (WindUtilities.isOnline()) {
-                val result = result<String> {
-                    apiCallManagerV2.getIp()
+                val result = result<GetMyIpResponse> {
+                    apiCallManagerV2.getApiIp()
                 }
                 when (result) {
                     is CallResult.Error -> loadIpFromStorage()
                     is CallResult.Success -> {
-                        val ipAddress = getModifiedIpAddress(result.data.trim())
+                        val ipAddress = getModifiedIpAddress(result.data.userIp.trim())
                         preferenceHelper.userIP = ipAddress
                         _state.emit(RepositoryState.Success(ipAddress))
                     }

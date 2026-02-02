@@ -1001,4 +1001,9 @@ class DataStorePreferenceHelper(
         get() = dataStore.data.map { preferences ->
             preferences[DataStoreKeys.CUSTOM_ICON] ?: DEFAULT_ICON
         }
+    override var selectedUnblockWgParam: String?
+        get() = runBlocking { getString(DataStoreKeys.SELECTED_UNBLOCK_WG_PARAM, "").takeIf { it.isNotEmpty() } }
+        set(value) {
+            setString(DataStoreKeys.SELECTED_UNBLOCK_WG_PARAM, value)
+        }
 }

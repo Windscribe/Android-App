@@ -91,6 +91,10 @@ class OverlayPresenterImp @Inject constructor(
 
     override fun onStaticIpClick(staticIp: StaticRegion) {
         logger.debug("Selected static Ip to connect.")
+        if(staticIp.credentials == null) {
+            overlayView.showToast("No credentials found for static IP")
+            return
+        }
         overlayView.onStaticSelected(
             staticIp.id, staticIp.credentials.userNameEncoded,
             staticIp.credentials.passwordEncoded

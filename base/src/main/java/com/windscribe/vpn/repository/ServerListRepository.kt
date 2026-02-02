@@ -152,6 +152,9 @@ class ServerListRepository @Inject constructor(
                             } else {
                                 null
                             }
+                        if (appLifeCycleObserver.overriddenCountryCode != null) {
+                            preferenceHelper.isAntiCensorshipOn = true
+                        }
                         val dataArray = jsonObject.getJSONArray("data")
                         val regions = Gson().fromJson<List<Region>>(
                             dataArray.toString(),

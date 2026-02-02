@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.constants.ExtraConstants
 import kotlinx.coroutines.flow.MutableStateFlow
 
 data class AppIcon(
@@ -73,7 +74,7 @@ class AppIconManager(val context: Context, val preferenceManager: PreferencesHel
                 AppIconCategory.Discreet
             ),
             IconConfig(
-                "Classic",
+                ExtraConstants.DEFAULT_ICON,
                 com.windscribe.mobile.R.mipmap.ic_launcher_og,
                 AppIconCategory.Windscribe
             ),

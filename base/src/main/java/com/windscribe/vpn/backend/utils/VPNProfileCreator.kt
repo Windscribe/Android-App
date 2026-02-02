@@ -28,6 +28,7 @@ import com.windscribe.vpn.backend.openvpn.ProxyTunnelManager.Companion.PROXY_TUN
 import com.windscribe.vpn.backend.wireguard.WireGuardVpnProfile
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.commonutils.WindUtilities.ConfigType.WIRE_GUARD
+import com.windscribe.vpn.constants.AmneziaPreset
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_INVALID_DNS_ADDRESS
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
 import com.windscribe.vpn.constants.NetworkErrorCodes.ERROR_VALID_CONFIG_NOT_FOUND
@@ -37,6 +38,7 @@ import com.windscribe.vpn.exceptions.InvalidVPNConfigException
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.model.OpenVPNConnectionInfo
 import com.windscribe.vpn.repository.CallResult
+import com.windscribe.vpn.repository.UnblockWgParamsRepository
 import com.windscribe.vpn.repository.WgConfigRepository
 import com.windscribe.vpn.repository.WgRemoteParams
 import com.windscribe.vpn.serverlist.entity.ConfigFile
@@ -71,7 +73,8 @@ class VPNProfileCreator @Inject constructor(
         private val preferencesHelper: PreferencesHelper,
         private val wgConfigRepository: WgConfigRepository,
         private val proxyTunnelManager: ProxyTunnelManager,
-        private val proxyDNSManager: ProxyDNSManager
+        private val proxyDNSManager: ProxyDNSManager,
+        private val unblockWgParamsRepository: UnblockWgParamsRepository
 ) {
 
     private val logger = LoggerFactory.getLogger("vpn")
@@ -446,44 +449,12 @@ class VPNProfileCreator @Inject constructor(
         val lastSelectedLocation =
                 LastSelectedLocation(configFile.getPrimaryKey(), nickName = configFile.name)
         saveSelectedLocation(lastSelectedLocation)
-        saveProfile(WireGuardVpnProfile(configWithSettings.toWgQuickString()))
-        return "Custom Config: ${configWithSettings.toWgQuickString()}"
-    }
-
-    suspend fun updateWireGuardConfig(config: Config): CallResult<Config> {
-        val builder = Config.Builder()
-        val serverPublicKey = config.peers[0].publicKey.toBase64()
-        val hostName = config.`interface`.addresses.first().address.hostAddress ?: ""
-        val ip = config.peers[0].endpoint.get().host
-        val port = config.peers[0].endpoint.get().port.toString()
-        logger.debug("Requesting wg remote params.")
-        when (val remoteParamsResponse = wgConfigRepository.getWgParams(hostName, serverPublicKey, wgForceInit.getAndSet(false), true)) {
-            is CallResult.Success<WgRemoteParams> -> {
-                logger.debug("Wg remote params successful.")
-                val anInterface = createWireGuardInterface(remoteParamsResponse.data)
-                builder.setInterface(anInterface)
-                val peer = createWireGuardPeer(remoteParamsResponse.data, ip, port)
-                builder.addPeer(peer)
-                val content = builder.build().toWgQuickString()
-                val profileLines = content.split(System.lineSeparator().toRegex()).toTypedArray()
-                val stringBuilder = StringBuilder()
-                for (logLine in profileLines) {
-                    if (!logLine.startsWith("PrivateKey") && !logLine.startsWith("PreSharedKey") && !logLine.startsWith(
-                                    "PublicKey"
-                            )
-                    ) {
-                        stringBuilder.append(logLine).append(" ")
-                    }
-                }
-                logger.debug(stringBuilder.toString())
-                saveProfile(WireGuardVpnProfile(content))
-                return CallResult.Success(WireGuardVpnProfile.createConfigFromString(content))
-            }
-
-            is CallResult.Error -> {
-                logger.debug("Error getting Wg remote params.")
-                return remoteParamsResponse
-            }
+        if (preferencesHelper.isAntiCensorshipOn) {
+            saveProfile(WireGuardVpnProfile(config.toWgQuickString()))
+            return "Custom Config: ${config.toWgQuickString()}"
+        } else {
+            saveProfile(WireGuardVpnProfile(configWithSettings.toWgQuickString()))
+            return "Custom Config: ${configWithSettings.toWgQuickString()}"
         }
     }
 
@@ -555,17 +526,67 @@ class VPNProfileCreator @Inject constructor(
         } else {
             preferencesHelper.lastConnectedUsingSplit = false
         }
-        if (mPreferencesHelper.isAntiCensorshipOn) {
-            try {
-                val socket = DatagramSocket(0)
-                val localPort = socket.getLocalPort()
-                socket.close()
-                builder.setListenPort(localPort)
-            } catch (e: Exception) {
-                logger.error("Can't bind socket! $e")
+        return if (mPreferencesHelper.isAntiCensorshipOn) {
+            applyUnblockWgParams(builder).build()
+        } else {
+            builder.build()
+        }
+    }
+
+    private fun applyUnblockWgParams(builder: Builder): Builder {
+        val preset = unblockWgParamsRepository.getSelectedUnblockWgParam()
+        if (preset != null) {
+            logger.info("Applying WG unblock preset: ${preset.title}")
+            if (preset.jc != 0) {
+                builder.setJunkPacketCount(preset.jc)
+            }
+            if (preset.jMin != 0) {
+                builder.setJunkPacketMinSize(preset.jMin)
+            }
+            if (preset.jMax != 0) {
+                builder.setJunkPacketMaxSize(preset.jMax)
+            }
+            if (preset.s1 != 0) {
+                builder.setInitPacketJunkSize(preset.s1)
+            }
+            if (preset.s2 != 0) {
+                builder.setResponsePacketJunkSize(preset.s2)
+            }
+            if (preset.s3 != 0) {
+                builder.setCookieReplyPacketJunkSize(preset.s3)
+            }
+            if (preset.s4 != 0) {
+                builder.setTransportPacketJunkSize(preset.s4)
+            }
+            if (preset.h1.isNotEmpty()) {
+                builder.setInitPacketMagicHeader(preset.h1)
+            }
+            if (preset.h2.isNotEmpty()) {
+                builder.setResponsePacketMagicHeader(preset.h2)
+            }
+            if (preset.h3.isNotEmpty()) {
+                builder.setUnderloadPacketMagicHeader(preset.h3)
+            }
+            if (preset.h4.isNotEmpty()) {
+                builder.setTransportPacketMagicHeader(preset.h4)
+            }
+            if (preset.i1.isNotEmpty()) {
+                builder.setSpecialJunkI1(preset.i1)
+            }
+            if (preset.i2.isNotEmpty()) {
+                builder.setSpecialJunkI2(preset.i2)
+            }
+            if (preset.i3.isNotEmpty()) {
+                builder.setSpecialJunkI3(preset.i3)
+            }
+            if (preset.i4.isNotEmpty()) {
+                builder.setSpecialJunkI4(preset.i4)
+            }
+            if (preset.i5.isNotEmpty()) {
+                builder.setSpecialJunkI5(preset.i5)
             }
         }
-        return builder.build()
+        return builder
     }
 
     private fun createWireGuardPeer(wgRemoteParams: WgRemoteParams, endpoint: String, port: String): Peer {
@@ -585,7 +606,9 @@ class VPNProfileCreator @Inject constructor(
         builder.parseEndpoint(sb)
         builder.setPersistentKeepalive(25)
         builder.parsePreSharedKey(wgRemoteParams.preSharedKey)
-        builder.setUDPStuffing(appContext.preference.isAntiCensorshipOn)
+
+        // Note: Peer-specific Amnezia parameters (S3, S4, H3, H4) are set in Interface, not Peer
+
         return builder.build()
     }
 

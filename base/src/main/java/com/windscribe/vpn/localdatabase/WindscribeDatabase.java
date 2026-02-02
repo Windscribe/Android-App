@@ -12,6 +12,7 @@ import com.windscribe.vpn.localdatabase.tables.PingTestResults;
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable;
 import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable;
 import com.windscribe.vpn.localdatabase.tables.UserStatusTable;
+import com.windscribe.vpn.localdatabase.tables.UnBlockWgParam;
 import com.windscribe.vpn.localdatabase.tables.WindNotification;
 import com.windscribe.vpn.serverlist.dao.CityAndRegionDao;
 import com.windscribe.vpn.serverlist.dao.CityDao;
@@ -33,7 +34,7 @@ import javax.inject.Singleton;
 @Database(entities = {PingTestResults.class, UserStatusTable.class, ServerStatusUpdateTable.class,
         PopupNotificationTable.class, Region.class,
         City.class, Favourite.class, PingTime.class, StaticRegion.class, NetworkInfo.class, ConfigFile.class,
-        WindNotification.class}, version = 37)
+        WindNotification.class, UnBlockWgParam.class}, version = 38)
 @Singleton
 public abstract class WindscribeDatabase extends RoomDatabase {
 
@@ -63,4 +64,6 @@ public abstract class WindscribeDatabase extends RoomDatabase {
     public abstract UserStatusDao userStatusDao();
 
     public abstract WindNotificationDao windNotificationDao();
+
+    public abstract UnblockWgDao unblockWgDao();
 }

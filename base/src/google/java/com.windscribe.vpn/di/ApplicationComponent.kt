@@ -95,6 +95,10 @@ interface ApplicationComponent {
     val logRepository: LogRepository
     val bridgeApiRepository: BridgeApiRepository
 
+    val unblockWgParamsRepository: UnblockWgParamsRepository
+
+    //Services
+
     //Inject
     fun inject(app: Windscribe)
     fun inject(windscribeCloudMessaging: WindscribeCloudMessaging)
@@ -107,4 +111,5 @@ interface ApplicationComponent {
     fun inject(googlePendingReceiptValidator: GooglePendingReceiptValidator)
     fun inject(amazonPendingReceiptValidator: AmazonPendingReceiptValidator)
     fun inject(latencyWorker: LatencyWorker)
+    fun inject(unblockWgParamsWorker: UnblockWgParamsWorker)
 }
