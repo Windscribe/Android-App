@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.*
 import javax.inject.Singleton
+import kotlin.jvm.java
 
 /**
  * Handles one off and periodic tasks for app.
@@ -33,12 +34,14 @@ class WindScribeWorkManager(private val context: Context, private val scope: Cor
         // One time
         val data = Data.Builder().putBoolean("forceUpdate", true).build()
         updateSession(data)
+        WorkManager.getInstance(context).enqueue(createOneTimeWorkerRequest(UnblockWgParamsWorker::class.java))
         // Hourly
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(NOTIFICATION_HOURLY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(NotificationWorker::class.java, HOURS))
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(SESSION_HOURLY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(SessionWorker::class.java, HOURS))
         // Every day
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(NOTIFICATION_DAY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(NotificationWorker::class.java, DAYS))
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(SESSION_DAY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(SessionWorker::class.java, DAYS))
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(UNBLOCK_WG_PARAMS_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(UnblockWgParamsWorker::class.java, DAYS))
         keepSessionUpdated()
     }
 
@@ -141,5 +144,7 @@ class WindScribeWorkManager(private val context: Context, private val scope: Cor
         const val PENDING_GOGGLE_RECEIPT_WORKER_KEY = "com.windscribe.vpn.pendingGoogleReceipts"
         const val PENDING_AMAZON_RECEIPT_WORKER_KEY = "com.windscribe.vpn.pendingAmazonReceipts"
         const val LATENCY_WORKER_KEY = "com.windscribe.vpn.latencyWorker"
+
+        const val UNBLOCK_WG_PARAMS_WORKER_KEY = "com.windscribe.vpn.unblockWgParamsWorker"
     }
 }

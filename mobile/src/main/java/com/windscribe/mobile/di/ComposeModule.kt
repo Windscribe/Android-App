@@ -77,6 +77,7 @@ import com.windscribe.vpn.repository.LogRepository
 import com.windscribe.vpn.repository.NotificationRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
+import com.windscribe.vpn.repository.UnblockWgParamsRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.services.sso.GoogleSignInManager
@@ -122,7 +123,8 @@ class ComposeModule {
         bridgeApiRepository: BridgeApiRepository,
         resourceHelper: ResourceHelper,
         deviceStateManager: DeviceStateManager,
-        appIconManager: AppIconManager
+        appIconManager: AppIconManager,
+        unblockWgParamsRepository: UnblockWgParamsRepository
     ): ViewModelProvider.Factory {
         return object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -210,7 +212,7 @@ class ComposeModule {
                 } else if (modelClass.isAssignableFrom(AccountViewModel::class.java)) {
                     return AccountViewModelImpl(userRepository, apiCallManager, workManager, appPreferenceHelper) as T
                 } else if (modelClass.isAssignableFrom(ConnectionViewModel::class.java)) {
-                    return ConnectionViewModelImpl(preferencesHelper = appPreferenceHelper, api = apiCallManager, autoConnectionManager, vpnConnectionStateManager, proxyDNSManager, decoyTrafficController, portMapRepository) as T
+                    return ConnectionViewModelImpl(preferencesHelper = appPreferenceHelper, api = apiCallManager, autoConnectionManager, vpnConnectionStateManager, proxyDNSManager, decoyTrafficController, portMapRepository, unblockWgParamsRepository) as T
                 } else if (modelClass.isAssignableFrom(RobertViewModel::class.java)) {
                     return RobertViewModelImpl(apiCallManager, appPreferenceHelper) as T
                 } else if (modelClass.isAssignableFrom(LipstickViewmodel::class.java)) {

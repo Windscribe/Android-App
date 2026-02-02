@@ -7,6 +7,7 @@ import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
 import com.windscribe.vpn.localdatabase.tables.UserStatusTable
+import com.windscribe.vpn.localdatabase.tables.UnBlockWgParam
 import com.windscribe.vpn.localdatabase.tables.WindNotification
 import com.windscribe.vpn.serverlist.entity.City
 import com.windscribe.vpn.serverlist.entity.CityAndRegion
@@ -69,4 +70,7 @@ interface LocalDbInterface {
     suspend fun getRegionIdFromCityAsync(cityID: Int): Int
     suspend fun getLowestPingIdAsync(): Int
     suspend fun getConfigFileAsync(configFileID: Int): ConfigFile
+    suspend fun deleteUnblockWgParams()
+    suspend fun insertUnblockWgParams(unblockWgParams: List<UnBlockWgParam>)
+    suspend fun getUnblockWgParams(): Flow<List<UnBlockWgParam>>
 }

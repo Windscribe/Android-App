@@ -115,6 +115,7 @@ object PreferencesKeyConstants {
     const val WG_CONNECT_API_FAIL_OVER_STATE = "wg_connect_api_fail_over_state"
     const val ALREADY_SHOWN_SHARE_APP_LINK = "already_shown_share_app_link"
     const val ANTI_CENSORSHIP = "anti_censorship"
+    const val AMNEZIA_PRESET = "amnezia_preset"
     const val AUTO_CONNECT = "auto_connect"
     const val ADVANCE_PARAM_TEXT = "advance_params_text"
     const val DNS_MODE = "dns_mode"
@@ -152,4 +153,5 @@ object PreferencesKeyConstants {
     const val AMAZON_PURCHASED_ITEM = "amazon_purchase_item"
 
     const val CUSTOM_ICON = "custom_icon"
+    const val SELECTED_UNBLOCK_WG_PARAM = "selected_unblock_wg_param"
 }

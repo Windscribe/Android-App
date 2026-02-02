@@ -157,12 +157,20 @@ fun CaptchaDebugView(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier.padding(top = 24.dp, start = 24.dp, end = 24.dp, bottom = 16.dp)
+        modifier = Modifier.padding(top = 24.dp, start = 24.dp, end = 24.dp, bottom = 24.dp)
     ) {
         Text(
             stringResource(com.windscribe.vpn.R.string.complete_puzzle_to_continue),
             color = Color.White,
             style = font18.copy(fontWeight = FontWeight.Medium)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            stringResource(com.windscribe.vpn.R.string.slide_puzzle_piece_into_place),
+            style = font12.copy(fontWeight = FontWeight.Normal),
+            textAlign = TextAlign.Center,
+            color = AppColors.white.copy(alpha = 0.50f),
+            modifier = Modifier.width(150.dp)
         )
         Spacer(modifier = Modifier.height(24.dp))
         Box {
@@ -254,28 +262,8 @@ fun CaptchaDebugView(
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(color = AppColors.deepBlue, shape = RoundedCornerShape(10.dp))
-                .border(
-                    1.dp,
-                    AppColors.white.copy(alpha = 0.05f),
-                    shape = RoundedCornerShape(10.dp)
-                )
-                .padding(start = 16.dp, top = 4.dp, bottom = 4.dp)
-        ) {
-            Text(
-                stringResource(com.windscribe.vpn.R.string.slide_puzzle_piece_into_place),
-                style = font12.copy(fontWeight = FontWeight.Normal),
-                textAlign = TextAlign.Center,
-                color = AppColors.white.copy(alpha = 0.50f),
-                modifier = Modifier.align(Alignment.Center)
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        TextButton(stringResource(id = com.windscribe.vpn.R.string.cancel), onClick = {
+        NextButtonLighterNoPadding(modifier = Modifier.width(235.dp), text = stringResource(id = com.windscribe.vpn.R.string.cancel)) {
             onCancel()
-        })
+        }
     }
 }

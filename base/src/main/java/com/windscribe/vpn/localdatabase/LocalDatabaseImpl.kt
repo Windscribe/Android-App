@@ -7,6 +7,7 @@ import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
 import com.windscribe.vpn.localdatabase.tables.UserStatusTable
+import com.windscribe.vpn.localdatabase.tables.UnBlockWgParam
 import com.windscribe.vpn.localdatabase.tables.WindNotification
 import com.windscribe.vpn.serverlist.dao.CityAndRegionDao
 import com.windscribe.vpn.serverlist.dao.CityDao
@@ -44,7 +45,8 @@ class LocalDatabaseImpl @Inject constructor(
     private val networkInfoDao: NetworkInfoDao,
     private val serverStatusDao: ServerStatusDao,
     private val preferenceChangeObserver: PreferenceChangeObserver,
-    private val windNotificationDao: WindNotificationDao
+    private val windNotificationDao: WindNotificationDao,
+    private val unblockWgDao: UnblockWgDao
 ) : LocalDbInterface {
 
     // Suspend functions (Coroutines)
@@ -260,5 +262,17 @@ class LocalDatabaseImpl @Inject constructor(
 
     override suspend fun getAllConfigs(): List<ConfigFile> {
         return configFileDao.getAllConfigs()
+    }
+
+    override suspend fun deleteUnblockWgParams() {
+        unblockWgDao.deleteAll()
+    }
+
+    override suspend fun insertUnblockWgParams(unblockWgParams: List<UnBlockWgParam>) {
+        unblockWgDao.insert(unblockWgParams)
+    }
+
+    override suspend fun getUnblockWgParams(): Flow<List<UnBlockWgParam>> {
+        return unblockWgDao.getUnblockWgParams()
     }
 }

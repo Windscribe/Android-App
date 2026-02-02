@@ -33,6 +33,7 @@ import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import com.windscribe.vpn.constants.ExtraConstants
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDatabaseImpl
 import com.windscribe.vpn.localdatabase.LocalDbInterface
@@ -40,6 +41,7 @@ import com.windscribe.vpn.localdatabase.Migrations
 import com.windscribe.vpn.localdatabase.NetworkInfoDao
 import com.windscribe.vpn.localdatabase.PopupNotificationDao
 import com.windscribe.vpn.localdatabase.ServerStatusDao
+import com.windscribe.vpn.localdatabase.UnblockWgDao
 import com.windscribe.vpn.localdatabase.UserStatusDao
 import com.windscribe.vpn.localdatabase.WindNotificationDao
 import com.windscribe.vpn.localdatabase.WindscribeDatabase
@@ -56,6 +58,7 @@ import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.NotificationRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
+import com.windscribe.vpn.repository.UnblockWgParamsRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.repository.WgConfigRepository
 import com.windscribe.vpn.serverlist.dao.CityAndRegionDao
@@ -235,7 +238,8 @@ open class BaseApplicationModule {
         networkInfoDao: NetworkInfoDao,
         serverStatusDao: ServerStatusDao,
         preferenceChangeObserver: PreferenceChangeObserver,
-        windNotificationDao: WindNotificationDao
+        windNotificationDao: WindNotificationDao,
+        unblockWgDao: UnblockWgDao
     ): LocalDbInterface {
         return LocalDatabaseImpl(
             userStatusDao,
@@ -251,7 +255,8 @@ open class BaseApplicationModule {
             networkInfoDao,
             serverStatusDao,
             preferenceChangeObserver,
-            windNotificationDao
+            windNotificationDao,
+            unblockWgDao
         )
     }
 
@@ -296,6 +301,12 @@ open class BaseApplicationModule {
     @Singleton
     fun providePopupNotificationDao(windscribeDatabase: WindscribeDatabase): PopupNotificationDao {
         return windscribeDatabase.popupNotificationDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideUnblockWgDao(windscribeDatabase: WindscribeDatabase): UnblockWgDao {
+        return windscribeDatabase.unblockWgDao()
     }
 
     @Provides
@@ -462,13 +473,15 @@ open class BaseApplicationModule {
         preferencesHelper: PreferencesHelper,
         wgConfigRepository: WgConfigRepository,
         proxyTunnelManager: ProxyTunnelManager,
-        proxyDNSManager: ProxyDNSManager
+        proxyDNSManager: ProxyDNSManager,
+        unblockWgParamsRepository: UnblockWgParamsRepository
     ): VPNProfileCreator {
         return VPNProfileCreator(
             preferencesHelper,
             wgConfigRepository,
             proxyTunnelManager,
-            proxyDNSManager
+            proxyDNSManager,
+            unblockWgParamsRepository
         )
     }
 
@@ -777,7 +790,7 @@ open class BaseApplicationModule {
             preferencesHelper.wsNetSettings,
             { log -> logWsNetMessage(log) },
             true,
-            "0.2.16"
+            ExtraConstants.AMNEZIA_WG_VERSION
         )
         advanceParameterRepository.getCountryOverride()?.let { override ->
             WSNet.instance().advancedParameters().setCountryOverrideValue(override)

@@ -8,6 +8,7 @@ import com.windscribe.vpn.api.response.*
 interface IApiCallManager {
 
     suspend fun addUserEmailAddress(email: String): GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>
+    suspend fun getApiIp(): GenericResponseClass<GetMyIpResponse?, ApiErrorResponse?>
     suspend fun getIp(): GenericResponseClass<String?, ApiErrorResponse?>
     suspend fun claimAccount(
         username: String,
@@ -118,4 +119,5 @@ interface IApiCallManager {
     suspend fun rotateIp(): GenericResponseClass<String?, ApiErrorResponse?>
     suspend fun pinIp(ip: String?): GenericResponseClass<String?, ApiErrorResponse?>
     suspend fun passwordRecovery(email: String?): GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
+    suspend fun unblockWgParams(): GenericResponseClass<UnblockWgResponse?, ApiErrorResponse?>
 }

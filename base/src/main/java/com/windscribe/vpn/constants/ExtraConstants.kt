@@ -13,5 +13,7 @@ object ExtraConstants {
 
     // JSON keys
     const val JSON_RESPONSE_KEY = "data"
-    const val DEFAULT_ICON = "Classic"
+    const val DEFAULT_ICON = "OG"
+    // Release:https://github.com/Windscribe/amneziawg-go/releases/tag/v0.2.16
+    const val AMNEZIA_WG_VERSION = "2.0.0"
 }
