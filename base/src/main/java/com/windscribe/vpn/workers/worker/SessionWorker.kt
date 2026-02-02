@@ -92,9 +92,11 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
             if (changed[0]) {
                 workManager.updateServerList()
             }
-            val storedSipCount = localDbInterface.getAllStaticRegions().size
+            val storedSip = localDbInterface.getAllStaticRegions()
+            val hasStaticCredential = storedSip.firstOrNull()?.credentials
+            val storedSipCount = storedSip.size
             logger.debug("Sip: stored: $storedSipCount updated: ${it.sipCount}")
-            if (storedSipCount != it.sipCount) {
+            if (storedSipCount != it.sipCount || (it.sipCount > 0 && hasStaticCredential == null)) {
                 workManager.updateStaticIpList()
             }
             val forceUpdate = inputData.getBoolean("forceUpdate", false)
