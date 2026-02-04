@@ -220,6 +220,8 @@ class DataStorePreferenceHelper(
     override fun clearAllData() {
         val installation = newInstallation
         val savedCustomIcon = customIcon  // Save custom icon before clearing
+        val language = savedLanguage
+        val theme = selectedTheme
         scope.launch {
             dataStore.edit { it.clear() }
         }
@@ -227,7 +229,9 @@ class DataStorePreferenceHelper(
         if (PreferencesKeyConstants.I_OLD == installation) {
             newInstallation = PreferencesKeyConstants.I_OLD
         }
-        customIcon = savedCustomIcon  // Restore custom icon after clearing
+        customIcon = savedCustomIcon
+        savedLanguage = language
+        selectedTheme = theme
     }
 
     override fun clearOldSessionAuth() {
