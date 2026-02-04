@@ -38,6 +38,7 @@ class WgConfigRepository @Inject constructor(
     private val preferenceHelper: PreferencesHelper
 ) {
     private val logger = LoggerFactory.getLogger(TAG)
+    private var firstConnection = true
 
     /**
      * Retrieves complete WireGuard configuration for establishing a VPN connection.
@@ -119,10 +120,11 @@ class WgConfigRepository @Inject constructor(
     private suspend fun generateKeys(forceInit: Boolean): CallResult<WgLocalParams> {
         // Return cached params if available and not forcing init
         val wgLocalParams = preferenceHelper.wgLocalParams
-        if (!forceInit && wgLocalParams?.hashedCIDR != null) {
+        if (!forceInit && wgLocalParams?.hashedCIDR != null && !firstConnection) {
             logger.debug("Using cached WireGuard parameters")
             return CallResult.Success(wgLocalParams)
         }
+        firstConnection = false
         val keyPair = if (wgLocalParams != null && wgLocalParams.hashedCIDR == null && !forceInit) {
             logger.debug("Refreshing WireGuard key pair due to missing CIDR")
             KeyPair(Key.fromBase64(wgLocalParams.privateKey))

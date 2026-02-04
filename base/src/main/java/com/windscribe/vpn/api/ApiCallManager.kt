@@ -471,7 +471,7 @@ open class ApiCallManager @Inject constructor(
             val callback = wsNetServerAPI.wgConfigsInit(
                 preferencesHelper.sessionHash,
                 clientPublicKey,
-                deleteOldestKey
+                deleteOldestKey,
             ) { code, json ->
                 buildResponse(continuation, code, json, WgInitResponse::class.java)
             }
