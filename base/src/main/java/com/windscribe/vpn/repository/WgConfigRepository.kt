@@ -124,14 +124,14 @@ class WgConfigRepository @Inject constructor(
             logger.debug("Using cached WireGuard parameters")
             return CallResult.Success(wgLocalParams)
         }
-        firstConnection = false
-        val keyPair = if (wgLocalParams != null && wgLocalParams.hashedCIDR == null && !forceInit) {
-            logger.debug("Refreshing WireGuard key pair due to missing CIDR")
+        val keyPair = if (wgLocalParams != null && !forceInit) {
+            logger.debug("Refreshing WireGuard key pair")
             KeyPair(Key.fromBase64(wgLocalParams.privateKey))
         } else {
             logger.debug("Generating new WireGuard key pair")
             KeyPair()
         }
+        firstConnection = false
         val publicKey = keyPair.publicKey.toBase64()
 
         // Brief delay for rate limiting
