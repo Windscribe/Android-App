@@ -9,12 +9,12 @@ import android.content.Intent
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED
 import android.net.VpnService
 import android.util.Log
-import com.windscribe.common.startSafeForeground
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.backend.utils.startForegroundSafely
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.ShortcutStateManager
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +44,11 @@ class CharonVpnServiceWrapper : CharonVpnService() {
 
     override fun onCreate() {
         appContext.serviceComponent.inject(this)
+        startForegroundSafely(
+            windNotificationBuilder,
+            NotificationConstants.SERVICE_NOTIFICATION_ID,
+            Connecting
+        )
         Log.i("GoLog", "Setting service")
         super.onCreate()
     }
@@ -66,12 +71,12 @@ class CharonVpnServiceWrapper : CharonVpnService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent == null || intent.action == VpnService.SERVICE_INTERFACE) {
+        if (intent == null || intent.action == SERVICE_INTERFACE) {
             logger.debug("System relaunched service, starting shortcut state manager")
-            // Call startForeground before stopSelf to prevent ForegroundServiceDidNotStartInTimeException
-            startSafeForeground(
+            startForegroundSafely(
+                windNotificationBuilder,
                 NotificationConstants.SERVICE_NOTIFICATION_ID,
-                windNotificationBuilder.buildNotification(Connecting)
+                Connecting
             )
             shortcutStateManager.connect()
             stopSelf()
@@ -79,19 +84,22 @@ class CharonVpnServiceWrapper : CharonVpnService() {
         }
         return when (intent.action) {
             DISCONNECT_ACTION -> {
-                startSafeForeground(
+                startForegroundSafely(
+                    windNotificationBuilder,
                     NotificationConstants.SERVICE_NOTIFICATION_ID,
-                    windNotificationBuilder.buildNotification(Connecting)
+                    Connecting
                 )
+                @Suppress("DEPRECATION")
                 stopForeground(false)
                 setNextProfile(null)
                 START_NOT_STICKY
             }
 
             else -> {
-                startSafeForeground(
+                startForegroundSafely(
+                    windNotificationBuilder,
                     NotificationConstants.SERVICE_NOTIFICATION_ID,
-                    windNotificationBuilder.buildNotification(Connecting)
+                    Connecting
                 )
                 Util.getProfile<VpnProfile>()?.let {
                     setNextProfile(it)

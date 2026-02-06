@@ -15,6 +15,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.Action
 import androidx.core.app.NotificationCompat.Builder
+import com.windscribe.common.startSafeForeground
 import com.windscribe.vpn.R.drawable
 import com.windscribe.vpn.R.mipmap
 import com.windscribe.vpn.R.string
@@ -307,4 +308,30 @@ class WindNotificationBuilder @Inject constructor(
             else -> setupNotificationLegacy()
         }
     }
+}
+
+/**
+ * Extension function to safely call startForeground immediately after DI injection
+ * to prevent ForegroundServiceDidNotStartInTimeException.
+ *
+ * This should be called in Service.onCreate() right after appContext.serviceComponent.inject(this)
+ * to ensure the service enters foreground mode before Android's ~5-10s timeout.
+ *
+ * @param notificationBuilder The injected WindNotificationBuilder (must be initialized via DI first)
+ * @param notificationId The notification ID to use
+ * @param status The VPN status to display in the notification
+ * @param clearActions If true, clears contentIntent and actions from the notification
+ */
+fun android.app.Service.startForegroundSafely(
+    notificationBuilder: WindNotificationBuilder,
+    notificationId: Int,
+    status: Status,
+    clearActions: Boolean = false
+) {
+    val notification = notificationBuilder.buildNotification(status)
+    if (clearActions) {
+        notification.contentIntent = null
+        notification.actions = null
+    }
+    startSafeForeground(notificationId, notification)
 }

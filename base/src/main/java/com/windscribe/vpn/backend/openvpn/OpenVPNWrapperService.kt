@@ -13,6 +13,7 @@ import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.backend.utils.startForegroundSafely
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.ShortcutStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -46,6 +47,11 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
 
     override fun onCreate() {
         Windscribe.appContext.serviceComponent.inject(this)
+        startForegroundSafely(
+            windNotificationBuilder,
+            NotificationConstants.SERVICE_NOTIFICATION_ID,
+            Connecting
+        )
         super.onCreate()
         openVPNBackend.service = this
     }
@@ -53,18 +59,19 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent == null || intent.action == VpnService.SERVICE_INTERFACE) {
             logger.debug("System relaunched service, starting shortcut state manager")
-            // Call startForeground before stopSelf to prevent ForegroundServiceDidNotStartInTimeException
-            startSafeForeground(
+            startForegroundSafely(
+                windNotificationBuilder,
                 NotificationConstants.SERVICE_NOTIFICATION_ID,
-                windNotificationBuilder.buildNotification(Connecting)
+                Connecting
             )
             shortcutStateManager.connect()
             stopSelf()
             return START_NOT_STICKY
         }
-        startSafeForeground(
+        startForegroundSafely(
+            windNotificationBuilder,
             NotificationConstants.SERVICE_NOTIFICATION_ID,
-            windNotificationBuilder.buildNotification(Connecting)
+            Connecting
         )
         return super.onStartCommand(intent, flags, startId)
     }

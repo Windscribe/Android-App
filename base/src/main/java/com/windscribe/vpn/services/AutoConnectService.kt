@@ -15,6 +15,7 @@ import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.backend.utils.startForegroundSafely
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.model.User
@@ -63,8 +64,6 @@ class AutoConnectService : Service() {
 
     private var logger = LoggerFactory.getLogger("auto-connect-service")
 
-    private var onStartCommandCalled = false
-
     companion object {
         var isAutoConnectingServiceRunning = false
     }
@@ -73,15 +72,17 @@ class AutoConnectService : Service() {
         isAutoConnectingServiceRunning = true
         appContext.serviceComponent.inject(this)
 
+        startForegroundSafely(
+            windNotificationBuilder,
+            NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID,
+            VPNState.Status.UnsecuredNetwork,
+            clearActions = true
+        )
         serviceScope.launch {
             vpnConnectionStateManager.state.collectLatest {
                 if (it.status == VPNState.Status.Connected || it.status == VPNState.Status.Connecting) {
                     logger.debug("VPN connection is successful. Stopping auto connect service.")
-                    // Only stop if onStartCommand was already called (meaning startForeground was called)
-                    // This prevents ForegroundServiceDidNotStartInTimeException race condition
-                    if (onStartCommandCalled) {
-                        stopAutoConnectService()
-                    }
+                    stopAutoConnectService()
                 }
             }
         }
@@ -123,11 +124,12 @@ class AutoConnectService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val notification = windNotificationBuilder.buildNotification(VPNState.Status.UnsecuredNetwork)
-        notification.contentIntent = null
-        notification.actions = null
-        startSafeForeground(NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID, notification)
-        onStartCommandCalled = true
+        startForegroundSafely(
+            windNotificationBuilder,
+            NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID,
+            VPNState.Status.UnsecuredNetwork,
+            clearActions = true
+        )
         return if (canAccessNetworkName()) {
             logger.debug("Auto connect service started and waiting for network changes.")
             START_STICKY

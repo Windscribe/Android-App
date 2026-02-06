@@ -7,13 +7,13 @@ package com.windscribe.vpn.backend.wireguard
 import android.content.Intent
 import android.net.VpnService
 import com.windscribe.common.DNSDetails
-import com.windscribe.common.startSafeForeground
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.backend.utils.startForegroundSafely
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.ShortcutStateManager
 import com.wireguard.android.backend.GoBackend
@@ -45,25 +45,31 @@ class WireGuardWrapperService : GoBackend.VpnService() {
 
     override fun onCreate() {
         Windscribe.appContext.serviceComponent.inject(this)
+        startForegroundSafely(
+            windNotificationBuilder,
+            NotificationConstants.SERVICE_NOTIFICATION_ID,
+            Connecting
+        )
         super.onCreate()
         wireguardBackend.serviceCreated(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent == null || intent.action == VpnService.SERVICE_INTERFACE) {
+        if (intent == null || intent.action == SERVICE_INTERFACE) {
             logger.debug("System relaunched service, starting shortcut state manager")
-            // Call startForeground before stopSelf to prevent ForegroundServiceDidNotStartInTimeException
-            startSafeForeground(
+            startForegroundSafely(
+                windNotificationBuilder,
                 NotificationConstants.SERVICE_NOTIFICATION_ID,
-                windNotificationBuilder.buildNotification(Connecting)
+                Connecting
             )
             shortcutStateManager.connect()
             stopSelf()
             return START_NOT_STICKY
         }
-        startSafeForeground(
+        startForegroundSafely(
+            windNotificationBuilder,
             NotificationConstants.SERVICE_NOTIFICATION_ID,
-            windNotificationBuilder.buildNotification(Connecting)
+            Connecting
         )
         return if (preferencesHelper.globalUserConnectionPreference) {
             START_STICKY
@@ -79,6 +85,7 @@ class WireGuardWrapperService : GoBackend.VpnService() {
     }
 
     fun close() {
+        @Suppress("DEPRECATION")
         stopForeground(false)
         stopSelf()
     }
