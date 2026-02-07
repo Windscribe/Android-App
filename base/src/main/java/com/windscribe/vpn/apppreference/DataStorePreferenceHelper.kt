@@ -695,7 +695,7 @@ class DataStorePreferenceHelper(
             getString(DataStoreKeys.DEVICE_ID, "")
                 .takeIf { it.isNotEmpty() }
         }
-        set(value) = setString(DataStoreKeys.DEVICE_ID, value)
+        set(value) = setStringSync(DataStoreKeys.DEVICE_ID, value)
 
     override var powerWhiteListDialogCount: Int
         get() = runBlocking { getInt(DataStoreKeys.POWER_WHITE_LIST_POPUP_SHOW_COUNT, 0) }
