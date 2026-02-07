@@ -45,6 +45,7 @@ fun CustomDropDown(
     selectedItemKey: String,
     shape: RoundedCornerShape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
     @StringRes description: Int? = null,
+    textAlign: TextAlign = TextAlign.Center,
     onSelect: (DropDownStringItem) -> Unit
 ) {
     val expanded = remember { mutableStateOf(false) }
@@ -108,7 +109,7 @@ fun CustomDropDown(
                                     text = it.label ?: "",
                                     color = MaterialTheme.colorScheme.backgroundColor,
                                     style = font16,
-                                    textAlign = TextAlign.Center,
+                                    textAlign = textAlign,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }

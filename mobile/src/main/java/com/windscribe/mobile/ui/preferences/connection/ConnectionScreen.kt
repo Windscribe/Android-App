@@ -288,6 +288,7 @@ private fun AntiCensorshipMode(viewModel: ConnectionViewModel?) {
                 R.string.amnezia_preset,
                 presets,
                 selectedPreset,
+                textAlign = TextAlign.Start,
                 shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
             ) {
                 val index = it.key.toIntOrNull() ?: 0
