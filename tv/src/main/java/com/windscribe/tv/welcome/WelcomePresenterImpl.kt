@@ -162,7 +162,7 @@ class WelcomePresenterImpl @Inject constructor(
                     welcomeView.updateCurrentProcess("Signing in...")
                 }
                 val result = result<AuthToken> {
-                    apiCallManager.authTokenLogin(true)
+                    apiCallManager.authTokenLogin(username, true)
                 }
                 withContext(Dispatchers.Main) {
                     when (result) {
