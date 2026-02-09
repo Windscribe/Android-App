@@ -167,7 +167,7 @@ class LoginViewModel @Inject constructor(
 
     private suspend fun startLoginProcess() {
         logger.info("Trying to log in with provided credentials...")
-        val authResult = result<AuthToken> { apiCallManager.authTokenLogin(false) }
+        val authResult = result<AuthToken> { apiCallManager.authTokenLogin(username, false) }
         when (authResult) {
             is CallResult.Error -> {
                 val networkError = getNetworkError(authResult.code)

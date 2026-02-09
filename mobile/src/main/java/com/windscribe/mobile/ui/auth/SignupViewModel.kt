@@ -158,7 +158,7 @@ class SignupViewModel @Inject constructor(
 
     private suspend fun startSignupProcess() {
         logger.info("Trying to registering with provided credentials...")
-        val authResult = result<AuthToken> { apiCallManager.authTokenSignup(false) }
+        val authResult = result<AuthToken> { apiCallManager.authTokenSignup(username, false) }
         when (authResult) {
             is CallResult.Error -> {
                 val networkError = getNetworkError(authResult.code)

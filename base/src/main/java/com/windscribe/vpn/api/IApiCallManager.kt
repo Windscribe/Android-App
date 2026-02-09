@@ -114,8 +114,8 @@ interface IApiCallManager {
         token: String
     ): GenericResponseClass<SsoResponse?, ApiErrorResponse?>
 
-    suspend fun authTokenSignup(useAsciiCaptcha: Boolean): GenericResponseClass<AuthToken?, ApiErrorResponse?>
-    suspend fun authTokenLogin(useAsciiCaptcha: Boolean): GenericResponseClass<AuthToken?, ApiErrorResponse?>
+    suspend fun authTokenSignup(username: String, useAsciiCaptcha: Boolean): GenericResponseClass<AuthToken?, ApiErrorResponse?>
+    suspend fun authTokenLogin(username: String, useAsciiCaptcha: Boolean): GenericResponseClass<AuthToken?, ApiErrorResponse?>
     suspend fun rotateIp(): GenericResponseClass<String?, ApiErrorResponse?>
     suspend fun pinIp(ip: String?): GenericResponseClass<String?, ApiErrorResponse?>
     suspend fun passwordRecovery(email: String?): GenericResponseClass<GenericSuccess?, ApiErrorResponse?>

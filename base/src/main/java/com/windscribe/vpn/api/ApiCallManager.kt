@@ -515,18 +515,18 @@ open class ApiCallManager @Inject constructor(
         }
     }
 
-    override suspend fun authTokenLogin(useAsciiCaptcha: Boolean): GenericResponseClass<AuthToken?, ApiErrorResponse?> {
+    override suspend fun authTokenLogin(username: String, useAsciiCaptcha: Boolean): GenericResponseClass<AuthToken?, ApiErrorResponse?> {
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.authTokenLogin(useAsciiCaptcha) { code, json ->
+            val callback = wsNetServerAPI.authTokenLogin(username,useAsciiCaptcha) { code, json ->
                 buildResponse(continuation, code, json, AuthToken::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
         }
     }
 
-    override suspend fun authTokenSignup(useAsciiCaptcha: Boolean): GenericResponseClass<AuthToken?, ApiErrorResponse?> {
+    override suspend fun authTokenSignup(username: String, useAsciiCaptcha: Boolean): GenericResponseClass<AuthToken?, ApiErrorResponse?> {
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.authTokenSignup(useAsciiCaptcha) { code, json ->
+            val callback = wsNetServerAPI.authTokenSignup(username,useAsciiCaptcha) { code, json ->
                 buildResponse(continuation, code, json, AuthToken::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
