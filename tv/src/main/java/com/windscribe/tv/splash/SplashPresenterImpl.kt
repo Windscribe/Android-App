@@ -47,15 +47,12 @@ class SplashPresenterImpl @Inject constructor(
 
     fun checkApplicationInstanceAndDecideActivity() {
         if (preferencesHelper.isNewApplicationInstance) {
-            activityScope.launch(Dispatchers.IO) {
-                preferencesHelper.isNewApplicationInstance = false
-            }
             val installation = preferencesHelper.newInstallation
             if (PreferencesKeyConstants.I_NEW == installation) {
                 // Record new install
-                preferencesHelper.newInstallation = PreferencesKeyConstants.I_OLD
                 activityScope.launch(Dispatchers.IO) {
                     try {
+                        kotlinx.coroutines.delay(500)
                         val result = result<String> {
                             apiCallManager.recordAppInstall()
                         }
@@ -63,6 +60,8 @@ class SplashPresenterImpl @Inject constructor(
                             when (result) {
                                 is CallResult.Success -> {
                                     logger.info("Recording app install success. ${result.data}")
+                                    preferencesHelper.isNewApplicationInstance = false
+                                    preferencesHelper.newInstallation = PreferencesKeyConstants.I_OLD
                                 }
                                 is CallResult.Error -> {
                                     logger.debug("Recording app install failed. ${result.errorMessage}")
@@ -79,6 +78,9 @@ class SplashPresenterImpl @Inject constructor(
                 }
             } else {
                 // Not a new install, decide activity
+                activityScope.launch(Dispatchers.IO) {
+                    preferencesHelper.isNewApplicationInstance = false
+                }
                 decideActivity()
             }
         } else {

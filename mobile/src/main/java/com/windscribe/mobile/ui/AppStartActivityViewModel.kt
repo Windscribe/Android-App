@@ -70,7 +70,7 @@ class AppStartActivityViewModelImpl(val preferencesHelper: PreferencesHelper, va
 
     private fun recordInstall() {
        viewModelScope.launch {
-           delay(1500)
+           delay(500)
            if (preferencesHelper.isNewApplicationInstance) {
                val installation = preferencesHelper.newInstallation
                if (PreferencesKeyConstants.I_NEW == installation) {
