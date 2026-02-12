@@ -11,6 +11,7 @@ import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.repository.CallResult
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -69,18 +70,19 @@ class AppStartActivityViewModelImpl(val preferencesHelper: PreferencesHelper, va
 
     private fun recordInstall() {
        viewModelScope.launch {
+           delay(1500)
            if (preferencesHelper.isNewApplicationInstance) {
-               preferencesHelper.isNewApplicationInstance = false
                val installation = preferencesHelper.newInstallation
                if (PreferencesKeyConstants.I_NEW == installation) {
-                   preferencesHelper.newInstallation = PreferencesKeyConstants.I_OLD
                    val result = result<String?> { apiCalManager.recordAppInstall() }
                    when(result) {
                        is CallResult.Success -> {
                            logger.info("App install recorded successfully.")
+                           preferencesHelper.isNewApplicationInstance = false
+                           preferencesHelper.newInstallation = PreferencesKeyConstants.I_OLD
                        }
                        is CallResult.Error -> {
-                           logger.error("Failed to record app install ${result.errorMessage}")
+                           logger.error("Failed to record app install: ${result.errorMessage}")
                        }
                    }
                }
