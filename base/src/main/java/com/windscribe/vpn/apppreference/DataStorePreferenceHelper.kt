@@ -321,8 +321,8 @@ class DataStorePreferenceHelper(
         get() = runBlocking {
             getString(
                 DataStoreKeys.CONNECTION_STATUS,
-                PreferencesKeyConstants.VPN_DISCONNECTED
-            )
+                ""
+            ).takeIf { it.isNotEmpty() }
         }
         set(value) = setStringSync(DataStoreKeys.CONNECTION_STATUS, value)  // SYNC
 
@@ -603,7 +603,7 @@ class DataStorePreferenceHelper(
     // App Lifecycle
     override var isNewApplicationInstance: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.ON_CREATE_APPLICATION, true) }
-        set(value) = setBoolean(DataStoreKeys.ON_CREATE_APPLICATION, value)
+        set(value) = setBooleanSync(DataStoreKeys.ON_CREATE_APPLICATION, value)
 
     override var lastSelectedTabIndex: Int
         get() = runBlocking { getInt(DataStoreKeys.LAST_SELECTED_SERVER_TAB, 0) }
@@ -934,11 +934,11 @@ class DataStorePreferenceHelper(
     override var newInstallation: String?
         get() = runBlocking {
             getString(
-                DataStoreKeys.NEW_INSTALLATION,
+                 DataStoreKeys.NEW_INSTALLATION,
                 ""
             ).takeIf { it.isNotEmpty() }
         }
-        set(value) = setString(DataStoreKeys.NEW_INSTALLATION, value)
+        set(value) = setStringSync(DataStoreKeys.NEW_INSTALLATION, value)
 
     override var getSession: String?
         get() = runBlocking { getString(DataStoreKeys.GET_SESSION, "").takeIf { it.isNotEmpty() } }
