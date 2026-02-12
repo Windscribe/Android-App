@@ -1,0 +1,8 @@
+v3.97(Mobile)
+* Removed WireGuard dependency on Api and faster connect times.
+* Fixed Unable to login in Russia.
+* New anti-censorship configurations for WireGuard(Connections > Anticensorship > Select Configuration)
+* Added custom & discreet icon + App name support.
+* Added option to filter out system apps from split tunnel list.
+* Fixed screen exit and enter animations.
+* Fixed status bar not matching the selected theme.

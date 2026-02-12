@@ -1,21 +1,45 @@
-Windscribe VPN is a tool that secures Wifi and helps you safeguard your privacy online. Best part? It’s absolutely free to use and offers up to 10GB of bandwidth per month, if you supply a confirmed email address! That’s something you can actually use!
+<b>Windscribe VPN</b> is your all-in-one solution for privacy, security, and unrestricted internet access.
 
-With Windscribe VPN, you'll never mess with confusing settings and option menus again; just turn it on once and forget about it.
+Trusted by millions worldwide, recognized as a <b>PCMag Editors’ Choice</b>, and proven in court to protect your data, Windscribe is the best VPN to browse, stream, and connect without limits.
 
-Get up to 10GB of data per month for FREE, which you can use on your iPhone, iPad, Mac or Windows PC, or as a browser add-on for Chrome, Firefox and Opera.
+We’re <b>independently owned, open-source,</b> and <b>audited</b>. Our no-logs policy is not just promised, it has been backed up in real legal cases. Whether you’re securing public Wi-Fi in New York City, bypassing geo-blocks to access global content, or streaming in 4K from your living room, Windscribe is built to keep you safe and connected.
 
-<b>Free Features</b>
-•	Super easy to use, just turn it on with a single tap
-•	Unblocks most geo-restricted content
-•	Network whitelisting - auto-enable/disable the VPN when you get home, or join any other wifi network.
-•	Split Tunneling - choose which apps should go over the VPN tunnel.
-•	Encrypts all your data so nobody can spy on your Internet activities
-•	Strict no-logging policy
-•	4 protocols to choose from (OpenVPN UDP/TCP, IKEv2, Stealth)
-•	Access to servers in 10 countries (Including US, Canada, UK and more)
+Everything Windscribe Can Do
 
-<b>Pro Features</b>
-•	Same as the free features, plus:
-•	Unlimited bandwidth
-•	Unlimited connections
-•	Access to servers in over 63 countries and over 110 data-centers
+Windscribe delivers a full privacy and performance solution to every user, free or paid:
+•  <b>High-speed 10 Gbps servers</b> for fast downloads, smooth streaming, and low-latency gaming.
+• <b>Streaming access</b> to Netflix, Disney+, AmazonPrime Video, Hulu, HBO Max, Peacock, Paramount+, ESPN+, Sling TV, BBC iPlayer, DAZN, FuboTV, and more, whether you are in the US or abroad.
+•  <b>P2P support</b> for secure file sharing without throttling.
+•  <b>AES-256 encryption</b> with Perfect Forward Secrecy to secure every packet.
+•  <b>6 secure protocols</b>: WireGuard®, OpenVPN (UDP/TCP), IKEv2, Stealth, and Wstunnel. You can adapt for speed, stability, or stealth.
+•  <b>Split tunnelling</b> to route only the apps you choose through the VPN.
+•  <b>DNS leak protection</b> to keep your browsing history private.
+•  <b>Firewall killswitch</b> to block all traffic if your VPN connection drops.
+•  <b>Multi-platform support</b> on Android, iOS, Windows, macOS, Linux, browsers, smart TVs, tablets and routers.
+• <b>Tracker & threat blocking</b> to stop advertisers from profiling you and to filter out malicious or unwanted sites, keeping pages faster, cleaner, and safer.
+• <b>One-tap Quick Connect</b> for instant protection anywhere.
+
+Robust Free Plan – Try Before You Buy
+
+Every Windscribe user gets the full privacy and security stack above. Our free plan is perfect for trying Windscribe and securing essential browsing, with:
+• 10 GB monthly data allowance
+• Access to core global server locations
+
+Why Go Pro
+
+Upgrading to Pro unlocks the complete Windscribe experience:
+•  <b>Unlimited data and bandwidth</b>, so you can browse, stream, and download without caps.
+• Access to all 69+ countries & locations: Albania, Argentina, Australia, Austria, Belgium, Bosnia, Brazil, Bulgaria, Canada, Chile, Colombia, Croatia, Cyprus, Czech Republic, Denmark, Ecuador, El Salvador, Estonia, Finland, France, Georgia, Germany, Greece, Guatemala, Hong Kong, Hungary, Iceland, India, Indonesia, Ireland, Israel, Italy, Japan, Kenya, Latvia, Lithuania, Luxembourg, Malaysia, Mexico, Moldova, Netherlands, New Zealand, Nigeria, North Macedonia, Norway, Panama, Paraguay, Peru, Philippines, Poland, Portugal, Romania, Russia, Serbia, Singapore, Slovakia, Slovenia, South Africa, South Korea, Spain, Sweden, Switzerland, Taiwan, Thailand, Turkey, UK, Ukraine, United Arab Emirates, <b>United States</b>, Vietnam.
+•  <b>Port forwarding</b> for hosting game servers or accessing devices remotely.
+
+Pro is ideal for heavy streamers, frequent travellers, and anyone who wants total access to the fastest servers and every location we offer.
+
+Why Americans Trust Windscribe
+
+• Recognized by <b>PCMag Editors’ Choice</b> for quality and performance.
+<b>Court-proven privacy,</b> not just marketing claims.
+• Open-source apps and <b>third-party audits</b> for total transparency.
+• Works seamlessly whether you need a US IP abroad or want to access global content from home.
+• Built and maintained by a team focused on privacy, not corporate shareholders.
+
+<b>Download Windscribe VPN today</b>. Start free to secure your connection instantly, or go Pro for unlimited access, all server locations, and the fastest VPN speeds available. Your internet, your rules — in the US and around the world.
