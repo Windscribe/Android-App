@@ -10,6 +10,18 @@ plugins {
 apply from: "$rootDir/config/config.gradle"
 apply from: "$rootDir/depedencycheck.gradle"
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask.class).configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
 android {
     namespace 'com.windscribe.mobile'
     ndkVersion "27.2.12479018"

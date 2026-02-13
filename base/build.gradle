@@ -10,6 +10,12 @@ java {
     }
 }
 
+tasks.withType(org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask.class).configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
 android {
     ndkVersion "27.2.12479018"
     compileOptions {
