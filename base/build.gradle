@@ -4,6 +4,12 @@ apply plugin: 'kotlin-kapt'
 apply from: "$rootDir/config/config.gradle"
 apply from: "$rootDir/depedencycheck.gradle"
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
 android {
     ndkVersion "27.2.12479018"
     compileOptions {
