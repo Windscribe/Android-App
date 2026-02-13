@@ -7,11 +7,11 @@ android {
     compileSdk = 34
     ndkVersion = "27.2.12479018"
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "21"
     }
     namespace = "com.wireguard.tunnel"
     defaultConfig {
