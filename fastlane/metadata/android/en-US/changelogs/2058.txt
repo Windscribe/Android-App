@@ -1,3 +1,3 @@
-v3.97(TV)
+v3.98(TV)
 * Removed WireGuard dependency on Api and faster connect times.
 * Fixed Unable to login in Russia.

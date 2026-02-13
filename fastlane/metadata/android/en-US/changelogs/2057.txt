@@ -1,4 +1,4 @@
-v3.97(Mobile)
+v3.98(Mobile)
 * Removed WireGuard dependency on Api and faster connect times.
 * Fixed Unable to login in Russia.
 * New anti-censorship configurations for WireGuard(Connections > Anticensorship > Select Configuration)
