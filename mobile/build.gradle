@@ -58,6 +58,9 @@ android {
         targetCompatibility rootProject.java
         coreLibraryDesugaringEnabled true
     }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 
     buildFeatures {
         viewBinding true

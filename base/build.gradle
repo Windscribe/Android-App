@@ -10,6 +10,9 @@ android {
         sourceCompatibility rootProject.java
         targetCompatibility rootProject.java
     }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
     buildFeatures {
         dataBinding true
         viewBinding true
