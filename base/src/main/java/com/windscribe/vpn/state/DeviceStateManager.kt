@@ -20,7 +20,6 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
-import androidx.work.impl.utils.getActiveNetworkCompat
 import com.windscribe.vpn.services.DeviceStateService.Companion.enqueueWork
 import com.wsnet.lib.WSNet
 import kotlinx.coroutines.CoroutineScope
@@ -225,6 +224,28 @@ class DeviceStateManager @Inject constructor(
      */
     fun getCurrentNetworkName(): String? {
         return _networkDetail.value?.name
+    }
+
+    /**
+     * Gets the active network in an API-safe way.
+     * Uses getActiveNetwork() on API 23+ (Android 6.0+)
+     * Falls back to getAllNetworks() on older versions (including Fire OS)
+     */
+    private fun ConnectivityManager.getActiveNetworkCompat(): Network? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                activeNetwork
+            } catch (e: Exception) {
+                // Fallback for Fire OS or other modified Android versions
+                logger.warn("getActiveNetwork() failed, using fallback: ${e.message}")
+                getAllNetworks().firstOrNull()
+            }
+        } else {
+            // API 21-22: Use getAllNetworks() and pick first one with internet capability
+            getAllNetworks().firstOrNull { network ->
+                getNetworkCapabilities(network)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+            }
+        }
     }
 
     /**
