@@ -243,7 +243,9 @@ class DeviceStateManager @Inject constructor(
         } else {
             // API 21-22: Use getAllNetworks() and pick first one with internet capability
             getAllNetworks().firstOrNull { network ->
-                getNetworkCapabilities(network)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+                val info = getNetworkInfo(network)
+                logger.info("Checking network $info")
+                info?.isConnected == true
             }
         }
     }
@@ -251,6 +253,7 @@ class DeviceStateManager @Inject constructor(
     /**
      * Checks if there's underlying connectivity (WiFi or Cellular with validated internet).
      * Returns true only if there's a network with underlying transport and working internet.
+     * On API < 23 (including Fire OS), validation check is optional as it may not be properly set.
      */
     private fun hasUnderlyingConnectivity(): Boolean {
         val activeNetwork = connectivityManager?.getActiveNetworkCompat() ?: return false
@@ -261,7 +264,10 @@ class DeviceStateManager @Inject constructor(
         val hasWifi = caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
         val hasCellular = caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
         val hasEthernet = caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
-        val result = hasInternet && isValidated && (hasWifi || hasCellular || hasEthernet)
+        // On API < 23 (Fire OS, etc), don't require validation as it may not be set
+        val requireValidation = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+        val hasTransport = hasWifi || hasCellular || hasEthernet
+        val result = hasInternet && hasTransport && (isValidated || !requireValidation)
         return result
     }
 
