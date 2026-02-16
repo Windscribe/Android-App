@@ -78,3 +78,16 @@
 -keep class com.windscribe.vpn.api.response.GenericResponseClass { *; }
 -keep class com.windscribe.vpn.serverlist.entity.** { *; }
 -keep class com.windscribe.vpn.api.response.** { *; }
+
+# Fire OS (API 22) compatibility - Prevent VerifyError with AutofillManager
+# AutofillManager was added in API 26 but Fire OS runs on API 22
+-dontwarn android.view.autofill.**
+-dontwarn android.service.autofill.**
+
+# Keep entire AppCompat library - prevent R8 from obfuscating/optimizing
+-keep class androidx.appcompat.** { *; }
+-keepclassmembers class androidx.appcompat.** { *; }
+
+# Keep Material Design components
+-keep class com.google.android.material.** { *; }
+-keepclassmembers class com.google.android.material.** { *; }
