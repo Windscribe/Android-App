@@ -375,7 +375,7 @@
     <string name="inclusive">Bao gồm</string>
     <string name="network_options_description">Windscribe sẽ tự động ngắt kết nối khi bạn tham gia mạng wifi không an toàn.</string>
     <string name="auto_secure_new_networks">Tự động bảo mật mạng mới</string>
-    <string name="auto_secure_new_networks_description">Đánh dấu tất cả các mạng mới gặp là Bảo mật.</string>
+    <string name="auto_secure_new_networks_description">Các mạng mới tự động được "Bảo mật". Nếu bạn gắn thẻ mạng là "Không an toàn", Windscribe sẽ ngắt kết nối khi thiết bị tham gia vào mạng đó. KHÔNG khuyến nghị đặt mạng là "Không an toàn".</string>
     <string name="auto_secure_description_secondary">Kết nối tự động trên mạng Wi-Fi này với
 Vị trí được chọn cuối cùng.</string>
     <string name="preferred_protocol_description_secondary">Chọn giao thức tốt nhất cho mạng này. Thao tác này sẽ ghi đè tất cả cài đặt kết nối chung.</string>

@@ -375,7 +375,7 @@
     <string name="inclusive">Inklusif</string>
     <string name="network_options_description">Windscribe akan memutuskan sambungan secara otomatis saat Anda bergabung dengan jaringan wifi yang tidak aman.</string>
     <string name="auto_secure_new_networks">Amankan Otomatis jaringan baru</string>
-    <string name="auto_secure_new_networks_description">Tandai semua jaringan yang baru ditemui sebagai Diamankan.</string>
+    <string name="auto_secure_new_networks_description">Jaringan baru secara otomatis "Diamankan". Jika Anda menandai jaringan sebagai "Tidak Aman", Windscribe akan terputus saat perangkat bergabung dengannya. Menyetel jaringan sebagai "Tidak Aman" TIDAK disarankan.</string>
     <string name="auto_secure_description_secondary">Hubungkan secara otomatis di jaringan Wi-Fi ini ke
 Lokasi terakhir yang dipilih.</string>
     <string name="preferred_protocol_description_secondary">Pilih protokol terbaik untuk jaringan ini. Tindakan ini akan menimpa semua pengaturan koneksi global.</string>

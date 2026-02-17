@@ -375,7 +375,7 @@
     <string name="inclusive">شامله</string>
     <string name="network_options_description">سيتم قطع اتصال Windscribe تلقائيا عند الانضمام إلى شبكة wifi غير آمنة.</string>
     <string name="auto_secure_new_networks">تأمين تلقائي للشبكات الجديدة</string>
-    <string name="auto_secure_new_networks_description">ضع علامة على جميع الشبكات التي تمت مواجهتها حديثا على أنها مؤمنة.</string>
+    <string name="auto_secure_new_networks_description">يتم تأمين الشبكات الجديدة تلقائيًا. إذا قمت بوضع علامة على الشبكة على أنها "غير آمنة"، سيقطع Windscribe الاتصال عندما ينضم الجهاز إليها. لا يُنصح بتعيين الشبكة على أنها "غير آمنة".</string>
     <string name="auto_secure_description_secondary">اتصل تلقائيا على شبكة Wi-Fi هذه ب
 آخر موقع تم اختياره.</string>
     <string name="preferred_protocol_description_secondary">اختر أفضل بروتوكول لهذه الشبكة. يؤدي هذا إلى تجاوز جميع إعدادات الاتصال العمومي.</string>

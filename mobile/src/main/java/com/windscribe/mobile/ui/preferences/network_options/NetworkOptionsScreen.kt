@@ -41,6 +41,7 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.R
+import com.windscribe.vpn.constants.FeatureExplainer
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 
 @Composable
@@ -66,9 +67,10 @@ fun NetworkOptionsScreen(viewModel: NetworkOptionsViewModel? = null) {
                 icon = com.windscribe.mobile.R.drawable.ic_wifi,
                 description = R.string.auto_secure_new_networks_description,
                 autoSecureEnabled,
+                explainer = FeatureExplainer.NETWORK_OPTIONS,
                 onSelect = {
                     viewModel?.onAutoSecureChanged()
-                }
+                },
             )
             if (currentNetwork != null) {
                 Spacer(modifier = Modifier.height(16.dp))

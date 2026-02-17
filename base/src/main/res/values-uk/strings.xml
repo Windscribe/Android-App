@@ -377,7 +377,7 @@
     <string name="inclusive">Включно</string>
     <string name="network_options_description">Windscribe автоматично відключиться, коли ви приєднаєтеся до незахищеної мережі Wi-Fi.</string>
     <string name="auto_secure_new_networks">Автоматичний захист нових мереж</string>
-    <string name="auto_secure_new_networks_description">Позначте всі нові мережі як захищені.</string>
+    <string name="auto_secure_new_networks_description">Нові мережі автоматично стають "Захищеними". Якщо ви позначите мережу як "Незахищену", Windscribe відключиться, коли пристрій підключиться до неї. НЕ рекомендується встановлювати мережу як "Незахищену".</string>
     <string name="auto_secure_description_secondary">Автоматично під\єднувати пристрій у цій мережі Wi-Fi до
 Остання обрана локація.</string>
     <string name="preferred_protocol_description_secondary">Виберіть найкращий протокол для цієї мережі. Це замінює всі глобальні налаштування підключення.</string>

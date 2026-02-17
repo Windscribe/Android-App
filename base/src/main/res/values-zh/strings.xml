@@ -375,7 +375,7 @@
     <string name="inclusive">包括</string>
     <string name="network_options_description">当您连接标记为 “未保护” 的Wi-Fi网络时，Windscribe 将自动断开隧道连接。</string>
     <string name="auto_secure_new_networks">自动保护新连接的网络</string>
-    <string name="auto_secure_new_networks_description">将所有新的网络标记为“已保护”。</string>
+    <string name="auto_secure_new_networks_description">新网络会自动标记为"安全"。如果您将网络标记为"不安全"，Windscribe将在设备加入时断开连接。不建议将网络设置为"不安全"。</string>
     <string name="auto_secure_description_secondary">在此 Wi-Fi 网络上自动连接到
 上次选择的位置。</string>
     <string name="preferred_protocol_description_secondary">为此网络选择最佳协议。这将覆盖所有全局连接设置。</string>

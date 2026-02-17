@@ -375,7 +375,7 @@
     <string name="inclusive">포함</string>
     <string name="network_options_description">Windscribe는 보안되지 않은 Wi-Fi 네트워크에 연결할 때 자동으로 연결을 끊습니다.</string>
     <string name="auto_secure_new_networks">새 네트워크 자동 보안</string>
-    <string name="auto_secure_new_networks_description">새로 발견된 모든 네트워크를 보안으로 표시합니다.</string>
+    <string name="auto_secure_new_networks_description">새 네트워크는 자동으로 "보안됨"으로 설정됩니다. 네트워크를 "보안되지 않음"으로 태그하면 기기가 연결될 때 Windscribe가 연결을 끊습니다. 네트워크를 "보안되지 않음"으로 설정하는 것은 권장되지 않습니다.</string>
     <string name="auto_secure_description_secondary">이 Wi-Fi 네트워크에서 자동으로 연결
 마지막으로 선택한 위치입니다.</string>
     <string name="preferred_protocol_description_secondary">이 네트워크에 가장 적합한 프로토콜을 선택합니다. 이렇게 하면 모든 전역 연결 설정이 재정의됩니다.</string>

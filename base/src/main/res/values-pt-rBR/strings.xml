@@ -375,7 +375,7 @@
     <string name="inclusive">Inclusive</string>
     <string name="network_options_description">Windscribe will auto-disconnect when you join an unsecured wifi network.</string>
     <string name="auto_secure_new_networks">Auto-Secure new networks</string>
-    <string name="auto_secure_new_networks_description">Mark all newly encountered networks as Secured.</string>
+    <string name="auto_secure_new_networks_description">As novas redes são automaticamente "Protegidas". Se marcar uma rede como "Não protegida", o Windscribe desligar-se-á quando o dispositivo se ligar a ela. NÃO é recomendado definir uma rede como "Não protegida".</string>
     <string name="auto_secure_description_secondary">Connect automatically on this Wi-Fi network to
 last chosen location.</string>
     <string name="preferred_protocol_description_secondary">Choose the best protocol for this network. This overrides all global connection settings.</string>

@@ -375,7 +375,7 @@
     <string name="inclusive">सम्मिलित</string>
     <string name="network_options_description">जब आप असुरक्षित वाईफाई नेटवर्क में शामिल होते हैं तो विंडस्क्राइब ऑटो-डिस्कनेक्ट हो जाएगा।</string>
     <string name="auto_secure_new_networks">ऑटो-सुरक्षित नए नेटवर्क</string>
-    <string name="auto_secure_new_networks_description">सभी नए सामने आए नेटवर्क को सुरक्षित के रूप में चिह्नित करें।</string>
+    <string name="auto_secure_new_networks_description">नए नेटवर्क स्वचालित रूप से "सुरक्षित" होते हैं। यदि आप किसी नेटवर्क को "असुरक्षित" के रूप में टैग करते हैं, तो डिवाइस के उसमें शामिल होने पर Windscribe डिस्कनेक्ट हो जाएगा। किसी नेटवर्क को "असुरक्षित" के रूप में सेट करने की अनुशंसा नहीं की जाती है।</string>
     <string name="auto_secure_description_secondary">इस वाई-फ़ाई नेटवर्क पर स्वचालित रूप से कनेक्ट करें
 अंतिम चुना गया स्थान।</string>
     <string name="preferred_protocol_description_secondary">इस नेटवर्क के लिए सबसे अच्छा प्रोटोकॉल चुनें। यह सभी वैश्विक कनेक्शन सेटिंग्स को ओवरराइड करता है।</string>
