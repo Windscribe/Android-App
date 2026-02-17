@@ -16,6 +16,11 @@ tasks.withType(org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask.class)
     }
 }
 
+tasks.withType(JavaCompile).configureEach {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
 android {
     ndkVersion "27.2.12479018"
     compileOptions {
