@@ -2,10 +2,25 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask.class).configureEach {
+    kotlinOptions {
+        jvmTarget = "21"
+    }
+}
+
 android {
     compileOptions {
         sourceCompatibility rootProject.java
         targetCompatibility rootProject.java
+    }
+    kotlinOptions {
+        jvmTarget = "21"
     }
     compileSdkVersion rootProject.appCompiledSdk
     defaultConfig {

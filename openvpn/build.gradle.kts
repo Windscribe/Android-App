@@ -11,6 +11,12 @@ plugins {
    // kotlin("android.extensions")
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 android {
     compileSdkVersion(34)
     ndkVersion = "27.2.12479018"
