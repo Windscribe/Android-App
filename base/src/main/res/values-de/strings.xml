@@ -377,7 +377,7 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="inclusive">Inklusive</string>
     <string name="network_options_description">Windscribe trennt die Verbindung automatisch, wenn du dich mit einem ungesicherten WLAN-Netzwerk verbinden.</string>
     <string name="auto_secure_new_networks">Auto-Sicherung neuer Netzwerke</string>
-    <string name="auto_secure_new_networks_description">Markiere alle neuen Netzwerke als sicher.</string>
+    <string name="auto_secure_new_networks_description">Neue Netzwerke werden automatisch als "Gesichert" markiert. Wenn Sie ein Netzwerk als "Ungesichert" markieren, trennt Windscribe die Verbindung, wenn das Gerät dem Netzwerk beitritt. Es wird NICHT empfohlen, ein Netzwerk als "Ungesichert" festzulegen.</string>
     <string name="auto_secure_description_secondary">Automatisch mit diesem WLAN-Netzwerk verbinden und zum zuletzt ausgewählten Standort wechseln.</string>
     <string name="preferred_protocol_description_secondary">Wähle das beste Protokoll für dieses Netzwerk aus. Dies überschreibt alle globalen Verbindungseinstellungen.</string>
     <string name="location_order_description">Ordne die Standortliste aufsteigend nach Alphabet, Geografie oder Latenz.</string>

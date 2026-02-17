@@ -380,7 +380,7 @@
     <string name="explain_me" translatable="false">Εξηγήστε μου!</string>
     <string name="network_options_description">Το Windscribe θα αποσυνδεθεί αυτόματα όταν συνδεθείτε σε μη ασφαλές δίκτυο Wi-Fi.</string>
     <string name="auto_secure_new_networks">Αυτόματη Ασφάλιση νέων δικτύων</string>
-    <string name="auto_secure_new_networks_description">Το Windscribe θα επισημαίνει κάθε νέο δίκτυο ως "Ασφαλές" και θα ενεργοποιείται **ΑΥΤΟΜΑΤΑ** όταν η συσκευή σας συνδέεται σε αυτά.</string>
+    <string name="auto_secure_new_networks_description">Τα νέα δίκτυα είναι αυτόματα "Ασφαλή". Αν επισημάνετε ένα δίκτυο ως "Μη ασφαλές", το Windscribe θα αποσυνδεθεί όταν η συσκευή συνδεθεί σε αυτό. ΔΕΝ συνιστάται να ορίσετε ένα δίκτυο ως "Μη ασφαλές".</string>
     <string name="auto_secure_description_secondary">Αυτόματη σύνδεση σε αυτό το δίκτυο Wi-Fi στην τελευταία επιλεγμένη τοποθεσία.</string>
     <string name="preferred_protocol_description_secondary">Επιλέξτε το καλύτερο πρωτόκολλο για αυτό το δίκτυο. Αυτό παρακάμπτει όλες τις καθολικές ρυθμίσεις σύνδεσης.</string>
     <string name="location_order_description">Ταξινόμηση της λίστας τοποθεσιών με αύξουσα αλφαβητική σειρά, γεωγραφία ή καθυστέρηση.</string>

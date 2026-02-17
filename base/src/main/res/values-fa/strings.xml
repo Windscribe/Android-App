@@ -375,7 +375,7 @@
     <string name="inclusive">شامل</string>
     <string name="network_options_description">Windscribe هنگام پیوستن به یک شبکه وای فای ناامن به طور خودکار قطع می شود.</string>
     <string name="auto_secure_new_networks">امنیت خودکار شبکه های جدید</string>
-    <string name="auto_secure_new_networks_description">تمام شبکه های تازه مواجه شده را به عنوان امن علامت گذاری کنید.</string>
+    <string name="auto_secure_new_networks_description">شبکه‌های جدید به طور خودکار "ایمن" هستند. اگر شبکه‌ای را به عنوان "ناایمن" علامت‌گذاری کنید، Windscribe هنگامی که دستگاه به آن می‌پیوندد قطع می‌شود. تنظیم شبکه به عنوان "ناایمن" توصیه نمی‌شود.</string>
     <string name="auto_secure_description_secondary">اتصال خودکار در این شبکه Wi-Fi به
 اخرین مکان انتخاب شده</string>
     <string name="preferred_protocol_description_secondary">بهترین پروتکل را برای این شبکه انتخاب کنید. این تمام تنظیمات اتصال جهانی را لغو می کند.</string>

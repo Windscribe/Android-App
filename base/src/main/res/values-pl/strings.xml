@@ -375,7 +375,7 @@
     <string name="inclusive">All inclusive</string>
     <string name="network_options_description">Windscribe automatycznie rozłączy się po dołączeniu do niezabezpieczonej sieci Wi-Fi.</string>
     <string name="auto_secure_new_networks">Automatyczne zabezpieczanie nowych sieci</string>
-    <string name="auto_secure_new_networks_description">Oznacz wszystkie nowo napotkane sieci jako zabezpieczone.</string>
+    <string name="auto_secure_new_networks_description">Nowe sieci są automatycznie oznaczone jako "Zabezpieczone". Jeśli oznaczysz sieć jako "Niezabezpieczoną", Windscribe rozłączy się, gdy urządzenie dołączy do niej. Ustawienie sieci jako "Niezabezpieczonej" NIE jest zalecane.</string>
     <string name="auto_secure_description_secondary">Połącz się automatycznie w tej sieci Wi-Fi z
 ostatnio wybrana lokalizacja.</string>
     <string name="preferred_protocol_description_secondary">Wybierz najlepszy protokół dla tej sieci. Spowoduje to zastąpienie wszystkich globalnych ustawień połączenia.</string>

@@ -375,7 +375,7 @@
     <string name="inclusive">Inclusivo</string>
     <string name="network_options_description">Windscribe se desconectará automáticamente cuando se una a una red wifi no segura.</string>
     <string name="auto_secure_new_networks">Nuevas redes autoseguras</string>
-    <string name="auto_secure_new_networks_description">Marque todas las redes recién encontradas como seguras.</string>
+    <string name="auto_secure_new_networks_description">Las redes nuevas se marcan automáticamente como "Seguras". Si etiquetas una red como "No segura", Windscribe se desconectará cuando el dispositivo se conecte a ella. NO se recomienda configurar una red como "No segura".</string>
     <string name="auto_secure_description_secondary">Conéctese automáticamente en esta red Wi-Fi a
 Última ubicación elegida.</string>
     <string name="preferred_protocol_description_secondary">Elija el mejor protocolo para esta red. Esto anula todas las configuraciones de conexión global.</string>

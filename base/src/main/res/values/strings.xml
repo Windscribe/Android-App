@@ -388,7 +388,8 @@
     <string name="explain_me" translatable="false">Explain me!</string>
     <string name="network_options_description">Windscribe will auto-disconnect when you join an unsecured wifi network.</string>
     <string name="auto_secure_new_networks">Auto-Secure new networks</string>
-    <string name="auto_secure_new_networks_description">Windscribe will mark every new network as “Secured” and turn ON automatically when your device connects to them.</string>
+    <string name="auto_secure_new_networks_description">New networks are automatically "Secured". If you tag a network as "Unsecured", Windscribe will disconnect when the device joins it. Setting a network as "Unsecured" is NOT recommended.
+</string>
     <string name="auto_secure_description_secondary">Connect automatically on this Wi-Fi network to
 last chosen location.</string>
     <string name="preferred_protocol_description_secondary">Choose the best protocol for this network. This overrides all global connection settings.</string>

@@ -388,7 +388,7 @@
     <string name="explain_me" translatable="false">Explain me!</string>
     <string name="network_options_description">Windscribe sa automaticky odpojí, keď sa pripojíte k nezabezpečenej wifi sieti.</string>
     <string name="auto_secure_new_networks">Auto-zabezpečenie nových sietí</string>
-    <string name="auto_secure_new_networks_description">Windscribe označí každú novú síť ako \"Zabezpečenú\" a automaticky sa ZAPNE, keď sa k nim vaše zariadenie pripojí.</string>
+    <string name="auto_secure_new_networks_description">Nové siete sú automaticky "Zabezpečené". Ak označíte sieť ako "Nezabezpečenú", Windscribe sa odpojí, keď sa k nej zariadenie pripojí. Nastavenie siete ako "Nezabezpečenej" sa NEODPORÚČA.</string>
     <string name="auto_secure_description_secondary">Pripojiť sa automaticky k tejto Wi-Fi sieti na
 naposledy vybranú polohu.</string>
     <string name="preferred_protocol_description_secondary">Vyberte najlepší protokol pre túto sieť. Toto prepisuje všetky globálne nastavenia pripojenia.</string>

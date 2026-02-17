@@ -375,7 +375,7 @@
     <string name="inclusive">Inclusif</string>
     <string name="network_options_description">Windscribe se déconnecte automatiquement lorsque vous vous connectez à un réseau wifi non sécurisé.</string>
     <string name="auto_secure_new_networks">Sécurisation automatique des nouveaux réseaux</string>
-    <string name="auto_secure_new_networks_description">Marquez tous les nouveaux réseaux comme sécurisés.</string>
+    <string name="auto_secure_new_networks_description">Les nouveaux réseaux sont automatiquement "Sécurisés". Si vous marquez un réseau comme "Non sécurisé", Windscribe se déconnectera lorsque l\'appareil le rejoindra. Il n\'est PAS recommandé de définir un réseau comme "Non sécurisé".</string>
     <string name="auto_secure_description_secondary">Connectez-vous automatiquement sur ce réseau Wi-Fi à
 dernier emplacement choisi.</string>
     <string name="preferred_protocol_description_secondary">Choisissez le meilleur protocole pour ce réseau. Cela remplace tous les paramètres de connexion globale.</string>

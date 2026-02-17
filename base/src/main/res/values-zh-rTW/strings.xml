@@ -375,7 +375,7 @@
     <string name="inclusive">包容</string>
     <string name="network_options_description">当您加入不安全的wifi网络时，Windscribe将自动断开连接。</string>
     <string name="auto_secure_new_networks">自动保护新网络</string>
-    <string name="auto_secure_new_networks_description">将所有新遇到的网络标记为“安全”。</string>
+    <string name="auto_secure_new_networks_description">新網路會自動標記為「安全」。如果您將網路標記為「不安全」，Windscribe將在裝置加入時中斷連線。不建議將網路設定為「不安全」。</string>
     <string name="auto_secure_description_secondary">在此 Wi-Fi 网络上自动连接到
 上次选择的位置。</string>
     <string name="preferred_protocol_description_secondary">为此网络选择最佳协议。这将覆盖所有全局连接设置。</string>

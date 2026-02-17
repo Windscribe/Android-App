@@ -376,7 +376,7 @@
     <string name="inclusive">Includi</string>
     <string name="network_options_description">Windscribe si disconnetterà automaticamente quando ti connetterai a una rete Wi-Fi non protetta.</string>
     <string name="auto_secure_new_networks">Proteggi automaticamente nuove reti</string>
-    <string name="auto_secure_new_networks_description">Contrassegnare tutte le reti appena rilevate come protette.</string>
+    <string name="auto_secure_new_networks_description">Le nuove reti sono automaticamente "Protette". Se contrassegni una rete come "Non protetta", Windscribe si disconnetterà quando il dispositivo vi si connette. NON è consigliato impostare una rete come "Non protetta".</string>
     <string name="auto_secure_description_secondary">Connettiti automaticamente su questa rete Wi-Fi a
 Ultima posizione scelta.</string>
     <string name="preferred_protocol_description_secondary">Scegli il protocollo migliore per questa rete. In questo modo vengono ignorate tutte le impostazioni di connessione globali.</string>

@@ -375,7 +375,7 @@
     <string name="inclusive">Kapsayıcı</string>
     <string name="network_options_description">Windscribe, güvenli olmayan bir wifi ağına katıldığınızda bağlantıyı otomatik olarak kesecektir.</string>
     <string name="auto_secure_new_networks">Yeni ağların güvenliğini otomatik hale getirme</string>
-    <string name="auto_secure_new_networks_description">Yeni karşılaşılan tüm ağları Güvenli olarak işaretleyin.</string>
+    <string name="auto_secure_new_networks_description">Yeni ağlar otomatik olarak "Güvenli" olur. Bir ağı "Güvenli Değil" olarak etiketlerseniz, cihaz ağa katıldığında Windscribe bağlantıyı kesecektir. Bir ağı "Güvenli Değil" olarak ayarlamak önerilmez.</string>
     <string name="auto_secure_description_secondary">Bu Wi-Fi ağında otomatik olarak bağlan
 son seçilen yer.</string>
     <string name="preferred_protocol_description_secondary">Bu ağ için en iyi protokolü seçin. Bu, tüm genel bağlantı ayarlarını geçersiz kılar.</string>

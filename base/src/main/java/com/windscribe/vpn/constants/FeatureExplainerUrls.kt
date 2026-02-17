@@ -10,4 +10,5 @@ object FeatureExplainer {
     const val DECOY_TRAFFIC = "https://windscribe.com/features/decoy-traffic"
     const val CUSTOM_DNS_MODE = "https://windscribe.com/features/flexible-dns"
     const val CIRCUMVENT_CENSORSHIP = "https://windscribe.com/features/circumvent-censorship"
+    const val NETWORK_OPTIONS = "https://windscribe.com/features/network-options"
 }

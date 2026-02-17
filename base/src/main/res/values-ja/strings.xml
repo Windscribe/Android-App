@@ -375,7 +375,7 @@
     <string name="inclusive">選択したもののみ</string>
     <string name="network_options_description">Windscribeは、セキュリティで保護されていないWi-Fiネットワークに参加すると自動的に切断されます。</string>
     <string name="auto_secure_new_networks">新しいネットワークの自動保護</string>
-    <string name="auto_secure_new_networks_description">新しく検出されたすべてのネットワークをセキュリティで保護済みとしてマークします。</string>
+    <string name="auto_secure_new_networks_description">新しいネットワークは自動的に「保護済み」になります。ネットワークを「保護されていない」とタグ付けすると、デバイスが参加したときにWindscribeは切断されます。ネットワークを「保護されていない」に設定することは推奨されません。</string>
     <string name="auto_secure_description_secondary">このWi-Fiネットワークに自動的に接続して
 最後に選択した場所。</string>
     <string name="preferred_protocol_description_secondary">このネットワークに最適なプロトコルを選択してください。これにより、すべてのグローバル接続設定が上書きされます。</string>

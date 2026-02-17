@@ -375,7 +375,7 @@
     <string name="inclusive">সমাবেশী</string>
     <string name="network_options_description">Windscribe আপনি একটি অনিরাপদ ওয়াইফাই নেটওয়ার্কে যোগদান করলে স্বয়ংক্রিয়ভাবে সংযোগ বিচ্ছিন্ন করবে।</string>
     <string name="auto_secure_new_networks">নতুন নেটওয়ার্কগুলি স্বয়ংক্রিয়-নিরাপদ করুন</string>
-    <string name="auto_secure_new_networks_description">নতুন পরিচিত সমস্ত নেটওয়ার্ককে নিরাপদ হিসেবে চিহ্নিত করুন।</string>
+    <string name="auto_secure_new_networks_description">নতুন নেটওয়ার্কগুলি স্বয়ংক্রিয়ভাবে "সুরক্ষিত"। আপনি যদি একটি নেটওয়ার্ককে "অসুরক্ষিত" হিসাবে ট্যাগ করেন, তাহলে ডিভাইসটি যোগ দিলে Windscribe সংযোগ বিচ্ছিন্ন করবে। একটি নেটওয়ার্ককে "অসুরক্ষিত" হিসাবে সেট করার সুপারিশ করা হয় না।</string>
     <string name="auto_secure_description_secondary">এই ওয়াইফাই নেটওয়ার্কে স্বয়ংক্রিয়ভাবে শেষ নির্বাচিত স্থানে সংযোগ করুন।</string>
     <string name="preferred_protocol_description_secondary">এই নেটওয়ার্কের জন্য সেরা প্রোটোকল নির্বাচন করুন। এটি সমস্ত বৈশ্বিক সংযোগ সেটিংস ওভাররাইড করবে।</string>
     <string name="location_order_description">স্থানের তালিকাটি বর্ণমালা, ভূগোল, বা লেটেন্সির আরোহণক্রমে সাজান।</string>
