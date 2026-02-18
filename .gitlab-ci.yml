@@ -106,6 +106,7 @@ UploadToNexusPublic:
     - export GRADLE_USER_HOME=$(pwd)/.gradle
     - chmod +x ./gradlew
     - extras ndk -n 27.2.12479018 -c 3.22.1
+    - apk --no-cache add ruby ruby-dev
     - gem install bundler
     - bundle config set --local path 'vendor/bundle'
     - bundle install
@@ -140,6 +141,7 @@ UploadToNexusPublic:
     - export GRADLE_USER_HOME=$(pwd)/.gradle
     - chmod +x ./gradlew
     - extras ndk -n 27.2.12479018 -c 3.22.1
+    - apk --no-cache add ruby ruby-dev
     - gem install bundler
     - bundle config set --local path 'vendor/bundle'
     - bundle install
@@ -172,10 +174,10 @@ Slack:
 ".curl":
   stage: Deploy
   before_script:
+    - apk --no-cache add ruby ruby-dev curl
     - gem install bundler
     - bundle config set --local path 'vendor/bundle'
     - bundle install
-    - apk --no-cache add curl
 
 BuildStrongswan:
   stage: Deploy
