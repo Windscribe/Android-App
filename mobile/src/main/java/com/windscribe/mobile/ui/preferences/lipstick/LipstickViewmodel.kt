@@ -1,6 +1,8 @@
 package com.windscribe.mobile.ui.preferences.lipstick
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
@@ -201,34 +203,78 @@ class LipstickViewmodelImpl @Inject constructor(
 
     override fun loadDisconnectedCustomBackground(context: Context, fileUri: Uri) {
         try {
-            val inputStream = context.contentResolver.openInputStream(fileUri)
-            inputStream?.use {
-                val documentFile = DocumentFile.fromSingleUri(context, fileUri)
-                val output =
-                    context.openFileOutput("disconnected_background.png", Context.MODE_PRIVATE)
-                it.copyTo(output)
+            val documentFile = DocumentFile.fromSingleUri(context, fileUri)
+
+            // Downsample image to max 2560x2560 to prevent OOM
+            val options = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            context.contentResolver.openInputStream(fileUri)?.use {
+                BitmapFactory.decodeStream(it, null, options)
+            }
+
+            // Calculate sample size to keep image under 2560x2560
+            val maxSize = 2560
+            var sampleSize = 1
+            while (options.outWidth / sampleSize > maxSize || options.outHeight / sampleSize > maxSize) {
+                sampleSize *= 2
+            }
+
+            options.inJustDecodeBounds = false
+            options.inSampleSize = sampleSize
+
+            val bitmap = context.contentResolver.openInputStream(fileUri)?.use {
+                BitmapFactory.decodeStream(it, null, options)
+            }
+
+            bitmap?.let {
+                val output = context.openFileOutput("disconnected_background.png", Context.MODE_PRIVATE)
+                it.compress(Bitmap.CompressFormat.PNG, 100, output)
                 output.close()
+                it.recycle()
                 _customDisconnectedBackgroundItem.value = documentFile?.name
                 preferenceHelper.customDisconnectedBackground = documentFile?.name
             }
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             logger.error("Error reading disconnected custom background image file: ${e.message}")
         }
     }
 
     override fun loadConnectedCustomBackground(context: Context, fileUri: Uri) {
         try {
-            val inputStream = context.contentResolver.openInputStream(fileUri)
-            inputStream?.use {
-                val documentFile = DocumentFile.fromSingleUri(context, fileUri)
-                val output =
-                    context.openFileOutput("connected_background.png", Context.MODE_PRIVATE)
-                it.copyTo(output)
+            val documentFile = DocumentFile.fromSingleUri(context, fileUri)
+
+            // Downsample image to max 2560x2560 to prevent OOM
+            val options = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            context.contentResolver.openInputStream(fileUri)?.use {
+                BitmapFactory.decodeStream(it, null, options)
+            }
+
+            // Calculate sample size to keep image under 2560x2560
+            val maxSize = 2560
+            var sampleSize = 1
+            while (options.outWidth / sampleSize > maxSize || options.outHeight / sampleSize > maxSize) {
+                sampleSize *= 2
+            }
+
+            options.inJustDecodeBounds = false
+            options.inSampleSize = sampleSize
+
+            val bitmap = context.contentResolver.openInputStream(fileUri)?.use {
+                BitmapFactory.decodeStream(it, null, options)
+            }
+
+            bitmap?.let {
+                val output = context.openFileOutput("connected_background.png", Context.MODE_PRIVATE)
+                it.compress(Bitmap.CompressFormat.PNG, 100, output)
                 output.close()
+                it.recycle()
                 _customConnectedBackgroundItem.value = documentFile?.name
                 preferenceHelper.customConnectedBackground = documentFile?.name
             }
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             logger.error("Error reading connected custom background image file: ${e.message}")
         }
     }

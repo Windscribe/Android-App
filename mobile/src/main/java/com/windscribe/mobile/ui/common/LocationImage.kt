@@ -106,6 +106,7 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
                                 val imageLoader = context.imageLoader
                                 val request = ImageRequest.Builder(context)
                                     .data(imageData)
+                                    .size(2048, 2048)  // Limit tile pattern to 2048x2048
                                     .allowHardware(false)
                                     .build()
 
@@ -137,8 +138,12 @@ fun LocationImage(connectionViewmodel: ConnectionViewmodel, homeViewmodel: HomeV
                                 2 -> ContentScale.Fit        // Fit
                                 else -> ContentScale.FillHeight // Default
                             }
+                            val imageRequest = ImageRequest.Builder(context)
+                                .data(imageData)
+                                .size(2560, 2560)  // Limit to 2560x2560 max (safe for all devices)
+                                .build()
                             SubcomposeAsyncImage(
-                                model = imageData,
+                                model = imageRequest,
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = contentScale,
