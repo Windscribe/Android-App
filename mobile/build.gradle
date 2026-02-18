@@ -10,16 +10,8 @@ plugins {
 apply from: "$rootDir/config/config.gradle"
 apply from: "$rootDir/depedencycheck.gradle"
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask.class).configureEach {
-    kotlinOptions {
-        jvmTarget = "21"
-    }
+kotlin {
+    jvmToolchain(21)
 }
 
 android {
@@ -66,8 +58,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility rootProject.java
-        targetCompatibility rootProject.java
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
         coreLibraryDesugaringEnabled true
     }
     kotlinOptions {

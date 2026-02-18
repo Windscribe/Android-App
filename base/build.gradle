@@ -4,28 +4,15 @@ apply plugin: 'kotlin-kapt'
 apply from: "$rootDir/config/config.gradle"
 apply from: "$rootDir/depedencycheck.gradle"
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask.class).configureEach {
-    kotlinOptions {
-        jvmTarget = "21"
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+kotlin {
+    jvmToolchain(21)
 }
 
 android {
     ndkVersion "27.2.12479018"
     compileOptions {
-        sourceCompatibility rootProject.java
-        targetCompatibility rootProject.java
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
     kotlinOptions {
         jvmTarget = "21"
