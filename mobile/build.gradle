@@ -10,10 +10,6 @@ plugins {
 apply from: "$rootDir/config/config.gradle"
 apply from: "$rootDir/depedencycheck.gradle"
 
-kotlin {
-    jvmToolchain(21)
-}
-
 android {
     namespace 'com.windscribe.mobile'
     ndkVersion "27.2.12479018"
@@ -58,12 +54,12 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
+        sourceCompatibility rootProject.java
+        targetCompatibility rootProject.java
         coreLibraryDesugaringEnabled true
     }
     kotlinOptions {
-        jvmTarget = "21"
+        jvmTarget = "17"
     }
 
     buildFeatures {
