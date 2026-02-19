@@ -47,6 +47,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import com.windscribe.mobile.ui.common.CustomDropDown
@@ -228,6 +229,9 @@ private fun AppsTitle() {
 private fun Apps(viewModel: SplitTunnelViewModel? = null) {
     val apps by viewModel?.filteredApps?.collectAsState()
         ?: remember { mutableStateOf(emptyList<InstalledAppsData>()) }
+    val density = LocalDensity.current
+    val iconSizePx = with(density) { 24.dp.roundToPx() }
+
     LazyColumn {
         itemsIndexed(apps) { index, app ->
             val shape = if (index == apps.lastIndex) {
@@ -248,7 +252,7 @@ private fun Apps(viewModel: SplitTunnelViewModel? = null) {
                     .clickable { viewModel?.onAppSelected(app) },
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val bitmap = app.appIconDrawable.toBitmap()
+                val bitmap = app.appIconDrawable.toBitmap(width = iconSizePx, height = iconSizePx)
                 Image(
                     painter = BitmapPainter(bitmap.asImageBitmap()),
                     contentDescription = null,
