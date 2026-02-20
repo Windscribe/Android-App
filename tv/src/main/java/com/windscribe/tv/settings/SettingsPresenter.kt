@@ -38,4 +38,5 @@ interface SettingsPresenter {
     fun onCustomDNSClicked()
     fun onRobertDNSClicked()
     fun saveCustomDNSAddress(url: String)
+    fun onConfigurationSelected(configuration: String)
 }

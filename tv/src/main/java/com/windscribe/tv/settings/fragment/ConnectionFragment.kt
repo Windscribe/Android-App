@@ -167,6 +167,20 @@ class ConnectionFragment : Fragment() {
         binding.portList.adapter = portAdapter
     }
 
+    fun setConfigurationAdapter(selectedConfiguration: String, configurations: List<String>) {
+        val configurationAdapter = MenuAdapter(configurations, selectedConfiguration)
+        configurationAdapter.setListener(object : MenuItemSelectListener {
+            override fun onItemSelected(selectedItemKey: String?) {
+                selectedItemKey?.let {
+                    listener?.onConfigurationSelected(selectedItemKey)
+                }
+            }
+        })
+        binding.configurationItems.setNumRows(1)
+        binding.configurationItems.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT)
+        binding.configurationItems.adapter = configurationAdapter
+    }
+
     fun setProtocolAdapter(savedProtocol: String, protocols: List<String>) {
         selectedProtocol = savedProtocol
         val protocolAdapter = MenuAdapter(protocols, savedProtocol)
@@ -286,9 +300,12 @@ class ConnectionFragment : Fragment() {
         if (enabled) {
             binding.allowAntiCensorship.setState(State.MenuButtonState.Selected)
             binding.blockAntiCensorship.setState(State.MenuButtonState.NotSelected)
+            binding.configurationView.visibility = View.VISIBLE
         } else {
             binding.blockAntiCensorship.setState(State.MenuButtonState.Selected)
             binding.allowAntiCensorship.setState(State.MenuButtonState.NotSelected)
+            TransitionManager.beginDelayedTransition(binding.connectionParent)
+            binding.configurationView.visibility = View.GONE
         }
     }
 }

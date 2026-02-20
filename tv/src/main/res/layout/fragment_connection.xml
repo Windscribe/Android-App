@@ -341,5 +341,35 @@
             app:layout_constraintStart_toEndOf="@id/allow_anti_censorship"
             app:layout_constraintTop_toTopOf="@id/allow_anti_censorship" />
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/configurationView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/allow_anti_censorship">
+
+            <TextView
+                android:id="@+id/titleConfiguration"
+                style="@style/preference_item_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/reg_24dp"
+                android:text="@string/configuration"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+            <androidx.leanback.widget.HorizontalGridView
+                android:id="@+id/configurationItems"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/reg_24dp"
+                android:focusable="false"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/titleConfiguration" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

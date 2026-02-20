@@ -45,6 +45,7 @@ import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.CallResult
+import com.windscribe.vpn.repository.UnblockWgParamsRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
@@ -72,7 +73,8 @@ class SettingsPresenterImp @Inject constructor(
     private val vpnConnectionStateManager: VPNConnectionStateManager,
     private val logRepository: LogRepository,
     private var proxyDNSManager: ProxyDNSManager,
-    private val portMapRepository: com.windscribe.vpn.repository.PortMapRepository
+    private val portMapRepository: com.windscribe.vpn.repository.PortMapRepository,
+    private val wgParamsRepository: UnblockWgParamsRepository
 ) : SettingsPresenter, InstalledAppsAdapter.InstalledAppListener {
     private val installedAppList: MutableList<InstalledAppsData> = ArrayList()
     private var installedAppsAdapter: InstalledAppsAdapter? = null
@@ -163,6 +165,7 @@ class SettingsPresenterImp @Inject constructor(
         if (preferencesHelper.isAntiCensorshipOn.not()) {
             preferencesHelper.isAntiCensorshipOn = true
             settingView.setAntiCensorshipMode(true)
+            setConfigurationAdapter()
         }
     }
 
@@ -170,6 +173,14 @@ class SettingsPresenterImp @Inject constructor(
         if (preferencesHelper.isAntiCensorshipOn) {
             preferencesHelper.isAntiCensorshipOn = false
             settingView.setAntiCensorshipMode(false)
+        }
+    }
+
+    private fun setConfigurationAdapter() {
+        val configurations = wgParamsRepository.unblockWgParams.value.map { it.title }
+        val selectedConfiguration = wgParamsRepository.getSelectedUnblockWgParam()
+        if (selectedConfiguration != null) {
+            settingView.setupConfigurationAdapter(selectedConfiguration.title, configurations)
         }
     }
 
@@ -325,6 +336,11 @@ class SettingsPresenterImp @Inject constructor(
                 setPortMapAdapter(protocol)
             }
         }
+    }
+
+    override fun onConfigurationSelected(configuration: String) {
+        logger.info("Saving selected configuration...")
+        wgParamsRepository.setSelectedUnblockWgParam(configuration)
     }
 
     override fun onSendDebugClicked() {
@@ -496,6 +512,7 @@ class SettingsPresenterImp @Inject constructor(
         settingView.setCustomDNSAddress(preferencesHelper.dnsAddress ?: "")
         settingView.setCustomDNSAddressVisibility(preferencesHelper.dnsMode == DNS_MODE_CUSTOM)
         setupAppListAdapter()
+        setConfigurationAdapter()
     }
 
     override fun setupLayoutForDebugTab() {
