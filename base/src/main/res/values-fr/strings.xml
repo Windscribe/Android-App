@@ -42,7 +42,7 @@
     <string name="getting_reg_token">Obtenir un jeton reg&#8230;</string>
     <string name="invalid_email_format">E-mail non valide!</string>
     <string name="email_empty">E-mail vide!</string>
-    <string name="email">Messagerie électronique</string>
+    <string name="email">Adresse e-mail</string>
     <string name="confirm_your_email">Veuillez confirmer votre adresse e-mail</string>
     <string name="confirm_email">Confirmer l’adresse e-mail</string>
     <string name="resend_verification_email">Renvoyer l’e-mail de vérification</string>
@@ -281,12 +281,12 @@
     <string name="disconnected_lower_case">Coupé </string>
     <string name="connected_lower_case">Relié </string>
     <string name="other">AUTRE</string>
-    <string name="about">Environ</string>
+    <string name="about">À propos de Windscribe</string>
     <string name="advance">Paramètres avancés</string>
     <string name="about_us">Qui sommes-nous</string>
     <string name="status">Statut</string>
     <string name="privacy_policy">Politique de confidentialité</string>
-    <string name="terms_title">Petits caractères</string>
+    <string name="terms_title">Conditions d\'utilisation</string>
     <string name="blog">Blog</string>
     <string name="jobs">Emplois</string>
     <string name="software_licenses">Licences logicielles</string>
@@ -442,7 +442,7 @@ dernier emplacement choisi.</string>
     <string name="added_email_successfully">Ajout d’un e-mail avec succès.</string>
     <string name="file_path_will_show_here">Le chemin du fichier s’affichera ici</string>
     <string name="reddit">Reddit</string>
-    <string name="discord">Discorde</string>
+    <string name="discord">Discord</string>
     <string name="app_requires_background_location_permission">L’application nécessite une autorisation de localisation en arrière-plan pour accéder au SSID WIFI sur Android 11+. Si vous souhaitez utiliser cette fonctionnalité, appuyez sur OK et sélectionnez \"Autoriser tout le temps\ » dans la boîte de dialogue d’autorisation.</string>
     <string name="error">"« Erreur »"</string>
     <string name="auto">Auto</string>
@@ -457,7 +457,7 @@ dernier emplacement choisi.</string>
     <string name="geography">Géographie</string>
     <string name="alphabet">Alphabet</string>
     <string name="latency">Latence</string>
-    <string name="light">Lumière</string>
+    <string name="light">Clair</string>
     <string name="dark">Sombre</string>
     <string name="disconnect_from_vpn">Déconnecter du VPN</string>
     <string name="auto_detecting_packet_size">Détection automatique de la taille des paquets...</string>
@@ -479,7 +479,7 @@ dernier emplacement choisi.</string>
     <string name="auto_connect">Connexion automatique</string>
     <string name="auto_connect_explainer">Se connecte au dernier emplacement utilisé lorsque l’application se lance ou rejoint un réseau.</string>
     <string name="save">Enregistrer</string>
-    <string name="clear">Clair</string>
+    <string name="clear">Effacer</string>
     <string name="enter_1_key_value_per_line">Saisissez une clé=valeur par ligne.</string>
     <string name="upgrade_to_stay_protected">Mettez à niveau maintenant pour rester protégé ou attendez que votre bande passante soit réinitialisée le %s</string>
     <string name="changelog">Journal des modifications</string>
@@ -511,8 +511,8 @@ dernier emplacement choisi.</string>
     <string name="charged_every_month">facturé chaque mois</string>
     <string name="charged_every_12_months">facturé tous les 12 mois</string>
     <string name="look_and_feel">Apparence</string>
-    <string name="when_disconnected">Quand déconnecté</string>
-    <string name="when_connected">Quand connecté</string>
+    <string name="when_disconnected">Déconnexion</string>
+    <string name="when_connected">Connexion</string>
     <string name="aspect_ratio">Format d\'image</string>
     <string name="fill">Remplir</string>
     <string name="scale">Échelle</string>
@@ -542,19 +542,19 @@ dernier emplacement choisi.</string>
     <string name="favourite_node_not_available">Nous n\'avons pas pu définir votre IP préférée pour cet emplacement. Réessayez plus tard.</string>
     <string name="advance_description">Effectuez des ajustements avancés sur le fonctionnement de l\'application</string>
     <string name="connected_dns">DNS connecté</string>
-    <string name="custom_dns_address_hint">IP/DNS-over-HTTPS/TLS</string>
+    <string name="custom_dns_address_hint">IP/DNS-via-HTTPS/TLS</string>
     <string name="custom_dns_explainer">Sélectionnez le serveur DNS lors de la connexion à Windscribe.</string>
     <string name="enter_valid_ip_or_url">Entrez une IP ou une URL valide</string>
     <string name="quick_connect">Connexion rapide</string>
-    <string name="file_sharing_frowned_upon">Le partage de fichiers est mal vu</string>
-    <string name="voucher_code_optional">Code de bon (Optionnel)</string>
-    <string name="voucher_code">Code de bon</string>
-    <string name="have_a_voucher">Vous avez un bon?</string>
-    <string name="apply_voucher_code">Appliquer le code de bon à votre compte.</string>
-    <string name="voucher_code_is_applied">Code de bon appliqué avec succès.</string>
+    <string name="file_sharing_frowned_upon">Le partage de fichiers est découragé</string>
+    <string name="voucher_code_optional">Code promo (Optionnel)</string>
+    <string name="voucher_code">Code promo</string>
+    <string name="have_a_voucher">Vous avez un code promo?</string>
+    <string name="apply_voucher_code">Appliquer le code promo à votre compte.</string>
+    <string name="voucher_code_is_applied">Code promo appliqué avec succès.</string>
     <string name="voucher_code_is_invalid">Le bon fourni est invalide ou expiré.</string>
     <string name="confirmed_email_required">E-mail confirmé requis.</string>
-    <string name="voucher_code_used_already">Le code de bon a déjà été utilisé.</string>
+    <string name="voucher_code_used_already">Le code promo a déjà été utilisé.</string>
     <string name="power_whitelist_title">Désactiver l\'optimisation de la batterie</string>
     <string name="power_whitelist_summary">Pour maintenir une connexion stable, veuillez retirer Windscribe des paramètres d\'optimisation de la batterie. Cela garantit un service ininterrompu pour les connexions IKEv2.</string>
     <string name="never_aks_again_for_permission">Ne plus demander</string>
@@ -569,4 +569,6 @@ dernier emplacement choisi.</string>
     <string name="continue_with_apple">Continuer avec Apple</string>
     <string name="support_url">windscribe.com/support</string>
     <string name="windflix">Windflix</string>
+    <string name="app_icon">Icône d\'appli</string>
+    <string name="app_icon_description">Choisissez une nouvelle icône d\'appli pour plus de confidentialité</string>
 </resources>
