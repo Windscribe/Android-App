@@ -236,6 +236,10 @@ class SettingActivity :
         presenter.onProtocolSelected(protocol)
     }
 
+    override fun onConfigurationSelected(configuration: String) {
+        presenter.onConfigurationSelected(configuration)
+    }
+
     override fun onSignUpClick() {
         goToClaimAccount()
     }
@@ -411,6 +415,18 @@ class SettingActivity :
     override fun setupProtocolAdapter(protocol: String, protocols: List<String>) {
         if (fragment is ConnectionFragment) {
             (fragment as ConnectionFragment).setProtocolAdapter(protocol, protocols)
+        }
+    }
+
+    override fun setupConfigurationAdapter(
+        selectedConfiguration: String,
+        configurations: List<String>
+    ) {
+        if (fragment is ConnectionFragment) {
+            (fragment as ConnectionFragment).setConfigurationAdapter(
+                selectedConfiguration,
+                configurations
+            )
         }
     }
 

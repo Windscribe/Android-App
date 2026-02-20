@@ -23,6 +23,7 @@ interface SettingsFragmentListener {
     fun onManualClicked()
     fun onPortSelected(protocol: String, port: String)
     fun onProtocolSelected(protocol: String)
+    fun onConfigurationSelected(configuration: String)
     fun onSignUpClick()
     fun onSortSelect(newSort: String)
     fun onUpgradeClick(planName: String)

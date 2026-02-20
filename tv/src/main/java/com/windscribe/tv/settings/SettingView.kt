@@ -45,4 +45,5 @@ interface SettingView {
     fun setCustomDNS(isCustom: Boolean)
     fun setCustomDNSAddress(url: String)
     fun setCustomDNSAddressVisibility(show: Boolean)
+    fun setupConfigurationAdapter(selectedConfiguration: String, configurations: List<String>)
 }
