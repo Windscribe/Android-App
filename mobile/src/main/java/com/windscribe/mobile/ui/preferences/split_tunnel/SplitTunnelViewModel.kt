@@ -141,6 +141,7 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
         return currentApps.map { appData ->
             val newApp = InstalledAppsData(appData.appName, appData.packageName, appData.appIconDrawable)
             newApp.isChecked = appData.isChecked
+            newApp.isSystemApp = appData.isSystemApp
             newApp
         }.toMutableList()
     }
@@ -148,13 +149,14 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
     private suspend fun emitUpdatedLists(newAppsList: MutableList<InstalledAppsData>) {
         _apps.emit(newAppsList)
         val query = _searchKeyword.value
+        val showSystemApps = _showSystemApps.value
         if (query.isEmpty()) {
-            _filteredApps.emit(newAppsList)
+            _filteredApps.emit(newAppsList.filter { !it.isSystemApp || showSystemApps })
         } else {
             val filteredApps = newAppsList.filter {
                 it.appName.contains(query, true)
             }
-            _filteredApps.emit(filteredApps)
+            _filteredApps.emit(filteredApps.filter { !it.isSystemApp || showSystemApps })
         }
     }
 
@@ -193,23 +195,17 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
 
     private suspend fun applyFilters() {
         val query = _searchKeyword.value
-        val showSystem = _showSystemApps.value
         val allApps = _apps.value
-
+        val showSystemApps = _showSystemApps.value
         val filtered = allApps.filter { app ->
             val matchesSearch = if (query.isEmpty()) {
                 true
             } else {
                 app.appName.contains(query, true)
             }
-            val matchesSystemFilter = if (showSystem) {
-                true
-            } else {
-                !app.isSystemApp
-            }
-            matchesSearch && matchesSystemFilter
+            matchesSearch
         }
-        _filteredApps.emit(filtered)
+        _filteredApps.emit(filtered.filter { !it.isSystemApp || showSystemApps })
     }
 
     private suspend fun addWindscribeToList(checked: Boolean) {
