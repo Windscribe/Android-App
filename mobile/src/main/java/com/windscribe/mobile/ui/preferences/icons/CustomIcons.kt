@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -255,7 +257,7 @@ private fun AppIconView(
         modifier = Modifier.padding(
             horizontal = CustomIconsConstants.HORIZONTAL_PADDING,
             vertical = CustomIconsConstants.VERTICAL_PADDING
-        )
+        ).navigationBarsPadding()
     ) {
         navController?.let {
             PreferencesNavBar(stringResource(com.windscribe.vpn.R.string.app_icon)) {
