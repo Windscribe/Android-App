@@ -3,12 +3,9 @@
  */
 package com.windscribe.tv.adapter
 
-import android.graphics.drawable.Drawable
-
 class InstalledAppsData(
     val appName: String,
     val packageName: String,
-    val appIconDrawable: Drawable,
     val isSystemApp: Boolean
 ) : Comparable<InstalledAppsData> {
     var isChecked = false

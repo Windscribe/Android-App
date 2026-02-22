@@ -34,6 +34,7 @@ import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
+import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.ConnectionDataRepository
@@ -217,7 +218,8 @@ abstract class PresenterModule {
             logRepository: LogRepository,
             proxyDNSManager: ProxyDNSManager,
             portMapRepository: com.windscribe.vpn.repository.PortMapRepository,
-            wgParamsRepository: com.windscribe.vpn.repository.UnblockWgParamsRepository
+            wgParamsRepository: com.windscribe.vpn.repository.UnblockWgParamsRepository,
+            appIconCache: AppIconCache
         ): SettingsPresenter {
             return SettingsPresenterImp(
                 settingView,
@@ -232,7 +234,8 @@ abstract class PresenterModule {
                 logRepository,
                 proxyDNSManager,
                 portMapRepository,
-                wgParamsRepository
+                wgParamsRepository,
+                appIconCache
             )
         }
 

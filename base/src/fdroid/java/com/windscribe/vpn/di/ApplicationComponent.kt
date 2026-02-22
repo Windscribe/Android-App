@@ -16,6 +16,7 @@ import com.windscribe.vpn.backend.openvpn.OpenVPNBackend
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.backend.wireguard.WireguardBackend
+import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.mocklocation.MockLocationManager
@@ -88,8 +89,8 @@ interface ApplicationComponent {
     val portMappingRepository: PortMapRepository
     val logRepository: LogRepository
     val bridgeApiRepository: BridgeApiRepository
-
     val unblockWgParamsRepository: UnblockWgParamsRepository
+    val appIconCache: AppIconCache
 
     //Inject
     fun inject(app: Windscribe)

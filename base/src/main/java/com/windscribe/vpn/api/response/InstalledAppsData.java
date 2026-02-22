@@ -4,14 +4,10 @@
 
 package com.windscribe.vpn.api.response;
 
-import android.graphics.drawable.Drawable;
-
 import androidx.annotation.Keep;
 
 @Keep
 public class InstalledAppsData implements Comparable<InstalledAppsData> {
-
-    private Drawable appIconDrawable;
 
     private String appName;
 
@@ -21,23 +17,14 @@ public class InstalledAppsData implements Comparable<InstalledAppsData> {
 
     private boolean systemApp = false;
 
-    public InstalledAppsData(String appName, String packageName, Drawable appIconDrawable) {
+    public InstalledAppsData(String appName, String packageName) {
         this.appName = appName;
         this.packageName = packageName;
-        this.appIconDrawable = appIconDrawable;
     }
 
     @Override
     public int compareTo(InstalledAppsData o) {
         return o.appName.compareTo(appName);
-    }
-
-    public Drawable getAppIconDrawable() {
-        return appIconDrawable;
-    }
-
-    public void setAppIconDrawable(Drawable appIconDrawable) {
-        this.appIconDrawable = appIconDrawable;
     }
 
     public String getAppName() {

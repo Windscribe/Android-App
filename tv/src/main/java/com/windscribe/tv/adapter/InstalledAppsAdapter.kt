@@ -4,6 +4,7 @@
 package com.windscribe.tv.adapter
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.BitmapDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,10 +14,12 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.windscribe.tv.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.cache.AppIconCache
 
 class InstalledAppsAdapter(
     mAppsList: List<InstalledAppsData>,
-    installedAppListener: InstalledAppListener
+    installedAppListener: InstalledAppListener,
+    private val appIconCache: AppIconCache
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private class InstalledAppsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imgAppLogo: ImageView = itemView.findViewById(R.id.banner)
@@ -39,7 +42,13 @@ class InstalledAppsAdapter(
     override fun onBindViewHolder(viewHolder: RecyclerView.ViewHolder, i: Int) {
         val listViewHolder = viewHolder as InstalledAppsViewHolder
         val installedAppsData = mAppsList!![viewHolder.getAdapterPosition()]
-        listViewHolder.imgAppLogo.setImageDrawable(installedAppsData.appIconDrawable)
+        val iconBitmap = appIconCache.getIcon(installedAppsData.packageName)
+        if (iconBitmap != null) {
+            listViewHolder.imgAppLogo.setImageDrawable(BitmapDrawable(appContext.resources, iconBitmap))
+        } else {
+            listViewHolder.imgAppLogo.setImageResource(android.R.drawable.sym_def_app_icon)
+        }
+
         listViewHolder.tvAppName.text = installedAppsData.appName
         if (installedAppsData.isChecked) {
             listViewHolder.itemView.background = ResourcesCompat

@@ -17,6 +17,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.multidex.MultiDexApplication
+import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.apppreference.MigrationResult
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.TrayToDataStoreMigration
@@ -28,6 +29,7 @@ import com.windscribe.vpn.backend.ikev2.CharonVpnServiceWrapper
 import com.windscribe.vpn.backend.ikev2.StrongswanCertificateManager.init
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.debug.MainThreadWatchdog
 import com.windscribe.vpn.di.ActivityComponent
 import com.windscribe.vpn.di.ApplicationComponent
@@ -123,6 +125,9 @@ open class Windscribe : MultiDexApplication() {
     @Inject
     lateinit var vpnController: WindVpnController
 
+    @Inject
+    lateinit var appIconCache: AppIconCache
+
     lateinit var applicationComponent: ApplicationComponent
     lateinit var activityComponent: ActivityComponent
     lateinit var serviceComponent: ServiceComponent
@@ -192,6 +197,7 @@ open class Windscribe : MultiDexApplication() {
 
         mockLocationManager.init()
         reviewManager.handleAppReview()
+        appIconCache.preloadIcons(applicationScope)
         applicationScope.launch {
             if (preference.sessionHash != null) {
                 workManager.updateNodeLatencies()

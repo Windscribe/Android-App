@@ -8,6 +8,7 @@ import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.InstalledAppsData
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.commonutils.SortByName
 import com.windscribe.vpn.commonutils.SortBySelected
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +25,7 @@ abstract class SplitTunnelViewModel : ViewModel() {
     abstract val isSplitTunnelEnabled: StateFlow<Boolean>
     abstract val searchKeyword: StateFlow<String>
     abstract val showSystemApps: StateFlow<Boolean>
+    abstract val appIconCache: AppIconCache
     open fun onModeSelected(mode: DropDownStringItem) {}
     open fun onAppSelected(app: InstalledAppsData) {}
     open fun onSplitTunnelSettingChanged() {}
@@ -31,7 +33,10 @@ abstract class SplitTunnelViewModel : ViewModel() {
     open fun onShowSystemAppsToggle() {}
 }
 
-class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitTunnelViewModel() {
+class SplitTunnelViewModelImpl(
+    val preferenceHelper: PreferencesHelper,
+    override val appIconCache: AppIconCache
+) : SplitTunnelViewModel() {
     private val _showProgress = MutableStateFlow(false)
     override val showProgress: StateFlow<Boolean> = _showProgress
     override val modes: List<DropDownStringItem>
@@ -71,8 +76,7 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
                 val isSystemApp = (it.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) == 1
                 val app = InstalledAppsData(
                     pm.getApplicationLabel(it).toString(),
-                    it.packageName,
-                    pm.getApplicationIcon(it)
+                    it.packageName
                 )
                 app.isSystemApp = isSystemApp
                 for (installedAppsData in savedApps) {
@@ -139,7 +143,7 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
 
     private fun createNewAppsList(currentApps: MutableList<InstalledAppsData>): MutableList<InstalledAppsData> {
         return currentApps.map { appData ->
-            val newApp = InstalledAppsData(appData.appName, appData.packageName, appData.appIconDrawable)
+            val newApp = InstalledAppsData(appData.appName, appData.packageName)
             newApp.isChecked = appData.isChecked
             newApp.isSystemApp = appData.isSystemApp
             newApp
@@ -215,8 +219,7 @@ class SplitTunnelViewModelImpl(val preferenceHelper: PreferencesHelper) : SplitT
             val applicationInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
             val windscribeApp = InstalledAppsData(
                 pm.getApplicationLabel(applicationInfo).toString(),
-                applicationInfo.packageName,
-                pm.getApplicationIcon(applicationInfo)
+                applicationInfo.packageName
             )
             windscribeApp.isSystemApp = false
 

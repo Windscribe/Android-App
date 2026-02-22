@@ -74,7 +74,8 @@ class SettingsPresenterImp @Inject constructor(
     private val logRepository: LogRepository,
     private var proxyDNSManager: ProxyDNSManager,
     private val portMapRepository: com.windscribe.vpn.repository.PortMapRepository,
-    private val wgParamsRepository: UnblockWgParamsRepository
+    private val wgParamsRepository: UnblockWgParamsRepository,
+    private val appIconCache: com.windscribe.vpn.cache.AppIconCache
 ) : SettingsPresenter, InstalledAppsAdapter.InstalledAppListener {
     private val installedAppList: MutableList<InstalledAppsData> = ArrayList()
     private var installedAppsAdapter: InstalledAppsAdapter? = null
@@ -586,7 +587,6 @@ class SettingsPresenterImp @Inject constructor(
             val mData = InstalledAppsData(
                 pm.getApplicationLabel(applicationInfo).toString(),
                 applicationInfo.packageName,
-                pm.getApplicationIcon(applicationInfo),
                 false
             )
             mData.isChecked = checked
@@ -630,7 +630,6 @@ class SettingsPresenterImp @Inject constructor(
                     val mData = InstalledAppsData(
                         pm.getApplicationLabel(applicationInfo).toString(),
                         applicationInfo.packageName,
-                        pm.getApplicationIcon(applicationInfo),
                         isSystemApp
                     )
                     for (installedAppsData in savedApps) {
@@ -644,7 +643,7 @@ class SettingsPresenterImp @Inject constructor(
                 withContext(Dispatchers.Main) {
                     settingView.hideProgress()
                     installedAppsAdapter = InstalledAppsAdapter(
-                        installedAppList, this@SettingsPresenterImp
+                        installedAppList, this@SettingsPresenterImp, appIconCache
                     )
                     installedAppsAdapter?.let {
                         settingView.setupAppsAdapter(it)

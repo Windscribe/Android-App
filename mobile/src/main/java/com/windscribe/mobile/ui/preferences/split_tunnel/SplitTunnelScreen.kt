@@ -49,7 +49,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.drawable.toBitmap
 import com.windscribe.mobile.ui.common.CustomDropDown
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.PreferenceProgressBar
@@ -228,10 +227,8 @@ private fun AppsTitle() {
 @Composable
 private fun Apps(viewModel: SplitTunnelViewModel? = null) {
     val apps by viewModel?.filteredApps?.collectAsState()
-        ?: remember { mutableStateOf(emptyList<InstalledAppsData>()) }
-    val density = LocalDensity.current
-    val iconSizePx = with(density) { 24.dp.roundToPx() }
-
+        ?: remember { mutableStateOf(emptyList()) }
+    val appIconCache = viewModel?.appIconCache
     LazyColumn {
         itemsIndexed(apps) { index, app ->
             val shape = if (index == apps.lastIndex) {
@@ -252,12 +249,20 @@ private fun Apps(viewModel: SplitTunnelViewModel? = null) {
                     .clickable { viewModel?.onAppSelected(app) },
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val bitmap = app.appIconDrawable.toBitmap(width = iconSizePx, height = iconSizePx)
-                Image(
-                    painter = BitmapPainter(bitmap.asImageBitmap()),
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
-                )
+                val iconBitmap = appIconCache?.getIcon(app.packageName)
+                if (iconBitmap != null) {
+                    Image(
+                        painter = BitmapPainter(iconBitmap.asImageBitmap()),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(android.R.drawable.sym_def_app_icon),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = app.appName,
@@ -298,21 +303,18 @@ private fun SplitTunnelScreenApps() {
     val apps = listOf<InstalledAppsData>().toMutableList()
     val chrome = InstalledAppsData(
         "Chrome",
-        "com.google.chrome",
-        LocalContext.current.getDrawable(R.drawable.it_small)
+        "com.google.chrome"
     )
     chrome.isChecked = true
     apps.add(chrome)
     val discord = InstalledAppsData(
         "Discord",
-        "com.discord",
-        LocalContext.current.getDrawable(R.drawable.ca_small)
+        "com.discord"
     )
     apps.add(discord)
     val telegram = InstalledAppsData(
         "Telegram",
-        "org.telegram.messenger",
-        LocalContext.current.getDrawable(R.drawable.jp_small)
+        "org.telegram.messenger"
     )
     apps.add(telegram)
     val viewmodel = object : SplitTunnelViewModel() {
@@ -323,6 +325,7 @@ private fun SplitTunnelScreenApps() {
         override val isSplitTunnelEnabled: StateFlow<Boolean> = MutableStateFlow(true)
         override val searchKeyword: StateFlow<String> = MutableStateFlow("")
         override val showSystemApps: StateFlow<Boolean> = MutableStateFlow(false)
+        override val appIconCache: com.windscribe.vpn.cache.AppIconCache = com.windscribe.vpn.cache.AppIconCache()
     }
     PreviewWithNav {
         SplitTunnelScreen(viewmodel)

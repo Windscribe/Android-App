@@ -94,8 +94,8 @@ interface ApplicationComponent {
     val portMappingRepository: PortMapRepository
     val logRepository: LogRepository
     val bridgeApiRepository: BridgeApiRepository
-
     val unblockWgParamsRepository: UnblockWgParamsRepository
+    val appIconCache: AppIconCache
 
     //Services
 

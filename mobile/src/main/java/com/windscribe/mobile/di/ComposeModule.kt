@@ -64,6 +64,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
@@ -124,7 +125,8 @@ class ComposeModule {
         resourceHelper: ResourceHelper,
         deviceStateManager: DeviceStateManager,
         appIconManager: AppIconManager,
-        unblockWgParamsRepository: UnblockWgParamsRepository
+        unblockWgParamsRepository: UnblockWgParamsRepository,
+        appIconCache: AppIconCache
     ): ViewModelProvider.Factory {
         return object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -230,7 +232,7 @@ class ComposeModule {
                 } else if (modelClass.isAssignableFrom(NetworkDetailViewModel::class.java)) {
                     return NetworkDetailViewModelImpl(localDbInterface, apiCallManager, appPreferenceHelper, networkInfoManager, windVpnController, vpnConnectionStateManager, portMapRepository, deviceStateManager) as T
                 } else if (modelClass.isAssignableFrom(SplitTunnelViewModel::class.java)) {
-                    return SplitTunnelViewModelImpl(appPreferenceHelper) as T
+                    return SplitTunnelViewModelImpl(appPreferenceHelper, appIconCache) as T
                 } else if (modelClass.isAssignableFrom(EmailViewModel::class.java)) {
                     return EmailViewModelImpl(apiCallManager, userRepository, workManager) as T
                 } else if (modelClass.isAssignableFrom(BridgeApiViewModel::class.java)) {
