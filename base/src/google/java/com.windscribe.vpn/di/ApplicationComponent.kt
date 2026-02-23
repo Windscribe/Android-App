@@ -19,6 +19,7 @@ import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.backend.wireguard.WireguardBackend
 import com.windscribe.vpn.billing.AmazonBillingManager
 import com.windscribe.vpn.billing.GoogleBillingManager
+import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.mocklocation.MockLocationManager
