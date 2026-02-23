@@ -19,6 +19,8 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
 
 /**
  * LRU cache for app icons with background preloading
@@ -97,53 +99,18 @@ class AppIconCache @Inject constructor() {
     }
 
     /**
-     * Get icon bitmap for ApplicationInfo, loading and caching if needed
-     */
-    fun getIcon(appInfo: ApplicationInfo, pm: PackageManager): Bitmap? {
-        // Check cache first
-        iconCache.get(appInfo.packageName)?.let { return it }
-
-        // Load and cache
-        return try {
-            val drawable = pm.getApplicationIcon(appInfo)
-            val bitmap = drawableToBitmap(drawable, iconSizePx, iconSizePx)
-            iconCache.put(appInfo.packageName, bitmap)
-            bitmap
-        } catch (e: Exception) {
-            logger.debug("Error loading icon for ${appInfo.packageName}: ${e.message}")
-            null
-        }
-    }
-
-    /**
      * Convert drawable to bitmap with specified dimensions
      * Downsamples to reduce memory usage
      */
     private fun drawableToBitmap(drawable: Drawable, width: Int, height: Int): Bitmap {
         if (drawable is BitmapDrawable && drawable.bitmap != null) {
-            return Bitmap.createScaledBitmap(drawable.bitmap, width, height, true)
+            return drawable.bitmap.scale(width, height)
         }
 
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val bitmap = createBitmap(width, height)
         val canvas = Canvas(bitmap)
         drawable.setBounds(0, 0, canvas.width, canvas.height)
         drawable.draw(canvas)
         return bitmap
-    }
-
-    /**
-     * Clear the cache
-     */
-    fun clear() {
-        iconCache.evictAll()
-        logger.info("Icon cache cleared")
-    }
-
-    /**
-     * Get cache statistics
-     */
-    fun getCacheStats(): String {
-        return "Cache size: ${iconCache.size()}, Max size: ${iconCache.maxSize()}, " +
-                "Hit count: ${iconCache.hitCount()}, Miss count: ${iconCache.missCount()}"
     }
 }
