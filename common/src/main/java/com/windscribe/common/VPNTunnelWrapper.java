@@ -50,6 +50,7 @@ public class VPNTunnelWrapper {
     private ParcelFileDescriptor socketFileDescriptor;
     private ParcelFileDescriptor detachFileDescriptor;
     private DatagramChannel controlDChannel;
+    private Boolean byPassControlD = true;
 
     public VPNTunnelWrapper(ParcelFileDescriptor parcelFileDescriptor, VpnService vpnService) throws ErrnoException, IOException {
         this.parcelFileDescriptor = parcelFileDescriptor;
@@ -193,6 +194,18 @@ public class VPNTunnelWrapper {
             ipPacket = IpSelector.newPacket(ipPacketData, 0, ipPacketData.length);
             if ((ipPacket instanceof IpV4Packet || ipPacket instanceof IpV6Packet) && ipPacket.getPayload() instanceof UdpPacket requestUdpPacket) {
                 if (requestUdpPacket.getHeader().getDstPort().value() == 53) {
+                    // Bypass windscribe.com for quicker tunnel test once.
+                    try {
+                        byte[] dnsQueryData = requestUdpPacket.getPayload().getRawData();
+                        DnsMessage dnsMessage = new DnsMessage(dnsQueryData);
+                        if (dnsMessage.questions != null && !dnsMessage.questions.isEmpty()) {
+                            String domain = dnsMessage.questions.get(0).name.toString();
+                            if (domain.endsWith("windscribe.com") && byPassControlD) {
+                                byPassControlD = false;
+                                return new Pair<>(ipPacket, false);
+                            }
+                        }
+                    } catch (Exception ignored) { }
                     return new Pair<>(ipPacket, true);
                 }
             }
