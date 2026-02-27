@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -28,8 +30,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.theme.font14
 import com.windscribe.mobile.ui.theme.font16
-import com.windscribe.mobile.ui.theme.font24
+import com.windscribe.mobile.ui.theme.font18
+import com.windscribe.mobile.ui.theme.font22
 import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.theme
 import com.windscribe.mobile.ui.AppStartActivityViewModel
@@ -61,8 +65,9 @@ fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = 
                         .clickable { appStartActivityViewModel?.dialogCallback?.onDismiss() }
                 )
             }
-            Spacer(modifier = Modifier.weight(1f))
+            // Show icon at top if not iconAtBottom
             if (appStartActivityViewModel?.dialogData?.iconAtBottom != true) {
+                Spacer(modifier = Modifier.height(16.dp))
                 Image(
                     painter = painterResource(
                         appStartActivityViewModel?.dialogData?.icon ?: R.drawable.ic_warning_icon
@@ -73,25 +78,33 @@ fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = 
                 )
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
             Text(
                 text = appStartActivityViewModel?.dialogData?.title ?: "",
-                style = font24,
+                style = font22,
                 color = theme(R.attr.wdPrimaryColor),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            Text(
-                text = appStartActivityViewModel?.dialogData?.description ?: "",
-                style = font16,
-                color = theme(R.attr.wdPrimaryColor),
-                textAlign = if (appStartActivityViewModel?.dialogData?.iconAtBottom == true) TextAlign.Start else TextAlign.Center,
+            // Scrollable description container
+            Column(
                 modifier = Modifier
+                    .weight(1f)
                     .widthIn(max = 400.dp)
-                    .padding(bottom = 16.dp)
-            )
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Text(
+                    text = appStartActivityViewModel?.dialogData?.description ?: "",
+                    style = font14,
+                    color = theme(R.attr.wdPrimaryColor),
+                    textAlign = if (appStartActivityViewModel?.dialogData?.iconAtBottom == true) TextAlign.Start else TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Show icon at bottom if iconAtBottom
             if (appStartActivityViewModel?.dialogData?.iconAtBottom == true) {
