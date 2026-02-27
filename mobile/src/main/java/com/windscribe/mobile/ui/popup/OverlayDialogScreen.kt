@@ -74,7 +74,9 @@ fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = 
                     ),
                     contentDescription = "Attention",
                     colorFilter = ColorFilter.tint(theme(R.attr.wdPrimaryColor)),
-                    modifier = Modifier.padding(vertical = 16.dp)
+                    modifier = Modifier
+                        .size(width = 201.dp, height = 153.dp)
+                        .padding(vertical = 16.dp)
                 )
             }
 
@@ -114,7 +116,9 @@ fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = 
                     ),
                     contentDescription = "Attention",
                     colorFilter = ColorFilter.tint(theme(R.attr.wdPrimaryColor)),
-                    modifier = Modifier.padding(vertical = 16.dp)
+                    modifier = Modifier
+                        .size(width = 201.dp, height = 153.dp)
+                        .padding(vertical = 16.dp)
                 )
             }
 
