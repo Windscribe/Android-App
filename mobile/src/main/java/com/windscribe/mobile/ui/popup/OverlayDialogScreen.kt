@@ -62,14 +62,16 @@ fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = 
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
-            Image(
-                painter = painterResource(
-                    appStartActivityViewModel?.dialogData?.icon ?: R.drawable.ic_warning_icon
-                ),
-                contentDescription = "Attention",
-                colorFilter = ColorFilter.tint(theme(R.attr.wdPrimaryColor)),
-                modifier = Modifier.padding(vertical = 16.dp)
-            )
+            if (appStartActivityViewModel?.dialogData?.iconAtBottom != true) {
+                Image(
+                    painter = painterResource(
+                        appStartActivityViewModel?.dialogData?.icon ?: R.drawable.ic_warning_icon
+                    ),
+                    contentDescription = "Attention",
+                    colorFilter = ColorFilter.tint(theme(R.attr.wdPrimaryColor)),
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
+            }
 
             Text(
                 text = appStartActivityViewModel?.dialogData?.title ?: "",
@@ -83,12 +85,26 @@ fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = 
                 text = appStartActivityViewModel?.dialogData?.description ?: "",
                 style = font16,
                 color = theme(R.attr.wdPrimaryColor),
-                textAlign = TextAlign.Center,
+                textAlign = if (appStartActivityViewModel?.dialogData?.iconAtBottom == true) TextAlign.Start else TextAlign.Center,
                 modifier = Modifier
                     .widthIn(max = 400.dp)
                     .padding(bottom = 16.dp)
             )
+
             Spacer(modifier = Modifier.weight(1f))
+
+            // Show icon at bottom if iconAtBottom
+            if (appStartActivityViewModel?.dialogData?.iconAtBottom == true) {
+                Image(
+                    painter = painterResource(
+                        appStartActivityViewModel?.dialogData?.icon ?: R.drawable.ic_warning_icon
+                    ),
+                    contentDescription = "Attention",
+                    colorFilter = ColorFilter.tint(theme(R.attr.wdPrimaryColor)),
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
+            }
+
             NextButton(
                 modifier = Modifier.width(400.dp),
                 text = appStartActivityViewModel?.dialogData?.okLabel ?: "",

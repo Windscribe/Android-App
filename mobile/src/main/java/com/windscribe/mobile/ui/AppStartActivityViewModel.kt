@@ -27,7 +27,8 @@ data class DialogData(
     @DrawableRes val icon: Int,
     val title: String,
     val description: String,
-    val okLabel: String
+    val okLabel: String,
+    val iconAtBottom: Boolean = false
 )
 
 abstract class AppStartActivityViewModel : ViewModel() {
