@@ -108,6 +108,7 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 	private volatile boolean mShowNotification;
 	private BuilderAdapter mBuilderAdapter = new BuilderAdapter();
 	private Handler mHandler;
+	private Handler mBackgroundHandler;
 	private VpnStateService mService;
 	private static final String ISRGX1Sha256Hash = "22B557A27055B33606B6559F37703928D3E4AD79F110B407D04986E1843543D1";
 	private final Object mServiceLock = new Object();
@@ -207,6 +208,11 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 		/* handler used to do changes in the main UI thread */
 		mHandler = new Handler();
 
+		/* handler for background work to avoid blocking main thread */
+		android.os.HandlerThread backgroundThread = new android.os.HandlerThread("CharonVpnServiceBg");
+		backgroundThread.start();
+		mBackgroundHandler = new Handler(backgroundThread.getLooper());
+
 		mDataSource = new VpnProfileDataSource(this);
 		mDataSource.open();
 		/* use a separate thread as main thread for charon */
@@ -244,14 +250,38 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 			unbindService(mServiceConnection);
 		}
 		mDataSource.close();
+		// Clean up background thread
+		if (mBackgroundHandler != null)
+		{
+			mBackgroundHandler.getLooper().quit();
+		}
 	}
 
 	/**
 	 * Set the profile that is to be initiated next. Notify the handler thread.
+	 * This method is asynchronous to avoid blocking the caller (especially main thread).
 	 *
 	 * @param profile the profile to initiate
 	 */
 	public void setNextProfile(VpnProfile profile)
+	{
+		// Always post to background thread to avoid blocking caller
+		if (mBackgroundHandler != null)
+		{
+			mBackgroundHandler.post(() -> setNextProfileInternal(profile));
+		}
+		else
+		{
+			// Fallback for early calls before onCreate completes
+			setNextProfileInternal(profile);
+		}
+	}
+
+	/**
+	 * Internal implementation that actually sets the profile.
+	 * Called from background thread to avoid blocking main thread.
+	 */
+	private void setNextProfileInternal(VpnProfile profile)
 	{
 		synchronized (this)
 		{
@@ -356,6 +386,10 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 	 */
 	private void stopCurrentConnection()
 	{
+		VpnProfile profileToStop = null;
+		VpnProfile nextProfileSnapshot = null;
+
+		// Step 1: Prepare state while holding lock
 		synchronized (this)
 		{
 		   if(tunnelWrapper != null){
@@ -374,10 +408,22 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 				setState(State.DISCONNECTING);
 				mIsDisconnecting = true;
 				SimpleFetcher.disable();
-				deinitializeCharon();
-				Log.i(TAG, "charon stopped");
+				profileToStop = mCurrentProfile;
+				nextProfileSnapshot = mNextProfile;
+			}
+		}
+
+		// Step 2: Call native code WITHOUT holding lock - this prevents deadlock
+		if (profileToStop != null)
+		{
+			deinitializeCharon();
+			Log.i(TAG, "charon stopped");
+
+			// Step 3: Clean up while holding lock
+			synchronized (this)
+			{
 				mCurrentProfile = null;
-				if (mNextProfile == null)
+				if (nextProfileSnapshot == null)
 				{	/* only do this if we are not connecting to another profile */
 					removeNotification();
 					mBuilderAdapter.closeBlocking();
