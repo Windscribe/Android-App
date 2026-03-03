@@ -103,8 +103,8 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
-    override fun observeUserState(windscribeActivity: WindscribeActivity) {
-        userRepository.user.observe(windscribeActivity) {
+    override suspend fun observeUserState() {
+        userRepository.userInfo.collectLatest {
             setAccountStatus(it)
             setUserStatus(it)
         }
