@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -81,6 +82,7 @@ import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_CUSTOM
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DNS_MODE_ROBERT
 import com.windscribe.vpn.mocklocation.MockLocationManager.Companion.isAppSelectedInMockLocationList
 import com.windscribe.vpn.mocklocation.MockLocationManager.Companion.isDevModeOn
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 
 
@@ -103,6 +105,7 @@ fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
     LaunchedEffect(Unit) {
         viewModel?.refreshPreferences()
     }
+    val scrollState = rememberScrollState()
     PreferenceBackground {
         Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
             PreferencesNavBar(stringResource(R.string.connection)) {
@@ -113,7 +116,7 @@ fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
                 modifier = Modifier
                     .weight(1f)
                     .navigationBarsPadding()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
             ) {
                 ConnectionItem(
                     R.string.network_options,
@@ -178,7 +181,7 @@ fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 DecoyTrafficMode(viewModel)
                 Spacer(modifier = Modifier.height(16.dp))
-                AntiCensorshipMode(viewModel)
+                AntiCensorshipMode(viewModel, scrollState)
             }
         }
     }
@@ -260,16 +263,23 @@ private fun DecoyTrafficMode(viewModel: ConnectionViewModel?) {
 }
 
 @Composable
-private fun AntiCensorshipMode(viewModel: ConnectionViewModel?) {
+private fun AntiCensorshipMode(viewModel: ConnectionViewModel?, scrollState: ScrollState) {
     val antiCensorship by viewModel?.antiCensorship?.collectAsState()
         ?: remember { mutableStateOf(false) }
     val presets by viewModel?.unblockWgPresets?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
     val selectedPreset by viewModel?.unblockWgSelectedPreset?.collectAsState() ?: remember { mutableStateOf("") }
-
     val shape = if (antiCensorship) {
         RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
     } else {
         RoundedCornerShape(size = 12.dp)
+    }
+
+    LaunchedEffect(antiCensorship) {
+        if (antiCensorship) {
+            // Wait for the dropdown to be composed before scrolling
+            delay(100)
+            scrollState.animateScrollTo(scrollState.maxValue)
+        }
     }
 
     Column {
