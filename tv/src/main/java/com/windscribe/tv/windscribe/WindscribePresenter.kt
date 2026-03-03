@@ -19,7 +19,7 @@ interface WindscribePresenter {
     fun onHotStart()
     fun onMenuButtonClicked()
     suspend fun observeVPNState()
-    fun observeUserState(windscribeActivity: WindscribeActivity)
+    suspend fun observeUserState()
     suspend fun observeConnectedProtocol()
     suspend fun observeServerList()
     suspend fun observeSelectedLocation()

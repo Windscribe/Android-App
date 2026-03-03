@@ -581,8 +581,8 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
         activityScope { windscribePresenter.observeSelectedLocation() }
         activityScope { windscribePresenter.observeDisconnectedProtocol() }
         activityScope { windscribePresenter.observeConnectedProtocol() }
-        activityScope { windscribePresenter.observeVPNState() }
         activityScope { windscribePresenter.observeNetworkEvents() }
+        activityScope { windscribePresenter.observeUserState() }
     }
 
     private fun setFocusListener() {
