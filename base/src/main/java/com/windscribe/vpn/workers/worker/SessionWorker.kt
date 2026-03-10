@@ -87,26 +87,33 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
         }
     }
 
-    private suspend fun updateIfRequired(changed: List<Boolean>, userSessionResponse: UserSessionResponse) {
+    private fun updateIfRequired(changed: List<Boolean>, userSessionResponse: UserSessionResponse) {
         userRepository.reload(userSessionResponse) {
+            // ALC changed
             if (changed[0]) {
-                workManager.updateServerList()
+                logger.debug("ALC or location hash changed")
+                preferencesHelper.migrationRequired = true
             }
-            val storedSip = localDbInterface.getAllStaticRegions()
-            val hasStaticCredential = storedSip.firstOrNull()?.credentials
-            val storedSipCount = storedSip.size
-            logger.debug("Sip: stored: $storedSipCount updated: ${it.sipCount}")
-            if (storedSipCount != it.sipCount || (it.sipCount > 0 && hasStaticCredential == null)) {
-                workManager.updateStaticIpList()
-            }
-            val forceUpdate = inputData.getBoolean("forceUpdate", false)
-            if (changed[2] || forceUpdate) {
-                workManager.updateServerList()
+            // User status changed
+            if (changed[2]) {
+                logger.debug("User status changed.")
+                preferencesHelper.migrationRequired = true
                 workManager.updateStaticIpList()
                 workManager.updateCredentialsUpdate()
                 workManager.updateNotifications()
             }
+            workManager.updateServerList()
+            val storedSip = localDbInterface.getAllStaticRegions()
+            val hasStaticCredential = storedSip.firstOrNull()?.credentials
+            val storedSipCount = storedSip.size
+            // Static ip changed
+            if (storedSipCount != it.sipCount || (it.sipCount > 0 && hasStaticCredential == null)) {
+                logger.debug("Static ip changed.")
+                workManager.updateStaticIpList()
+            }
+            // Email status changed
             if (changed[3]) {
+                logger.debug("Email status changed.")
                 preferenceChangeObserver.postEmailStatusChange()
             }
             handleAccountStatusChange(it)

@@ -44,19 +44,9 @@ class ServerListWorker(context: Context, workerParams: WorkerParameters) : Corou
         if (!userRepository.loggedIn()) return Result.failure()
 
         return runCatching {
-            // First update
             serverListRepository.update()
-            // Check if we need to reload with different country code
-            val reloadServerList = serverListRepository.globalServerList &&
-                appContext.appLifeCycleObserver.overriddenCountryCode != null &&
-                appContext.appLifeCycleObserver.overriddenCountryCode != "ZZ"
-            if (reloadServerList) {
-                // Reload server list with country override
-                serverListRepository.update()
-            }
-            // Load the updated server list
             serverListRepository.load()
-            logger.debug("Successfully updated server list. Global Server list: ${serverListRepository.globalServerList} CountryOverride: ${appContext.appLifeCycleObserver.overriddenCountryCode}")
+            logger.debug("Successfully updated server list.")
             mainScope.launch {
                 handleLocationUpdate()
             }

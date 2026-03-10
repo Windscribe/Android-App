@@ -39,11 +39,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.AddButtonWithDetails
-import com.windscribe.mobile.ui.common.FavouriteIcon
-import com.windscribe.mobile.ui.common.LatencyIcon
-import com.windscribe.mobile.ui.common.ServerListIcon
-import com.windscribe.mobile.ui.common.ServerNodeName
-import com.windscribe.mobile.ui.common.TenGIcon
+import com.windscribe.mobile.ui.common.DataCenterFavouriteIcon
+import com.windscribe.mobile.ui.common.DataCenterLatencyIcon
+import com.windscribe.mobile.ui.common.DataCenterName
 import com.windscribe.mobile.ui.common.healthColor
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.helper.HandleScrollHaptic
@@ -55,6 +53,8 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.vpn.commonutils.FlagIconResource
 import kotlin.collections.set
+
+private const val MIN_HEALTH_VALUE = 50
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -125,12 +125,8 @@ private fun ListItemView(
     homeViewmodel: HomeViewmodel
 ) {
     val userState by homeViewmodel.userState.collectAsState()
-    var health = item.city.health
-    if (health < miniumHealthStart){
-        health = miniumHealthStart
-    }
-    val color = colorResource(healthColor(health))
-    val angle = (health / 100f) * 360f
+    // V2: Health is now at Server level, calculate from servers for this city
+    val health by viewModel.observeAverageHealth(item.city.id).collectAsState(initial = MIN_HEALTH_VALUE)
     val latencyState by viewModel.latencyListState.collectAsState()
     val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     val latency by rememberUpdatedState(
@@ -151,26 +147,24 @@ private fun ListItemView(
             }.padding(start = 8.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        SplitBorderCircle(
-            angle,
-            color,
-            MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.20f),
-            FlagIconResource.getSmallFlag(item.countryCode),
-            userState !is UserState.Pro && item.city.pro == 1,
-            showLocationLoad
+        LocationSplitBorderCircle(
+            health = health,
+            flagRes = FlagIconResource.getSmallFlag(item.countryCode),
+            showProIcon = userState !is UserState.Pro && item.city.pro == 1,
+            showLocationLoad = showLocationLoad
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            ServerNodeName("${item.city.nodeName} ${item.city.nickName}", Modifier)
+            DataCenterName("${item.city.nodeName} ${item.city.nickName}", Modifier)
             Text(
                 text = item.pinnedIp ?: "Random IP",
                 style = font12.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.60f)
             )
         }
-        LatencyIcon(latency)
+        DataCenterLatencyIcon(latency)
         Spacer(modifier = Modifier.width(12.dp))
-        FavouriteIcon(true) {
+        DataCenterFavouriteIcon(true) {
             viewModel.deleteFavourite(item.id)
         }
     }

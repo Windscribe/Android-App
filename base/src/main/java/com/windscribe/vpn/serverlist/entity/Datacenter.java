@@ -9,33 +9,28 @@ import android.os.Parcelable;
 
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.windscribe.vpn.serverlist.converter.NodeToJson;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Keep
-@Entity(tableName = "City")
-public class City implements Parcelable {
+@Entity(tableName = "Datacenter")
+public class Datacenter implements Parcelable {
 
-    public static final Creator<City> CREATOR = new Creator<City>() {
+    public static final Creator<Datacenter> CREATOR = new Creator<Datacenter>() {
         @Override
-        public City createFromParcel(Parcel in) {
-            return new City(in);
+        public Datacenter createFromParcel(Parcel in) {
+            return new Datacenter(in);
         }
 
         @Override
-        public City[] newArray(int size) {
-            return new City[size];
+        public Datacenter[] newArray(int size) {
+            return new Datacenter[size];
         }
     };
 
@@ -43,11 +38,6 @@ public class City implements Parcelable {
     @Expose
     @ColumnInfo(name = "city_id")
     public int id;
-
-    @SerializedName("nodes")
-    @Expose
-    @TypeConverters(NodeToJson.class)
-    public List<Node> nodes;
 
     @PrimaryKey(autoGenerate = true)
     public int primaryKey;
@@ -59,15 +49,15 @@ public class City implements Parcelable {
     @ColumnInfo(name = "gps")
     private String coordinates;
 
-    @SerializedName("health")
+    @SerializedName("iata")
     @Expose
-    @ColumnInfo(name = "health")
-    private int health = 0;
+    @ColumnInfo(name = "iata")
+    private String iata;
 
     @SerializedName("link_speed")
     @Expose
     @ColumnInfo(name = "link_speed")
-    private String linkSpeed = "100";
+    private int linkSpeed = 100;
 
     @SerializedName("nick")
     @Expose
@@ -84,59 +74,73 @@ public class City implements Parcelable {
     @ColumnInfo(name = "ovpn_x509")
     private String ovpnX509;
 
-    @SerializedName("ping_ip")
+    @SerializedName("p2p")
     @Expose
-    @ColumnInfo(name = "ping_ip", defaultValue = "")
-    private String pingIp;
+    @ColumnInfo(name = "p2p")
+    private int p2p;
 
     @SerializedName("pro")
     @Expose
     @ColumnInfo(name = "pro")
-    private int pro;
+    public int pro = 0;
 
     @SerializedName("wg_pubkey")
     @Expose
     @ColumnInfo(name = "wg_pubkey")
     private String pubKey;
 
+    @SerializedName("status")
+    @Expose
+    @ColumnInfo(name = "status")
+    private int status = 1;
+
     @SerializedName("tz")
     @Expose
     @ColumnInfo(name = "tz")
     private String tz;
 
-    @SerializedName("ping_host")
+    @SerializedName("wg_endpoint")
     @Expose
-    @ColumnInfo(name = "ping_host")
-    @Nullable
-    private String pingHost;
+    @ColumnInfo(name = "wg_endpoint")
+    private String wgEndpoint;
 
-    public City(int region_id, int id, String nodeName, String nickName, int pro, String coordinates, String tz, List<Node> nodes) {
+    public Datacenter(int region_id, int id, String nodeName, String nickName, String coordinates, String tz, String iata, int status, int p2p, int pro, String pubKey, String wgEndpoint, String ovpnX509, int linkSpeed) {
         this.region_id = region_id;
         this.id = id;
         this.nodeName = nodeName;
         this.nickName = nickName;
+        this.coordinates = coordinates;
+        this.tz = tz;
+        this.iata = iata;
+        this.status = status;
+        this.p2p = p2p;
         this.pro = pro;
+        this.pubKey = pubKey;
+        this.wgEndpoint = wgEndpoint;
+        this.ovpnX509 = ovpnX509;
+        this.linkSpeed = linkSpeed;
     }
 
-    protected City(Parcel in) {
+    @androidx.room.Ignore
+    protected Datacenter(Parcel in) {
         region_id = in.readInt();
         id = in.readInt();
         nodeName = in.readString();
         nickName = in.readString();
-        pro = in.readInt();
         coordinates = in.readString();
         tz = in.readString();
-        in.readList(nodes, Node.class.getClassLoader());
         primaryKey = in.readInt();
         pubKey = in.readString();
-        pingIp = in.readString();
         ovpnX509 = in.readString();
-        linkSpeed = in.readString();
-        health = in.readInt();
-        pingHost = in.readString();
+        linkSpeed = in.readInt();
+        iata = in.readString();
+        status = in.readInt();
+        p2p = in.readInt();
+        pro = in.readInt();
+        wgEndpoint = in.readString();
     }
 
-    public City() {
+    public Datacenter() {
 
     }
 
@@ -149,13 +153,13 @@ public class City implements Parcelable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        City city = (City) o;
-        return id == city.id && primaryKey == city.primaryKey && region_id == city.region_id && health == city.health && pro == city.pro && Objects.equals(nodes, city.nodes) && Objects.equals(coordinates, city.coordinates) && Objects.equals(linkSpeed, city.linkSpeed) && Objects.equals(nickName, city.nickName) && Objects.equals(nodeName, city.nodeName) && Objects.equals(ovpnX509, city.ovpnX509) && Objects.equals(pingIp, city.pingIp) && Objects.equals(pubKey, city.pubKey) && Objects.equals(tz, city.tz) && Objects.equals(pingHost, city.pingHost);
+        Datacenter city = (Datacenter) o;
+        return id == city.id && primaryKey == city.primaryKey && region_id == city.region_id && linkSpeed == city.linkSpeed && p2p == city.p2p && pro == city.pro && status == city.status && Objects.equals(coordinates, city.coordinates) && Objects.equals(iata, city.iata) && Objects.equals(nickName, city.nickName) && Objects.equals(nodeName, city.nodeName) && Objects.equals(ovpnX509, city.ovpnX509) && Objects.equals(pubKey, city.pubKey) && Objects.equals(tz, city.tz) && Objects.equals(wgEndpoint, city.wgEndpoint);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nodes, primaryKey, region_id, coordinates, health, linkSpeed, nickName, nodeName, ovpnX509, pingIp, pro, pubKey, tz, pingHost);
+        return Objects.hash(id, primaryKey, region_id, coordinates, iata, linkSpeed, nickName, nodeName, ovpnX509, p2p, pro, pubKey, status, tz, wgEndpoint);
     }
 
     public String getCoordinates() {
@@ -166,12 +170,12 @@ public class City implements Parcelable {
         this.coordinates = coordinates;
     }
 
-    public int getHealth() {
-        return health;
+    public String getIata() {
+        return iata;
     }
 
-    public void setHealth(final int health) {
-        this.health = health;
+    public void setIata(String iata) {
+        this.iata = iata;
     }
 
     public int getId() {
@@ -182,11 +186,11 @@ public class City implements Parcelable {
         this.id = id;
     }
 
-    public String getLinkSpeed() {
+    public int getLinkSpeed() {
         return linkSpeed;
     }
 
-    public void setLinkSpeed(final String linkSpeed) {
+    public void setLinkSpeed(int linkSpeed) {
         this.linkSpeed = linkSpeed;
     }
 
@@ -209,48 +213,20 @@ public class City implements Parcelable {
         this.nodeName = nodeName;
     }
 
-    public List<Node> getNodes() {
-        List<Node> nodesToRemove = new ArrayList<>();
-        if (nodes != null) {
-            for (Node node : nodes) {
-                boolean forceDisconnected = node.isForceDisconnect();
-                if (forceDisconnected) {
-                    nodesToRemove.add(node);
-                }
-            }
-            for (Node removeNode : nodesToRemove) {
-                nodes.remove(removeNode);
-            }
-        }
-        return nodes;
-    }
-
-    public void setNodes(List<Node> nodes) {
-        this.nodes = nodes;
-    }
-
     public String getOvpnX509() {
         return ovpnX509;
     }
 
-    public void setOvpnX509(final String ovpnX509) {
+    public void setOvpnX509(String ovpnX509) {
         this.ovpnX509 = ovpnX509;
     }
 
-    public String getPingIp() {
-        return pingIp;
+    public int getP2p() {
+        return p2p;
     }
 
-    public void setPingIp(String pingIp) {
-        this.pingIp = pingIp;
-    }
-
-    public int getPrimaryKey() {
-        return primaryKey;
-    }
-
-    public void setPrimaryKey(int primaryKey) {
-        this.primaryKey = primaryKey;
+    public void setP2p(int p2p) {
+        this.p2p = p2p;
     }
 
     public int getPro() {
@@ -259,6 +235,14 @@ public class City implements Parcelable {
 
     public void setPro(int pro) {
         this.pro = pro;
+    }
+
+    public int getPrimaryKey() {
+        return primaryKey;
+    }
+
+    public void setPrimaryKey(int primaryKey) {
+        this.primaryKey = primaryKey;
     }
 
     public String getPubKey() {
@@ -277,6 +261,14 @@ public class City implements Parcelable {
         this.region_id = regionID;
     }
 
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     public String getTz() {
         return tz;
     }
@@ -285,47 +277,36 @@ public class City implements Parcelable {
         this.tz = tz;
     }
 
-    public void setPingHost(String pingHost) {
-        this.pingHost = pingHost;
+    public String getWgEndpoint() {
+        return wgEndpoint;
     }
 
-    @Nullable
-    public String getPingHost() {
-        return pingHost;
+    public void setWgEndpoint(String wgEndpoint) {
+        this.wgEndpoint = wgEndpoint;
     }
 
-    public boolean nodesAvailable() {
-        List<Node> nodesToRemove = new ArrayList<>();
-        if (nodes != null) {
-            for (Node node : nodes) {
-                boolean forceDisconnected = node.isForceDisconnect();
-                if (forceDisconnected) {
-                    nodesToRemove.add(node);
-                }
-            }
-            for (Node removeNode : nodesToRemove) {
-                nodes.remove(removeNode);
-            }
-        }
-        return nodes != null && nodes.size() > 0;
+    public boolean nodesAvailable(int serverCount) {
+        return serverCount > 0;
     }
 
     @NonNull
     @Override
     public String toString() {
-        return "City{" +
+        return "Datacenter{" +
                 "primaryKey=" + primaryKey +
-                ", nodes=" + nodes +
                 ", region_id=" + region_id +
                 ", id=" + id +
                 ", nodeName='" + nodeName + '\'' +
                 ", nickName='" + nickName + '\'' +
-                ", pro=" + pro +
                 ", coordinates='" + coordinates + '\'' +
                 ", tz='" + tz + '\'' +
+                ", iata='" + iata + '\'' +
+                ", status=" + status +
+                ", p2p=" + p2p +
                 ", pubKey='" + pubKey + '\'' +
+                ", wgEndpoint='" + wgEndpoint + '\'' +
                 ", ovpnX509='" + ovpnX509 + '\'' +
-                ", pingHost='" + pingHost + '\'' +
+                ", linkSpeed=" + linkSpeed +
                 '}';
     }
 
@@ -335,16 +316,16 @@ public class City implements Parcelable {
         dest.writeInt(id);
         dest.writeString(nodeName);
         dest.writeString(nickName);
-        dest.writeInt(pro);
         dest.writeString(coordinates);
         dest.writeString(tz);
-        dest.writeList(nodes);
         dest.writeInt(primaryKey);
         dest.writeString(pubKey);
-        dest.writeString(pingIp);
         dest.writeString(ovpnX509);
-        dest.writeString(linkSpeed);
-        dest.writeInt(health);
-        dest.writeString(pingHost);
+        dest.writeInt(linkSpeed);
+        dest.writeString(iata);
+        dest.writeInt(status);
+        dest.writeInt(p2p);
+        dest.writeInt(pro);
+        dest.writeString(wgEndpoint);
     }
 }

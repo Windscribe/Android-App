@@ -107,6 +107,18 @@ public class UserSessionResponse {
     @Expose
     private String userName;
 
+    @SerializedName("inventory_namespace")
+    @Expose
+    private String inventoryNamespace;
+
+    @SerializedName("user_class")
+    @Expose
+    private Integer userClass;
+
+    @SerializedName("server_inventory")
+    @Expose
+    private ServerInventory serverInventory;
+
     public List<String> getAlcList() {
         return alcList;
     }
@@ -285,6 +297,30 @@ public class UserSessionResponse {
 
     public int sipCount() {
         return sip != null ? sip.getCount() : 0;
+    }
+
+    public String getInventoryNamespace() {
+        return inventoryNamespace;
+    }
+
+    public void setInventoryNamespace(String inventoryNamespace) {
+        this.inventoryNamespace = inventoryNamespace;
+    }
+
+    public Integer getUserClass() {
+        return userClass;
+    }
+
+    public void setUserClass(Integer userClass) {
+        this.userClass = userClass;
+    }
+
+    public ServerInventory getServerInventory() {
+        return serverInventory;
+    }
+
+    public void setServerInventory(ServerInventory serverInventory) {
+        this.serverInventory = serverInventory;
     }
 
     @NonNull

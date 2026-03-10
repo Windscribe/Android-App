@@ -227,7 +227,7 @@ fun CustomConfigItem(
                 color = MaterialTheme.colorScheme.serverItemTextColor,
                 textAlign = TextAlign.Start
             )
-            LatencyIcon(latency)
+            DataCenterLatencyIcon(latency)
         }
     }
 }

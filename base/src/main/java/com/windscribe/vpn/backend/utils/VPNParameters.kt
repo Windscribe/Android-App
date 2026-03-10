@@ -11,7 +11,8 @@ class VPNParameters(
         val stealthIp: String,
         val hostName: String,
         val publicKey: String,
-        val ovpnX509: String
+        val ovpnX509: String,
+        val supportsV6: Boolean = false
 ) {
     override fun toString(): String {
         return "VPNParameters(ikev2Ip='$ikev2Ip', udpIp='$udpIp', tcpIp='$tcpIp', stealthIp='$stealthIp', hostName='$hostName', publicKey='$publicKey', ovpnX509='$ovpnX509')"

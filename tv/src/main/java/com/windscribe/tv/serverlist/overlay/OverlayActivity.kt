@@ -27,11 +27,11 @@ import com.windscribe.tv.serverlist.detail.DetailActivity
 import com.windscribe.tv.serverlist.fragments.AllOverlayFragment
 import com.windscribe.tv.serverlist.fragments.FavouriteFragment
 import com.windscribe.tv.serverlist.fragments.StaticIpFragment
-import com.windscribe.tv.serverlist.fragments.WindOverlayFragment
 import com.windscribe.tv.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
+import kotlin.jvm.java
 
 class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
     private lateinit var binding: ActivityOverlayBinding
@@ -77,16 +77,6 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
                 binding.headerItemFavText
             )
             onFavNodeClick()
-        }
-        binding.headerItemWind.setOnClickListener {
-            onHeaderClick(
-                2,
-                WindOverlayFragment::class.java,
-                binding.headerItemWindBar,
-                binding.headerItemWindIcon,
-                binding.headerItemWindText
-            )
-            onWindNodeClick()
         }
         binding.headerItemStatic.setOnClickListener {
             onHeaderClick(
@@ -210,22 +200,6 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         startActivity(startIntent)
     }
 
-    private fun onWindNodeClick() {
-        if (currentFragment is WindOverlayFragment) {
-            return
-        }
-        val fragment = WindOverlayFragment()
-        TransitionManager.beginDelayedTransition(binding.overlayParent, Slide())
-        val transaction = supportFragmentManager.beginTransaction()
-        transaction.replace(R.id.BrowseRow, fragment, "3")
-        transaction.commit()
-        supportFragmentManager.executePendingTransactions()
-    }
-
-    override suspend fun onWindOverlayReady() {
-        presenter.windLocationViewReady()
-    }
-
     override fun setAllAdapter(serverAdapter: ServerAdapter) {
         if (currentFragment is AllOverlayFragment) {
             (currentFragment as AllOverlayFragment).setAllOverlayAdapter(serverAdapter)
@@ -271,12 +245,6 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         }
     }
 
-    override fun setWindAdapter(serverAdapter: ServerAdapter) {
-        if (currentFragment is WindOverlayFragment) {
-            (currentFragment as WindOverlayFragment).setWindOverlayAdapter(serverAdapter)
-        }
-    }
-
     override fun showToast(text: String) {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
     }
@@ -292,7 +260,6 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         val autoTransition = AutoTransition()
         autoTransition.excludeTarget(R.id.header_item_all_text, true)
         autoTransition.excludeTarget(R.id.header_item_fav_text, true)
-        autoTransition.excludeTarget(R.id.header_item_wind_text, true)
         autoTransition.excludeTarget(R.id.header_item_static_text, true)
         TransitionManager.beginDelayedTransition(binding.overlayParent, autoTransition)
         minHeader?.applyTo(binding.overlayParent)
@@ -309,7 +276,6 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         with(binding) {
             headerItemAll.onFocusChangeListener = focusChangeListener
             headerItemFav.onFocusChangeListener = focusChangeListener
-            headerItemWind.onFocusChangeListener = focusChangeListener
             headerItemStatic.onFocusChangeListener = focusChangeListener
         }
     }
@@ -330,7 +296,6 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         listOf(
             binding.headerItemAllBar,
             binding.headerItemFavBar,
-            binding.headerItemWindBar,
             binding.headerItemStaticBar
         ).forEach { it.visibility = View.INVISIBLE }
         selectedBar.visibility = View.VISIBLE
@@ -339,7 +304,6 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         listOf(
             binding.headerItemAllIcon,
             binding.headerItemFavIcon,
-            binding.headerItemWindIcon,
             binding.headerItemStaticIcon
         ).forEach { it.alpha = 0.40f }
         selectedIcon.alpha = 1.0f
@@ -348,7 +312,6 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         listOf(
             binding.headerItemAllText,
             binding.headerItemFavText,
-            binding.headerItemWindText,
             binding.headerItemStaticText
         ).forEach { it.alpha = 0.40f }
         selectedText.alpha = 1.0f

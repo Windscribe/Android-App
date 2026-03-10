@@ -4,7 +4,7 @@
 package com.windscribe.vpn.serverlist.entity
 
 class ServerListData {
-    var bestLocation: CityAndRegion? = null
+    var bestLocation: DatacenterAndLocation? = null
     var serverListHash: String? = null
     var favourites: List<Favourite> = ArrayList()
     var flags: Map<String, Int>? = null
@@ -12,6 +12,7 @@ class ServerListData {
             HashMap()
         } else field
     var pingTimes: List<PingTime> = ArrayList()
+    var serverCountMap: Map<Int, Int> = HashMap()
     var isProUser = false
     private var showLatencyInMs = false
     var isShowLocationHealthEnabled = false

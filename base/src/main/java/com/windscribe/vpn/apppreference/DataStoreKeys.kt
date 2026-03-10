@@ -167,6 +167,7 @@ object DataStoreKeys {
     // System
     val DEVICE_ID = stringPreferencesKey(PreferencesKeyConstants.DEVICE_ID)
     val PORT_MAP_VERSION = intPreferencesKey(PreferencesKeyConstants.PORT_MAP_VERSION)
+    val SERVER_REVISION = longPreferencesKey(PreferencesKeyConstants.SERVER_REVISION)
 
     // Complex types (JSON serialized)
     val INSTALLED_APPS_DATA = stringPreferencesKey(PreferencesKeyConstants.INSTALLED_APPS_DATA)
@@ -191,6 +192,7 @@ object DataStoreKeys {
     val STATIC_IP_CREDENTIALS = stringPreferencesKey(PreferencesKeyConstants.STATIC_IP_CREDENTIAL)
 
     val SELECTED_UNBLOCK_WG_PARAM = stringPreferencesKey(PreferencesKeyConstants.SELECTED_UNBLOCK_WG_PARAM)
+    val IPV6_MODE = stringPreferencesKey(PreferencesKeyConstants.IPV6_MODE)
 
     // OpenVPN Server Config (base64 encoded config)
     val OPEN_VPN_SERVER_CONFIG =

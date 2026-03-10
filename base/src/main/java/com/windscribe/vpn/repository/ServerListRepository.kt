@@ -9,32 +9,35 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
+import com.windscribe.vpn.api.response.LocationResponse
+import com.windscribe.vpn.api.response.ServerInventory
+import com.windscribe.vpn.api.response.ServerResponse
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext.result
-import com.windscribe.vpn.constants.AdvanceParamsValues.IGNORE
 import com.windscribe.vpn.localdatabase.LocalDbInterface
-import com.windscribe.vpn.model.User
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.Region
-import com.windscribe.vpn.serverlist.entity.RegionAndCities
-import com.windscribe.vpn.state.AppLifeCycleObserver
+import com.windscribe.vpn.serverlist.entity.Datacenter
+import com.windscribe.vpn.serverlist.entity.Location
+import com.windscribe.vpn.serverlist.entity.LocationAndDatacenters
+import com.windscribe.vpn.serverlist.entity.Server
+import com.windscribe.vpn.serverlist.entity.ServerMapState
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
-import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.collections.mapNotNull
 
 @Keep
 data class CustomCity(
@@ -56,166 +59,90 @@ class ServerListRepository @Inject constructor(
     private val localDbInterface: LocalDbInterface,
     private val preferenceChangeObserver: PreferenceChangeObserver,
     private val userRepository: Lazy<UserRepository>,
-    private val appLifeCycleObserver: AppLifeCycleObserver,
-    private val advanceParameterRepository: AdvanceParameterRepository,
     private val preferenceHelper: PreferencesHelper,
     private val favouriteRepository: FavouriteRepository
 ) {
     private val logger = LoggerFactory.getLogger("server_list_repository")
-    private var _events = MutableSharedFlow<List<RegionAndCities>>(replay = 1)
-    val regions: SharedFlow<List<RegionAndCities>> = _events
+    private var _events = MutableSharedFlow<List<LocationAndDatacenters>>(replay = 1)
+    val locationAndDatacenters: SharedFlow<List<LocationAndDatacenters>> = _events
     private var _locationJsonToExport = MutableStateFlow("")
     val locationJsonToExport: StateFlow<String> = _locationJsonToExport
     private val _customCities = MutableStateFlow<List<CustomCity>>(listOf())
     val customCities: StateFlow<List<CustomCity>> = _customCities
     private val _customRegions = MutableStateFlow<List<CustomRegion>>(listOf())
     val customRegions: StateFlow<List<CustomRegion>> = _customRegions
-
-    var globalServerList = true
+    private val _serversState = MutableStateFlow<ServerMapState>(ServerMapState.Loading)
+    val serversState: StateFlow<ServerMapState> = _serversState
 
     init {
         load()
+        observeAllServers()
     }
 
     fun load() {
         scope.launch {
-            _events.emit(localDbInterface.getAllRegionAsync())
+            _events.emit(localDbInterface.getAllLocationsAsync())
             observeServerLocations()
         }
         loadCustomLocationsJson()
     }
 
-    private fun getCountryOverride(): String? {
-        val countryCode = advanceParameterRepository.getCountryOverride()
-        val isConnectedVPN = appContext.vpnConnectionStateManager.isVPNConnected()
-        return if (countryCode != null) {
-            if (countryCode == IGNORE) {
-                "ZZ"
-            } else {
-                countryCode
-            }
-        } else if (appLifeCycleObserver.overriddenCountryCode == null && isConnectedVPN) {
-            "ZZ"
-        } else {
-            logger.debug("Existing server override: ${appLifeCycleObserver.overriddenCountryCode ?: "Global"}")
-            appLifeCycleObserver.overriddenCountryCode
-        }
-    }
-
     suspend fun update() {
-        logger.debug("Starting server list update")
-
-        // Get session
-        val sessionResult = result<UserSessionResponse> {
-            apiCallManager.getSessionGeneric(null)
-        }
-        when (sessionResult) {
-            is CallResult.Success -> {
-                val userSession = sessionResult.data
-                userRepository.get().reload(userSession)
-                val user = User(userSession)
-
-                val alc = if (userSession.alcList.isNullOrEmpty()) {
-                    arrayOf()
-                } else {
-                    userSession.alcList.toTypedArray()
-                }
-
-                val countryOverride = getCountryOverride()
-                if (countryOverride != "ZZ") {
-                    globalServerList = false
-                }
-                logger.debug("Country override: $countryOverride")
-
-                // Get server list
-                val serverListResult = result<String> {
-                    apiCallManager.getServerList(
-                        user.userStatusInt == 1,
-                        user.locationHash,
-                        alc,
-                        countryOverride
-                    )
-                }
-
-                when (serverListResult) {
-                    is CallResult.Success -> {
-                        // Parse server list JSON
-                        logger.debug("Parsing server list JSON")
-                        val jsonString = serverListResult.data
-                        val jsonObject = JSONObject(jsonString)
-                        val infoObject = jsonObject.getJSONObject("info")
-                        logger.debug(infoObject.toString())
-
-                        appLifeCycleObserver.overriddenCountryCode =
-                            if (infoObject.has("country_override")) {
-                                infoObject.getString("country_override")
-                            } else {
-                                null
-                            }
-                        if (appLifeCycleObserver.overriddenCountryCode != null) {
-                            preferenceHelper.isAntiCensorshipOn = true
-                        }
-                        val dataArray = jsonObject.getJSONArray("data")
-                        val regions = Gson().fromJson<List<Region>>(
-                            dataArray.toString(),
-                            object : TypeToken<ArrayList<Region?>?>() {}.type
-                        )
-
-                        // Add to database
-                        addToDatabase(regions)
-                    }
-
-                    is CallResult.Error -> {
-                        logger.debug("Error getting server list: $serverListResult")
-                        throw Exception("Failed to get server list")
+        val isFirstLoad = preferenceHelper.serverRevision == 0L
+        val migrationRequired = preferenceHelper.migrationRequired
+        if (isFirstLoad || migrationRequired) {
+            if (isFirstLoad) {
+                logger.debug("V2: First load - fetching locations and full server list")
+            } else {
+                logger.debug("Stale server list - fetching locations and full server list")
+            }
+            val locationsResult = loadLocations()
+            if (locationsResult is CallResult.Error) {
+                throw Exception("Failed to load locations")
+            }
+            val serversResult = loadFullServerList(backup = false)
+            if (serversResult is CallResult.Error) {
+                throw Exception("Failed to load full server list")
+            }
+            if (migrationRequired) {
+                preferenceHelper.migrationRequired = false
+            }
+            logger.debug("Full update completed successfully")
+        } else {
+            val sessionResult = result<UserSessionResponse> {
+                apiCallManager.getSessionGeneric(null, preferenceHelper.serverRevision, false)
+            }
+            when (sessionResult) {
+                is CallResult.Success -> {
+                    val userSession = sessionResult.data
+                    userRepository.get().reload(userSession)
+                    userSession.serverInventory?.let { serverInventory ->
+                        updateServersDelta(serverInventory)
+                    } ?: run {
+                        logger.debug("V2: No server inventory delta - servers are up to date")
                     }
                 }
-            }
-
-            is CallResult.Error -> {
-                logger.debug("Error updating session: $sessionResult")
-                throw Exception("Failed to update session")
-            }
-        }
-    }
-
-    private fun hash(jsonString: String): String {
-        val bytes = jsonString.toByteArray()
-        val digest = MessageDigest.getInstance("SHA-256")
-        val hashBytes = digest.digest(bytes)
-        return hashBytes.joinToString("") { "%02x".format(it) }
-    }
-
-    private suspend fun addToDatabase(regions: List<Region>) {
-        val cities: MutableList<City> = ArrayList()
-        for (region in regions) {
-            if (region.getCities() != null) {
-                for (city in region.getCities()) {
-                    city.regionID = region.id
-                    cities.add(city)
+                is CallResult.Error -> {
+                    logger.error("V2: Error getting session: ${sessionResult.errorMessage}")
+                    throw Exception("Failed to get session")
                 }
             }
         }
-        localDbInterface.addToRegions(regions)
-        localDbInterface.addToCities(cities)
-        preferenceChangeObserver.postCityServerChange()
-        load()
-        favouriteRepository.load()
     }
 
     private fun observeServerLocations() {
         scope.launch {
-            regions.collect { regions ->
-                buildLocationsJson(regions)
+            locationAndDatacenters.collect { locationsAndDatacenters ->
+                buildLocationsJson(locationsAndDatacenters)
             }
         }
     }
 
-    private fun buildLocationsJson(regions: List<RegionAndCities>) {
+    private fun buildLocationsJson(regions: List<LocationAndDatacenters>) {
         val customLocationData = CustomLocationsData(regions.mapNotNull { region ->
-            if (region.region == null) return@mapNotNull null
-            val cities = region.cities.map { CustomCity(it.id, it.nodeName, it.nickName) }
-            return@mapNotNull CustomRegion(region.region.id, region.region.name, cities)
+            if (region.location == null) return@mapNotNull null
+            val cities = region.datacenters.map { CustomCity(it.id, it.nodeName, it.nickName) }
+            return@mapNotNull CustomRegion(region.location.id, region.location.name, cities)
         })
         _locationJsonToExport.value = Gson().toJson(customLocationData)
     }
@@ -254,14 +181,14 @@ class ServerListRepository @Inject constructor(
             _customCities.value = cities
             _customRegions.value = customLocationsData.locations
             scope.launch {
-                _events.emit(localDbInterface.getAllRegionAsync())
+                _events.emit(localDbInterface.getAllLocationsAsync())
                 favouriteRepository.load()
             }
-        } catch (ignored: Exception) {
+        } catch (_: Exception) {
             _customCities.value = listOf()
             _customRegions.value = listOf()
             scope.launch {
-                _events.emit(localDbInterface.getAllRegionAsync())
+                _events.emit(localDbInterface.getAllLocationsAsync())
                 favouriteRepository.load()
             }
         }
@@ -280,5 +207,182 @@ class ServerListRepository @Inject constructor(
     fun getCustomRegionName(id: Int): String? {
         val region = customRegions.value.firstOrNull { it.id == id }
         return region?.country
+    }
+
+    /**
+     * V2 Federated Server List: Load static locations and datacenters
+     * This should be called first in the V2 flow
+     */
+    private suspend fun loadLocations(): CallResult<Unit> {
+        val locationsResult = result<LocationResponse> {
+            apiCallManager.getLocations()
+        }
+
+        return when (locationsResult) {
+            is CallResult.Success -> {
+                try {
+                    val locationResponse = locationsResult.data
+                    val locations = mutableListOf<Location>()
+                    val datacenters = mutableListOf<Datacenter>()
+                    for (location in locationResponse.locations) {
+                        val loc = Location(
+                            location.id,
+                            location.name,
+                            location.countryCode,
+                            location.shortName,
+                            location.sortOrder,
+                            location.continent
+                        )
+                        locations.add(loc)
+                        for (datacenter in location.datacenters) {
+                            val dc = Datacenter(
+                                location.id,
+                                datacenter.id,
+                                datacenter.city,
+                                datacenter.nick ?: "",
+                                datacenter.gps,
+                                datacenter.tz,
+                                datacenter.iata,
+                                datacenter.status,
+                                datacenter.p2p,
+                                datacenter.premium,
+                                datacenter.wgPubkey,
+                                datacenter.wgEndpoint,
+                                datacenter.ovpnX509,
+                                datacenter.linkSpeed
+                            )
+                            datacenters.add(dc)
+                        }
+                    }
+                    // Save to database
+                    localDbInterface.addToLocations(locations)
+                    localDbInterface.addToDatacenters(datacenters)
+                    CallResult.Success(Unit)
+                } catch (e: Exception) {
+                    logger.error("V2: Error parsing locations response", e)
+                    CallResult.Error(-1, e.message ?: "Failed to parse locations")
+                }
+            }
+            is CallResult.Error -> {
+                logger.error("V2: Error loading locations: ${locationsResult.errorMessage}")
+                locationsResult
+            }
+        }
+    }
+
+    /**
+     * V2 Federated Server List: Load full server list with revision
+     * This should be called after loadLocations()
+     */
+    private suspend fun loadFullServerList(backup: Boolean = false): CallResult<Unit> {
+        val serversResult = result<ServerResponse> {
+            apiCallManager.getServers(backup)
+        }
+
+        return when (serversResult) {
+            is CallResult.Success -> {
+                try {
+                    val serverResponse = serversResult.data
+                    val servers = serverResponse.servers.map { serverData ->
+                        Server(
+                            id = serverData.id,
+                            hostname = serverData.hostname,
+                            ip = serverData.ip,
+                            ip2 = serverData.ip2,
+                            ip3 = serverData.ip3,
+                            datacenterId = serverData.datacenterId,
+                            weight = serverData.weight,
+                            health = serverData.health,
+                            ipv6 = serverData.ipv6
+                        )
+                    }
+                    localDbInterface.deleteAllServers()
+                    localDbInterface.addServers(servers)
+                    preferenceHelper.serverRevision = serverResponse.revision
+                    preferenceChangeObserver.postCityServerChange()
+                    load()
+                    CallResult.Success(Unit)
+                } catch (e: Exception) {
+                    logger.error("V2: Error parsing servers response", e)
+                    CallResult.Error(-1, e.message ?: "Failed to parse servers")
+                }
+            }
+            is CallResult.Error -> {
+                logger.error("V2: Error loading servers: ${serversResult.errorMessage}")
+                serversResult
+            }
+        }
+    }
+
+    /**
+     * V2 Federated Server List: Apply delta update from session
+     * This should be called when ServerInventory is present in session response
+     */
+    private suspend fun updateServersDelta(serverInventory: ServerInventory) {
+        when (serverInventory.action) {
+            "hold" -> {
+                logger.debug("V2: Hold action received - not updating this session")
+                return
+            }
+            "delta" -> {
+                val enabledCount = serverInventory.enabled?.size ?: 0
+                val disabledCount = serverInventory.disabled?.size ?: 0
+                if (enabledCount == 0 && disabledCount == 0) {
+                    return
+                }
+                logger.debug("V2: Delta update - enabling $enabledCount servers, disabling $disabledCount servers")
+                serverInventory.enabled?.let { enabledServers ->
+                    val servers = enabledServers.map { serverData ->
+                        Server(
+                            id = serverData.id,
+                            hostname = serverData.hostname,
+                            ip = serverData.ip,
+                            ip2 = serverData.ip2,
+                            ip3 = serverData.ip3,
+                            datacenterId = serverData.datacenterId,
+                            weight = serverData.weight,
+                            health = serverData.health
+                        )
+                    }
+                    localDbInterface.addServers(servers)
+                }
+                // Remove disabled servers
+                serverInventory.disabled?.let { disabledServers ->
+                    val serverIds = disabledServers.map { it.id }
+                    localDbInterface.deleteServers(serverIds)
+                }
+                // Update revision
+                preferenceHelper.serverRevision = serverInventory.revision
+                preferenceChangeObserver.postCityServerChange()
+                load()
+            }
+            else -> {
+                logger.warn("V2: Unknown action: ${serverInventory.action}")
+            }
+        }
+    }
+
+    /**
+     * Observes all servers from the database and maintains a map grouped by datacenter ID.
+     * This raw state can be used by ViewModels to calculate health and availability.
+     */
+    private fun observeAllServers() {
+        scope.launch(Dispatchers.IO) {
+            try {
+                localDbInterface.observeAllServers()
+                    .flowOn(Dispatchers.IO)
+                    .collect { servers ->
+                        // Skip empty server list emissions (happens during database updates)
+                        if (servers.isEmpty()) {
+                            return@collect
+                        }
+                        val serversMap = servers.groupBy { it.datacenterId }
+                        _serversState.value = ServerMapState.Success(serversMap)
+                    }
+            } catch (e: Exception) {
+                logger.error("Error observing servers", e)
+                _serversState.value = ServerMapState.Error("Failed to load servers: ${e.message}")
+            }
+        }
     }
 }

@@ -16,6 +16,5 @@ interface OverlayView {
     fun setFavouriteAdapter(favouriteAdapter: FavouriteAdapter)
     fun setState(state: LoadState, stateDrawable: Int, stateText: Int, fragmentIndex: Int)
     fun setStaticAdapter(staticAdapter: StaticIpAdapter)
-    fun setWindAdapter(serverAdapter: ServerAdapter)
     fun showToast(text: String)
 }

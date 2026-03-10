@@ -20,13 +20,13 @@ import com.windscribe.tv.serverlist.customviews.FavouriteButtonView
 import com.windscribe.tv.serverlist.detail.DetailListener
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerNodeListOverLoaded
-import com.windscribe.vpn.serverlist.entity.City
+import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.Favourite
 import com.windscribe.vpn.serverlist.entity.PingTime
 import com.windscribe.vpn.serverlist.entity.ServerListData
 
 class DetailViewAdapter(
-    private val locationList: List<City>,
+    private val locationList: List<Datacenter>,
     serverListData: ServerListData,
     listener: DetailListener
 ) : RecyclerView.Adapter<DetailViewHolder>() {
@@ -38,10 +38,10 @@ class DetailViewAdapter(
         private val latencyView: TextView = itemView.findViewById(R.id.latency)
         private val nodeNameLabel: TextView = itemView.findViewById(R.id.nodeName)
         private val nodeNickNameLabel: TextView = itemView.findViewById(R.id.nodeNickName)
-        fun bind(city: City) {
+        fun bind(city: Datacenter) {
             nodeNameLabel.text = city.nodeName
             nodeNickNameLabel.text = city.nickName
-            setFav(btnFav, city.getId())
+            setFav(btnFav, city.id)
             val pingTime = getPingTime(city)
             if (pingTime == -1) {
                 latencyView.text = ""
@@ -72,7 +72,7 @@ class DetailViewAdapter(
                 btnConnect.setOnClickListener {
                     if (!dataDetails.isProUser && selectedCity.pro == 1) {
                         listener.onConnectClick(selectedCity)
-                    } else if (!selectedCity.nodesAvailable()) {
+                    } else if (!hasServersForCity(selectedCity)) {
                         listener.onDisabledClick()
                     } else {
                         listener.onConnectClick(selectedCity)
@@ -93,7 +93,7 @@ class DetailViewAdapter(
                         selectedBackground(hasFocus)
                         if (!dataDetails.isProUser && selectedCity.pro == 1) {
                             setHighlightText(appContext.getString(com.windscribe.vpn.R.string.upgrade), hasFocus)
-                        } else if (!selectedCity.nodesAvailable()) {
+                        } else if (!hasServersForCity(selectedCity)) {
                             setHighlightText(appContext.getString(com.windscribe.vpn.R.string.unavailable), hasFocus)
                         } else {
                             setHighlightText(appContext.getString(com.windscribe.vpn.R.string.connect), hasFocus)
@@ -101,9 +101,9 @@ class DetailViewAdapter(
                     }
                 btnFav.onFocusChangeListener =
                     View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
-                        setFav(btnFav, selectedCity.getId())
+                        setFav(btnFav, selectedCity.id)
                         selectedBackground(hasFocus)
-                        val currentFavState = favStates[selectedCity.getId(), 1]
+                        val currentFavState = favStates[selectedCity.id, 1]
                         if (currentFavState == 1) {
                             setHighlightText(appContext.getString(com.windscribe.vpn.R.string.favourite), hasFocus)
                         } else {
@@ -168,7 +168,7 @@ class DetailViewAdapter(
 
     override fun getItemId(position: Int): Long {
         return if (locationList.isNotEmpty()) {
-            locationList[position].getId().toLong()
+            locationList[position].id.toLong()
         } else position.toLong()
     }
 
@@ -199,9 +199,9 @@ class DetailViewAdapter(
         this.isPremiumUser = isPremiumUser
     }
 
-    private fun getPingTime(city: City): Int {
+    private fun getPingTime(city: Datacenter): Int {
         for (pingTime in dataDetails.pingTimes) {
-            if (city.getId() == pingTime.ping_id) {
+            if (city.id == pingTime.ping_id) {
                 return pingTime.getPingTime()
             }
         }
@@ -219,6 +219,12 @@ class DetailViewAdapter(
 
     private fun setFav(btnFav: FavouriteButtonView, id: Int) {
         btnFav.setState(if (isFavourite(id)) 2 else 1)
+    }
+
+    private fun hasServersForCity(city: Datacenter): Boolean {
+        // Check if there are servers available for this city (datacenter)
+        val serverCount = dataDetails.serverCountMap[city.id] ?: 0
+        return serverCount > 0
     }
 
     init {

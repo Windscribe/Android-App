@@ -18,7 +18,7 @@ import com.windscribe.mobile.ui.theme.font9
 import com.windscribe.mobile.ui.theme.serverItemTextColor
 
 @Composable
-fun LatencyIcon(latency: Int) {
+fun DataCenterLatencyIcon(latency: Int) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(2.dp),

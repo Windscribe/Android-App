@@ -9,7 +9,7 @@ import com.windscribe.tv.serverlist.adapters.FavouriteAdapter
 import com.windscribe.tv.serverlist.adapters.ServerAdapter
 import com.windscribe.tv.serverlist.adapters.StaticIpAdapter
 import com.windscribe.tv.serverlist.customviews.State.FavouriteState
-import com.windscribe.tv.serverlist.listeners.NodeClickListener
+import com.windscribe.tv.serverlist.listeners.DatacenterClickListener
 import com.windscribe.tv.sort.ByLatency
 import com.windscribe.tv.sort.ByRegionName
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -22,11 +22,12 @@ import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
-import com.windscribe.vpn.serverlist.entity.City
+import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.Favourite
-import com.windscribe.vpn.serverlist.entity.Region
-import com.windscribe.vpn.serverlist.entity.RegionAndCities
+import com.windscribe.vpn.serverlist.entity.Location
+import com.windscribe.vpn.serverlist.entity.LocationAndDatacenters
 import com.windscribe.vpn.serverlist.entity.ServerListData
+import com.windscribe.vpn.serverlist.entity.ServerMapState
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +49,7 @@ class OverlayPresenterImp @Inject constructor(
     private val serverListRepository: ServerListRepository,
     private val staticIpRepository: StaticIpRepository,
     private val latencyRepository: LatencyRepository
-) : OverlayPresenter, NodeClickListener {
+) : OverlayPresenter, DatacenterClickListener {
     private var favouriteAdapter: FavouriteAdapter? = null
     private var serverAdapter: ServerAdapter? = null
     private var staticIpAdapter: StaticIpAdapter? = null
@@ -68,24 +69,24 @@ class OverlayPresenterImp @Inject constructor(
         overlayView.onDisabledNodeClick()
     }
 
-    override fun onFavouriteButtonClick(city: City, state: FavouriteState) {
+    override fun onFavouriteButtonClick(city: Datacenter, state: FavouriteState) {
         if (state == FavouriteState.Favourite) {
             logger.debug("Removed from favourites")
-            removeFromFavourite(city.getId())
+            removeFromFavourite(city.id)
             overlayView.showToast(resourceHelper.getString(com.windscribe.vpn.R.string.remove_from_favourites))
         } else {
-            addToFav(city.getId())
+            addToFav(city.id)
             logger.debug("Added to favourites")
             overlayView.showToast(resourceHelper.getString(com.windscribe.vpn.R.string.added_to_favourites))
         }
     }
 
-    override fun onFavouriteNodeCLick(city: City) {
-        logger.debug("Selected favourite node to connect.")
-        overlayView.onNodeSelected(city.getId())
+    override fun onFavouriteDatacenterClick(city: Datacenter) {
+        logger.debug("Selected favourite datacenter to connect.")
+        overlayView.onNodeSelected(city.id)
     }
 
-    override fun onGroupSelected(city: Region) {
+    override fun onGroupSelected(city: Location) {
         overlayView.onLocationSelected(city.id)
     }
 
@@ -119,7 +120,7 @@ class OverlayPresenterImp @Inject constructor(
         }
     }
 
-    private fun resetAllAdapter(regions: MutableList<RegionAndCities>) {
+    private fun resetAllAdapter(regions: MutableList<LocationAndDatacenters>) {
         overlayView.setState(
             LoadState.Loading,
             R.drawable.ic_all_icon,
@@ -134,7 +135,6 @@ class OverlayPresenterImp @Inject constructor(
                 } catch (e: Exception) {
                     emptyList()
                 }
-                logger.info("Ping times....")
                 dataDetails.pingTimes = pingTimes
 
                 val favourites = try {
@@ -142,7 +142,6 @@ class OverlayPresenterImp @Inject constructor(
                 } catch (e: Exception) {
                     emptyList()
                 }
-                logger.info("Favourites...")
                 dataDetails.favourites = favourites
 
                 dataDetails.setShowLatencyInMs(preferencesHelper.showLatencyInMS)
@@ -153,7 +152,7 @@ class OverlayPresenterImp @Inject constructor(
                     dataDetails.bestLocation = bestLocation
                 } catch (_ : Exception) { }
                 for (regionAndCity in regions) {
-                    val total = getTotal(regionAndCity.cities, dataDetails)
+                    val total = getTotal(regionAndCity.datacenters, dataDetails)
                     regionAndCity.latencyTotal = total
                 }
 
@@ -166,14 +165,14 @@ class OverlayPresenterImp @Inject constructor(
 
                 withContext(Dispatchers.Main) {
                     logger.debug("***Successfully received server list.***")
-                    regions.add(0, RegionAndCities())
+                    regions.add(0, LocationAndDatacenters())
                     if (regions.isNotEmpty()) {
                         serverAdapter =
                             ServerAdapter(regions, dataDetails, this@OverlayPresenterImp, false)
                         serverAdapter?.let {
                             overlayView.setAllAdapter(it)
                             overlayView.setState(LoadState.Loaded, R.drawable.ic_all_icon, 0, 1)
-                            logger.debug("All node loaded Successfully ")
+                            logger.debug("All locations loaded successfully")
                         }
                     } else {
                         overlayView.setState(
@@ -182,7 +181,7 @@ class OverlayPresenterImp @Inject constructor(
                             com.windscribe.vpn.R.string.load_nothing_found,
                             1
                         )
-                        logger.debug("No nodes found.")
+                        logger.debug("No datacenters found.")
                     }
                 }
             } catch (e: Throwable) {
@@ -193,14 +192,14 @@ class OverlayPresenterImp @Inject constructor(
                         com.windscribe.vpn.R.string.load_error,
                         1
                     )
-                    logger.debug("Error loading all nodes.")
+                    logger.debug("Error loading all locations.")
                 }
             }
         }
     }
 
     private fun resetFavouriteAdapter() {
-        logger.debug("Loading favourite nodes.")
+        logger.debug("Loading favourite datacenters.")
         overlayView.setState(
             LoadState.Loading,
             R.drawable.ic_fav_nav_icon,
@@ -213,6 +212,15 @@ class OverlayPresenterImp @Inject constructor(
                 val pings = localDbInterface.getAllPingsAsync()
                 dataDetails.pingTimes = pings
                 dataDetails.isProUser = preferencesHelper.userStatus == 1
+
+                // Load server counts from repository state
+                val serverState = serverListRepository.serversState.value
+                dataDetails.serverCountMap = when (serverState) {
+                    is ServerMapState.Success -> {
+                        serverState.data.mapValues { it.value.size }
+                    }
+                    else -> emptyMap()
+                }
             } catch (ignored: Exception) {
 
             }
@@ -229,7 +237,7 @@ class OverlayPresenterImp @Inject constructor(
             withContext(Dispatchers.Main) {
                 if (favourites.isNotEmpty()) {
                     try {
-                        val cities = localDbInterface.getCityByID(favourites)
+                        val cities = localDbInterface.getDatacenterByID(favourites)
                         favouriteAdapter = FavouriteAdapter(
                             cities.toMutableList(), dataDetails,
                             this@OverlayPresenterImp
@@ -244,27 +252,27 @@ class OverlayPresenterImp @Inject constructor(
                             0,
                             2
                         )
-                        logger.debug("Favourite node loaded Successfully ")
+                        logger.debug("Favourite datacenters loaded successfully")
                     } catch (ignored: Exception) {
                         overlayView.setState(
                             LoadState.NoResult, R.drawable.ic_fav_nav_icon,
                             com.windscribe.vpn.R.string.load_nothing_found, 2
                         )
-                        logger.debug("No favourite nodes found.")
+                        logger.debug("No favourite datacenters found.")
                     }
                 } else {
                     overlayView.setState(
                         LoadState.NoResult, R.drawable.ic_fav_nav_icon,
                         com.windscribe.vpn.R.string.load_nothing_found, 2
                     )
-                    logger.debug("No favourite nodes found.")
+                    logger.debug("No favourite datacenters found.")
                 }
             }
         }
     }
 
     override suspend fun allLocationViewReady() {
-        serverListRepository.regions.collectLatest {
+        serverListRepository.locationAndDatacenters.collectLatest {
             resetAllAdapter(it.toMutableList())
         }
     }
@@ -280,12 +288,6 @@ class OverlayPresenterImp @Inject constructor(
         }
     }
 
-    override suspend fun windLocationViewReady() {
-        serverListRepository.regions.collectLatest {
-            resetWindAdapter(it.toMutableList())
-        }
-    }
-
     override suspend fun observeStaticRegions() {
         staticIpRepository.regions.collectLatest {
             logger.debug("Static list Updated: ${it.size}")
@@ -294,15 +296,14 @@ class OverlayPresenterImp @Inject constructor(
     }
 
     override suspend fun observeAllLocations() {
-        serverListRepository.regions.collectLatest {
+        serverListRepository.locationAndDatacenters.collectLatest {
             resetAllAdapter(it.toMutableList())
             resetFavouriteAdapter()
-            resetWindAdapter(it.toMutableList())
         }
     }
 
     private fun resetStaticAdapter(regions: MutableList<StaticRegion>) {
-        logger.debug("Loading static nodes.")
+        logger.debug("Loading static IPs.")
         overlayView.setState(
             LoadState.Loading,
             R.drawable.ic_static_ip,
@@ -355,81 +356,6 @@ class OverlayPresenterImp @Inject constructor(
         }
     }
 
-    private fun resetWindAdapter(regions: MutableList<RegionAndCities>) {
-        logger.debug("Loading wind nodes.")
-        overlayView.setState(
-            LoadState.Loading,
-            R.drawable.ic_flix_icon,
-            com.windscribe.vpn.R.string.load_loading,
-            3
-        )
-        val dataDetails = ServerListData()
-        activityScope.launch(Dispatchers.IO) {
-            try {
-                val pingTimes = try {
-                    localDbInterface.getAllPingsAsync()
-                } catch (e: Exception) {
-                    emptyList()
-                }
-                logger.info("Ping times....")
-                dataDetails.pingTimes = pingTimes
-
-                val favourites = try {
-                    localDbInterface.getFavouritesAsync()
-                } catch (e: Exception) {
-                    emptyList()
-                }
-                logger.info("Favourites...")
-                dataDetails.favourites = favourites
-
-                dataDetails.setShowLatencyInMs(preferencesHelper.showLatencyInMS)
-                dataDetails.isProUser =
-                    preferencesHelper.userStatus == UserStatusConstants.USER_STATUS_PREMIUM
-                try {
-                    val result = locationRepository.getBestLocationAsync()
-                    dataDetails.bestLocation = result
-                } catch (_ : Exception) { }
-                val streamingGroups: MutableList<RegionAndCities> = ArrayList()
-                for (group in regions) {
-                    if (group.region != null && group.region.locationType == "streaming") {
-                        streamingGroups.add(group)
-                    }
-                }
-
-                withContext(Dispatchers.Main) {
-                    logger.debug("***Successfully received server list.***")
-                    if (regions.isNotEmpty()) {
-                        windAdapter = ServerAdapter(
-                            streamingGroups, dataDetails, this@OverlayPresenterImp,
-                            true
-                        )
-                        windAdapter?.let {
-                            overlayView.setWindAdapter(it)
-                            overlayView.setState(LoadState.Loaded, R.drawable.ic_flix_icon, 0, 3)
-                            logger.debug("Wind node loaded Successfully ")
-                        }
-                    } else {
-                        overlayView.setState(
-                            LoadState.NoResult, R.drawable.ic_flix_icon,
-                            com.windscribe.vpn.R.string.load_nothing_found, 3
-                        )
-                        logger.debug("No wind nodes found.")
-                    }
-                }
-            } catch (e: Throwable) {
-                withContext(Dispatchers.Main) {
-                    overlayView.setState(
-                        LoadState.Error,
-                        R.drawable.ic_flix_icon,
-                        com.windscribe.vpn.R.string.load_error,
-                        3
-                    )
-                    logger.debug("Error loading wind nodes.")
-                }
-            }
-        }
-    }
-
     private fun addToFav(cityId: Int) {
         val favourite = Favourite()
         favourite.id = cityId
@@ -450,12 +376,12 @@ class OverlayPresenterImp @Inject constructor(
         }
     }
 
-    private fun getTotal(cities: List<City>, dataDetails: ServerListData): Int {
+    private fun getTotal(cities: List<Datacenter>, dataDetails: ServerListData): Int {
         var total = 0
         var index = 0
         for (city in cities) {
             for (pingTime in dataDetails.pingTimes) {
-                if (pingTime.id == city.getId()) {
+                if (pingTime.id == city.id) {
                     total += pingTime.getPingTime()
                     index++
                 }

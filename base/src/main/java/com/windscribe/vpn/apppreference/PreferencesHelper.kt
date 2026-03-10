@@ -61,6 +61,7 @@ interface PreferencesHelper {
     var packetSize: Int
     var pingTestRequired: Boolean
     var portMapVersion: Int
+    var serverRevision: Long
     var purchaseFlowState: String
     var savedLanguage: String
     var savedProtocol: String
@@ -152,4 +153,5 @@ interface PreferencesHelper {
     var customIcon: String
     val customIconFlow: kotlinx.coroutines.flow.Flow<String>
     var selectedUnblockWgParam: String?
+    var ipv6Mode: String
 }

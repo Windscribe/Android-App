@@ -32,8 +32,8 @@ class WindScribeWorkManager(private val context: Context, private val scope: Cor
     fun onAppStart() {
         if (preferencesHelper.sessionHash == null) return
         // One time
-        val data = Data.Builder().putBoolean("forceUpdate", true).build()
-        updateSession(data)
+        preferencesHelper.migrationRequired = true
+        updateSession()
         WorkManager.getInstance(context).enqueue(createOneTimeWorkerRequest(UnblockWgParamsWorker::class.java))
         // Hourly
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(NOTIFICATION_HOURLY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(NotificationWorker::class.java, HOURS))

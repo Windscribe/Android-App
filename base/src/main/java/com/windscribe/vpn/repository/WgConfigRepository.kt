@@ -59,7 +59,8 @@ class WgConfigRepository @Inject constructor(
         hostname: String,
         serverPublicKey: String,
         forceInit: Boolean = false,
-        checkUserAccountStatus: Boolean = false
+        checkUserAccountStatus: Boolean = false,
+        supportsV6: Boolean = false
     ): CallResult<WgRemoteParams> {
         // Validate user account if required
         if (checkUserAccountStatus) {
@@ -82,7 +83,7 @@ class WgConfigRepository @Inject constructor(
         logger.debug("Requesting WireGuard configuration for hostname: $hostname")
 
         // Generate LAN IP from public key
-        val connectConfig = generateLanIpAddress(userPublicKey, localParams.hashedCIDR)
+        val connectConfig = generateLanIpAddress(userPublicKey, localParams.hashedCIDR, localParams.hashedCIDRV6, supportsV6)
             .getOrElse { return it }
 
         return createRemoteParams(localParams, serverPublicKey, connectConfig)
@@ -92,6 +93,7 @@ class WgConfigRepository @Inject constructor(
      * Clears all cached WireGuard parameters.
      *
      * Should be invoked on:
+     * - User logout
      * - User logout
      * - Connection reset
      * - Key rotation requirement
@@ -120,7 +122,7 @@ class WgConfigRepository @Inject constructor(
     private suspend fun generateKeys(forceInit: Boolean): CallResult<WgLocalParams> {
         // Return cached params if available and not forcing init
         val wgLocalParams = preferenceHelper.wgLocalParams
-        if (!forceInit && wgLocalParams?.hashedCIDR != null && !firstConnection) {
+        if (!forceInit && wgLocalParams?.hashedCIDR != null && wgLocalParams.hashedCIDRV6 != null && !firstConnection) {
             logger.debug("Using cached WireGuard parameters")
             return CallResult.Success(wgLocalParams)
         }
@@ -135,6 +137,7 @@ class WgConfigRepository @Inject constructor(
         val publicKey = keyPair.publicKey.toBase64()
 
         // Brief delay for rate limiting
+        // Brief delay for rate limiting
         delay(INIT_DELAY_MS)
 
         // Initialize with server (with retry on PSK generation failure)
@@ -144,9 +147,10 @@ class WgConfigRepository @Inject constructor(
         // Create and cache local params
         return WgLocalParams(
             privateKey = keyPair.privateKey.toBase64(),
-            allowedIPs = initResponse.config.allowedIPs,
+            allowedIPs = "0.0.0.0/0",
             preSharedKey = initResponse.config.preSharedKey,
-            hashedCIDR = initResponse.config.hashedCIDR
+            hashedCIDR = initResponse.config.hashedCIDR,
+            hashedCIDRV6 = initResponse.config.hashedCIDRV6
         ).also { params ->
             preferenceHelper.wgLocalParams = params
             logger.debug("Cached new WireGuard local parameters")
@@ -172,32 +176,55 @@ class WgConfigRepository @Inject constructor(
     }
 
     /**
-     * Generates deterministic LAN IP address from WireGuard public key.
+     * Generates deterministic LAN IP addresses (IPv4 and optionally IPv6) from WireGuard public key.
      *
-     * Uses SHA-256 hash of public key to derive IP within CIDR range,
+     * Uses SHA-256 hash of public key to derive IPs within CIDR ranges,
      * ensuring consistent IP allocation for the same public key.
      *
+     * IPv6 generation is controlled by user preference and server capability:
+     * - If ipv6Mode is "ipv4": only IPv4 is generated
+     * - If ipv6Mode is "auto" AND server supports IPv6: both IPv4 and IPv6 are generated
+     *
      * @param publicKey Base64-encoded WireGuard public key
-     * @param hashedCIDR CIDR range for IP allocation (e.g., ["100.64.0.0/10"]), defaults to legacy CIDR if null
-     * @return [CallResult.Success] with [WgConnectConfig] or [CallResult.Error]
+     * @param hashedCIDR IPv4 CIDR range for IP allocation (e.g., ["100.64.0.0/10"])
+     * @param hashedCIDRv6 IPv6 CIDR range for IP allocation (e.g., ["fd00::/8"])
+     * @param supportsV6 Whether the server supports IPv6
+     * @return [CallResult.Success] with [WgConnectConfig] containing IPv4 and optionally IPv6 addresses or [CallResult.Error]
      */
     private fun generateLanIpAddress(
         publicKey: String,
-        hashedCIDR: List<String>?
+        hashedCIDR: List<String>?,
+        hashedCIDRv6: List<String>?,
+        supportsV6: Boolean
     ): CallResult<WgConnectConfig> {
-        val cidr = hashedCIDR?.takeIf { it.isNotEmpty() } ?: throw InvalidVPNConfigException(CallResult.Error(errorMessage = "Invalid CIDR range"))
-
-        logger.debug("Generating LAN IP for public key: $publicKey using CIDR: ${cidr[0]}")
+        val cidr = hashedCIDR?.takeIf { it.isNotEmpty() }
+            ?: throw InvalidVPNConfigException(CallResult.Error(errorMessage = "Invalid IPv4 CIDR range"))
 
         return runCatching {
-            val ipAddress = WireguardUtil.generateWireguardIP(publicKey, cidr[0])
-            logger.debug("Generated IP: $ipAddress from CIDR: ${cidr[0]}")
-            WgConnectConfig(address = ipAddress, dns = DEFAULT_DNS)
+            val ipv4Address = WireguardUtil.generateWireguardIP(publicKey, cidr[0])
+
+            // Check if we should generate IPv6
+            val ipv6Mode = preferenceHelper.ipv6Mode
+            val shouldGenerateIPv6 = ipv6Mode == "auto" && supportsV6
+
+            val (address, dns) = if (shouldGenerateIPv6) {
+                val cidrV6 = hashedCIDRv6?.takeIf { it.isNotEmpty() }
+                    ?: throw InvalidVPNConfigException(CallResult.Error(errorMessage = "Invalid IPv6 CIDR range"))
+                val ipv6Address = WireguardUtil.generateWireguardIPv6(publicKey, cidrV6[0])
+                val ipv6WithCIDR = "$ipv6Address/128"
+                logger.debug("Generated IPv4: $ipv4Address, IPv6: $ipv6WithCIDR (mode: $ipv6Mode, server supports IPv6: $supportsV6 $publicKey)")
+                Pair("$ipv4Address, $ipv6WithCIDR", "$DEFAULT_DNS_IPV4")
+            } else {
+                logger.debug("Generated IPv4 only: $ipv4Address (mode: $ipv6Mode, server supports IPv6: $supportsV6)")
+                Pair(ipv4Address, DEFAULT_DNS_IPV4)
+            }
+
+            WgConnectConfig(address = address, dns = dns)
         }.fold(
             onSuccess = { CallResult.Success(it) },
             onFailure = { exception ->
                 logger.error("IP generation failed: ${exception.message}", exception)
-                CallResult.Error(errorMessage = "Failed to generate WireGuard IP: ${exception.message}")
+                CallResult.Error(errorMessage = "Failed to generate WireGuard IPs: ${exception.message}")
             }
         )
     }
@@ -241,20 +268,27 @@ class WgConfigRepository @Inject constructor(
         localParams: WgLocalParams,
         serverPublicKey: String,
         connectConfig: WgConnectConfig
-    ): CallResult<WgRemoteParams> = WgRemoteParams(
-        allowedIPs = localParams.allowedIPs,
-        preSharedKey = localParams.preSharedKey,
-        privateKey = localParams.privateKey,
-        serverPublicKey = serverPublicKey,
-        address = connectConfig.address,
-        dns = connectConfig.dns
-    ).also { params ->
-        logger.debug("Assembled remote WireGuard parameters: {}", params)
-    }.let { CallResult.Success(it) }
+    ): CallResult<WgRemoteParams> {
+        // Determine allowedIPs based on whether IPv6 is configured
+        val hasIPv6 = connectConfig.address.contains(",")
+        val allowedIPs = if (hasIPv6) "0.0.0.0/0, ::/0" else "0.0.0.0/0"
+
+        return WgRemoteParams(
+            allowedIPs = allowedIPs,
+            preSharedKey = localParams.preSharedKey,
+            privateKey = localParams.privateKey,
+            serverPublicKey = serverPublicKey,
+            address = connectConfig.address,
+            dns = connectConfig.dns
+        ).also { params ->
+            logger.debug("Assembled remote WireGuard parameters: {}", params)
+        }.let { CallResult.Success(it) }
+    }
 
     companion object {
         private const val TAG = "wg-config"
-        private const val DEFAULT_DNS = "10.255.255.1"
+        private const val DEFAULT_DNS_IPV4 = "10.255.255.1"
+        private const val DEFAULT_DNS_IPV6 = "2001:4860:4860:0:0:0:0:8888"
         private const val INIT_DELAY_MS = 100L
         private const val ACCOUNT_STATUS_ACTIVE = 1
     }
@@ -312,5 +346,8 @@ data class WgLocalParams(
     val preSharedKey: String,
 
     @SerializedName("HashedCIDR")
-    val hashedCIDR: List<String>?
+    val hashedCIDR: List<String>?,
+
+    @SerializedName("HashedCIDRv6")
+    val hashedCIDRV6: List<String>?
 ) : Serializable

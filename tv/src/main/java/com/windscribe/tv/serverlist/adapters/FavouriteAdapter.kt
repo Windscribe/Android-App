@@ -15,15 +15,15 @@ import com.windscribe.tv.R
 import com.windscribe.tv.serverlist.adapters.FavouriteAdapter.FavouriteHolder
 import com.windscribe.tv.serverlist.customviews.ConnectButtonView
 import com.windscribe.tv.serverlist.customviews.FavouriteButtonView
-import com.windscribe.tv.serverlist.listeners.NodeClickListener
+import com.windscribe.tv.serverlist.listeners.DatacenterClickListener
 import com.windscribe.vpn.Windscribe.Companion.appContext
-import com.windscribe.vpn.serverlist.entity.City
+import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.ServerListData
 
 class FavouriteAdapter(
-    private val locations: MutableList<City>,
+    private val locations: MutableList<Datacenter>,
     serverListData: ServerListData,
-    private val listener: NodeClickListener
+    private val listener: DatacenterClickListener
 ) : RecyclerView.Adapter<FavouriteHolder>() {
     inner class FavouriteHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val btnConnect: ConnectButtonView = itemView.findViewById(R.id.connect)
@@ -33,7 +33,7 @@ class FavouriteAdapter(
         private val latencyView: TextView = itemView.findViewById(R.id.latency)
         private val nodeNameLabel: TextView = itemView.findViewById(R.id.nodeName)
         private val nodeNickNameLabel: TextView = itemView.findViewById(R.id.nodeNickName)
-        fun bind(city: City) {
+        fun bind(city: Datacenter) {
             btnFav.setState(2)
             nodeNameLabel.text = city.nodeName
             nodeNickNameLabel.text = city.nickName
@@ -63,10 +63,10 @@ class FavouriteAdapter(
                     PorterDuff.Mode.MULTIPLY
                 )
                 btnConnect.setOnClickListener {
-                    if (!city.nodesAvailable() && serverListData.isProUser) {
+                    if (!hasServersForCity(city) && serverListData.isProUser) {
                         listener.onDisabledClick()
                     } else {
-                        listener.onFavouriteNodeCLick(city)
+                        listener.onFavouriteDatacenterClick(city)
                     }
                 }
                 btnFav.setOnClickListener {
@@ -86,7 +86,7 @@ class FavouriteAdapter(
                         selectedBackground(hasFocus)
                         if (!serverListData.isProUser && city.pro == 1) {
                             setHighlightText(appContext.getString(com.windscribe.vpn.R.string.upgrade), hasFocus)
-                        } else if (!city.nodesAvailable()) {
+                        } else if (!hasServersForCity(city)) {
                             setHighlightText(appContext.getString(com.windscribe.vpn.R.string.unavailable), hasFocus)
                         } else {
                             setHighlightText(appContext.getString(com.windscribe.vpn.R.string.connect), hasFocus)
@@ -158,13 +158,19 @@ class FavouriteAdapter(
         this.isPremiumUser = isPremiumUser
     }
 
-    private fun getPingTime(city: City): Int {
+    private fun getPingTime(city: Datacenter): Int {
         for (pingTime in serverListData.pingTimes) {
             if (city.getId() == pingTime.ping_id) {
                 return pingTime.getPingTime()
             }
         }
         return -1
+    }
+
+    private fun hasServersForCity(city: Datacenter): Boolean {
+        // Check if there are servers available for this city (datacenter)
+        val serverCount = serverListData.serverCountMap[city.getId()] ?: 0
+        return serverCount > 0
     }
 
     init {

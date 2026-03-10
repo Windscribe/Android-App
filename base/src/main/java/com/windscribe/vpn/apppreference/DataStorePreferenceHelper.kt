@@ -613,6 +613,10 @@ class DataStorePreferenceHelper(
         get() = runBlocking { getInt(DataStoreKeys.PORT_MAP_VERSION, 0) }
         set(value) = setInt(DataStoreKeys.PORT_MAP_VERSION, value)
 
+    override var serverRevision: Long
+        get() = runBlocking { getLong(DataStoreKeys.SERVER_REVISION, 0) }
+        set(value) = setLong(DataStoreKeys.SERVER_REVISION, value)
+
     override var purchaseFlowState: String
         get() = runBlocking { getString(DataStoreKeys.PURCHASE_FLOW_STATE_KEY, "FINISHED") }
         set(value) = setString(DataStoreKeys.PURCHASE_FLOW_STATE_KEY, value)
@@ -1010,4 +1014,8 @@ class DataStorePreferenceHelper(
         set(value) {
             setString(DataStoreKeys.SELECTED_UNBLOCK_WG_PARAM, value)
         }
+
+    override var ipv6Mode: String
+        get() = runBlocking { getString(DataStoreKeys.IPV6_MODE, PreferencesKeyConstants.IPV6_MODE_AUTO) }
+        set(value) = setString(DataStoreKeys.IPV6_MODE, value)
 }

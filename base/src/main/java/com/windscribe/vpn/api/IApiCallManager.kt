@@ -3,6 +3,7 @@
  */
 package com.windscribe.vpn.api
 
+import android.util.Log
 import com.windscribe.vpn.api.response.*
 
 interface IApiCallManager {
@@ -30,7 +31,7 @@ interface IApiCallManager {
         overriddenCountryCode: String?
     ): GenericResponseClass<String?, ApiErrorResponse?>
 
-    suspend fun getSessionGeneric(firebaseToken: String?): GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>
+    suspend fun getSessionGeneric(firebaseToken: String?, serverRevision: Long = 0, backup: Boolean = false): GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>
     suspend fun getStaticIpList(deviceID: String?): GenericResponseClass<StaticIPResponse?, ApiErrorResponse?>
     suspend fun logUserIn(
         username: String,
@@ -120,4 +121,6 @@ interface IApiCallManager {
     suspend fun pinIp(ip: String?): GenericResponseClass<String?, ApiErrorResponse?>
     suspend fun passwordRecovery(email: String?): GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
     suspend fun unblockWgParams(): GenericResponseClass<UnblockWgResponse?, ApiErrorResponse?>
+    suspend fun getLocations(): GenericResponseClass<LocationResponse?, ApiErrorResponse?>
+    suspend fun getServers(backup: Boolean): GenericResponseClass<ServerResponse?, ApiErrorResponse?>
 }

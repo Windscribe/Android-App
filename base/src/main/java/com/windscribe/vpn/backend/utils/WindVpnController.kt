@@ -42,8 +42,8 @@ import com.windscribe.vpn.exceptions.InvalidVPNConfigException
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.*
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.Node
+import com.windscribe.vpn.serverlist.entity.Datacenter
+import com.windscribe.vpn.serverlist.entity.Server
 import com.windscribe.vpn.services.canAccessNetworkName
 import com.windscribe.vpn.services.startAutoConnectService
 import com.windscribe.vpn.state.DeviceStateManager
@@ -131,10 +131,11 @@ open class WindVpnController @Inject constructor(
 
     private var lastUsedRandomIndex = 0
 
-    private fun getForcedNodeIndex(city: City): Int {
+    private suspend fun getForcedNodeIndex(city: Datacenter): Int {
         val forceNode = advanceParameterRepository.get().getForceNode()
-        return if (forceNode != null && city.nodesAvailable()) {
-            city.nodes.indexOfFirst { it.hostname == forceNode }
+        val nodes = localDbInterface.getServersByDatacenter(city.id)
+        return if (forceNode != null && nodes.isNotEmpty() ) {
+            nodes.indexOfFirst { it.hostname == forceNode }
         } else {
             -1
         }
@@ -143,10 +144,10 @@ open class WindVpnController @Inject constructor(
     private suspend fun createVpnProfileFromCity(
         selectedCity: Int, config: ProtocolInformation, attempt: Int = 0, hostname: String?
     ): String {
-        val cityAndRegion = localDbInterface.getCityAndRegion(selectedCity)
+        val cityAndRegion = localDbInterface.getDatacenterAndLocation(selectedCity)
             ?: throw Exception("City not found in database: $selectedCity")
-        val city = cityAndRegion.city
-        val nodes = city.getNodes()
+        val city = cityAndRegion.datacenter
+        val nodes = localDbInterface.getServersByDatacenter(city.id)
         val pinnedIp = localDbInterface.getFavouritesAsync()
             .firstOrNull { it.id == selectedCity && it.pinnedNodeIp != null }?.pinnedNodeIp
         val pinnedNode = nodes.firstOrNull { it.hostname == pinnedIp }
@@ -164,7 +165,7 @@ open class WindVpnController @Inject constructor(
             logger.debug("Forcing node to {}", nodes[forcedNodeIndex])
             randomIndex = forcedNodeIndex
         }
-        val selectedNode: Node =
+        val selectedNode: Server =
             if (pinnedNode != null && attempt == 0) pinnedNode else nodes[randomIndex]
         logger.debug("{}", selectedNode)
         lastUsedRandomIndex = randomIndex
@@ -179,12 +180,12 @@ open class WindVpnController @Inject constructor(
             city.id,
             city.nodeName,
             city.nickName,
-            cityAndRegion.region.countryCode,
+            cityAndRegion.location.countryCode,
             coordinatesArray[0],
             coordinatesArray[1]
         )
         val vpnParameters =
-            VPNParameters(ikev2Ip, udpIp, tcpIp, stealthIp, hostname, publicKey, city.ovpnX509)
+            VPNParameters(ikev2Ip, udpIp, tcpIp, stealthIp, hostname, publicKey, city.ovpnX509, selectedNode.ipv6 == 1)
         when (config.protocol) {
             PROTO_IKev2 -> {
                 return vpnProfileCreator.createIkEV2Profile(
@@ -522,8 +523,8 @@ open class WindVpnController @Inject constructor(
 
             EXPIRED_OR_BANNED_ACCOUNT, ERROR_VALID_CONFIG_NOT_FOUND -> {
                 logger.debug("Forcing session update.")
-                val data = Data.Builder().putBoolean("forceUpdate", true).build()
-                appContext.workManager.updateSession(data)
+                preferencesHelper.migrationRequired = true
+                appContext.workManager.updateSession()
                 disconnect(
                     error = VPNState.Error(
                         error = VPNState.ErrorType.WireguardApiError,

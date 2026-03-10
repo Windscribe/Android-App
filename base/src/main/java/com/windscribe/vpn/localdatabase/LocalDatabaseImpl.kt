@@ -9,21 +9,23 @@ import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
 import com.windscribe.vpn.localdatabase.tables.UserStatusTable
 import com.windscribe.vpn.localdatabase.tables.UnBlockWgParam
 import com.windscribe.vpn.localdatabase.tables.WindNotification
-import com.windscribe.vpn.serverlist.dao.CityAndRegionDao
-import com.windscribe.vpn.serverlist.dao.CityDao
+import com.windscribe.vpn.serverlist.dao.DatacenterAndLocationDao
+import com.windscribe.vpn.serverlist.dao.DatacenterDao
 import com.windscribe.vpn.serverlist.dao.ConfigFileDao
 import com.windscribe.vpn.serverlist.dao.FavouriteDao
 import com.windscribe.vpn.serverlist.dao.PingTimeDao
-import com.windscribe.vpn.serverlist.dao.RegionAndCitiesDao
-import com.windscribe.vpn.serverlist.dao.RegionDao
+import com.windscribe.vpn.serverlist.dao.LocationAndDatacentersDao
+import com.windscribe.vpn.serverlist.dao.LocationDao
+import com.windscribe.vpn.serverlist.dao.ServerDao
 import com.windscribe.vpn.serverlist.dao.StaticRegionDao
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.CityAndRegion
+import com.windscribe.vpn.serverlist.entity.Datacenter
+import com.windscribe.vpn.serverlist.entity.DatacenterAndLocation
 import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.Favourite
 import com.windscribe.vpn.serverlist.entity.PingTime
-import com.windscribe.vpn.serverlist.entity.Region
-import com.windscribe.vpn.serverlist.entity.RegionAndCities
+import com.windscribe.vpn.serverlist.entity.Location
+import com.windscribe.vpn.serverlist.entity.LocationAndDatacenters
+import com.windscribe.vpn.serverlist.entity.Server
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import kotlinx.coroutines.flow.Flow
@@ -34,14 +36,15 @@ import javax.inject.Singleton
 class LocalDatabaseImpl @Inject constructor(
     private val userStatusDao: UserStatusDao,
     private val popupNotificationDao: PopupNotificationDao,
-    private val regionDao: RegionDao,
-    private val cityDao: CityDao,
-    private val cityAndRegionDao: CityAndRegionDao,
+    private val locationDao: LocationDao,
+    private val serverDao: ServerDao,
+    private val datacenterDao: DatacenterDao,
+    private val datacenterAndLocationDao: DatacenterAndLocationDao,
     private val configFileDao: ConfigFileDao,
     private val staticRegionsDao: StaticRegionDao,
     private val pingTimeDao: PingTimeDao,
     private val favouriteDao: FavouriteDao,
-    private val regionAndCitiesDao: RegionAndCitiesDao,
+    private val locationAndDatacentersDao: LocationAndDatacentersDao,
     private val networkInfoDao: NetworkInfoDao,
     private val serverStatusDao: ServerStatusDao,
     private val preferenceChangeObserver: PreferenceChangeObserver,
@@ -66,12 +69,12 @@ class LocalDatabaseImpl @Inject constructor(
         favouriteDao.deleteFavourite(id)
     }
 
-    override suspend fun getAllRegionAsync(): List<RegionAndCities> {
-        return regionAndCitiesDao.getAllRegionAsync()
+    override suspend fun getAllLocationsAsync(): List<LocationAndDatacenters> {
+        return locationAndDatacentersDao.getAllLocationsAsync()
     }
 
-    override suspend fun getCityByID(ids: IntArray?): List<City> {
-        return cityDao.getCityByID(ids)
+    override suspend fun getDatacenterByID(ids: IntArray?): List<Datacenter> {
+        return datacenterDao.getCityByID(ids)
     }
 
     override suspend fun getServerStatus(username: String): ServerStatusUpdateTable {
@@ -99,12 +102,12 @@ class LocalDatabaseImpl @Inject constructor(
             userStatusDao.insertOrUpdateUserStatus(userStatusTable)
     }
 
-    override suspend fun getCityByIDAsync(cityID: Int): City {
-        return cityDao.getCityByIDAsync(cityID)
+    override suspend fun getDatacenterByIDAsync(datacenterID: Int): Datacenter {
+        return datacenterDao.getCityByIDAsync(datacenterID)
     }
 
-    override suspend fun getAllCitiesAsync(regionId: Int): List<City> {
-        return cityDao.getAllCitiesAsync(regionId)
+    override suspend fun getAllDatacentersAsync(locationId: Int): List<Datacenter> {
+        return datacenterDao.getAllCitiesAsync(locationId)
     }
 
     override suspend fun getAllPingsAsync(): List<PingTime> {
@@ -115,8 +118,8 @@ class LocalDatabaseImpl @Inject constructor(
         return favouriteDao.getFavouritesAsync()
     }
 
-    override suspend fun getRegionAsync(regionId: Int): RegionAndCities {
-        return regionAndCitiesDao.getRegionAsync(regionId)
+    override suspend fun getLocationAsync(locationId: Int): LocationAndDatacenters {
+        return locationAndDatacentersDao.getLocationAsync(locationId)
     }
 
     override suspend fun addToFavouritesAsync(favourite: Favourite): Long {
@@ -131,12 +134,12 @@ class LocalDatabaseImpl @Inject constructor(
         return networkInfoDao.deleteNetworkSync(networkName)
     }
 
-    override suspend fun getCitiesAsync(): List<City> {
-        return cityDao.getCitiesAsync()
+    override suspend fun getDatacentersAsync(): List<Datacenter> {
+        return datacenterDao.getCitiesAsync()
     }
 
-    override suspend fun getRegionIdFromCityAsync(cityID: Int): Int {
-        return cityAndRegionDao.getRegionIdFromCityAsync(cityID)
+    override suspend fun getLocationIdFromDatacenterAsync(datacenterID: Int): Int {
+        return datacenterAndLocationDao.getLocationIdFromDatacenterAsync(datacenterID)
     }
 
     override suspend fun getLowestPingIdAsync(): Int {
@@ -177,8 +180,8 @@ class LocalDatabaseImpl @Inject constructor(
     override fun clearAllTables() {
         userStatusDao.clean()
         popupNotificationDao.clean()
-        regionDao.clean()
-        cityDao.clean()
+        locationDao.clean()
+        datacenterDao.clean()
         configFileDao.clean()
         staticRegionsDao.clean()
         networkInfoDao.clean()
@@ -194,13 +197,13 @@ class LocalDatabaseImpl @Inject constructor(
         preferenceChangeObserver.postCityServerChange()
     }
 
-    override fun getCityAndRegion(cityId: Int): CityAndRegion? {
-        return cityAndRegionDao.getCityAndRegion(cityId)
+    override fun getDatacenterAndLocation(datacenterId: Int): DatacenterAndLocation? {
+        return datacenterAndLocationDao.getDatacenterAndLocation(datacenterId)
     }
 
-    override fun getCountryCode(cityId: Int): String {
+    override fun getCountryCode(datacenterId: Int): String {
         return runCatching {
-            cityAndRegionDao.getCityAndRegion(cityId)?.region?.countryCode ?: ""
+            datacenterAndLocationDao.getDatacenterAndLocation(datacenterId)?.location?.countryCode ?: ""
         }.getOrDefault("")
     }
 
@@ -216,16 +219,16 @@ class LocalDatabaseImpl @Inject constructor(
         configFileDao.deleteCustomConfig(id)
     }
 
-    override suspend fun addToCities(cities: List<City>) {
-        return cityDao.addCities(cities)
+    override suspend fun addToDatacenters(datacenters: List<Datacenter>) {
+        return datacenterDao.addCities(datacenters)
     }
 
-    override suspend fun addToRegions(regions: List<Region>) {
-        return regionDao.addRegions(regions)
+    override suspend fun addToLocations(locations: List<Location>) {
+        return locationDao.addRegions(locations)
     }
 
-    override suspend fun getPingableCities(): List<City> {
-        return cityDao.getPingableCities()
+    override suspend fun getPingableDatacenters(): List<Datacenter> {
+        return datacenterDao.getPingableCities()
     }
 
     override suspend fun getWindNotifications(): List<WindNotification> {
@@ -274,5 +277,45 @@ class LocalDatabaseImpl @Inject constructor(
 
     override suspend fun getUnblockWgParams(): Flow<List<UnBlockWgParam>> {
         return unblockWgDao.getUnblockWgParams()
+    }
+
+    override suspend fun addServers(servers: List<Server>) {
+        return serverDao.addAll(servers)
+    }
+
+    override suspend fun deleteServers(serverIds: List<Int>) {
+        return serverDao.deleteByIds(serverIds)
+    }
+
+    override suspend fun deleteAllServers() {
+        return serverDao.deleteAll()
+    }
+
+    override suspend fun getServersByDatacenter(datacenterId: Int): List<Server> {
+        return serverDao.getServersByDatacenter(datacenterId)
+    }
+
+    override suspend fun getServerById(serverId: Int): Server? {
+        return serverDao.getServerById(serverId)
+    }
+
+    override suspend fun getAllServers(): List<Server> {
+        return serverDao.getAllServers()
+    }
+
+    override fun observeAllServers(): Flow<List<Server>> {
+        return serverDao.observeAllServers()
+    }
+
+    override suspend fun getLocationById(locationId: Int): Location {
+        return locationDao.getRegionById(locationId)
+    }
+
+    override suspend fun getPingIpAndHost(id: Int): Pair<String, String>? {
+        val server = getServersByDatacenter(id)
+            .randomOrNull() ?: return null
+        val ip = server.ip.takeIf { it.isNotBlank() } ?: return null
+        val host = server.hostname.takeIf { it.isNotBlank() } ?: return null
+        return Pair(ip, "http://${host}:6464/latency")
     }
 }

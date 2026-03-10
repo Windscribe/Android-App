@@ -135,7 +135,8 @@ abstract class PresenterModule {
             localDbInterface: LocalDbInterface,
             preferencesHelper: PreferencesHelper,
             resourceHelper: ResourceHelper,
-            latencyRepository: LatencyRepository
+            latencyRepository: LatencyRepository,
+            serverListRepository: ServerListRepository
         ): DetailPresenter {
             return DetailsPresenterImp(
                 detailView,
@@ -143,7 +144,8 @@ abstract class PresenterModule {
                 localDbInterface,
                 preferencesHelper,
                 resourceHelper,
-                latencyRepository
+                latencyRepository,
+                serverListRepository
             )
         }
 

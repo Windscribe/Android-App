@@ -14,14 +14,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.windscribe.tv.R
 import com.windscribe.tv.serverlist.adapters.StaticIpAdapter.StaticHolder
 import com.windscribe.tv.serverlist.customviews.ConnectButtonView
-import com.windscribe.tv.serverlist.listeners.NodeClickListener
+import com.windscribe.tv.serverlist.listeners.DatacenterClickListener
 import com.windscribe.vpn.serverlist.entity.ServerListData
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 
 class StaticIpAdapter(
     private val locations: List<StaticRegion>,
     dataDetails: ServerListData,
-    private val listener: NodeClickListener
+    private val listener: DatacenterClickListener
 ) : RecyclerView.Adapter<StaticHolder>() {
     inner class StaticHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val btnConnect: ConnectButtonView = itemView.findViewById(R.id.connect)

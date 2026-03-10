@@ -160,11 +160,11 @@ class WindscribePresenterImpl @Inject constructor(
         preferencesHelper.globalUserConnectionPreference = true
         activityScope.launch {
             try {
-                val cityAndRegion = withContext(Dispatchers.IO) {
-                    localDbInterface.getCityAndRegion(cityID)
+                val datacenterAndLocation = withContext(Dispatchers.IO) {
+                    localDbInterface.getDatacenterAndLocation(cityID)
                 }
-                if (cityAndRegion != null) {
-                    attemptConnection(cityAndRegion)
+                if (datacenterAndLocation != null) {
+                    attemptConnection(datacenterAndLocation)
                 } else {
                     logger.debug("Could not find selected location in database.")
                     windscribeView.showToast("Could not find selected location in database.")
@@ -429,7 +429,7 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override suspend fun observeServerList() {
-        serverListRepository.regions.collectLatest {
+        serverListRepository.locationAndDatacenters.collectLatest {
             setPartialOverlayView()
         }
     }
@@ -441,13 +441,13 @@ class WindscribePresenterImpl @Inject constructor(
             }
             try {
                 // Fetch all data on IO dispatcher
-                val regionsDeferred = localDbInterface.getAllRegionAsync()
+                val regionsDeferred = localDbInterface.getAllLocationsAsync()
                 val pingsDeferred = localDbInterface.getAllPingsAsync()
                 val favouritesDeferred = localDbInterface.getFavouritesAsync()
                 val bestLocationDeferred = locationRepository.getBestLocationAsync()
 
                 // Process data
-                val regions: MutableList<RegionAndCities> = ArrayList(regionsDeferred)
+                val locationAndDatacenters: MutableList<LocationAndDatacenters> = ArrayList(regionsDeferred)
                 val dataDetails = ServerListData()
                 dataDetails.pingTimes = pingsDeferred
                 dataDetails.favourites = favouritesDeferred
@@ -457,10 +457,10 @@ class WindscribePresenterImpl @Inject constructor(
 
                 if (selectedLocation == null) {
                     selectedLocation = LastSelectedLocation(
-                        bestLocationDeferred.city.getId(),
-                        bestLocationDeferred.city.nodeName,
-                        bestLocationDeferred.city.nickName,
-                        bestLocationDeferred.region.countryCode,
+                        bestLocationDeferred.datacenter.id,
+                        bestLocationDeferred.datacenter.nodeName,
+                        bestLocationDeferred.datacenter.nickName,
+                        bestLocationDeferred.location.countryCode,
                         "",
                         ""
                     )
@@ -470,25 +470,25 @@ class WindscribePresenterImpl @Inject constructor(
                     }
                 }
 
-                for (regionAndCity in regions) {
-                    val total = getTotalPingTime(regionAndCity.cities, dataDetails)
-                    regionAndCity.latencyTotal = total
+                for (locationAndDatacenter in locationAndDatacenters) {
+                    val total = getTotalPingTime(locationAndDatacenter.datacenters, dataDetails)
+                    locationAndDatacenter.latencyTotal = total
                 }
 
                 when (preferencesHelper.selection) {
                     PreferencesKeyConstants.LATENCY_LIST_SELECTION_MODE -> {
-                        Collections.sort(regions, ByLatency())
+                        Collections.sort(locationAndDatacenters, ByLatency())
                     }
                     PreferencesKeyConstants.AZ_LIST_SELECTION_MODE -> {
-                        Collections.sort(regions, ByRegionName())
+                        Collections.sort(locationAndDatacenters, ByRegionName())
                     }
                 }
                 withContext(Dispatchers.Main) {
                     windscribeView.showPartialViewProgress(false)
                     updateLocationData(selectedLocation, true)
-                    if (regions.isNotEmpty()) {
-                        regions.add(0, RegionAndCities())
-                        val serverAdapter = ServerAdapter(regions, dataDetails, null, false)
+                    if (locationAndDatacenters.isNotEmpty()) {
+                        locationAndDatacenters.add(0, LocationAndDatacenters())
+                        val serverAdapter = ServerAdapter(locationAndDatacenters, dataDetails, null, false)
                         windscribeView.setPartialAdapter(serverAdapter)
                         logger.debug("Partial Server view loaded successfully. ")
                     }
@@ -542,8 +542,8 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
-    private fun attemptConnection(cityAndRegion: CityAndRegion) {
-        if (isLocationNotAvailableToUser(cityAndRegion.city.pro == 1)) {
+    private fun attemptConnection(datacenterAndLocation: DatacenterAndLocation) {
+        if (isLocationNotAvailableToUser(datacenterAndLocation.datacenter.pro == 1)) {
             logger.info("Location selected is a pro node location, opening upgrade dialog...")
             windscribeView.openUpgradeActivity()
             return
@@ -551,9 +551,9 @@ class WindscribePresenterImpl @Inject constructor(
         if (WindUtilities.isOnline()) {
             preferencesHelper.isConnectingToStaticIp = false
             selectedLocation = LastSelectedLocation(
-                cityAndRegion.city.getId(),
-                cityAndRegion.city.nodeName,
-                cityAndRegion.city.nickName, cityAndRegion.region.countryCode
+                datacenterAndLocation.datacenter.id,
+                datacenterAndLocation.datacenter.nodeName,
+                datacenterAndLocation.datacenter.nickName, datacenterAndLocation.location.countryCode
             )
             selectedLocation?.let {
                 Util.saveSelectedLocation(it)
@@ -642,12 +642,12 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
-    private fun getTotalPingTime(cities: List<City>, dataDetails: ServerListData): Int {
+    private fun getTotalPingTime(cities: List<Datacenter>, dataDetails: ServerListData): Int {
         var total = 0
         var index = 0
         for (city in cities) {
             for (pingTime in dataDetails.pingTimes) {
-                if (pingTime.id == city.getId()) {
+                if (pingTime.id == city.id) {
                     total += pingTime.getPingTime()
                     index++
                 }

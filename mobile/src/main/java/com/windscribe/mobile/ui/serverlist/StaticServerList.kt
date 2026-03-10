@@ -16,9 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -26,16 +23,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -44,21 +38,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.AppStartActivity
-import com.windscribe.mobile.ui.theme.AppColors
-import com.windscribe.mobile.ui.theme.font12
-import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.common.AddButton
 import com.windscribe.mobile.ui.common.AddButtonWithDetails
-import com.windscribe.mobile.ui.common.LatencyIcon
-import com.windscribe.mobile.ui.common.ServerNodeName
+import com.windscribe.mobile.ui.common.DataCenterLatencyIcon
+import com.windscribe.mobile.ui.common.DataCenterName
 import com.windscribe.mobile.ui.common.openUrl
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.theme.expandedServerItemTextColor
+import com.windscribe.mobile.ui.theme.font12
+import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.vpn.constants.NetworkKeyConstants
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import coil.compose.AsyncImagePainter.State.Empty.painter
-import kotlin.collections.set
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,10 +59,7 @@ fun StaticIPServerList(
 ) {
     val state by viewModel.staticListState.collectAsState()
     val activity = LocalContext.current as AppStartActivity
-    val scrollState = rememberScrollState()
     val isRefreshing by viewModel.refreshState.collectAsState()
-
-
     when (state) {
         is ListState.Loading -> {
             ProgressIndicator()
@@ -183,7 +170,7 @@ private fun ListItemView(
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            ServerNodeName(item.staticItem.cityName, Modifier.padding(0.dp))
+            DataCenterName(item.staticItem.cityName, Modifier.padding(0.dp))
             Text(
                 text = item.staticItem.staticIp,
                 style = font12.copy(fontWeight = FontWeight.Medium),
@@ -192,7 +179,7 @@ private fun ListItemView(
             )
         }
         Spacer(modifier = Modifier.weight(1f))
-        LatencyIcon(latency)
+        DataCenterLatencyIcon(latency)
     }
 }
 

@@ -10,6 +10,5 @@ interface OverlayPresenter {
     fun favouriteViewReady()
     suspend fun staticIpViewReady()
     suspend fun allLocationViewReady()
-    suspend fun windLocationViewReady()
     suspend fun observeLatencyChange()
 }

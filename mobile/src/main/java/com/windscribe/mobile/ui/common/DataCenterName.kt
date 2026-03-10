@@ -12,7 +12,7 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.serverItemTextColor
 
 @Composable
-fun ServerNodeName(name: String, modifier: Modifier) {
+fun DataCenterName(name: String, modifier: Modifier) {
     Text(
         text = name,
         style = font16.copy(fontWeight = FontWeight.Medium),

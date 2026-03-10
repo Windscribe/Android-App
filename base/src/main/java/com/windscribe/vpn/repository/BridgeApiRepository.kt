@@ -74,14 +74,14 @@ class BridgeApiRepository @Inject constructor(
             }
         }
         val location = locationRepository.getSelectedCityAndRegion()
-        if (location == null || location.region == null) {
+        if (location == null || location.location == null) {
             _apiAvailable.emit(false)
             return
         }
         val user = userRepository.user.value ?: return
         val proUser = user.isPro
         val alcList = user.alcList?.split(",") ?: emptyList()
-        val alc = alcList.contains(location.region.countryCode)
+        val alc = alcList.contains(location.location.countryCode)
         val cityLocation =
             WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CityLocation
         val activate = ready && cityLocation && (proUser || alc)

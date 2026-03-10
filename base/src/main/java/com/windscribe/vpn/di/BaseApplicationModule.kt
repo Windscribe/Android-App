@@ -61,13 +61,14 @@ import com.windscribe.vpn.repository.StaticIpRepository
 import com.windscribe.vpn.repository.UnblockWgParamsRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.repository.WgConfigRepository
-import com.windscribe.vpn.serverlist.dao.CityAndRegionDao
-import com.windscribe.vpn.serverlist.dao.CityDao
+import com.windscribe.vpn.serverlist.dao.DatacenterAndLocationDao
+import com.windscribe.vpn.serverlist.dao.DatacenterDao
 import com.windscribe.vpn.serverlist.dao.ConfigFileDao
 import com.windscribe.vpn.serverlist.dao.FavouriteDao
 import com.windscribe.vpn.serverlist.dao.PingTimeDao
-import com.windscribe.vpn.serverlist.dao.RegionAndCitiesDao
-import com.windscribe.vpn.serverlist.dao.RegionDao
+import com.windscribe.vpn.serverlist.dao.LocationAndDatacentersDao
+import com.windscribe.vpn.serverlist.dao.LocationDao
+import com.windscribe.vpn.serverlist.dao.ServerDao
 import com.windscribe.vpn.serverlist.dao.StaticRegionDao
 import com.windscribe.vpn.services.review.WindscribeReviewManagerImpl
 import com.windscribe.vpn.services.sso.GoogleSignInManager
@@ -117,13 +118,13 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun provideCityAndRegionDao(windscribeDatabase: WindscribeDatabase): CityAndRegionDao {
-        return windscribeDatabase.cityAndRegionDao()
+    fun provideDatacenterAndLocationDao(windscribeDatabase: WindscribeDatabase): DatacenterAndLocationDao {
+        return windscribeDatabase.datacenterAndLocationDao()
     }
 
     @Provides
     @Singleton
-    fun provideCityDao(windscribeDatabase: WindscribeDatabase): CityDao {
+    fun provideDatacenterDao(windscribeDatabase: WindscribeDatabase): DatacenterDao {
         return windscribeDatabase.cityDao()
     }
 
@@ -191,6 +192,8 @@ open class BaseApplicationModule {
             .addMigrations(Migrations.migration_35_36)
             .addMigrations(Migrations.migration_36_37)
             .addMigrations(Migrations.migration_37_38)
+            .addMigrations(Migrations.migration_38_39)
+            .addMigrations(Migrations.migration_39_40)
             .build()
 
     }
@@ -227,14 +230,15 @@ open class BaseApplicationModule {
     fun provideLocalDatabaseImpl(
         userStatusDao: UserStatusDao,
         popupNotificationDao: PopupNotificationDao,
-        regionDao: RegionDao,
-        cityDao: CityDao,
-        cityAndRegionDao: CityAndRegionDao,
+        locationDao: LocationDao,
+        serverDao: ServerDao,
+        datacenterDao: DatacenterDao,
+        datacenterAndLocationDao: DatacenterAndLocationDao,
         configFileDao: ConfigFileDao,
         staticRegionDao: StaticRegionDao,
         pingTimeDao: PingTimeDao,
         favouriteDao: FavouriteDao,
-        regionAndCitiesDao: RegionAndCitiesDao,
+        locationAndDatacentersDao: LocationAndDatacentersDao,
         networkInfoDao: NetworkInfoDao,
         serverStatusDao: ServerStatusDao,
         preferenceChangeObserver: PreferenceChangeObserver,
@@ -244,14 +248,15 @@ open class BaseApplicationModule {
         return LocalDatabaseImpl(
             userStatusDao,
             popupNotificationDao,
-            regionDao,
-            cityDao,
-            cityAndRegionDao,
+            locationDao,
+            serverDao,
+            datacenterDao,
+            datacenterAndLocationDao,
             configFileDao,
             staticRegionDao,
             pingTimeDao,
             favouriteDao,
-            regionAndCitiesDao,
+            locationAndDatacentersDao,
             networkInfoDao,
             serverStatusDao,
             preferenceChangeObserver,
@@ -331,14 +336,20 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun provideRegionAndCitiesDao(windscribeDatabase: WindscribeDatabase): RegionAndCitiesDao {
-        return windscribeDatabase.regionAndCitiesDao()
+    fun provideLocationAndDatacentersDao(windscribeDatabase: WindscribeDatabase): LocationAndDatacentersDao {
+        return windscribeDatabase.locationAndDatacentersDao()
     }
 
     @Provides
     @Singleton
-    fun provideRegionDao(windscribeDatabase: WindscribeDatabase): RegionDao {
-        return windscribeDatabase.regionDao()
+    fun provideLocationDao(windscribeDatabase: WindscribeDatabase): LocationDao {
+        return windscribeDatabase.locationDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideServerDao(windscribeDatabase: WindscribeDatabase): ServerDao {
+        return windscribeDatabase.serverDao()
     }
 
     @Provides
@@ -369,8 +380,6 @@ open class BaseApplicationModule {
         localDbInterface: LocalDbInterface,
         preferenceChangeObserver: PreferenceChangeObserver,
         userRepository: Lazy<UserRepository>,
-        appLifeCycleObserver: AppLifeCycleObserver,
-        advanceParameterRepository: AdvanceParameterRepository,
         preferencesHelper: PreferencesHelper,
         favouriteRepository: FavouriteRepository
     ): ServerListRepository {
@@ -380,8 +389,6 @@ open class BaseApplicationModule {
             localDbInterface,
             preferenceChangeObserver,
             userRepository,
-            appLifeCycleObserver,
-            advanceParameterRepository,
             preferencesHelper,
             favouriteRepository
         )

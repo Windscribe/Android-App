@@ -104,7 +104,7 @@ class BridgeApiViewModelImpl @Inject constructor(
                 localdb.getFavourites(),
                 locationRepository.selectedCity
             ) { favourites, selectedCityId ->
-                val cityId = locationRepository.getSelectedCityAndRegion()?.city?.id ?: selectedCityId
+                val cityId = locationRepository.getSelectedCityAndRegion()?.datacenter?.id ?: selectedCityId
                 val hasPinned = favourites.any { it.id == cityId && it.pinnedIp != null }
                 _hasPinnedIp.emit(hasPinned)
             }.collectLatest { }
@@ -199,13 +199,13 @@ class BridgeApiViewModelImpl @Inject constructor(
         return when (val result = result<String> { api.pinIp(ip) }) {
             is CallResult.Success -> {
                 try {
-                    val city = localdb.getCityAndRegion(selectedCity)
-                    if (city == null) {
-                        logger.error("City not found in database: $selectedCity")
+                    val datacenterAndLocation = localdb.getDatacenterAndLocation(selectedCity)
+                    if (datacenterAndLocation == null) {
+                        logger.error("Datacenter not found in database: $selectedCity")
                         return false
                     }
                     val nodeIp = preferences.selectedIp
-                    localdb.addToFavouritesAsync(Favourite(city.city.id, ip, nodeIp))
+                    localdb.addToFavouritesAsync(Favourite(datacenterAndLocation.datacenter.id, ip, nodeIp))
                     logger.info("Pin IP request successful: ${result.data} $ip with nodeIp: $nodeIp")
                     _favouriteIconAnimation.value = _favouriteIconAnimation.value + 1
                     true

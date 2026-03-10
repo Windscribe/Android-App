@@ -21,7 +21,7 @@ import com.windscribe.mobile.ui.theme.expandedServerItemTextColor
 import com.windscribe.mobile.ui.theme.serverItemTextColor
 
 @Composable
-fun FavouriteIcon(isFavorite: Boolean, onClick: () -> Unit) {
+fun DataCenterFavouriteIcon(isFavorite: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(32.dp)

@@ -89,6 +89,7 @@ object PreferencesKeyConstants {
     const val BLUR_NETWORK_NAME = "blur_network_name"
     const val LAST_SELECTED_SERVER_TAB = "last_selected_server_tab"
     const val PORT_MAP_VERSION = "port_map_version"
+    const val SERVER_REVISION = "server_revision"
     const val HAPTIC_FEEDBACK = "haptic_feedback"
     const val CUSTOM_FLAG_BACKGROUND = "custom_flag_background"
     const val DISCONNECTED_FLAG_PATH = "disconnected_flag_path"
@@ -154,4 +155,7 @@ object PreferencesKeyConstants {
 
     const val CUSTOM_ICON = "custom_icon"
     const val SELECTED_UNBLOCK_WG_PARAM = "selected_unblock_wg_param"
+    const val IPV6_MODE = "ipv6_mode"
+    const val IPV6_MODE_IPV4_ONLY = "ipv4"
+    const val IPV6_MODE_AUTO = "auto"
 }

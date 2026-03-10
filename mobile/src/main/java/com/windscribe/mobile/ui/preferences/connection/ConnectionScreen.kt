@@ -1,7 +1,6 @@
 package com.windscribe.mobile.ui.preferences.connection
 
 import PreferencesNavBar
-import android.R.attr.description
 import android.content.Intent
 import android.widget.Toast
 import androidx.annotation.DrawableRes
@@ -141,6 +140,8 @@ fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
                 ConnectionMode(viewModel)
                 Spacer(modifier = Modifier.height(16.dp))
                 PacketSize(viewModel)
+                Spacer(modifier = Modifier.height(16.dp))
+                IPVersionMode(viewModel)
                 Spacer(modifier = Modifier.height(16.dp))
                 CustomDNS(viewModel)
                 Spacer(modifier = Modifier.height(16.dp))
@@ -305,6 +306,63 @@ private fun AntiCensorshipMode(viewModel: ConnectionViewModel?, scrollState: Scr
                 viewModel?.onUnblockWgPresetSelected(it.key)
             }
         }
+    }
+}
+
+@Composable
+private fun IPVersionMode(viewModel: ConnectionViewModel?) {
+    val ipStackEgressModes by viewModel?.ipStackEgressModes?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
+    val ipStackEgressMode by viewModel?.ipStackEgressMode?.collectAsState() ?: remember { mutableStateOf("auto") }
+    val ipStackIngressModes by viewModel?.ipStackIngressModes?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
+    val ipStackIngressMode by viewModel?.ipStackIngressMode?.collectAsState() ?: remember { mutableStateOf("auto") }
+
+    Column {
+        // Header with title and description only (no mode selector on right)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                )
+                .padding(16.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painterResource(com.windscribe.mobile.R.drawable.ip),
+                    contentDescription = "",
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor)
+                )
+                Spacer(modifier = Modifier.padding(8.dp))
+                Text(
+                    stringResource(R.string.ip_stack),
+                    style = font16,
+                    color = MaterialTheme.colorScheme.primaryTextColor
+                )
+            }
+            Spacer(modifier = Modifier.padding(8.dp))
+            DescriptionWithLearnMore(stringResource(R.string.ip_stack_description), FeatureExplainer.IPV6)
+        }
+        // Egress dropdown
+        Spacer(modifier = Modifier.height(1.dp))
+        CustomDropDown(
+            R.string.egress,
+            ipStackEgressModes,
+            ipStackEgressMode,
+            shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+        ) {
+            viewModel?.onIpStackEgressModeSelected(it)
+        }
+        // Future: Ingress dropdown (hidden for now)
+        // Spacer(modifier = Modifier.height(1.dp))
+        // CustomDropDown(
+        //     R.string.ingress,
+        //     ipStackIngressModes,
+        //     ipStackIngressMode,
+        //     shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+        // ) {
+        //     viewModel?.onIpStackIngressModeSelected(it)
+        // }
     }
 }
 
