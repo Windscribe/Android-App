@@ -16,7 +16,7 @@ import com.windscribe.vpn.commonutils.ThreadSafeList
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTO_WIRE_GUARD
 import com.windscribe.vpn.exceptions.WindScribeException
-import com.windscribe.vpn.serverlist.entity.Node
+import com.windscribe.vpn.serverlist.entity.Server
 import com.wireguard.config.BadConfigException
 import com.wireguard.config.Config
 import inet.ipaddr.AddressStringException
@@ -272,7 +272,7 @@ object Util {
     /**
      * @return Random node index based on weight ignoring the last attempted node.
      */
-    fun getRandomNode(lastUsedIndex: Int, attempt: Int, nodes: List<Node>): Int {
+    fun getRandomNode(lastUsedIndex: Int, attempt: Int, nodes: List<Server>): Int {
         if (nodes.size == 1) {
             return 0
         }
@@ -283,7 +283,7 @@ object Util {
         return index
     }
 
-    private fun getRandomNode(nodes: List<Node>): Int {
+    private fun getRandomNode(nodes: List<Server>): Int {
         var bestNode = 0
         var weightCounter = Math.random() * (nodes.sumOf { it.weight })
         for (node in nodes) {

@@ -14,34 +14,36 @@ import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable;
 import com.windscribe.vpn.localdatabase.tables.UserStatusTable;
 import com.windscribe.vpn.localdatabase.tables.UnBlockWgParam;
 import com.windscribe.vpn.localdatabase.tables.WindNotification;
-import com.windscribe.vpn.serverlist.dao.CityAndRegionDao;
-import com.windscribe.vpn.serverlist.dao.CityDao;
+import com.windscribe.vpn.serverlist.dao.DatacenterAndLocationDao;
+import com.windscribe.vpn.serverlist.dao.DatacenterDao;
 import com.windscribe.vpn.serverlist.dao.ConfigFileDao;
 import com.windscribe.vpn.serverlist.dao.FavouriteDao;
 import com.windscribe.vpn.serverlist.dao.PingTimeDao;
-import com.windscribe.vpn.serverlist.dao.RegionAndCitiesDao;
-import com.windscribe.vpn.serverlist.dao.RegionDao;
+import com.windscribe.vpn.serverlist.dao.LocationAndDatacentersDao;
+import com.windscribe.vpn.serverlist.dao.LocationDao;
+import com.windscribe.vpn.serverlist.dao.ServerDao;
 import com.windscribe.vpn.serverlist.dao.StaticRegionDao;
-import com.windscribe.vpn.serverlist.entity.City;
+import com.windscribe.vpn.serverlist.entity.Datacenter;
 import com.windscribe.vpn.serverlist.entity.ConfigFile;
 import com.windscribe.vpn.serverlist.entity.Favourite;
 import com.windscribe.vpn.serverlist.entity.PingTime;
-import com.windscribe.vpn.serverlist.entity.Region;
+import com.windscribe.vpn.serverlist.entity.Location;
+import com.windscribe.vpn.serverlist.entity.Server;
 import com.windscribe.vpn.serverlist.entity.StaticRegion;
 
 import javax.inject.Singleton;
 
 @Database(entities = {PingTestResults.class, UserStatusTable.class, ServerStatusUpdateTable.class,
-        PopupNotificationTable.class, Region.class,
-        City.class, Favourite.class, PingTime.class, StaticRegion.class, NetworkInfo.class, ConfigFile.class,
-        WindNotification.class, UnBlockWgParam.class}, version = 38)
+        PopupNotificationTable.class, Location.class,
+        Datacenter.class, Server.class, Favourite.class, PingTime.class, StaticRegion.class, NetworkInfo.class, ConfigFile.class,
+        WindNotification.class, UnBlockWgParam.class}, version = 39, exportSchema = true)
 @Singleton
 public abstract class WindscribeDatabase extends RoomDatabase {
 
 
-    public abstract CityAndRegionDao cityAndRegionDao();
+    public abstract DatacenterAndLocationDao datacenterAndLocationDao();
 
-    public abstract CityDao cityDao();
+    public abstract DatacenterDao cityDao();
 
     public abstract ConfigFileDao configFileDao();
 
@@ -53,9 +55,11 @@ public abstract class WindscribeDatabase extends RoomDatabase {
 
     public abstract PopupNotificationDao popupNotificationDao();
 
-    public abstract RegionAndCitiesDao regionAndCitiesDao();
+    public abstract LocationAndDatacentersDao locationAndDatacentersDao();
 
-    public abstract RegionDao regionDao();
+    public abstract LocationDao locationDao();
+
+    public abstract ServerDao serverDao();
 
     public abstract ServerStatusDao serverStatusDao();
 

@@ -13,16 +13,16 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.windscribe.tv.R
-import com.windscribe.tv.serverlist.listeners.NodeClickListener
+import com.windscribe.tv.serverlist.listeners.DatacenterClickListener
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.constants.ExtraConstants
-import com.windscribe.vpn.serverlist.entity.RegionAndCities
+import com.windscribe.vpn.serverlist.entity.LocationAndDatacenters
 import com.windscribe.vpn.serverlist.entity.ServerListData
 
 class ServerAdapter(
-    private val groups: List<RegionAndCities>,
+    private val groups: List<LocationAndDatacenters>,
     private val serverListData: ServerListData,
-    private val listener: NodeClickListener?,
+    private val listener: DatacenterClickListener?,
     private val isTypeStreaming: Boolean
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     internal inner class BestLocationHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -31,7 +31,7 @@ class ServerAdapter(
             textView.text = itemView.resources.getText(com.windscribe.vpn.R.string.best_location)
             itemView.setOnClickListener {
                 serverListData.bestLocation?.let {
-                    listener?.onBestLocationClick(it.city.getId())
+                    listener?.onBestLocationClick(it.datacenter.id)
                 }
             }
             itemView.onFocusChangeListener =
@@ -59,12 +59,12 @@ class ServerAdapter(
         private val imageBackground: ImageView = itemView.findViewById(R.id.imageBackground)
         private val imageView: AppCompatImageView = itemView.findViewById(R.id.image)
         private val textView: TextView = itemView.findViewById(R.id.label)
-        private var group: RegionAndCities? = null
-        fun bind(group: RegionAndCities) {
+        private var group: LocationAndDatacenters? = null
+        fun bind(group: LocationAndDatacenters) {
             this.group = group
-            textView.text = group.region.name
+            textView.text = group.location.name
             imageBackground.visibility = View.VISIBLE
-            val countryCode = group.region.countryCode
+            val countryCode = group.location.countryCode
             Glide.with(itemView).load(FlagIconResource.getFlag(countryCode)).into(imageView)
         }
 
@@ -109,7 +109,7 @@ class ServerAdapter(
         init {
             itemView.setOnClickListener {
                 group?.let {
-                    listener?.onGroupSelected(it.region)
+                    listener?.onGroupSelected(it.location)
                 }
             }
             itemView.onFocusChangeListener =

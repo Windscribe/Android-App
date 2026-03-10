@@ -103,13 +103,13 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
         return runCatching {
             when (WindUtilities.getSourceTypeBlocking()) {
                 SelectedLocationType.CityLocation -> {
-                    val cityAndRegion = db.getCityAndRegion(id) ?: throw Exception("City not found")
+                    val datacenterAndLocation = db.getDatacenterAndLocation(id) ?: throw Exception("Datacenter not found")
                     Pair(
                         LastSelectedLocation(
-                            cityAndRegion.city.id,
-                            serverListRepository.getCustomCityName(cityAndRegion.city.id) ?: cityAndRegion.city.nodeName,
-                            serverListRepository.getCustomCityNickName(cityAndRegion.city.id) ?: cityAndRegion.city.nickName,
-                            cityAndRegion.region.countryCode,
+                            datacenterAndLocation.datacenter.id,
+                            serverListRepository.getCustomCityName(datacenterAndLocation.datacenter.id) ?: datacenterAndLocation.datacenter.nodeName,
+                            serverListRepository.getCustomCityNickName(datacenterAndLocation.datacenter.id) ?: datacenterAndLocation.datacenter.nickName,
+                            datacenterAndLocation.location.countryCode,
                         ), LocationTypeInt.City
                     )
                 }

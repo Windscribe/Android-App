@@ -13,9 +13,11 @@ import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.constants.UserStatusConstants
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.LatencyRepository
-import com.windscribe.vpn.serverlist.entity.City
+import com.windscribe.vpn.repository.ServerListRepository
+import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.Favourite
 import com.windscribe.vpn.serverlist.entity.ServerListData
+import com.windscribe.vpn.serverlist.entity.ServerMapState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -31,7 +33,8 @@ class DetailsPresenterImp @Inject constructor(
     private val localDbInterface: LocalDbInterface,
     private val preferencesHelper: PreferencesHelper,
     private val resourceHelper: ResourceHelper,
-    private val latencyRepository: LatencyRepository
+    private val latencyRepository: LatencyRepository,
+    private val serverListRepository: ServerListRepository
 ) : DetailPresenter, DetailListener {
     private val logger = LoggerFactory.getLogger("basic")
     private var detailViewAdapter: DetailViewAdapter? = null
@@ -47,7 +50,7 @@ class DetailsPresenterImp @Inject constructor(
         activityScope.launch(Dispatchers.IO) {
             try {
                 // Load cities
-                val cities = localDbInterface.getAllCitiesAsync(regionId)
+                val cities = localDbInterface.getAllDatacentersAsync(regionId)
                 logger.info("Regions and cities...")
                 val sortedCities = cities.sortedBy { it.nodeName }
 
@@ -68,6 +71,15 @@ class DetailsPresenterImp @Inject constructor(
                     emptyList()
                 }
 
+                // Load server counts from repository state
+                val serverState = serverListRepository.serversState.value
+                val serverCountMap = when (serverState) {
+                    is ServerMapState.Success -> {
+                        serverState.data.mapValues { it.value.size }
+                    }
+                    else -> emptyMap()
+                }
+
                 withContext(Dispatchers.Main) {
                     logger.debug("***Successfully received server list.***")
                     val serverListData = ServerListData()
@@ -75,6 +87,7 @@ class DetailsPresenterImp @Inject constructor(
                     serverListData.isProUser = preferencesHelper.userStatus == UserStatusConstants.USER_STATUS_PREMIUM
                     serverListData.pingTimes = pingTimes
                     serverListData.favourites = favourites
+                    serverListData.serverCountMap = serverCountMap
 
                     if (sortedCities.isNotEmpty()) {
                         setBackground(regionId)
@@ -90,7 +103,7 @@ class DetailsPresenterImp @Inject constructor(
                         logger.debug("Successfully loaded detail view.")
                     } else {
                         detailView.setState(LoadState.NoResult, 0, com.windscribe.vpn.R.string.load_nothing_found)
-                        logger.debug("No nodes found under this group.")
+                        logger.debug("No datacenters found under this location.")
                     }
                 }
             } catch (e: Throwable) {
@@ -102,22 +115,22 @@ class DetailsPresenterImp @Inject constructor(
         }
     }
 
-    override fun onConnectClick(city: City) {
+    override fun onConnectClick(city: Datacenter) {
         logger.debug("Selected group item to connect.")
-        detailView.onNodeSelected(city.getId())
+        detailView.onNodeSelected(city.id)
     }
 
     override fun onDisabledClick() {
         detailView.onDisabledNodeClick()
     }
 
-    override fun onFavouriteClick(city: City, state: FavouriteState) {
+    override fun onFavouriteClick(city: Datacenter, state: FavouriteState) {
         if (state == FavouriteState.Favourite) {
             logger.debug("Removing from favourites.")
-            removeFromFavourite(city.getId())
+            removeFromFavourite(city.id)
         } else {
             logger.debug("Adding to favourites.")
-            addToFav(city.getId())
+            addToFav(city.id)
         }
     }
 
@@ -167,14 +180,14 @@ class DetailsPresenterImp @Inject constructor(
     private fun setBackground(regionId: Int) {
         activityScope.launch(Dispatchers.IO) {
             try {
-                val cities = localDbInterface.getRegionAsync(regionId)
+                val cities = localDbInterface.getLocationAsync(regionId)
 
                 withContext(Dispatchers.Main) {
                     detailView.setCountryFlagBackground(
-                        FlagIconResource.getFlag(cities.region.countryCode)
+                        FlagIconResource.getFlag(cities.location.countryCode)
                     )
-                    detailView.setTitle(cities.region.name)
-                    detailView.setCount("" + cities.cities.size)
+                    detailView.setTitle(cities.location.name)
+                    detailView.setCount("" + cities.datacenters.size)
                 }
             } catch (e: Throwable) {
             }

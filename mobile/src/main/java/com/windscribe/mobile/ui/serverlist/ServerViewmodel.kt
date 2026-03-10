@@ -1,7 +1,6 @@
 package com.windscribe.mobile.ui.serverlist
 
 import android.icu.text.LocaleDisplayNames.UiListItem.getComparator
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -14,10 +13,11 @@ import com.windscribe.vpn.repository.FavouriteWithCity
 import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
-import com.windscribe.vpn.serverlist.entity.City
+import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.Favourite
-import com.windscribe.vpn.serverlist.entity.Region
+import com.windscribe.vpn.serverlist.entity.Location
+import com.windscribe.vpn.serverlist.entity.ServerMapState
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
@@ -34,10 +34,26 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import kotlin.collections.filter
 import kotlin.collections.map
+import kotlin.collections.mapNotNull
+import kotlin.collections.sortedBy
 
-data class ServerListItem(val id: Int, val region: Region, val cities: List<City>)
-data class FavouriteListItem(val id: Int, val city: City, val countryCode: String, val pinnedIp: String?)
+data class ServerListItem(
+    val id: Int,
+    val region: Location,
+    val datacenters: List<Datacenter>,
+    val servers: List<String> = emptyList()
+)
+
+data class FavouriteListItem(
+    val id: Int,
+    val city: Datacenter,
+    val region: Location,
+    val countryCode: String,
+    val pinnedIp: String?
+)
+
 data class StaticListItem(val id: Int, val staticItem: StaticRegion)
 data class ConfigListItem(val id: Int, val config: ConfigFile)
 data class LatencyListItem(val id: Int, val time: Int)
@@ -52,12 +68,15 @@ enum class ServerListType {
     All, Fav, Static, Config
 }
 
+private const val MIN_HEALTH_VALUE = 50
+
 abstract class ServerViewModel : ViewModel() {
     abstract val serverListState: StateFlow<ListState<ServerListItem>>
     abstract val favouriteListState: StateFlow<ListState<FavouriteListItem>>
     abstract val staticListState: StateFlow<ListState<StaticListItem>>
     abstract val configListState: StateFlow<ListState<ConfigListItem>>
     abstract val latencyListState: StateFlow<ListState<LatencyListItem>>
+    abstract val serversState: StateFlow<ServerMapState>
     abstract val selectedServerListType: StateFlow<ServerListType>
     abstract val showSearchView: StateFlow<Boolean>
     abstract val searchKeyword: StateFlow<String>
@@ -65,13 +84,17 @@ abstract class ServerViewModel : ViewModel() {
     abstract val searchItemsExpandState: StateFlow<HashMap<String, Boolean>>
     abstract val refreshState: StateFlow<Boolean>
     abstract fun setSelectedType(type: ServerListType)
-    abstract fun toggleFavorite(city: City)
+    abstract fun toggleFavorite(city: Datacenter)
     abstract fun deleteFavourite(id: Int)
     abstract fun toggleSearch()
     abstract fun onQueryTextChange(query: String)
     abstract fun clearSearch()
     abstract fun onExpandStateChanged(id: String, expanded: Boolean)
     abstract fun refresh(serverListType: ServerListType)
+    abstract fun observeAverageHealth(dataCenterId: Int): Flow<Int>
+    abstract fun observeDatacenterServers(dataCenterId: Int): Flow<Boolean>
+    abstract fun observeAverageRegionHealth(cities: List<Datacenter>): Flow<Int>
+    abstract fun observeRegionPremiumStatus(cities: List<Datacenter>): Flow<Boolean>
 }
 
 class ServerViewModelImpl(
@@ -99,16 +122,21 @@ class ServerViewModelImpl(
     private val _latencyListState = MutableStateFlow<ListState<LatencyListItem>>(ListState.Loading)
     override val latencyListState: StateFlow<ListState<LatencyListItem>> = _latencyListState
 
+    // Delegate serversState to repository
+    override val serversState: StateFlow<ServerMapState> = serverRepository.serversState
+
     private val _searchListState = MutableStateFlow<ListState<ServerListItem>>(ListState.Loading)
     override val searchListState: StateFlow<ListState<ServerListItem>> = _searchListState
 
-    private val _selectedServerListType = MutableStateFlow(when (preferencesHelper.lastSelectedTabIndex) {
-        0 -> ServerListType.All
-        1 -> ServerListType.Fav
-        2 -> ServerListType.Static
-        3 -> ServerListType.Config
-        else -> ServerListType.All
-    })
+    private val _selectedServerListType = MutableStateFlow(
+        when (preferencesHelper.lastSelectedTabIndex) {
+            0 -> ServerListType.All
+            1 -> ServerListType.Fav
+            2 -> ServerListType.Static
+            3 -> ServerListType.Config
+            else -> ServerListType.All
+        }
+    )
     override val selectedServerListType: StateFlow<ServerListType> = _selectedServerListType
 
 
@@ -161,17 +189,14 @@ class ServerViewModelImpl(
     private fun fetchServerList() {
         fetchData(
             stateFlow = _serverListState,
-            repositoryFlow = serverRepository.regions,
-            transform = { regions ->
-                if (regions.isNotEmpty()) {
-                    preferencesHelper.migrationRequired = false
-                }
-                regions
-                    .map { region ->
+            repositoryFlow = serverRepository.locationAndDatacenters,
+            transform = { locations ->
+                locations
+                    .map { location ->
                         ServerListItem(
-                            id = region.region.id,
-                            region = region.region,
-                            cities = region.cities.updateCityNames().sortCities()
+                            id = location.location.id,
+                            region = location.location,
+                            datacenters = location.datacenters.updateCityNames().sortCities(),
                         )
                     }
                     .updateRegionNames().sortRegions()
@@ -180,7 +205,7 @@ class ServerViewModelImpl(
         )
     }
 
-    private fun List<City>.sortCities(): List<City> {
+    private fun List<Datacenter>.sortCities(): List<Datacenter> {
         return when (preferencesHelper.selection) {
             LATENCY_LIST_SELECTION_MODE -> {
                 val state = latencyListState.value as? ListState.Success<LatencyListItem>
@@ -197,7 +222,7 @@ class ServerViewModelImpl(
         }
     }
 
-    private fun List<City>.updateCityNames(): List<City> {
+    private fun List<Datacenter>.updateCityNames(): List<Datacenter> {
         return map {
             val cityName = serverRepository.getCustomCityName(it.id)
             val nickName = serverRepository.getCustomCityNickName(it.id)
@@ -233,7 +258,7 @@ class ServerViewModelImpl(
                     val latencyMap = state.data.associateBy { it.id }
                     sortedBy { item ->
                         // Find lowest latency across cities in region
-                        val minLatency = item.cities.mapNotNull { city ->
+                        val minLatency = item.datacenters.mapNotNull { city ->
                             val time = latencyMap[city.id]?.time
                             if (time != null && time > 0) time else null
                         }.minOrNull()
@@ -295,6 +320,7 @@ class ServerViewModelImpl(
                     sortedBy { it.city.nodeName }
                 }
             }
+
             else -> sortedBy { it.city.nodeName }
         }
     }
@@ -318,9 +344,11 @@ class ServerViewModelImpl(
         viewModelScope.launch(Dispatchers.IO) {
             favouriteRepository.favourites.map { favourites ->
                 favourites.updateFavouriteCityNames().sortFavouriteCities().map { favWithCity ->
+                    val region = localDbInterface.getLocationById(favWithCity.city.regionID)
                     FavouriteListItem(
                         favWithCity.city.id,
                         favWithCity.city,
+                        region,
                         localDbInterface.getCountryCode(favWithCity.city.id),
                         favWithCity.favourite.pinnedIp
                     )
@@ -393,7 +421,7 @@ class ServerViewModelImpl(
         _selectedServerListType.value = type
     }
 
-    override fun toggleFavorite(city: City) {
+    override fun toggleFavorite(city: Datacenter) {
         viewModelScope.launch(Dispatchers.IO) {
             val state = favouriteListState.value
             if (state is ListState.Success) {
@@ -455,13 +483,13 @@ class ServerViewModelImpl(
     private fun ServerListItem.filterIfContains(keyword: String): ServerListItem? {
         val lowerKeyword = keyword.lowercase(Locale.getDefault())
 
-        val filteredCities = cities.filter {
+        val filteredCities = datacenters.filter {
             it.nickName.lowercase(Locale.getDefault()).contains(lowerKeyword) ||
                     it.nodeName.lowercase(Locale.getDefault()).contains(lowerKeyword)
         }
 
         return when {
-            filteredCities.isNotEmpty() -> copy(cities = filteredCities)
+            filteredCities.isNotEmpty() -> copy(datacenters = filteredCities)
             region.name.lowercase(Locale.getDefault()).contains(lowerKeyword) -> this
             else -> null
         }
@@ -471,7 +499,7 @@ class ServerViewModelImpl(
         val lowerKeyword = keyword.lowercase(Locale.getDefault())
 
         return region.name.lowercase(Locale.getDefault()).startsWith(lowerKeyword) ||
-                cities.any {
+                datacenters.any {
                     it.nickName.lowercase(Locale.getDefault()).startsWith(lowerKeyword) ||
                             it.nodeName.lowercase(Locale.getDefault()).startsWith(lowerKeyword)
                 }
@@ -487,6 +515,73 @@ class ServerViewModelImpl(
                 this[id] = expanded
             }
         }
+    }
+
+    // Transform repository's serversState for UI needs
+    override fun observeAverageHealth(dataCenterId: Int): Flow<Int> {
+        return serverRepository.serversState
+            .map { state ->
+                when (state) {
+                    is ServerMapState.Success -> {
+                        val servers = state.data[dataCenterId] ?: emptyList()
+                        if (servers.isEmpty()) return@map MIN_HEALTH_VALUE
+                        val average = servers.map { it.health }.average().toInt()
+                        maxOf(MIN_HEALTH_VALUE, average)
+                    }
+                    else -> MIN_HEALTH_VALUE
+                }
+            }
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
+    }
+
+    override fun observeAverageRegionHealth(cities: List<Datacenter>): Flow<Int> {
+        return serverRepository.serversState
+            .map { state ->
+                if (cities.isEmpty()) return@map MIN_HEALTH_VALUE
+                when (state) {
+                    is ServerMapState.Success -> {
+                        var sum = 0
+                        for (city in cities) {
+                            val servers = state.data[city.id] ?: emptyList()
+                            val health = if (servers.isEmpty()) {
+                                MIN_HEALTH_VALUE
+                            } else {
+                                val average = servers.map { it.health }.average().toInt()
+                                maxOf(MIN_HEALTH_VALUE, average)
+                            }
+                            sum += health
+                        }
+                        sum / cities.size
+                    }
+                    else -> MIN_HEALTH_VALUE
+                }
+            }
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
+    }
+
+    override fun observeDatacenterServers(dataCenterId: Int): Flow<Boolean> {
+        return serverRepository.serversState
+            .map { state ->
+                when (state) {
+                    is ServerMapState.Success -> {
+                        val servers = state.data[dataCenterId] ?: emptyList()
+                        servers.isNotEmpty()
+                    }
+                    else -> false
+                }
+            }
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
+    }
+
+    override fun observeRegionPremiumStatus(cities: List<Datacenter>): Flow<Boolean> {
+        return kotlinx.coroutines.flow.flow {
+            // A region is premium if ALL its cities have pro == 1
+            val isPremium = cities.isNotEmpty() && cities.all { it.pro == 1 }
+            emit(isPremium)
+        }.flowOn(Dispatchers.IO)
     }
 
     override fun refresh(serverListType: ServerListType) {

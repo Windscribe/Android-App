@@ -10,7 +10,6 @@ import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.bundledBackgrounds
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.getSoundFile
-import com.windscribe.mobile.ui.common.isEnabled
 import com.windscribe.mobile.ui.home.HomeGoto
 import com.windscribe.mobile.ui.serverlist.ServerListItem
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -36,8 +35,8 @@ import com.windscribe.vpn.repository.NotificationRepository
 import com.windscribe.vpn.repository.RepositoryState
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.UserRepository
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.CityAndRegion
+import com.windscribe.vpn.serverlist.entity.Datacenter
+import com.windscribe.vpn.serverlist.entity.DatacenterAndLocation
 import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.state.NetworkInfoManager
@@ -134,7 +133,7 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract val goto: SharedFlow<HomeGoto>
     abstract val newFeedCount: StateFlow<Int>
     abstract fun onConnectButtonClick()
-    abstract fun onCityClick(city: City, isFav: Boolean = false)
+    abstract fun onCityClick(city: Datacenter, isFav: Boolean = false)
     abstract fun onStaticIpClick(staticRegion: StaticRegion)
     abstract fun onConfigClick(config: ConfigFile)
     abstract val toastMessage: StateFlow<ToastMessage>
@@ -249,13 +248,13 @@ class ConnectionViewmodelImpl @Inject constructor(
                 fetchConnectionState()
             } else {
                 try {
-                    val bestCityAndRegion = locationRepository.getBestLocationAsync()
-                    saveLastLocation(bestCityAndRegion)
+                    val bestDatacenterAndLocation = locationRepository.getBestLocationAsync()
+                    saveLastLocation(bestDatacenterAndLocation)
                     _bestLocation.emit(
                         ServerListItem(
-                            bestCityAndRegion.region.id,
-                            bestCityAndRegion.region,
-                            listOf(bestCityAndRegion.city)
+                            bestDatacenterAndLocation.location.id,
+                            bestDatacenterAndLocation.location,
+                            listOf(bestDatacenterAndLocation.datacenter)
                         )
                     )
                     fetchConnectionState()
@@ -289,13 +288,13 @@ class ConnectionViewmodelImpl @Inject constructor(
         }
     }
 
-    private fun saveLastLocation(location: CityAndRegion) {
-        val coordinatesArray = location.city.coordinates.split(",".toRegex()).toTypedArray()
+    private fun saveLastLocation(location: DatacenterAndLocation) {
+        val coordinatesArray = location.datacenter.coordinates.split(",".toRegex()).toTypedArray()
         val lastLocation = LastSelectedLocation(
-            location.city.id,
-            location.city.nodeName,
-            location.city.nickName,
-            location.region.countryCode,
+            location.datacenter.id,
+            location.datacenter.nodeName,
+            location.datacenter.nickName,
+            location.location.countryCode,
             coordinatesArray[0],
             coordinatesArray[1]
         )
@@ -616,9 +615,9 @@ class ConnectionViewmodelImpl @Inject constructor(
 
                 SelectedLocationType.CityLocation -> {
                     try {
-                        val location = localdb.getCityAndRegion(selectedLocation.cityId)
+                        val location = localdb.getDatacenterAndLocation(selectedLocation.cityId)
                         if (location != null) {
-                            onCityClick(location.city)
+                            onCityClick(location.datacenter)
                         } else {
                             showToast("Unable to find selected location in database. Update server list.")
                         }
@@ -630,7 +629,7 @@ class ConnectionViewmodelImpl @Inject constructor(
         }
     }
 
-    override fun onCityClick(city: City, isFav: Boolean) {
+    override fun onCityClick(city: Datacenter, isFav: Boolean) {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastCityClickTime < debounceMillis) {
             logger.debug("Ignoring city click, debounce time not elapsed")
@@ -639,25 +638,34 @@ class ConnectionViewmodelImpl @Inject constructor(
         lastCityClickTime = currentTime
 
         viewModelScope.launch(Dispatchers.IO) {
+            val datacenterAndLocation = localdb.getDatacenterAndLocation(city.id)
+            if (datacenterAndLocation == null) {
+                showToast("Unable to find selected location in database. Update server list.")
+                return@launch
+            }
             try {
                 val isPro = userRepository.user.value?.isPro ?: false
-                if (!city.isEnabled(isPro)) {
+                if (city.status == 0) {
                     _goto.emit(HomeGoto.LocationMaintenance)
                     return@launch
                 }
-                val cityAndRegion = localdb.getCityAndRegion(city.id)
-                if (cityAndRegion == null) {
-                    showToast("Unable to find selected location in database. Update server list.")
+                val hasNoServers = localdb.getServersByDatacenter(city.id).isEmpty()
+                if (hasNoServers) {
+                    if (isPro) {
+                        _goto.emit(HomeGoto.LocationMaintenance)
+                    } else {
+                        _goto.emit(HomeGoto.Upgrade)
+                    }
                     return@launch
                 }
-                val serverStatus = cityAndRegion.region.status
                 val eligibleToConnect =
-                    checkEligibility(cityAndRegion.city.pro, false, serverStatus)
+                    checkEligibility(datacenterAndLocation.datacenter.pro, false, datacenterAndLocation.datacenter.getStatus())
                 if (isFav) {
                     val favourite = localdb.getFavouritesAsync().firstOrNull { it.id == city.id }
                     // Only check for pinned node if this favourite has a pinned IP
                     if (favourite?.pinnedIp != null && favourite.pinnedNodeIp != null) {
-                        val nodeExists = city.nodes.any { it.hostname == favourite.pinnedNodeIp }
+                        val nodes = localdb.getServersByDatacenter(city.id)
+                        val nodeExists = nodes.any { it.hostname == favourite.pinnedNodeIp }
                         if (!nodeExists) {
                             logger.warn("Pinned node IP ${favourite.pinnedNodeIp} not found in city ${city.id} nodes")
                             val errorMessage = resourceHelper.getString(com.windscribe.vpn.R.string.could_not_pin_ip)
@@ -671,7 +679,7 @@ class ConnectionViewmodelImpl @Inject constructor(
                     preferences.globalUserConnectionPreference = true
                     preferences.isConnectingToStaticIp = false
                     preferences.isConnectingToConfigured = false
-                    saveLastLocation(cityAndRegion)
+                    saveLastLocation(datacenterAndLocation)
                     logger.debug("Attempting to connect")
                     appScope.launch {
                         autoConnectionManager.connectInForeground()
@@ -820,13 +828,13 @@ class ConnectionViewmodelImpl @Inject constructor(
     private fun fetchBestLocation() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val bestCityAndRegion = locationRepository.getBestLocationAsync()
+                val bestDatacenterAndLocation = locationRepository.getBestLocationAsync()
                 try {
                     _bestLocation.emit(
                         ServerListItem(
-                            bestCityAndRegion.region.id,
-                            bestCityAndRegion.region,
-                            listOf(bestCityAndRegion.city)
+                            bestDatacenterAndLocation.location.id,
+                            bestDatacenterAndLocation.location,
+                            listOf(bestDatacenterAndLocation.datacenter)
                         )
                     )
                 } catch (ignored: Exception) {

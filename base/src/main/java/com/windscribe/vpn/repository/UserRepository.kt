@@ -16,7 +16,6 @@ import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.services.sso.GoogleSignInManager
@@ -66,7 +65,7 @@ class UserRepository(
         response: UserSessionResponse? = null, callback: (suspend (user: User) -> Unit)? = null
     ) {
         scope.launch(Dispatchers.IO) {
-            response?.let { it ->
+            response?.let {
                 preferenceHelper.getSession = Gson().toJson(it)
                 val newUser = User(it)
                 user.postValue(newUser)
@@ -81,7 +80,7 @@ class UserRepository(
                         Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
                     user.postValue(User(userSession))
                     _userInfo.emit(User(userSession))
-                } catch (ignored: Exception) {
+                } catch (_: Exception) {
                     logger.info("No user is logged in.")
                 }
             }
@@ -96,7 +95,7 @@ class UserRepository(
                 Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
             user.postValue(User(userSession))
             _userInfo.tryEmit(User(userSession))
-        } catch (ignored: Exception) {
+        } catch (_: Exception) {
             logger.info("No user is logged in.")
         }
     }
@@ -125,7 +124,7 @@ class UserRepository(
         }
     }
 
-    suspend fun logout() {
+    fun logout() {
         scope.launch {
             if (appContext.vpnConnectionStateManager.isVPNActive()) {
                 vpnController.disconnectAsync()
@@ -164,7 +163,7 @@ class UserRepository(
         }
     }
 
-    private suspend fun onSessionDeleted() {
+    private fun onSessionDeleted() {
         scope.launch {
             preferenceHelper.sessionHash = null
             preferenceHelper.globalUserConnectionPreference = false

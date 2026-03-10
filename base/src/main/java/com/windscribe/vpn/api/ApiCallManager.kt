@@ -3,6 +3,7 @@
  */
 package com.windscribe.vpn.api
 
+import android.util.Log
 import com.windscribe.vpn.api.response.AddEmailResponse
 import com.windscribe.vpn.api.response.UnblockWgResponse
 import com.windscribe.vpn.api.response.ApiErrorResponse
@@ -13,10 +14,12 @@ import com.windscribe.vpn.api.response.ClaimVoucherCodeResponse
 import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.api.response.GetMyIpResponse
+import com.windscribe.vpn.api.response.LocationResponse
 import com.windscribe.vpn.api.response.NewsFeedNotification
 import com.windscribe.vpn.api.response.PortMapResponse
 import com.windscribe.vpn.api.response.RobertFilterResponse
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
+import com.windscribe.vpn.api.response.ServerResponse
 import com.windscribe.vpn.api.response.SsoResponse
 import com.windscribe.vpn.api.response.StaticIPResponse
 import com.windscribe.vpn.api.response.TicketResponse
@@ -194,15 +197,35 @@ open class ApiCallManager @Inject constructor(
         }
     }
 
-    override suspend fun getSessionGeneric(firebaseToken: String?): GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> {
+    override suspend fun getSessionGeneric(firebaseToken: String?, serverRevision: Long, backup: Boolean): GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> {
         checkSession()
         return suspendCancellableCoroutine { continuation ->
             val callback = wsNetServerAPI.session(
                 preferencesHelper.sessionHash,
                 "",
-                firebaseToken ?: ""
+                firebaseToken ?: "", serverRevision, backup
             ) { code, json ->
                 buildResponse(continuation, code, json, UserSessionResponse::class.java)
+            }
+            continuation.invokeOnCancellation { callback.cancel() }
+        }
+    }
+
+    override suspend fun getLocations(): GenericResponseClass<LocationResponse?, ApiErrorResponse?> {
+        checkSession()
+        return suspendCancellableCoroutine { continuation ->
+            val callback = wsNetServerAPI.getLocations(preferencesHelper.sessionHash) { code, json ->
+                buildResponse(continuation, code, json, LocationResponse::class.java)
+            }
+            continuation.invokeOnCancellation { callback.cancel() }
+        }
+    }
+
+    override suspend fun getServers(backup: Boolean): GenericResponseClass<ServerResponse?, ApiErrorResponse?> {
+        checkSession()
+        return suspendCancellableCoroutine { continuation ->
+            val callback = wsNetServerAPI.getServers(preferencesHelper.sessionHash, backup) { code, json ->
+                buildResponse(continuation, code, json, ServerResponse::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
         }

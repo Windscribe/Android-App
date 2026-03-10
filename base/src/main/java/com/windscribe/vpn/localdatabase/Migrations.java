@@ -122,6 +122,81 @@ public class Migrations {
         }
     };
 
+    public static final Migration migration_38_39 = new Migration(38, 39) {
+        @Override
+        public void migrate(@NonNull final SupportSQLiteDatabase database) {
+            // V2 Federated Server List: Complete migration in single step
+
+            // 1. Create Server table
+            database.execSQL("CREATE TABLE IF NOT EXISTS `Server` ("
+                    + "`server_id` INTEGER NOT NULL, "
+                    + "`hostname` TEXT NOT NULL, "
+                    + "`ip` TEXT NOT NULL, "
+                    + "`ip2` TEXT NOT NULL, "
+                    + "`ip3` TEXT NOT NULL, "
+                    + "`datacenter_id` INTEGER NOT NULL, "
+                    + "`weight` INTEGER NOT NULL, "
+                    + "`health` INTEGER NOT NULL, "
+                    + "PRIMARY KEY(`server_id`))");
+            database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Server_server_id` ON `Server` (`server_id`)");
+
+            // 2. Migrate Region table - remove unused fields, add new fields, NO premium_only
+            database.execSQL("CREATE TABLE IF NOT EXISTS `Region_new` ("
+                    + "`primaryKey` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
+                    + "`region_id` INTEGER NOT NULL, "
+                    + "`name` TEXT, "
+                    + "`country_code` TEXT, "
+                    + "`short_name` TEXT, "
+                    + "`sort_order` INTEGER NOT NULL, "
+                    + "`continent` TEXT)");
+
+            database.execSQL("INSERT INTO `Region_new` "
+                    + "(`primaryKey`, `region_id`, `name`, `country_code`, `short_name`, `sort_order`, `continent`) "
+                    + "SELECT `primaryKey`, `region_id`, `name`, `country_code`, `short_name`, 0, '' "
+                    + "FROM `Region`");
+
+            database.execSQL("DROP TABLE `Region`");
+            database.execSQL("ALTER TABLE `Region_new` RENAME TO `Region`");
+            database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Region_region_id` ON `Region` (`region_id`)");
+
+            // 3. Migrate City table - add new fields for V2
+            database.execSQL("CREATE TABLE IF NOT EXISTS `City_new` ("
+                    + "`primaryKey` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
+                    + "`city_id` INTEGER NOT NULL, "
+                    + "`region_id` INTEGER NOT NULL, "
+                    + "`city` TEXT, "
+                    + "`nick` TEXT, "
+                    + "`gps` TEXT, "
+                    + "`tz` TEXT, "
+                    + "`iata` TEXT, "
+                    + "`status` INTEGER NOT NULL, "
+                    + "`p2p` INTEGER NOT NULL, "
+                    + "`pro` INTEGER NOT NULL, "
+                    + "`wg_pubkey` TEXT, "
+                    + "`wg_endpoint` TEXT, "
+                    + "`ovpn_x509` TEXT, "
+                    + "`link_speed` INTEGER NOT NULL)");
+
+            database.execSQL("INSERT INTO `City_new` "
+                    + "(`primaryKey`, `city_id`, `region_id`, `city`, `nick`, `gps`, `tz`, `iata`, `status`, `p2p`, `pro`, `wg_pubkey`, `wg_endpoint`, `ovpn_x509`, `link_speed`) "
+                    + "SELECT `primaryKey`, `city_id`, `region_id`, `city`, `nick`, `gps`, `tz`, '', 1, 0, 0, `wg_pubkey`, '', `ovpn_x509`, "
+                    + "CASE WHEN `link_speed` IS NULL OR `link_speed` = '' THEN 100 ELSE CAST(`link_speed` AS INTEGER) END "
+                    + "FROM `City`");
+
+            database.execSQL("DROP TABLE `City`");
+            database.execSQL("ALTER TABLE `City_new` RENAME TO `City`");
+
+            // 4. Rename Region table to Location
+            database.execSQL("ALTER TABLE `Region` RENAME TO `Location`");
+
+            // 5. Rename City table to Datacenter
+            database.execSQL("ALTER TABLE `City` RENAME TO `Datacenter`");
+
+            invalidateData();
+            logger.debug("Migrated database from version:38 to version:39 - V2 Complete (Server, Location (renamed from Region), Datacenter (renamed from City))");
+        }
+    };
+
     private static void invalidateData() {
         Windscribe.getAppContext().getPreference().setMigrationRequired(true);
     }

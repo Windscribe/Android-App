@@ -3,11 +3,11 @@
  */
 package com.windscribe.tv.sort
 
-import com.windscribe.vpn.serverlist.entity.RegionAndCities
+import com.windscribe.vpn.serverlist.entity.LocationAndDatacenters
 import java.util.Comparator
 
-class ByRegionName : Comparator<RegionAndCities> {
-    override fun compare(o1: RegionAndCities, o2: RegionAndCities): Int {
-        return o1.region.name.compareTo(o2.region.name)
+class ByRegionName : Comparator<LocationAndDatacenters> {
+    override fun compare(o1: LocationAndDatacenters, o2: LocationAndDatacenters): Int {
+        return o1.location.name.compareTo(o2.location.name)
     }
 }

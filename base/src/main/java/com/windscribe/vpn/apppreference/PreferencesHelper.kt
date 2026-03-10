@@ -61,6 +61,7 @@ interface PreferencesHelper {
     var packetSize: Int
     var pingTestRequired: Boolean
     var portMapVersion: Int
+    var serverRevision: Long
     var purchaseFlowState: String
     var savedLanguage: String
     var savedProtocol: String

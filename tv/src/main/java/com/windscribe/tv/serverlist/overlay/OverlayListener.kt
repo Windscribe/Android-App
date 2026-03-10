@@ -8,5 +8,4 @@ interface OverlayListener {
     fun onExit()
     fun onFavouriteOverlayReady()
     fun onStaticOverlayReady()
-    suspend fun onWindOverlayReady()
 }

@@ -15,7 +15,7 @@ class OverlayFocusAware : ConstraintLayout {
         R.id.all_server_view_static
     )
     private val headerIds = intArrayOf(
-        R.id.header_item_all, R.id.header_item_fav, R.id.header_item_wind,
+        R.id.header_item_all, R.id.header_item_fav,
         R.id.header_item_static
     )
     private var currentFragment = 0

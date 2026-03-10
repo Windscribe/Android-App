@@ -167,6 +167,7 @@ object DataStoreKeys {
     // System
     val DEVICE_ID = stringPreferencesKey(PreferencesKeyConstants.DEVICE_ID)
     val PORT_MAP_VERSION = intPreferencesKey(PreferencesKeyConstants.PORT_MAP_VERSION)
+    val SERVER_REVISION = longPreferencesKey(PreferencesKeyConstants.SERVER_REVISION)
 
     // Complex types (JSON serialized)
     val INSTALLED_APPS_DATA = stringPreferencesKey(PreferencesKeyConstants.INSTALLED_APPS_DATA)

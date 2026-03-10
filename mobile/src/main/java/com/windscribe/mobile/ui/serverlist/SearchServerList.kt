@@ -1,6 +1,7 @@
 package com.windscribe.mobile.ui.serverlist
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,12 +52,11 @@ import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.helper.hapticClickable
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
-import com.windscribe.mobile.ui.common.FavouriteIcon
-import com.windscribe.mobile.ui.common.LatencyIcon
-import com.windscribe.mobile.ui.common.ServerListIcon
-import com.windscribe.mobile.ui.common.ServerNodeName
+import com.windscribe.mobile.ui.common.DataCenterFavouriteIcon
+import com.windscribe.mobile.ui.common.DataCenterLatencyIcon
+import com.windscribe.mobile.ui.common.DataCenterIcon
+import com.windscribe.mobile.ui.common.DataCenterName
 import com.windscribe.mobile.ui.common.TenGIcon
-import com.windscribe.mobile.ui.common.averageHealth
 import com.windscribe.mobile.ui.common.healthColor
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.helper.miniumHealthStart
@@ -65,7 +65,9 @@ import com.windscribe.mobile.ui.home.UserState
 import com.windscribe.mobile.ui.theme.serverListBackgroundColor
 import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.vpn.commonutils.FlagIconResource
-import com.windscribe.vpn.serverlist.entity.City
+import com.windscribe.vpn.serverlist.entity.Datacenter
+
+private const val MIN_HEALTH_VALUE = 50
 
 @Composable
 fun SearchServerList(viewModel: ServerViewModel, connectionViewModel: ConnectionViewmodel, homeViewmodel: HomeViewmodel) {
@@ -99,7 +101,7 @@ fun SearchServerList(viewModel: ServerViewModel, connectionViewModel: Connection
                     LocationCount(viewModel)
                     Spacer(modifier = Modifier.height(8.dp))
                     (state as ListState.Success).data.forEach { item ->
-                        ExpandableListItem(
+                        LocationItem(
                             viewModel,
                             connectionViewModel,
                             homeViewmodel,
@@ -120,7 +122,7 @@ fun SearchServerList(viewModel: ServerViewModel, connectionViewModel: Connection
 }
 
 @Composable
-private fun ExpandableListItem(
+private fun LocationItem(
     viewModel: ServerViewModel,
     connectionViewModel: ConnectionViewmodel,
     homeViewmodel: HomeViewmodel,
@@ -129,12 +131,8 @@ private fun ExpandableListItem(
     onExpandChange: (Boolean) -> Unit
 ) {
     val userState by homeViewmodel.userState.collectAsState()
-    var health = averageHealth(item)
-    if (health < miniumHealthStart){
-        health = miniumHealthStart
-    }
-    val color = colorResource(healthColor(health))
-    val angle = (health / 100f) * 360f
+    val locationHealth by viewModel.observeAverageRegionHealth(item.datacenters).collectAsState(initial = MIN_HEALTH_VALUE)
+    val isLocationPremiumOnly by viewModel.observeRegionPremiumStatus(item.datacenters).collectAsState(initial = false)
     val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     Column(
         verticalArrangement = Arrangement.Center,
@@ -150,13 +148,11 @@ private fun ExpandableListItem(
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SplitBorderCircle(
-                angle,
-                color,
-                MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.20f),
-                FlagIconResource.getSmallFlag(item.region.countryCode),
-                userState !is UserState.Pro && item.region.premium == 1,
-                showLocationLoad
+            LocationSplitBorderCircle(
+                health = locationHealth,
+                flagRes = FlagIconResource.getSmallFlag(item.region.countryCode),
+                showProIcon = userState !is UserState.Pro && isLocationPremiumOnly,
+                showLocationLoad = showLocationLoad
             )
             Spacer(modifier = Modifier.size(16.dp))
             Text(
@@ -187,8 +183,8 @@ private fun ExpandableListItem(
         }
         AnimatedVisibility(visible = expanded) {
             Column {
-                item.cities.forEach {
-                    ServerListItemView(it, viewModel, connectionViewModel, homeViewmodel)
+                item.datacenters.forEach {
+                    DataCenterItem(it, viewModel, connectionViewModel, homeViewmodel)
                 }
             }
         }
@@ -196,8 +192,8 @@ private fun ExpandableListItem(
 }
 
 @Composable
-private fun ServerListItemView(
-    item: City,
+private fun DataCenterItem(
+    item: Datacenter,
     viewModel: ServerViewModel,
     connectionViewModel: ConnectionViewmodel,
     homeViewmodel: HomeViewmodel
@@ -208,12 +204,7 @@ private fun ServerListItemView(
     if (favouriteState is ListState.Success) {
         isFavorite = (favouriteState as ListState.Success).data.any { it.city.id == item.id }
     }
-    var health = item.health
-    if (health < miniumHealthStart){
-        health = miniumHealthStart
-    }
-    val color = colorResource(healthColor(health))
-    val angle = (health / 100f) * 360f
+    val dataCenterHealth by viewModel.observeAverageHealth(item.id).collectAsState(initial = MIN_HEALTH_VALUE)
     val latencyState by viewModel.latencyListState.collectAsState()
     val latency by rememberUpdatedState(
         if (latencyState is ListState.Success) {
@@ -222,6 +213,7 @@ private fun ServerListItemView(
     )
     val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     val interactionSource = remember { MutableInteractionSource() }
+    val hasServers by viewModel.observeDatacenterServers(item.id).collectAsState(initial = false)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -236,16 +228,16 @@ private fun ServerListItemView(
             .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        ServerListIcon(item, userState, angle, color, showLocationLoad)
+        DataCenterIcon(item, userState, dataCenterHealth, showLocationLoad, hasServers)
         Spacer(modifier = Modifier.width(8.dp))
-        ServerNodeName("${item.nodeName} ${item.nickName}", Modifier.weight(1f))
-        if (item.linkSpeed == "10000") {
+        DataCenterName("${item.nodeName} ${item.nickName}", Modifier.weight(1f))
+        if (item.linkSpeed == 10000) {
             TenGIcon()
             Spacer(modifier = Modifier.width(12.dp))
         }
-        LatencyIcon(latency)
+        DataCenterLatencyIcon(latency)
         Spacer(modifier = Modifier.width(12.dp))
-        FavouriteIcon(isFavorite) {
+        DataCenterFavouriteIcon(isFavorite) {
             viewModel.toggleFavorite(item)
         }
     }

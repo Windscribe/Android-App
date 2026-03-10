@@ -316,6 +316,9 @@ open class Windscribe : MultiDexApplication() {
                 // Only Recording for legacy to new version
                 preference.newInstallation = PreferencesKeyConstants.I_NEW
                 preference.sessionHash = null
+                // Set migration flag on fresh app launch to force full server list update
+                preference.migrationRequired = true
+                logger.debug("Fresh app launch - setting migration flag for full server list update")
             }
         }
     }

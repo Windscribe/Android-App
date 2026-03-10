@@ -3,6 +3,7 @@
  */
 package com.windscribe.vpn.repository
 
+import android.R.attr.host
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.utils.SelectedLocationType
@@ -10,9 +11,9 @@ import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.localdatabase.LocalDbInterface
-import com.windscribe.vpn.serverlist.entity.City
-import com.windscribe.vpn.serverlist.entity.CityAndRegion
-import com.windscribe.vpn.serverlist.entity.Node
+import com.windscribe.vpn.serverlist.entity.Datacenter
+import com.windscribe.vpn.serverlist.entity.DatacenterAndLocation
+import com.windscribe.vpn.serverlist.entity.Server
 import com.wsnet.lib.WSNetPingManager
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
@@ -72,10 +73,10 @@ class LocationRepository @Inject constructor(
             }
     }
 
-    suspend fun getBestLocationAsync(): CityAndRegion {
+    suspend fun getBestLocationAsync(): DatacenterAndLocation {
         val locationId = runCatching { getLowestPingLocation() }
             .getOrElse { getRandomLocation() }
-        return localDbInterface.getCityAndRegion(locationId) ?: throw Exception("Best location not found")
+        return localDbInterface.getDatacenterAndLocation(locationId) ?: throw Exception("Best location not found")
     }
 
     suspend fun updateLocation(): Int {
@@ -92,8 +93,7 @@ class LocationRepository @Inject constructor(
     suspend fun isNodeAvailable(): Boolean {
         if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CityLocation) {
             return runCatching {
-                val city = localDbInterface.getCityByIDAsync(preferencesHelper.selectedCity)
-                val nodes = city.getNodes()
+                val nodes = localDbInterface.getServersByDatacenter(preferencesHelper.selectedCity)
                 ipAvailable(preferencesHelper.selectedIp, nodes)
             }.getOrDefault(false)
         } else {
@@ -105,23 +105,14 @@ class LocationRepository @Inject constructor(
         val selectedCity = preferencesHelper.selectedCity
         logger.debug("Getting sister city.")
         return runCatching {
-            val region = localDbInterface.getRegionIdFromCityAsync(selectedCity)
-            val cities = localDbInterface.getAllCitiesAsync(region)
-
-            val city = if (userRepository.get().user.value?.isPro == true) {
-                logger.debug("User is pro getting random location.")
-                cities.random()
-            } else {
-                logger.debug("User is not pro getting free location.")
-                val freeLocation = cities.shuffled().firstOrNull { it.pro == 0 }
-                freeLocation ?: throw Exception("No free city found in RegionId: $region")
-            }
-
-            if (city.nodesAvailable()) {
+            val region = localDbInterface.getLocationIdFromDatacenterAsync(selectedCity)
+            val cities = localDbInterface.getAllDatacentersAsync(region)
+            val city =  cities.random()
+            if (localDbInterface.getServersByDatacenter(city.getId()).isNotEmpty()) {
                 logger.debug("Found sister city${city.getId()}")
                 city.getId()
             } else {
-                throw Exception("No nodes available in sister city")
+                throw Exception("No servers available in sister datacenter")
             }
         }.getOrElse {
             logger.debug("No sister location found.")
@@ -131,23 +122,23 @@ class LocationRepository @Inject constructor(
 
     private suspend fun getLowestPingLocation(): Int {
         val pingId = localDbInterface.getLowestPingIdAsync()
-        val city = localDbInterface.getCityByIDAsync(pingId)
+        val city = localDbInterface.getDatacenterByIDAsync(pingId)
         return city.getId()
     }
 
     private suspend fun getRandomLocation(): Int {
         val isUserPro = userRepository.get().user.value?.isPro ?: false
         return runCatching {
-            val cities = localDbInterface.getCitiesAsync()
+            val cities = localDbInterface.getDatacentersAsync()
             val filteredLocations = cities.filter { city ->
-                val isLocationPro = city.pro == 1
-                (!isLocationPro || isUserPro) && city.nodesAvailable()
+                val servers = localDbInterface.getServersByDatacenter(city.id)
+                servers.isNotEmpty()
             }
             pickBestCityId(filteredLocations)
         }.getOrDefault(-1)
     }
 
-    private suspend fun pickBestCityId(cities: List<City>): Int {
+    private suspend fun pickBestCityId(cities: List<Datacenter>): Int {
         // Return cached result if available
         cachedTimezoneBasedLocationId?.let {
             return it
@@ -158,7 +149,7 @@ class LocationRepository @Inject constructor(
         }
         val userTimeZone = TimeZone.getDefault()
         val userOffsetMinutes = userTimeZone.getOffset(System.currentTimeMillis()) / (1000 * 60)
-        data class CityWithTimeDiff(val city: City, val timeDiffMinutes: Int, val tzScore: Int)
+        data class CityWithTimeDiff(val city: Datacenter, val timeDiffMinutes: Int, val tzScore: Int)
 
         val citiesWithTimezone = cities.map { city ->
             val cityTimeZone = TimeZone.getTimeZone(city.tz)
@@ -201,21 +192,24 @@ class LocationRepository @Inject constructor(
         return bestCityId
     }
 
-    private suspend fun pingCity(city: City): Int {
-        val ip = city.pingIp ?: return -1
-        val host = city.pingHost ?: return -1
-        if (ip.isEmpty() || host.isEmpty()) return -1
+    private suspend fun pingCity(city: Datacenter): Int {
+        val pingIpAndHost = localDbInterface.getPingIpAndHost(city.id) ?: return -1
+        val pingType = advanceParameterRepository.pingType()
         return withTimeoutOrNull(500) {
             suspendCancellableCoroutine { continuation ->
-                val pingType = advanceParameterRepository.pingType()
-                pingManager.ping(ip, host, pingType) { _, _, latency, _ ->
-                    continuation.resume(latency)
+                val callback = pingManager.ping(pingIpAndHost.first, pingIpAndHost.second, pingType) { _, _, latency, _ ->
+                    if (continuation.isActive) {
+                        continuation.resume(latency)
+                    }
+                }
+                continuation.invokeOnCancellation {
+                    callback.cancel()
                 }
             }
         } ?: -1
     }
 
-    private fun ipAvailable(ip: String?, nodes: List<Node>): Boolean {
+    private fun ipAvailable(ip: String?, nodes: List<Server>): Boolean {
         return nodes.any {
             ip == it.hostname || ip == it.ip || ip == it.ip2 || ip == it.ip3
         }
@@ -223,21 +217,11 @@ class LocationRepository @Inject constructor(
 
     private suspend fun isCityAvailable(id: Int, userPro: Int): Boolean {
         return runCatching {
-            val cityAndRegion = localDbInterface.getCityAndRegion(id) ?: return@runCatching false
-            if (cityAndRegion.region == null) return@runCatching false
-            val isLocationPro = cityAndRegion.city.pro == 1
-            val isUserPro = userPro == 1
-
+            val cityAndRegion = localDbInterface.getDatacenterAndLocation(id) ?: return@runCatching false
+            if (cityAndRegion.location == null) return@runCatching false
+            val nodes = localDbInterface.getServersByDatacenter(cityAndRegion.datacenter.id)
             when {
-                !isUserPro && isLocationPro -> {
-                    logger.debug("Location is premium user has no access to it.")
-                    false
-                }
-                !cityAndRegion.city.nodesAvailable() -> {
-                    false
-                }
-                cityAndRegion.region.status == NetworkKeyConstants.SERVER_STATUS_TEMPORARILY_UNAVAILABLE -> {
-                    logger.debug("City location : server status is temporary unavailable.")
+                nodes.isEmpty() -> {
                     false
                 }
                 else -> true
@@ -274,13 +258,13 @@ class LocationRepository @Inject constructor(
         }.getOrDefault(false)
     }
 
-    fun getSelectedCityAndRegion(): CityAndRegion? {
+    fun getSelectedCityAndRegion(): DatacenterAndLocation? {
         val selectedCityId = preferencesHelper.selectedCity
         if (selectedCityId == -1 || WindUtilities.getSourceTypeBlocking() != SelectedLocationType.CityLocation) {
             return null
         }
         return runCatching {
-            localDbInterface.getCityAndRegion(selectedCityId)
+            localDbInterface.getDatacenterAndLocation(selectedCityId)
         }.getOrNull()
     }
 }

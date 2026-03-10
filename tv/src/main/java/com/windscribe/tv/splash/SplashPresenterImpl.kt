@@ -101,7 +101,7 @@ class SplashPresenterImpl @Inject constructor(
                 try {
                     // Check if server data is available (check if any cities exist)
                     val serverListAvailable = try {
-                        localDbInterface.getCitiesAsync().count() > 0
+                        localDbInterface.getDatacentersAsync().count() > 0
                     } catch (_: Exception) {
                         false
                     }

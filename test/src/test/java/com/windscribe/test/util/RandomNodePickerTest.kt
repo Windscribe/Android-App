@@ -1,7 +1,7 @@
 package com.windscribe.test.util
 
 import com.windscribe.vpn.backend.Util
-import com.windscribe.vpn.serverlist.entity.Node
+import com.windscribe.vpn.serverlist.entity.Server
 import org.junit.Test
 import kotlin.random.Random
 
@@ -9,17 +9,24 @@ class RandomNodePickerTest {
 
     @Test
     fun testRandomNodePicker() {
-        val listOfNodes = mutableListOf<Node>()
+        val listOfServers = mutableListOf<Server>()
         for (i in 0..Random.nextInt(10)) {
-            val node = Node()
-            node.hostname = "$i"
-            node.weight = Random.nextInt(5)
-            listOfNodes.add(node)
+            val server = Server(
+                id = i,
+                hostname = "$i",
+                ip = "127.0.0.$i",
+                ip2 = "127.0.0.$i",
+                ip3 = "127.0.0.$i",
+                datacenterId = 1,
+                weight = Random.nextInt(5),
+                health = 100
+            )
+            listOfServers.add(server)
         }
-        val lastUsed = Random.nextInt(listOfNodes.size - 1)
+        val lastUsed = Random.nextInt(listOfServers.size - 1)
         val attempt = Random.nextInt(1)
-        val chosenIndex = Util.getRandomNode(lastUsed, attempt, listOfNodes)
+        val chosenIndex = Util.getRandomNode(lastUsed, attempt, listOfServers)
         assert(chosenIndex != lastUsed)
-        assert(chosenIndex < listOfNodes.size)
+        assert(chosenIndex < listOfServers.size)
     }
 }
