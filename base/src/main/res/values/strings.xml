@@ -497,6 +497,8 @@ last chosen location.</string>
     <string name="amnezia_preset_description">Choose preset configuration for anti-censorship</string>
     <string name="amnezia_preset_russian_quick">Russian Quick (No Junk)</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">IP Version</string>
+    <string name="ipv6_mode_description">Choose which IP version to use for VPN connections.</string>
     <string name="auto_connect">Auto-Connect</string>
     <string name="auto_connect_explainer">Connects to last used location when the app launches or joins a network.</string>
     <string name="save">Save</string>

@@ -464,7 +464,7 @@ class VPNProfileCreator @Inject constructor(
             config: ProtocolInformation
     ): String {
         val builder = Config.Builder()
-        when (val remoteParamsResponse = wgConfigRepository.getWgParams(vpnParameters.hostName, vpnParameters.publicKey, wgForceInit.getAndSet(false))) {
+        when (val remoteParamsResponse = wgConfigRepository.getWgParams(vpnParameters.hostName, vpnParameters.publicKey, wgForceInit.getAndSet(false), supportsV6 = vpnParameters.supportsV6)) {
             is CallResult.Success<WgRemoteParams> -> {
                 val anInterface = createWireGuardInterface(remoteParamsResponse.data)
                 builder.setInterface(anInterface)

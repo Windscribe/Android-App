@@ -17,5 +17,7 @@ data class WgInitConfig(
     @SerializedName("AllowedIPs")
     val allowedIPs: String,
     @SerializedName("HashedCIDR")
-    val hashedCIDR: List<String>
-)
+    val hashedCIDR: List<String>,
+    @SerializedName("HashedCIDRv6")
+    val hashedCIDRV6: List<String>
+) : Serializable

@@ -182,6 +182,8 @@ fun ConnectionScreen(viewModel: ConnectionViewModel? = null) {
                 DecoyTrafficMode(viewModel)
                 Spacer(modifier = Modifier.height(16.dp))
                 AntiCensorshipMode(viewModel, scrollState)
+                Spacer(modifier = Modifier.height(16.dp))
+                IPVersionMode(viewModel)
             }
         }
     }
@@ -305,6 +307,89 @@ private fun AntiCensorshipMode(viewModel: ConnectionViewModel?, scrollState: Scr
                 viewModel?.onUnblockWgPresetSelected(it.key)
             }
         }
+    }
+}
+
+@Composable
+private fun IPVersionMode(viewModel: ConnectionViewModel?) {
+    val ipVersionModes by viewModel?.ipVersionModes?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
+    val ipVersionMode by viewModel?.ipVersionMode?.collectAsState() ?: remember { mutableStateOf("ipv4") }
+    val expanded = remember { mutableStateOf(false) }
+    val selectedItem = ipVersionModes.firstOrNull { it.key == ipVersionMode } ?: ipVersionModes.firstOrNull()
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
+                shape = RoundedCornerShape(size = 12.dp)
+            )
+            .padding(16.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Image(
+                painterResource(com.windscribe.mobile.R.drawable.ip),
+                contentDescription = "",
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryTextColor)
+            )
+            Spacer(modifier = Modifier.padding(8.dp))
+            Text(
+                stringResource(R.string.ipv6_mode),
+                style = font16,
+                color = MaterialTheme.colorScheme.primaryTextColor
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Box(
+                modifier = Modifier
+                    .clickable { expanded.value = !expanded.value }
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = selectedItem?.label ?: "",
+                        style = font16,
+                        color = MaterialTheme.colorScheme.preferencesSubtitleColor
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        painter = painterResource(id = com.windscribe.mobile.R.drawable.ic_cm_icon),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.primaryTextColor
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = expanded.value,
+                    onDismissRequest = { expanded.value = false },
+                    modifier = Modifier.background(MaterialTheme.colorScheme.primaryTextColor)
+                ) {
+                    ipVersionModes.forEach { mode ->
+                        DropdownMenuItem(
+                            onClick = {
+                                expanded.value = false
+                                viewModel?.onIpVersionModeSelected(mode)
+                            },
+                            text = {
+                                Text(
+                                    text = mode.label ?: mode.key,
+                                    color = MaterialTheme.colorScheme.backgroundColor,
+                                    style = font16,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.padding(8.dp))
+        Text(
+            text = selectedItem?.description ?: "",
+            style = font14.copy(fontWeight = FontWeight.Normal),
+            color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+            textAlign = TextAlign.Start
+        )
     }
 }
 

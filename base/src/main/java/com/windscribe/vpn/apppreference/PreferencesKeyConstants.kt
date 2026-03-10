@@ -155,4 +155,7 @@ object PreferencesKeyConstants {
 
     const val CUSTOM_ICON = "custom_icon"
     const val SELECTED_UNBLOCK_WG_PARAM = "selected_unblock_wg_param"
+    const val IPV6_MODE = "ipv6_mode"
+    const val IPV6_MODE_IPV4_ONLY = "ipv4"
+    const val IPV6_MODE_AUTO = "auto"
 }

@@ -193,6 +193,7 @@ open class BaseApplicationModule {
             .addMigrations(Migrations.migration_36_37)
             .addMigrations(Migrations.migration_37_38)
             .addMigrations(Migrations.migration_38_39)
+            .addMigrations(Migrations.migration_39_40)
             .build()
 
     }

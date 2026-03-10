@@ -197,6 +197,16 @@ public class Migrations {
         }
     };
 
+    public static final Migration migration_39_40 = new Migration(39, 40) {
+        @Override
+        public void migrate(@NonNull final SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE Server"
+                    + " ADD COLUMN ipv6 INTEGER NOT NULL DEFAULT 0");
+            invalidateData();
+            logger.debug("Migrated database from version:39 to version:40");
+        }
+    };
+
     private static void invalidateData() {
         Windscribe.getAppContext().getPreference().setMigrationRequired(true);
     }

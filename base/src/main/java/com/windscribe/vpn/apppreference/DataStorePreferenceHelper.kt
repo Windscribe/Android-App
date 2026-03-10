@@ -1014,4 +1014,8 @@ class DataStorePreferenceHelper(
         set(value) {
             setString(DataStoreKeys.SELECTED_UNBLOCK_WG_PARAM, value)
         }
+
+    override var ipv6Mode: String
+        get() = runBlocking { getString(DataStoreKeys.IPV6_MODE, PreferencesKeyConstants.IPV6_MODE_IPV4_ONLY) }
+        set(value) = setString(DataStoreKeys.IPV6_MODE, value)
 }

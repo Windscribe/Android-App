@@ -25,7 +25,7 @@ data class ServerData(
     @Expose
     val id: Int,
 
-    @SerializedName("hostname")
+    @SerializedName("host")
     @Expose
     val hostname: String,
 
@@ -41,7 +41,7 @@ data class ServerData(
     @Expose
     val ip3: String,
 
-    @SerializedName("datacenter_id")
+    @SerializedName("dc_id")
     @Expose
     val datacenterId: Int,
 
@@ -49,7 +49,11 @@ data class ServerData(
     @Expose
     val weight: Int,
 
-    @SerializedName("health")
+    @SerializedName("net_load")
     @Expose
-    val health: Int
+    val health: Int,
+
+    @SerializedName("ipv6")
+    @Expose
+    val ipv6: Int = 0
 )

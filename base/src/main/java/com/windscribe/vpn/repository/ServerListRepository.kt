@@ -292,7 +292,8 @@ class ServerListRepository @Inject constructor(
                             ip3 = serverData.ip3,
                             datacenterId = serverData.datacenterId,
                             weight = serverData.weight,
-                            health = serverData.health
+                            health = serverData.health,
+                            ipv6 = serverData.ipv6
                         )
                     }
                     localDbInterface.deleteAllServers()

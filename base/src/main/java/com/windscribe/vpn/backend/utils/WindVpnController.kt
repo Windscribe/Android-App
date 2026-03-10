@@ -185,7 +185,7 @@ open class WindVpnController @Inject constructor(
             coordinatesArray[1]
         )
         val vpnParameters =
-            VPNParameters(ikev2Ip, udpIp, tcpIp, stealthIp, hostname, publicKey, city.ovpnX509)
+            VPNParameters(ikev2Ip, udpIp, tcpIp, stealthIp, hostname, publicKey, city.ovpnX509, selectedNode.ipv6 == 1)
         when (config.protocol) {
             PROTO_IKev2 -> {
                 return vpnProfileCreator.createIkEV2Profile(

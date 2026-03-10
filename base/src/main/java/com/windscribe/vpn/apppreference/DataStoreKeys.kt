@@ -192,6 +192,7 @@ object DataStoreKeys {
     val STATIC_IP_CREDENTIALS = stringPreferencesKey(PreferencesKeyConstants.STATIC_IP_CREDENTIAL)
 
     val SELECTED_UNBLOCK_WG_PARAM = stringPreferencesKey(PreferencesKeyConstants.SELECTED_UNBLOCK_WG_PARAM)
+    val IPV6_MODE = stringPreferencesKey(PreferencesKeyConstants.IPV6_MODE)
 
     // OpenVPN Server Config (base64 encoded config)
     val OPEN_VPN_SERVER_CONFIG =

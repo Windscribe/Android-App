@@ -294,8 +294,14 @@ public final class GoBackend implements Backend {
             for (final String includedApplication : config.getInterface().getIncludedApplications())
                 builder.addAllowedApplication(includedApplication);
 
-            for (final InetNetwork addr : config.getInterface().getAddresses())
+            // Check if IPv6 is configured by examining interface addresses
+            boolean hasIPv6Address = false;
+            for (final InetNetwork addr : config.getInterface().getAddresses()) {
                 builder.addAddress(addr.getAddress(), addr.getMask());
+                if (addr.getAddress() instanceof java.net.Inet6Address) {
+                    hasIPv6Address = true;
+                }
+            }
 
             for (final InetAddress addr : config.getInterface().getDnsServers())
                 builder.addDnsServer(addr.getHostAddress());
@@ -308,7 +314,8 @@ public final class GoBackend implements Backend {
                 for (final InetNetwork addr : peer.getAllowedIps()) {
                     if (addr.getMask() == 0)
                         sawDefaultRoute = true;
-                    if (!addr.toString().equals("::/0")){
+                    // Skip ::/0 route only if IPv6 is not configured
+                    if (!addr.toString().equals("::/0") || hasIPv6Address){
                         builder.addRoute(addr.getAddress(), addr.getMask());
                     }
                 }

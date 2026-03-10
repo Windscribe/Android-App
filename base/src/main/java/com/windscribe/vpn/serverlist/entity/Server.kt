@@ -57,5 +57,10 @@ data class Server(
     @SerializedName("health")
     @Expose
     @ColumnInfo(name = "health")
-    val health: Int
+    val health: Int,
+
+    @SerializedName("ipv6")
+    @Expose
+    @ColumnInfo(name = "ipv6", defaultValue = "0")
+    val ipv6: Int = 0
 )

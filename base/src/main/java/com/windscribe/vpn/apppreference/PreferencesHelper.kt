@@ -153,4 +153,5 @@ interface PreferencesHelper {
     var customIcon: String
     val customIconFlow: kotlinx.coroutines.flow.Flow<String>
     var selectedUnblockWgParam: String?
+    var ipv6Mode: String
 }
