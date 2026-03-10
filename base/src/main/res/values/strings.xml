@@ -499,6 +499,11 @@ last chosen location.</string>
     <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
     <string name="ipv6_mode">IP Version</string>
     <string name="ipv6_mode_description">Choose which IP version to use for VPN connections.</string>
+    <string name="ip_stack">IP Stack</string>
+    <string name="ip_stack_description">Configure IP stack for VPN connections.</string>
+    <string name="egress">Egress</string>
+    <string name="ingress">Ingress</string>
+    <string name="ipv4_only">IPv4 Only</string>
     <string name="auto_connect">Auto-Connect</string>
     <string name="auto_connect_explainer">Connects to last used location when the app launches or joins a network.</string>
     <string name="save">Save</string>

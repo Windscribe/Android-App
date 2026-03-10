@@ -75,9 +75,12 @@ abstract class ConnectionViewModel : ViewModel() {
     abstract val unblockWgSelectedPreset: StateFlow<String>
     abstract val unblockWgPresets: StateFlow<List<DropDownStringItem>>
     abstract fun onUnblockWgPresetSelected(title: String)
-    abstract val ipVersionMode: StateFlow<String>
-    abstract val ipVersionModes: StateFlow<List<DropDownStringItem>>
-    abstract fun onIpVersionModeSelected(mode: DropDownStringItem)
+    abstract val ipStackEgressMode: StateFlow<String>
+    abstract val ipStackEgressModes: StateFlow<List<DropDownStringItem>>
+    abstract fun onIpStackEgressModeSelected(mode: DropDownStringItem)
+    abstract val ipStackIngressMode: StateFlow<String>
+    abstract val ipStackIngressModes: StateFlow<List<DropDownStringItem>>
+    abstract fun onIpStackIngressModeSelected(mode: DropDownStringItem)
     abstract fun onPacketSizeModeSelected(auto: Boolean)
     abstract val packetSize: StateFlow<Int>
     abstract fun onPacketSizeSaved()
@@ -160,21 +163,34 @@ class ConnectionViewModelImpl(
     private val _unblockWgPresets = MutableStateFlow(emptyList<DropDownStringItem>())
     override val unblockWgPresets: StateFlow<List<DropDownStringItem>> = _unblockWgPresets
 
-    private val _ipVersionMode = MutableStateFlow(preferencesHelper.ipv6Mode)
-    override val ipVersionMode: StateFlow<String> = _ipVersionMode
-    private val _ipVersionModes = MutableStateFlow(listOf(
-        DropDownStringItem(
-            com.windscribe.vpn.apppreference.PreferencesKeyConstants.IPV6_MODE_IPV4_ONLY,
-            "IPv4 Only",
-            "Connect using IPv4 addresses only."
-        ),
+    private val _ipStackEgressMode = MutableStateFlow(preferencesHelper.ipv6Mode)
+    override val ipStackEgressMode: StateFlow<String> = _ipStackEgressMode
+    private val _ipStackEgressModes = MutableStateFlow(listOf(
         DropDownStringItem(
             com.windscribe.vpn.apppreference.PreferencesKeyConstants.IPV6_MODE_AUTO,
-            "Auto",
-            "Automatically select between IPv4 and IPv6 based on server support."
+            "Auto"
+        ),
+        DropDownStringItem(
+            com.windscribe.vpn.apppreference.PreferencesKeyConstants.IPV6_MODE_IPV4_ONLY,
+            "IPv4 Only"
         )
     ))
-    override val ipVersionModes: StateFlow<List<DropDownStringItem>> = _ipVersionModes
+    override val ipStackEgressModes: StateFlow<List<DropDownStringItem>> = _ipStackEgressModes
+
+    // Ingress mode (placeholder - not connected to preferences yet)
+    private val _ipStackIngressMode = MutableStateFlow(com.windscribe.vpn.apppreference.PreferencesKeyConstants.IPV6_MODE_AUTO)
+    override val ipStackIngressMode: StateFlow<String> = _ipStackIngressMode
+    private val _ipStackIngressModes = MutableStateFlow(listOf(
+        DropDownStringItem(
+            com.windscribe.vpn.apppreference.PreferencesKeyConstants.IPV6_MODE_AUTO,
+            "Auto"
+        ),
+        DropDownStringItem(
+            com.windscribe.vpn.apppreference.PreferencesKeyConstants.IPV6_MODE_IPV4_ONLY,
+            "IPv4 Only"
+        )
+    ))
+    override val ipStackIngressModes: StateFlow<List<DropDownStringItem>> = _ipStackIngressModes
 
     init {
         loadPortMapItems()
@@ -389,10 +405,17 @@ class ConnectionViewModelImpl(
         }
     }
 
-    override fun onIpVersionModeSelected(mode: DropDownStringItem) {
+    override fun onIpStackEgressModeSelected(mode: DropDownStringItem) {
         viewModelScope.launch {
-            _ipVersionMode.emit(mode.key)
+            _ipStackEgressMode.emit(mode.key)
             preferencesHelper.ipv6Mode = mode.key
+        }
+    }
+
+    override fun onIpStackIngressModeSelected(mode: DropDownStringItem) {
+        viewModelScope.launch {
+            _ipStackIngressMode.emit(mode.key)
+            // Not connected to preferences yet - placeholder for future use
         }
     }
 

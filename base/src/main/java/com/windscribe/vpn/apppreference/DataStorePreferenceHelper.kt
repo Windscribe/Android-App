@@ -1016,6 +1016,6 @@ class DataStorePreferenceHelper(
         }
 
     override var ipv6Mode: String
-        get() = runBlocking { getString(DataStoreKeys.IPV6_MODE, PreferencesKeyConstants.IPV6_MODE_IPV4_ONLY) }
+        get() = runBlocking { getString(DataStoreKeys.IPV6_MODE, PreferencesKeyConstants.IPV6_MODE_AUTO) }
         set(value) = setString(DataStoreKeys.IPV6_MODE, value)
 }
