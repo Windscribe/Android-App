@@ -39,7 +39,8 @@ import com.windscribe.mobile.ui.theme.font24
 @Composable
 fun ManualModeFailedScreen(appStartActivityViewModel: AppStartActivityViewModel? = null) {
     val navController = LocalNavController.current
-    var isNavigating by remember { mutableStateOf(false) }
+    var isSwitchToAutoClicked by remember { mutableStateOf(false) }
+    var isCancelClicked by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -80,23 +81,23 @@ fun ManualModeFailedScreen(appStartActivityViewModel: AppStartActivityViewModel?
             NextButton(
                 Modifier,
                 text = stringResource(com.windscribe.vpn.R.string.switch_to_auto),
-                enabled = !isNavigating
+                enabled = !isSwitchToAutoClicked
             ) {
-                if (!isNavigating) {
-                    isNavigating = true
+                if (!isSwitchToAutoClicked && !isCancelClicked) {
+                    isSwitchToAutoClicked = true
                     appStartActivityViewModel?.autoConnectionModeCallback?.onSwitchToAutoMode()
                     navController.popBackStack()
                 }
             }
             TextButton(
                 onClick = {
-                    if (!isNavigating) {
-                        isNavigating = true
+                    if (!isSwitchToAutoClicked && !isCancelClicked) {
+                        isCancelClicked = true
                         appStartActivityViewModel?.autoConnectionModeCallback?.onCancel()
                         navController.popBackStack()
                     }
                 },
-                enabled = !isNavigating
+                enabled = !isCancelClicked
             ) {
                 Text(
                     stringResource(com.windscribe.vpn.R.string.cancel),
