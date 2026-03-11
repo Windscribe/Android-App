@@ -52,15 +52,17 @@ class OpenVPNBackend @Inject constructor(
     private var stickyDisconnectEvent = false
     private val openVPNLogger = LoggerFactory.getLogger("openvpn")
     var service: OpenVPNWrapperService? = null
+
+    private val logListener = VpnStatus.LogListener {
+        if(it.logLevel == VpnStatus.LogLevel.INFO || it.logLevel == VpnStatus.LogLevel.ERROR) {
+            openVPNLogger.debug(it.toString())
+        }
+    }
     override fun activate() {
         vpnLogger.info("Activating OpenVPN backend.")
         stickyDisconnectEvent = true
         VpnStatus.addStateListener(this)
-        VpnStatus.addLogListener {
-            if(it.logLevel == VpnStatus.LogLevel.INFO || it.logLevel == VpnStatus.LogLevel.ERROR) {
-                openVPNLogger.debug(it.toString())
-            }
-        }
+        VpnStatus.addLogListener(logListener)
         VpnStatus.addByteCountListener(this)
         active = true
         startNetworkInfoObserver()
@@ -68,7 +70,7 @@ class OpenVPNBackend @Inject constructor(
     }
 
     override fun deactivate() {
-        VpnStatus.removeLogListener {}
+        VpnStatus.removeLogListener(logListener)
         VpnStatus.removeStateListener(this)
         VpnStatus.removeByteCountListener(this)
         stopNetworkInfoObserver()
