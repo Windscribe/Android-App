@@ -301,7 +301,6 @@ abstract class VpnBackend(
     }
 
     private fun failedConnectivityTest() {
-        connectivityTestJob?.cancel()
         connectivityTestJob = null
         connectionJob?.cancel()
         // If app is in foreground, try other protocols.
