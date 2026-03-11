@@ -482,8 +482,8 @@ open class WindVpnController @Inject constructor(
                     CoroutineScope(context).launch {
                         disconnect(
                             error = VPNState.Error(
-                                error = VPNState.ErrorType.WireguardApiError,
-                                "Wireguard key limited exceeded."
+                                error = VPNState.ErrorType.UserDisconnect,
+                                "User cancelled WireGuard key deletion."
                             )
                         )
                     }
