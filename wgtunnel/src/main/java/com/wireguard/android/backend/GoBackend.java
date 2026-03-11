@@ -335,19 +335,28 @@ public final class GoBackend implements Backend {
                 service.setUnderlyingNetworks(null);
 
             builder.setBlocking(true);
-            ParcelFileDescriptor tun = builder.establish();
-            DNSDetails dnsDetails = service.getDnsDetails();
-            boolean customTun = false;
-            if (dnsDetails!= null && dnsDetails.getType() == DnsType.Proxy){
+
+            final DNSDetails dnsDetails = service.getDnsDetails();
+            final boolean customTun = dnsDetails != null && dnsDetails.getType() == DnsType.Proxy;
+
+            if (customTun) {
+                ParcelFileDescriptor tun = builder.establish();
+                if (tun == null)
+                    throw new BackendException(Reason.TUN_CREATION_ERROR);
                 tunnelWrapper = new VPNTunnelWrapper(tun, service);
                 tunnelWrapper.start();
-                tun = tunnelWrapper.getParcelDescriptor();
-                customTun = true;
+                ParcelFileDescriptor wrappedTun = tunnelWrapper.getParcelDescriptor();
+                Log.d(TAG, "Go backend " + wgVersion());
+                currentTunnelHandle = wgTurnOn(tunnel.getName(), wrappedTun.detachFd(), goConfig, true);
+            } else {
+                try (final ParcelFileDescriptor tun = builder.establish()) {
+                    if (tun == null)
+                        throw new BackendException(Reason.TUN_CREATION_ERROR);
+                    Log.d(TAG, "Go backend " + wgVersion());
+                    currentTunnelHandle = wgTurnOn(tunnel.getName(), tun.detachFd(), goConfig, false);
+                }
             }
-            if (tun == null)
-                throw new BackendException(Reason.TUN_CREATION_ERROR);
-            Log.d(TAG, "Go backend " + wgVersion());
-            currentTunnelHandle = wgTurnOn(tunnel.getName(), tun.detachFd(), goConfig, customTun);
+
             if (currentTunnelHandle < 0)
                 throw new BackendException(Reason.GO_ACTIVATION_ERROR_CODE, currentTunnelHandle);
 
