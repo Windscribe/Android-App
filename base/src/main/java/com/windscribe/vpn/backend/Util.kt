@@ -228,11 +228,11 @@ object Util {
             ProtocolConnectionStatus.Disconnected
         )
         val supportedProtocoList =  ThreadSafeList<ProtocolInformation>().apply {
+            add(protocol5)
             add(protocol1)
             add(protocol2)
             add(protocol3)
             add(protocol4)
-            add(protocol5)
             add(protocol6)
         }
         val suggestedProtocolFromApp = supportedProtocoList.firstOrNull { it.protocol == suggestedProtocol?.first }
