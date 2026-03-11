@@ -26,7 +26,7 @@
     <string name="sign_up_description">Lindungi akun Anda, akses pengaturan Anda dari perangkat apa pun, dan dapatkan lebih banyak data.</string>
     <string name="choose_username">Pilih Nama Pengguna</string>
     <string name="choose_password">Pilih Kata Sandi</string>
-    <string name="email_description"><![CDATA[Hanya untuk pemulihan kata sandi, pembaruan &amp;; promo. Tidak ada spam]]></string>
+    <string name="email_description">Hanya untuk pemulihan kata sandi, pembaruan &amp;amp;; promo. Tidak ada spam</string>
     <string name="sign_up_failed_network_alert">Yah kami memberikan yang terbaik, kami tidak bisa mendaftarkan Anda menggunakan jaringan ini untuk beberapa alasan.</string>
     <string name="backup_api_end_point">Mencoba titik akhir api cadangan...</string>
     <string name="signing_in">Masuk...</string>
@@ -167,8 +167,12 @@
     <string name="pricing">HARGA</string>
     <string name="all_locations">Semua Lokasi</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[Langganan dapat dikelola bulanan, tahunan, atau dinonaktifkan dengan membuka pengaturan akun Google Play Store setelah pembelian. Semua harga sudah termasuk pajak yang berlaku.]]></string>
-    <string name="terms_policy_en"><b>Syarat Penggunaan</b> &amp; <b>Kebijakan Privasi.</b></string>
+    <string name="terms">Langganan dapat dikelola bulanan, tahunan, atau dinonaktifkan dengan membuka pengaturan akun Google Play Store setelah pembelian. Semua harga sudah termasuk pajak yang berlaku.</string>
+    <string name="terms_policy_en">
+        <b>Syarat Penggunaan</b>
+         &amp; 
+        <b>Kebijakan Privasi.</b>
+    </string>
     <string name="account_set_up">Pengaturan Akun</string>
     <string name="account_set_up_description">Lindungi akun Anda dan akses dari perangkat apa pun.</string>
     <string name="continue_free_10gb_mo">Dapatkan Gratis 10GB/bulan</string>
@@ -473,7 +477,7 @@ Lokasi terakhir yang dipilih.</string>
     <string name="location_permission_required">Izin lokasi diperlukan</string>
     <string name="foreground_location_permission_reason">Windscribe memerlukan izin lokasi untuk membuat fitur \"Network Whitelist\" berfungsi.  Izin ini diperlukan untuk mengakses nama jaringan Wifi. Izin ini hanya digunakan untuk fitur ini serta fungsi spoofing GPS. Data lokasi Anda tidak meninggalkan perangkat Anda, dan tidak digunakan untuk hal lain.</string>
     <string name="missing_location_permission">Izin lokasi tidak ada</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Izin lokasi diperlukan untuk menggunakan fitur ini. Buka pengaturan aplikasi &gt; Izin &gt; Lokasi dan pilih Izinkan sepanjang waktu.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Izin lokasi diperlukan untuk menggunakan fitur ini. Buka pengaturan aplikasi &amp;gt; Izin &amp;gt; Lokasi dan pilih Izinkan sepanjang waktu.</string>
     <string name="anti_censorship">Hindari Sensor</string>
     <string name="anti_censorship_explainer">Hubungkan ke VPN bahkan di lingkungan yang tidak bersahabat</string>
     <string name="auto_connect">Hubungkan Otomatis</string>
@@ -569,4 +573,46 @@ Lokasi terakhir yang dipilih.</string>
     <string name="continue_with_apple">Lanjutkan dengan Apple</string>
     <string name="support_url">windscribe.com/support</string>
     <string name="windflix">Windflix</string>
+    <string name="location_permission_disclosure_title">Pengungkapan Izin Lokasi</string>
+    <string name="location_permission_disclosure_message">Sebelum memberikan izin ini, harap pahami:
+Untuk apa kami menggunakannya:
+• Mengakses nama jaringan WiFi (SSID)
+• Mengaktifkan fitur daftar putih jaringan
+• Fungsionalitas pemalsuan GPS
+Apa yang TIDAK kami lakukan:
+• Melacak lokasi fisik Anda
+• Mengumpulkan koordinat GPS
+• Berbagi data dengan pihak ketiga
+• Mengirim data dari perangkat Anda
+Data lokasi Anda tetap di perangkat Anda dan hanya digunakan untuk fitur di atas.</string>
+    <string name="background_location_permission_disclosure_message">Sebelum memberikan izin lokasi latar belakang, harap pahami:
+Untuk apa kami menggunakannya:
+• Mengakses nama jaringan WiFi saat aplikasi berjalan di latar belakang
+• Mengaktifkan fitur daftar putih jaringan
+• Fungsionalitas pemalsuan GPS
+Apa yang TIDAK kami lakukan:
+• Melacak lokasi fisik Anda
+• Mengumpulkan koordinat GPS
+• Berbagi data dengan pihak ketiga
+• Mengirim data dari perangkat Anda
+Data lokasi Anda tetap di perangkat Anda dan hanya digunakan untuk fitur di atas.</string>
+    <string name="amnezia_preset">Konfigurasi</string>
+    <string name="amnezia_preset_description">Pilih konfigurasi preset untuk anti-sensor</string>
+    <string name="amnezia_preset_russian_quick">Rusia Cepat (Tanpa Sampah)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">Versi IP</string>
+    <string name="ipv6_mode_description">Pilih versi IP mana yang akan digunakan untuk koneksi VPN.</string>
+    <string name="ip_stack">Tumpukan IP</string>
+    <string name="ip_stack_description">Konfigurasi tumpukan IP untuk koneksi VPN.</string>
+    <string name="egress">Keluar</string>
+    <string name="ingress">Masuk</string>
+    <string name="ipv4_only">Hanya IPv4</string>
+    <string name="manual_connection_mode_failed_title">Mode koneksi manual gagal</string>
+    <string name="manual_connection_mode_failed_description">Kami tidak dapat menghubungkan Anda di jaringan ini. Mode koneksi otomatis direkomendasikan untuk hasil terbaik. Beralih ke Otomatis?</string>
+    <string name="switch_to_auto">Beralih ke Otomatis</string>
+    <string name="reset_password">Atur Ulang Kata Sandi</string>
+    <string name="password_reset_email_sent">Jika Anda memberikan email selama pendaftaran, Anda akan mendapatkan tautan reset kata sandi segera. Pastikan untuk memeriksa folder Spam Anda.</string>
+    <string name="app_icon">Ikon Aplikasi</string>
+    <string name="app_icon_description">Pilih ikon aplikasi yang berbeda untuk privasi yang lebih baik</string>
+    <string name="configuration">Konfigurasi</string>
 </resources>

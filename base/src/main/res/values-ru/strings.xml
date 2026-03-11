@@ -26,7 +26,7 @@
     <string name="sign_up_description">Защитите свою учетную запись, получите доступ к настройкам с любого устройства и получите больше данных.</string>
     <string name="choose_username">Выберите имя пользователя</string>
     <string name="choose_password">Выберите пароль</string>
-    <string name="email_description"><![CDATA[Только для восстановления пароля, обновлений и промо. Без спама]]></string>
+    <string name="email_description">Только для восстановления пароля, обновлений и промо. Без спама</string>
     <string name="sign_up_failed_network_alert">Что ж, мы сделали все возможное, но не смогли зарегистрировать вас в этой сети по какой-то причине.</string>
     <string name="backup_api_end_point">Пробуем резервные домены...</string>
     <string name="signing_in">Вход в систему...</string>
@@ -167,8 +167,13 @@
     <string name="pricing">ЦЕНА</string>
     <string name="all_locations">Все локации</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[Подписками можно управлять ежемесячно, ежегодно или отключить, перейдя в настройки учетной записи магазина Google Play после покупки. Все цены включают применимые налоги.]]></string>
-    <string name="terms_policy_en"><b>Условия использования</b> и <b>Политика конфиденциальности</b>.</string>
+    <string name="terms">Подписками можно управлять ежемесячно, ежегодно или отключить, перейдя в настройки учетной записи магазина Google Play после покупки. Все цены включают применимые налоги.</string>
+    <string name="terms_policy_en">
+        <b>Условия использования</b>
+         и 
+        <b>Политика конфиденциальности</b>
+        .
+    </string>
     <string name="account_set_up">Настройка учетной записи</string>
     <string name="account_set_up_description">Защитите свою учетную запись и получите к ней доступ с любого устройства.</string>
     <string name="continue_free_10gb_mo">Получите 10 ГБ в месяц бесплатно</string>
@@ -472,7 +477,7 @@
     <string name="location_permission_required">Требуется разрешение на определение местоположения</string>
     <string name="foreground_location_permission_reason">Windscribe требуется разрешение на определение местоположения для того, чтобы функция «Белый список сети» работала.  Это разрешение требуется для доступа к именам сетей Wi-Fi. Разрешение используется исключительно для этой функции, а также для функции подмены GPS. Данные о вашем местоположении не покидают ваше устройство и не используются ни для чего другого.</string>
     <string name="missing_location_permission">Отсутствует разрешение на определение местоположения</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Для использования этой функции требуется разрешение на определение местоположения. Перейдите в настройки приложения &gt; Разрешения &gt; Местоположение и выберите Разрешить всегда.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Для использования этой функции требуется разрешение на определение местоположения. Перейдите в настройки приложения &amp;gt; Разрешения &amp;gt; Местоположение и выберите Разрешить всегда.</string>
     <string name="anti_censorship">Обход блокировок</string>
     <string name="anti_censorship_explainer">Подключаться к VPN даже во враждебно настроенной сети</string>
     <string name="auto_connect">Автоматическое подключение</string>
@@ -568,4 +573,46 @@
     <string name="continue_with_apple">Продолжить с Apple</string>
     <string name="support_url">https://windscribe.com/support</string>
     <string name="windflix">Windflix</string>
+    <string name="location_permission_disclosure_title">Раскрытие разрешения на местоположение</string>
+    <string name="location_permission_disclosure_message">Прежде чем предоставить это разрешение, пожалуйста, поймите:
+Для чего мы его используем:
+• Доступ к именам сетей WiFi (SSID)
+• Включение функции белого списка сети
+• Функциональность подмены GPS
+Что мы НЕ делаем:
+• Отслеживаем ваше физическое местоположение
+• Собираем координаты GPS
+• Делимся данными с третьими лицами
+• Отправляем данные за пределы вашего устройства
+Ваши данные о местоположении остаются на вашем устройстве и используются только для вышеуказанных функций.</string>
+    <string name="background_location_permission_disclosure_message">Прежде чем предоставить разрешение на фоновое местоположение, пожалуйста, поймите:
+Для чего мы его используем:
+• Доступ к именам сетей WiFi во время работы приложения в фоновом режиме
+• Включение функции белого списка сети
+• Функциональность подмены GPS
+Что мы НЕ делаем:
+• Отслеживаем ваше физическое местоположение
+• Собираем координаты GPS
+• Делимся данными с третьими лицами
+• Отправляем данные за пределы вашего устройства
+Ваши данные о местоположении остаются на вашем устройстве и используются только для вышеуказанных функций.</string>
+    <string name="amnezia_preset">Конфигурация</string>
+    <string name="amnezia_preset_description">Выберите предустановленную конфигурацию для обхода цензуры</string>
+    <string name="amnezia_preset_russian_quick">Русский Быстрый (Без мусора)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">Версия IP</string>
+    <string name="ipv6_mode_description">Выберите, какую версию IP использовать для VPN-подключений.</string>
+    <string name="ip_stack">IP-стек</string>
+    <string name="ip_stack_description">Настройте IP-стек для VPN-подключений.</string>
+    <string name="egress">Исходящий</string>
+    <string name="ingress">Входящий</string>
+    <string name="ipv4_only">Только IPv4</string>
+    <string name="manual_connection_mode_failed_title">Режим ручного подключения не удался</string>
+    <string name="manual_connection_mode_failed_description">Мы не смогли подключить вас в этой сети. Рекомендуется автоматический режим подключения для достижения лучших результатов. Переключиться на Авто?</string>
+    <string name="switch_to_auto">Переключиться на Авто</string>
+    <string name="reset_password">Сбросить пароль</string>
+    <string name="password_reset_email_sent">Если вы указали электронную почту при регистрации, вы скоро получите ссылку для сброса пароля. Обязательно проверьте папку Спам.</string>
+    <string name="app_icon">Значок приложения</string>
+    <string name="app_icon_description">Выберите другой значок приложения для еще большей конфиденциальности</string>
+    <string name="configuration">Конфигурация</string>
 </resources>

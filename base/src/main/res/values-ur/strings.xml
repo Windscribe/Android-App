@@ -25,20 +25,20 @@
     <string name="sign_up_description">Safeguard your account, access your settings from any device and get more data.</string>
     <string name="choose_username">Choose Username</string>
     <string name="choose_password">Choose  Password</string>
-    <string name="email_description"><![CDATA[For password recovery, updates & promo only. No spam]]></string>
+    <string name="email_description">For password recovery, updates &amp; promo only. No spam</string>
     <string name="sign_up_failed_network_alert">Well we gave it our best shot, we just couldn’t sign you up using this network for some reason.</string>
-    <string name="backup_api_end_point">Trying backup api end point&#8230;</string>
-    <string name="signing_in">Signing in&#8230;</string>
-    <string name="signing_up">Signing up&#8230;</string>
-    <string name="getting_session">Getting Session&#8230;</string>
-    <string name="getting_port_maps">Getting Port Maps&#8230;</string>
-    <string name="getting_server_config">Getting Server Config&#8230;</string>
-    <string name="getting_server_credentials">Getting Server Credentials&#8230;</string>
-    <string name="getting_best_location">Getting Best Location&#8230;</string>
-    <string name="getting_server_list">Getting Server List&#8230;</string>
-    <string name="preparing_your_dashboard">Preparing your dashboard&#8230;</string>
-    <string name="trying_static_endpoint">Trying static endpoint&#8230;</string>
-    <string name="getting_reg_token">Getting reg token&#8230;</string>
+    <string name="backup_api_end_point">Trying backup api end point…</string>
+    <string name="signing_in">Signing in…</string>
+    <string name="signing_up">Signing up…</string>
+    <string name="getting_session">Getting Session…</string>
+    <string name="getting_port_maps">Getting Port Maps…</string>
+    <string name="getting_server_config">Getting Server Config…</string>
+    <string name="getting_server_credentials">Getting Server Credentials…</string>
+    <string name="getting_best_location">Getting Best Location…</string>
+    <string name="getting_server_list">Getting Server List…</string>
+    <string name="preparing_your_dashboard">Preparing your dashboard…</string>
+    <string name="trying_static_endpoint">Trying static endpoint…</string>
+    <string name="getting_reg_token">Getting reg token…</string>
     <string name="invalid_email_format">Invalid email!</string>
     <string name="email_empty">Empty email!</string>
     <string name="email">Email</string>
@@ -66,14 +66,14 @@
     <string name="pro_reason_to_confirm">Please confirm your email to protect your account</string>
     <string name="connected">CONNECTED</string>
     <string name="connected_lowercase">Connected</string>
-    <string name="connecting">CONNECTING&#160;</string>
+    <string name="connecting">CONNECTING </string>
     <string name="connecting_to">Connecting to %s</string>
     <string name="connected_to">Connected to %s</string>
     <string name="disconnecting">DISCONNECTING</string>
     <string name="disconnected">DISCONNECTED</string>
-    <string name="tunnel_test_failed">CONNECTIVITY FAILED&#8230;</string>
-    <string name="checking_connectivity">Checking connectivity&#8230;</string>
-    <string name="connectivity_test_failed">Connectivity test failed&#8230;</string>
+    <string name="tunnel_test_failed">CONNECTIVITY FAILED…</string>
+    <string name="checking_connectivity">Checking connectivity…</string>
+    <string name="connectivity_test_failed">Connectivity test failed…</string>
     <string name="best_location">Best Location</string>
     <string name="connection_mode">Connection Mode</string>
     <string name="preferred_protocol">Preferred Protocol</string>
@@ -102,7 +102,7 @@
     <string name="a_la_carte_unlimited_plan">Unlimited</string>
     <string name="expiry_date">Expiry  Date</string>
     <string name="reset_date">Reset  Date</string>
-    <string name="gb_per_month">&#160;GB/Month</string>
+    <string name="gb_per_month"> GB/Month</string>
     <string name="my_account">Account</string>
     <string name="cancel">Cancel</string>
     <string name="edit_account">Manage Account</string>
@@ -114,7 +114,7 @@
     <string name="item_unavailable">Item you requested is not available. \nPlease contact support at https://windscribe.com/support!</string>
     <string name="billing_service_unavailable">Billing service unavailable. Please check your network connection and try again!</string>
     <string name="unknown_billing_error">Unknown error. Please contact support at https://windscribe.com/support!</string>
-    <string name="fatal_error">Could not connect to the billing service&#8230;Please check your network connection!</string>
+    <string name="fatal_error">Could not connect to the billing service…Please check your network connection!</string>
     <string name="play_store_generic_api_error">Unexpected response received from Play store. This may happen due to recently cancelled purchases. Try again later.</string>
     <string name="unable_to_process_request">We were unable to process your request. Please try again!</string>
     <string name="play_store_updating">Play store update in process! Please try after the update is finished.</string>
@@ -166,8 +166,12 @@
     <string name="pricing">PRICING</string>
     <string name="all_locations">All Locations</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[Subscriptions may be managed monthly, yearly or turned off by going to the Google play store account settings after purchase. All prices include applicable taxes.]]></string>
-    <string name="terms_policy_en"><b>Terms of Use </b> &amp; <b>Privacy Policy.</b></string>
+    <string name="terms">Subscriptions may be managed monthly, yearly or turned off by going to the Google play store account settings after purchase. All prices include applicable taxes.</string>
+    <string name="terms_policy_en">
+        <b>Terms of Use </b>
+         &amp; 
+        <b>Privacy Policy.</b>
+    </string>
     <string name="account_set_up">Account Setup</string>
     <string name="account_set_up_description">Safeguard your account and access it from any device.</string>
     <string name="continue_free_10gb_mo">Get Free 10GB/month</string>
@@ -175,7 +179,7 @@
     <string name="no_email_warning">Without an email, your free account will be limited to 2GB/Mo and you won’t  be able to reset your password.</string>
     <string name="get_started">Get Started</string>
     <string name="error_try_again">Error try again!</string>
-    <string name="please_wait">Please wait&#8230;</string>
+    <string name="please_wait">Please wait…</string>
     <string name="resend">Resend</string>
     <string name="loading">Loading..</string>
     <string name="retry">Retry</string>
@@ -232,7 +236,7 @@
     <string name="network_unsecured">Unsecured</string>
     <string name="preferred_protocol_description">Choose a default protocol for this network if you are having issues connecting</string>
     <string name="unknown">Unknown network</string>
-    <string name="loading_network_list">Loading network list\nPlease wait&#8230;</string>
+    <string name="loading_network_list">Loading network list\nPlease wait…</string>
     <string name="no_saved_network_list">No saved network list!</string>
     <string name="network_options">Network Options</string>
     <string name="auto_secure">Auto-Secure</string>
@@ -296,7 +300,7 @@
     <string name="upgrade_title">You deserve more than limited privacy.</string>
     <string name="text_login">Login</string>
     <string name="text_sign_up">Sign up</string>
-    <string name="sending_debug_log">Sending debug log\nPlease wait&#8230;</string>
+    <string name="sending_debug_log">Sending debug log\nPlease wait…</string>
     <string name="app_log_submitted">Thanks! App log submitted.</string>
     <string name="log_submission_failed">Error submitting log file!</string>
     <string name="add_your_email_address">Add your email address in case you forget your password. We’ll even give you 10GB for it.</string>
@@ -341,7 +345,11 @@
     <string name="Error">Error</string>
     <string name="text_account_set_up">Sign Up</string>
     <string name="xpress_login">Lazy Login</string>
-    <string name="web_login_description">Go to <b>https://windscribe.com/lazy</b> on any device and enter the code below.</string>
+    <string name="web_login_description">
+        Go to 
+        <b>https://windscribe.com/lazy</b>
+         on any device and enter the code below.
+    </string>
     <string name="app_login_description">Using your Windscribe Android app on your phone or tablet, go to Preferences (Top left), under “Account” choose “Lazy Login” and enter the code below.</string>
     <string name="or">OR</string>
     <string name="generate_code">Generate Code</string>
@@ -472,7 +480,7 @@ last chosen location.</string>
     <string name="location_permission_required">Location permission required</string>
     <string name="foreground_location_permission_reason">Windscribe needs the location permission in order to make the \"Network Whitelist\" feature work.  This permission is required to access Wifi network names. This permission is used solely for this feature as well as GPS spoofing functionality. Your location data does not leave your device, and is not used for anything else.</string>
     <string name="missing_location_permission">Missing location permission</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Location permission is required to use this feature. Go to app settings > Permissions > Location and select Allow all the time.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Location permission is required to use this feature. Go to app settings &gt; Permissions &gt; Location and select Allow all the time.</string>
     <string name="anti_censorship">Circumvent Censorship</string>
     <string name="anti_censorship_explainer">Connect to the VPN even in hostile environment</string>
     <string name="auto_connect">Auto-Connect</string>
@@ -569,4 +577,46 @@ last chosen location.</string>
     <string name="support_url">https://windscribe.com/support</string>
     <string name="windflix">Windflix</string>
     <string name="failed_network_title">محدود نیٹ ورک کا پتہ چلا</string>
+    <string name="location_permission_disclosure_title">مقام کی اجازت کا انکشاف</string>
+    <string name="location_permission_disclosure_message">یہ اجازت دینے سے پہلے، براہ کرم سمجھیں:
+ہم اسے کس لیے استعمال کرتے ہیں:
+• WiFi نیٹ ورک کے ناموں (SSID) تک رسائی
+• نیٹ ورک وائٹ لسٹ خصوصیت کو فعال کریں
+• GPS جعل سازی کی فعالیت
+ہم کیا نہیں کرتے:
+• آپ کے جسمانی مقام کو ٹریک کرنا
+• GPS نقاط جمع کرنا
+• تیسرے فریقوں کے ساتھ ڈیٹا شیئر کرنا
+• آپ کے آلے سے باہر ڈیٹا بھیجنا
+آپ کا مقام کا ڈیٹا آپ کے آلے پر رہتا ہے اور صرف اوپر دی گئی خصوصیات کے لیے استعمال ہوتا ہے۔</string>
+    <string name="background_location_permission_disclosure_message">بیک گراؤنڈ مقام کی اجازت دینے سے پہلے، براہ کرم سمجھیں:
+ہم اسے کس لیے استعمال کرتے ہیں:
+• ایپ بیک گراؤنڈ میں چلنے کے دوران WiFi نیٹ ورک کے ناموں تک رسائی
+• نیٹ ورک وائٹ لسٹ خصوصیت کو فعال کریں
+• GPS جعل سازی کی فعالیت
+ہم کیا نہیں کرتے:
+• آپ کے جسمانی مقام کو ٹریک کرنا
+• GPS نقاط جمع کرنا
+• تیسرے فریقوں کے ساتھ ڈیٹا شیئر کرنا
+• آپ کے آلے سے باہر ڈیٹا بھیجنا
+آپ کا مقام کا ڈیٹا آپ کے آلے پر رہتا ہے اور صرف اوپر دی گئی خصوصیات کے لیے استعمال ہوتا ہے۔</string>
+    <string name="amnezia_preset">ترتیب</string>
+    <string name="amnezia_preset_description">سینسر شپ مخالف کے لیے پہلے سے طے شدہ ترتیب کا انتخاب کریں</string>
+    <string name="amnezia_preset_russian_quick">روسی فوری (کوڑا نہیں)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">IP ورژن</string>
+    <string name="ipv6_mode_description">VPN کنکشن کے لیے کون سا IP ورژن استعمال کرنا ہے منتخب کریں۔</string>
+    <string name="ip_stack">IP اسٹیک</string>
+    <string name="ip_stack_description">VPN کنکشن کے لیے IP اسٹیک کی ترتیب کریں۔</string>
+    <string name="egress">باہر نکلنا</string>
+    <string name="ingress">اندر آنا</string>
+    <string name="ipv4_only">صرف IPv4</string>
+    <string name="manual_connection_mode_failed_title">دستی کنکشن موڈ ناکام</string>
+    <string name="manual_connection_mode_failed_description">ہم آپ کو اس نیٹ ورک پر منسلک نہیں کر سکے۔ بہترین نتائج کے لیے خودکار کنکشن موڈ کی سفارش کی جاتی ہے۔ خودکار پر سوئچ کریں؟</string>
+    <string name="switch_to_auto">خودکار پر سوئچ کریں</string>
+    <string name="reset_password">پاس ورڈ ری سیٹ کریں</string>
+    <string name="password_reset_email_sent">اگر آپ نے رجسٹریشن کے دوران ای میل فراہم کی تھی، تو آپ کو جلد ہی پاس ورڈ ری سیٹ لنک ملے گا۔ اپنے سپیم فولڈر کو چیک کرنا یقینی بنائیں۔</string>
+    <string name="app_icon">ایپ آئیکن</string>
+    <string name="app_icon_description">مزید رازداری کے لیے ایک مختلف ایپ آئیکن منتخب کریں</string>
+    <string name="configuration">ترتیب</string>
 </resources>

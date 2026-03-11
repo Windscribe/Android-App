@@ -606,9 +606,6 @@ class VPNProfileCreator @Inject constructor(
         builder.parseEndpoint(sb)
         builder.setPersistentKeepalive(25)
         builder.parsePreSharedKey(wgRemoteParams.preSharedKey)
-
-        // Note: Peer-specific Amnezia parameters (S3, S4, H3, H4) are set in Interface, not Peer
-
         return builder.build()
     }
 

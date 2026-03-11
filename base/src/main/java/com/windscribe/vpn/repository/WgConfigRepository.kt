@@ -135,8 +135,6 @@ class WgConfigRepository @Inject constructor(
         }
         firstConnection = false
         val publicKey = keyPair.publicKey.toBase64()
-
-        // Brief delay for rate limiting
         // Brief delay for rate limiting
         delay(INIT_DELAY_MS)
 
@@ -147,7 +145,8 @@ class WgConfigRepository @Inject constructor(
         // Create and cache local params
         return WgLocalParams(
             privateKey = keyPair.privateKey.toBase64(),
-            allowedIPs = "0.0.0.0/0",
+            allowedIPs = initResponse.config.allowedIPs,
+            allowedIPs6 = initResponse.config.allowedIPsV6,
             preSharedKey = initResponse.config.preSharedKey,
             hashedCIDR = initResponse.config.hashedCIDR,
             hashedCIDRV6 = initResponse.config.hashedCIDRV6
@@ -202,18 +201,16 @@ class WgConfigRepository @Inject constructor(
 
         return runCatching {
             val ipv4Address = WireguardUtil.generateWireguardIP(publicKey, cidr[0])
-
             // Check if we should generate IPv6
             val ipv6Mode = preferenceHelper.ipv6Mode
             val shouldGenerateIPv6 = ipv6Mode == "auto" && supportsV6
-
             val (address, dns) = if (shouldGenerateIPv6) {
                 val cidrV6 = hashedCIDRv6?.takeIf { it.isNotEmpty() }
                     ?: throw InvalidVPNConfigException(CallResult.Error(errorMessage = "Invalid IPv6 CIDR range"))
                 val ipv6Address = WireguardUtil.generateWireguardIPv6(publicKey, cidrV6[0])
                 val ipv6WithCIDR = "$ipv6Address/128"
                 logger.debug("Generated IPv4: $ipv4Address, IPv6: $ipv6WithCIDR (mode: $ipv6Mode, server supports IPv6: $supportsV6 $publicKey)")
-                Pair("$ipv4Address, $ipv6WithCIDR", "$DEFAULT_DNS_IPV4")
+                Pair("$ipv4Address, $ipv6WithCIDR", DEFAULT_DNS_IPV4)
             } else {
                 logger.debug("Generated IPv4 only: $ipv4Address (mode: $ipv6Mode, server supports IPv6: $supportsV6)")
                 Pair(ipv4Address, DEFAULT_DNS_IPV4)
@@ -271,8 +268,7 @@ class WgConfigRepository @Inject constructor(
     ): CallResult<WgRemoteParams> {
         // Determine allowedIPs based on whether IPv6 is configured
         val hasIPv6 = connectConfig.address.contains(",")
-        val allowedIPs = if (hasIPv6) "0.0.0.0/0, ::/0" else "0.0.0.0/0"
-
+        val allowedIPs = if (hasIPv6) "${localParams.allowedIPs}, ${localParams.allowedIPs6}" else localParams.allowedIPs
         return WgRemoteParams(
             allowedIPs = allowedIPs,
             preSharedKey = localParams.preSharedKey,
@@ -288,7 +284,6 @@ class WgConfigRepository @Inject constructor(
     companion object {
         private const val TAG = "wg-config"
         private const val DEFAULT_DNS_IPV4 = "10.255.255.1"
-        private const val DEFAULT_DNS_IPV6 = "2001:4860:4860:0:0:0:0:8888"
         private const val INIT_DELAY_MS = 100L
         private const val ACCOUNT_STATUS_ACTIVE = 1
     }
@@ -341,6 +336,9 @@ data class WgLocalParams(
 
     @SerializedName("allowedIPs")
     val allowedIPs: String,
+
+    @SerializedName("allowedIPsV6")
+    val allowedIPs6: String,
 
     @SerializedName("preSharedKey")
     val preSharedKey: String,

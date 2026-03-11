@@ -26,7 +26,7 @@
     <string name="sign_up_description">保护您的帐户，从任何设备访问您的设置并获取更多数据。</string>
     <string name="choose_username">选择用户名</string>
     <string name="choose_password">选择密码</string>
-    <string name="email_description"><![CDATA[仅用于密码恢复，更新和促销。无垃圾邮件]]></string>
+    <string name="email_description">仅用于密码恢复，更新和促销。无垃圾邮件</string>
     <string name="sign_up_failed_network_alert">好吧，我们尽了最大的努力，由于某种原因，我们无法使用此网络注册您。</string>
     <string name="backup_api_end_point">正在尝试备份 api 端点...</string>
     <string name="signing_in">正在登录...</string>
@@ -167,8 +167,12 @@
     <string name="pricing">定价</string>
     <string name="all_locations">所有地点</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[订阅可以按月、按年进行管理，也可以在购买后转到 Google Play 商店帐户设置中关闭。所有价格均包含适用税费。]]></string>
-    <string name="terms_policy_en"><b>使用條款</b> &amp; <b>隱私政策。</b></string>
+    <string name="terms">订阅可以按月、按年进行管理，也可以在购买后转到 Google Play 商店帐户设置中关闭。所有价格均包含适用税费。</string>
+    <string name="terms_policy_en">
+        <b>使用條款</b>
+         &amp; 
+        <b>隱私政策。</b>
+    </string>
     <string name="account_set_up">帐户设置</string>
     <string name="account_set_up_description">保护您的帐户并从任何设备访问它。</string>
     <string name="continue_free_10gb_mo">免费获得 10GB/月</string>
@@ -473,7 +477,7 @@
     <string name="location_permission_required">需要位置权限</string>
     <string name="foreground_location_permission_reason">Windscribe需要位置权限才能使“网络白名单”功能正常工作。 需要此权限才能访问 Wifi 网络名称。此权限仅用于此功能以及 GPS 欺骗功能。您的位置数据不会离开您的设备，也不会用于其他任何用途。</string>
     <string name="missing_location_permission">缺少位置权限</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[需要位置权限才能使用此功能。转到“应用设置”&gt;“权限”&gt;“位置”，然后选择“始终允许”。]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">需要位置权限才能使用此功能。转到“应用设置”&amp;gt;“权限”&amp;gt;“位置”，然后选择“始终允许”。</string>
     <string name="anti_censorship">規避審查</string>
     <string name="anti_censorship_explainer">即使在惡劣的環境中也能連接到 VPN。</string>
     <string name="auto_connect">自動連接</string>
@@ -569,4 +573,46 @@
     <string name="continue_with_apple">使用 Apple 繼續</string>
     <string name="support_url">https://windscribe.com/support</string>
     <string name="windflix">Windflix</string>
+    <string name="location_permission_disclosure_title">位置權限披露</string>
+    <string name="location_permission_disclosure_message">在授予此權限之前，請理解:
+我們使用它的目的:
+• 訪問WiFi網路名稱(SSID)
+• 啟用網路白名單功能
+• GPS欺騙功能
+我們不做什麼:
+• 追蹤您的物理位置
+• 收集GPS座標
+• 與第三方共享資料
+• 將資料傳送到裝置外部
+您的位置資料保留在您的裝置上，僅用於上述功能。</string>
+    <string name="background_location_permission_disclosure_message">在授予背景位置權限之前，請理解:
+我們使用它的目的:
+• 在應用程式在背景運行時訪問WiFi網路名稱
+• 啟用網路白名單功能
+• GPS欺騙功能
+我們不做什麼:
+• 追蹤您的物理位置
+• 收集GPS座標
+• 與第三方共享資料
+• 將資料傳送到裝置外部
+您的位置資料保留在您的裝置上，僅用於上述功能。</string>
+    <string name="amnezia_preset">配置</string>
+    <string name="amnezia_preset_description">選擇反審查的預設配置</string>
+    <string name="amnezia_preset_russian_quick">俄羅斯快速(無垃圾)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">IP版本</string>
+    <string name="ipv6_mode_description">選擇用於VPN連接的IP版本。</string>
+    <string name="ip_stack">IP堆疊</string>
+    <string name="ip_stack_description">為VPN連接配置IP堆疊。</string>
+    <string name="egress">出口</string>
+    <string name="ingress">入口</string>
+    <string name="ipv4_only">僅IPv4</string>
+    <string name="manual_connection_mode_failed_title">手動連接模式失敗</string>
+    <string name="manual_connection_mode_failed_description">我們無法在此網路上連接您。建議使用自動連接模式以獲得最佳結果。切換到自動？</string>
+    <string name="switch_to_auto">切換到自動</string>
+    <string name="reset_password">重置密碼</string>
+    <string name="password_reset_email_sent">如果您在註冊時提供了電子郵件，您將很快收到密碼重置連結。請務必檢查您的垃圾郵件資料夾。</string>
+    <string name="app_icon">應用圖示</string>
+    <string name="app_icon_description">選擇不同的應用圖示以獲得更多隱私</string>
+    <string name="configuration">配置</string>
 </resources>

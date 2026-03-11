@@ -26,20 +26,20 @@
     <string name="sign_up_description">Schütze dein Konto, greife von jedem Gerät aus auf die Einstellungen zu und erhalten mehr Daten.</string>
     <string name="choose_username">Wähle einen Benutzernamen</string>
     <string name="choose_password">Passwort wählen</string>
-    <string name="email_description"><![CDATA[Nur für die Wiederherstellung von Passwörtern, Updates und Werbeaktionen. Kein Spam]]></string>
+    <string name="email_description">Nur für die Wiederherstellung von Passwörtern, Updates und Werbeaktionen. Kein Spam</string>
     <string name="sign_up_failed_network_alert">Wir haben wirklich alles versucht, aber wir konnten dich aus irgendeinem Grund einfach nicht über dieses Netzwerk anmelden. Überprüfen deine Internetverbindung.</string>
-    <string name="backup_api_end_point">Verbindet mit Backup-API Endpunkt &#8230;</string>
-    <string name="signing_in">&#8230; wird angemeldet</string>
-    <string name="signing_up">&#8230; wird registriert</string>
-    <string name="getting_session">Sitzung &#8230; wird abgerufen</string>
-    <string name="getting_port_maps">Port Maps &#8230; wird abgerufen</string>
-    <string name="getting_server_config">Abrufen der Serverkonfiguration &#8230;</string>
-    <string name="getting_server_credentials">Serveranmeldeinformationen &#8230; wird abgerufen</string>
-    <string name="getting_best_location">Idealer Standort &#8230; wird abgerufen</string>
-    <string name="getting_server_list">Serverliste &#8230; wird abgerufen</string>
-    <string name="preparing_your_dashboard">Dashboard &#8230; wird vorbereitet</string>
-    <string name="trying_static_endpoint">Verbindet mit statischem Endpunkt &#8230;</string>
-    <string name="getting_reg_token">Registrierungstoken &#8230; wird abgerufen</string>
+    <string name="backup_api_end_point">Verbindet mit Backup-API Endpunkt …</string>
+    <string name="signing_in">… wird angemeldet</string>
+    <string name="signing_up">… wird registriert</string>
+    <string name="getting_session">Sitzung … wird abgerufen</string>
+    <string name="getting_port_maps">Port Maps … wird abgerufen</string>
+    <string name="getting_server_config">Abrufen der Serverkonfiguration …</string>
+    <string name="getting_server_credentials">Serveranmeldeinformationen … wird abgerufen</string>
+    <string name="getting_best_location">Idealer Standort … wird abgerufen</string>
+    <string name="getting_server_list">Serverliste … wird abgerufen</string>
+    <string name="preparing_your_dashboard">Dashboard … wird vorbereitet</string>
+    <string name="trying_static_endpoint">Verbindet mit statischem Endpunkt …</string>
+    <string name="getting_reg_token">Registrierungstoken … wird abgerufen</string>
     <string name="invalid_email_format">Ungültige E-Mail!</string>
     <string name="email_empty">Leere E-Mail!</string>
     <string name="email">E-Mail</string>
@@ -67,14 +67,14 @@
     <string name="pro_reason_to_confirm">Bestätige deine E-Mail-Adresse, um dein Konto zu schützen</string>
     <string name="connected">VERBUNDEN</string>
     <string name="connected_lowercase">Verbunden</string>
-    <string name="connecting">VERBINDEND &#160;</string>
+    <string name="connecting">VERBINDEND  </string>
     <string name="connecting_to">Verbindet sich mit %s</string>
     <string name="connected_to">Verbunden mit %s</string>
     <string name="disconnecting">TRENNT SICH</string>
     <string name="disconnected">GETRENNT</string>
-    <string name="tunnel_test_failed">VERBINDUNGSFEHLER &#8230;</string>
-    <string name="checking_connectivity">Überprüfen Verbindung &#8230;</string>
-    <string name="connectivity_test_failed">Verbindungstest fehlgeschlagen &#8230;</string>
+    <string name="tunnel_test_failed">VERBINDUNGSFEHLER …</string>
+    <string name="checking_connectivity">Überprüfen Verbindung …</string>
+    <string name="connectivity_test_failed">Verbindungstest fehlgeschlagen …</string>
     <string name="best_location">Bester Standort</string>
     <string name="connection_mode">Verbindungsmodus</string>
     <string name="preferred_protocol">Bevorzugtes Protokoll</string>
@@ -103,7 +103,7 @@
     <string name="a_la_carte_unlimited_plan">Unbegrenzt</string>
     <string name="expiry_date">Verfallsdatum</string>
     <string name="reset_date">Datum zurücksetzen</string>
-    <string name="gb_per_month"> &#160; GB/Monat</string>
+    <string name="gb_per_month">   GB/Monat</string>
     <string name="my_account">Konto</string>
     <string name="cancel">Abbrechen</string>
     <string name="edit_account">Konto verwalten</string>
@@ -115,7 +115,7 @@
     <string name="item_unavailable">Der von dir angeforderte Artikel ist nicht verfügbar. \nBitte wenden dich an den Support unter https://windscribe.com/support!</string>
     <string name="billing_service_unavailable">Zahlungsservice nicht verfügbar. Bitte überprüfe deine Netzwerkverbindung und versuche es erneut!</string>
     <string name="unknown_billing_error">Unbekannter Fehler. Bitte wenden dich an den Support unter https://windscribe.com/support!</string>
-    <string name="fatal_error">Es konnte keine Verbindung zum Zahlungsservice &#8230; hergestellt werden... Bitte überprüfe deine Netzwerkverbindung!</string>
+    <string name="fatal_error">Es konnte keine Verbindung zum Zahlungsservice … hergestellt werden... Bitte überprüfe deine Netzwerkverbindung!</string>
     <string name="play_store_generic_api_error">Unerwartete Antwort aus dem Play Store. Dies kann aufgrund kürzlich stornierter Käufe passieren. Versuche es später noch einmal.</string>
     <string name="unable_to_process_request">Wir konnten deine Anfrage nicht bearbeiten. Bitte versuchen es erneut!</string>
     <string name="play_store_updating">Play Store Update in Bearbeitung! Bitte versuche es nochmal, nachdem das Update abgeschlossen ist.</string>
@@ -144,7 +144,6 @@
     <string name="may_be_later">Vielleicht später</string>
     <string name="never_ask_again">Geh weg</string>
     <string name="rate_message">Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir werden Sie lange lieben.
-
 Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir sind dir für immer mit tiefer Dankbarkeit verbunden.</string>
     <string name="gps_spoofing_explain">Für diese Funktion musst du deine Android-Einstellungen ändern. Bitte folge den nächsten Schritten, um sie zu aktivieren.</string>
     <string name="let_s_do_it">Los gehts</string>
@@ -169,8 +168,12 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="pricing">PREISE</string>
     <string name="all_locations">Alle Standorte</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[Abonnements können monatlich oder jährlich verwaltet oder nach dem Kauf in den Kontoeinstellungen des Google Play Store deaktiviert werden. Alle Preise sind inklusive der anfallenden Steuern.]]></string>
-    <string name="terms_policy_en"><b>Nutzungsbedingungen </b> &amp; <b>Datenschutz.</b></string>
+    <string name="terms">Abonnements können monatlich oder jährlich verwaltet oder nach dem Kauf in den Kontoeinstellungen des Google Play Store deaktiviert werden. Alle Preise sind inklusive der anfallenden Steuern.</string>
+    <string name="terms_policy_en">
+        <b>Nutzungsbedingungen </b>
+         &amp; 
+        <b>Datenschutz.</b>
+    </string>
     <string name="account_set_up">Konto-Einrichtung</string>
     <string name="account_set_up_description">Schütze dein Konto und greife von jedem Gerät aus darauf zu.</string>
     <string name="continue_free_10gb_mo">Hol dir kostenlos 10 GB/Monat</string>
@@ -178,7 +181,7 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="no_email_warning">Ohne E-Mail ist dein kostenloses Konto auf 2 GB/Monat begrenzt und du kannst dein Passwort nicht zurücksetzen.</string>
     <string name="get_started">Loslegen</string>
     <string name="error_try_again">Fehler Versuchen Sie es erneut!</string>
-    <string name="please_wait">Bitte warten&#8230;</string>
+    <string name="please_wait">Bitte warten…</string>
     <string name="resend">Erneut senden</string>
     <string name="loading">Lädt..</string>
     <string name="retry">Wiederholen</string>
@@ -299,7 +302,7 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="upgrade_title">Du verdienst mehr als nur eingeschränkte Privatsphäre.</string>
     <string name="text_login">Anmelden</string>
     <string name="text_sign_up">Anmelden</string>
-    <string name="sending_debug_log">Debug-Protokoll senden\nBitte warten&#8230;</string>
+    <string name="sending_debug_log">Debug-Protokoll senden\nBitte warten…</string>
     <string name="app_log_submitted">Danke! App-Protokoll übermittelt.</string>
     <string name="log_submission_failed">Fehler beim Übermitteln der Protokolldatei!</string>
     <string name="add_your_email_address">Füge deine E-Mail-Adresse hinzu, falls du dein Passwort vergessen hast. Wir geben dir sogar 10 GB dafür.</string>
@@ -344,7 +347,11 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="Error">Fehler</string>
     <string name="text_account_set_up">Registrieren</string>
     <string name="xpress_login">Faules Login</string>
-    <string name="web_login_description">Gehe zu <b>https://windscribe.com/lazy</b> auf einem beliebigen Gerät und gib den unten stehenden Code ein.</string>
+    <string name="web_login_description">
+        Gehe zu 
+        <b>https://windscribe.com/lazy</b>
+         auf einem beliebigen Gerät und gib den unten stehenden Code ein.
+    </string>
     <string name="app_login_description">Gehe mit deiner Windscribe Android-App auf deinem Telefon oder Tablet zu Einstellungen (oben links), wähle unter \"Konto\" die Option \"Faules Login\" und gib den folgenden Code ein.</string>
     <string name="or">ODER</string>
     <string name="generate_code">Code generieren</string>
@@ -474,7 +481,7 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="location_permission_required">Standortgenehmigung erforderlich</string>
     <string name="foreground_location_permission_reason">Windscribe benötigt die Standortberechtigung, während es im Hintergrund ausgeführt wird, damit die Funktion \"Netzwerk-Whitelist\" funktioniert.  Diese Berechtigung ist für den Zugriff auf WLAN-Netzwerknamen erforderlich. Diese Berechtigung wird ausschließlich für diese Funktion sowie für die GPS-Spoofing-Funktionalität verwendet. Deine Standortdaten verlassen dein Gerät nicht und werden für nichts anderes verwendet.</string>
     <string name="missing_location_permission">Fehlende Standortberechtigung</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Für die Verwendung dieser Funktion ist eine Standortberechtigung erforderlich. Gehe zu den App-Einstellungen &gt; Berechtigungen &gt; Standort und wähle Ständig zulassen aus.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Für die Verwendung dieser Funktion ist eine Standortberechtigung erforderlich. Gehe zu den App-Einstellungen &amp;gt; Berechtigungen &amp;gt; Standort und wähle Ständig zulassen aus.</string>
     <string name="anti_censorship">Zensur umgehen</string>
     <string name="anti_censorship_explainer">Verbindung zum VPN auch in kritischer Umgebung</string>
     <string name="auto_connect">Automatische Verbindung</string>
@@ -570,4 +577,46 @@ Gefällt dir Windscribe? Das hoffen wir doch. Bewerte uns im Play Store und wir 
     <string name="continue_with_apple">Mit Apple fortfahren</string>
     <string name="support_url">windscribe.com/support</string>
     <string name="windflix">Windflix</string>
+    <string name="location_permission_disclosure_title">Offenlegung der Standortberechtigung</string>
+    <string name="location_permission_disclosure_message">Bitte verstehen Sie, bevor Sie diese Berechtigung erteilen:
+Wofür wir sie verwenden:
+• Zugriff auf WLAN-Netzwerknamen (SSID)
+• Aktivierung der Netzwerk-Whitelist-Funktion
+• GPS-Spoofing-Funktionalität
+Was wir NICHT tun:
+• Ihren physischen Standort verfolgen
+• GPS-Koordinaten sammeln
+• Daten mit Dritten teilen
+• Daten von Ihrem Gerät senden
+Ihre Standortdaten bleiben auf Ihrem Gerät und werden ausschließlich für die oben genannten Funktionen verwendet.</string>
+    <string name="background_location_permission_disclosure_message">Bitte verstehen Sie, bevor Sie die Hintergrundstandortberechtigung erteilen:
+Wofür wir sie verwenden:
+• Zugriff auf WLAN-Netzwerknamen, während die App im Hintergrund läuft
+• Aktivierung der Netzwerk-Whitelist-Funktion
+• GPS-Spoofing-Funktionalität
+Was wir NICHT tun:
+• Ihren physischen Standort verfolgen
+• GPS-Koordinaten sammeln
+• Daten mit Dritten teilen
+• Daten von Ihrem Gerät senden
+Ihre Standortdaten bleiben auf Ihrem Gerät und werden ausschließlich für die oben genannten Funktionen verwendet.</string>
+    <string name="amnezia_preset">Konfiguration</string>
+    <string name="amnezia_preset_description">Wählen Sie eine voreingestellte Konfiguration für Anti-Zensur</string>
+    <string name="amnezia_preset_russian_quick">Russisch Schnell (Kein Müll)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">IP-Version</string>
+    <string name="ipv6_mode_description">Wählen Sie, welche IP-Version für VPN-Verbindungen verwendet werden soll.</string>
+    <string name="ip_stack">IP-Stack</string>
+    <string name="ip_stack_description">Konfigurieren Sie den IP-Stack für VPN-Verbindungen.</string>
+    <string name="egress">Ausgang</string>
+    <string name="ingress">Eingang</string>
+    <string name="ipv4_only">Nur IPv4</string>
+    <string name="manual_connection_mode_failed_title">Manueller Verbindungsmodus fehlgeschlagen</string>
+    <string name="manual_connection_mode_failed_description">Wir konnten Sie in diesem Netzwerk nicht verbinden. Automatischer Verbindungsmodus für beste Ergebnisse empfohlen. Zu Auto wechseln?</string>
+    <string name="switch_to_auto">Zu Auto wechseln</string>
+    <string name="reset_password">Passwort zurücksetzen</string>
+    <string name="password_reset_email_sent">Wenn Sie während der Registrierung eine E-Mail angegeben haben, erhalten Sie in Kürze einen Link zum Zurücksetzen des Passworts. Überprüfen Sie unbedingt Ihren Spam-Ordner.</string>
+    <string name="app_icon">App-Symbol</string>
+    <string name="app_icon_description">Wählen Sie ein anderes App-Symbol für noch mehr Privatsphäre</string>
+    <string name="configuration">Konfiguration</string>
 </resources>

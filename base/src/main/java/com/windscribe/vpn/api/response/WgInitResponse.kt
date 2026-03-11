@@ -16,6 +16,8 @@ data class WgInitConfig(
     val preSharedKey: String,
     @SerializedName("AllowedIPs")
     val allowedIPs: String,
+    @SerializedName("AllowedIPsV6")
+    val allowedIPsV6: String,
     @SerializedName("HashedCIDR")
     val hashedCIDR: List<String>,
     @SerializedName("HashedCIDRv6")

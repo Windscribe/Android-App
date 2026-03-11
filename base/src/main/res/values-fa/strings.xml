@@ -26,7 +26,7 @@
     <string name="sign_up_description">از حساب خود محافظت کنید، از هر دستگاهی به تنظیمات خود دسترسی پیدا کنید و اطلاعات بیشتری دریافت کنید.</string>
     <string name="choose_username">نام کاربری را انتخاب کنید</string>
     <string name="choose_password">انتخاب گذرواژه</string>
-    <string name="email_description"><![CDATA[برای بازیابی رمز عبور، به روز رسانی و فقط تبلیغی. بدون هرزنامه]]></string>
+    <string name="email_description">برای بازیابی رمز عبور، به روز رسانی و فقط تبلیغی. بدون هرزنامه</string>
     <string name="sign_up_failed_network_alert">خوب ما ان را به بهترین شات ما، ما فقط نمی تواند شما را ثبت نام با استفاده از این شبکه به دلایلی.</string>
     <string name="backup_api_end_point">تلاش برای پشتیبان گیری API نقطه پایان...</string>
     <string name="signing_in">ورود به...</string>
@@ -167,7 +167,7 @@
     <string name="pricing">قیمت</string>
     <string name="all_locations">همه مکان ها</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[اشتراک ها ممکن است ماهانه، سالانه یا با رفتن به تنظیمات حساب فروشگاه Play Google پس از خرید خاموش شوند. تمام قیمت ها شامل مالیات های قابل اجرا است.]]></string>
+    <string name="terms">اشتراک ها ممکن است ماهانه، سالانه یا با رفتن به تنظیمات حساب فروشگاه Play Google پس از خرید خاموش شوند. تمام قیمت ها شامل مالیات های قابل اجرا است.</string>
     <string name="terms_policy_en">&lt;b&gt;مقررات استفاده&lt;/b&gt; &amp; &lt;b&gt;حریم خصوصی&lt;/b.</string>
     <string name="account_set_up">راه اندازی حساب</string>
     <string name="account_set_up_description">از حساب خود محافظت کنید و از هر دستگاهی به ان دسترسی پیدا کنید.</string>
@@ -473,7 +473,7 @@
     <string name="location_permission_required">مجوز مکان مورد نیاز است</string>
     <string name="foreground_location_permission_reason">Windscribe نیاز به مجوز مکان دارد تا ویژگی \"Network Whitelist\" کار کند.  این مجوز برای دسترسی به نام شبکه WiFi مورد نیاز است. این مجوز صرفا برای این ویژگی و همچنین قابلیت جعل GPS استفاده می شود. داده های مکان شما دستگاه شما را ترک نمی کند و برای هیچ چیز دیگری استفاده نمی شود.</string>
     <string name="missing_location_permission">مجوز مکان از دست رفته</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[برای استفاده از این ویژگی به مجوز مکان نیاز است. به تنظیمات برنامه &gt; Permissions &gt; Location بروید و Allow all the time را انتخاب کنید.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">برای استفاده از این ویژگی به مجوز مکان نیاز است. به تنظیمات برنامه &amp;gt; Permissions &amp;gt; Location بروید و Allow all the time را انتخاب کنید.</string>
     <string name="anti_censorship">دور زدن سانسور</string>
     <string name="anti_censorship_explainer">به VPN حتی در محیط‌های خصمانه متصل شوید</string>
     <string name="auto_connect">اتصال خودکار</string>
@@ -569,4 +569,46 @@
     <string name="continue_with_apple">ادامه با Apple</string>
     <string name="support_url">windscribe.com/support</string>
     <string name="windflix">Windflix</string>
+    <string name="location_permission_disclosure_title">افشای مجوز مکان</string>
+    <string name="location_permission_disclosure_message">قبل از اعطای این مجوز، لطفاً درک کنید:
+برای چه استفاده می‌کنیم:
+• دسترسی به نام شبکه‌های WiFi (SSID)
+• فعال‌سازی ویژگی لیست سفید شبکه
+• عملکرد جعل GPS
+آنچه انجام نمی‌دهیم:
+• ردیابی موقعیت فیزیکی شما
+• جمع‌آوری مختصات GPS
+• اشتراک‌گذاری داده‌ها با اشخاص ثالث
+• ارسال داده‌ها خارج از دستگاه شما
+داده‌های موقعیت شما در دستگاه شما باقی می‌ماند و فقط برای ویژگی‌های فوق استفاده می‌شود.</string>
+    <string name="background_location_permission_disclosure_message">قبل از اعطای مجوز موقعیت پس‌زمینه، لطفاً درک کنید:
+برای چه استفاده می‌کنیم:
+• دسترسی به نام شبکه‌های WiFi در حالی که برنامه در پس‌زمینه اجرا می‌شود
+• فعال‌سازی ویژگی لیست سفید شبکه
+• عملکرد جعل GPS
+آنچه انجام نمی‌دهیم:
+• ردیابی موقعیت فیزیکی شما
+• جمع‌آوری مختصات GPS
+• اشتراک‌گذاری داده‌ها با اشخاص ثالث
+• ارسال داده‌ها خارج از دستگاه شما
+داده‌های موقعیت شما در دستگاه شما باقی می‌ماند و فقط برای ویژگی‌های فوق استفاده می‌شود.</string>
+    <string name="amnezia_preset">پیکربندی</string>
+    <string name="amnezia_preset_description">پیکربندی پیش‌فرض را برای ضد سانسور انتخاب کنید</string>
+    <string name="amnezia_preset_russian_quick">روسی سریع (بدون زباله)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">نسخه IP</string>
+    <string name="ipv6_mode_description">انتخاب کنید کدام نسخه IP برای اتصالات VPN استفاده شود.</string>
+    <string name="ip_stack">پشته IP</string>
+    <string name="ip_stack_description">پیکربندی پشته IP برای اتصالات VPN.</string>
+    <string name="egress">خروجی</string>
+    <string name="ingress">ورودی</string>
+    <string name="ipv4_only">فقط IPv4</string>
+    <string name="manual_connection_mode_failed_title">حالت اتصال دستی ناموفق بود</string>
+    <string name="manual_connection_mode_failed_description">ما نتوانستیم شما را در این شبکه متصل کنیم. حالت اتصال خودکار برای نتایج بهتر توصیه می‌شود. به خودکار تغییر دهید؟</string>
+    <string name="switch_to_auto">تغییر به خودکار</string>
+    <string name="reset_password">بازنشانی رمز عبور</string>
+    <string name="password_reset_email_sent">اگر در هنگام ثبت‌نام ایمیل ارائه کرده‌اید، به زودی یک پیوند بازنشانی رمز عبور دریافت خواهید کرد. حتماً پوشه Spam خود را بررسی کنید.</string>
+    <string name="app_icon">آیکون برنامه</string>
+    <string name="app_icon_description">یک آیکون برنامه متفاوت را برای حریم خصوصی بیشتر انتخاب کنید</string>
+    <string name="configuration">پیکربندی</string>
 </resources>

@@ -26,7 +26,7 @@
     <string name="sign_up_description">Bảo vệ tài khoản của bạn, truy cập cài đặt của bạn từ mọi thiết bị và nhận thêm dữ liệu.</string>
     <string name="choose_username">Chọn tên người dùng</string>
     <string name="choose_password">Chọn mật khẩu</string>
-    <string name="email_description"><![CDATA[Chỉ để khôi phục mật khẩu, cập nhật và khuyến mãi. Không có thư rác]]></string>
+    <string name="email_description">Chỉ để khôi phục mật khẩu, cập nhật và khuyến mãi. Không có thư rác</string>
     <string name="sign_up_failed_network_alert">Chà, chúng tôi đã cố gắng hết sức, chúng tôi không thể đăng ký cho bạn bằng cách sử dụng mạng này vì một số lý do.</string>
     <string name="backup_api_end_point">Bạn đang thử sao lưu điểm cuối api...</string>
     <string name="signing_in">Đăng nhập...</string>
@@ -167,8 +167,12 @@
     <string name="pricing">GIÁ</string>
     <string name="all_locations">Tất cả địa điểm</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[Đăng ký có thể được quản lý hàng tháng, hàng năm hoặc tắt bằng cách đi tới cài đặt tài khoản cửa hàng Google Play sau khi mua. Tất cả giá đã bao gồm thuế hiện hành.]]></string>
-    <string name="terms_policy_en"><b>Điều khoản sử dụng</b> &amp; <b>Chính sách Bảo mật.</b></string>
+    <string name="terms">Đăng ký có thể được quản lý hàng tháng, hàng năm hoặc tắt bằng cách đi tới cài đặt tài khoản cửa hàng Google Play sau khi mua. Tất cả giá đã bao gồm thuế hiện hành.</string>
+    <string name="terms_policy_en">
+        <b>Điều khoản sử dụng</b>
+         &amp; 
+        <b>Chính sách Bảo mật.</b>
+    </string>
     <string name="account_set_up">Thiết lập tài khoản</string>
     <string name="account_set_up_description">Bảo vệ tài khoản của bạn và truy cập nó từ mọi thiết bị.</string>
     <string name="continue_free_10gb_mo">Nhận miễn phí 10GB/tháng</string>
@@ -473,7 +477,7 @@ Vị trí được chọn cuối cùng.</string>
     <string name="location_permission_required">Yêu cầu quyền truy cập thông tin vị trí</string>
     <string name="foreground_location_permission_reason">Windscribe cần quyền truy cập vị trí để làm cho tính năng \"Network Whitelist\" hoạt động.  Quyền này là bắt buộc để truy cập tên mạng Wifi. Quyền này chỉ được sử dụng cho tính năng này cũng như chức năng giả mạo GPS. Dữ liệu vị trí của bạn không rời khỏi thiết bị của bạn và không được sử dụng cho bất kỳ mục đích nào khác.</string>
     <string name="missing_location_permission">Thiếu quyền truy cập thông tin vị trí</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Cần có quyền truy cập vị trí để sử dụng tính năng này. Đi tới cài đặt ứng dụng &gt; Quyền &gt; Vị trí và chọn Cho phép mọi lúc.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Cần có quyền truy cập vị trí để sử dụng tính năng này. Đi tới cài đặt ứng dụng &amp;gt; Quyền &amp;gt; Vị trí và chọn Cho phép mọi lúc.</string>
     <string name="anti_censorship">Phá vỡ kiểm duyệt</string>
     <string name="anti_censorship_explainer">Kết nối với VPN ngay cả trong môi trường thù địch</string>
     <string name="auto_connect">Tự động kết nối</string>
@@ -569,4 +573,46 @@ Vị trí được chọn cuối cùng.</string>
     <string name="continue_with_apple">Tiếp tục với Apple</string>
     <string name="support_url">https://windscribe.com/support</string>
     <string name="windflix">Windflix</string>
+    <string name="location_permission_disclosure_title">Tiết lộ quyền truy cập vị trí</string>
+    <string name="location_permission_disclosure_message">Trước khi cấp quyền này, vui lòng hiểu:
+Chúng tôi sử dụng nó để:
+• Truy cập tên mạng WiFi (SSID)
+• Kích hoạt tính năng danh sách trắng mạng
+• Chức năng giả mạo GPS
+Chúng tôi KHÔNG làm gì:
+• Theo dõi vị trí vật lý của bạn
+• Thu thập tọa độ GPS
+• Chia sẻ dữ liệu với bên thứ ba
+• Gửi dữ liệu ra khỏi thiết bị của bạn
+Dữ liệu vị trí của bạn vẫn ở trên thiết bị của bạn và chỉ được sử dụng cho các tính năng trên.</string>
+    <string name="background_location_permission_disclosure_message">Trước khi cấp quyền truy cập vị trí nền, vui lòng hiểu:
+Chúng tôi sử dụng nó để:
+• Truy cập tên mạng WiFi trong khi ứng dụng chạy nền
+• Kích hoạt tính năng danh sách trắng mạng
+• Chức năng giả mạo GPS
+Chúng tôi KHÔNG làm gì:
+• Theo dõi vị trí vật lý của bạn
+• Thu thập tọa độ GPS
+• Chia sẻ dữ liệu với bên thứ ba
+• Gửi dữ liệu ra khỏi thiết bị của bạn
+Dữ liệu vị trí của bạn vẫn ở trên thiết bị của bạn và chỉ được sử dụng cho các tính năng trên.</string>
+    <string name="amnezia_preset">Cấu hình</string>
+    <string name="amnezia_preset_description">Chọn cấu hình đặt trước cho chống kiểm duyệt</string>
+    <string name="amnezia_preset_russian_quick">Nga Nhanh (Không rác)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">Phiên bản IP</string>
+    <string name="ipv6_mode_description">Chọn phiên bản IP nào để sử dụng cho kết nối VPN.</string>
+    <string name="ip_stack">Ngăn xếp IP</string>
+    <string name="ip_stack_description">Cấu hình ngăn xếp IP cho kết nối VPN.</string>
+    <string name="egress">Lối ra</string>
+    <string name="ingress">Lối vào</string>
+    <string name="ipv4_only">Chỉ IPv4</string>
+    <string name="manual_connection_mode_failed_title">Chế độ kết nối thủ công thất bại</string>
+    <string name="manual_connection_mode_failed_description">Chúng tôi không thể kết nối bạn trên mạng này. Chế độ kết nối tự động được khuyến nghị để có kết quả tốt nhất. Chuyển sang Tự động?</string>
+    <string name="switch_to_auto">Chuyển sang Tự động</string>
+    <string name="reset_password">Đặt lại mật khẩu</string>
+    <string name="password_reset_email_sent">Nếu bạn đã cung cấp email trong quá trình đăng ký, bạn sẽ nhận được liên kết đặt lại mật khẩu sớm. Hãy chắc chắn kiểm tra thư mục Spam của bạn.</string>
+    <string name="app_icon">Biểu tượng ứng dụng</string>
+    <string name="app_icon_description">Chọn biểu tượng ứng dụng khác để có thêm quyền riêng tư</string>
+    <string name="configuration">Cấu hình</string>
 </resources>
