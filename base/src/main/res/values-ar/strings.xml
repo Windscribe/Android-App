@@ -26,13 +26,13 @@
     <string name="sign_up_description">قم بحماية حسابك والوصول إلى إعداداتك من أي جهاز واحصل على المزيد من البيانات.</string>
     <string name="choose_username">اختر اسم المستخدم</string>
     <string name="choose_password">اختر كلمة المرور</string>
-    <string name="email_description"><![CDATA[لاستعادة كلمة المرور والتحديثات والعرض الترويجي فقط. لا البريد المزعج]]></string>
+    <string name="email_description">لاستعادة كلمة المرور والتحديثات والعرض الترويجي فقط. لا البريد المزعج</string>
     <string name="sign_up_failed_network_alert">لقد فعلنا ما بوسعنا، لكننا لم نتمكن من توصيلك بهذه الشبكة لسبب ما.</string>
     <string name="backup_api_end_point">محاولة النسخ الاحتياطي لنقطة نهاية واجهة برمجة التطبيقات ...</string>
     <string name="signing_in">جاري تسجيل الدخول...</string>
     <string name="signing_up">جاري التسجيل...</string>
     <string name="getting_session">الحصول على جلسة...</string>
-    <string name="getting_port_maps">الحصول على خرائط المنفذ&#8230;</string>
+    <string name="getting_port_maps">الحصول على خرائط المنفذ…</string>
     <string name="getting_server_config">الحصول على تكوين الخادم ...</string>
     <string name="getting_server_credentials">الحصول على بيانات اعتماد الخادم ...</string>
     <string name="getting_best_location">الحصول على أفضل موقع...</string>
@@ -87,7 +87,7 @@
     <string name="packet_size">حجم الحزمة</string>
     <string name="lan_by_pass">السماح بحركة مرور الشبكة المحلية</string>
     <string name="gps_spoofing">انتحال نظام تحديد المواقع العالمي (GPS)</string>
-    <string name="natKeepAlive"></string>
+    <string name="natKeepAlive"/>
     <string name="keep_alive">ابق على قيد الحياة</string>
     <string name="auto_detecting">الكشف التلقائي ...</string>
     <string name="decoy_traffic">شرك المرور</string>
@@ -167,8 +167,12 @@
     <string name="pricing">التسعير</string>
     <string name="all_locations">جميع المواقع</string>
     <string name="robert">ر.و.ب.إ.ر.ت.</string>
-    <string name="terms"><![CDATA[يمكن إدارة الاشتراكات شهريا أو سنويا أو إيقاف تشغيلها بالانتقال إلى إعدادات حساب متجر Google play بعد الشراء. جميع الأسعار تشمل الضرائب المطبقة.]]></string>
-    <string name="terms_policy_en"><b>شروط الاستخدام </b> &amp; <b>سياسة الخصوصية</b></string>
+    <string name="terms">يمكن إدارة الاشتراكات شهريا أو سنويا أو إيقاف تشغيلها بالانتقال إلى إعدادات حساب متجر Google play بعد الشراء. جميع الأسعار تشمل الضرائب المطبقة.</string>
+    <string name="terms_policy_en">
+        <b>شروط الاستخدام </b>
+         &amp; 
+        <b>سياسة الخصوصية</b>
+    </string>
     <string name="account_set_up">إعداد الحساب</string>
     <string name="account_set_up_description">حماية حسابك والوصول إليه من أي جهاز.</string>
     <string name="continue_free_10gb_mo">احصل على 10 جيجابايت / شهر مجانا</string>
@@ -473,7 +477,7 @@
     <string name="location_permission_required">إذن الموقع مطلوب</string>
     <string name="foreground_location_permission_reason">يحتاج Windscribe إلى إذن الموقع من أجل جعل ميزة \"القائمة البيضاء للشبكة\" تعمل.  هذا الإذن مطلوب للوصول إلى أسماء شبكات Wifi. يتم استخدام هذا الإذن فقط لهذه الميزة بالإضافة إلى وظيفة انتحال GPS. لا تغادر بيانات موقعك جهازك ، ولا يتم استخدامها لأي شيء آخر.</string>
     <string name="missing_location_permission">إذن الموقع مفقود</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[مطلوب إذن الموقع لاستخدام هذه الميزة. انتقل إلى إعدادات التطبيق &gt; أذونات &gt; الموقع وحدد السماح طوال الوقت.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">مطلوب إذن الموقع لاستخدام هذه الميزة. انتقل إلى إعدادات التطبيق &amp;gt; أذونات &amp;gt; الموقع وحدد السماح طوال الوقت.</string>
     <string name="anti_censorship">التحايل على الرقابة</string>
     <string name="anti_censorship_explainer">اتصل بشبكة VPN حتى في بيئة معادية</string>
     <string name="auto_connect">الاتصال التلقائي</string>
@@ -569,4 +573,46 @@
     <string name="continue_with_apple">المتابعة مع Apple</string>
     <string name="support_url">windscribe.com/support</string>
     <string name="windflix">Windflix</string>
+    <string name="location_permission_disclosure_title">الكشف عن إذن الموقع</string>
+    <string name="location_permission_disclosure_message">قبل منح هذا الإذن، يرجى فهم:
+ما نستخدمه من أجله:
+• الوصول إلى أسماء شبكات WiFi (SSID)
+• تمكين ميزة القائمة البيضاء للشبكة
+• وظيفة انتحال GPS
+ما لا نفعله:
+• تتبع موقعك الفعلي
+• جمع إحداثيات GPS
+• مشاركة البيانات مع أطراف ثالثة
+• إرسال البيانات خارج جهازك
+تبقى بيانات موقعك على جهازك وتُستخدم فقط للميزات المذكورة أعلاه.</string>
+    <string name="background_location_permission_disclosure_message">قبل منح إذن موقع الخلفية، يرجى فهم:
+ما نستخدمه من أجله:
+• الوصول إلى أسماء شبكات WiFi أثناء تشغيل التطبيق في الخلفية
+• تمكين ميزة القائمة البيضاء للشبكة
+• وظيفة انتحال GPS
+ما لا نفعله:
+• تتبع موقعك الفعلي
+• جمع إحداثيات GPS
+• مشاركة البيانات مع أطراف ثالثة
+• إرسال البيانات خارج جهازك
+تبقى بيانات موقعك على جهازك وتُستخدم فقط للميزات المذكورة أعلاه.</string>
+    <string name="amnezia_preset">التكوين</string>
+    <string name="amnezia_preset_description">اختر التكوين المسبق لمكافحة الرقابة</string>
+    <string name="amnezia_preset_russian_quick">روسي سريع (بدون غير مرغوب)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">إصدار IP</string>
+    <string name="ipv6_mode_description">اختر إصدار IP الذي سيتم استخدامه لاتصالات VPN.</string>
+    <string name="ip_stack">مكدس IP</string>
+    <string name="ip_stack_description">تكوين مكدس IP لاتصالات VPN.</string>
+    <string name="egress">الخروج</string>
+    <string name="ingress">الدخول</string>
+    <string name="ipv4_only">IPv4 فقط</string>
+    <string name="manual_connection_mode_failed_title">فشل وضع الاتصال اليدوي</string>
+    <string name="manual_connection_mode_failed_description">لم نتمكن من توصيلك على هذه الشبكة. يوصى بوضع الاتصال التلقائي للحصول على أفضل النتائج. التبديل إلى الوضع التلقائي؟</string>
+    <string name="switch_to_auto">التبديل إلى تلقائي</string>
+    <string name="reset_password">إعادة تعيين كلمة المرور</string>
+    <string name="password_reset_email_sent">إذا قدمت بريدًا إلكترونيًا أثناء التسجيل، فستحصل على رابط إعادة تعيين كلمة المرور قريبًا. تأكد من التحقق من مجلد البريد العشوائي.</string>
+    <string name="app_icon">أيقونة التطبيق</string>
+    <string name="app_icon_description">اختر أيقونة تطبيق مختلفة لمزيد من الخصوصية</string>
+    <string name="configuration">التكوين</string>
 </resources>

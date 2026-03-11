@@ -26,7 +26,7 @@
     <string name="sign_up_description">アカウントを保護し、どのデバイスからでも設定にアクセスし、より多くのデータを取得します。</string>
     <string name="choose_username">ユーザー名を選択</string>
     <string name="choose_password">パスワードを選択</string>
-    <string name="email_description"><![CDATA[パスワードの回復、アップデート&amp;プロモーションのみ。スパムなし]]></string>
+    <string name="email_description">パスワードの回復、アップデート&amp;amp;プロモーションのみ。スパムなし</string>
     <string name="sign_up_failed_network_alert">さて、私たちはそれにベストショットを与えました、私たちは何らかの理由でこのネットワークを使用してあなたにサインアップすることができませんでした。</string>
     <string name="backup_api_end_point">バックアップAPIエンドポイントを実行しています...</string>
     <string name="signing_in">サインインしています...</string>
@@ -167,8 +167,12 @@
     <string name="pricing">プライシング</string>
     <string name="all_locations">すべての場所</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[サブスクリプションは、毎月、毎年管理することも、購入後にGoogle Playストアのアカウント設定に移動してオフにすることもできます。すべての価格には税金が含まれています。]]></string>
-    <string name="terms_policy_en"><b>利用規約</b>&amp;<b>プライバシーポリシー</b></string>
+    <string name="terms">サブスクリプションは、毎月、毎年管理することも、購入後にGoogle Playストアのアカウント設定に移動してオフにすることもできます。すべての価格には税金が含まれています。</string>
+    <string name="terms_policy_en">
+        <b>利用規約</b>
+        &amp;
+        <b>プライバシーポリシー</b>
+    </string>
     <string name="account_set_up">アカウント設定</string>
     <string name="account_set_up_description">アカウントを保護し、どのデバイスからでもアクセスできます。</string>
     <string name="continue_free_10gb_mo">10GB/月を無料でゲット</string>
@@ -473,7 +477,7 @@
     <string name="location_permission_required">ロケーション許可が必要</string>
     <string name="foreground_location_permission_reason">Windscribe は \"Network Whitelist\" 機能を動作させるために位置情報の許可を必要とします。 この権限は、Wifiネットワーク名にアクセスするために必要です。この権限は、この機能とGPSスプーフィング機能にのみ使用されます。あなたの位置データはあなたのデバイスから離れず、他の何にも使用されません。</string>
     <string name="missing_location_permission">位置情報のアクセス許可がありません</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[この機能を使用するには、位置情報の許可が必要です。[アプリの設定] &gt; [場所] &gt; [アクセス許可] に移動し、[常に許可] を選択します。]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">この機能を使用するには、位置情報の許可が必要です。[アプリの設定] &amp;gt; [場所] &amp;gt; [アクセス許可] に移動し、[常に許可] を選択します。</string>
     <string name="anti_censorship">検閲の回避</string>
     <string name="anti_censorship_explainer">過酷な環境でもVPNに接続します</string>
     <string name="auto_connect">自動接続</string>
@@ -569,4 +573,46 @@
     <string name="continue_with_apple">Appleで続行</string>
     <string name="support_url">windscribe.com/support</string>
     <string name="windflix">Windflix</string>
+    <string name="location_permission_disclosure_title">位置情報許可の開示</string>
+    <string name="location_permission_disclosure_message">この許可を与える前に、ご理解ください:
+使用目的:
+• WiFiネットワーク名(SSID)へのアクセス
+• ネットワークホワイトリスト機能の有効化
+• GPSスプーフィング機能
+行わないこと:
+• 物理的な位置の追跡
+• GPS座標の収集
+• 第三者とのデータ共有
+• デバイス外へのデータ送信
+位置情報データはデバイス内に留まり、上記の機能にのみ使用されます。</string>
+    <string name="background_location_permission_disclosure_message">バックグラウンド位置情報許可を与える前に、ご理解ください:
+使用目的:
+• アプリがバックグラウンドで実行中にWiFiネットワーク名にアクセス
+• ネットワークホワイトリスト機能の有効化
+• GPSスプーフィング機能
+行わないこと:
+• 物理的な位置の追跡
+• GPS座標の収集
+• 第三者とのデータ共有
+• デバイス外へのデータ送信
+位置情報データはデバイス内に留まり、上記の機能にのみ使用されます。</string>
+    <string name="amnezia_preset">構成</string>
+    <string name="amnezia_preset_description">検閲対策のプリセット構成を選択</string>
+    <string name="amnezia_preset_russian_quick">ロシア クイック（ジャンクなし）</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">IPバージョン</string>
+    <string name="ipv6_mode_description">VPN接続に使用するIPバージョンを選択してください。</string>
+    <string name="ip_stack">IPスタック</string>
+    <string name="ip_stack_description">VPN接続用のIPスタックを構成します。</string>
+    <string name="egress">エグレス</string>
+    <string name="ingress">イングレス</string>
+    <string name="ipv4_only">IPv4のみ</string>
+    <string name="manual_connection_mode_failed_title">手動接続モードが失敗しました</string>
+    <string name="manual_connection_mode_failed_description">このネットワークで接続できませんでした。最良の結果を得るには自動接続モードをお勧めします。自動に切り替えますか？</string>
+    <string name="switch_to_auto">自動に切り替え</string>
+    <string name="reset_password">パスワードをリセット</string>
+    <string name="password_reset_email_sent">登録時にメールアドレスを提供している場合、まもなくパスワードリセットリンクを受け取ります。スパムフォルダを確認してください。</string>
+    <string name="app_icon">アプリアイコン</string>
+    <string name="app_icon_description">さらなるプライバシーのために別のアプリアイコンを選択</string>
+    <string name="configuration">構成</string>
 </resources>

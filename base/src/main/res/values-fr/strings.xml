@@ -26,20 +26,20 @@
     <string name="sign_up_description">Protégez votre compte, accédez à vos paramètres depuis n’importe quel appareil et obtenez plus de données.</string>
     <string name="choose_username">Choisissez nom d’utilisateur</string>
     <string name="choose_password">Choisissez mot de passe</string>
-    <string name="email_description"><![CDATA[Pour la récupération de mot de passe, mises à jours, et promotion uniquement. Pas de spam]]></string>
+    <string name="email_description">Pour la récupération de mot de passe, mises à jours, et promotion uniquement. Pas de spam</string>
     <string name="sign_up_failed_network_alert">Désolé, nous n\'avons pas pu vous inscrire sur ce réseau.</string>
-    <string name="backup_api_end_point">Essayer le point de terminaison de l’Api de sauvegarde&#8230;</string>
-    <string name="signing_in">Connexion&#8230;</string>
-    <string name="signing_up">Inscription&#8230;</string>
-    <string name="getting_session">Obtenir une session&#8230;</string>
+    <string name="backup_api_end_point">Essayer le point de terminaison de l’Api de sauvegarde…</string>
+    <string name="signing_in">Connexion…</string>
+    <string name="signing_up">Inscription…</string>
+    <string name="getting_session">Obtenir une session…</string>
     <string name="getting_port_maps">Obtenir des cartes de port...</string>
-    <string name="getting_server_config">Obtenir la configuration du serveur&#8230;</string>
-    <string name="getting_server_credentials">Obtention des informations d’identification du serveur&#8230;</string>
-    <string name="getting_best_location">Obtenir le meilleur emplacement&#8230;</string>
-    <string name="getting_server_list">Obtention de la liste des serveurs&#8230;</string>
-    <string name="preparing_your_dashboard">Préparation de votre tableau de bord&#8230;</string>
-    <string name="trying_static_endpoint">Essayer un point de terminaison statique&#8230;</string>
-    <string name="getting_reg_token">Obtenir un jeton reg&#8230;</string>
+    <string name="getting_server_config">Obtenir la configuration du serveur…</string>
+    <string name="getting_server_credentials">Obtention des informations d’identification du serveur…</string>
+    <string name="getting_best_location">Obtenir le meilleur emplacement…</string>
+    <string name="getting_server_list">Obtention de la liste des serveurs…</string>
+    <string name="preparing_your_dashboard">Préparation de votre tableau de bord…</string>
+    <string name="trying_static_endpoint">Essayer un point de terminaison statique…</string>
+    <string name="getting_reg_token">Obtenir un jeton reg…</string>
     <string name="invalid_email_format">E-mail non valide!</string>
     <string name="email_empty">E-mail vide!</string>
     <string name="email">Adresse e-mail</string>
@@ -67,14 +67,14 @@
     <string name="pro_reason_to_confirm">Veuillez confirmer votre adresse e-mail pour protéger votre compte</string>
     <string name="connected">RELIÉ</string>
     <string name="connected_lowercase">Relié</string>
-    <string name="connecting">CONNECTANT&#160;</string>
+    <string name="connecting">CONNECTANT </string>
     <string name="connecting_to">Connexion à %s</string>
     <string name="connected_to">Connecté à %s</string>
     <string name="disconnecting">DÉCONNEXION</string>
     <string name="disconnected">COUPÉ</string>
-    <string name="tunnel_test_failed">LA CONNECTIVITÉ A ÉCHOUÉ&#8230;</string>
-    <string name="checking_connectivity">Vérification de la connectivité&#8230;</string>
-    <string name="connectivity_test_failed">Echec du test de connectivité&#8230;</string>
+    <string name="tunnel_test_failed">LA CONNECTIVITÉ A ÉCHOUÉ…</string>
+    <string name="checking_connectivity">Vérification de la connectivité…</string>
+    <string name="connectivity_test_failed">Echec du test de connectivité…</string>
     <string name="best_location">Meilleur emplacement</string>
     <string name="connection_mode">Mode de connexion</string>
     <string name="preferred_protocol">Protocole préféré</string>
@@ -167,8 +167,12 @@
     <string name="pricing">PRISÉE</string>
     <string name="all_locations">Tous les emplacements</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[Les abonnements peuvent être gérés mensuellement, annuellement ou désactivés en accédant aux paramètres du compte Google Play Store après l’achat. Tous les prix incluent les taxes applicables.]]></string>
-    <string name="terms_policy_en"><b>Conditions d\'utilisation </b> et <b>Politique de confidentialité.</b></string>
+    <string name="terms">Les abonnements peuvent être gérés mensuellement, annuellement ou désactivés en accédant aux paramètres du compte Google Play Store après l’achat. Tous les prix incluent les taxes applicables.</string>
+    <string name="terms_policy_en">
+        <b>Conditions d\'utilisation </b>
+         et 
+        <b>Politique de confidentialité.</b>
+    </string>
     <string name="account_set_up">Configuration du compte</string>
     <string name="account_set_up_description">Protégez votre compte et accédez-y depuis n’importe quel appareil.</string>
     <string name="continue_free_10gb_mo">Obtenez gratuitement 10 Go/mois</string>
@@ -473,7 +477,7 @@ dernier emplacement choisi.</string>
     <string name="location_permission_required">Autorisation de localisation requise</string>
     <string name="foreground_location_permission_reason">Windscribe a besoin de l’autorisation de localisation pour faire fonctionner la fonctionnalité \"Liste blanche réseau\ ».  Cette autorisation est requise pour accéder aux noms de réseau Wifi. Cette autorisation est utilisée uniquement pour cette fonctionnalité ainsi que pour la fonctionnalité d’usurpation GPS. Vos données de localisation ne quittent pas votre appareil et ne sont utilisées pour rien d’autre.</string>
     <string name="missing_location_permission">Autorisation de localisation manquante</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Une autorisation de localisation est requise pour utiliser cette fonctionnalité. Accédez aux paramètres de l’application &gt; Autorisations &gt; emplacement et sélectionnez Autoriser tout le temps.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Une autorisation de localisation est requise pour utiliser cette fonctionnalité. Accédez aux paramètres de l’application &amp;gt; Autorisations &amp;gt; emplacement et sélectionnez Autoriser tout le temps.</string>
     <string name="anti_censorship">Contourner la censure</string>
     <string name="anti_censorship_explainer">Connectez-vous au VPN, même dans un environnement hostile</string>
     <string name="auto_connect">Connexion automatique</string>
@@ -571,4 +575,44 @@ dernier emplacement choisi.</string>
     <string name="windflix">Windflix</string>
     <string name="app_icon">Icône d\'appli</string>
     <string name="app_icon_description">Choisissez une nouvelle icône d\'appli pour plus de confidentialité</string>
+    <string name="location_permission_disclosure_title">Divulgation de l\'autorisation de localisation</string>
+    <string name="location_permission_disclosure_message">Avant d\'accorder cette autorisation, veuillez comprendre:
+À quoi nous l\'utilisons:
+• Accéder aux noms des réseaux WiFi (SSID)
+• Activer la fonctionnalité de liste blanche réseau
+• Fonctionnalité d\'usurpation GPS
+Ce que nous ne faisons PAS:
+• Suivre votre emplacement physique
+• Collecter les coordonnées GPS
+• Partager des données avec des tiers
+• Envoyer des données hors de votre appareil
+Vos données de localisation restent sur votre appareil et sont utilisées uniquement pour les fonctionnalités ci-dessus.</string>
+    <string name="background_location_permission_disclosure_message">Avant d\'accorder l\'autorisation de localisation en arrière-plan, veuillez comprendre:
+À quoi nous l\'utilisons:
+• Accéder aux noms des réseaux WiFi pendant que l\'application s\'exécute en arrière-plan
+• Activer la fonctionnalité de liste blanche réseau
+• Fonctionnalité d\'usurpation GPS
+Ce que nous ne faisons PAS:
+• Suivre votre emplacement physique
+• Collecter les coordonnées GPS
+• Partager des données avec des tiers
+• Envoyer des données hors de votre appareil
+Vos données de localisation restent sur votre appareil et sont utilisées uniquement pour les fonctionnalités ci-dessus.</string>
+    <string name="amnezia_preset">Configuration</string>
+    <string name="amnezia_preset_description">Choisissez la configuration prédéfinie pour l\'anti-censure</string>
+    <string name="amnezia_preset_russian_quick">Rapide russe (Sans ordure)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">Version IP</string>
+    <string name="ipv6_mode_description">Choisissez la version IP à utiliser pour les connexions VPN.</string>
+    <string name="ip_stack">Pile IP</string>
+    <string name="ip_stack_description">Configurez la pile IP pour les connexions VPN.</string>
+    <string name="egress">Sortie</string>
+    <string name="ingress">Entrée</string>
+    <string name="ipv4_only">IPv4 uniquement</string>
+    <string name="manual_connection_mode_failed_title">Échec du mode de connexion manuel</string>
+    <string name="manual_connection_mode_failed_description">Nous n\'avons pas pu vous connecter sur ce réseau. Le mode de connexion automatique est recommandé pour de meilleurs résultats. Passer en Auto ?</string>
+    <string name="switch_to_auto">Passer en Auto</string>
+    <string name="reset_password">Réinitialiser le mot de passe</string>
+    <string name="password_reset_email_sent">Si vous avez fourni un e-mail lors de l\'inscription, vous recevrez bientôt un lien de réinitialisation du mot de passe. Assurez-vous de vérifier votre dossier Spam.</string>
+    <string name="configuration">Configuration</string>
 </resources>

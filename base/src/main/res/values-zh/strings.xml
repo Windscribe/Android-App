@@ -26,7 +26,7 @@
     <string name="sign_up_description">保护您的帐户，从任何设备访问您的设置并获取更多数据。</string>
     <string name="choose_username">选择用户名</string>
     <string name="choose_password">选择密码</string>
-    <string name="email_description"><![CDATA[仅用于密码恢复，更新和促销。无垃圾邮件]]></string>
+    <string name="email_description">仅用于密码恢复，更新和促销。无垃圾邮件</string>
     <string name="sign_up_failed_network_alert">好吧，我们尽了最大的努力，由于某种原因，我们无法使用此网络注册您。</string>
     <string name="backup_api_end_point">正在尝试备份 api 端点...</string>
     <string name="signing_in">正在登录...</string>
@@ -167,8 +167,13 @@
     <string name="pricing">定价</string>
     <string name="all_locations">所有地点</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[订阅可以按月、按年进行管理，也可以在购买后转到 Google Play 商店帐户设置中关闭。所有价格均包含适用税费。]]></string>
-    <string name="terms_policy_en"><b>使用条款</b> &amp; <b>隐私政策</b>。</string>
+    <string name="terms">订阅可以按月、按年进行管理，也可以在购买后转到 Google Play 商店帐户设置中关闭。所有价格均包含适用税费。</string>
+    <string name="terms_policy_en">
+        <b>使用条款</b>
+         &amp; 
+        <b>隐私政策</b>
+        。
+    </string>
     <string name="account_set_up">帐户设置</string>
     <string name="account_set_up_description">保护您的帐户并从任何设备访问它。</string>
     <string name="continue_free_10gb_mo">免费获得 10GB/月</string>
@@ -342,7 +347,11 @@
     <string name="Error">错误</string>
     <string name="text_account_set_up">注册</string>
     <string name="xpress_login">延迟登录</string>
-    <string name="web_login_description">在任意设备上访问 <b>https://windscribe.com/lazy</b> 并输入以下代码</string>
+    <string name="web_login_description">
+        在任意设备上访问 
+        <b>https://windscribe.com/lazy</b>
+         并输入以下代码
+    </string>
     <string name="app_login_description">在手机或平板电脑上使用您的 Windscribe Android 应用程序，转到首选项（左上角），在“帐户”下选择“延迟登录”并输入下面的代码。</string>
     <string name="or">或</string>
     <string name="generate_code">生成代码</string>
@@ -473,7 +482,7 @@
     <string name="location_permission_required">需要位置权限</string>
     <string name="foreground_location_permission_reason">Windscribe需要位置权限才能使“网络白名单”功能正常工作。需要此权限才能访问 Wi-Fi 网络名称。此权限仅用于此功能以及 GPS 欺骗功能。您的位置信息不会泄漏，也不会用于其他任何用途。</string>
     <string name="missing_location_permission">缺少位置权限</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[需要位置权限才能使用此功能。转到“应用设置”&gt;“权限”&gt;“位置”，然后选择“始终允许”。]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">需要位置权限才能使用此功能。转到“应用设置”&amp;gt;“权限”&amp;gt;“位置”，然后选择“始终允许”。</string>
     <string name="anti_censorship">规避审查</string>
     <string name="anti_censorship_explainer">即使在恶劣的环境中也能连接到 VPN。</string>
     <string name="auto_connect">自动连接</string>
@@ -569,4 +578,46 @@
     <string name="continue_with_apple">使用 Apple 继续</string>
     <string name="support_url">https://windscribe.com/support</string>
     <string name="windflix">Windflix</string>
+    <string name="location_permission_disclosure_title">位置权限披露</string>
+    <string name="location_permission_disclosure_message">在授予此权限之前，请理解:
+我们使用它的目的:
+• 访问WiFi网络名称(SSID)
+• 启用网络白名单功能
+• GPS欺骗功能
+我们不做什么:
+• 跟踪您的物理位置
+• 收集GPS坐标
+• 与第三方共享数据
+• 将数据发送到设备外部
+您的位置数据保留在您的设备上，仅用于上述功能。</string>
+    <string name="background_location_permission_disclosure_message">在授予后台位置权限之前，请理解:
+我们使用它的目的:
+• 在应用程序在后台运行时访问WiFi网络名称
+• 启用网络白名单功能
+• GPS欺骗功能
+我们不做什么:
+• 跟踪您的物理位置
+• 收集GPS坐标
+• 与第三方共享数据
+• 将数据发送到设备外部
+您的位置数据保留在您的设备上，仅用于上述功能。</string>
+    <string name="amnezia_preset">配置</string>
+    <string name="amnezia_preset_description">选择反审查的预设配置</string>
+    <string name="amnezia_preset_russian_quick">俄罗斯快速(无垃圾)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">IP版本</string>
+    <string name="ipv6_mode_description">选择用于VPN连接的IP版本。</string>
+    <string name="ip_stack">IP堆栈</string>
+    <string name="ip_stack_description">为VPN连接配置IP堆栈。</string>
+    <string name="egress">出口</string>
+    <string name="ingress">入口</string>
+    <string name="ipv4_only">仅IPv4</string>
+    <string name="manual_connection_mode_failed_title">手动连接模式失败</string>
+    <string name="manual_connection_mode_failed_description">我们无法在此网络上连接您。建议使用自动连接模式以获得最佳结果。切换到自动？</string>
+    <string name="switch_to_auto">切换到自动</string>
+    <string name="reset_password">重置密码</string>
+    <string name="password_reset_email_sent">如果您在注册时提供了电子邮件，您将很快收到密码重置链接。请务必检查您的垃圾邮件文件夹。</string>
+    <string name="app_icon">应用图标</string>
+    <string name="app_icon_description">选择不同的应用图标以获得更多隐私</string>
+    <string name="configuration">配置</string>
 </resources>

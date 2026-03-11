@@ -26,7 +26,7 @@
     <string name="sign_up_description">अपने खाते की सुरक्षा करें, किसी भी डिवाइस से अपनी सेटिंग्स तक पहुंचें और अधिक डेटा प्राप्त करें।</string>
     <string name="choose_username">उपयोगकर्ता नाम चुनें</string>
     <string name="choose_password">पासवर्ड चुनें</string>
-    <string name="email_description"><![CDATA[पासवर्ड रिकवरी, अपडेट और प्रोमो के लिए ही। कोई स्पैम नहीं]]></string>
+    <string name="email_description">पासवर्ड रिकवरी, अपडेट और प्रोमो के लिए ही। कोई स्पैम नहीं</string>
     <string name="sign_up_failed_network_alert">खैर हमने इसे अपना सर्वश्रेष्ठ शॉट दिया, हम बस किसी कारण से इस नेटवर्क का उपयोग करके आपको साइन अप नहीं कर सके।</string>
     <string name="backup_api_end_point">बैकअप एपीआई अंत बिंदु की कोशिश कर रहा है ...</string>
     <string name="signing_in">साइन इन करें...</string>
@@ -167,8 +167,12 @@
     <string name="pricing">मूल्य निर्धारण</string>
     <string name="all_locations">सभी स्थान</string>
     <string name="robert">आर.ओ.बी.ई.आर.टी.</string>
-    <string name="terms"><![CDATA[खरीदारी के बाद Google Play Store खाता सेटिंग में जाकर सदस्यताओं को मासिक, वार्षिक या बंद किया जा सकता है. सभी कीमतों में लागू कर शामिल हैं।]]></string>
-    <string name="terms_policy_en"><b>उपयोग की शर्तें </b> &amp; <b>गोपनीयता नीति.</b></string>
+    <string name="terms">खरीदारी के बाद Google Play Store खाता सेटिंग में जाकर सदस्यताओं को मासिक, वार्षिक या बंद किया जा सकता है. सभी कीमतों में लागू कर शामिल हैं।</string>
+    <string name="terms_policy_en">
+        <b>उपयोग की शर्तें </b>
+         &amp; 
+        <b>गोपनीयता नीति.</b>
+    </string>
     <string name="account_set_up">खाता सेटअप</string>
     <string name="account_set_up_description">अपने खाते की सुरक्षा करें और इसे किसी भी डिवाइस से एक्सेस करें।</string>
     <string name="continue_free_10gb_mo">मुफ्त 10GB / माह प्राप्त करें</string>
@@ -473,7 +477,7 @@
     <string name="location_permission_required">स्थान अनुमति आवश्यक है</string>
     <string name="foreground_location_permission_reason">विंडस्क्राइब को \"नेटवर्क व्हाइटलिस्ट\" सुविधा को काम करने के लिए स्थान अनुमति की आवश्यकता होती है।  वाईफ़ाई नेटवर्क नामों तक पहुँचने के लिए यह अनुमति आवश्यक है. इस अनुमति का उपयोग केवल इस सुविधा के साथ-साथ जीपीएस स्पूफिंग कार्यक्षमता के लिए किया जाता है। आपका स्थान डेटा आपके डिवाइस को नहीं छोड़ता है, और किसी और चीज़ के लिए उपयोग नहीं किया जाता है।</string>
     <string name="missing_location_permission">स्थान अनुमति अनुपलब्ध</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[इस सुविधा का उपयोग करने के लिए स्थान अनुमति आवश्यक है. स्थान &gt; अनुमतियों &gt; ऐप सेटिंग्स पर जाएं और हर समय अनुमति दें का चयन करें।]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">इस सुविधा का उपयोग करने के लिए स्थान अनुमति आवश्यक है. स्थान &amp;gt; अनुमतियों &amp;gt; ऐप सेटिंग्स पर जाएं और हर समय अनुमति दें का चयन करें।</string>
     <string name="anti_censorship">सेंसरशिप को दरकिनार करें</string>
     <string name="anti_censorship_explainer">शत्रुतापूर्ण वातावरण में भी वीपीएन से कनेक्ट करें.</string>
     <string name="auto_connect">ऑटो-कनेक्ट</string>
@@ -569,4 +573,46 @@
     <string name="continue_with_apple">Apple के साथ जारी रखें</string>
     <string name="support_url">windscribe.com/support</string>
     <string name="windflix">Windflix</string>
+    <string name="location_permission_disclosure_title">स्थान अनुमति प्रकटीकरण</string>
+    <string name="location_permission_disclosure_message">इस अनुमति को देने से पहले, कृपया समझें:
+हम इसका उपयोग किसलिए करते हैं:
+• WiFi नेटवर्क नाम (SSID) तक पहुंच
+• नेटवर्क व्हाइटलिस्ट सुविधा सक्षम करें
+• GPS स्पूफिंग कार्यक्षमता
+हम क्या नहीं करते:
+• आपके भौतिक स्थान को ट्रैक करना
+• GPS निर्देशांक एकत्र करना
+• तीसरे पक्षों के साथ डेटा साझा करना
+• आपके डिवाइस से डेटा भेजना
+आपका स्थान डेटा आपके डिवाइस पर रहता है और केवल उपरोक्त सुविधाओं के लिए उपयोग किया जाता है।</string>
+    <string name="background_location_permission_disclosure_message">बैकग्राउंड स्थान अनुमति देने से पहले, कृपया समझें:
+हम इसका उपयोग किसलिए करते हैं:
+• ऐप बैकग्राउंड में चलते समय WiFi नेटवर्क नाम तक पहुंच
+• नेटवर्क व्हाइटलिस्ट सुविधा सक्षम करें
+• GPS स्पूफिंग कार्यक्षमता
+हम क्या नहीं करते:
+• आपके भौतिक स्थान को ट्रैक करना
+• GPS निर्देशांक एकत्र करना
+• तीसरे पक्षों के साथ डेटा साझा करना
+• आपके डिवाइस से डेटा भेजना
+आपका स्थान डेटा आपके डिवाइस पर रहता है और केवल उपरोक्त सुविधाओं के लिए उपयोग किया जाता है।</string>
+    <string name="amnezia_preset">कॉन्फ़िगरेशन</string>
+    <string name="amnezia_preset_description">सेंसरशिप-विरोधी के लिए प्रीसेट कॉन्फ़िगरेशन चुनें</string>
+    <string name="amnezia_preset_russian_quick">रूसी त्वरित (कोई जंक नहीं)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">IP संस्करण</string>
+    <string name="ipv6_mode_description">VPN कनेक्शन के लिए कौन सा IP संस्करण उपयोग करना है चुनें।</string>
+    <string name="ip_stack">IP स्टैक</string>
+    <string name="ip_stack_description">VPN कनेक्शन के लिए IP स्टैक कॉन्फ़िगर करें।</string>
+    <string name="egress">निकास</string>
+    <string name="ingress">प्रवेश</string>
+    <string name="ipv4_only">केवल IPv4</string>
+    <string name="manual_connection_mode_failed_title">मैनुअल कनेक्शन मोड विफल</string>
+    <string name="manual_connection_mode_failed_description">हम इस नेटवर्क पर आपको कनेक्ट नहीं कर सके। सर्वोत्तम परिणामों के लिए स्वचालित कनेक्शन मोड की सिफारिश की जाती है। ऑटो में स्विच करें?</string>
+    <string name="switch_to_auto">ऑटो में स्विच करें</string>
+    <string name="reset_password">पासवर्ड रीसेट करें</string>
+    <string name="password_reset_email_sent">यदि आपने पंजीकरण के दौरान ईमेल प्रदान किया था, तो आपको शीघ्र ही पासवर्ड रीसेट लिंक मिलेगा। अपने स्पैम फ़ोल्डर की जांच अवश्य करें।</string>
+    <string name="app_icon">ऐप आइकन</string>
+    <string name="app_icon_description">और भी अधिक गोपनीयता के लिए एक अलग ऐप आइकन चुनें</string>
+    <string name="configuration">कॉन्फ़िगरेशन</string>
 </resources>

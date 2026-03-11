@@ -26,20 +26,20 @@
     <string name="sign_up_description">আপনার অ্যাকাউন্ট নিরাপদ রাখুন, যে কোনো ডিভাইস থেকে আপনার সেটিংস অ্যাক্সেস করুন এবং আরও ডেটা পান।</string>
     <string name="choose_username">ব্যবহারকারীর নাম নির্বাচন করুন</string>
     <string name="choose_password">পাসওয়ার্ড নির্বাচন করুন</string>
-    <string name="email_description"><![CDATA[পাসওয়ার্ড পুনরুদ্ধার, একাউন্ট সংক্রান্ত সূচনা ও প্রচারের জন্য মাত্র। কোনো পাঠানো হবে না।]]></string>
+    <string name="email_description">পাসওয়ার্ড পুনরুদ্ধার, একাউন্ট সংক্রান্ত সূচনা ও প্রচারের জন্য মাত্র। কোনো পাঠানো হবে না।</string>
     <string name="sign_up_failed_network_alert">আমরা আমাদের সেরা চেষ্টা করেছি, কিন্তু কোনো কারণে আপনাকে এই নেটওয়ার্কের মাধ্যমে সাইন আপ করা যায়নি।</string>
-    <string name="backup_api_end_point">ব্যাকআপ এপিআই এন্ড পয়েন্ট চেষ্টা করছি&#8230;</string>
-    <string name="signing_in">সাইন ইন হচ্ছে&#8230;</string>
-    <string name="signing_up">সাইন আপ হচ্ছে&#8230;</string>
-    <string name="getting_session">সেশন আনা হচ্ছে&#8230;</string>
-    <string name="getting_port_maps">পোর্ট ম্যাপস আনা হচ্ছে&#8230;</string>
-    <string name="getting_server_config">সার্ভার বিন্যাস আনা হচ্ছে&#8230;</string>
-    <string name="getting_server_credentials">সার্ভার শংসাপত্র আনা হচ্ছে&#8230;</string>
-    <string name="getting_best_location">সেরা লোকেশন আনা হচ্ছে&#8230;</string>
-    <string name="getting_server_list">সার্ভার তালিকা আনা হচ্ছে&#8230;</string>
-    <string name="preparing_your_dashboard">আপনার ড্যাশবোর্ড প্রস্তুত করা হচ্ছে&#8230;</string>
-    <string name="trying_static_endpoint">স্থায়ী এন্ডপয়েন্ট চেষ্টা করা হচ্ছে&#8230;</string>
-    <string name="getting_reg_token">রেজিস্ট্রেশন টোকেন আনা হচ্ছে&#8230;</string>
+    <string name="backup_api_end_point">ব্যাকআপ এপিআই এন্ড পয়েন্ট চেষ্টা করছি…</string>
+    <string name="signing_in">সাইন ইন হচ্ছে…</string>
+    <string name="signing_up">সাইন আপ হচ্ছে…</string>
+    <string name="getting_session">সেশন আনা হচ্ছে…</string>
+    <string name="getting_port_maps">পোর্ট ম্যাপস আনা হচ্ছে…</string>
+    <string name="getting_server_config">সার্ভার বিন্যাস আনা হচ্ছে…</string>
+    <string name="getting_server_credentials">সার্ভার শংসাপত্র আনা হচ্ছে…</string>
+    <string name="getting_best_location">সেরা লোকেশন আনা হচ্ছে…</string>
+    <string name="getting_server_list">সার্ভার তালিকা আনা হচ্ছে…</string>
+    <string name="preparing_your_dashboard">আপনার ড্যাশবোর্ড প্রস্তুত করা হচ্ছে…</string>
+    <string name="trying_static_endpoint">স্থায়ী এন্ডপয়েন্ট চেষ্টা করা হচ্ছে…</string>
+    <string name="getting_reg_token">রেজিস্ট্রেশন টোকেন আনা হচ্ছে…</string>
     <string name="invalid_email_format">অবৈধ ইমেইল!</string>
     <string name="email_empty">ইমেইল খালি!</string>
     <string name="email">ইমেইল</string>
@@ -67,14 +67,14 @@
     <string name="pro_reason_to_confirm">আপনার অ্যাকাউন্ট নিরাপদ রাখতে অনুগ্রহ করে আপনার ইমেইল নিশ্চিত করুন</string>
     <string name="connected">সংযুক্ত</string>
     <string name="connected_lowercase">সংযুক্ত</string>
-    <string name="connecting">সংযোগ করা হচ্ছে&#160;</string>
+    <string name="connecting">সংযোগ করা হচ্ছে </string>
     <string name="connecting_to">%s এ সংযোগ করা হচ্ছে</string>
     <string name="connected_to">%s এ সংযুক্ত</string>
     <string name="disconnecting">অসংযোগ করা হচ্ছে</string>
     <string name="disconnected">অসংযুক্ত</string>
-    <string name="tunnel_test_failed">সংযোগতা ব্যর্থ&#8230;</string>
-    <string name="checking_connectivity">সংযোগতা পরীক্ষা করা হচ্ছে&#8230;</string>
-    <string name="connectivity_test_failed">সংযোগতা পরীক্ষা ব্যর্থ&#8230;</string>
+    <string name="tunnel_test_failed">সংযোগতা ব্যর্থ…</string>
+    <string name="checking_connectivity">সংযোগতা পরীক্ষা করা হচ্ছে…</string>
+    <string name="connectivity_test_failed">সংযোগতা পরীক্ষা ব্যর্থ…</string>
     <string name="best_location">সেরা স্থান</string>
     <string name="connection_mode">সংযোগ মোড</string>
     <string name="preferred_protocol">পছন্দের প্রোটোকল</string>
@@ -103,7 +103,7 @@
     <string name="a_la_carte_unlimited_plan">সীমাহীন</string>
     <string name="expiry_date">মেয়াদ শেষের তারিখ</string>
     <string name="reset_date">রিসেটের তারিখ</string>
-    <string name="gb_per_month">&#160; GB প্রতি মাসে </string>
+    <string name="gb_per_month">  GB প্রতি মাসে </string>
     <string name="my_account">অ্যাকাউন্ট</string>
     <string name="cancel">বাতিল করুন</string>
     <string name="edit_account">অ্যাকাউন্ট পরিচালনা করুন</string>
@@ -115,7 +115,7 @@
     <string name="item_unavailable">আপনি যে বস্তুটি অনুরোধ করেছেন তা উপলব্ধ নেই। \nদয়া করে https://windscribe.com/support এ সাপোর্টের সাথে যোগাযোগ করুন!</string>
     <string name="billing_service_unavailable">বিলিং পরিষেবা উপলব্ধ নেই। দয়া করে আপনার নেটওয়ার্ক সংযোগ চেক করুন এবং আবার চেষ্টা করুন!</string>
     <string name="unknown_billing_error">অজানা ত্রুটি। দয়া করে https://windscribe.com/support এ সাপোর্টের সাথে যোগাযোগ করুন!</string>
-    <string name="fatal_error">বিলিং পরিষেবার সাথে সংযোগ স্থাপন করা যায়নি&#8230;দয়া করে আপনার নেটওয়ার্ক সংযোগ চেক করুন!</string>
+    <string name="fatal_error">বিলিং পরিষেবার সাথে সংযোগ স্থাপন করা যায়নি…দয়া করে আপনার নেটওয়ার্ক সংযোগ চেক করুন!</string>
     <string name="play_store_generic_api_error">প্লে স্টোর থেকে অনাকাঙ্ক্ষিত প্রতিক্রিয়া পাওয়া গেছে। এটি সম্প্রতি বাতিলকৃত ক্রয়ের কারণে হতে পারে। পরে আবার চেষ্টা করুন।</string>
     <string name="unable_to_process_request">আপনার অনুরোধ প্রক্রিয়া করতে আমরা অক্ষম। দয়া করে আবার চেষ্টা করুন!</string>
     <string name="play_store_updating">প্লে স্টোর আপডেট চলছে! আপডেট শেষ হওয়ার পর দয়া করে চেষ্টা করুন।</string>
@@ -167,8 +167,12 @@
     <string name="pricing">মূল্য নির্ধারণ</string>
     <string name="all_locations">সমস্ত স্থান</string>
     <string name="robert">আর.ও.বি.ই.আর.টি.</string>
-    <string name="terms"><![CDATA[মাসিক বা বার্ষিক সাবস্ক্রিপশনগুলি  ক্রয়ের পর Google Play স্টোর অ্যাকাউন্ট সেটিংসে গিয়ে বন্ধ করা যেতে পারে। সমস্ত মূল্যে প্রযোজ্য কর অন্তর্ভুক্ত।]]></string>
-    <string name="terms_policy_en"><b>ব্যবহারের শর্তাবলী</b> &amp; <b>গোপনীয়তা নীতি।</b></string>
+    <string name="terms">মাসিক বা বার্ষিক সাবস্ক্রিপশনগুলি  ক্রয়ের পর Google Play স্টোর অ্যাকাউন্ট সেটিংসে গিয়ে বন্ধ করা যেতে পারে। সমস্ত মূল্যে প্রযোজ্য কর অন্তর্ভুক্ত।</string>
+    <string name="terms_policy_en">
+        <b>ব্যবহারের শর্তাবলী</b>
+         &amp; 
+        <b>গোপনীয়তা নীতি।</b>
+    </string>
     <string name="account_set_up">অ্যাকাউন্ট সেটআপ</string>
     <string name="account_set_up_description">আপনার অ্যাকাউন্ট নিরাপদ রাখুন এবং যেকোনো ডিভাইস থেকে ব্যবহার করুন।</string>
     <string name="continue_free_10gb_mo">প্রতি মাসে বিনামূল্যে ১০GB পান</string>
@@ -176,7 +180,7 @@
     <string name="no_email_warning">ইমেইল ছাড়া, আপনার বিনামূল্যে অ্যাকাউন্টটি প্রতি মাসে ২GB ডেটা পর্যন্ত সীমিত থাকবে এবং আপনি আপনার পাসওয়ার্ড পুনরায় সেট করতে অক্ষম হবেন।</string>
     <string name="get_started">শুরু করুন</string>
     <string name="error_try_again">ত্রুটি, আবার চেষ্টা করুন!</string>
-    <string name="please_wait">অনুগ্রহ করে অপেক্ষা করুন&#8230;</string>
+    <string name="please_wait">অনুগ্রহ করে অপেক্ষা করুন…</string>
     <string name="resend">পুনরায় পাঠান</string>
     <string name="loading">লোড হচ্ছে..</string>
     <string name="retry">পুনরায় চেষ্টা করুন</string>
@@ -233,7 +237,7 @@
     <string name="network_unsecured">অনিরাপদ</string>
     <string name="preferred_protocol_description">যদি আপনার এই নেটওয়ার্কে সংযোগে সমস্যা হয়, তবে একটি ডিফল্ট প্রোটোকল নির্বাচন করুন</string>
     <string name="unknown">অজানা নেটওয়ার্ক</string>
-    <string name="loading_network_list">নেটওয়ার্কের তালিকা লোড হচ্ছে\nঅনুগ্রহ করে অপেক্ষা করুন&#8230;</string>
+    <string name="loading_network_list">নেটওয়ার্কের তালিকা লোড হচ্ছে\nঅনুগ্রহ করে অপেক্ষা করুন…</string>
     <string name="no_saved_network_list">কোনো সংরক্ষিত নেটওয়ার্কের তালিকা নেই!</string>
     <string name="network_options">নেটওয়ার্ক বিকল্পসমূহ</string>
     <string name="auto_secure">স্বয়ংক্রিয়-নিরাপদ</string>
@@ -297,7 +301,7 @@
     <string name="upgrade_title">আপনার সীমিত গোপনীয়তার চেয়ে বেশি প্রাপ্য।</string>
     <string name="text_login">লগইন</string>
     <string name="text_sign_up">সাইন আপ</string>
-    <string name="sending_debug_log">ডিবাগ লগ পাঠানো হচ্ছে\nঅনুগ্রহ করে অপেক্ষা করুন&#8230;</string>
+    <string name="sending_debug_log">ডিবাগ লগ পাঠানো হচ্ছে\nঅনুগ্রহ করে অপেক্ষা করুন…</string>
     <string name="app_log_submitted">ধন্যবাদ! অ্যাপ লগ পাঠানো সফল হয়েছে।</string>
     <string name="log_submission_failed">লগ ফাইল জমা দেওয়ার সময় ত্রুটি!</string>
     <string name="add_your_email_address">আপনার ইমেইল দিন । আপনি পাসওয়ার্ড ভুলে গেলে এই ইমেইলের সাহায্যে আপনি নতুন পাসওয়ার্ড নির্বাচন করতে পারবেন। এর জন্য আপনি ১০GB ডেটা পাবেন।</string>
@@ -342,7 +346,11 @@
     <string name="Error">ত্রুটি</string>
     <string name="text_account_set_up">সাইন আপ</string>
     <string name="xpress_login">সহজ লগইন</string>
-    <string name="web_login_description">যেকোনো ডিভাইসে <b>https://windscribe.com/lazy</b> ঠিকানায় যান এবং নীচের কোড লিখুন।</string>
+    <string name="web_login_description">
+        যেকোনো ডিভাইসে 
+        <b>https://windscribe.com/lazy</b>
+         ঠিকানায় যান এবং নীচের কোড লিখুন।
+    </string>
     <string name="app_login_description">আপনার ফোন বা ট্যাবলেটে Windscribe Android অ্যাপ ব্যবহার করে, “অ্যাকাউন্ট” এর নীচে “সহজ লগইন” নির্বাচন করুন এবং নীচের কোড লিখুন।</string>
     <string name="or">অথবা</string>
     <string name="generate_code">কোড তৈরি করুন</string>
@@ -472,7 +480,7 @@
     <string name="location_permission_required">লোকেশন  অনুমতি প্রয়োজন</string>
     <string name="foreground_location_permission_reason">নেটওয়ার্ক হোয়াইটলিস্ট\" ফিচার কাজ করার জন্য Windscribe-এর লোকেশন অনুমতি প্রয়োজন। এই অনুমতি ওয়াইফাই নেটওয়ার্কের নাম অ্যাক্সেস করার জন্য প্রয়োজন। এই অনুমতি শুধুমাত্র এই বৈশিষ্ট্য এবং GPS ঠকানো কার্যকারিতার জন্য ব্যবহার করা হয়। আপনার লোকেশন তথ্য আপনার ডিভাইস থেকে বের হয় না, এবং অন্য কোনো কাজে ব্যবহার হয় না।</string>
     <string name="missing_location_permission">লোকেশন অনুমতি অনুপস্থিত</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[এই ফিচার ব্যবহারের জন্য লোকেশন অনুমতি প্রয়োজন। অ্যাপ সেটিংসে যান > অনুমতি > লোকেশন এবং সব সময় অনুমতি দিন নির্বাচন করুন।]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">এই ফিচার ব্যবহারের জন্য লোকেশন অনুমতি প্রয়োজন। অ্যাপ সেটিংসে যান &gt; অনুমতি &gt; লোকেশন এবং সব সময় অনুমতি দিন নির্বাচন করুন।</string>
     <string name="anti_censorship">সেন্সরশিপ এড়িয়ে চলুন</string>
     <string name="anti_censorship_explainer">শত্রুতাপূর্ণ পরিবেশেও VPN-এ সংযোগ করুন</string>
     <string name="auto_connect">স্বয়ংক্রিয় সংযোগ </string>
@@ -568,4 +576,46 @@
     <string name="upgrade_to_stay_protected">সুরক্ষিত থাকার জন্য এখনই আপগ্রেড করুন বা %s তারিখে আপনার ব্যান্ডউইথ রিসেট না হওয়া পর্যন্ত অপেক্ষা করুন</string>
     <string name="changelog">পরিবর্তনের তালিকা</string>
     <string name="windflix">Windflix</string>
+    <string name="location_permission_disclosure_title">অবস্থান অনুমতি প্রকাশ</string>
+    <string name="location_permission_disclosure_message">এই অনুমতি দেওয়ার আগে, দয়া করে বুঝুন:
+আমরা এটি কীসের জন্য ব্যবহার করি:
+• WiFi নেটওয়ার্ক নাম (SSID) অ্যাক্সেস করুন
+• নেটওয়ার্ক হোয়াইটলিস্ট বৈশিষ্ট্য সক্ষম করুন
+• GPS স্পুফিং কার্যকারিতা
+আমরা কী করি না:
+• আপনার শারীরিক অবস্থান ট্র্যাক করি
+• GPS স্থানাঙ্ক সংগ্রহ করি
+• তৃতীয় পক্ষের সাথে ডেটা শেয়ার করি
+• আপনার ডিভাইসের বাইরে ডেটা পাঠাই
+আপনার অবস্থান ডেটা আপনার ডিভাইসে থাকে এবং শুধুমাত্র উপরের বৈশিষ্ট্যগুলির জন্য ব্যবহৃত হয়।</string>
+    <string name="background_location_permission_disclosure_message">ব্যাকগ্রাউন্ড অবস্থান অনুমতি দেওয়ার আগে, দয়া করে বুঝুন:
+আমরা এটি কীসের জন্য ব্যবহার করি:
+• অ্যাপ ব্যাকগ্রাউন্ডে চলার সময় WiFi নেটওয়ার্ক নাম অ্যাক্সেস করুন
+• নেটওয়ার্ক হোয়াইটলিস্ট বৈশিষ্ট্য সক্ষম করুন
+• GPS স্পুফিং কার্যকারিতা
+আমরা কী করি না:
+• আপনার শারীরিক অবস্থান ট্র্যাক করি
+• GPS স্থানাঙ্ক সংগ্রহ করি
+• তৃতীয় পক্ষের সাথে ডেটা শেয়ার করি
+• আপনার ডিভাইসের বাইরে ডেটা পাঠাই
+আপনার অবস্থান ডেটা আপনার ডিভাইসে থাকে এবং শুধুমাত্র উপরের বৈশিষ্ট্যগুলির জন্য ব্যবহৃত হয়।</string>
+    <string name="amnezia_preset">কনফিগারেশন</string>
+    <string name="amnezia_preset_description">সেন্সরশিপ-বিরোধী জন্য প্রিসেট কনফিগারেশন চয়ন করুন</string>
+    <string name="amnezia_preset_russian_quick">রাশিয়ান দ্রুত (জাঙ্ক ছাড়া)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">IP সংস্করণ</string>
+    <string name="ipv6_mode_description">VPN সংযোগগুলির জন্য কোন IP সংস্করণ ব্যবহার করবেন তা চয়ন করুন।</string>
+    <string name="ip_stack">IP স্ট্যাক</string>
+    <string name="ip_stack_description">VPN সংযোগগুলির জন্য IP স্ট্যাক কনফিগার করুন।</string>
+    <string name="egress">নির্গমন</string>
+    <string name="ingress">প্রবেশ</string>
+    <string name="ipv4_only">শুধুমাত্র IPv4</string>
+    <string name="manual_connection_mode_failed_title">ম্যানুয়াল সংযোগ মোড ব্যর্থ</string>
+    <string name="manual_connection_mode_failed_description">আমরা এই নেটওয়ার্কে আপনাকে সংযুক্ত করতে পারিনি। সর্বোত্তম ফলাফলের জন্য স্বয়ংক্রিয় সংযোগ মোড সুপারিশ করা হয়। স্বয়ংক্রিয়তে স্যুইচ করবেন?</string>
+    <string name="switch_to_auto">স্বয়ংক্রিয়তে স্যুইচ করুন</string>
+    <string name="reset_password">পাসওয়ার্ড রিসেট করুন</string>
+    <string name="password_reset_email_sent">আপনি যদি নিবন্ধনের সময় একটি ইমেল প্রদান করে থাকেন, তাহলে আপনি শীঘ্রই একটি পাসওয়ার্ড রিসেট লিঙ্ক পাবেন। আপনার স্প্যাম ফোল্ডার চেক করতে ভুলবেন না।</string>
+    <string name="app_icon">অ্যাপ আইকন</string>
+    <string name="app_icon_description">আরও গোপনীয়তার জন্য একটি ভিন্ন অ্যাপ আইকন চয়ন করুন</string>
+    <string name="configuration">কনফিগারেশন</string>
 </resources>

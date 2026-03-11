@@ -26,7 +26,7 @@
     <string name="sign_up_description">Захистіть свій обліковий запис, отримуйте доступ до налаштувань із будь-якого пристрою та отримуйте більше даних.</string>
     <string name="choose_username">Виберіть ім\я користувача</string>
     <string name="choose_password">Виберіть Пароль</string>
-    <string name="email_description"><![CDATA[Тільки для відновлення пароля, оновлення та акція. Без спаму]]></string>
+    <string name="email_description">Тільки для відновлення пароля, оновлення та акція. Без спаму</string>
     <string name="sign_up_failed_network_alert">Ну, ми зробили найкращий знімок, ми просто не могли зареєструвати вас за допомогою цієї мережі з якоїсь причини.</string>
     <string name="backup_api_end_point">Спроба кінцевої точки API резервного копіювання...</string>
     <string name="signing_in">Вхід...</string>
@@ -167,8 +167,12 @@
     <string name="pricing">ЦІНОУТВОРЕННЯ</string>
     <string name="all_locations">Всі локації</string>
     <string name="robert">Р.О.Б.Е.Р.Т.</string>
-    <string name="terms"><![CDATA[Підписками можна керувати щомісяця, щорічно або вимкнути, перейшовши в налаштування облікового запису магазину Google Play після покупки. Усі ціни включають відповідні податки.]]></string>
-    <string name="terms_policy_en"><b>Умови використання </b> &amp; <b>Політика конфіденційності.</b></string>
+    <string name="terms">Підписками можна керувати щомісяця, щорічно або вимкнути, перейшовши в налаштування облікового запису магазину Google Play після покупки. Усі ціни включають відповідні податки.</string>
+    <string name="terms_policy_en">
+        <b>Умови використання </b>
+         &amp; 
+        <b>Політика конфіденційності.</b>
+    </string>
     <string name="account_set_up">Налаштування облікового запису</string>
     <string name="account_set_up_description">Захистіть свій обліковий запис і отримайте доступ до нього з будь-якого пристрою.</string>
     <string name="continue_free_10gb_mo">Отримайте безкоштовно 10 ГБ/місяць</string>
@@ -255,7 +259,6 @@
     <string name="talk_to_garry_description">Не Siri розумна, але все одно може відповідати на запитання.</string>
     <string name="contact_humans">Звернутися до людей</string>
     <string name="contact_humans_description">Вибачте за непорозуміння. Ось вірний переклад:
-
 У вас виникла проблема, з якою не може впоратися Гаррі? Зверніться до служби підтримки.</string>
     <string name="community_support">Підтримка спільноти</string>
     <string name="community_support_description">Найкращі місця, де можна допомогти та отримати допомогу від інших користувачів.</string>
@@ -475,7 +478,7 @@
     <string name="location_permission_required">Потрібен дозвіл на місцезнаходження</string>
     <string name="foreground_location_permission_reason">Windscribe потрібен дозвіл на розташування, щоб функція \"Білий список мережі\" працювала.  Цей дозвіл потрібен для доступу до імен мереж Wi-Fi. Цей дозвіл використовується виключно для цієї функції, а також для функції підміни GPS. Дані про ваше місцезнаходження не залишають ваш пристрій і не використовуються ні для чого іншого.</string>
     <string name="missing_location_permission">Дозвіл на доступ до місцезнаходження відсутній</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Для використання цієї функції потрібен дозвіл на доступ до геоданих. Перейдіть до налаштувань програми &gt; Дозволи &gt; Місцезнаходження та виберіть Дозволити постійно.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Для використання цієї функції потрібен дозвіл на доступ до геоданих. Перейдіть до налаштувань програми &amp;gt; Дозволи &amp;gt; Місцезнаходження та виберіть Дозволити постійно.</string>
     <string name="anti_censorship">Обхід цензури</string>
     <string name="anti_censorship_explainer">Підключайтеся до VPN навіть у ворожому середовищі</string>
     <string name="auto_connect">Автоматичне підключення</string>
@@ -569,4 +572,48 @@
     <string name="windflix">Windflix</string>
     <string name="changelog">Список змін</string>
     <string name="upgrade_to_stay_protected">Оновіть зараз, щоб залишатися захищеними, або зачекайте, доки ваша пропускна здатність не буде відновлена %s</string>
+    <string name="enter_email">Введіть email</string>
+    <string name="advance_description">Виконати розширені налаштування роботи додатка</string>
+    <string name="location_permission_disclosure_title">Розкриття дозволу на місцезнаходження</string>
+    <string name="location_permission_disclosure_message">Перед наданням цього дозволу, будь ласка, зрозумійте:
+Для чого ми його використовуємо:
+• Доступ до імен мереж WiFi (SSID)
+• Увімкнення функції білого списку мережі
+• Функціональність підміни GPS
+Що ми НЕ робимо:
+• Відстежуємо ваше фізичне місцезнаходження
+• Збираємо координати GPS
+• Ділимося даними з третіми особами
+• Надсилаємо дані за межі вашого пристрою
+Ваші дані про місцезнаходження залишаються на вашому пристрої та використовуються лише для вищевказаних функцій.</string>
+    <string name="background_location_permission_disclosure_message">Перед наданням дозволу на фонове місцезнаходження, будь ласка, зрозумійте:
+Для чого ми його використовуємо:
+• Доступ до імен мереж WiFi під час роботи додатка у фоновому режимі
+• Увімкнення функції білого списку мережі
+• Функціональність підміни GPS
+Що ми НЕ робимо:
+• Відстежуємо ваше фізичне місцезнаходження
+• Збираємо координати GPS
+• Ділимося даними з третіми особами
+• Надсилаємо дані за межі вашого пристрою
+Ваші дані про місцезнаходження залишаються на вашому пристрої та використовуються лише для вищевказаних функцій.</string>
+    <string name="amnezia_preset">Конфігурація</string>
+    <string name="amnezia_preset_description">Виберіть попередньо налаштовану конфігурацію для обходу цензури</string>
+    <string name="amnezia_preset_russian_quick">Російський Швидкий (Без сміття)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">Версія IP</string>
+    <string name="ipv6_mode_description">Виберіть, яку версію IP використовувати для VPN-з\'єднань.</string>
+    <string name="ip_stack">IP-стек</string>
+    <string name="ip_stack_description">Налаштуйте IP-стек для VPN-з\'єднань.</string>
+    <string name="egress">Вихідний</string>
+    <string name="ingress">Вхідний</string>
+    <string name="ipv4_only">Тільки IPv4</string>
+    <string name="manual_connection_mode_failed_title">Режим ручного підключення не вдався</string>
+    <string name="manual_connection_mode_failed_description">Ми не змогли підключити вас у цій мережі. Рекомендується автоматичний режим підключення для кращих результатів. Перемкнути на Авто?</string>
+    <string name="switch_to_auto">Перемкнути на Авто</string>
+    <string name="reset_password">Скинути пароль</string>
+    <string name="password_reset_email_sent">Якщо ви вказали електронну пошту під час реєстрації, ви незабаром отримаєте посилання для скидання пароля. Обов\'язково перевірте папку Спам.</string>
+    <string name="app_icon">Значок додатка</string>
+    <string name="app_icon_description">Виберіть інший значок додатка для ще більшої конфіденційності</string>
+    <string name="configuration">Конфігурація</string>
 </resources>

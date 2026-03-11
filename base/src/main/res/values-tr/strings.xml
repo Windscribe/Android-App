@@ -26,7 +26,7 @@
     <string name="sign_up_description">Hesabınızı koruyun, ayarlarınıza herhangi bir cihazdan erişin ve daha fazla veri alın.</string>
     <string name="choose_username">Kullanıcı Adı Seç</string>
     <string name="choose_password">Şifre Seç</string>
-    <string name="email_description"><![CDATA[Yalnızca şifre kurtarma, güncellemeler ve promosyonlar için. Spam yok]]></string>
+    <string name="email_description">Yalnızca şifre kurtarma, güncellemeler ve promosyonlar için. Spam yok</string>
     <string name="sign_up_failed_network_alert">Elimizden gelenin en iyisini yaptık, nedense bu ağı kullanarak sizi kaydedemedik.</string>
     <string name="backup_api_end_point">Yedekleme api\si bitiş noktası deneniyor...</string>
     <string name="signing_in">Oturum açma...</string>
@@ -167,8 +167,12 @@
     <string name="pricing">FİYATLANDIRMA</string>
     <string name="all_locations">Tüm Lokasyonlar</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[Abonelikler aylık, yıllık olarak yönetilebilir veya satın alma işleminden sonra Google Play Store hesap ayarlarına giderek kapatılabilir. Tüm fiyatlara geçerli vergiler dahildir.]]></string>
-    <string name="terms_policy_en"><b>Kullanım Koşulları</b> &amp; <b>Gizlilik Politikası.</b></string>
+    <string name="terms">Abonelikler aylık, yıllık olarak yönetilebilir veya satın alma işleminden sonra Google Play Store hesap ayarlarına giderek kapatılabilir. Tüm fiyatlara geçerli vergiler dahildir.</string>
+    <string name="terms_policy_en">
+        <b>Kullanım Koşulları</b>
+         &amp; 
+        <b>Gizlilik Politikası.</b>
+    </string>
     <string name="account_set_up">Hesap Kurulumu</string>
     <string name="account_set_up_description">Hesabınızı koruyun ve herhangi bir cihazdan erişin.</string>
     <string name="continue_free_10gb_mo">Ücretsiz 10GB/ay kazanın</string>
@@ -473,7 +477,7 @@ son seçilen yer.</string>
     <string name="location_permission_required">Konum izni gereklidir</string>
     <string name="foreground_location_permission_reason">Windscribe\ın \"Ağ Beyaz Listesi\" özelliğinin çalışması için konum iznine ihtiyacı vardır.  Bu izin, Wifi ağ adlarına erişmek için gereklidir. Bu izin yalnızca bu özellik ve GPS kimlik sahtekarlığı işlevi için kullanılır. Konum verileriniz cihazınızdan çıkmaz ve başka hiçbir şey için kullanılmaz.</string>
     <string name="missing_location_permission">Eksik konum izni</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Bu özelliği kullanmak için konum izni gereklidir. Uygulama ayarları\&gt; İzinler &gt; Konum\a gidin ve Her zaman izin ver\i seçin.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Bu özelliği kullanmak için konum izni gereklidir. Uygulama ayarları\&amp;gt; İzinler &amp;gt; Konum\a gidin ve Her zaman izin ver\i seçin.</string>
     <string name="anti_censorship">Sansürü Aşın</string>
     <string name="anti_censorship_explainer">Düşmanca bir ortamda bile VPN e bağlanın</string>
     <string name="auto_connect">Otomatik Bağlan</string>
@@ -569,4 +573,46 @@ son seçilen yer.</string>
     <string name="continue_with_apple">Apple ile devam et</string>
     <string name="support_url">https://windscribe.com/support</string>
     <string name="windflix">Windflix</string>
+    <string name="location_permission_disclosure_title">Konum İzni Açıklaması</string>
+    <string name="location_permission_disclosure_message">Bu izni vermeden önce, lütfen anlayın:
+Ne için kullanıyoruz:
+• WiFi ağ adlarına (SSID) erişim
+• Ağ beyaz liste özelliğini etkinleştirme
+• GPS sahteciliği işlevi
+Yapmadığımız şeyler:
+• Fiziksel konumunuzu izleme
+• GPS koordinatlarını toplama
+• Üçüncü taraflarla veri paylaşma
+• Cihazınızın dışına veri gönderme
+Konum verileriniz cihazınızda kalır ve yalnızca yukarıdaki özellikler için kullanılır.</string>
+    <string name="background_location_permission_disclosure_message">Arka plan konum iznini vermeden önce, lütfen anlayın:
+Ne için kullanıyoruz:
+• Uygulama arka planda çalışırken WiFi ağ adlarına erişim
+• Ağ beyaz liste özelliğini etkinleştirme
+• GPS sahteciliği işlevi
+Yapmadığımız şeyler:
+• Fiziksel konumunuzu izleme
+• GPS koordinatlarını toplama
+• Üçüncü taraflarla veri paylaşma
+• Cihazınızın dışına veri gönderme
+Konum verileriniz cihazınızda kalır ve yalnızca yukarıdaki özellikler için kullanılır.</string>
+    <string name="amnezia_preset">Yapılandırma</string>
+    <string name="amnezia_preset_description">Sansüre karşı önceden ayarlanmış yapılandırmayı seçin</string>
+    <string name="amnezia_preset_russian_quick">Rus Hızlı (Gereksiz Yok)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">IP Sürümü</string>
+    <string name="ipv6_mode_description">VPN bağlantıları için hangi IP sürümünün kullanılacağını seçin.</string>
+    <string name="ip_stack">IP Yığını</string>
+    <string name="ip_stack_description">VPN bağlantıları için IP yığınını yapılandırın.</string>
+    <string name="egress">Çıkış</string>
+    <string name="ingress">Giriş</string>
+    <string name="ipv4_only">Yalnızca IPv4</string>
+    <string name="manual_connection_mode_failed_title">Manuel bağlantı modu başarısız oldu</string>
+    <string name="manual_connection_mode_failed_description">Sizi bu ağda bağlayamadık. En iyi sonuçlar için otomatik bağlantı modu önerilir. Otomatiğe geç?</string>
+    <string name="switch_to_auto">Otomatiğe Geç</string>
+    <string name="reset_password">Şifreyi Sıfırla</string>
+    <string name="password_reset_email_sent">Kayıt sırasında bir e-posta sağladıysanız, kısa süre içinde bir şifre sıfırlama bağlantısı alacaksınız. Spam klasörünüzü kontrol ettiğinizden emin olun.</string>
+    <string name="app_icon">Uygulama Simgesi</string>
+    <string name="app_icon_description">Daha fazla gizlilik için farklı bir uygulama simgesi seçin</string>
+    <string name="configuration">Yapılandırma</string>
 </resources>

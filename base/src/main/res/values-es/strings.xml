@@ -26,7 +26,7 @@
     <string name="sign_up_description">Proteja su cuenta, acceda a su configuración desde cualquier dispositivo y obtenga más datos.</string>
     <string name="choose_username">Elija Nombre de usuario</string>
     <string name="choose_password">Elija contraseña</string>
-    <string name="email_description"><![CDATA[Solo para recuperación de contraseña, actualizaciones y promoción. Sin spam]]></string>
+    <string name="email_description">Solo para recuperación de contraseña, actualizaciones y promoción. Sin spam</string>
     <string name="sign_up_failed_network_alert">Bueno, dimos lo mejor de nosotros, simplemente no pudimos registrarte usando esta red por alguna razón.</string>
     <string name="backup_api_end_point">Probando el punto final de la API de copia de seguridad...</string>
     <string name="signing_in">Iniciando sesión...</string>
@@ -167,8 +167,12 @@
     <string name="pricing">PRECIOS</string>
     <string name="all_locations">Todas las ubicaciones</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[Las suscripciones pueden administrarse mensualmente, anualmente o desactivarse yendo a la configuración de la cuenta de Google Play Store después de la compra. Todos los precios incluyen los impuestos aplicables.]]></string>
-    <string name="terms_policy_en"><b>Términos de Uso </b> &amp; <b>Política de Privacidad</b></string>
+    <string name="terms">Las suscripciones pueden administrarse mensualmente, anualmente o desactivarse yendo a la configuración de la cuenta de Google Play Store después de la compra. Todos los precios incluyen los impuestos aplicables.</string>
+    <string name="terms_policy_en">
+        <b>Términos de Uso </b>
+         &amp; 
+        <b>Política de Privacidad</b>
+    </string>
     <string name="account_set_up">Configuración de la cuenta</string>
     <string name="account_set_up_description">Protege tu cuenta y accede a ella desde cualquier dispositivo.</string>
     <string name="continue_free_10gb_mo">Obtén gratis 10GB/mes</string>
@@ -473,7 +477,7 @@
     <string name="location_permission_required">Se requiere permiso de ubicación</string>
     <string name="foreground_location_permission_reason">Windscribe necesita el permiso de ubicación para que la función \"Lista blanca de red\" funcione.  Este permiso es necesario para acceder a los nombres de las redes Wifi. Este permiso se utiliza únicamente para esta función, así como para la funcionalidad de suplantación de GPS. Sus datos de ubicación no salen de su dispositivo y no se utilizan para nada más.</string>
     <string name="missing_location_permission">Falta el permiso de ubicación</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Se requiere permiso de ubicación para usar esta función. Vaya a la configuración de la aplicación &gt; Permisos &gt; ubicación y seleccione Permitir todo el tiempo.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Se requiere permiso de ubicación para usar esta función. Vaya a la configuración de la aplicación &amp;gt; Permisos &amp;gt; ubicación y seleccione Permitir todo el tiempo.</string>
     <string name="anti_censorship">Evitar Censura</string>
     <string name="anti_censorship_explainer">Conecta al VPN incluso en un ambiente hostil</string>
     <string name="auto_connect">Conexión automática</string>
@@ -569,4 +573,46 @@
     <string name="continue_with_apple">Continuar con Apple</string>
     <string name="support_url">windscribe.com/support</string>
     <string name="windflix">Windflix</string>
+    <string name="location_permission_disclosure_title">Divulgación de permiso de ubicación</string>
+    <string name="location_permission_disclosure_message">Antes de otorgar este permiso, por favor comprenda:
+Para qué lo usamos:
+• Acceder a nombres de redes WiFi (SSID)
+• Habilitar la función de lista blanca de red
+• Funcionalidad de suplantación de GPS
+Lo que NO hacemos:
+• Rastrear su ubicación física
+• Recopilar coordenadas GPS
+• Compartir datos con terceros
+• Enviar datos fuera de su dispositivo
+Sus datos de ubicación permanecen en su dispositivo y se utilizan únicamente para las funciones anteriores.</string>
+    <string name="background_location_permission_disclosure_message">Antes de otorgar el permiso de ubicación en segundo plano, por favor comprenda:
+Para qué lo usamos:
+• Acceder a nombres de redes WiFi mientras la aplicación se ejecuta en segundo plano
+• Habilitar la función de lista blanca de red
+• Funcionalidad de suplantación de GPS
+Lo que NO hacemos:
+• Rastrear su ubicación física
+• Recopilar coordenadas GPS
+• Compartir datos con terceros
+• Enviar datos fuera de su dispositivo
+Sus datos de ubicación permanecen en su dispositivo y se utilizan únicamente para las funciones anteriores.</string>
+    <string name="amnezia_preset">Configuración</string>
+    <string name="amnezia_preset_description">Elija la configuración preestablecida para anti-censura</string>
+    <string name="amnezia_preset_russian_quick">Rápido ruso (Sin basura)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">Versión de IP</string>
+    <string name="ipv6_mode_description">Elija qué versión de IP usar para conexiones VPN.</string>
+    <string name="ip_stack">Pila de IP</string>
+    <string name="ip_stack_description">Configure la pila de IP para conexiones VPN.</string>
+    <string name="egress">Salida</string>
+    <string name="ingress">Entrada</string>
+    <string name="ipv4_only">Solo IPv4</string>
+    <string name="manual_connection_mode_failed_title">Falló el modo de conexión manual</string>
+    <string name="manual_connection_mode_failed_description">No pudimos conectarle en esta red. Se recomienda el modo de conexión automática para obtener mejores resultados. ¿Cambiar a Auto?</string>
+    <string name="switch_to_auto">Cambiar a Auto</string>
+    <string name="reset_password">Restablecer contraseña</string>
+    <string name="password_reset_email_sent">Si proporcionó un correo electrónico durante el registro, recibirá un enlace para restablecer la contraseña en breve. Asegúrese de verificar su carpeta de Spam.</string>
+    <string name="app_icon">Icono de la aplicación</string>
+    <string name="app_icon_description">Elija un icono de aplicación diferente para aún más privacidad</string>
+    <string name="configuration">Configuración</string>
 </resources>

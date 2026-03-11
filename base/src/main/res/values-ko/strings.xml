@@ -26,7 +26,7 @@
     <string name="sign_up_description">계정을 보호하고, 모든 장치에서 설정에 액세스하고, 더 많은 데이터를 얻으십시오.</string>
     <string name="choose_username">Username(사용자 이름)을 선택합니다</string>
     <string name="choose_password">Password(비밀번호)를 선택합니다</string>
-    <string name="email_description"><![CDATA[비밀번호 복구, 업데이트 및 프로모션에만 해당됩니다. 스팸 없음]]></string>
+    <string name="email_description">비밀번호 복구, 업데이트 및 프로모션에만 해당됩니다. 스팸 없음</string>
     <string name="sign_up_failed_network_alert">우리는 최선을 다했지만 어떤 이유로이 네트워크를 사용하여 가입 할 수 없었습니다.</string>
     <string name="backup_api_end_point">백업 API 끝점 시도 중...</string>
     <string name="signing_in">로그인 중...</string>
@@ -167,8 +167,12 @@
     <string name="pricing">가격</string>
     <string name="all_locations">모든 위치</string>
     <string name="robert">R.O.B.E.R.T. (영어)</string>
-    <string name="terms"><![CDATA[구독은 월간, 연간 또는 구매 후 Google Play 스토어 계정 설정으로 이동하여 끌 수 있습니다. 모든 가격에는 관련 세금이 포함되어 있습니다.]]></string>
-    <string name="terms_policy_en"><b>이용 약관</b> &amp; <b>개인정보 처리방침.</b></string>
+    <string name="terms">구독은 월간, 연간 또는 구매 후 Google Play 스토어 계정 설정으로 이동하여 끌 수 있습니다. 모든 가격에는 관련 세금이 포함되어 있습니다.</string>
+    <string name="terms_policy_en">
+        <b>이용 약관</b>
+         &amp; 
+        <b>개인정보 처리방침.</b>
+    </string>
     <string name="account_set_up">계정 설정</string>
     <string name="account_set_up_description">계정을 보호하고 모든 장치에서 액세스할 수 있습니다.</string>
     <string name="continue_free_10gb_mo">무료 10GB/월 받기</string>
@@ -473,7 +477,7 @@
     <string name="location_permission_required">위치 정보 사용 권한 필요</string>
     <string name="foreground_location_permission_reason">Windscribe는 \"네트워크 화이트리스트\" 기능이 작동하도록 위치 권한이 필요합니다.  이 권한은 Wi-Fi 네트워크 이름에 액세스하는 데 필요합니다. 이 권한은 이 기능과 GPS 스푸핑 기능에만 사용됩니다. 위치 데이터는 기기 외부로 유출되지 않으며 다른 용도로 사용되지 않습니다.</string>
     <string name="missing_location_permission">위치 정보 액세스 권한 누락</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[이 기능을 사용하려면 위치 권한이 필요합니다. 앱 설정으로 이동하여 권한 &gt; 위치를 &gt; 항상 허용을 선택합니다.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">이 기능을 사용하려면 위치 권한이 필요합니다. 앱 설정으로 이동하여 권한 &amp;gt; 위치를 &amp;gt; 항상 허용을 선택합니다.</string>
     <string name="anti_censorship">검열 우회</string>
     <string name="anti_censorship_explainer">적대적인 환경에서도 VPN에 연결하십시오</string>
     <string name="auto_connect">자동 연결</string>
@@ -569,4 +573,46 @@
     <string name="continue_with_apple">Apple로 계속</string>
     <string name="support_url">windscribe.com/support</string>
     <string name="windflix">Windflix</string>
+    <string name="location_permission_disclosure_title">위치 권한 공개</string>
+    <string name="location_permission_disclosure_message">이 권한을 부여하기 전에 이해해 주세요:
+사용 목적:
+• WiFi 네트워크 이름(SSID) 액세스
+• 네트워크 화이트리스트 기능 활성화
+• GPS 스푸핑 기능
+하지 않는 것:
+• 물리적 위치 추적
+• GPS 좌표 수집
+• 제3자와 데이터 공유
+• 기기 외부로 데이터 전송
+위치 데이터는 기기에 남아 있으며 위의 기능에만 사용됩니다.</string>
+    <string name="background_location_permission_disclosure_message">백그라운드 위치 권한을 부여하기 전에 이해해 주세요:
+사용 목적:
+• 앱이 백그라운드에서 실행되는 동안 WiFi 네트워크 이름에 액세스
+• 네트워크 화이트리스트 기능 활성화
+• GPS 스푸핑 기능
+하지 않는 것:
+• 물리적 위치 추적
+• GPS 좌표 수집
+• 제3자와 데이터 공유
+• 기기 외부로 데이터 전송
+위치 데이터는 기기에 남아 있으며 위의 기능에만 사용됩니다.</string>
+    <string name="amnezia_preset">구성</string>
+    <string name="amnezia_preset_description">검열 방지를 위한 사전 설정 구성 선택</string>
+    <string name="amnezia_preset_russian_quick">러시아 빠름 (쓰레기 없음)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">IP 버전</string>
+    <string name="ipv6_mode_description">VPN 연결에 사용할 IP 버전을 선택하세요.</string>
+    <string name="ip_stack">IP 스택</string>
+    <string name="ip_stack_description">VPN 연결용 IP 스택을 구성합니다.</string>
+    <string name="egress">송신</string>
+    <string name="ingress">수신</string>
+    <string name="ipv4_only">IPv4만</string>
+    <string name="manual_connection_mode_failed_title">수동 연결 모드 실패</string>
+    <string name="manual_connection_mode_failed_description">이 네트워크에서 연결할 수 없습니다. 최상의 결과를 위해 자동 연결 모드를 권장합니다. 자동으로 전환하시겠습니까?</string>
+    <string name="switch_to_auto">자동으로 전환</string>
+    <string name="reset_password">비밀번호 재설정</string>
+    <string name="password_reset_email_sent">등록 시 이메일을 제공한 경우 곧 비밀번호 재설정 링크를 받게 됩니다. 스팸 폴더를 확인하세요.</string>
+    <string name="app_icon">앱 아이콘</string>
+    <string name="app_icon_description">더 많은 개인정보 보호를 위해 다른 앱 아이콘 선택</string>
+    <string name="configuration">구성</string>
 </resources>

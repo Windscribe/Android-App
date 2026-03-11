@@ -26,7 +26,7 @@
     <string name="sign_up_description">Proteggi il tuo account, accedi alle tue impostazioni da qualsiasi dispositivo e ottieni più dati.</string>
     <string name="choose_username">Scegli il nome utente</string>
     <string name="choose_password">Scegli la password</string>
-    <string name="email_description"><![CDATA[Solo per il recupero della password, aggiornamenti e promo. Niente spam]]></string>
+    <string name="email_description">Solo per il recupero della password, aggiornamenti e promo. Niente spam</string>
     <string name="sign_up_failed_network_alert">Abbiamo fatto del nostro meglio, ma per qualche motivo non siamo riusciti a registrarti utilizzando questa rete.</string>
     <string name="backup_api_end_point">Provare l\endpoint dell\api di backup ...</string>
     <string name="signing_in">Accesso...</string>
@@ -167,8 +167,12 @@
     <string name="pricing">PREZZI</string>
     <string name="all_locations">Tutte le posizioni</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[Gli abbonamenti possono essere gestiti mensilmente, annualmente o disattivati accedendo alle impostazioni dell\account Google Play Store dopo l\acquisto. Tutti i prezzi includono le tasse applicabili.]]></string>
-    <string name="terms_policy_en"><b>Termini di Utilizzo</b> &amp; <b>Informativa sulla Privacy.</b></string>
+    <string name="terms">Gli abbonamenti possono essere gestiti mensilmente, annualmente o disattivati accedendo alle impostazioni dell\account Google Play Store dopo l\acquisto. Tutti i prezzi includono le tasse applicabili.</string>
+    <string name="terms_policy_en">
+        <b>Termini di Utilizzo</b>
+         &amp; 
+        <b>Informativa sulla Privacy.</b>
+    </string>
     <string name="account_set_up">Configurazione dell\account</string>
     <string name="account_set_up_description">Proteggi il tuo account e accedi da qualsiasi dispositivo.</string>
     <string name="continue_free_10gb_mo">Ottieni gratuitamente 10 GB / mese</string>
@@ -298,7 +302,7 @@
     <string name="upgrade_title">Ti meriti più di una privacy limitata.</string>
     <string name="text_login">Accesso</string>
     <string name="text_sign_up">Registrati</string>
-    <string name="sending_debug_log">Invio del registro di debug\nAttendere&#8230;</string>
+    <string name="sending_debug_log">Invio del registro di debug\nAttendere…</string>
     <string name="app_log_submitted">Grazie! Log inviato.</string>
     <string name="log_submission_failed">Errore durante l\'invio del log!</string>
     <string name="add_your_email_address">Aggiungi il tuo indirizzo email nel caso in cui dimentichi la password. Ti daremo anche 10 GB per questo.</string>
@@ -474,7 +478,7 @@ Ultima posizione scelta.</string>
     <string name="location_permission_required">È richiesta l\autorizzazione alla posizione</string>
     <string name="foreground_location_permission_reason">Windscribe ha bisogno dell\autorizzazione di posizione per far funzionare la funzione \"Network Whitelist\".  Questa autorizzazione è necessaria per accedere ai nomi delle reti Wifi. Questa autorizzazione viene utilizzata esclusivamente per questa funzione e per la funzionalità di spoofing GPS. I dati sulla tua posizione non lasciano il tuo dispositivo e non vengono utilizzati per nient\altro.</string>
     <string name="missing_location_permission">Autorizzazione posizione mancante</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Per utilizzare questa funzione è necessaria l\autorizzazione alla posizione. Vai alle impostazioni dell\app &gt; Autorizzazioni &gt; posizione e seleziona Consenti sempre.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Per utilizzare questa funzione è necessaria l\autorizzazione alla posizione. Vai alle impostazioni dell\app &amp;gt; Autorizzazioni &amp;gt; posizione e seleziona Consenti sempre.</string>
     <string name="anti_censorship">Aggira la censura</string>
     <string name="anti_censorship_explainer">Connettiti alla VPN anche in ambienti ostili</string>
     <string name="auto_connect">Connessione automatica</string>
@@ -569,4 +573,46 @@ Ultima posizione scelta.</string>
     <string name="continue_with_apple">Continua con Apple</string>
     <string name="support_url">windscribe.com/support</string>
     <string name="windflix">Windflix</string>
+    <string name="location_permission_disclosure_title">Divulgazione autorizzazione posizione</string>
+    <string name="location_permission_disclosure_message">Prima di concedere questa autorizzazione, si prega di comprendere:
+Per cosa la utilizziamo:
+• Accedere ai nomi delle reti WiFi (SSID)
+• Abilitare la funzionalità whitelist di rete
+• Funzionalità di spoofing GPS
+Cosa NON facciamo:
+• Tracciare la tua posizione fisica
+• Raccogliere coordinate GPS
+• Condividere dati con terze parti
+• Inviare dati fuori dal tuo dispositivo
+I tuoi dati sulla posizione rimangono sul tuo dispositivo e vengono utilizzati esclusivamente per le funzionalità sopra indicate.</string>
+    <string name="background_location_permission_disclosure_message">Prima di concedere l\'autorizzazione alla posizione in background, si prega di comprendere:
+Per cosa la utilizziamo:
+• Accedere ai nomi delle reti WiFi mentre l\'app è in esecuzione in background
+• Abilitare la funzionalità whitelist di rete
+• Funzionalità di spoofing GPS
+Cosa NON facciamo:
+• Tracciare la tua posizione fisica
+• Raccogliere coordinate GPS
+• Condividere dati con terze parti
+• Inviare dati fuori dal tuo dispositivo
+I tuoi dati sulla posizione rimangono sul tuo dispositivo e vengono utilizzati esclusivamente per le funzionalità sopra indicate.</string>
+    <string name="amnezia_preset">Configurazione</string>
+    <string name="amnezia_preset_description">Scegli la configurazione preimpostata per l\'anti-censura</string>
+    <string name="amnezia_preset_russian_quick">Russo Rapido (Senza Spazzatura)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">Versione IP</string>
+    <string name="ipv6_mode_description">Scegli quale versione IP utilizzare per le connessioni VPN.</string>
+    <string name="ip_stack">Stack IP</string>
+    <string name="ip_stack_description">Configura lo stack IP per le connessioni VPN.</string>
+    <string name="egress">Uscita</string>
+    <string name="ingress">Ingresso</string>
+    <string name="ipv4_only">Solo IPv4</string>
+    <string name="manual_connection_mode_failed_title">Modalità di connessione manuale fallita</string>
+    <string name="manual_connection_mode_failed_description">Non siamo riusciti a connetterti su questa rete. La modalità di connessione automatica è raccomandata per risultati migliori. Passare a Auto?</string>
+    <string name="switch_to_auto">Passa a Auto</string>
+    <string name="reset_password">Reimposta password</string>
+    <string name="password_reset_email_sent">Se hai fornito un\'email durante la registrazione, riceverai presto un link per reimpostare la password. Assicurati di controllare la tua cartella Spam.</string>
+    <string name="app_icon">Icona app</string>
+    <string name="app_icon_description">Scegli un\'icona app diversa per ancora più privacy</string>
+    <string name="configuration">Configurazione</string>
 </resources>

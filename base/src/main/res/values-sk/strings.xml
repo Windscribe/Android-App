@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="username_empty">Prázdne používateľské meno!</string>
     <string name="password_empty">Prázdne heslo!</string>
@@ -26,20 +27,20 @@
     <string name="sign_up_description">Zabezpečte svoj účet, získajte prístup k nastaveniam z akéhokoľvek zariadenia a získajte viac dát.</string>
     <string name="choose_username">Vyberte používateľské meno</string>
     <string name="choose_password">Vyberte heslo</string>
-    <string name="email_description"><![CDATA[Len na obnovenie hesla, aktualizácie a propagáciu. Žiadny spam]]></string>
+    <string name="email_description">Len na obnovenie hesla, aktualizácie a propagáciu. Žiadny spam</string>
     <string name="sign_up_failed_network_alert">Dobre, dali sme do toho všetko, ale z nejakého dôvodu sme vás nemohli zaregistrovať pomocou tejto siete.</string>
-    <string name="backup_api_end_point">Skúšam záložný api koncový bod&#8230;</string>
-    <string name="signing_in">Prihlasovanie&#8230;</string>
-    <string name="signing_up">Registrácia&#8230;</string>
-    <string name="getting_session">Získavam reláciu&#8230;</string>
-    <string name="getting_port_maps">Získavam mapy portov&#8230;</string>
-    <string name="getting_server_config">Získavam konfiguráciu servera&#8230;</string>
-    <string name="getting_server_credentials">Získavam prihlasovacie údaje servera&#8230;</string>
-    <string name="getting_best_location">Získavam najlepšiu polohu&#8230;</string>
-    <string name="getting_server_list">Získavam zoznam serverov&#8230;</string>
-    <string name="preparing_your_dashboard">Pripravujem váš panel&#8230;</string>
-    <string name="trying_static_endpoint">Skúšam statický koncový bod&#8230;</string>
-    <string name="getting_reg_token">Získavam registračný token&#8230;</string>
+    <string name="backup_api_end_point">Skúšam záložný api koncový bod…</string>
+    <string name="signing_in">Prihlasovanie…</string>
+    <string name="signing_up">Registrácia…</string>
+    <string name="getting_session">Získavam reláciu…</string>
+    <string name="getting_port_maps">Získavam mapy portov…</string>
+    <string name="getting_server_config">Získavam konfiguráciu servera…</string>
+    <string name="getting_server_credentials">Získavam prihlasovacie údaje servera…</string>
+    <string name="getting_best_location">Získavam najlepšiu polohu…</string>
+    <string name="getting_server_list">Získavam zoznam serverov…</string>
+    <string name="preparing_your_dashboard">Pripravujem váš panel…</string>
+    <string name="trying_static_endpoint">Skúšam statický koncový bod…</string>
+    <string name="getting_reg_token">Získavam registračný token…</string>
     <string name="invalid_email_format">Neplatný e-mail!</string>
     <string name="email_empty">Prázdny e-mail!</string>
     <string name="email">E-mail</string>
@@ -67,14 +68,14 @@
     <string name="pro_reason_to_confirm">Potvrďte svoj e-mail na ochranu účtu</string>
     <string name="connected">PRIPOJENÉ</string>
     <string name="connected_lowercase">Pripojené</string>
-    <string name="connecting">PRIPÁJANIE&#160;</string>
+    <string name="connecting">PRIPÁJANIE </string>
     <string name="connecting_to">Pripájanie k %s</string>
     <string name="connected_to">Pripojené k %s</string>
     <string name="disconnecting">ODPÁJANIE</string>
     <string name="disconnected">ODPOJENÉ</string>
-    <string name="tunnel_test_failed">ZLYHALO PRIPOJENIE&#8230;</string>
-    <string name="checking_connectivity">Kontrola pripojenia&#8230;</string>
-    <string name="connectivity_test_failed">Test pripojenia zlyhal&#8230;</string>
+    <string name="tunnel_test_failed">ZLYHALO PRIPOJENIE…</string>
+    <string name="checking_connectivity">Kontrola pripojenia…</string>
+    <string name="connectivity_test_failed">Test pripojenia zlyhal…</string>
     <string name="best_location">Najlepšia poloha</string>
     <string name="connection_mode">Režim pripojenia</string>
     <string name="preferred_protocol">Preferovaný protokol</string>
@@ -103,7 +104,7 @@
     <string name="a_la_carte_unlimited_plan">A la carte neobmedzený</string>
     <string name="expiry_date">Dátum expirácie</string>
     <string name="reset_date">Dátum obnovenia</string>
-    <string name="gb_per_month">&#160;GB/mesiac</string>
+    <string name="gb_per_month"> GB/mesiac</string>
     <string name="my_account">Účet</string>
     <string name="cancel">Zrušiť</string>
     <string name="edit_account">Spravovať účet</string>
@@ -115,7 +116,7 @@
     <string name="item_unavailable">Položka, ktorú ste požadovali, nie je k dispozícii. \nKontaktujte prosím podporu na https://windscribe.com/support!</string>
     <string name="billing_service_unavailable">Fakturačná služba nie je k dispozícii. Skontrolujte prosím sieťové pripojenie a skúste znova!</string>
     <string name="unknown_billing_error">Neznáma chyba. Kontaktujte prosím podporu na https://windscribe.com/support!</string>
-    <string name="fatal_error">Nepodarilo sa pripojiť k fakturačnej službe&#8230;Skontrolujte prosím sieťové pripojenie!</string>
+    <string name="fatal_error">Nepodarilo sa pripojiť k fakturačnej službe…Skontrolujte prosím sieťové pripojenie!</string>
     <string name="play_store_generic_api_error">Neočakávaná odpoveď z Play obchodu. Môže sa to stať kvôli nedávno zrušeným nákupom. Skúste neskôr.</string>
     <string name="unable_to_process_request">Nemohli sme spracovať vašu požiadavku. Skúste znova!</string>
     <string name="play_store_updating">Prebieha aktualizácia Play obchodu! Skúste to po dokončení aktualizácie.</string>
@@ -167,8 +168,12 @@
     <string name="pricing">CENY</string>
     <string name="all_locations">Všetky polohy</string>
     <string name="robert">R.O.B.E.R.T.</string>
-    <string name="terms"><![CDATA[Predplatné môže byť spravované mesačne, ročne alebo vypnuté v nastaveniach účtu Google Play obchodu po zakúpení. Všetky ceny zahŕňajú príslušné dane.]]></string>
-    <string name="terms_policy_en"><b>Podmienky používania </b> &amp; <b>Zásady ochrany osobných údajov.</b></string>
+    <string name="terms">Predplatné môže byť spravované mesačne, ročne alebo vypnuté v nastaveniach účtu Google Play obchodu po zakúpení. Všetky ceny zahŕňajú príslušné dane.</string>
+    <string name="terms_policy_en">
+        <b>Podmienky používania </b>
+         &amp; 
+        <b>Zásady ochrany osobných údajov.</b>
+    </string>
     <string name="account_set_up">Nastavenie účtu</string>
     <string name="account_set_up_description">Zabezpečte svoj účet a získajte k nemu prístup z akéhokoľvek zariadenia.</string>
     <string name="continue_free_10gb_mo">Získať bezplatne 10GB/mesiac</string>
@@ -176,7 +181,7 @@
     <string name="no_email_warning">Bez e-mailu bude váš bezplatný účet obmedzený na 2GB/mesiac a nebudete môcť obnoviť svoje heslo.</string>
     <string name="get_started">Začať</string>
     <string name="error_try_again">Chyba, skúste znova!</string>
-    <string name="please_wait">Čakajte prosím&#8230;</string>
+    <string name="please_wait">Čakajte prosím…</string>
     <string name="resend">Znova odoslať</string>
     <string name="loading">Načítava sa..</string>
     <string name="retry">Skúsiť znova</string>
@@ -241,7 +246,7 @@
     <string name="network_unsecured">Nezabezpečená</string>
     <string name="preferred_protocol_description">Windscribe bude vždy používať tento protokol na pripojenie k tejto sieti. Toto prepisuje globálne preferencie pripojenia.</string>
     <string name="unknown">Neznáma síť</string>
-    <string name="loading_network_list">Načítavanie zoznamu sietí\nČakajte prosím&#8230;</string>
+    <string name="loading_network_list">Načítavanie zoznamu sietí\nČakajte prosím…</string>
     <string name="no_saved_network_list">Žiadny uložený zoznam sietí!</string>
     <string name="network_options">Možnosti siete</string>
     <string name="auto_secure">Auto-zabezpečenie</string>
@@ -307,7 +312,7 @@
     <string name="upgrade_title">Zaslúžite si viac ako obmedzenú ochranu súkromia.</string>
     <string name="text_login">Prihlásiť sa</string>
     <string name="text_sign_up">Zaregistrovať sa</string>
-    <string name="sending_debug_log">Odosielanie ladiaceho záznamu\nČakajte prosím&#8230;</string>
+    <string name="sending_debug_log">Odosielanie ladiaceho záznamu\nČakajte prosím…</string>
     <string name="app_log_submitted">Ďakujeme! Záznam aplikácie bol odoslaný.</string>
     <string name="log_submission_failed">Chyba pri odosielaní súboru záznamu!</string>
     <string name="add_your_email_address">Pridajte svoju e-mailovú adresu v prípade, že zabudnete heslo. Dokonca vám za to dáme 10GB.</string>
@@ -352,7 +357,11 @@
     <string name="Error">Chyba</string>
     <string name="text_account_set_up">Zaregistrovať sa</string>
     <string name="xpress_login">Lazy Login</string>
-    <string name="web_login_description">Prejdite na <b>https://windscribe.com/lazy</b> na akomkoľvek zariadení a zadajte kód nižšie.</string>
+    <string name="web_login_description">
+        Prejdite na 
+        <b>https://windscribe.com/lazy</b>
+         na akomkoľvek zariadení a zadajte kód nižšie.
+    </string>
     <string name="app_login_description">Pomocou vašej Windscribe Android aplikácie na telefóne alebo tablete prejdite do Preferencií (vľavo hore), v časti \"Účet\" vyberte \"Lazy Login\" a zadajte kód nižšie.</string>
     <string name="or">ALEBO</string>
     <string name="generate_code">Vygenerovať kód</string>
@@ -486,7 +495,7 @@ naposledy vybranú polohu.</string>
     <string name="location_permission_required">Povolenie k polohe je povinné</string>
     <string name="foreground_location_permission_reason">Windscribe potrebuje povolenie k polohe, aby funkcia \"Whitelist sietí\" fungovala. Toto povolenie je potrebné na prístup k názvom Wifi sietí. Toto povolenie sa používa výhradne pre túto funkciu, ako aj pre funkciu GPS falšovania. Vaše údaje o polohe neopúšťajú vaše zariadenie a nie sú použité na nič iné.</string>
     <string name="missing_location_permission">Chýbajúce povolenie k polohe</string>
-    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time"><![CDATA[Povolenie k polohe je potrebné na použitie tejto funkcie. Prejdite do nastavení aplikácie > Povolenia > Poloha a vyberte Povoliť vždy.]]></string>
+    <string name="location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time">Povolenie k polohe je potrebné na použitie tejto funkcie. Prejdite do nastavení aplikácie &gt; Povolenia &gt; Poloha a vyberte Povoliť vždy.</string>
     <string name="anti_censorship">Obchádzanie cenzúry</string>
     <string name="anti_censorship_explainer">Pripojte sa k VPN aj v nepriateľskom prostredí</string>
     <string name="auto_connect">Auto-pripojenie</string>
@@ -542,7 +551,6 @@ naposledy vybranú polohu.</string>
     <string name="charged_every_12_months">účtované každých 12 mesiacov</string>
     <string name="continue_with_google">Pokračovať s Google</string>
     <string name="continue_with_apple">Pokračovať s Apple</string>
-
     <string name="look_and_feel">Vzhľad a dojem</string>
     <string name="when_disconnected">Keď je odpojené</string>
     <string name="when_connected">Keď je pripojené</string>
@@ -571,4 +579,46 @@ naposledy vybranú polohu.</string>
     <string name="upgrade_to_pro">Inovovať na Pro</string>
     <string name="aggressive_rekeying">Agresívne prekaľčovanie</string>
     <string name="aggressive_rekeying_description">Kvantovo bezpečná rotácia WireGuard PSK pri každom novom pripojení k serveru</string>
+    <string name="location_permission_disclosure_title">Zverejnenie povolenia polohy</string>
+    <string name="location_permission_disclosure_message">Pred udelením tohto povolenia prosím pochopte:
+Na čo ho používame:
+• Prístup k názvom WiFi sietí (SSID)
+• Povolenie funkcie bieleho zoznamu siete
+• Funkčnosť falšovania GPS
+Čo NEROBÍME:
+• Sledovanie vašej fyzickej polohy
+• Zhromažďovanie GPS súradníc
+• Zdieľanie údajov s tretími stranami
+• Odosielanie údajov mimo vášho zariadenia
+Vaše údaje o polohe zostávajú vo vašom zariadení a používajú sa výlučne pre vyššie uvedené funkcie.</string>
+    <string name="background_location_permission_disclosure_message">Pred udelením povolenia polohy na pozadí prosím pochopte:
+Na čo ho používame:
+• Prístup k názvom WiFi sietí počas behu aplikácie na pozadí
+• Povolenie funkcie bieleho zoznamu siete
+• Funkčnosť falšovania GPS
+Čo NEROBÍME:
+• Sledovanie vašej fyzickej polohy
+• Zhromažďovanie GPS súradníc
+• Zdieľanie údajov s tretími stranami
+• Odosielanie údajov mimo vášho zariadenia
+Vaše údaje o polohe zostávajú vo vašom zariadení a používajú sa výlučne pre vyššie uvedené funkcie.</string>
+    <string name="amnezia_preset">Konfigurácia</string>
+    <string name="amnezia_preset_description">Vyberte prednastanvenú konfiguráciu pre anti-cenzúru</string>
+    <string name="amnezia_preset_russian_quick">Ruský Rýchly (Bez smetí)</string>
+    <string name="amnezia_preset_ozon_ru">Ozon.ru</string>
+    <string name="ipv6_mode">Verzia IP</string>
+    <string name="ipv6_mode_description">Vyberte, ktorú verziu IP použiť pre VPN pripojenia.</string>
+    <string name="ip_stack">IP zásobník</string>
+    <string name="ip_stack_description">Nakonfigurujte IP zásobník pre VPN pripojenia.</string>
+    <string name="egress">Výstup</string>
+    <string name="ingress">Vstup</string>
+    <string name="ipv4_only">Iba IPv4</string>
+    <string name="manual_connection_mode_failed_title">Manuálny režim pripojenia zlyhal</string>
+    <string name="manual_connection_mode_failed_description">Nemohli sme vás pripojiť v tejto sieti. Odporúča sa automatický režim pripojenia pre najlepšie výsledky. Prepnúť na Auto?</string>
+    <string name="switch_to_auto">Prepnúť na Auto</string>
+    <string name="reset_password">Obnoviť heslo</string>
+    <string name="password_reset_email_sent">Ak ste pri registrácii zadali e-mail, čoskoro dostanete odkaz na obnovenie hesla. Nezabudnite skontrolovať priečinok Spam.</string>
+    <string name="app_icon">Ikona aplikácie</string>
+    <string name="app_icon_description">Vyberte inú ikonu aplikácie pre ešte väčšie súkromie</string>
+    <string name="configuration">Konfigurácia</string>
 </resources>
