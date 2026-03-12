@@ -161,6 +161,14 @@ class SettingActivity :
         presenter.saveCustomDNSAddress(url)
     }
 
+    override fun onIpStackEgressAutoClicked() {
+        presenter.onIpStackEgressAutoClicked()
+    }
+
+    override fun onIpStackEgressIpv4OnlyClicked() {
+        presenter.onIpStackEgressIpv4OnlyClicked()
+    }
+
     override fun setCustomDNSAddressVisibility(show: Boolean) {
         if (fragment is ConnectionFragment) {
             (fragment as ConnectionFragment).setCustomDNSAddressVisibility(show)
@@ -287,6 +295,12 @@ class SettingActivity :
 
     override fun setAntiCensorshipMode(enabled: Boolean) {
         (fragment as? ConnectionFragment)?.setAntiCensorshipMode(enabled)
+    }
+
+    override fun setIpStackEgressMode(mode: String) {
+        if (fragment is ConnectionFragment) {
+            (fragment as ConnectionFragment).setIpStackEgressMode(mode)
+        }
     }
 
     override fun setDebugLog(log: List<String>) {

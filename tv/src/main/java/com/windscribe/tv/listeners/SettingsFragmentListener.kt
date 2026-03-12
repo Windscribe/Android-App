@@ -33,4 +33,6 @@ interface SettingsFragmentListener {
     fun onCustomDNSClicked()
     fun onRobertDNSClicked()
     fun saveCustomDNSAddress(url: String)
+    fun onIpStackEgressAutoClicked()
+    fun onIpStackEgressIpv4OnlyClicked()
 }

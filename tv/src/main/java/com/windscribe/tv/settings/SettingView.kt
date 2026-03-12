@@ -46,4 +46,5 @@ interface SettingView {
     fun setCustomDNSAddress(url: String)
     fun setCustomDNSAddressVisibility(show: Boolean)
     fun setupConfigurationAdapter(selectedConfiguration: String, configurations: List<String>)
+    fun setIpStackEgressMode(mode: String)
 }

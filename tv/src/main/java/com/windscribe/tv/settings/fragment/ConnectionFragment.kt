@@ -248,6 +248,14 @@ class ConnectionFragment : Fragment() {
             listener?.onBlockBootStartClick()
         }
 
+        binding.ipStackEgressAuto.setOnClickListener {
+            listener?.onIpStackEgressAutoClicked()
+        }
+
+        binding.ipStackEgressIpv4Only.setOnClickListener {
+            listener?.onIpStackEgressIpv4OnlyClicked()
+        }
+
         binding.allowAntiCensorship.setOnClickListener {
             listener?.onAllowAntiCensorshipClicked()
         }
@@ -306,6 +314,16 @@ class ConnectionFragment : Fragment() {
             binding.allowAntiCensorship.setState(State.MenuButtonState.NotSelected)
             TransitionManager.beginDelayedTransition(binding.connectionParent)
             binding.configurationView.visibility = View.GONE
+        }
+    }
+
+    fun setIpStackEgressMode(mode: String) {
+        if (mode == com.windscribe.vpn.apppreference.PreferencesKeyConstants.IPV6_MODE_AUTO) {
+            binding.ipStackEgressAuto.setState(State.MenuButtonState.Selected)
+            binding.ipStackEgressIpv4Only.setState(State.MenuButtonState.NotSelected)
+        } else {
+            binding.ipStackEgressIpv4Only.setState(State.MenuButtonState.Selected)
+            binding.ipStackEgressAuto.setState(State.MenuButtonState.NotSelected)
         }
     }
 }

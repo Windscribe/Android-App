@@ -177,6 +177,22 @@ class SettingsPresenterImp @Inject constructor(
         }
     }
 
+    override fun onIpStackEgressAutoClicked() {
+        val ipv6Mode = preferencesHelper.ipv6Mode
+        if (ipv6Mode != PreferencesKeyConstants.IPV6_MODE_AUTO) {
+            preferencesHelper.ipv6Mode = PreferencesKeyConstants.IPV6_MODE_AUTO
+            settingView.setIpStackEgressMode(PreferencesKeyConstants.IPV6_MODE_AUTO)
+        }
+    }
+
+    override fun onIpStackEgressIpv4OnlyClicked() {
+        val ipv6Mode = preferencesHelper.ipv6Mode
+        if (ipv6Mode != PreferencesKeyConstants.IPV6_MODE_IPV4_ONLY) {
+            preferencesHelper.ipv6Mode = PreferencesKeyConstants.IPV6_MODE_IPV4_ONLY
+            settingView.setIpStackEgressMode(PreferencesKeyConstants.IPV6_MODE_IPV4_ONLY)
+        }
+    }
+
     private fun setConfigurationAdapter() {
         val configurations = wgParamsRepository.unblockWgParams.value.map { it.title }
         val selectedConfiguration = wgParamsRepository.getSelectedUnblockWgParam()
@@ -512,6 +528,7 @@ class SettingsPresenterImp @Inject constructor(
         settingView.setCustomDNS(preferencesHelper.dnsMode == DNS_MODE_CUSTOM)
         settingView.setCustomDNSAddress(preferencesHelper.dnsAddress ?: "")
         settingView.setCustomDNSAddressVisibility(preferencesHelper.dnsMode == DNS_MODE_CUSTOM)
+        settingView.setIpStackEgressMode(preferencesHelper.ipv6Mode)
         setupAppListAdapter()
         setConfigurationAdapter()
     }
@@ -723,11 +740,20 @@ class SettingsPresenterImp @Inject constructor(
         portMapRepository.getPortMapWithCallback { portMapResponse ->
             var selectedPortMap: PortMap? = null
             val protocols: MutableList<String> = ArrayList()
+            var wireGuardHeading: String? = null
             for (portMap in portMapResponse.portmap) {
                 if (portMap.protocol == savedProtocol) {
                     selectedPortMap = portMap
                 }
-                protocols.add(portMap.heading)
+                if (portMap.protocol == PROTO_WIRE_GUARD) {
+                    wireGuardHeading = portMap.heading
+                } else {
+                    protocols.add(portMap.heading)
+                }
+            }
+            // Add WireGuard at the front if found
+            wireGuardHeading?.let {
+                protocols.add(0, it)
             }
             selectedPortMap = selectedPortMap ?: portMapResponse.portmap[0]
             selectedPortMap?.let {

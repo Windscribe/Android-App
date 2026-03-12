@@ -98,11 +98,11 @@ class ServerListRepository @Inject constructor(
             }
             val locationsResult = loadLocations()
             if (locationsResult is CallResult.Error) {
-                throw Exception("Failed to load locations")
+                throw Exception("Failed to load locations list: ${locationsResult.errorMessage}")
             }
             val serversResult = loadFullServerList(backup = false)
             if (serversResult is CallResult.Error) {
-                throw Exception("Failed to load full server list")
+                throw Exception("Failed to load full server list ${serversResult.errorMessage}")
             }
             if (migrationRequired) {
                 preferenceHelper.migrationRequired = false
