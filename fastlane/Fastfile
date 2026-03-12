@@ -21,9 +21,9 @@ end
      end
 
      # Update root build.gradle appVersionCode (mobile uses this directly, TV adds +1)
-     gradle_file = File.read("build.gradle")
+     gradle_file = File.read("../build.gradle")
      gradle_file.gsub!(/appVersionCode = \d+/, "appVersionCode = #{mobile_version}")
-     File.write("build.gradle", gradle_file)
+     File.write("../build.gradle", gradle_file)
 
      UI.success("✅ Updated appVersionCode to #{mobile_version} (TV will be #{tv_version})")
   end
@@ -44,9 +44,9 @@ end
        end
 
        # Update root build.gradle appVersionCode (mobile uses this directly, TV adds +1)
-       gradle_file = File.read("build.gradle")
+       gradle_file = File.read("../build.gradle")
        gradle_file.gsub!(/appVersionCode = \d+/, "appVersionCode = #{mobile_version}")
-       File.write("build.gradle", gradle_file)
+       File.write("../build.gradle", gradle_file)
 
        UI.success("✅ Kept appVersionCode at #{mobile_version} (TV will be #{tv_version})")
     end
