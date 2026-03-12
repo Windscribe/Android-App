@@ -20,16 +20,12 @@ end
        tv_version = mobile_version + 1
      end
 
-     increment_version_code(
-        gradle_file_path: "mobile/build.gradle",
-        app_folder_name:"mobile",
-        version_code: mobile_version
-  )
-      increment_version_code(
-         gradle_file_path: "tv/build.gradle",
-         app_folder_name:"tv",
-         version_code: tv_version
-  )
+     # Update root build.gradle appVersionCode (mobile uses this directly, TV adds +1)
+     gradle_file = File.read("build.gradle")
+     gradle_file.gsub!(/appVersionCode = \d+/, "appVersionCode = #{mobile_version}")
+     File.write("build.gradle", gradle_file)
+
+     UI.success("✅ Updated appVersionCode to #{mobile_version} (TV will be #{tv_version})")
   end
 
    desc "Pull Build number from play store and update gradle with same."
@@ -47,16 +43,12 @@ end
          tv_version = mobile_version + 1
        end
 
-       increment_version_code(
-          gradle_file_path: "mobile/build.gradle",
-          app_folder_name:"mobile",
-          version_code: mobile_version
-    )
-        increment_version_code(
-           gradle_file_path: "tv/build.gradle",
-           app_folder_name:"tv",
-           version_code: tv_version
-    )
+       # Update root build.gradle appVersionCode (mobile uses this directly, TV adds +1)
+       gradle_file = File.read("build.gradle")
+       gradle_file.gsub!(/appVersionCode = \d+/, "appVersionCode = #{mobile_version}")
+       File.write("build.gradle", gradle_file)
+
+       UI.success("✅ Kept appVersionCode at #{mobile_version} (TV will be #{tv_version})")
     end
 
   desc "Build and sign"
