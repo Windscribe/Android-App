@@ -108,8 +108,7 @@ UploadToNexusPublic:
     - extras fastlane || (apk --no-cache add ruby ruby-dev && gem install fastlane --force)
     - apk --no-cache add swig
     - fastlane updateBuildVersion
-    - export VERSION_CODE=$(grep -E "versionCode" mobile/build.gradle | cut -d '"' -f2
-      | tr -d '"' | tr -d 'versionCode ')
+    - export VERSION_CODE=$(grep -E "appVersionCode = " build.gradle | sed 's/.*appVersionCode = //')
     - export VERSION_NAME=${MAJOR}.${MINOR}.${VERSION_CODE}
     - touch ${CHANGE_LOG_PATH}${VERSION_CODE}.txt
     - export ANDROID_NDK=$(ls -d $ANDROID_SDK_ROOT/ndk/*/ | head -n 1)
@@ -140,8 +139,7 @@ UploadToNexusPublic:
     - extras fastlane || (apk --no-cache add ruby ruby-dev && gem install fastlane --force)
     - apk --no-cache add swig
     - fastlane keepBuildVersion
-    - export VERSION_CODE=$(grep -E "versionCode" mobile/build.gradle | cut -d '"' -f2
-      | tr -d '"' | tr -d 'versionCode ')
+    - export VERSION_CODE=$(grep -E "appVersionCode = " build.gradle | sed 's/.*appVersionCode = //')
     - export VERSION_NAME=${MAJOR}.${MINOR}.${VERSION_CODE}
     - touch ${CHANGE_LOG_PATH}${VERSION_CODE}.txt
     - export ANDROID_NDK=$(ls -d $ANDROID_SDK_ROOT/ndk/*/ | head -n 1)
