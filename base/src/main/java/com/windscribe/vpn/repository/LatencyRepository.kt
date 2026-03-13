@@ -57,18 +57,19 @@ class LatencyRepository @Inject constructor(
     private val skipPing
         get() = vpnConnectionStateManager.get().isVPNActive() || WindUtilities.isOnline().not()
 
-    private suspend fun pingJobAsync(city: Datacenter): Deferred<PingTime> {
+    private suspend fun pingJobAsync(city: Datacenter): Deferred<PingTime?> {
         val context = currentCoroutineContext()
         return CoroutineScope(context).async {
-            val pingIpAndHost = localDbInterface.getPingIpAndHost(city.id) ?: return@async PingTime()
             val pingTime = getPingTime(city.getId(), city.regionID, false, true)
+            val pingIpAndHost = localDbInterface.getPingIpAndHost(city.id) ?: return@async null
             if (appContext.isRegionRestricted) {
                 return@async getLatency(pingTime.ip, pingTime)
             } else {
                 try {
                     return@async getLatencyFromApi(pingIpAndHost.second, pingIpAndHost.first, pingTime)
                 } catch (e: Exception){
-                    return@async PingTime()
+                    logger.debug("Ping failed for datacenter ${city.id}: ${e.message}")
+                    return@async pingTime.apply { setPingTime(-1) }
                 }
             }
         }
@@ -84,7 +85,8 @@ class LatencyRepository @Inject constructor(
                 try {
                     return@async getLatencyFromApi(region.pingHost, region.staticIpNode.ip, pingTime)
                 } catch (e: Exception){
-                    return@async PingTime()
+                    logger.debug("Ping failed for static region ${region.id}: ${e.message}")
+                    return@async pingTime.apply { setPingTime(-1) }
                 }
             }
         }
@@ -93,7 +95,7 @@ class LatencyRepository @Inject constructor(
     suspend fun updateAllServerLatencies(): Boolean {
         val currentIp = preferencesHelper.userIP
         val validPings = localDbInterface.getAllPingsAsync().filter {
-            val isSameIp = currentIp == it.ip
+            val isSameIp = currentIp != null && currentIp == it.ip
             val isWithinTimeLimit = (System.currentTimeMillis() - it.updatedAt).toDuration(DurationUnit.MILLISECONDS).inWholeMinutes <= MINIMUM_PING_VALIDATION_MINUTES
             val isPingValid = it.pingTime != -1
             return@filter isSameIp && isWithinTimeLimit && isPingValid
@@ -111,13 +113,18 @@ class LatencyRepository @Inject constructor(
         val cityPings = runCatching {
             citiesToPing.chunked(batchSize).forEach { batch ->
                 val batchJobs = batch.map { pingJobAsync(it) }
-                val batchResults = batchJobs.awaitAll()
+                val batchResults = batchJobs.awaitAll().filterNotNull()
                 batchResults.forEach { pingTime ->
-                    localDbInterface.addPing(pingTime)
-                    allPingResults.add(pingTime)
+                    runCatching {
+                        localDbInterface.addPing(pingTime)
+                        allPingResults.add(pingTime)
+                    }
                 }
             }
-            logger.debug("Latency completed for ${allPingResults.count { it.pingTime > 0 && !it.isStatic }} of ${citiesToPing.count()} cities.")
+            val successCount = allPingResults.count { it.pingTime > 0 && !it.isStatic }
+            val failureCount = allPingResults.count { it.pingTime == -1 && !it.isStatic }
+            val attemptedCount = allPingResults.count { !it.isStatic }
+            logger.debug("Latency: $successCount successful, $failureCount failed out of $attemptedCount datacenters (${citiesToPing.count()} total).")
             return@runCatching updateLatencyEvent(allPingResults, LatencyType.Servers)
         }
         val staticLatencyChanged = updateStaticIpLatency()
@@ -129,16 +136,16 @@ class LatencyRepository @Inject constructor(
     }
 
     suspend fun updateFavouriteCityLatencies(): Boolean {
-        val cities = localDbInterface.getFavouritesAsync().map {
+        val cities = localDbInterface.getFavouritesAsync().mapNotNull {
             try {
                 localDbInterface.getDatacenterByIDAsync(it.id)
-            } catch (e: Exception) {
-               return@map null
+            } catch (_: Exception) {
+               null
             }
-        }.filterNotNull()
+        }
         val pingJobs = cities.map { pingJobAsync(it) }
         val cityPings = runCatching {
-            pingJobs.awaitAll().map { pingTime ->
+            pingJobs.awaitAll().filterNotNull().map { pingTime ->
                 localDbInterface.addPing(pingTime)
                 pingTime
             }.run {
