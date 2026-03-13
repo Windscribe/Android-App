@@ -98,6 +98,7 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
             if (changed[2]) {
                 logger.debug("User status changed.")
                 preferencesHelper.migrationRequired = true
+                wgConfigRepository.deleteKeys()
                 workManager.updateStaticIpList()
                 workManager.updateCredentialsUpdate()
                 workManager.updateNotifications()
