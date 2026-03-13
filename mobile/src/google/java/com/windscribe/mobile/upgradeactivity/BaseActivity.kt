@@ -8,9 +8,11 @@ import android.graphics.Rect
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.toColorInt
 import com.windscribe.mobile.R
 import com.windscribe.mobile.di.ActivityComponent
 import com.windscribe.mobile.di.ActivityModule
@@ -51,12 +53,13 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     open fun setWindow() {
-        val statusBarColor = resources.getColor(android.R.color.transparent)
-        window.decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                )
-        window.statusBarColor = statusBarColor
+        val isDark = Windscribe.appContext.preference.selectedTheme == PreferencesKeyConstants.DARK_THEME
+        val navigationBarStyle = if (isDark) {
+            SystemBarStyle.dark("#0B0F16".toColorInt())
+        } else {
+            SystemBarStyle.light("#FFFFFF".toColorInt(), "#0B0F16".toColorInt())
+        }
+        enableEdgeToEdge(navigationBarStyle = navigationBarStyle)
     }
 
     fun openURLInBrowser(urlToOpen: String?) {
@@ -92,8 +95,9 @@ abstract class BaseActivity : AppCompatActivity() {
     fun setLanguage() {
         val newLocale = Windscribe.Companion.appContext.getSavedLocale()
         Locale.setDefault(newLocale)
-        val config = Configuration()
+        val config = Configuration(baseContext.resources.configuration)
         config.locale = newLocale
+        config.fontScale = 1.0f
         Windscribe.Companion.appContext.resources.updateConfiguration(config, baseContext.resources.displayMetrics)
         resources.updateConfiguration(config, baseContext.resources.displayMetrics)
     }
