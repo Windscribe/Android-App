@@ -68,7 +68,7 @@ enum class ServerListType {
     All, Fav, Static, Config
 }
 
-private const val MIN_HEALTH_VALUE = 50
+private const val MIN_HEALTH_VALUE = 10
 
 abstract class ServerViewModel : ViewModel() {
     abstract val serverListState: StateFlow<ListState<ServerListItem>>
