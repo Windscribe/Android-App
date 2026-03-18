@@ -278,7 +278,13 @@ public class VpnStateService extends Service
 		Context context = getApplicationContext();
 		Intent intent = new Intent(context, StrongSwanApplication.service);
 		intent.setAction(CharonVpnService.DISCONNECT_ACTION);
-		ContextCompat.startForegroundService(context, intent);
+		try {
+			ContextCompat.startForegroundService(context, intent);
+		} catch (Exception e) {
+			// Android 12+ may throw ForegroundServiceStartNotAllowedException
+			// when app is in background. Log and ignore - disconnect will happen
+			// when service is destroyed or user brings app to foreground.
+		}
 	}
 
 	/**
@@ -312,7 +318,13 @@ public class VpnStateService extends Service
 			profileInfo.putBoolean(CharonVpnService.KEY_IS_RETRY, true);
 		}
 		intent.putExtras(profileInfo);
-		ContextCompat.startForegroundService(context, intent);
+		try {
+			ContextCompat.startForegroundService(context, intent);
+		} catch (Exception e) {
+			// Android 12+ may throw ForegroundServiceStartNotAllowedException
+			// when app is in background. Log and ignore - connection will retry
+			// when user brings app to foreground or network changes.
+		}
 	}
 
 	/**

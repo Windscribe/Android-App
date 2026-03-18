@@ -11,19 +11,33 @@ import android.net.VpnService
 import android.util.Log
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.backend.Util
+import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.backend.utils.startForegroundImmediately
 import com.windscribe.vpn.backend.utils.startForegroundSafely
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.ShortcutStateManager
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import org.strongswan.android.data.VpnProfile
 import org.strongswan.android.logic.CharonVpnService
 import javax.inject.Inject
 
 class CharonVpnServiceWrapper : CharonVpnService() {
+
+    companion object {
+        private const val STATE_CHILD_SA_UP = 1
+        private const val STATE_CHILD_SA_DOWN = 2
+        private const val STATE_AUTH_ERROR = 3
+        private const val STATE_PEER_AUTH_ERROR = 4
+        private const val STATE_LOOKUP_ERROR = 5
+        private const val STATE_UNREACHABLE_ERROR = 6
+        private const val STATE_CERTIFICATE_UNAVAILABLE = 7
+        private const val STATE_GENERIC_ERROR = 8
+    }
 
     @Inject
     lateinit var windNotificationBuilder: WindNotificationBuilder
@@ -43,6 +57,8 @@ class CharonVpnServiceWrapper : CharonVpnService() {
     private var logger = LoggerFactory.getLogger("vpn")
 
     override fun onCreate() {
+        logger.debug("CharonVpnServiceWrapper onCreate()")
+        startForegroundImmediately(NotificationConstants.SERVICE_NOTIFICATION_ID)
         appContext.serviceComponent.inject(this)
         startForegroundSafely(
             windNotificationBuilder,
@@ -51,6 +67,7 @@ class CharonVpnServiceWrapper : CharonVpnService() {
         )
         Log.i("GoLog", "Setting service")
         super.onCreate()
+        iKev2VpnBackend.serviceCreated(this)
     }
 
     override fun getMainActivityClass(): Class<*> {
@@ -62,7 +79,9 @@ class CharonVpnServiceWrapper : CharonVpnService() {
     }
 
     override fun onDestroy() {
+        logger.debug("CharonVpnServiceWrapper onDestroy()")
         windNotificationBuilder.cancelNotification(NotificationConstants.SERVICE_NOTIFICATION_ID)
+        iKev2VpnBackend.serviceDestroyed()
         super.onDestroy()
     }
 
@@ -84,13 +103,7 @@ class CharonVpnServiceWrapper : CharonVpnService() {
         }
         return when (intent.action) {
             DISCONNECT_ACTION -> {
-                startForegroundSafely(
-                    windNotificationBuilder,
-                    NotificationConstants.SERVICE_NOTIFICATION_ID,
-                    Connecting
-                )
-                @Suppress("DEPRECATION")
-                stopForeground(false)
+                logger.debug("Disconnect action received, setting next profile to null")
                 setNextProfile(null)
                 START_NOT_STICKY
             }
@@ -103,11 +116,117 @@ class CharonVpnServiceWrapper : CharonVpnService() {
                 )
                 Util.getProfile<VpnProfile>()?.let {
                     setNextProfile(it)
-                    START_STICKY
+                    START_NOT_STICKY
                 } ?: kotlin.run {
                     START_NOT_STICKY
                 }
             }
         }
+    }
+
+    fun connect() {
+        logger.debug("CharonVpnServiceWrapper connect() called")
+        Util.getProfile<VpnProfile>()?.let { profile ->
+            logger.info("Setting next profile: ${profile.name}")
+            setNextProfile(profile)
+        } ?: run {
+            logger.error("Failed to get VPN profile for connection")
+            iKev2VpnBackend.getTunnel().onStateChange(IKev2Tunnel.State.DOWN)
+        }
+    }
+
+    override fun stateChanged() {
+        logger.debug("stateChanged() callback from CharonVpnService")
+    }
+
+    override fun updateStatus(status: Int) {
+        logger.debug("updateStatus($status) called")
+        super.updateStatus(status)
+
+        when (status) {
+            STATE_CHILD_SA_DOWN -> {
+                logger.info("IKEv2 tunnel: CHILD_SA_DOWN -> CONNECTING")
+                iKev2VpnBackend.getTunnel().onStateChange(IKev2Tunnel.State.CONNECTING)
+            }
+            STATE_CHILD_SA_UP -> {
+                logger.info("IKEv2 tunnel: CHILD_SA_UP -> CONNECTED")
+                iKev2VpnBackend.getTunnel().onStateChange(IKev2Tunnel.State.CONNECTED)
+            }
+            STATE_AUTH_ERROR -> {
+                logger.error("IKEv2 authentication failed")
+                scope.launch {
+                    iKev2VpnBackend.disconnect(
+                        VPNState.Error(
+                            error = VPNState.ErrorType.AuthenticationError,
+                            message = "Authentication failed."
+                        )
+                    )
+                }
+            }
+            STATE_PEER_AUTH_ERROR -> {
+                logger.error("IKEv2 peer authentication failed")
+                scope.launch {
+                    iKev2VpnBackend.disconnect(
+                        VPNState.Error(
+                            error = VPNState.ErrorType.AuthenticationError,
+                            message = "Peer authentication failed."
+                        )
+                    )
+                }
+            }
+            STATE_LOOKUP_ERROR -> {
+                logger.error("IKEv2 DNS lookup failed")
+                scope.launch {
+                    iKev2VpnBackend.disconnect(
+                        VPNState.Error(
+                            error = VPNState.ErrorType.GenericError,
+                            message = "Failed to resolve server hostname."
+                        )
+                    )
+                }
+            }
+            STATE_UNREACHABLE_ERROR -> {
+                logger.error("IKEv2 server unreachable")
+                scope.launch {
+                    iKev2VpnBackend.disconnect(
+                        VPNState.Error(
+                            error = VPNState.ErrorType.TimeoutError,
+                            message = "Server unreachable."
+                        )
+                    )
+                }
+            }
+            STATE_CERTIFICATE_UNAVAILABLE -> {
+                logger.error("IKEv2 certificate unavailable")
+                scope.launch {
+                    iKev2VpnBackend.disconnect(
+                        VPNState.Error(
+                            error = VPNState.ErrorType.AuthenticationError,
+                            message = "Certificate unavailable."
+                        )
+                    )
+                }
+            }
+            STATE_GENERIC_ERROR -> {
+                logger.error("IKEv2 generic error")
+                scope.launch {
+                    iKev2VpnBackend.disconnect(
+                        VPNState.Error(
+                            error = VPNState.ErrorType.GenericError,
+                            message = "Connection error."
+                        )
+                    )
+                }
+            }
+            else -> {
+                logger.warn("Unknown IKEv2 status: $status")
+            }
+        }
+    }
+
+    fun close() {
+        logger.debug("CharonVpnServiceWrapper close() called")
+        iKev2VpnBackend.getTunnel().onStateChange(IKev2Tunnel.State.DOWN)
+        stopSelf()
     }
 }

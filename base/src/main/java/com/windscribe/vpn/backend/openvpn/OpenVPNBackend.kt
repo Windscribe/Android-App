@@ -31,6 +31,7 @@ import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.wsnet.lib.WSNetBridgeAPI
+import kotlinx.coroutines.Job
 
 @Singleton
 class OpenVPNBackend @Inject constructor(
@@ -58,11 +59,30 @@ class OpenVPNBackend @Inject constructor(
             openVPNLogger.debug(it.toString())
         }
     }
+    private var connectionStateJob: Job? = null
+    private val openVpnTunnel = OpenVpnTunnel()
+
+    fun serviceCreated(openVPNWrapperService: OpenVPNWrapperService) {
+        vpnLogger.info("OpenVPN service created.")
+        service = openVPNWrapperService
+    }
+
+    fun serviceDestroyed() {
+        vpnLogger.info("OpenVPN service destroyed.")
+        service = null
+    }
+
+    fun getTunnel() = openVpnTunnel
+
     override fun activate() {
         vpnLogger.info("Activating OpenVPN backend.")
         stickyDisconnectEvent = true
         VpnStatus.addStateListener(this)
-        VpnStatus.addLogListener(logListener)
+        VpnStatus.addLogListener {
+            if(it.logLevel == VpnStatus.LogLevel.INFO || it.logLevel == VpnStatus.LogLevel.ERROR) {
+                openVPNLogger.debug(it.toString())
+            }
+        }
         VpnStatus.addByteCountListener(this)
         active = true
         startNetworkInfoObserver()
@@ -71,6 +91,7 @@ class OpenVPNBackend @Inject constructor(
 
     override fun deactivate() {
         VpnStatus.removeLogListener(logListener)
+        connectionStateJob?.cancel()
         VpnStatus.removeStateListener(this)
         VpnStatus.removeByteCountListener(this)
         stopNetworkInfoObserver()

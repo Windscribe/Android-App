@@ -767,18 +767,21 @@ public abstract class OpenVPNService extends VpnService implements StateListener
 
     @Override
     public void onDestroy() {
-        synchronized (mProcessLock) {
-            if (mProcessThread != null) {
-                mManagement.stopVPN(true);
+        try {
+            synchronized (mProcessLock) {
+                if (mProcessThread != null) {
+                    mManagement.stopVPN(true);
+                }
             }
-        }
+            if (mDeviceStateReceiver != null) {
+                this.unregisterReceiver(mDeviceStateReceiver);
+            }
+            // Just in case unregister for state
+            VpnStatus.removeStateListener(this);
+            VpnStatus.flushLog();
+        } catch (Exception ignored) {
 
-        if (mDeviceStateReceiver != null) {
-            this.unregisterReceiver(mDeviceStateReceiver);
         }
-        // Just in case unregister for state
-        VpnStatus.removeStateListener(this);
-        VpnStatus.flushLog();
     }
 
     private String getTunConfigString() {

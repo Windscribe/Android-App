@@ -20,7 +20,6 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
-import com.windscribe.vpn.services.DeviceStateService.Companion.enqueueWork
 import com.wsnet.lib.WSNet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -115,10 +114,6 @@ class DeviceStateManager @Inject constructor(
     private fun registerNetworkCallback() {
         val connectivityManager = this.connectivityManager ?: return
 
-        val networkRequest =
-            NetworkRequest.Builder().addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                .build()
-
         networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
                 handleNetworkChange()
@@ -140,7 +135,17 @@ class DeviceStateManager @Inject constructor(
         }
 
         try {
-            connectivityManager.registerNetworkCallback(networkRequest, networkCallback!!)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                connectivityManager.registerDefaultNetworkCallback(networkCallback!!)
+                logger.info("Network callback registered using registerDefaultNetworkCallback()")
+            } else {
+                // API 21-23: Use registerNetworkCallback with request
+                val networkRequest = NetworkRequest.Builder()
+                    .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                    .build()
+                connectivityManager.registerNetworkCallback(networkRequest, networkCallback!!)
+                logger.info("Network callback registered using registerNetworkCallback() with request (API < 24)")
+            }
         } catch (e: Exception) {
             logger.error("Failed to register network callback", e)
         }
@@ -470,9 +475,10 @@ class DeviceStateManager @Inject constructor(
                         logger.error("WSNet setConnectivityState failed: ${e.message}")
                     }
                 }
-                if (online) {
-                    context?.let { enqueueWork(it) }
-                }
+                // COMMENTED OUT: This was causing app to restart when network comes online
+                // if (online) {
+                //     context?.let { enqueueWork(it) }
+                // }
             }
         }
     }
