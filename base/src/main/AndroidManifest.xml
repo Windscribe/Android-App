@@ -13,10 +13,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED"
-        tools:ignore="SystemPermissionTypo" />
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
@@ -44,8 +43,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
-        <receiver android:name=".state.DeviceStateManager" />
         <receiver
             android:name=".bootreceiver.WindscribeBootReceiver"
             android:exported="true">
@@ -59,11 +56,14 @@
         </receiver>
 
         <service
-            android:foregroundServiceType="systemExempted"
+            android:foregroundServiceType="specialUse"
             android:name=".backend.wireguard.WireGuardWrapperService"
             android:exported="true"
             android:permission="android.permission.BIND_VPN_SERVICE"
             tools:ignore="ForegroundServicePermission">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="WireGuard VPN protocol service - maintains encrypted VPN tunnel connection for user privacy and security" />
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
@@ -82,35 +82,39 @@
             </intent-filter>
         </service>
         <service
-            android:name=".services.DeviceStateService"
-            android:exported="true"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
-        <service
             android:name=".bootreceiver.BootSessionService"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <service
-            android:foregroundServiceType="systemExempted"
+            android:foregroundServiceType="specialUse"
             android:name="com.windscribe.vpn.backend.openvpn.OpenVPNWrapperService"
             android:exported="true"
             android:permission="android.permission.BIND_VPN_SERVICE"
             tools:ignore="ForegroundServicePermission">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="OpenVPN protocol service - maintains encrypted VPN tunnel connection for user privacy and security" />
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
-
         <service
-            android:foregroundServiceType="systemExempted"
+            android:foregroundServiceType="specialUse"
             android:name="com.windscribe.vpn.backend.ikev2.CharonVpnServiceWrapper"
-            android:permission="android.permission.BIND_VPN_SERVICE"
-            tools:ignore="ForegroundServicePermission" />
+            android:permission="android.permission.BIND_VPN_SERVICE">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="IKEv2 VPN protocol service - maintains encrypted VPN tunnel connection for user privacy and security" />
+        </service>
         <service
-            android:foregroundServiceType="systemExempted"
+            android:foregroundServiceType="specialUse"
             android:name=".services.AutoConnectService"
-            android:enabled="true"
-            tools:ignore="ForegroundServicePermission" />
+            android:enabled="true">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Auto-connect service - automatically connects VPN on network changes to protect user privacy on unsecured networks" />
+        </service>
     </application>
 
 </manifest>

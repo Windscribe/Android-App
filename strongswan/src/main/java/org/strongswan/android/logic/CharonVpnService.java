@@ -30,6 +30,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.Bundle;
@@ -156,6 +157,18 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
+		// CRITICAL: Must call startForeground() immediately when started via startForegroundService()
+		// to avoid ForegroundServiceDidNotStartInTimeException on Android 12+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !mShowNotification)
+		{
+			try {
+				startSafeForeground(this, getNotificationID(), buildNotification(false), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+				mShowNotification = true;
+			} catch (Exception e) {
+				Log.e(TAG, "Failed to start foreground", e);
+			}
+		}
+
 		if (intent != null)
 		{
 			VpnProfile profile = null;
@@ -254,6 +267,16 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 		if (mBackgroundHandler != null)
 		{
 			mBackgroundHandler.getLooper().quit();
+		}
+		// Stop foreground service
+		if (mShowNotification && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+		{
+			try {
+				stopForeground(true);
+				mShowNotification = false;
+			} catch (Exception e) {
+				Log.e(TAG, "Failed to stop foreground", e);
+			}
 		}
 	}
 
@@ -443,8 +466,14 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 			@Override
 			public void run()
 			{
-				mShowNotification = true;
-				startSafeForeground(CharonVpnService.this, getNotificationID(), buildNotification(false));
+				if (!mShowNotification) {
+					mShowNotification = true;
+					startSafeForeground(CharonVpnService.this, getNotificationID(), buildNotification(false), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+				} else {
+					// Already in foreground, just update the notification
+					NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+					manager.notify(getNotificationID(), buildNotification(false));
+				}
 			}
 		});
 	}
@@ -461,9 +490,9 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 			{
 				mShowNotification = false;
 
-				// Notification will be removed in NotificationHelper. Calling stopForeground(true) causes
-				// subsequent NotificationManager.cancel to fail.
-				stopForeground(false);
+				// Don't call stopForeground() here - service must stay foreground until onDestroy()
+				// to avoid ForegroundServiceDidNotStartInTimeException when started via startForegroundService()
+				// Notification will be removed in onDestroy() by the wrapper service
 			}
 		});
 	}

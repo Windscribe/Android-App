@@ -18,7 +18,7 @@ class ProxyTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBacke
     private var tunnelLib = WSTunnelLib()
     private var protectJob: Job? = null
 
-    fun startProxyTunnel(ip: String, port: String, isWSTunnel: Boolean = true) {
+    fun startProxyTunnel(ip: String, port: String, localPort: Int = PROXY_TUNNEL_PORT, isWSTunnel: Boolean = true) {
        scope.launch {
            if (proxyJob?.isActive == true) {
                logger.debug("Previous Stunnel job is still running. Waiting for it to finish.")
@@ -32,15 +32,15 @@ class ProxyTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBacke
                }
                val logFile = File(appContext.filesDir, PROXY_LOG).path
                tunnelLib.initialise(BuildConfig.DEV, logFile)
-               logger.debug("Running proxy.")
+               logger.debug("Running proxy on local port: $localPort")
                if (isWSTunnel) {
                    val remote =
                        "wss://$ip:$port/$PROXY_TUNNEL_PROTOCOL/$PROXY_TUNNEL_ADDRESS/$WS_TUNNEL_PORT"
-                   tunnelLib.startProxy(":$PROXY_TUNNEL_PORT", remote, 1, mtu, false)
+                   tunnelLib.startProxy(":$localPort", remote, 1, mtu, false)
                } else {
                    val remote = "https://$ip:$port"
                    val antiCensorship = appContext.preference.isAntiCensorshipOn
-                   tunnelLib.startProxy(":$PROXY_TUNNEL_PORT", remote, 2, mtu, antiCensorship)
+                   tunnelLib.startProxy(":$localPort", remote, 2, mtu, antiCensorship)
                }
                logger.debug("Exiting tunnel proxy.")
            }
@@ -69,6 +69,6 @@ class ProxyTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBacke
         const val PROXY_LOG = "proxy.txt"
         const val PROXY_TUNNEL_ADDRESS = "127.0.0.1"
         const val PROXY_TUNNEL_PROTOCOL = "tcp"
-        const val PROXY_TUNNEL_PORT = 65479
+        const val PROXY_TUNNEL_PORT = 65480
     }
 }

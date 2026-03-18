@@ -5,19 +5,19 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
-import com.windscribe.common.startSafeForeground
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.backend.utils.startForegroundImmediately
 import com.windscribe.vpn.backend.utils.startForegroundSafely
 import com.windscribe.vpn.constants.NotificationConstants
-import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.DeviceStateManager
@@ -27,9 +27,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -70,13 +68,17 @@ class AutoConnectService : Service() {
 
     override fun onCreate() {
         isAutoConnectingServiceRunning = true
+        // Promote to foreground IMMEDIATELY before DI to prevent
+        // ForegroundServiceDidNotStartInTimeException on slow devices.
+        // AutoConnectService uses specialUse type - it auto-connects VPN on network changes.
+        startForegroundImmediately(NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID)
         appContext.serviceComponent.inject(this)
-
         startForegroundSafely(
             windNotificationBuilder,
             NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID,
             VPNState.Status.UnsecuredNetwork,
-            clearActions = true
+            clearActions = true,
+            serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
         )
         serviceScope.launch {
             vpnConnectionStateManager.state.collectLatest {
@@ -128,7 +130,8 @@ class AutoConnectService : Service() {
             windNotificationBuilder,
             NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID,
             VPNState.Status.UnsecuredNetwork,
-            clearActions = true
+            clearActions = true,
+            serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
         )
         return if (canAccessNetworkName()) {
             logger.debug("Auto connect service started and waiting for network changes.")

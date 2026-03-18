@@ -53,7 +53,11 @@ class WindscribeCloudMessaging : FirebaseMessagingService() {
                         val launchIntent = appContext.applicationInterface.upgradeIntent
                         launchIntent.addFlags(FLAG_ACTIVITY_NEW_TASK)
                         appContext.appLifeCycleObserver.pushNotificationAction = pushNotificationAction
-                        startActivity(launchIntent)
+                        try {
+                            startActivity(launchIntent)
+                        } catch (e: SecurityException) {
+                            logger.error("[WINDSCRIBE_BG_ACTIVITY] Cannot start activity from background: ${e.message}", e)
+                        }
                     }
                 }
             }

@@ -321,17 +321,19 @@ class WindNotificationBuilder @Inject constructor(
  * @param notificationId The notification ID to use
  * @param status The VPN status to display in the notification
  * @param clearActions If true, clears contentIntent and actions from the notification
+ * @param serviceType The foreground service type (defaults to FOREGROUND_SERVICE_TYPE_SPECIAL_USE for VPN services)
  */
 fun android.app.Service.startForegroundSafely(
     notificationBuilder: WindNotificationBuilder,
     notificationId: Int,
     status: Status,
-    clearActions: Boolean = false
+    clearActions: Boolean = false,
+    serviceType: Int = android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
 ) {
     val notification = notificationBuilder.buildNotification(status)
     if (clearActions) {
         notification.contentIntent = null
         notification.actions = null
     }
-    startSafeForeground(notificationId, notification)
+    startSafeForeground(notificationId, notification, serviceType)
 }

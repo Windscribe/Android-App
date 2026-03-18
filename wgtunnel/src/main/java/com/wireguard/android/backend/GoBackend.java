@@ -55,6 +55,7 @@ public final class GoBackend implements Backend {
     @Nullable private Config currentConfig;
     @Nullable private Tunnel currentTunnel;
     private int currentTunnelHandle = -1;
+    private final Object tunnelStateLock = new Object();
 
     private VPNTunnelWrapper tunnelWrapper;
 
@@ -232,6 +233,13 @@ public final class GoBackend implements Backend {
     }
 
     private void setStateInternal(final Tunnel tunnel, @Nullable final Config config, final State state)
+            throws Exception {
+        synchronized (tunnelStateLock) {
+            setStateInternalLocked(tunnel, config, state);
+        }
+    }
+
+    private void setStateInternalLocked(final Tunnel tunnel, @Nullable final Config config, final State state)
             throws Exception {
         Log.i(TAG, "Bringing tunnel " + tunnel.getName() + ' ' + state);
 
@@ -447,14 +455,16 @@ public final class GoBackend implements Backend {
         @Override
         public void onDestroy() {
             if (owner != null) {
-                final Tunnel tunnel = owner.currentTunnel;
-                if (tunnel != null) {
-                    if (owner.currentTunnelHandle != -1)
-                        wgTurnOff(owner.currentTunnelHandle);
-                    owner.currentTunnel = null;
-                    owner.currentTunnelHandle = -1;
-                    owner.currentConfig = null;
-                    tunnel.onStateChange(State.DOWN);
+                synchronized (owner.tunnelStateLock) {
+                    final Tunnel tunnel = owner.currentTunnel;
+                    if (tunnel != null) {
+                        if (owner.currentTunnelHandle != -1)
+                            wgTurnOff(owner.currentTunnelHandle);
+                        owner.currentTunnel = null;
+                        owner.currentTunnelHandle = -1;
+                        owner.currentConfig = null;
+                        tunnel.onStateChange(State.DOWN);
+                    }
                 }
             }
             vpnService = vpnService.newIncompleteFuture();

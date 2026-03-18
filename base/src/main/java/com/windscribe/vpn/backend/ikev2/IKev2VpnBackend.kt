@@ -4,18 +4,13 @@
 
 package com.windscribe.vpn.backend.ikev2
 
-import android.app.Service
-import android.content.ComponentName
-import android.content.Intent
-import android.content.ServiceConnection
-import android.os.IBinder
-import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.VPNState
+import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
 import com.windscribe.vpn.backend.VpnBackend.Companion.DISCONNECT_DELAY
@@ -25,12 +20,12 @@ import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.strongswan.android.logic.CharonVpnService
-import org.strongswan.android.logic.VpnStateService
-import org.strongswan.android.logic.VpnStateService.VpnStateListener
 import java.io.File
 import java.io.IOException
 import java.util.*
@@ -50,68 +45,100 @@ class IKev2VpnBackend @Inject constructor(
         localDbInterface: LocalDbInterface,
         bridgeAPI: WSNetBridgeAPI,
         resourceHelper: ResourceHelper
-) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager, localDbInterface, bridgeAPI, resourceHelper), VpnStateListener {
+) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager, localDbInterface, bridgeAPI, resourceHelper) {
 
-    private var vpnService: VpnStateService? = null
-    private val stateServiceChannel = Channel<VpnStateService>()
-    private var serviceConnection: ServiceConnection? = null
+    var service: CharonVpnServiceWrapper? = null  // Direct reference like WireGuard
+    private var connectionStateJob: Job? = null
     override var active = false
 
+    // StateFlow-based tunnel like WireGuard
+    private val ikev2Tunnel = IKev2Tunnel()
+
+    // Sticky flag to prevent initial DOWN state from triggering disconnect (like WireGuard)
+    private var stickyDisconnectEvent = false
+
+    fun serviceCreated(charonVpnServiceWrapper: CharonVpnServiceWrapper) {
+        vpnLogger.info("IKEv2 service created.")
+        service = charonVpnServiceWrapper
+    }
+
+    fun serviceDestroyed() {
+        vpnLogger.info("IKEv2 service destroyed.")
+        service = null
+    }
+
+    /**
+     * Returns the tunnel object for state reporting from CharonVpnService
+     */
+    fun getTunnel() = ikev2Tunnel
+
     override fun activate() {
-        bindToStateService()
+        stickyDisconnectEvent = true  // Prevent initial DOWN from triggering disconnect
+        vpnLogger.info("Activating IKEv2 backend.")
+        // Start observing tunnel state changes (like WireGuard does)
+        connectionStateJob = scope.launch {
+            ikev2Tunnel.stateFlow.cancellable().collectLatest { state ->
+                vpnLogger.info("IKEv2 tunnel state changed to ${state.name}")
+                when (state) {
+                    IKev2Tunnel.State.DOWN -> {
+                        // Only disconnect if not the initial activation event and not reconnecting
+                        if (!stickyDisconnectEvent && !reconnecting) {
+                            connectionJob?.cancel()
+                            updateState(VPNState(Disconnected))
+                        }
+                    }
+                    IKev2Tunnel.State.CONNECTING -> {
+                        updateState(VPNState(Connecting))
+                    }
+                    IKev2Tunnel.State.CONNECTED -> {
+                        testConnectivity()
+                    }
+                    IKev2Tunnel.State.DISCONNECTING -> {
+                        updateState(VPNState(VPNState.Status.Disconnecting))
+                    }
+                }
+                stickyDisconnectEvent = false  // Reset after first event
+            }
+        }
         active = true
         startNetworkInfoObserver()
-        vpnLogger.debug("Ikev2 backend activated.")
+        vpnLogger.debug("IKEv2 backend activated.")
     }
 
     override fun deactivate() {
-        val context = Windscribe.appContext.applicationContext
-        serviceConnection?.let {
-            try {
-                context.unbindService(it)
-                serviceConnection = null
-            } catch (e: Exception) {
-            }
-        }
+        connectionStateJob?.cancel()
         stopNetworkInfoObserver()
         active = false
-        vpnLogger.debug("Ikev2 backend deactivated.")
-    }
-
-    private suspend fun getVpnService() = vpnService ?: stateServiceChannel.receive()
-
-    private fun bindToStateService() {
-        val context = Windscribe.appContext.applicationContext
-        serviceConnection = object : ServiceConnection {
-            override fun onServiceConnected(name: ComponentName, service: IBinder) {
-                vpnService = (service as VpnStateService.LocalBinder).service.apply {
-                    registerListener(this@IKev2VpnBackend)
-                    scope.launch {
-                        stateServiceChannel.send(this@apply)
-                    }
-                }
-            }
-
-            override fun onServiceDisconnected(name: ComponentName) {
-                vpnService = null
-            }
-        }
-        serviceConnection?.let {
-            context.bindService(
-                Intent(context, VpnStateService::class.java),
-                it, Service.BIND_AUTO_CREATE
-            )
-        }
+        vpnLogger.debug("IKEv2 backend deactivated.")
     }
 
     override fun connect(protocolInformation: ProtocolInformation, connectionId: UUID) {
         this.protocolInformation = protocolInformation
         this.connectionId = connectionId
-        vpnLogger.debug("Connecting to Ikev2 Service.")
+        vpnLogger.info("Connecting to IKEv2 Service.")
         startConnectionJob()
         scope.launch {
             proxyDNSManager.startControlDIfRequired()
-            getVpnService().connect(null, true)
+
+            // Start the CharonVpnServiceWrapper service (if not already started)
+            val context = appContext.applicationContext
+            val intent = android.content.Intent(context, CharonVpnServiceWrapper::class.java)
+
+            try {
+                vpnLogger.info("Starting CharonVpnServiceWrapper service.")
+                androidx.core.content.ContextCompat.startForegroundService(context, intent)
+
+                // Give service time to start and call serviceCreated()
+                delay(100)
+
+                // Now trigger connection
+                vpnLogger.info("Triggering connection via service.")
+                service?.connect() ?: run {
+                    vpnLogger.error("Service is null after starting! Cannot connect.")
+                }
+            } catch (e: Exception) {
+                vpnLogger.error("Failed to start CharonVpnServiceWrapper: ${e.message}")
+            }
         }
     }
 
@@ -121,29 +148,21 @@ class IKev2VpnBackend @Inject constructor(
             proxyDNSManager.stopControlD()
         }
         connectionJob?.cancel()
-        vpnLogger.debug("Disconnecting ikev2 service.")
-        vpnService?.state?.let {
-            getVpnService().disconnect()
-        }
-        delay(DISCONNECT_DELAY)
-        deactivate()
-    }
+        vpnLogger.info("Stopping IKEv2 service.")
 
-    override fun stateChanged() {
-        vpnService?.let {
-            vpnLogger.debug("Ikev2 Connection State: ${it.state}")
-            if (it.state == VpnStateService.State.CONNECTED) {
-                testConnectivity()
-            } else {
-                if (it.state != VpnStateService.State.DISCONNECTING) {
-                    val state = serviceStateToVPNStatus(it.state, it.errorState)
-                    state?.let {
-                        updateState(state)
-                    }
-                }
-            }
-            checkLogFileSize()
-        }
+        // Stop the VPN tunnel by setting next profile to null
+        vpnLogger.info("Setting next profile to null to stop tunnel.")
+        service?.setNextProfile(null)
+
+        delay(20)  // Short delay for profile to stop
+
+        // Then close the service cleanly (WireGuard's approach - no startForegroundService!)
+        vpnLogger.info("Closing CharonVpnServiceWrapper.")
+        service?.close()
+
+        delay(DISCONNECT_DELAY)
+        vpnLogger.info("Deactivating IKEv2 backend.")
+        deactivate()
     }
 
     private fun checkLogFileSize(){
@@ -160,27 +179,4 @@ class IKev2VpnBackend @Inject constructor(
             }
         }
     }
-
-    private fun serviceStateToVPNStatus(state: VpnStateService.State, error: VpnStateService.ErrorState): VPNState? =
-            if (error == VpnStateService.ErrorState.NO_ERROR) when (state) {
-                VpnStateService.State.DISABLED -> {
-                    connectionJob?.cancel()
-                    VPNState(Disconnected)
-                }
-                VpnStateService.State.CONNECTING -> VPNState(VPNState.Status.Connecting)
-                VpnStateService.State.CONNECTED -> VPNState(VPNState.Status.Connected)
-                VpnStateService.State.DISCONNECTING -> VPNState(VPNState.Status.Disconnecting)
-            } else {
-                if (error == VpnStateService.ErrorState.AUTH_FAILED) {
-                    scope.launch {
-                        disconnect(
-                            VPNState.Error(
-                                error = VPNState.ErrorType.AuthenticationError,
-                                message = "Authentication failed."
-                            )
-                        )
-                    }
-                }
-                null
-            }
 }

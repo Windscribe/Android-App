@@ -13,6 +13,7 @@ import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.utils.WindNotificationBuilder
 import com.windscribe.vpn.backend.utils.WindVpnController
+import com.windscribe.vpn.backend.utils.startForegroundImmediately
 import com.windscribe.vpn.backend.utils.startForegroundSafely
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.ShortcutStateManager
@@ -44,7 +45,11 @@ class WireGuardWrapperService : GoBackend.VpnService() {
     private var logger = LoggerFactory.getLogger("vpn")
 
     override fun onCreate() {
+        // Promote to foreground IMMEDIATELY before DI to prevent
+        // ForegroundServiceDidNotStartInTimeException on slow devices.
+        startForegroundImmediately(NotificationConstants.SERVICE_NOTIFICATION_ID)
         Windscribe.appContext.serviceComponent.inject(this)
+        // Replace placeholder with full notification now that DI is complete.
         startForegroundSafely(
             windNotificationBuilder,
             NotificationConstants.SERVICE_NOTIFICATION_ID,
@@ -85,8 +90,9 @@ class WireGuardWrapperService : GoBackend.VpnService() {
     }
 
     fun close() {
-        @Suppress("DEPRECATION")
-        stopForeground(false)
+        // Don't call stopForeground() here - service must stay foreground until onDestroy()
+        // to avoid ForegroundServiceDidNotStartInTimeException
+        // onDestroy() will handle notification cleanup
         stopSelf()
     }
 

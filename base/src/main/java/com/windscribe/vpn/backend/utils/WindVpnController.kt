@@ -108,7 +108,11 @@ open class WindVpnController @Inject constructor(
                 startIntent.putExtra("protocolInformation", protocolInformation)
                 startIntent.putExtra("connectionId", connectionId)
                 startIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                appContext.startActivity(startIntent)
+                try {
+                    appContext.startActivity(startIntent)
+                } catch (e: SecurityException) {
+                    logger.error("[WINDSCRIBE_BG_ACTIVITY] Cannot start VPN permission activity from background: ${e.message}", e)
+                }
             }
         } catch (e: Exception) {
             logger.error("Unexpected Error while checking permission for VPN", e)

@@ -62,6 +62,7 @@ import java.net.DatagramSocket
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
+import java.net.ServerSocket
 import java.nio.ByteOrder
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -79,6 +80,28 @@ class VPNProfileCreator @Inject constructor(
 
     private val logger = LoggerFactory.getLogger("vpn")
     var wgForceInit = AtomicBoolean(false)
+
+    /**
+     * Finds an available port starting from minPort (default 1100)
+     * @return Available port number
+     */
+    private fun findAvailablePort(minPort: Int = 1100): Int {
+        var port = minPort
+        while (port < 65535) {
+            try {
+                ServerSocket(port).use { socket ->
+                    socket.reuseAddress = true
+                    logger.debug("Found available port: $port")
+                    return port
+                }
+            } catch (e: Exception) {
+                port++
+            }
+        }
+        logger.warn("Could not find available port, using default: $PROXY_TUNNEL_PORT")
+        return PROXY_TUNNEL_PORT
+    }
+
     private val publicIpV4Array = arrayOf(
             "0.0.0.0/5", "8.0.0.0/7", "11.0.0.0/8", "12.0.0.0/6",
             "16.0.0.0/4", "32.0.0.0/3",
@@ -212,19 +235,22 @@ class VPNProfileCreator @Inject constructor(
         var serverConfig: String? = null
         var proxyIp: String? = null
         var ip: String? = null
+        var dynamicPort: Int? = null
         try {
             if (PreferencesKeyConstants.PROTO_STEALTH == protocolInformation.protocol) {
+                dynamicPort = findAvailablePort()
                 serverConfig = preferencesHelper.openVpnServerConfig
                 protocol = PROXY_TUNNEL_PROTOCOL
                 ip = PROXY_TUNNEL_ADDRESS
                 proxyIp = vpnParameters.stealthIp
-                port = PROXY_TUNNEL_PORT.toString()
+                port = dynamicPort.toString()
                 //Old stunnel port
                 // port = "1194"
             }
             if (PreferencesKeyConstants.PROTO_WS_TUNNEL == protocolInformation.protocol) {
+                dynamicPort = findAvailablePort()
                 serverConfig = preferencesHelper.openVpnServerConfig
-                port = PROXY_TUNNEL_PORT.toString()
+                port = dynamicPort.toString()
                 protocol = PROXY_TUNNEL_PROTOCOL
                 ip = PROXY_TUNNEL_ADDRESS
                 proxyIp = vpnParameters.ikev2Ip
@@ -285,10 +311,11 @@ class VPNProfileCreator @Inject constructor(
                 proxyTunnelManager.stopProxyTunnel()
             }
             preferencesHelper.selectedPort = protocolInformation.port
-            if (proxyIp != null) {
+            if (proxyIp != null && dynamicPort != null) {
                 proxyTunnelManager.startProxyTunnel(
                         proxyIp,
                         protocolInformation.port,
+                        dynamicPort,
                         false
                 )
             }
@@ -306,8 +333,8 @@ class VPNProfileCreator @Inject constructor(
                 proxyTunnelManager.stopProxyTunnel()
             }
             preferencesHelper.selectedPort = protocolInformation.port
-            if (proxyIp != null) {
-                proxyTunnelManager.startProxyTunnel(proxyIp, protocolInformation.port, true)
+            if (proxyIp != null && dynamicPort != null) {
+                proxyTunnelManager.startProxyTunnel(proxyIp, protocolInformation.port, dynamicPort, true)
             }
         }
         preferencesHelper.selectedIp = vpnParameters.hostName

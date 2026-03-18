@@ -139,6 +139,9 @@ open class Windscribe : MultiDexApplication() {
         }
         super.onCreate()
         appContext = this
+        // Ensure notification channel exists before any service can start.
+        // This must happen before DI so foreground services can post immediately.
+        com.windscribe.vpn.backend.utils.ForegroundServiceHelper.ensureNotificationChannel(this)
         registerForegroundActivityObserver()
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         runTrayMigrationEarly()

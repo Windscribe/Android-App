@@ -3,21 +3,24 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application>
-
-
         <service
-            android:name="org.strongswan.android.logic.CharonVpnService"
-            android:exported="true"
+            android:name=".logic.CharonVpnService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
             android:permission="android.permission.BIND_VPN_SERVICE">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="StrongSwan IKEv2 VPN service - maintains encrypted IPSec VPN tunnel connection for user privacy and security" />
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
-
         <service
             android:name="org.strongswan.android.logic.VpnStateService"
-            android:exported="true" />
+            android:exported="false" />
     </application>
 </manifest>
