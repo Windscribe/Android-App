@@ -52,6 +52,8 @@ public class VpnStateService extends Service
 	private ErrorState mError = ErrorState.NO_ERROR;
 	private ImcState mImcState = ImcState.UNKNOWN;
 	private final LinkedList<RemediationInstruction> mRemediationInstructions = new LinkedList<RemediationInstruction>();
+	/* Windscribe handles retries at a higher level, disable strongSwan's retry mechanism */
+	private static final boolean ENABLE_RETRY_HANDLER = false;
 	private static long RETRY_INTERVAL = 1000;
 	/* cap the retry interval at 2 minutes */
 	private static long MAX_RETRY_INTERVAL = 120000;
@@ -532,6 +534,10 @@ public class VpnStateService extends Service
 	 */
 	private void setRetryTimer(ErrorState error)
 	{
+		if (!ENABLE_RETRY_HANDLER)
+		{
+			return;  // Retry disabled - Windscribe handles retries
+		}
 		mRetryTimeout = mRetryIn = mTimeoutProvider.getTimeout(error);
 		if (mRetryTimeout <= 0)
 		{
@@ -564,23 +570,28 @@ public class VpnStateService extends Service
 		public void handleMessage(Message msg)
 		{
 			/* handle retry countdown */
-			if (mService.get().mRetryTimeout <= 0)
+			VpnStateService service = mService.get();
+			if (service == null)
+			{
+				return;  // Service was destroyed, ignore retry message
+			}
+			if (service.mRetryTimeout <= 0)
 			{
 				return;
 			}
 			// Don't retry on AUTH_FAILED
-			if (mService.get().getErrorState() == ErrorState.AUTH_FAILED)
+			if (service.getErrorState() == ErrorState.AUTH_FAILED)
 			{
-				mService.get().disconnect();
+				service.disconnect();
 				return;
 			}
-			mService.get().mRetryIn -= RETRY_INTERVAL;
-			if (mService.get().mRetryIn > 0)
+			service.mRetryIn -= RETRY_INTERVAL;
+			if (service.mRetryIn > 0)
 			{
 				/* calculate next interval before notifying listeners */
 				long next = SystemClock.uptimeMillis() + RETRY_INTERVAL;
 
-				for (VpnStateListener listener : mService.get().mListeners)
+				for (VpnStateListener listener : service.mListeners)
 				{
 					listener.stateChanged();
 				}
@@ -588,7 +599,7 @@ public class VpnStateService extends Service
 			}
 			else
 			{
-				mService.get().connect(null, false);
+				service.connect(null, false);
 			}
 		}
 	}

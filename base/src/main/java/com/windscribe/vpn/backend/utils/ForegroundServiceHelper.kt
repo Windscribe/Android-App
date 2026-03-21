@@ -9,6 +9,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
+import android.content.pm.ServiceInfo
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.windscribe.common.startSafeForeground
@@ -73,9 +74,13 @@ object ForegroundServiceHelper {
  * After DI completes, call [startForegroundSafely] to replace with the full notification.
  *
  * @param notificationId The notification ID to use (must match the one used in startForegroundSafely)
+ * @param serviceType The foreground service type (defaults to FOREGROUND_SERVICE_TYPE_SPECIAL_USE for VPN services)
  */
-fun Service.startForegroundImmediately(notificationId: Int) {
+fun Service.startForegroundImmediately(
+    notificationId: Int,
+    serviceType: Int = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+) {
     ForegroundServiceHelper.ensureNotificationChannel(applicationContext)
     val notification = ForegroundServiceHelper.buildMinimalNotification(applicationContext)
-    startSafeForeground(notificationId, notification)
+    startSafeForeground(notificationId, notification, serviceType)
 }

@@ -71,8 +71,12 @@ class AutoConnectService : Service() {
         // Promote to foreground IMMEDIATELY before DI to prevent
         // ForegroundServiceDidNotStartInTimeException on slow devices.
         // AutoConnectService uses specialUse type - it auto-connects VPN on network changes.
-        startForegroundImmediately(NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID)
+        startForegroundImmediately(
+            NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID,
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+        )
         appContext.serviceComponent.inject(this)
+        // Replace placeholder with full notification now that DI is complete.
         startForegroundSafely(
             windNotificationBuilder,
             NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID,

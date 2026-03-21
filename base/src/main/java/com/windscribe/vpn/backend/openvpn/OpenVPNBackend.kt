@@ -12,6 +12,8 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.VPNState
+import com.windscribe.vpn.backend.VPNState.Status.Connecting
+import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
 import com.windscribe.vpn.backend.VpnBackend.Companion.DISCONNECT_DELAY
 import com.windscribe.vpn.commonutils.ResourceHelper
@@ -24,14 +26,16 @@ import de.blinkt.openvpn.core.ConnectionStatus
 import de.blinkt.openvpn.core.OpenVPNService
 import de.blinkt.openvpn.core.VpnStatus
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.wsnet.lib.WSNetBridgeAPI
-import kotlinx.coroutines.Job
 
 @Singleton
 class OpenVPNBackend @Inject constructor(
@@ -53,12 +57,6 @@ class OpenVPNBackend @Inject constructor(
     private var stickyDisconnectEvent = false
     private val openVPNLogger = LoggerFactory.getLogger("openvpn")
     var service: OpenVPNWrapperService? = null
-
-    private val logListener = VpnStatus.LogListener {
-        if(it.logLevel == VpnStatus.LogLevel.INFO || it.logLevel == VpnStatus.LogLevel.ERROR) {
-            openVPNLogger.debug(it.toString())
-        }
-    }
     private var connectionStateJob: Job? = null
     private val openVpnTunnel = OpenVpnTunnel()
 
@@ -75,8 +73,49 @@ class OpenVPNBackend @Inject constructor(
     fun getTunnel() = openVpnTunnel
 
     override fun activate() {
-        vpnLogger.info("Activating OpenVPN backend.")
         stickyDisconnectEvent = true
+        vpnLogger.info("Activating OpenVPN backend.")
+
+        connectionStateJob = scope.launch {
+            openVpnTunnel.stateFlow.cancellable().collectLatest { state ->
+                when (state) {
+                    OpenVpnTunnel.State.DOWN -> {
+                        if (!stickyDisconnectEvent && !reconnecting) {
+                            connectionJob?.cancel()
+                            updateState(VPNState(Disconnected))
+                        }
+                    }
+                    OpenVpnTunnel.State.CONNECTING -> {
+                        stickyDisconnectEvent = false
+                        updateState(VPNState(Connecting))
+                    }
+                    OpenVpnTunnel.State.CONNECTED -> {
+                        stickyDisconnectEvent = false
+                        testConnectivity()
+                    }
+                    OpenVpnTunnel.State.DISCONNECTING -> {
+                        updateState(VPNState(VPNState.Status.Disconnecting))
+                    }
+                }
+            }
+        }
+
+        scope.launch {
+            openVpnTunnel.errorFlow.cancellable().collectLatest { error ->
+                vpnLogger.error("OpenVPN error: ${error.errorType} - ${error.message}")
+                when (error.errorType) {
+                    VPNState.ErrorType.AuthenticationError -> {
+                        preferencesHelper.isReconnecting = false
+                        disconnect(VPNState.Error(error.errorType, error.message))
+                    }
+                    else -> {
+                        val status = error.vpnStatus ?: VPNState.Status.Disconnected
+                        updateState(VPNState(status, VPNState.Error(error.errorType, error.message)))
+                    }
+                }
+            }
+        }
+
         VpnStatus.addStateListener(this)
         VpnStatus.addLogListener {
             if(it.logLevel == VpnStatus.LogLevel.INFO || it.logLevel == VpnStatus.LogLevel.ERROR) {
@@ -84,19 +123,20 @@ class OpenVPNBackend @Inject constructor(
             }
         }
         VpnStatus.addByteCountListener(this)
+
         active = true
         startNetworkInfoObserver()
-        vpnLogger.info("Open VPN backend activated.")
+        vpnLogger.info("OpenVPN backend activated.")
     }
 
     override fun deactivate() {
-        VpnStatus.removeLogListener(logListener)
         connectionStateJob?.cancel()
+        VpnStatus.removeLogListener {}
         VpnStatus.removeStateListener(this)
         VpnStatus.removeByteCountListener(this)
         stopNetworkInfoObserver()
         active = false
-        vpnLogger.info("Open VPN backend deactivated.")
+        vpnLogger.info("OpenVPN backend deactivated.")
     }
 
     override fun connect(protocolInformation: ProtocolInformation, connectionId: UUID) {
@@ -116,10 +156,11 @@ class OpenVPNBackend @Inject constructor(
             proxyDNSManager.stopControlD()
         }
         if (active) {
-            stickyDisconnectEvent = false
-            vpnLogger.info("Stopping Open VPN Service.")
+            vpnLogger.info("Stopping OpenVPN Service.")
             connectionJob?.cancel()
-            startOpenVPN(OpenVPNService.PAUSE_VPN)
+            service?.stopVPN()
+            delay(20)
+            service?.close()
             delay(DISCONNECT_DELAY)
             deactivate()
         }
@@ -157,61 +198,9 @@ class OpenVPNBackend @Inject constructor(
             level: ConnectionStatus?,
             Intent: Intent?
     ) {
-        vpnLogger.debug("{} {} {}", openVpnState, localizedResId, level)
-        level?.let {
-            when (it) {
-                ConnectionStatus.LEVEL_START, ConnectionStatus.LEVEL_CONNECTING_NO_SERVER_REPLY_YET,
-                ConnectionStatus.LEVEL_CONNECTING_SERVER_REPLIED -> {
-                    //  updateState(VPNState(VPNState.Status.Connecting, connectionId = connectionId))
-                }
-                ConnectionStatus.LEVEL_NOTCONNECTED -> {
-                    if (stickyDisconnectEvent && stateManager.state.value.status == VPNState.Status.Connecting) {
-                        stickyDisconnectEvent = false
-                        return
-                    }
-                    connectionJob?.cancel()
-                    updateState(VPNState(VPNState.Status.Disconnected, connectionId = connectionId))
-                }
-                ConnectionStatus.LEVEL_CONNECTED -> {
-                    testConnectivity()
-                }
-                ConnectionStatus.LEVEL_MULTI_USER_PERMISSION -> {
-                    updateState(
-                        VPNState(
-                            VPNState.Status.Disconnected,
-                            VPNState.Error(VPNState.ErrorType.GenericError)
-                        )
-                    )
-                }
-                ConnectionStatus.LEVEL_AUTH_FAILED -> {
-                    preferencesHelper.isReconnecting = false
-                    scope.launch {
-                        disconnect(
-                            VPNState.Error(
-                                error = VPNState.ErrorType.AuthenticationError,
-                                message = "Authentication failed."
-                            )
-                        )
-                    }
-                }
-                ConnectionStatus.LEVEL_WAITING_FOR_USER_INPUT -> {
-                    updateState(
-                        VPNState(
-                            VPNState.Status.RequiresUserInput,
-                            VPNState.Error(VPNState.ErrorType.GenericError)
-                        )
-                    )
-                }
-                else -> {}
-            }
-        }
     }
 
     override fun updateByteCount(download: Long, upload: Long, diffIn: Long, diffOut: Long) {}
-
-    override fun connectivityTestPassed(ip: String) {
-        super.connectivityTestPassed(ip)
-    }
 
     override fun setConnectedVPN(uuid: String?) {
     }
