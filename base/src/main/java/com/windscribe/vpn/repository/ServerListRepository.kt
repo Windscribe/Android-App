@@ -139,12 +139,25 @@ class ServerListRepository @Inject constructor(
     }
 
     private fun buildLocationsJson(regions: List<LocationAndDatacenters>) {
-        val customLocationData = CustomLocationsData(regions.mapNotNull { region ->
-            if (region.location == null) return@mapNotNull null
-            val cities = region.datacenters.map { CustomCity(it.id, it.nodeName, it.nickName) }
-            return@mapNotNull CustomRegion(region.location.id, region.location.name, cities)
-        })
-        _locationJsonToExport.value = Gson().toJson(customLocationData)
+        // Run JSON serialization on IO dispatcher to avoid blocking
+        // and catch OOM errors gracefully
+        scope.launch(Dispatchers.IO) {
+            try {
+                val customLocationData = CustomLocationsData(regions.mapNotNull { region ->
+                    if (region.location == null) return@mapNotNull null
+                    val cities = region.datacenters.map { CustomCity(it.id, it.nodeName, it.nickName) }
+                    return@mapNotNull CustomRegion(region.location.id, region.location.name, cities)
+                })
+                val json = Gson().toJson(customLocationData)
+                _locationJsonToExport.value = json
+            } catch (e: OutOfMemoryError) {
+                logger.error("OutOfMemoryError while building locations JSON - data too large", e)
+                _locationJsonToExport.value = ""
+            } catch (e: Exception) {
+                logger.error("Error building locations JSON", e)
+                _locationJsonToExport.value = ""
+            }
+        }
     }
 
     fun saveLocationsJson(json: String) {
