@@ -249,14 +249,42 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 	{
 		mTerminate = true;
 		setNextProfile(null);
-		try
+
+		// Safely clean up connection handler thread
+		if (mConnectionHandler != null)
 		{
-			mConnectionHandler.join();
+			try
+			{
+				// Only try to join if the thread was actually started
+				Thread.State state = mConnectionHandler.getState();
+				if (state != Thread.State.NEW)
+				{
+					// Interrupt the thread to wake it from any wait() calls
+					mConnectionHandler.interrupt();
+
+					// Wait for thread to finish with a timeout (5 seconds)
+					// This prevents indefinite blocking during service shutdown
+					mConnectionHandler.join(5000);
+
+					// If thread is still alive after timeout, log it but continue cleanup
+					if (mConnectionHandler.isAlive())
+					{
+						Log.w(TAG, "Connection handler thread did not terminate within timeout");
+					}
+				}
+			}
+			catch (InterruptedException e)
+			{
+				Log.e(TAG, "Interrupted while waiting for connection handler to terminate", e);
+				// Restore interrupt status
+				Thread.currentThread().interrupt();
+			}
+			catch (Exception e)
+			{
+				Log.e(TAG, "Exception during connection handler cleanup", e);
+			}
 		}
-		catch (InterruptedException e)
-		{
-			e.printStackTrace();
-		}
+
 		if (mService != null)
 		{
 			mService.unregisterListener(this);
