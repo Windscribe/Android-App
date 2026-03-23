@@ -261,19 +261,26 @@ class DeviceStateManager @Inject constructor(
      * On API < 23 (including Fire OS), validation check is optional as it may not be properly set.
      */
     private fun hasUnderlyingConnectivity(): Boolean {
-        val activeNetwork = connectivityManager?.getActiveNetworkCompat() ?: return false
-        val caps = connectivityManager?.getNetworkCapabilities(activeNetwork) ?: return false
+        return try {
+            val activeNetwork = connectivityManager?.getActiveNetworkCompat() ?: return false
+            val caps = connectivityManager?.getNetworkCapabilities(activeNetwork) ?: return false
 
-        val hasInternet = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-        val isValidated = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-        val hasWifi = caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
-        val hasCellular = caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
-        val hasEthernet = caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
-        // On API < 23 (Fire OS, etc), don't require validation as it may not be set
-        val requireValidation = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-        val hasTransport = hasWifi || hasCellular || hasEthernet
-        val result = hasInternet && hasTransport && (isValidated || !requireValidation)
-        return result
+            val hasInternet = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            val isValidated = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+            val hasWifi = caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+            val hasCellular = caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+            val hasEthernet = caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+            // On API < 23 (Fire OS, etc), don't require validation as it may not be set
+            val requireValidation = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+            val hasTransport = hasWifi || hasCellular || hasEthernet
+            hasInternet && hasTransport && (isValidated || !requireValidation)
+        } catch (e: SecurityException) {
+            logger.error("SecurityException when checking connectivity: ${e.message}")
+            false
+        } catch (e: Exception) {
+            logger.error("Exception when checking connectivity: ${e.message}")
+            false
+        }
     }
 
     /**
@@ -281,23 +288,31 @@ class DeviceStateManager @Inject constructor(
      * Returns the underlying transport type, even when VPN is active.
      */
     private fun getCurrentNetworkType(): NetworkType {
-        // Get the active network
-        val activeNetwork = connectivityManager?.getActiveNetworkCompat() ?: return NetworkType.NONE
-        val caps =
-            connectivityManager?.getNetworkCapabilities(activeNetwork) ?: return NetworkType.NONE
+        return try {
+            // Get the active network
+            val activeNetwork = connectivityManager?.getActiveNetworkCompat() ?: return NetworkType.NONE
+            val caps =
+                connectivityManager?.getNetworkCapabilities(activeNetwork) ?: return NetworkType.NONE
 
-        // Check if it has internet capability
-        if (!caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-            return NetworkType.NONE
-        }
+            // Check if it has internet capability
+            if (!caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+                return NetworkType.NONE
+            }
 
-        // Return type based on transport (prioritize WiFi > Ethernet > Cellular)
-        return when {
-            caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> NetworkType.WIFI
-            caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> NetworkType.ETHERNET
-            caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> NetworkType.CELLULAR
-            caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> NetworkType.OTHER
-            else -> NetworkType.NONE
+            // Return type based on transport (prioritize WiFi > Ethernet > Cellular)
+            when {
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> NetworkType.WIFI
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> NetworkType.ETHERNET
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> NetworkType.CELLULAR
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> NetworkType.OTHER
+                else -> NetworkType.NONE
+            }
+        } catch (e: SecurityException) {
+            logger.error("SecurityException when getting network type: ${e.message}")
+            NetworkType.NONE
+        } catch (e: Exception) {
+            logger.error("Exception when getting network type: ${e.message}")
+            NetworkType.NONE
         }
     }
 
