@@ -373,7 +373,9 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
 
     override fun showToast(toastMessage: String) {
         if (toastMessage.isNotEmpty()) {
-            Toast.makeText(appContext, toastMessage, Toast.LENGTH_SHORT).show()
+            runOnUiThread {
+                Toast.makeText(appContext, toastMessage, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
