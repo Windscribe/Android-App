@@ -18,6 +18,7 @@ import (
 	"runtime"
 	"runtime/debug"
 	"strings"
+	"sync"
 	"unsafe"
 
 	"golang.org/x/sys/unix"
@@ -51,29 +52,38 @@ type TunnelHandle struct {
 }
 
 var tunnelHandles map[int32]TunnelHandle
+var signalHandlerOnce sync.Once
 
 func init() {
 	tunnelHandles = make(map[int32]TunnelHandle)
-	signals := make(chan os.Signal)
-	signal.Notify(signals, unix.SIGUSR2)
-	go func() {
-		buf := make([]byte, os.Getpagesize())
-		for {
-			select {
-			case <-signals:
-				n := runtime.Stack(buf, true)
-				if n == len(buf) {
-					n--
+}
+
+func ensureSignalHandlerStarted() {
+	signalHandlerOnce.Do(func() {
+		signals := make(chan os.Signal, 1)
+		signal.Notify(signals, unix.SIGUSR2)
+		go func() {
+			buf := make([]byte, os.Getpagesize())
+			for {
+				select {
+				case <-signals:
+					n := runtime.Stack(buf, true)
+					if n == len(buf) {
+						n--
+					}
+					buf[n] = 0
+					C.__android_log_write(C.ANDROID_LOG_ERROR, cstring("WireGuard/GoBackend/Stacktrace"), (*C.char)(unsafe.Pointer(&buf[0])))
 				}
-				buf[n] = 0
-				C.__android_log_write(C.ANDROID_LOG_ERROR, cstring("WireGuard/GoBackend/Stacktrace"), (*C.char)(unsafe.Pointer(&buf[0])))
 			}
-		}
-	}()
+		}()
+	})
 }
 
 //export wgTurnOn
 func wgTurnOn(interfaceName string, tunFd int32, settings string, customTun bool) int32 {
+	// Lazily start signal handler on first use to avoid crashes during library load
+	ensureSignalHandlerStarted()
+
 	tag := cstring("WireGuard/GoBackend/" + interfaceName)
 	logger := &device.Logger{
 		Verbosef: AndroidLogger{level: C.ANDROID_LOG_DEBUG, tag: tag}.Printf,

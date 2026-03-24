@@ -83,7 +83,11 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
         if (intent != null) {
             shortcutBuilder.setIntent(intent)
         }
-        ShortcutManagerCompat.pushDynamicShortcut(context, shortcutBuilder.build())
+        try {
+            ShortcutManagerCompat.pushDynamicShortcut(context, shortcutBuilder.build())
+        } catch (e: IllegalStateException) {
+            logger.error("Error adding shortcut", e)
+        }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

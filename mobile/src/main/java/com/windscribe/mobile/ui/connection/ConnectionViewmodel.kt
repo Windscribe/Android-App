@@ -43,14 +43,12 @@ import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -215,7 +213,6 @@ class ConnectionViewmodelImpl @Inject constructor(
         observeNotificationCount()
         handleConnectionSoundsState()
         handleConnectionHapticFeedback()
-        observeCustomLocationNameChanges()
         observeDecoyTrafficChanges()
     }
 
@@ -263,20 +260,6 @@ class ConnectionViewmodelImpl @Inject constructor(
                     fetchConnectionState()
                 }
             }
-        }
-    }
-
-    @OptIn(FlowPreview::class)
-    private fun observeCustomLocationNameChanges() {
-        viewModelScope.launch(Dispatchers.IO) {
-            combine(
-                serverListRepository.customRegions,
-                serverListRepository.customCities
-            ) { _, _ -> }
-                .debounce(100)
-                .collectLatest {
-                    fetchLastLocation()
-                }
         }
     }
 
@@ -377,8 +360,10 @@ class ConnectionViewmodelImpl @Inject constructor(
             combine(
                 vpnConnectionStateManager.state,
                 autoConnectionManager.connectedProtocol,
-                autoConnectionManager.nextInLineProtocol
-            ) { state, connectedProtocol, nextInLineProtocol ->
+                autoConnectionManager.nextInLineProtocol,
+                serverListRepository.customRegions,
+                serverListRepository.customCities
+            ) { state, connectedProtocol, nextInLineProtocol, _, _ ->
                 val protocolInfo = when (state.status) {
                     VPNState.Status.Connected, VPNState.Status.Connecting -> connectedProtocol
                     else -> nextInLineProtocol

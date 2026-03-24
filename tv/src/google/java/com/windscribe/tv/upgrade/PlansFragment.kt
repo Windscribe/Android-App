@@ -148,17 +148,28 @@ class PlansFragment : Fragment(), OnClickListener {
         isEmailAdded: Boolean,
         isEmailConfirmed: Boolean
     ) {
+        // Check if activity is still valid before committing fragment transaction
+        if (activity.isFinishing || activity.isDestroyed) {
+            return
+        }
+
         this.isEmailAdded = isEmailAdded
         this.isEmailConfirmed = isEmailConfirmed
         this.mWindscribeInAppProduct = products
         enterTransition = Slide(Gravity.BOTTOM)
-        val transaction = activity.supportFragmentManager
-            .beginTransaction()
-            .replace(container, this)
-        if (addToBackStack) {
-            transaction.addToBackStack(this.javaClass.name)
+
+        try {
+            val transaction = activity.supportFragmentManager
+                .beginTransaction()
+                .replace(container, this)
+            if (addToBackStack) {
+                transaction.addToBackStack(this.javaClass.name)
+            }
+            transaction.commit()
+        } catch (e: IllegalStateException) {
+            // FragmentManager might have been destroyed between the check and commit
+            // Silently ignore as the user has navigated away
         }
-        transaction.commit()
     }
 
     companion object {

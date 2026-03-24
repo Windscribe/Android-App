@@ -735,10 +735,17 @@ private fun IPContextMenu(bridgeApiViewModel: BridgeApiViewModel) {
     Box(
         modifier = Modifier
             .offset {
-                IntOffset(
-                    ipContextMenuState.second.x.roundToInt() - with(density) { menuWidth.roundToPx() },
-                    ipContextMenuState.second.y.roundToInt()
-                )
+                // Guard against NaN values which can occur if layout hasn't been measured yet
+                val x = ipContextMenuState.second.x
+                val y = ipContextMenuState.second.y
+                if (x.isNaN() || y.isNaN() || x.isInfinite() || y.isInfinite()) {
+                    IntOffset.Zero
+                } else {
+                    IntOffset(
+                        (x - with(density) { menuWidth.toPx() }).toInt(),
+                        y.toInt()
+                    )
+                }
             }
     ) {
         AnimatedVisibility(
