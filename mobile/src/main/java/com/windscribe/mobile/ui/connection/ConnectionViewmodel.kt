@@ -177,7 +177,7 @@ class ConnectionViewmodelImpl @Inject constructor(
     override val toastMessage: StateFlow<ToastMessage> = _toastMessage
     private val _bestLocation = MutableStateFlow<ServerListItem?>(null)
     override val bestLocation: StateFlow<ServerListItem?> = _bestLocation
-    private val _isAntiCensorshipEnabled = MutableStateFlow(preferences.isAntiCensorshipOn)
+    private val _isAntiCensorshipEnabled = MutableStateFlow(preferences.isProtocolTweaksEnabled)
     override val isAntiCensorshipEnabled: StateFlow<Boolean> = _isAntiCensorshipEnabled
     private val _isPreferredProtocolEnabled = MutableStateFlow(false)
     override val isPreferredProtocolEnabled: StateFlow<Boolean> = _isPreferredProtocolEnabled
@@ -226,7 +226,7 @@ class ConnectionViewmodelImpl @Inject constructor(
 
     private fun fetchUserPreferences() {
         viewModelScope.launch(Dispatchers.IO) {
-            preferences.isAntiCensorshipOnFlow.collectLatest { isEnabled ->
+            preferences.isProtocolTweaksEnabledFlow.collectLatest { isEnabled ->
                 _isAntiCensorshipEnabled.value = isEnabled
             }
         }

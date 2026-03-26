@@ -24,6 +24,7 @@ sealed class Screen(val route: String) {
     object General: Screen("general")
     object Account: Screen("account")
     object Connection: Screen("connection")
+    object AntiCensorship: Screen("anti_censorship")
     object Robert: Screen("robert")
     object LookAndFeel: Screen("look_and_feel")
     object HelpMe: Screen("help_me")

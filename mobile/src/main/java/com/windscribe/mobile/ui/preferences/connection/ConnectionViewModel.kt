@@ -70,11 +70,6 @@ abstract class ConnectionViewModel : ViewModel() {
     abstract fun onGPSSpoofingToggleClicked()
     abstract val decoyTraffic: StateFlow<Boolean>
     abstract fun onDecoyTrafficToggleClicked()
-    abstract val antiCensorship: StateFlow<Boolean>
-    abstract fun onAntiCensorshipToggleClicked()
-    abstract val unblockWgSelectedPreset: StateFlow<String>
-    abstract val unblockWgPresets: StateFlow<List<DropDownStringItem>>
-    abstract fun onUnblockWgPresetSelected(title: String)
     abstract val ipStackEgressMode: StateFlow<String>
     abstract val ipStackEgressModes: StateFlow<List<DropDownStringItem>>
     abstract fun onIpStackEgressModeSelected(mode: DropDownStringItem)
@@ -108,8 +103,7 @@ class ConnectionViewModelImpl(
     val vpnManagerStateManager: VPNConnectionStateManager,
     val proxyDNSManager: ProxyDNSManager,
     val decoyTrafficController: DecoyTrafficController,
-    val portMapRepository: PortMapRepository,
-    val unblockWgParamsRepository: UnblockWgParamsRepository
+    val portMapRepository: PortMapRepository
 ) : ConnectionViewModel() {
     private val _showProgress = MutableStateFlow(false)
     override val showProgress: StateFlow<Boolean> = _showProgress
@@ -139,11 +133,6 @@ class ConnectionViewModelImpl(
     override val gpsSpoofing: StateFlow<Boolean> = _gpsSpoofing
     private val _decoyTraffic = MutableStateFlow(preferencesHelper.isDecoyTrafficOn)
     override val decoyTraffic: StateFlow<Boolean> = _decoyTraffic
-    private val _antiCensorship = MutableStateFlow(preferencesHelper.isAntiCensorshipOn)
-    override val antiCensorship: StateFlow<Boolean> = _antiCensorship
-    private val _unblockWgSelectedPreset =
-        MutableStateFlow(unblockWgParamsRepository.getSelectedUnblockWgParam()?.title ?: "")
-    override val unblockWgSelectedPreset: StateFlow<String> = _unblockWgSelectedPreset
     private val _packetSizeAuto = MutableStateFlow(preferencesHelper.isPackageSizeModeAuto)
     override val packetSizeAuto: StateFlow<Boolean> = _packetSizeAuto
     private val _packetSize = MutableStateFlow(preferencesHelper.packetSize)
@@ -159,9 +148,6 @@ class ConnectionViewModelImpl(
     override val trafficMultipliers: StateFlow<List<DropDownStringItem>> = _trafficMultipliers
     private val _trafficMultiplier = MutableStateFlow("")
     override val trafficMultiplier: StateFlow<String> = _trafficMultiplier
-
-    private val _unblockWgPresets = MutableStateFlow(emptyList<DropDownStringItem>())
-    override val unblockWgPresets: StateFlow<List<DropDownStringItem>> = _unblockWgPresets
 
     private val _ipStackEgressMode = MutableStateFlow(preferencesHelper.ipv6Mode)
     override val ipStackEgressMode: StateFlow<String> = _ipStackEgressMode
@@ -195,7 +181,6 @@ class ConnectionViewModelImpl(
     init {
         loadPortMapItems()
         setDecoyTrafficParameters()
-        loadUnblockWgPresetItems()
     }
 
     private fun loadPortMapItems() {
@@ -391,20 +376,6 @@ class ConnectionViewModelImpl(
         }
     }
 
-    override fun onAntiCensorshipToggleClicked() {
-        viewModelScope.launch {
-            _antiCensorship.emit(!_antiCensorship.value)
-            preferencesHelper.isAntiCensorshipOn = _antiCensorship.value
-        }
-    }
-
-    override fun onUnblockWgPresetSelected(title: String) {
-        viewModelScope.launch {
-            _unblockWgSelectedPreset.emit(title)
-            unblockWgParamsRepository.setSelectedUnblockWgParam(title)
-        }
-    }
-
     override fun onIpStackEgressModeSelected(mode: DropDownStringItem) {
         viewModelScope.launch {
             _ipStackEgressMode.emit(mode.key)
@@ -563,18 +534,6 @@ class ConnectionViewModelImpl(
                         16572
                     )
                 )
-            }
-        }
-    }
-
-    private fun loadUnblockWgPresetItems() {
-        viewModelScope.launch {
-            unblockWgParamsRepository.unblockWgParams.collectLatest { it ->
-                val selected = it.firstOrNull { it.title == _unblockWgSelectedPreset.value }
-                if (selected == null) {
-                    _unblockWgSelectedPreset.emit(it.firstOrNull()?.title ?: "")
-                }
-                _unblockWgPresets.emit(it.map { DropDownStringItem(it.title) })
             }
         }
     }

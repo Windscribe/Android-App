@@ -51,7 +51,7 @@ class BridgeApiRepository @Inject constructor(
 
     private fun observeAntiCensorshipStatus() {
         scope.launch {
-          preferencesHelper.isAntiCensorshipOnFlow.collect {
+          preferencesHelper.isProtocolTweaksEnabledFlow.collect {
               if (WSNet.isValid()) {
                   wsnet.advancedParameters().isAPIExtraTLSPadding = it
               }

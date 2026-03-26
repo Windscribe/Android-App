@@ -194,6 +194,7 @@ open class BaseApplicationModule {
             .addMigrations(Migrations.migration_37_38)
             .addMigrations(Migrations.migration_38_39)
             .addMigrations(Migrations.migration_39_40)
+            .addMigrations(Migrations.migration_40_41)
             .build()
 
     }
@@ -445,7 +446,8 @@ open class BaseApplicationModule {
         connectionDataRepository: ConnectionDataRepository,
         serverListRepository: ServerListRepository,
         staticIpRepository: StaticIpRepository,
-        googleSignInManager: GoogleSignInManager
+        googleSignInManager: GoogleSignInManager,
+        unblockWgParamsRepository: UnblockWgParamsRepository
     ): UserRepository {
         return UserRepository(
             scope,
@@ -458,7 +460,8 @@ open class BaseApplicationModule {
             connectionDataRepository,
             serverListRepository,
             staticIpRepository,
-            googleSignInManager
+            googleSignInManager,
+            unblockWgParamsRepository
         )
     }
 
@@ -804,7 +807,7 @@ open class BaseApplicationModule {
         }
         deviceStateManager.updateNetworkStatus()
         WSNet.instance().advancedParameters().isAPIExtraTLSPadding =
-            preferencesHelper.isAntiCensorshipOn
+            preferencesHelper.isProtocolTweaksEnabled
         return WSNet.instance()
     }
 

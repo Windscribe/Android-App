@@ -122,7 +122,8 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
     }
 
     private suspend fun getSession(): UserSessionResponse {
-        val response = apiCallManager.getSessionGeneric(null).callResult<UserSessionResponse>()
+        val backup = preferencesHelper.getBackupParameter()
+        val response = apiCallManager.getSessionGeneric(null, backup = backup).callResult<UserSessionResponse>()
         when(response) {
             is CallResult.Error -> {
                 if (response.code == NetworkErrorCodes.ERROR_RESPONSE_SESSION_INVALID) {

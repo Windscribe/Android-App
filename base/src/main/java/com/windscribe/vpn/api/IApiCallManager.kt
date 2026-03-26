@@ -31,7 +31,7 @@ interface IApiCallManager {
         overriddenCountryCode: String?
     ): GenericResponseClass<String?, ApiErrorResponse?>
 
-    suspend fun getSessionGeneric(firebaseToken: String?, serverRevision: Long = 0, backup: Boolean = false): GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>
+    suspend fun getSessionGeneric(firebaseToken: String?, serverRevision: Long = 0, backup: Int = -1): GenericResponseClass<UserSessionResponse?, ApiErrorResponse?>
     suspend fun getStaticIpList(deviceID: String?): GenericResponseClass<StaticIPResponse?, ApiErrorResponse?>
     suspend fun logUserIn(
         username: String,
@@ -122,5 +122,5 @@ interface IApiCallManager {
     suspend fun passwordRecovery(email: String?): GenericResponseClass<GenericSuccess?, ApiErrorResponse?>
     suspend fun unblockWgParams(): GenericResponseClass<UnblockWgResponse?, ApiErrorResponse?>
     suspend fun getLocations(): GenericResponseClass<LocationResponse?, ApiErrorResponse?>
-    suspend fun getServers(backup: Boolean): GenericResponseClass<ServerResponse?, ApiErrorResponse?>
+    suspend fun getServers(backup: Int): GenericResponseClass<ServerResponse?, ApiErrorResponse?>
 }

@@ -117,7 +117,15 @@ object PreferencesKeyConstants {
     const val ALREADY_SHOWN_SHARE_APP_LINK = "already_shown_share_app_link"
     const val ANTI_CENSORSHIP = "anti_censorship"
     const val AMNEZIA_PRESET = "amnezia_preset"
+    const val ANTI_CENSORSHIP_MANUAL_MODE = "anti_censorship_manual_mode"
+    const val SERVER_ROUTING_MODE = "server_routing_mode"
+    const val PROTOCOL_TWEAKS_ENABLED = "protocol_tweaks_enabled"
     const val AUTO_CONNECT = "auto_connect"
+
+    // Server Routing Mode values
+    const val SERVER_ROUTING_AUTO = "auto"
+    const val SERVER_ROUTING_REGULAR = "regular"
+    const val SERVER_ROUTING_ALTERNATE = "alternate"
     const val ADVANCE_PARAM_TEXT = "advance_params_text"
     const val DNS_MODE = "dns_mode"
     const val DNS_MODE_ROBERT = "dns_mode_robert"

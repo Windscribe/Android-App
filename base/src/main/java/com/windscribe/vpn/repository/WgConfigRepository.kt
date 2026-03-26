@@ -234,8 +234,9 @@ class WgConfigRepository @Inject constructor(
     private suspend fun validateUserAccountStatus(): CallResult<Unit> {
         logger.debug("Validating user account status")
 
+        val backup = preferenceHelper.getBackupParameter()
         return result<UserSessionResponse> {
-            apiManager.getSessionGeneric(null)
+            apiManager.getSessionGeneric(null, backup = backup)
         }.fold(
             onSuccess = { session ->
                 when (session.userAccountStatus) {

@@ -221,7 +221,8 @@ abstract class PresenterModule {
             proxyDNSManager: ProxyDNSManager,
             portMapRepository: com.windscribe.vpn.repository.PortMapRepository,
             wgParamsRepository: com.windscribe.vpn.repository.UnblockWgParamsRepository,
-            appIconCache: AppIconCache
+            appIconCache: AppIconCache,
+            serverListRepository: ServerListRepository
         ): SettingsPresenter {
             return SettingsPresenterImp(
                 settingView,
@@ -237,7 +238,8 @@ abstract class PresenterModule {
                 proxyDNSManager,
                 portMapRepository,
                 wgParamsRepository,
-                appIconCache
+                appIconCache,
+                serverListRepository
             )
         }
 

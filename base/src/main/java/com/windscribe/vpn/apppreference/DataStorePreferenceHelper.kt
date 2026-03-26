@@ -60,9 +60,9 @@ class DataStorePreferenceHelper(
             preferences[DataStoreKeys.SHOW_LOCATION_HEALTH] ?: false
         }.distinctUntilChanged()
 
-    override val isAntiCensorshipOnFlow: Flow<Boolean>
+    override val isProtocolTweaksEnabledFlow: Flow<Boolean>
         get() = dataStore.data.map { preferences ->
-            preferences[DataStoreKeys.ANTI_CENSORSHIP] ?: appContext.isRegionRestricted
+            preferences[DataStoreKeys.PROTOCOL_TWEAKS_ENABLED] ?: appContext.isRegionRestricted
         }.distinctUntilChanged()
 
     override val backgroundAspectRatioOptionFlow: Flow<Int>
@@ -584,14 +584,23 @@ class DataStorePreferenceHelper(
         get() = runBlocking { getBoolean(DataStoreKeys.DECOY_TRAFFIC, false) }
         set(value) = setBoolean(DataStoreKeys.DECOY_TRAFFIC, value)
 
-    override var isAntiCensorshipOn: Boolean
+
+    override var isAntiCensorshipManualMode: Boolean
+        get() = runBlocking { getBoolean(DataStoreKeys.ANTI_CENSORSHIP_MANUAL_MODE, false) }
+        set(value) = setBoolean(DataStoreKeys.ANTI_CENSORSHIP_MANUAL_MODE, value)
+
+    override var serverRoutingMode: String
         get() = runBlocking {
-            getBoolean(
-                DataStoreKeys.ANTI_CENSORSHIP,
-                appContext.isRegionRestricted
+            getString(
+                DataStoreKeys.SERVER_ROUTING_MODE,
+                PreferencesKeyConstants.SERVER_ROUTING_AUTO
             )
         }
-        set(value) = setBoolean(DataStoreKeys.ANTI_CENSORSHIP, value)
+        set(value) = setString(DataStoreKeys.SERVER_ROUTING_MODE, value)
+
+    override var isProtocolTweaksEnabled: Boolean
+        get() = runBlocking { getBoolean(DataStoreKeys.PROTOCOL_TWEAKS_ENABLED, false) }
+        set(value) = setBoolean(DataStoreKeys.PROTOCOL_TWEAKS_ENABLED, value)
 
     override var fakeTrafficVolume: FakeTrafficVolume
         get() = runBlocking {
@@ -1018,4 +1027,12 @@ class DataStorePreferenceHelper(
     override var ipv6Mode: String
         get() = runBlocking { getString(DataStoreKeys.IPV6_MODE, PreferencesKeyConstants.IPV6_MODE_AUTO) }
         set(value) = setString(DataStoreKeys.IPV6_MODE, value)
+
+    override fun getBackupParameter(): Int {
+        return when (serverRoutingMode) {
+            PreferencesKeyConstants.SERVER_ROUTING_REGULAR -> 0
+            PreferencesKeyConstants.SERVER_ROUTING_ALTERNATE -> 1
+            else -> -1  // Auto
+        }
+    }
 }

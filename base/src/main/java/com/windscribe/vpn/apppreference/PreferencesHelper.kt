@@ -16,7 +16,7 @@ interface PreferencesHelper {
     // Reactive Flow properties for observed preferences
     val isHapticFeedbackEnabledFlow: kotlinx.coroutines.flow.Flow<Boolean>
     val isShowLocationHealthEnabledFlow: kotlinx.coroutines.flow.Flow<Boolean>
-    val isAntiCensorshipOnFlow: kotlinx.coroutines.flow.Flow<Boolean>
+    val isProtocolTweaksEnabledFlow: kotlinx.coroutines.flow.Flow<Boolean>
     val backgroundAspectRatioOptionFlow: kotlinx.coroutines.flow.Flow<Int>
     val selectionFlow: kotlinx.coroutines.flow.Flow<String>
 
@@ -32,6 +32,7 @@ interface PreferencesHelper {
     fun userIsInGhostMode(): Boolean
     fun increaseConnectionCount()
     fun getConnectionCount(): Int
+    fun getBackupParameter(): Int
     var isHapticFeedbackEnabled: Boolean
     var alcListString: String?
     var autoStartOnBoot: Boolean
@@ -101,7 +102,9 @@ interface PreferencesHelper {
     var isShowLocationHealthEnabled: Boolean
     var isStartedByAlwaysOn: Boolean
     var isDecoyTrafficOn: Boolean
-    var isAntiCensorshipOn: Boolean
+    var isAntiCensorshipManualMode: Boolean
+    var serverRoutingMode: String
+    var isProtocolTweaksEnabled: Boolean
     var wgLocalParams: WgLocalParams?
     var autoConnect: Boolean
     var advanceParamText: String

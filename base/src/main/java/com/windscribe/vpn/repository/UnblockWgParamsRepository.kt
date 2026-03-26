@@ -42,13 +42,14 @@ class UnblockWgParamsRepository @Inject constructor(
             is CallResult.Success<UnblockWgResponse> -> {
                 logger.info("Fetched ${result.data.params.size} unblock wg params")
                 val savedPreset = preferencesHelper.selectedUnblockWgParam
-                val selected = result.data.params.firstOrNull { it.title == savedPreset }
+                val selected = result.data.params.firstOrNull { it.id == savedPreset }
                 if (selected == null) {
-                    preferencesHelper.selectedUnblockWgParam = result.data.params.firstOrNull()?.title
+                    preferencesHelper.selectedUnblockWgParam = result.data.params.firstOrNull()?.id
                 }
                 if (result.data.params.isNotEmpty()) {
                     val mappedData = result.data.params.map { param ->
                         UnBlockWgParam(
+                            id = param.id,
                             title = param.title,
                             countries = param.countries,
                             jc = param.jc ?: 0,
@@ -90,9 +91,9 @@ class UnblockWgParamsRepository @Inject constructor(
     fun getSelectedUnblockWgParam(): UnBlockWgParam? {
         var selected = preferencesHelper.selectedUnblockWgParam
         if (selected == null) {
-            selected = unblockWgParams.value.firstOrNull()?.title
+            selected = unblockWgParams.value.firstOrNull()?.id
         }
-        return unblockWgParams.value.firstOrNull { it.title == selected }
+        return unblockWgParams.value.firstOrNull { it.id == selected }
     }
 
     fun setSelectedUnblockWgParam(id: String) {

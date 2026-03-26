@@ -36,7 +36,7 @@ import javax.inject.Singleton;
 @Database(entities = {PingTestResults.class, UserStatusTable.class, ServerStatusUpdateTable.class,
         PopupNotificationTable.class, Location.class,
         Datacenter.class, Server.class, Favourite.class, PingTime.class, StaticRegion.class, NetworkInfo.class, ConfigFile.class,
-        WindNotification.class, UnBlockWgParam.class}, version = 40, exportSchema = true)
+        WindNotification.class, UnBlockWgParam.class}, version = 41, exportSchema = true)
 @Singleton
 public abstract class WindscribeDatabase extends RoomDatabase {
 

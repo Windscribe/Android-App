@@ -45,6 +45,7 @@ import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.ServerStatusUpdateTable
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.CallResult
+import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.UnblockWgParamsRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -75,7 +76,8 @@ class SettingsPresenterImp @Inject constructor(
     private var proxyDNSManager: ProxyDNSManager,
     private val portMapRepository: com.windscribe.vpn.repository.PortMapRepository,
     private val wgParamsRepository: UnblockWgParamsRepository,
-    private val appIconCache: com.windscribe.vpn.cache.AppIconCache
+    private val appIconCache: com.windscribe.vpn.cache.AppIconCache,
+    private val serverListRepository: ServerListRepository
 ) : SettingsPresenter, InstalledAppsAdapter.InstalledAppListener {
     private val installedAppList: MutableList<InstalledAppsData> = ArrayList()
     private var installedAppsAdapter: InstalledAppsAdapter? = null
@@ -162,18 +164,53 @@ class SettingsPresenterImp @Inject constructor(
         }
     }
 
-    override fun onAllowAntiCensorshipClicked() {
-        if (preferencesHelper.isAntiCensorshipOn.not()) {
-            preferencesHelper.isAntiCensorshipOn = true
-            settingView.setAntiCensorshipMode(true)
-            setConfigurationAdapter()
+    override fun onProtocolTweaksOnClicked() {
+        if (!preferencesHelper.isProtocolTweaksEnabled) {
+            preferencesHelper.isProtocolTweaksEnabled = true
+            preferencesHelper.isAntiCensorshipManualMode = true
+            settingView.setProtocolTweaksMode(true)
+            setAmneziaPresetAdapter()
         }
     }
 
-    override fun onBlockAntiCensorshipClicked() {
-        if (preferencesHelper.isAntiCensorshipOn) {
-            preferencesHelper.isAntiCensorshipOn = false
-            settingView.setAntiCensorshipMode(false)
+    override fun onProtocolTweaksOffClicked() {
+        if (preferencesHelper.isProtocolTweaksEnabled) {
+            preferencesHelper.isProtocolTweaksEnabled = false
+            preferencesHelper.isAntiCensorshipManualMode = true
+            settingView.setProtocolTweaksMode(false)
+        }
+    }
+
+    override fun onServerRoutingAutoClicked() {
+        if (preferencesHelper.serverRoutingMode != PreferencesKeyConstants.SERVER_ROUTING_AUTO) {
+            preferencesHelper.serverRoutingMode = PreferencesKeyConstants.SERVER_ROUTING_AUTO
+            preferencesHelper.isAntiCensorshipManualMode = true
+            settingView.setServerRoutingMode(PreferencesKeyConstants.SERVER_ROUTING_AUTO)
+            activityScope.launch {
+                serverListRepository.update()
+            }
+        }
+    }
+
+    override fun onServerRoutingRegularClicked() {
+        if (preferencesHelper.serverRoutingMode != PreferencesKeyConstants.SERVER_ROUTING_REGULAR) {
+            preferencesHelper.serverRoutingMode = PreferencesKeyConstants.SERVER_ROUTING_REGULAR
+            preferencesHelper.isAntiCensorshipManualMode = true
+            settingView.setServerRoutingMode(PreferencesKeyConstants.SERVER_ROUTING_REGULAR)
+            activityScope.launch {
+                serverListRepository.update()
+            }
+        }
+    }
+
+    override fun onServerRoutingAlternateClicked() {
+        if (preferencesHelper.serverRoutingMode != PreferencesKeyConstants.SERVER_ROUTING_ALTERNATE) {
+            preferencesHelper.serverRoutingMode = PreferencesKeyConstants.SERVER_ROUTING_ALTERNATE
+            preferencesHelper.isAntiCensorshipManualMode = true
+            settingView.setServerRoutingMode(PreferencesKeyConstants.SERVER_ROUTING_ALTERNATE)
+            activityScope.launch {
+                serverListRepository.update()
+            }
         }
     }
 
@@ -193,11 +230,13 @@ class SettingsPresenterImp @Inject constructor(
         }
     }
 
-    private fun setConfigurationAdapter() {
-        val configurations = wgParamsRepository.unblockWgParams.value.map { it.title }
-        val selectedConfiguration = wgParamsRepository.getSelectedUnblockWgParam()
-        if (selectedConfiguration != null) {
-            settingView.setupConfigurationAdapter(selectedConfiguration.title, configurations)
+    private fun setAmneziaPresetAdapter() {
+        val params = wgParamsRepository.unblockWgParams.value
+        val titles = params.map { it.title }
+        val ids = params.map { it.id }
+        val selectedPreset = wgParamsRepository.getSelectedUnblockWgParam()
+        if (selectedPreset != null) {
+            settingView.setupAmneziaPresetAdapter(selectedPreset.id, titles, ids)
         }
     }
 
@@ -355,9 +394,10 @@ class SettingsPresenterImp @Inject constructor(
         }
     }
 
-    override fun onConfigurationSelected(configuration: String) {
-        logger.info("Saving selected configuration...")
-        wgParamsRepository.setSelectedUnblockWgParam(configuration)
+    override fun onAmneziaPresetSelected(presetId: String) {
+        logger.info("Saving selected Amnezia preset: $presetId")
+        preferencesHelper.isAntiCensorshipManualMode = true
+        wgParamsRepository.setSelectedUnblockWgParam(presetId)
     }
 
     override fun onSendDebugClicked() {
@@ -524,13 +564,16 @@ class SettingsPresenterImp @Inject constructor(
         settingView.setLanTrafficMode(if (allowLanTraffic) LAN_ALLOW else LAN_BLOCK)
         val allowBootStart = preferencesHelper.autoStartOnBoot
         settingView.setBootStartMode(if (allowBootStart) BOOT_ALLOW else BOOT_BLOCK)
-        settingView.setAntiCensorshipMode(preferencesHelper.isAntiCensorshipOn)
+        settingView.setProtocolTweaksMode(preferencesHelper.isProtocolTweaksEnabled)
+        settingView.setServerRoutingMode(preferencesHelper.serverRoutingMode)
+        if (preferencesHelper.isProtocolTweaksEnabled) {
+            setAmneziaPresetAdapter()
+        }
         settingView.setCustomDNS(preferencesHelper.dnsMode == DNS_MODE_CUSTOM)
         settingView.setCustomDNSAddress(preferencesHelper.dnsAddress ?: "")
         settingView.setCustomDNSAddressVisibility(preferencesHelper.dnsMode == DNS_MODE_CUSTOM)
         settingView.setIpStackEgressMode(preferencesHelper.ipv6Mode)
         setupAppListAdapter()
-        setConfigurationAdapter()
     }
 
     override fun setupLayoutForDebugTab() {
