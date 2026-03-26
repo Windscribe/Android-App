@@ -41,10 +41,11 @@ interface SettingView {
     fun showProgress(progressText: String)
     fun showToast(toastString: String)
     fun updateLocale()
-    fun setAntiCensorshipMode(enabled: Boolean)
+    fun setProtocolTweaksMode(enabled: Boolean)
+    fun setServerRoutingMode(mode: String)
     fun setCustomDNS(isCustom: Boolean)
     fun setCustomDNSAddress(url: String)
     fun setCustomDNSAddressVisibility(show: Boolean)
-    fun setupConfigurationAdapter(selectedConfiguration: String, configurations: List<String>)
+    fun setupAmneziaPresetAdapter(selectedPresetId: String, presetTitles: List<String>, presetIds: List<String>)
     fun setIpStackEgressMode(mode: String)
 }

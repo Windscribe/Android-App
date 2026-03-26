@@ -217,6 +217,24 @@ private fun NavGraphBuilder.addNavigationScreens() {
             ConnectionScreen(it)
         }
     }
+    composable(route = Screen.AntiCensorship.route,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { -it })
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { it })
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { it })
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { -it })
+        }
+    ) {
+        ViewModelRoute(com.windscribe.mobile.ui.preferences.anticensorship.AntiCensorshipViewModel::class.java) {
+            com.windscribe.mobile.ui.preferences.anticensorship.AntiCensorshipScreen(it)
+        }
+    }
     composable(route = Screen.Robert.route,
         enterTransition = {
             slideInHorizontally(initialOffsetX = { -it })

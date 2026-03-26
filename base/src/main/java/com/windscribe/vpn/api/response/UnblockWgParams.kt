@@ -9,6 +9,7 @@ data class UnblockWgResponse(
 
 data class UnblockWgParams(
     val title: String,
+    val id: String,
     val countries: List<String>,
     @SerializedName("Jc")
     val jc: Int?,

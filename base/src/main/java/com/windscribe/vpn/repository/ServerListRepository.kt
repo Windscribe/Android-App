@@ -109,8 +109,9 @@ class ServerListRepository @Inject constructor(
             }
             logger.debug("Full update completed successfully")
         } else {
+            val backup = preferenceHelper.getBackupParameter()
             val sessionResult = result<UserSessionResponse> {
-                apiCallManager.getSessionGeneric(null, preferenceHelper.serverRevision, false)
+                apiCallManager.getSessionGeneric(null, preferenceHelper.serverRevision, backup)
             }
             when (sessionResult) {
                 is CallResult.Success -> {
@@ -288,8 +289,9 @@ class ServerListRepository @Inject constructor(
      * This should be called after loadLocations()
      */
     private suspend fun loadFullServerList(backup: Boolean = false): CallResult<Unit> {
+        val backupParam = if (backup) 1 else preferenceHelper.getBackupParameter()
         val serversResult = result<ServerResponse> {
-            apiCallManager.getServers(backup)
+            apiCallManager.getServers(backupParam)
         }
 
         return when (serversResult) {

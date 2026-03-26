@@ -207,6 +207,37 @@ public class Migrations {
         }
     };
 
+    public static final Migration migration_40_41 = new Migration(40, 41) {
+        @Override
+        public void migrate(@NonNull final SupportSQLiteDatabase database) {
+            // Drop and recreate UnBlockWgParam with id as primary key
+            // Data will be refreshed from API on next fetch
+            database.execSQL("DROP TABLE IF EXISTS UnBlockWgParam");
+            database.execSQL("CREATE TABLE IF NOT EXISTS `UnBlockWgParam` "
+                    + "(`id` TEXT NOT NULL DEFAULT '', "
+                    + "`title` TEXT NOT NULL DEFAULT '', "
+                    + "`countries` TEXT NOT NULL DEFAULT '', "
+                    + "`Jc` INTEGER NOT NULL DEFAULT 0, "
+                    + "`Jmin` INTEGER NOT NULL DEFAULT 0, "
+                    + "`Jmax` INTEGER NOT NULL DEFAULT 0, "
+                    + "`S1` INTEGER NOT NULL DEFAULT 0, "
+                    + "`S2` INTEGER NOT NULL DEFAULT 0, "
+                    + "`S3` INTEGER NOT NULL DEFAULT 0, "
+                    + "`S4` INTEGER NOT NULL DEFAULT 0, "
+                    + "`H1` TEXT NOT NULL DEFAULT '', "
+                    + "`H2` TEXT NOT NULL DEFAULT '', "
+                    + "`H3` TEXT NOT NULL DEFAULT '', "
+                    + "`H4` TEXT NOT NULL DEFAULT '', "
+                    + "`I1` TEXT NOT NULL DEFAULT '', "
+                    + "`I2` TEXT NOT NULL DEFAULT '', "
+                    + "`I3` TEXT NOT NULL DEFAULT '', "
+                    + "`I4` TEXT NOT NULL DEFAULT '', "
+                    + "`I5` TEXT NOT NULL DEFAULT '', "
+                    + "PRIMARY KEY(`id`))");
+            logger.debug("Migrated database from version:40 to version:41 - UnBlockWgParam primary key changed to id");
+        }
+    };
+
     private static void invalidateData() {
         Windscribe.getAppContext().getPreference().setMigrationRequired(true);
     }

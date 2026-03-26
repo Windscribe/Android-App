@@ -39,7 +39,7 @@ class ProxyTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBacke
                    tunnelLib.startProxy(":$localPort", remote, 1, mtu, false)
                } else {
                    val remote = "https://$ip:$port"
-                   val antiCensorship = appContext.preference.isAntiCensorshipOn
+                   val antiCensorship = appContext.preference.isProtocolTweaksEnabled
                    tunnelLib.startProxy(":$localPort", remote, 2, mtu, antiCensorship)
                }
                logger.debug("Exiting tunnel proxy.")

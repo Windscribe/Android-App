@@ -492,7 +492,16 @@ last chosen location.</string>
     <string name="location_permission_disclosure_message">Before granting this permission, please understand:\n\nWhat we use it for:\n• Access WiFi network names (SSID)\n• Enable Network Whitelist feature\n• GPS spoofing functionality\n\nWhat we DON\'T do:\n• Track your physical location\n• Collect GPS coordinates\n• Share data with third parties\n• Send data off your device\n\nYour location data stays on your device and is used solely for the features above.</string>
     <string name="background_location_permission_disclosure_message">Before granting background location permission, please understand:\n\nWhat we use it for:\n• Access WiFi network names while app runs in background\n• Enable Network Whitelist feature\n• GPS spoofing functionality\n\nWhat we DON\'T do:\n• Track your physical location\n• Collect GPS coordinates\n• Share data with third parties\n• Send data off your device\n\nYour location data stays on your device and is used solely for the features above.</string>
     <string name="anti_censorship">Circumvent Censorship</string>
+    <string name="anti_censorship_settings">Anti-censorship Settings</string>
+    <string name="anti_censorship_screen_title">Anti-censorship</string>
+    <string name="anti_censorship_screen_description">These degrade performance, enable only if Windscribe doesn’t connect normally.</string>
     <string name="anti_censorship_explainer">Connect to the VPN even in hostile environment</string>
+    <string name="protocol_tweaks">Protocol Tweaks</string>
+    <string name="protocol_tweaks_description">Protocol-level changes made to WireGuard, OpenVPN, and Stealth protocols.</string>
+    <string name="server_routing">Server Routing</string>
+    <string name="server_routing_description">Increases latency, but improves chances of being able to connect.</string>
+    <string name="regular">Regular</string>
+    <string name="alternate">Alternate</string>
     <string name="amnezia_preset">Configuration</string>
     <string name="amnezia_preset_description">Choose preset configuration for anti-censorship</string>
     <string name="amnezia_preset_russian_quick">Russian Quick (No Junk)</string>

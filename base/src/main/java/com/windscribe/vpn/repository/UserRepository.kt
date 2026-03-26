@@ -50,7 +50,8 @@ class UserRepository(
     private val connectionDataRepository: ConnectionDataRepository,
     private val serverListRepository: ServerListRepository,
     private val staticIpRepository: StaticIpRepository,
-    private val googleSignInManager: GoogleSignInManager
+    private val googleSignInManager: GoogleSignInManager,
+    private val unblockWgParamsRepository: UnblockWgParamsRepository
 ) {
     var user = MutableLiveData<User>()
     private val logger = LoggerFactory.getLogger("data")
@@ -72,6 +73,8 @@ class UserRepository(
                 _userInfo.emit(newUser)
                 preferenceHelper.userStatus = if (newUser.isPro) 1 else 0
                 preferenceHelper.userName = newUser.userName
+                // Amnezia auto-enable logic
+                handleAmneziaAutoEnable(it)
                 callback?.invoke(newUser)
             } ?: kotlin.run {
                 try {
@@ -194,11 +197,50 @@ class UserRepository(
         } ?: false
     }
 
+    /**
+     * Auto-enables/disables Amnezia based on server recommendation (if not in manual mode)
+     */
+    private suspend fun handleAmneziaAutoEnable(sessionResponse: UserSessionResponse) {
+        // Skip if user has manually configured anti-censorship settings
+        if (preferenceHelper.isAntiCensorshipManualMode) {
+            logger.debug("Skipping Amnezia auto-enable - user is in manual mode")
+            return
+        }
+
+        val configId = sessionResponse.amneziaWgConfigId
+        logger.debug("Amnezia auto-enable check - config_id from server: $configId")
+
+        if (configId.isNullOrEmpty()) {
+            // No recommendation - auto-disable
+            if (preferenceHelper.isProtocolTweaksEnabled) {
+                logger.info("Auto-disabling Protocol Tweaks - no server recommendation")
+                preferenceHelper.isProtocolTweaksEnabled = false
+            }
+        } else {
+            // Server recommends a config - try to find and auto-enable it by ID
+            val params = unblockWgParamsRepository.unblockWgParams.value
+            val matchingPreset = params.firstOrNull { it.id == configId }
+
+            if (matchingPreset != null) {
+                logger.info("Auto-enabling Protocol Tweaks with preset ID: ${matchingPreset.id}, title: ${matchingPreset.title}")
+                preferenceHelper.isProtocolTweaksEnabled = true
+                unblockWgParamsRepository.setSelectedUnblockWgParam(matchingPreset.id)
+            } else {
+                logger.warn("Server recommended config_id '$configId' not found in presets")
+                if (preferenceHelper.isProtocolTweaksEnabled) {
+                    logger.info("Auto-disabling Protocol Tweaks - recommended preset not found")
+                    preferenceHelper.isProtocolTweaksEnabled = false
+                }
+            }
+        }
+    }
+
     fun prepareDashboard(firebaseToken: String?): Flow<UserDataState> = flow {
         preferenceHelper.loginTime = Date()
         emit(UserDataState.Loading("Getting session"))
         try {
-            val result = apiManager.getSessionGeneric(firebaseToken).callResult<UserSessionResponse>()
+            val backup = preferenceHelper.getBackupParameter()
+            val result = apiManager.getSessionGeneric(firebaseToken, backup = backup).callResult<UserSessionResponse>()
             when (result) {
                 is CallResult.Error -> {
                     logger.debug("Error getting session: ${result.errorMessage}")

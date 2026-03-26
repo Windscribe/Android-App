@@ -260,7 +260,7 @@ class VPNProfileCreator @Inject constructor(
                 protocol = "tcp"
                 serverConfig = preferencesHelper.openVpnServerConfig
                 // Append additional anti-censorship options
-                if (preferencesHelper.isAntiCensorshipOn && serverConfig != null) {
+                if (preferencesHelper.isProtocolTweaksEnabled && serverConfig != null) {
                     serverConfig = String(org.spongycastle.util.encoders.Base64.decode(serverConfig))
                     serverConfig += "\nudp-stuffing"
                     serverConfig += "\ntcp-split-reset"
@@ -274,7 +274,7 @@ class VPNProfileCreator @Inject constructor(
                 protocol = "udp"
                 serverConfig = preferencesHelper.openVpnServerConfig
                 // Append additional anti-censorship options
-                if (preferencesHelper.isAntiCensorshipOn && serverConfig != null) {
+                if (preferencesHelper.isProtocolTweaksEnabled && serverConfig != null) {
                     serverConfig = String(org.spongycastle.util.encoders.Base64.decode(serverConfig))
                     serverConfig += "\nudp-stuffing"
                     serverConfig += "\ntcp-split-reset"
@@ -476,7 +476,7 @@ class VPNProfileCreator @Inject constructor(
         val lastSelectedLocation =
                 LastSelectedLocation(configFile.getPrimaryKey(), nickName = configFile.name)
         saveSelectedLocation(lastSelectedLocation)
-        if (preferencesHelper.isAntiCensorshipOn) {
+        if (preferencesHelper.isProtocolTweaksEnabled) {
             saveProfile(WireGuardVpnProfile(config.toWgQuickString()))
             return "Custom Config: ${config.toWgQuickString()}"
         } else {
@@ -553,7 +553,7 @@ class VPNProfileCreator @Inject constructor(
         } else {
             preferencesHelper.lastConnectedUsingSplit = false
         }
-        return if (mPreferencesHelper.isAntiCensorshipOn) {
+        return if (mPreferencesHelper.isProtocolTweaksEnabled) {
             applyUnblockWgParams(builder).build()
         } else {
             builder.build()

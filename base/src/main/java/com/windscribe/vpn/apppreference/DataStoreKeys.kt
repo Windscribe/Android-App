@@ -123,6 +123,11 @@ object DataStoreKeys {
     val DECOY_TRAFFIC = booleanPreferencesKey(PreferencesKeyConstants.DECOY_TRAFFIC)
     val FAKE_TRAFFIC_VOLUME = stringPreferencesKey(PreferencesKeyConstants.FAKE_TRAFFIC_VOLUME)
     val ANTI_CENSORSHIP = booleanPreferencesKey(PreferencesKeyConstants.ANTI_CENSORSHIP)
+    val ANTI_CENSORSHIP_MANUAL_MODE =
+        booleanPreferencesKey(PreferencesKeyConstants.ANTI_CENSORSHIP_MANUAL_MODE)
+    val SERVER_ROUTING_MODE = stringPreferencesKey(PreferencesKeyConstants.SERVER_ROUTING_MODE)
+    val PROTOCOL_TWEAKS_ENABLED =
+        booleanPreferencesKey(PreferencesKeyConstants.PROTOCOL_TWEAKS_ENABLED)
     val AUTO_SECURE_NEW_NETWORKS =
         booleanPreferencesKey(PreferencesKeyConstants.AUTO_SECURE_NEW_NETWORKS)
     val GPS_SPOOF_SETTING = booleanPreferencesKey(PreferencesKeyConstants.GPS_SPOOF_SETTING)

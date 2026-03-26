@@ -9,8 +9,11 @@ import com.windscribe.vpn.localdatabase.ListToString
 @Entity(tableName = "UnBlockWgParam")
 @TypeConverters(ListToString::class)
 data class UnBlockWgParam(
-    @ColumnInfo(name = "title")
+    @ColumnInfo(name = "id")
     @PrimaryKey
+    val id: String = "",
+
+    @ColumnInfo(name = "title")
     val title: String = "",
 
     @ColumnInfo(name = "countries")

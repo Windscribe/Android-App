@@ -119,6 +119,10 @@ public class UserSessionResponse {
     @Expose
     private ServerInventory serverInventory;
 
+    @SerializedName("amneziawg_config_id")
+    @Expose
+    private String amneziaWgConfigId = null;
+
     public List<String> getAlcList() {
         return alcList;
     }
@@ -321,6 +325,14 @@ public class UserSessionResponse {
 
     public void setServerInventory(ServerInventory serverInventory) {
         this.serverInventory = serverInventory;
+    }
+
+    public String getAmneziaWgConfigId() {
+        return amneziaWgConfigId;
+    }
+
+    public void setAmneziaWgConfigId(String amneziaWgConfigId) {
+        this.amneziaWgConfigId = amneziaWgConfigId;
     }
 
     @NonNull

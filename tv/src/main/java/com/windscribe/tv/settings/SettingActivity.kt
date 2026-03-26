@@ -141,12 +141,24 @@ class SettingActivity :
         presenter.onBlockLanClicked()
     }
 
-    override fun onAllowAntiCensorshipClicked() {
-        presenter.onAllowAntiCensorshipClicked()
+    override fun onProtocolTweaksOnClicked() {
+        presenter.onProtocolTweaksOnClicked()
     }
 
-    override fun onBlockAntiCensorshipClicked() {
-        presenter.onBlockAntiCensorshipClicked()
+    override fun onProtocolTweaksOffClicked() {
+        presenter.onProtocolTweaksOffClicked()
+    }
+
+    override fun onServerRoutingAutoClicked() {
+        presenter.onServerRoutingAutoClicked()
+    }
+
+    override fun onServerRoutingRegularClicked() {
+        presenter.onServerRoutingRegularClicked()
+    }
+
+    override fun onServerRoutingAlternateClicked() {
+        presenter.onServerRoutingAlternateClicked()
     }
 
     override fun onRobertDNSClicked() {
@@ -244,8 +256,8 @@ class SettingActivity :
         presenter.onProtocolSelected(protocol)
     }
 
-    override fun onConfigurationSelected(configuration: String) {
-        presenter.onConfigurationSelected(configuration)
+    override fun onAmneziaPresetSelected(presetId: String) {
+        presenter.onAmneziaPresetSelected(presetId)
     }
 
     override fun onSignUpClick() {
@@ -293,8 +305,16 @@ class SettingActivity :
         }
     }
 
-    override fun setAntiCensorshipMode(enabled: Boolean) {
-        (fragment as? ConnectionFragment)?.setAntiCensorshipMode(enabled)
+    override fun setProtocolTweaksMode(enabled: Boolean) {
+        (fragment as? ConnectionFragment)?.setProtocolTweaksMode(enabled)
+    }
+
+    override fun setServerRoutingMode(mode: String) {
+        (fragment as? ConnectionFragment)?.setServerRoutingMode(mode)
+    }
+
+    override fun setupAmneziaPresetAdapter(selectedPresetId: String, presetTitles: List<String>, presetIds: List<String>) {
+        (fragment as? ConnectionFragment)?.setAmneziaPresetAdapter(selectedPresetId, presetTitles, presetIds)
     }
 
     override fun setIpStackEgressMode(mode: String) {
@@ -429,18 +449,6 @@ class SettingActivity :
     override fun setupProtocolAdapter(protocol: String, protocols: List<String>) {
         if (fragment is ConnectionFragment) {
             (fragment as ConnectionFragment).setProtocolAdapter(protocol, protocols)
-        }
-    }
-
-    override fun setupConfigurationAdapter(
-        selectedConfiguration: String,
-        configurations: List<String>
-    ) {
-        if (fragment is ConnectionFragment) {
-            (fragment as ConnectionFragment).setConfigurationAdapter(
-                selectedConfiguration,
-                configurations
-            )
         }
     }
 

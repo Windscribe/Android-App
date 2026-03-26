@@ -167,18 +167,18 @@ class ConnectionFragment : Fragment() {
         binding.portList.adapter = portAdapter
     }
 
-    fun setConfigurationAdapter(selectedConfiguration: String, configurations: List<String>) {
-        val configurationAdapter = MenuAdapter(configurations, selectedConfiguration)
-        configurationAdapter.setListener(object : MenuItemSelectListener {
+    fun setAmneziaPresetAdapter(selectedPresetId: String, presetTitles: List<String>, presetIds: List<String>) {
+        val presetAdapter = MenuAdapter(presetTitles, selectedPresetId, presetIds)
+        presetAdapter.setListener(object : MenuItemSelectListener {
             override fun onItemSelected(selectedItemKey: String?) {
                 selectedItemKey?.let {
-                    listener?.onConfigurationSelected(selectedItemKey)
+                    listener?.onAmneziaPresetSelected(selectedItemKey)
                 }
             }
         })
-        binding.configurationItems.setNumRows(1)
-        binding.configurationItems.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT)
-        binding.configurationItems.adapter = configurationAdapter
+        binding.amneziaPresetItems.setNumRows(1)
+        binding.amneziaPresetItems.setRowHeight(ViewGroup.LayoutParams.WRAP_CONTENT)
+        binding.amneziaPresetItems.adapter = presetAdapter
     }
 
     fun setProtocolAdapter(savedProtocol: String, protocols: List<String>) {
@@ -256,12 +256,23 @@ class ConnectionFragment : Fragment() {
             listener?.onIpStackEgressIpv4OnlyClicked()
         }
 
-        binding.allowAntiCensorship.setOnClickListener {
-            listener?.onAllowAntiCensorshipClicked()
+        binding.protocolTweaksOn.setOnClickListener {
+            listener?.onProtocolTweaksOnClicked()
         }
-        binding.blockAntiCensorship.setOnClickListener {
-            listener?.onBlockAntiCensorshipClicked()
+        binding.protocolTweaksOff.setOnClickListener {
+            listener?.onProtocolTweaksOffClicked()
         }
+
+        binding.serverRoutingAuto.setOnClickListener {
+            listener?.onServerRoutingAutoClicked()
+        }
+        binding.serverRoutingRegular.setOnClickListener {
+            listener?.onServerRoutingRegularClicked()
+        }
+        binding.serverRoutingAlternate.setOnClickListener {
+            listener?.onServerRoutingAlternateClicked()
+        }
+
         binding.autoConnection.setOnClickListener {
             listener?.onAutoClicked()
         }
@@ -304,16 +315,36 @@ class ConnectionFragment : Fragment() {
         }
     }
 
-    fun setAntiCensorshipMode(enabled: Boolean) {
+    fun setProtocolTweaksMode(enabled: Boolean) {
         if (enabled) {
-            binding.allowAntiCensorship.setState(State.MenuButtonState.Selected)
-            binding.blockAntiCensorship.setState(State.MenuButtonState.NotSelected)
-            binding.configurationView.visibility = View.VISIBLE
+            binding.protocolTweaksOn.setState(State.MenuButtonState.Selected)
+            binding.protocolTweaksOff.setState(State.MenuButtonState.NotSelected)
+            binding.protocolTweaksPresetView.visibility = View.VISIBLE
         } else {
-            binding.blockAntiCensorship.setState(State.MenuButtonState.Selected)
-            binding.allowAntiCensorship.setState(State.MenuButtonState.NotSelected)
+            binding.protocolTweaksOff.setState(State.MenuButtonState.Selected)
+            binding.protocolTweaksOn.setState(State.MenuButtonState.NotSelected)
             TransitionManager.beginDelayedTransition(binding.connectionParent)
-            binding.configurationView.visibility = View.GONE
+            binding.protocolTweaksPresetView.visibility = View.GONE
+        }
+    }
+
+    fun setServerRoutingMode(mode: String) {
+        when (mode) {
+            com.windscribe.vpn.apppreference.PreferencesKeyConstants.SERVER_ROUTING_AUTO -> {
+                binding.serverRoutingAuto.setState(State.MenuButtonState.Selected)
+                binding.serverRoutingRegular.setState(State.MenuButtonState.NotSelected)
+                binding.serverRoutingAlternate.setState(State.MenuButtonState.NotSelected)
+            }
+            com.windscribe.vpn.apppreference.PreferencesKeyConstants.SERVER_ROUTING_REGULAR -> {
+                binding.serverRoutingRegular.setState(State.MenuButtonState.Selected)
+                binding.serverRoutingAuto.setState(State.MenuButtonState.NotSelected)
+                binding.serverRoutingAlternate.setState(State.MenuButtonState.NotSelected)
+            }
+            com.windscribe.vpn.apppreference.PreferencesKeyConstants.SERVER_ROUTING_ALTERNATE -> {
+                binding.serverRoutingAlternate.setState(State.MenuButtonState.Selected)
+                binding.serverRoutingAuto.setState(State.MenuButtonState.NotSelected)
+                binding.serverRoutingRegular.setState(State.MenuButtonState.NotSelected)
+            }
         }
     }
 
