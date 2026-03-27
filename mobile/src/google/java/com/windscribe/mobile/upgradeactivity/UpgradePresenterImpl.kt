@@ -50,7 +50,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
-import java.security.MessageDigest
+
 import javax.inject.Inject
 
 class UpgradePresenterImpl @Inject constructor(
@@ -142,10 +142,10 @@ class UpgradePresenterImpl @Inject constructor(
         activityScope.launch(Dispatchers.IO) {
             try {
                 val userSessionResponse = getUserSessionData()
-                val userID = userSessionResponse.userID.toByteArray()
-                val md = MessageDigest.getInstance("SHA-256")
-                val digest = md.digest(userID)
-                val accountID = String(digest)
+                val accountID = android.util.Base64.encodeToString(
+                    userSessionResponse.userID.toByteArray(Charsets.UTF_8),
+                    android.util.Base64.NO_WRAP or android.util.Base64.URL_SAFE
+                )
                 withContext(Dispatchers.Main) {
                     presenterLog.info("Generated encrypted account ID.")
                     upgradeView?.startPurchaseFlow(productDetailsParams, accountID)
