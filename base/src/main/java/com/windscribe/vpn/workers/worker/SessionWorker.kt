@@ -94,11 +94,14 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
                 logger.debug("ALC or location hash changed")
                 preferencesHelper.migrationRequired = true
             }
-            // User status changed
+            // User or account status changed
             if (changed[2]) {
-                logger.debug("User status changed.")
+                logger.debug("User or account status changed.")
                 preferencesHelper.migrationRequired = true
-                wgConfigRepository.deleteKeys()
+                wgConfigRepository.unregisterKey()
+            }
+            // User or account status changed or update required
+            if (changed[2] || changed[3]) {
                 workManager.updateStaticIpList()
                 workManager.updateCredentialsUpdate()
                 workManager.updateNotifications()
@@ -113,7 +116,7 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
                 workManager.updateStaticIpList()
             }
             // Email status changed
-            if (changed[3]) {
+            if (changed[4]) {
                 logger.debug("Email status changed.")
                 preferenceChangeObserver.postEmailStatusChange()
             }
@@ -150,7 +153,7 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
             vpnController.disconnectAsync()
         }
         if (user.accountStatus == User.AccountStatus.Banned || user.accountStatus == User.AccountStatus.Expired) {
-            wgConfigRepository.deleteKeys()
+            wgConfigRepository.unregisterKey()
             preferencesHelper.globalUserConnectionPreference = false
         }
     }

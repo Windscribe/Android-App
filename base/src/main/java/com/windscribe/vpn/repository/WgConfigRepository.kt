@@ -16,7 +16,6 @@ import com.wireguard.crypto.KeyPair
 import kotlinx.coroutines.delay
 import org.slf4j.LoggerFactory
 import java.io.Serializable
-import java.security.PublicKey
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -38,7 +37,7 @@ class WgConfigRepository @Inject constructor(
     private val preferenceHelper: PreferencesHelper
 ) {
     private val logger = LoggerFactory.getLogger(TAG)
-    private var firstConnection = true
+    private var skipCacheOnFirstInit = true
 
     /**
      * Retrieves complete WireGuard configuration for establishing a VPN connection.
@@ -94,13 +93,22 @@ class WgConfigRepository @Inject constructor(
      *
      * Should be invoked on:
      * - User logout
-     * - User logout
      * - Connection reset
      * - Key rotation requirement
      */
     fun deleteKeys() {
         logger.debug("Clearing cached WireGuard parameters")
         preferenceHelper.wgLocalParams = null
+    }
+
+    /**
+     * Unregisters the current WireGuard key with the server.
+     * Forces re-initialization on next connection using the same key.
+     */
+    fun unregisterKey() {
+        logger.debug("Unregister Wireguard key")
+        preferenceHelper.wgRegisteredKey = null
+        skipCacheOnFirstInit = true
     }
 
     /**
@@ -121,19 +129,23 @@ class WgConfigRepository @Inject constructor(
      */
     private suspend fun generateKeys(forceInit: Boolean): CallResult<WgLocalParams> {
         // Return cached params if available and not forcing init
-        val wgLocalParams = preferenceHelper.wgLocalParams
-        if (!forceInit && wgLocalParams?.hashedCIDR != null && wgLocalParams.hashedCIDRV6 != null && !firstConnection) {
+        val cachedParams = preferenceHelper.wgLocalParams
+        val isKeyRegisteredWithServer = preferenceHelper.wgRegisteredKey != null
+        if (!forceInit && cachedParams?.hashedCIDR != null && cachedParams.hashedCIDRV6 != null
+            && isKeyRegisteredWithServer && !skipCacheOnFirstInit) {
             logger.debug("Using cached WireGuard parameters")
-            return CallResult.Success(wgLocalParams)
+            return CallResult.Success(cachedParams)
         }
-        val keyPair = if (wgLocalParams != null && !forceInit) {
-            logger.debug("Refreshing WireGuard key pair")
-            KeyPair(Key.fromBase64(wgLocalParams.privateKey))
+
+        // Reuse existing key for re-registration (unless forceInit or no cached key)
+        val keyPair = if (cachedParams != null && !forceInit) {
+            logger.debug("Reusing existing WireGuard key pair")
+            KeyPair(Key.fromBase64(cachedParams.privateKey))
         } else {
             logger.debug("Generating new WireGuard key pair")
             KeyPair()
         }
-        firstConnection = false
+        skipCacheOnFirstInit = false
         val publicKey = keyPair.publicKey.toBase64()
         // Brief delay for rate limiting
         delay(INIT_DELAY_MS)
@@ -143,8 +155,9 @@ class WgConfigRepository @Inject constructor(
             .getOrElse { return it }
 
         // Create and cache local params
+        val privateKey = keyPair.privateKey.toBase64()
         return WgLocalParams(
-            privateKey = keyPair.privateKey.toBase64(),
+            privateKey = privateKey,
             allowedIPs = initResponse.config.allowedIPs,
             allowedIPs6 = initResponse.config.allowedIPsV6,
             preSharedKey = initResponse.config.preSharedKey,
@@ -152,7 +165,9 @@ class WgConfigRepository @Inject constructor(
             hashedCIDRV6 = initResponse.config.hashedCIDRV6
         ).also { params ->
             preferenceHelper.wgLocalParams = params
-            logger.debug("Cached new WireGuard local parameters")
+            // Save registered key after successful init
+            preferenceHelper.wgRegisteredKey = privateKey
+            logger.debug("Cached new WireGuard local parameters and registered key")
         }.let { CallResult.Success(it) }
     }
 

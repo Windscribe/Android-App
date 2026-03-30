@@ -753,6 +753,13 @@ class DataStorePreferenceHelper(
             )  // SYNC - critical WireGuard config
         }
 
+    override var wgRegisteredKey: String?
+        get() = securePreferences.getString(SecurePreferencesKeys.WG_REGISTERED_KEY, null)
+        set(value) = securePreferences.putStringSync(
+            SecurePreferencesKeys.WG_REGISTERED_KEY,
+            value
+        )  // SYNC - critical for WireGuard key registration
+
     // OpenVPN Credentials (stored as JSON in DataStore)
     override var openVpnCredentials: ServerCredentialsResponse?
         get() = runBlocking {

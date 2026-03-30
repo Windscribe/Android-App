@@ -106,6 +106,7 @@ interface PreferencesHelper {
     var serverRoutingMode: String
     var isProtocolTweaksEnabled: Boolean
     var wgLocalParams: WgLocalParams?
+    var wgRegisteredKey: String?
     var autoConnect: Boolean
     var advanceParamText: String
     var wsNetSettings: String

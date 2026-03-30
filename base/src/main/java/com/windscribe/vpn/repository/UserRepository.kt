@@ -118,12 +118,13 @@ class UserRepository(
             return listOf(
                 alcListChanged or locationHashChanged,
                 sipChanged,
-                userStatusChanged or accountStatusChanged or migrationRequired,
+                userStatusChanged or accountStatusChanged,
+                migrationRequired,
                 emailStatusChanged
             )
         } ?: kotlin.run {
             logger.debug("No user information found to compare.")
-            return listOf(false, false, false, false)
+            return listOf(false, false, false, false, false)
         }
     }
 
