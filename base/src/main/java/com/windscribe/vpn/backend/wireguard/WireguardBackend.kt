@@ -44,10 +44,9 @@ import java.net.InetAddress
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.jvm.optionals.getOrDefault
-import kotlin.jvm.optionals.toSet
-import kotlin.random.Random
 import com.wsnet.lib.WSNetBridgeAPI
+import com.wsnet.lib.WSNet
+import java.util.concurrent.atomic.AtomicBoolean
 
 
 @Singleton
@@ -64,6 +63,7 @@ class WireguardBackend @Inject constructor(
     localDbInterface: LocalDbInterface,
     val wgLogger: WgLogger,
     val wgConfigRepository: com.windscribe.vpn.repository.WgConfigRepository,
+    private val wsNet: WSNet,
     private val apiManager: IApiCallManager,
     private val bridgeAPI: WSNetBridgeAPI,
     resourceHelper: ResourceHelper
@@ -83,6 +83,9 @@ class WireguardBackend @Inject constructor(
     private var connectionStateJob: Job? = null
     override var active = false
     private var wgErrorJob: Job? = null
+    private var connectionHealthJob: Job? = null
+    private var handshakeReceivedJob: Job? = null
+    private var protectByVPN = AtomicBoolean(false)
 
     private val testTunnel = WireGuardTunnel(
         name = appContext.getString(R.string.app_name), config = null, state = DOWN
@@ -98,6 +101,17 @@ class WireguardBackend @Inject constructor(
         getPinnedIpForSelectedCity = { getPinnedIpForSelectedCity() }
     )
 
+    init {
+        wsNet.httpNetworkManager().setWhitelistSocketsCallback { fds ->
+            for (fd in fds) {
+//                if (active && protectByVPN.get()) {
+//                    vpnLogger.info("Protecting fd")
+//                    service?.protect(fd)
+//                }
+            }
+        }
+    }
+
     fun serviceCreated(vpnService: WireGuardWrapperService) {
         vpnLogger.info("WireGuard service created.")
         service = vpnService
@@ -106,6 +120,11 @@ class WireguardBackend @Inject constructor(
     fun serviceDestroyed() {
         vpnLogger.info("WireGuard service destroyed.")
         service = null
+    }
+
+    private fun setProtectByVPN(protect: Boolean) {
+        vpnLogger.debug("Setting protectByVPN to $protect")
+        protectByVPN.set(protect)
     }
 
     private var stickyDisconnectEvent = false
@@ -145,6 +164,8 @@ class WireguardBackend @Inject constructor(
     override fun deactivate() {
         wgErrorJob?.cancel()
         connectionStateJob?.cancel()
+        connectionHealthJob?.cancel()
+        handshakeReceivedJob?.cancel()
         pinIpRecovery.stop()
         wgLogger.stopCapture()
         stopNetworkInfoObserver()
@@ -203,6 +224,26 @@ class WireguardBackend @Inject constructor(
     private fun startConnectionHealthJob() {
         if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CustomConfiguredProfile) {
             return
+        }
+
+        // Listen for handshake failures
+        connectionHealthJob = scope.launch {
+            wgLogger.handshakeFailureEvent.collect {
+                if (!protectByVPN.get()) {
+                    vpnLogger.warn("Handshake failure detected, enabling protectByVPN to bypass wsnet calls")
+                    setProtectByVPN(true)
+                }
+            }
+        }
+
+        // Listen for successful handshakes
+        handshakeReceivedJob = scope.launch {
+            wgLogger.handshakeReceivedEvent.collect {
+                if (protectByVPN.get()) {
+                    vpnLogger.debug("Handshake received, disabling protectByVPN")
+                    setProtectByVPN(false)
+                }
+            }
         }
     }
 }

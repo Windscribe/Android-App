@@ -14,8 +14,12 @@ class WgLogger {
     private val _handshakeReceivedEvent = MutableSharedFlow<Unit>(replay = 0)
     val handshakeReceivedEvent: SharedFlow<Unit> = _handshakeReceivedEvent
 
+    private val _handshakeFailureEvent = MutableSharedFlow<Unit>(replay = 0)
+    val handshakeFailureEvent: SharedFlow<Unit> = _handshakeFailureEvent
+
     companion object {
         private const val HANDSHAKE_RESPONSE_RECEIVED = "Received handshake response"
+        private const val HANDSHAKE_NOT_COMPLETE = "Handshake did not complete after 5 seconds, retrying"
     }
 
     suspend fun captureLogs(context: Context) {
@@ -47,8 +51,13 @@ class WgLogger {
     }
 
     private suspend fun processHandshakeEvents(line: String) {
-        if (line.contains(HANDSHAKE_RESPONSE_RECEIVED)) {
-            _handshakeReceivedEvent.emit(Unit)
+        when {
+            line.contains(HANDSHAKE_RESPONSE_RECEIVED) -> {
+                _handshakeReceivedEvent.emit(Unit)
+            }
+            line.contains(HANDSHAKE_NOT_COMPLETE) -> {
+                _handshakeFailureEvent.emit(Unit)
+            }
         }
     }
 
