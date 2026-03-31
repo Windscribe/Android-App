@@ -1,0 +1,2 @@
+v3.99(Mobile)
+* Fixed tv build showing up for mobile users in fdroid.
