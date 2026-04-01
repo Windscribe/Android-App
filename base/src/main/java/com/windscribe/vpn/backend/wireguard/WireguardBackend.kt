@@ -15,6 +15,7 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
+import com.windscribe.vpn.backend.VpnBackend.Companion.DISCONNECT_DELAY
 import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.commonutils.WindUtilities
@@ -46,6 +47,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import com.wsnet.lib.WSNetBridgeAPI
 import com.wsnet.lib.WSNet
+import com.wsnet.lib.WSNetHttpNetworkManager
+import org.strongswan.android.logic.StrongSwanApplication.service
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -104,10 +107,9 @@ class WireguardBackend @Inject constructor(
     init {
         wsNet.httpNetworkManager().setWhitelistSocketsCallback { fds ->
             for (fd in fds) {
-//                if (active && protectByVPN.get()) {
-//                    vpnLogger.info("Protecting fd")
-//                    service?.protect(fd)
-//                }
+                if (active) {
+                    service?.protect(fd)
+                }
             }
         }
     }
@@ -224,26 +226,6 @@ class WireguardBackend @Inject constructor(
     private fun startConnectionHealthJob() {
         if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CustomConfiguredProfile) {
             return
-        }
-
-        // Listen for handshake failures
-        connectionHealthJob = scope.launch {
-            wgLogger.handshakeFailureEvent.collect {
-                if (!protectByVPN.get()) {
-                    vpnLogger.warn("Handshake failure detected, enabling protectByVPN to bypass wsnet calls")
-                    setProtectByVPN(true)
-                }
-            }
-        }
-
-        // Listen for successful handshakes
-        handshakeReceivedJob = scope.launch {
-            wgLogger.handshakeReceivedEvent.collect {
-                if (protectByVPN.get()) {
-                    vpnLogger.debug("Handshake received, disabling protectByVPN")
-                    setProtectByVPN(false)
-                }
-            }
         }
     }
 }
