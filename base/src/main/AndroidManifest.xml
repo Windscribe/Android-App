@@ -70,7 +70,7 @@
         </service>
         <service
             android:name=".services.DisconnectService"
-            android:exported="true" />
+            android:exported="false" />
         <service
             android:name=".services.VpnTileService"
             android:icon="@drawable/ic_tile_connect"
