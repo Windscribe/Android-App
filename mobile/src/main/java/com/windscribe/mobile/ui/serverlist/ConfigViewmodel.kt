@@ -67,14 +67,16 @@ class ConfigViewmodelImpl @Inject constructor(
             showToast(context, "File is larger than 12KB")
             return null
         }
-        val fileName = documentFile.name ?: return null
-        if (fileName.length > 35) {
-            showToast(context, "File name is too long. Maximum 35 characters allowed.")
-            return null
-        }
+        var fileName = documentFile.name ?: return null
         if (!fileName.endsWith(".conf") && !fileName.endsWith(".ovpn")) {
             showToast(context, "Choose a valid .ovpn or .conf file.")
             return null
+        }
+        val maxLength = 35
+        if (fileName.length > maxLength) {
+            val ext = fileName.substringAfterLast('.')
+            val nameWithoutExt = fileName.substringBeforeLast('.')
+            fileName = "${nameWithoutExt.take(maxLength - ext.length - 1)}.$ext"
         }
         return fileName
     }
