@@ -15,10 +15,7 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
-import com.windscribe.vpn.backend.VpnBackend.Companion.DISCONNECT_DELAY
-import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.commonutils.ResourceHelper
-import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.UserRepository
@@ -29,7 +26,7 @@ import com.wireguard.android.backend.GoBackend
 import com.wireguard.android.backend.Tunnel.State.DOWN
 import com.wireguard.android.backend.Tunnel.State.TOGGLE
 import com.wireguard.android.backend.Tunnel.State.UP
-import com.wireguard.config.Config
+import com.wsnet.lib.WSNetBridgeAPI
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -39,17 +36,9 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.net.DatagramPacket
-import java.net.DatagramSocket
-import java.net.InetAddress
-import java.util.*
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
-import com.wsnet.lib.WSNetBridgeAPI
-import com.wsnet.lib.WSNet
-import com.wsnet.lib.WSNetHttpNetworkManager
-import org.strongswan.android.logic.StrongSwanApplication.service
-import java.util.concurrent.atomic.AtomicBoolean
 
 
 @Singleton
@@ -66,7 +55,6 @@ class WireguardBackend @Inject constructor(
     localDbInterface: LocalDbInterface,
     val wgLogger: WgLogger,
     val wgConfigRepository: com.windscribe.vpn.repository.WgConfigRepository,
-    private val wsNet: WSNet,
     private val apiManager: IApiCallManager,
     private val bridgeAPI: WSNetBridgeAPI,
     resourceHelper: ResourceHelper
@@ -86,9 +74,6 @@ class WireguardBackend @Inject constructor(
     private var connectionStateJob: Job? = null
     override var active = false
     private var wgErrorJob: Job? = null
-    private var connectionHealthJob: Job? = null
-    private var handshakeReceivedJob: Job? = null
-    private var protectByVPN = AtomicBoolean(false)
 
     private val testTunnel = WireGuardTunnel(
         name = appContext.getString(R.string.app_name), config = null, state = DOWN
@@ -104,15 +89,14 @@ class WireguardBackend @Inject constructor(
         getPinnedIpForSelectedCity = { getPinnedIpForSelectedCity() }
     )
 
-    init {
-        wsNet.httpNetworkManager().setWhitelistSocketsCallback { fds ->
-            for (fd in fds) {
-                if (active) {
-                    service?.protect(fd)
-                }
-            }
-        }
-    }
+    private val tunnelHealthCheck = TunnelHealthCheck(
+        scope = scope,
+        wgLogger = wgLogger,
+        deviceStateManager = deviceStateManager,
+        workManager = appContext.workManager,
+        getService = { service },
+        disconnect = { disconnect(error = null) }
+    )
 
     fun serviceCreated(vpnService: WireGuardWrapperService) {
         vpnLogger.info("WireGuard service created.")
@@ -122,11 +106,6 @@ class WireguardBackend @Inject constructor(
     fun serviceDestroyed() {
         vpnLogger.info("WireGuard service destroyed.")
         service = null
-    }
-
-    private fun setProtectByVPN(protect: Boolean) {
-        vpnLogger.debug("Setting protectByVPN to $protect")
-        protectByVPN.set(protect)
     }
 
     private var stickyDisconnectEvent = false
@@ -166,9 +145,8 @@ class WireguardBackend @Inject constructor(
     override fun deactivate() {
         wgErrorJob?.cancel()
         connectionStateJob?.cancel()
-        connectionHealthJob?.cancel()
-        handshakeReceivedJob?.cancel()
         pinIpRecovery.stop()
+        tunnelHealthCheck.stop()
         wgLogger.stopCapture()
         stopNetworkInfoObserver()
         active = false
@@ -182,12 +160,14 @@ class WireguardBackend @Inject constructor(
         scope.launch {
             proxyDNSManager.startControlDIfRequired()
             vpnLogger.info("Getting WireGuard profile.")
-            Util.getProfile<WireGuardVpnProfile>()?.let {
+            Util.getProfile<WireGuardVpnProfile>()?.let { profile ->
                 withContext(Dispatchers.IO) {
-                    val content = WireGuardVpnProfile.createConfigFromString(it.content)
-                    vpnLogger.info(it.content)
+                    val content = WireGuardVpnProfile.createConfigFromString(profile.content)
+                    vpnLogger.info(profile.content)
                     try {
                         backend.setState(testTunnel, UP, content)
+                        // Start tunnel health monitoring after connection is established
+                        tunnelHealthCheck.start(profile.content)
                     } catch (e: Exception) {
                         vpnLogger.error("Exception while setting WireGuard state UP.", e)
                         updateState(VPNState(Disconnected))
@@ -214,18 +194,5 @@ class WireguardBackend @Inject constructor(
         delay(DISCONNECT_DELAY)
         vpnLogger.info("Deactivating WireGuard backend.")
         deactivate()
-    }
-
-    override fun connectivityTestPassed(ip: String) {
-        super.connectivityTestPassed(ip)
-        if (!reconnecting) {
-            startConnectionHealthJob()
-        }
-    }
-
-    private fun startConnectionHealthJob() {
-        if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CustomConfiguredProfile) {
-            return
-        }
     }
 }
