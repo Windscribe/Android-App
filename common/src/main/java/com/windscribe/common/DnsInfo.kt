@@ -12,7 +12,7 @@ import java.net.UnknownHostException
 enum class DnsType {
     Tunnel, Plain, Proxy
 }
-data class DNSDetails(val address: String? = null, val ip: String? = null, val type: DnsType): Serializable {
+data class DNSDetails(val address: String? = null, val ip: String? = null, val type: DnsType, val controlDPort: Int = 5355): Serializable {
 
     val getTypeValue: String
         get() {

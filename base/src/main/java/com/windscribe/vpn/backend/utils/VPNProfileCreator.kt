@@ -421,8 +421,13 @@ class VPNProfileCreator @Inject constructor(
             ))
         }
         return dnsDetails.getOrNull()?.let { details ->
-            proxyDNSManager.dnsDetails = details
-            return details
+            val detailsWithPort = if (details.type == DnsType.Proxy) {
+                details.copy(controlDPort = proxyDNSManager.getListenPort())
+            } else {
+                details
+            }
+            proxyDNSManager.dnsDetails = detailsWithPort
+            return detailsWithPort
         }
     }
 

@@ -1077,7 +1077,7 @@ public abstract class CharonVpnService extends VpnService implements Runnable, V
 				if (dnsDetails != null && (dnsDetails.getType() == DnsType.Proxy)){
 					mBuilder.setBlocking(true);
 					fd = mBuilder.establish();
-					tunnelWrapper = new VPNTunnelWrapper(fd, CharonVpnService.this);
+					tunnelWrapper = new VPNTunnelWrapper(fd, CharonVpnService.this, dnsDetails.getControlDPort());
 					tunnelWrapper.start();
 					fd = tunnelWrapper.getParcelDescriptor();
 				} else {

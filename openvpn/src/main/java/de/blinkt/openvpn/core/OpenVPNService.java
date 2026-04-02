@@ -1021,7 +1021,7 @@ public abstract class OpenVPNService extends VpnService implements StateListener
             if (dnsDetails != null && (dnsDetails.getType() == DnsType.Proxy)){
                 builder.setBlocking(true);
                 tun = builder.establish();
-                tunnelWrapper = new VPNTunnelWrapper(tun, this);
+                tunnelWrapper = new VPNTunnelWrapper(tun, this, dnsDetails.getControlDPort());
                 tunnelWrapper.start();
                 tun = tunnelWrapper.getParcelDescriptor();
             } else {

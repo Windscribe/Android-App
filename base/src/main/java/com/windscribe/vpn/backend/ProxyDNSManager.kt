@@ -8,12 +8,16 @@ import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.exceptions.WindScribeException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileOutputStream
+import java.net.DatagramSocket
+import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 class ProxyDNSManager(
     val scope: CoroutineScope,
@@ -30,6 +34,10 @@ class ProxyDNSManager(
     var invalidConfig = false
     private var isRunning = AtomicBoolean(false)
     private val logger = LoggerFactory.getLogger("vpn")
+    private val activePort = AtomicInteger(5355)
+
+    /** Returns the port ctrld is currently configured to listen on. */
+    fun getListenPort(): Int = activePort.get()
 
 
     private fun updateControlDConfig() {
@@ -44,6 +52,7 @@ class ProxyDNSManager(
             val staticConfig = appContext.assets.open("config.toml").bufferedReader().readText()
             val listenPort = findAvailablePort()
                 ?: throw WindScribeException("Unable to find port to start ControlD cli.")
+            activePort.set(listenPort.toInt())
             val listenerInfo = staticConfig.replace("5355", listenPort)
             val configData = "$listenerInfo\n$upStreamInfo".encodeToByteArray()
             logger.debug("Configuring controlD with: $upStreamInfo \nListenPort: $listenPort")
@@ -105,6 +114,33 @@ class ProxyDNSManager(
             isRunning.set(false)
         }
         controlDJob?.start()
+        waitForControlDReady()
+    }
+
+    /**
+     * Waits for ctrld to be reachable on its listen port before returning.
+     * Polls every 100ms for up to 5 seconds.
+     */
+    private suspend fun waitForControlDReady() {
+        val port = activePort.get()
+        val maxAttempts = 50
+        for (i in 1..maxAttempts) {
+            try {
+                DatagramSocket().use { socket ->
+                    socket.connect(InetSocketAddress("127.0.0.1", port))
+                    socket.soTimeout = 100
+                }
+                // Also verify via native check
+                if (cdLib.isCdRunning()) {
+                    logger.debug("ControlD is ready on port $port after ${i * 100}ms.")
+                    return
+                }
+            } catch (e: Exception) {
+                // Not ready yet
+            }
+            delay(100)
+        }
+        logger.warn("ControlD may not be ready after ${maxAttempts * 100}ms on port $port. Proceeding anyway.")
     }
 
     suspend fun stopControlD() {

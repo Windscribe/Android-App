@@ -351,7 +351,7 @@ public final class GoBackend implements Backend {
                 ParcelFileDescriptor tun = builder.establish();
                 if (tun == null)
                     throw new BackendException(Reason.TUN_CREATION_ERROR);
-                tunnelWrapper = new VPNTunnelWrapper(tun, service);
+                tunnelWrapper = new VPNTunnelWrapper(tun, service, dnsDetails.getControlDPort());
                 tunnelWrapper.start();
                 ParcelFileDescriptor wrappedTun = tunnelWrapper.getParcelDescriptor();
                 Log.d(TAG, "Go backend " + wgVersion());
@@ -440,6 +440,10 @@ public final class GoBackend implements Backend {
         @Nullable
         public DNSDetails getDnsDetails() {
             return null;
+        }
+
+        public int getControlDPort() {
+            return 5355;
         }
 
         public Builder getBuilder() {
