@@ -103,4 +103,8 @@ class WireGuardWrapperService : GoBackend.VpnService() {
     override fun getDnsDetails(): DNSDetails? {
         return proxyDNSManager.dnsDetails
     }
+
+    override fun getControlDPort(): Int {
+        return proxyDNSManager.getListenPort()
+    }
 }

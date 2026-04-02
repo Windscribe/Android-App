@@ -31,6 +31,8 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -46,13 +48,19 @@ public class VPNTunnelWrapper {
     private final ByteBuffer socketBuffer = ByteBuffer.allocateDirect(6400);
     private final ParcelFileDescriptor parcelFileDescriptor;
     private final BlockingQueue<Packet> dnsPackets = new LinkedBlockingQueue<>(300);
-    InetSocketAddress controlDAddress = new InetSocketAddress("127.0.0.1", 5355);
+    private static final int DNS_READ_TIMEOUT_MS = 5000;
+    private InetSocketAddress controlDAddress;
     private ParcelFileDescriptor socketFileDescriptor;
     private ParcelFileDescriptor detachFileDescriptor;
     private DatagramChannel controlDChannel;
     private Boolean byPassControlD = true;
 
     public VPNTunnelWrapper(ParcelFileDescriptor parcelFileDescriptor, VpnService vpnService) throws ErrnoException, IOException {
+        this(parcelFileDescriptor, vpnService, 5355);
+    }
+
+    public VPNTunnelWrapper(ParcelFileDescriptor parcelFileDescriptor, VpnService vpnService, int controlDPort) throws ErrnoException, IOException {
+        this.controlDAddress = new InetSocketAddress("127.0.0.1", controlDPort);
         this.parcelFileDescriptor = parcelFileDescriptor;
         vpnInputChannel = new FileInputStream(parcelFileDescriptor.getFileDescriptor()).getChannel();
         vpnOutputChannel = new FileOutputStream(parcelFileDescriptor.getFileDescriptor()).getChannel();
@@ -230,9 +238,20 @@ public class VPNTunnelWrapper {
     public void readDNSResponseFromControlD(ByteBuffer controlDBuffer) {
         controlDBuffer.clear();
         try {
-            controlDChannel.read(controlDBuffer);
+            controlDChannel.configureBlocking(false);
+            try (Selector selector = Selector.open()) {
+                controlDChannel.register(selector, SelectionKey.OP_READ);
+                if (selector.select(DNS_READ_TIMEOUT_MS) > 0) {
+                    selector.selectedKeys().clear();
+                    controlDChannel.read(controlDBuffer);
+                } else {
+                    log("DNS read timed out after " + DNS_READ_TIMEOUT_MS + "ms");
+                }
+            } finally {
+                controlDChannel.configureBlocking(true);
+            }
         } catch (IOException e) {
-            log(e.getMessage());
+            log("DNS read error: " + e.getMessage());
         }
     }
 
