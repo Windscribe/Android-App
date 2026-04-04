@@ -68,6 +68,7 @@ class UpgradePresenterImpl @Inject constructor(
     private var mPurchase: Purchase? = null
     private var notificationAction: PushNotificationAction? = null
     private var mobileBillingPlans: List<BillingPlans> = ArrayList()
+    private var paymentToken: String? = null
     private val logger = LoggerFactory.getLogger("basic")
 
     private suspend fun getUserSessionData(): UserSessionResponse {
@@ -141,6 +142,14 @@ class UpgradePresenterImpl @Inject constructor(
     }
 
     private fun launchPurchaseFlowWithAccountID(productDetailsParams: List<BillingFlowParams.ProductDetailsParams>) {
+        // Use the server-generated payment_token (UUID) from /MobileBillingPlans if available.
+        val token = paymentToken
+        if (token != null) {
+            logger.info("Using server-generated payment token as account ID.")
+            upgradeView.startPurchaseFlow(productDetailsParams, token)
+            return
+        }
+        // Fallback: payment_token not yet available (older API versions)
         activityScope.launch(Dispatchers.IO) {
             try {
                 val userSessionResponse = getUserSessionData()
@@ -149,12 +158,12 @@ class UpgradePresenterImpl @Inject constructor(
                     android.util.Base64.NO_WRAP or android.util.Base64.URL_SAFE
                 )
                 withContext(Dispatchers.Main) {
-                    logger.info("Generated encrypted account ID.")
+                    logger.info("Falling back to base64 account ID.")
                     upgradeView.startPurchaseFlow(productDetailsParams, accountID)
                 }
             } catch (_: Exception) {
                 withContext(Dispatchers.Main) {
-                    logger.info("Failed to generate encrypted account ID.")
+                    logger.info("Failed to generate account ID.")
                     upgradeView.startPurchaseFlow(productDetailsParams, null)
                 }
             }
@@ -478,6 +487,7 @@ class UpgradePresenterImpl @Inject constructor(
         val inAppSkuList: MutableList<String> = ArrayList()
         if (billingPlanResponse.plansList.isNotEmpty()) {
             mobileBillingPlans = billingPlanResponse.plansList
+            paymentToken = billingPlanResponse.paymentToken
             logger.debug("Getting in app skus from billing plan...")
             for (billingPlan in mobileBillingPlans) {
                 logger.debug("Billing plan: {}", billingPlan)

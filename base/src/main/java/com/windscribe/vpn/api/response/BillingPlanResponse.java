@@ -28,6 +28,10 @@ public class BillingPlanResponse {
     @Expose
     private OverriddenPlans overriddenPlans;
 
+    @SerializedName("payment_token")
+    @Expose
+    private String paymentToken;
+
     @SuppressWarnings("FieldMayBeFinal")
     @SerializedName("version")
     @Expose
@@ -39,6 +43,10 @@ public class BillingPlanResponse {
 
     public OverriddenPlans getOverriddenPlans() {
         return overriddenPlans;
+    }
+
+    public @Nullable String getPaymentToken() {
+        return paymentToken;
     }
 
     public int getVersion() {

@@ -25,6 +25,7 @@ import com.windscribe.tv.email.AddEmailActivity
 import com.windscribe.tv.upgrade.PlansFragment.Companion.newInstance
 import com.windscribe.tv.welcome.WelcomeActivity
 import com.windscribe.tv.windscribe.WindscribeActivity
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.billing.*
 import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
@@ -235,8 +236,10 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
     ) {
         val builder =
             BillingFlowParams.newBuilder().setProductDetailsParamsList(productDetailsParams)
-        accountID?.let { builder.setObfuscatedAccountId(it) }
-        logger.info("Launching billing flow...")
+        val obfuscatedId = accountID ?: appContext.preference.deviceUuid
+        if (!obfuscatedId.isNullOrEmpty()) {
+            builder.setObfuscatedAccountId(obfuscatedId)
+        }
         presenter.setPurchaseFlowState(PurchaseState.IN_PROCESS)
         googleBillingManager.launchBillingFlow(this, builder.build())
     }
