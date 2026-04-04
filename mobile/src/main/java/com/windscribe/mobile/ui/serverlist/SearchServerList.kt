@@ -198,7 +198,6 @@ private fun DataCenterItem(
     connectionViewModel: ConnectionViewmodel,
     homeViewmodel: HomeViewmodel
 ) {
-    val userState by homeViewmodel.userState.collectAsState()
     val favouriteState by viewModel.favouriteListState.collectAsState()
     var isFavorite = false
     if (favouriteState is ListState.Success) {
@@ -213,7 +212,7 @@ private fun DataCenterItem(
     )
     val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     val interactionSource = remember { MutableInteractionSource() }
-    val hasServers by viewModel.observeDatacenterServers(item.id).collectAsState(initial = false)
+    val serverCount by viewModel.observeDatacenterServerCount(item.id).collectAsState(initial = 0)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -228,7 +227,7 @@ private fun DataCenterItem(
             .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        DataCenterIcon(item, userState, dataCenterHealth, showLocationLoad, hasServers)
+        DataCenterIcon(item, dataCenterHealth, showLocationLoad, serverCount)
         Spacer(modifier = Modifier.width(8.dp))
         DataCenterName("${item.nodeName} ${item.nickName}", Modifier.weight(1f))
         if (item.linkSpeed == 10000) {

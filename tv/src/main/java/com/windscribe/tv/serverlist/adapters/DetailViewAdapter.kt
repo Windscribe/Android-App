@@ -21,6 +21,8 @@ import com.windscribe.tv.serverlist.detail.DetailListener
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerNodeListOverLoaded
 import com.windscribe.vpn.serverlist.entity.Datacenter
+import com.windscribe.vpn.serverlist.entity.DatacenterStatus
+import com.windscribe.vpn.serverlist.entity.DatacenterStatusHelper
 import com.windscribe.vpn.serverlist.entity.Favourite
 import com.windscribe.vpn.serverlist.entity.PingTime
 import com.windscribe.vpn.serverlist.entity.ServerListData
@@ -49,15 +51,17 @@ class DetailViewAdapter(
                 latencyView.text =
                     latencyView.resources.getString(com.windscribe.vpn.R.string.ping_time, pingTime)
             }
+            // Determine datacenter status
+            val serverCount = dataDetails.serverCountMap[city.id] ?: 0
+            val status = DatacenterStatusHelper.getStatus(city, serverCount)
+            val requiresPro = DatacenterStatusHelper.requiresPro(city, serverCount)
+
+            // Show pro icon if user is not premium and datacenter requires Pro
             if (isPremiumUser) {
                 btnFav.visibility = View.VISIBLE
                 detailStar.visibility = View.INVISIBLE
             } else {
-                if (city.pro == 1) {
-                    detailStar.visibility = View.VISIBLE
-                } else {
-                    detailStar.visibility = View.INVISIBLE
-                }
+                detailStar.visibility = if (requiresPro) View.VISIBLE else View.INVISIBLE
             }
 
             city.let { selectedCity ->
@@ -70,12 +74,13 @@ class DetailViewAdapter(
                     PorterDuff.Mode.MULTIPLY
                 )
                 btnConnect.setOnClickListener {
-                    if (!dataDetails.isProUser && selectedCity.pro == 1) {
-                        listener.onConnectClick(selectedCity)
-                    } else if (!hasServersForCity(selectedCity)) {
-                        listener.onDisabledClick()
-                    } else {
-                        listener.onConnectClick(selectedCity)
+                    when (status) {
+                        DatacenterStatus.Pro, DatacenterStatus.UnderMaintenance -> {
+                            listener.onDisabledClick()
+                        }
+                        DatacenterStatus.Available -> {
+                            listener.onConnectClick(selectedCity)
+                        }
                     }
                 }
                 btnFav.setOnClickListener {
@@ -91,13 +96,12 @@ class DetailViewAdapter(
                 btnConnect.onFocusChangeListener =
                     View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
                         selectedBackground(hasFocus)
-                        if (!dataDetails.isProUser && selectedCity.pro == 1) {
-                            setHighlightText(appContext.getString(com.windscribe.vpn.R.string.upgrade), hasFocus)
-                        } else if (!hasServersForCity(selectedCity)) {
-                            setHighlightText(appContext.getString(com.windscribe.vpn.R.string.unavailable), hasFocus)
-                        } else {
-                            setHighlightText(appContext.getString(com.windscribe.vpn.R.string.connect), hasFocus)
+                        val text = when (status) {
+                            DatacenterStatus.Pro -> appContext.getString(com.windscribe.vpn.R.string.upgrade)
+                            DatacenterStatus.UnderMaintenance -> appContext.getString(com.windscribe.vpn.R.string.unavailable)
+                            DatacenterStatus.Available -> appContext.getString(com.windscribe.vpn.R.string.connect)
                         }
+                        setHighlightText(text, hasFocus)
                     }
                 btnFav.onFocusChangeListener =
                     View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->

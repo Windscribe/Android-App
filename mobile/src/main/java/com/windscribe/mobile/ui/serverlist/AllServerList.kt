@@ -518,7 +518,6 @@ private fun DataCenterItem(
     connectionViewModel: ConnectionViewmodel,
     homeViewmodel: HomeViewmodel
 ) {
-    val userState by homeViewmodel.userState.collectAsState()
     val favouriteState by viewModel.favouriteListState.collectAsState()
     val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     var isFavorite = false
@@ -532,7 +531,7 @@ private fun DataCenterItem(
             (latencyState as ListState.Success).data.find { it.id == item.id }?.time ?: -1
         } else -1
     )
-    val hasServers by viewModel.observeDatacenterServers(item.id).collectAsState(initial = false)
+    val serverCount by viewModel.observeDatacenterServerCount(item.id).collectAsState(initial = 0)
     val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = Modifier
@@ -547,7 +546,7 @@ private fun DataCenterItem(
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        DataCenterIcon(item, userState, health, showLocationLoad, hasServers)
+        DataCenterIcon(item, health, showLocationLoad, serverCount)
         Spacer(modifier = Modifier.width(8.dp))
         DataCenterName("${item.nodeName} ${item.nickName}", Modifier.weight(1f))
         if (item.p2p != 1) {

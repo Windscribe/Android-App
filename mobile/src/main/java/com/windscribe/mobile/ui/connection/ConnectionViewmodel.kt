@@ -37,6 +37,8 @@ import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.DatacenterAndLocation
+import com.windscribe.vpn.serverlist.entity.DatacenterStatus
+import com.windscribe.vpn.serverlist.entity.DatacenterStatusHelper
 import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.state.NetworkInfoManager
@@ -629,25 +631,45 @@ class ConnectionViewmodelImpl @Inject constructor(
                 return@launch
             }
             try {
-                val isPro = userRepository.user.value?.isPro ?: false
-                if (city.status == 0) {
-                    _goto.emit(HomeGoto.LocationMaintenance)
-                    return@launch
-                }
-                val hasNoServers = localdb.getServersByDatacenter(city.id).isEmpty()
-                if (hasNoServers) {
-                    if (isPro) {
+                // Check datacenter status
+                val serverCount = localdb.getServersByDatacenter(city.id).size
+                val status = DatacenterStatusHelper.getStatus(city, serverCount)
+                when (status) {
+                    DatacenterStatus.UnderMaintenance -> {
                         _goto.emit(HomeGoto.LocationMaintenance)
-                    } else {
-                        _goto.emit(HomeGoto.Upgrade)
+                        return@launch
                     }
+                    DatacenterStatus.Pro -> {
+                        _goto.emit(HomeGoto.Upgrade)
+                        return@launch
+                    }
+                    else -> {}
+                }
+
+                // Check internet connectivity
+                if (!WindUtilities.isOnline()) {
+                    logger.info("Error: no internet available to connect.")
+                    showToast(com.windscribe.vpn.R.string.no_internet)
                     return@launch
                 }
-                val eligibleToConnect =
-                    checkEligibility(datacenterAndLocation.datacenter.pro, false, datacenterAndLocation.datacenter.getStatus())
+
+                // Check account status
+                val user = userRepository.user.value
+                if (user?.accountStatus == User.AccountStatus.Expired) {
+                    logger.info("Error: account status is expired and can not connect to this datacenter")
+                    val resetDate = user.nextResetDate() ?: ""
+                    _goto.emit(HomeGoto.Expired(resetDate))
+                    return@launch
+                }
+                if (user?.accountStatus == User.AccountStatus.Banned) {
+                    logger.info("Error: account status is banned and can not connect to this datacenter.")
+                    _goto.emit(HomeGoto.Banned)
+                    return@launch
+                }
+
+                // Verify pinned node exists (if favourite)
                 if (isFav) {
                     val favourite = localdb.getFavouritesAsync().firstOrNull { it.id == city.id }
-                    // Only check for pinned node if this favourite has a pinned IP
                     if (favourite?.pinnedIp != null && favourite.pinnedNodeIp != null) {
                         val nodes = localdb.getServersByDatacenter(city.id)
                         val nodeExists = nodes.any { it.hostname == favourite.pinnedNodeIp }
@@ -660,20 +682,18 @@ class ConnectionViewmodelImpl @Inject constructor(
                         }
                     }
                 }
-                if (eligibleToConnect) {
-                    preferences.globalUserConnectionPreference = true
-                    preferences.isConnectingToStaticIp = false
-                    preferences.isConnectingToConfigured = false
-                    saveLastLocation(datacenterAndLocation)
-                    logger.debug("Attempting to connect")
-                    appScope.launch {
-                        autoConnectionManager.connectInForeground()
-                    }
-                } else {
-                    logger.info("User can not connect to city location.")
+
+                // All checks passed - connect
+                preferences.globalUserConnectionPreference = true
+                preferences.isConnectingToStaticIp = false
+                preferences.isConnectingToConfigured = false
+                saveLastLocation(datacenterAndLocation)
+                logger.debug("Attempting to connect")
+                appScope.launch {
+                    autoConnectionManager.connectInForeground()
                 }
 
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 showToast("Unable to find selected location in database. Update server list.")
             }
         }
@@ -689,18 +709,46 @@ class ConnectionViewmodelImpl @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val eligibleToConnect = checkEligibility(1, true, staticRegion.status ?: 1)
-                if (eligibleToConnect) {
-                    preferences.globalUserConnectionPreference = true
-                    preferences.isConnectingToStaticIp = true
-                    preferences.isConnectingToConfigured = false
-                    saveLastLocation(staticRegion)
-                    logger.debug("Attempting to connect..")
-                    appScope.launch {
-                        autoConnectionManager.connectInForeground()
-                    }
-                } else {
-                    logger.info("User can not connect to location right now.")
+                // Check static IP availability
+                val status = staticRegion.status ?: 1
+                if (status == NetworkKeyConstants.SERVER_STATUS_TEMPORARILY_UNAVAILABLE || status == 0) {
+                    logger.info("Error: Static IP is temporarily unavailable.")
+                    showToast("Location temporary unavailable.")
+                    _goto.emit(HomeGoto.LocationMaintenance)
+                    return@launch
+                }
+
+                // Check Pro subscription (required)
+                val isPro = userRepository.user.value?.isPro ?: false
+                if (!isPro) {
+                    logger.info("Static IP requires Pro subscription")
+                    _goto.emit(HomeGoto.Upgrade)
+                    return@launch
+                }
+
+                // Check internet connectivity
+                if (!WindUtilities.isOnline()) {
+                    logger.info("Error: no internet available.")
+                    showToast(com.windscribe.vpn.R.string.no_internet)
+                    return@launch
+                }
+
+                // Check account status (banned only)
+                val user = userRepository.user.value
+                if (user?.accountStatus == User.AccountStatus.Banned) {
+                    logger.info("Error: account status is banned.")
+                    _goto.emit(HomeGoto.Banned)
+                    return@launch
+                }
+
+                // All checks passed - connect
+                preferences.globalUserConnectionPreference = true
+                preferences.isConnectingToStaticIp = true
+                preferences.isConnectingToConfigured = false
+                saveLastLocation(staticRegion)
+                logger.debug("Attempting to connect..")
+                appScope.launch {
+                    autoConnectionManager.connectInForeground()
                 }
 
             } catch (e: Exception) {
@@ -719,6 +767,14 @@ class ConnectionViewmodelImpl @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                // Check internet connectivity
+                if (!WindUtilities.isOnline()) {
+                    logger.info("Error: no internet available.")
+                    showToast(com.windscribe.vpn.R.string.no_internet)
+                    return@launch
+                }
+
+                // Setup config connection
                 locationRepository.setSelectedCity(config.getPrimaryKey())
                 saveLastLocation(config)
                 preferences.globalUserConnectionPreference = true
@@ -762,52 +818,6 @@ class ConnectionViewmodelImpl @Inject constructor(
 
     override fun clearToast() {
         _toastMessage.value = ToastMessage.None
-    }
-
-    private fun checkEligibility(isPro: Int, isStaticIp: Boolean, serverStatus: Int): Boolean {
-        // Check Internet
-        if (!WindUtilities.isOnline()) {
-            logger.info("Error: no internet available.")
-            showToast(com.windscribe.vpn.R.string.no_internet)
-            return false
-        }
-        // User account status
-        val user = userRepository.user.value
-        if (user?.accountStatus == User.AccountStatus.Expired && !isStaticIp) {
-            logger.info("Error: account status is expired.")
-            val resetDate = user.nextResetDate() ?: ""
-            viewModelScope.launch {
-                _goto.emit(HomeGoto.Expired(resetDate))
-            }
-            return false
-        }
-        if (user?.accountStatus == User.AccountStatus.Banned) {
-            logger.info("Error: account status is banned.")
-            viewModelScope.launch {
-                _goto.emit(HomeGoto.Banned)
-            }
-            return false
-        }
-        // Does user own this location
-        if (preferences.userStatus != UserStatusConstants.USER_STATUS_PREMIUM && isPro == 1 && !isStaticIp) {
-            logger.info("Location is pro but user is not. Opening upgrade activity.")
-            viewModelScope.launch {
-                _goto.emit(HomeGoto.Upgrade)
-            }
-            return false
-        }
-        // Set Static status
-        preferences.isConnectingToStaticIp = isStaticIp
-        preferences.isConnectingToConfigured = false
-        if (serverStatus == NetworkKeyConstants.SERVER_STATUS_TEMPORARILY_UNAVAILABLE || (isStaticIp && serverStatus == 0)) {
-            logger.info("Error: Server is temporary unavailable.")
-            showToast("Location temporary unavailable.")
-            viewModelScope.launch {
-                _goto.emit(HomeGoto.LocationMaintenance)
-            }
-            return false
-        }
-        return true
     }
 
     private fun fetchBestLocation() {
