@@ -68,10 +68,11 @@ class FavouriteAdapter(
                 )
                 btnConnect.setOnClickListener {
                     when (status) {
-                        DatacenterStatus.Pro, DatacenterStatus.UnderMaintenance -> {
+                        DatacenterStatus.UnderMaintenance -> {
                             listener.onDisabledClick()
                         }
-                        DatacenterStatus.Available -> {
+                        DatacenterStatus.Pro, DatacenterStatus.Available -> {
+                            // Pro locations go through onConnectClick → attemptConnection → upgrade logic
                             listener.onFavouriteDatacenterClick(city)
                         }
                     }
