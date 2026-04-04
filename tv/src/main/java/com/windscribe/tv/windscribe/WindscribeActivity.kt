@@ -530,35 +530,41 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
     }
 
     private fun onFadeIn() {
-        if (!isDestroyed && binding.flagAlpha.isAttachedToWindow) {
-            binding.flagAlpha.animate().alpha(0.5f).setDuration(500).withEndAction {}
+        runOnUiThread {
+            if (!isDestroyed && binding.flagAlpha.isAttachedToWindow) {
+                binding.flagAlpha.animate().alpha(0.5f).setDuration(500).withEndAction {}
+            }
         }
     }
 
     private fun onFadeOut(flagIconResource: Int) {
-        if (!isDestroyed && binding.flagAlpha.isAttachedToWindow) {
-            binding.flagAlpha.animate()
-                .alpha(0.0f)
-                .setDuration(500)
-                .withEndAction {
-                    if (!isDestroyed) setFlag(flagIconResource)
-                }
-        } else {
-            // View not attached - just set flag directly without animation
-            setFlag(flagIconResource)
+        runOnUiThread {
+            if (!isDestroyed && binding.flagAlpha.isAttachedToWindow) {
+                binding.flagAlpha.animate()
+                    .alpha(0.0f)
+                    .setDuration(500)
+                    .withEndAction {
+                        if (!isDestroyed) setFlag(flagIconResource)
+                    }
+            } else {
+                // View not attached - just set flag directly without animation
+                setFlag(flagIconResource)
+            }
         }
     }
 
     private fun setFlag(flagIconResource: Int) {
-        if (!isDestroyed) {
-            try {
-                Glide.with(this@WindscribeActivity)
-                    .load(ResourcesCompat.getDrawable(resources, flagIconResource, theme))
-                    .dontAnimate()
-                    .into(binding.flagAlpha)
-                onFadeIn()
-            } catch (e: Exception) {
-                mainLogger.error("Error loading flag: ${e.message}")
+        runOnUiThread {
+            if (!isDestroyed) {
+                try {
+                    Glide.with(this@WindscribeActivity)
+                        .load(ResourcesCompat.getDrawable(resources, flagIconResource, theme))
+                        .dontAnimate()
+                        .into(binding.flagAlpha)
+                    onFadeIn()
+                } catch (e: Exception) {
+                    mainLogger.error("Error loading flag: ${e.message}")
+                }
             }
         }
     }

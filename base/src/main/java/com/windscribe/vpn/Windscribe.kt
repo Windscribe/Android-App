@@ -49,7 +49,6 @@ import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.state.WindscribeReviewManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
-import de.blinkt.openvpn.core.PRNGFixes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -156,10 +155,6 @@ open class Windscribe : MultiDexApplication() {
 
         preference.isNewApplicationInstance = true
         WindContextWrapper.setAppLocale(this)
-        try {
-            PRNGFixes.apply()
-        } catch (ignored: Exception) {
-        }
         setUpNewInstallation()
         initStrongswan()
         if (BuildConfig.APP_ID.isNotEmpty()) {
