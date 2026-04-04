@@ -28,12 +28,7 @@ class WindscribeReviewManagerImpl(
             userRepository.userInfo.collectLatest {
                 delay(3000)
                 val dataUsed = it.dataUsed.toDouble() / (1024 * 1024 * 1024)
-                logger.debug(
-                    "Data Used {}, Days since login {} Request app review: {}",
-                    dataUsed,
-                    daysSinceLogin(),
-                    notAlreadyShown()
-                )
+                // Check if user is eligible for review
                 if (dataUsed > 1.0 && daysSinceLogin() >= 2 && notAlreadyShown()) {
                     reviewManager.requestReviewFlow().addOnCompleteListener { task ->
                         if (task.isSuccessful) {

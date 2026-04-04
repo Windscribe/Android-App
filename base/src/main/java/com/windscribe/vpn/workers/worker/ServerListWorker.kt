@@ -45,7 +45,6 @@ class ServerListWorker(context: Context, workerParams: WorkerParameters) : Corou
 
         return runCatching {
             serverListRepository.update()
-            serverListRepository.load()
             logger.debug("Successfully updated server list.")
             mainScope.launch {
                 handleLocationUpdate()

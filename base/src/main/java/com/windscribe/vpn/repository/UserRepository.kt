@@ -105,7 +105,6 @@ class UserRepository(
 
     fun whatChanged(userSessionResponse: UserSessionResponse): List<Boolean> {
         return user.value?.let {
-            logger.debug("Comparing user information.")
             val newUser = User(userSessionResponse)
             val locationHashChanged = it.locationHash != userSessionResponse.locationHash
             val alcListChanged = it.alcList != newUser.alcList
@@ -114,7 +113,11 @@ class UserRepository(
             val sipChanged = it.sipCount != newUser.sipCount
             val migrationRequired = preferenceHelper.migrationRequired
             val emailStatusChanged = it.emailStatus != newUser.emailStatus
-            logger.debug("What changed: Server list: $locationHashChanged | Alc: $alcListChanged | Sip: $sipChanged | User Status: $userStatusChanged | Account Status: $accountStatusChanged | Migration: $migrationRequired | Email Status: $emailStatusChanged")
+
+            // Only log if something actually changed
+            if (locationHashChanged || alcListChanged || sipChanged || userStatusChanged || accountStatusChanged || migrationRequired || emailStatusChanged) {
+                logger.debug("What changed: Server list: $locationHashChanged | Alc: $alcListChanged | Sip: $sipChanged | User Status: $userStatusChanged | Account Status: $accountStatusChanged | Migration: $migrationRequired | Email Status: $emailStatusChanged")
+            }
             return listOf(
                 alcListChanged or locationHashChanged,
                 sipChanged,
@@ -204,12 +207,10 @@ class UserRepository(
     private suspend fun handleAmneziaAutoEnable(sessionResponse: UserSessionResponse) {
         // Skip if user has manually configured anti-censorship settings
         if (preferenceHelper.isAntiCensorshipManualMode) {
-            logger.debug("Skipping Amnezia auto-enable - user is in manual mode")
             return
         }
 
         val configId = sessionResponse.amneziaWgConfigId
-        logger.debug("Amnezia auto-enable check - config_id from server: $configId")
 
         if (configId.isNullOrEmpty()) {
             // No recommendation - auto-disable

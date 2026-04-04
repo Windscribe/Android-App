@@ -89,7 +89,7 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
 
     private fun updateIfRequired(changed: List<Boolean>, userSessionResponse: UserSessionResponse) {
         userRepository.reload(userSessionResponse) {
-            // ALC changed
+            // Server list changed (ALC or location hash)
             if (changed[0]) {
                 logger.debug("ALC or location hash changed")
                 preferencesHelper.migrationRequired = true
@@ -100,13 +100,19 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
                 preferencesHelper.migrationRequired = true
                 wgConfigRepository.unregisterKey()
             }
+
+            // Update server list when: server list changed, account changed, or migration required
+            // All these cases set migrationRequired = true which forces full server refresh
+            if (changed[0] || changed[2] || changed[3]) {
+                workManager.updateServerList()
+            }
+
             // User or account status changed or update required
             if (changed[2] || changed[3]) {
                 workManager.updateStaticIpList()
                 workManager.updateCredentialsUpdate()
                 workManager.updateNotifications()
             }
-            workManager.updateServerList()
             val storedSip = localDbInterface.getAllStaticRegions()
             val hasStaticCredential = storedSip.firstOrNull()?.credentials
             val storedSipCount = storedSip.size
@@ -142,14 +148,13 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
     }
 
     private fun handleAccountStatusChange(user: User) {
-        logger.info("User account status: ${user.accountStatus} is VPN Connected: ${vpnStateManager.isVPNConnected()}")
         val shouldDisconnect = when (user.accountStatus) {
             User.AccountStatus.Banned -> vpnStateManager.isVPNConnected()
             User.AccountStatus.Expired -> vpnStateManager.isVPNConnected() && !preferencesHelper.isConnectingToConfigured
             else -> false
         }
         if (shouldDisconnect) {
-            logger.info("Disconnecting...")
+            logger.info("Disconnecting due to account status: ${user.accountStatus}")
             vpnController.disconnectAsync()
         }
         if (user.accountStatus == User.AccountStatus.Banned || user.accountStatus == User.AccountStatus.Expired) {
