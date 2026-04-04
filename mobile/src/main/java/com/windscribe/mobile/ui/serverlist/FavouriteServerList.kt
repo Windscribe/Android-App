@@ -52,6 +52,7 @@ import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.vpn.commonutils.FlagIconResource
+import com.windscribe.vpn.serverlist.entity.DatacenterStatusHelper
 import kotlin.collections.set
 
 private const val MIN_HEALTH_VALUE = 50
@@ -124,9 +125,8 @@ private fun ListItemView(
     connectionViewmodel: ConnectionViewmodel,
     homeViewmodel: HomeViewmodel
 ) {
-    val userState by homeViewmodel.userState.collectAsState()
-    // V2: Health is now at Server level, calculate from servers for this city
     val health by viewModel.observeAverageHealth(item.city.id).collectAsState(initial = MIN_HEALTH_VALUE)
+    val serverCount by viewModel.observeDatacenterServerCount(item.city.id).collectAsState(initial = 0)
     val latencyState by viewModel.latencyListState.collectAsState()
     val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     val latency by rememberUpdatedState(
@@ -134,6 +134,7 @@ private fun ListItemView(
             (latencyState as ListState.Success).data.find { it.id == item.id }?.time ?: -1
         } else -1
     )
+    val requiresPro = DatacenterStatusHelper.requiresPro(item.city, serverCount)
     val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = Modifier
@@ -150,7 +151,7 @@ private fun ListItemView(
         LocationSplitBorderCircle(
             health = health,
             flagRes = FlagIconResource.getSmallFlag(item.countryCode),
-            showProIcon = userState !is UserState.Pro && item.city.pro == 1,
+            showProIcon = requiresPro,
             showLocationLoad = showLocationLoad
         )
         Spacer(modifier = Modifier.width(16.dp))

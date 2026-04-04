@@ -229,6 +229,11 @@ class WelcomeActivity :
     }
 
     private fun replaceFragment(fragment: Fragment, addToBackStack: Boolean) {
+        // Check if activity is still alive
+        if (isDestroyed || isFinishing) {
+            return
+        }
+
         val transaction = supportFragmentManager
             .beginTransaction()
             .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
@@ -236,7 +241,7 @@ class WelcomeActivity :
         if (addToBackStack) {
             transaction.addToBackStack(fragment.javaClass.name)
         }
-        transaction.commit()
+        transaction.commitAllowingStateLoss()
     }
 
     override fun setLoginRegistrationError(error: String) {
@@ -295,13 +300,18 @@ class WelcomeActivity :
     }
 
     override fun showNoEmailAttentionFragment() {
+        // Check if activity is still alive
+        if (isDestroyed || isFinishing) {
+            return
+        }
+
         val noEmailAttentionFragment = NoEmailAttentionFragment()
         noEmailAttentionFragment.enterTransition = Slide(Gravity.BOTTOM)
             .addTarget(R.id.email_fragment_container)
         supportFragmentManager.beginTransaction()
             .add(R.id.fragment_container, noEmailAttentionFragment)
             .addToBackStack(noEmailAttentionFragment.javaClass.name)
-            .commit()
+            .commitAllowingStateLoss()
     }
 
     override fun showToast(message: String) {
@@ -350,9 +360,14 @@ class WelcomeActivity :
         email: String?,
         isSignup: Boolean
     ) {
+        // Check if activity is still alive before showing dialog
+        if (isDestroyed || isFinishing) {
+            return
+        }
+
         // Dismiss any existing captcha dialog first
         val existingDialog = supportFragmentManager.findFragmentByTag("CaptchaDialog") as? CaptchaFragment
-        existingDialog?.dismiss()
+        existingDialog?.dismissAllowingStateLoss()
 
         val dialog = CaptchaFragment.newInstance(
             username,
@@ -362,7 +377,13 @@ class WelcomeActivity :
             email,
             isSignup
         )
-        dialog.show(supportFragmentManager, "CaptchaDialog")
+
+        // Use showNow with state loss allowed to prevent crashes
+        try {
+            dialog.show(supportFragmentManager, "CaptchaDialog")
+        } catch (e: IllegalStateException) {
+            // Ignore if state already saved
+        }
     }
 
     override fun onAuthSignUpClick(username: String, password: String, email: String?) {

@@ -164,7 +164,7 @@ class WindscribePresenterImpl @Inject constructor(
                     localDbInterface.getDatacenterAndLocation(cityID)
                 }
                 if (datacenterAndLocation != null) {
-                    attemptConnection(datacenterAndLocation)
+                    attemptConnection(datacenterAndLocation)  // Called in coroutine scope
                 } else {
                     logger.debug("Could not find selected location in database.")
                     windscribeView.showToast("Could not find selected location in database.")
@@ -542,28 +542,48 @@ class WindscribePresenterImpl @Inject constructor(
         }
     }
 
-    private fun attemptConnection(datacenterAndLocation: DatacenterAndLocation) {
-        if (isLocationNotAvailableToUser(datacenterAndLocation.datacenter.pro == 1)) {
-            logger.info("Location selected is a pro node location, opening upgrade dialog...")
-            windscribeView.openUpgradeActivity()
-            return
+    private suspend fun attemptConnection(datacenterAndLocation: DatacenterAndLocation) {
+        // Check datacenter status
+        val serverCount = withContext(Dispatchers.IO) {
+            localDbInterface.getServersByDatacenter(datacenterAndLocation.datacenter.id).size
         }
-        if (WindUtilities.isOnline()) {
-            preferencesHelper.isConnectingToStaticIp = false
-            selectedLocation = LastSelectedLocation(
-                datacenterAndLocation.datacenter.id,
-                datacenterAndLocation.datacenter.nodeName,
-                datacenterAndLocation.datacenter.nickName, datacenterAndLocation.location.countryCode
-            )
-            selectedLocation?.let {
-                Util.saveSelectedLocation(it)
-                locationRepository.setSelectedCity(it.cityId)
+        val status = DatacenterStatusHelper.getStatus(datacenterAndLocation.datacenter, serverCount)
+
+        when (status) {
+            DatacenterStatus.UnderMaintenance -> {
+                logger.info("Location is under maintenance")
+                windscribeView.showToast("Location temporarily unavailable")
+                return
             }
-            vpnController.connectAsync()
-        } else {
+            DatacenterStatus.Pro -> {
+                logger.info("Location requires Pro subscription, opening upgrade dialog...")
+                windscribeView.openUpgradeActivity()
+                return
+            }
+            DatacenterStatus.Available -> {
+                // Continue with connection
+            }
+        }
+
+        // Check internet connectivity
+        if (!WindUtilities.isOnline()) {
             logger.info("User not connected to any network.")
             windscribeView.showToast("Please connect to a network first and retry!")
+            return
         }
+
+        // Connect
+        preferencesHelper.isConnectingToStaticIp = false
+        selectedLocation = LastSelectedLocation(
+            datacenterAndLocation.datacenter.id,
+            datacenterAndLocation.datacenter.nodeName,
+            datacenterAndLocation.datacenter.nickName, datacenterAndLocation.location.countryCode
+        )
+        selectedLocation?.let {
+            Util.saveSelectedLocation(it)
+            locationRepository.setSelectedCity(it.cityId)
+        }
+        vpnController.connectAsync()
     }
 
     private fun attemptConnectionUsingIp(
@@ -689,10 +709,6 @@ class WindscribePresenterImpl @Inject constructor(
             return problematicBrands && VERSION.SDK_INT == VERSION_CODES.P && windscribeView.networkInfo != null && windscribeView.networkInfo?.type == ConnectivityManager.TYPE_ETHERNET
         }
 
-    private fun isLocationNotAvailableToUser(pro: Boolean): Boolean {
-        return pro && preferencesHelper.userStatus != UserStatusConstants.USER_STATUS_PREMIUM
-    }
-
     private fun disconnectFromVPN() {
         activityScope.launch {
             preferencesHelper.globalUserConnectionPreference = false
@@ -703,7 +719,6 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun startVpnConnectionProcess() {
         if (selectedLocation != null) {
-            isLocationNotAvailableToUser(false)
             preferencesHelper.globalUserConnectionPreference = true
             activityScope.launch {
                 autoConnectionManager.connectInForeground()

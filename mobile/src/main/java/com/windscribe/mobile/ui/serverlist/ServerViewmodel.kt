@@ -14,6 +14,7 @@ import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
 import com.windscribe.vpn.serverlist.entity.Datacenter
+import com.windscribe.vpn.serverlist.entity.DatacenterStatusHelper
 import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.Favourite
 import com.windscribe.vpn.serverlist.entity.Location
@@ -92,7 +93,7 @@ abstract class ServerViewModel : ViewModel() {
     abstract fun onExpandStateChanged(id: String, expanded: Boolean)
     abstract fun refresh(serverListType: ServerListType)
     abstract fun observeAverageHealth(dataCenterId: Int): Flow<Int>
-    abstract fun observeDatacenterServers(dataCenterId: Int): Flow<Boolean>
+    abstract fun observeDatacenterServerCount(dataCenterId: Int): Flow<Int>
     abstract fun observeAverageRegionHealth(cities: List<Datacenter>): Flow<Int>
     abstract fun observeRegionPremiumStatus(cities: List<Datacenter>): Flow<Boolean>
 }
@@ -561,15 +562,15 @@ class ServerViewModelImpl(
             .flowOn(Dispatchers.IO)
     }
 
-    override fun observeDatacenterServers(dataCenterId: Int): Flow<Boolean> {
+    override fun observeDatacenterServerCount(dataCenterId: Int): Flow<Int> {
         return serverRepository.serversState
             .map { state ->
                 when (state) {
                     is ServerMapState.Success -> {
                         val servers = state.data[dataCenterId] ?: emptyList()
-                        servers.isNotEmpty()
+                        servers.size
                     }
-                    else -> false
+                    else -> 0
                 }
             }
             .distinctUntilChanged()
@@ -577,11 +578,23 @@ class ServerViewModelImpl(
     }
 
     override fun observeRegionPremiumStatus(cities: List<Datacenter>): Flow<Boolean> {
-        return kotlinx.coroutines.flow.flow {
-            // A region is premium if ALL its cities have pro == 1
-            val isPremium = cities.isNotEmpty() && cities.all { it.pro == 1 }
-            emit(isPremium)
-        }.flowOn(Dispatchers.IO)
+        return serverRepository.serversState
+            .map { state ->
+                if (cities.isEmpty()) return@map false
+
+                when (state) {
+                    is ServerMapState.Success -> {
+                        // A region is premium if ALL its cities require Pro
+                        cities.all { datacenter ->
+                            val serverCount = state.data[datacenter.id]?.size ?: 0
+                            DatacenterStatusHelper.requiresPro(datacenter, serverCount)
+                        }
+                    }
+                    else -> false
+                }
+            }
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
     }
 
     override fun refresh(serverListType: ServerListType) {

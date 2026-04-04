@@ -49,7 +49,6 @@ import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.state.WindscribeReviewManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
-import de.blinkt.openvpn.core.PRNGFixes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -156,10 +155,6 @@ open class Windscribe : MultiDexApplication() {
 
         preference.isNewApplicationInstance = true
         WindContextWrapper.setAppLocale(this)
-        try {
-            PRNGFixes.apply()
-        } catch (ignored: Exception) {
-        }
         setUpNewInstallation()
         initStrongswan()
         if (BuildConfig.APP_ID.isNotEmpty()) {
@@ -265,6 +260,17 @@ open class Windscribe : MultiDexApplication() {
     private fun runTrayMigrationEarly() {
         runBlocking {
             try {
+                // Ensure DataStore directory exists before accessing
+                val dataStoreDir = java.io.File(appContext.filesDir, "datastore")
+                if (!dataStoreDir.exists()) {
+                    logger.debug("Creating DataStore directory: ${dataStoreDir.absolutePath}")
+                    val created = dataStoreDir.mkdirs()
+                    if (!created && !dataStoreDir.exists()) {
+                        logger.error("Failed to create DataStore directory - disk full or permissions issue")
+                        return@runBlocking
+                    }
+                }
+
                 val dataStore = appContext.windscribeDataStore
                 val migration = TrayToDataStoreMigration(appContext, dataStore)
                 when (val result = migration.migrate()) {
@@ -283,6 +289,8 @@ open class Windscribe : MultiDexApplication() {
                         logger.error("Tray migration failed: ${result.message}")
                     }
                 }
+            } catch (e: java.io.IOException) {
+                logger.error("IOException during DataStore initialization - disk full or permissions issue: ${e.message}", e)
             } catch (e: Exception) {
                 logger.error("Unexpected error during Tray migration: ${e.message}", e)
             }
