@@ -53,7 +53,7 @@ class OverlayFocusAware : ConstraintLayout {
             }
         }
         return viewId?.let {
-            return findViewById(it)
+            findViewById<View>(it) ?: focused
         } ?: focused
     }
 

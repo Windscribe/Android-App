@@ -39,6 +39,11 @@ class ErrorPrimaryFragment : Fragment() {
     }
 
     fun add(error: String?, activity: AppCompatActivity, container: Int, addToBackStack: Boolean) {
+        // Check if activity is still alive before committing fragment
+        if (activity.isDestroyed || activity.isFinishing) {
+            return
+        }
+
         val bundle = Bundle()
         bundle.putString("error", error)
         arguments = bundle
@@ -47,7 +52,8 @@ class ErrorPrimaryFragment : Fragment() {
         if (addToBackStack) {
             transaction.addToBackStack(this.javaClass.name)
         }
-        transaction.commit()
+        // Use commitAllowingStateLoss to prevent crashes if activity state is saved
+        transaction.commitAllowingStateLoss()
     }
 
     companion object {

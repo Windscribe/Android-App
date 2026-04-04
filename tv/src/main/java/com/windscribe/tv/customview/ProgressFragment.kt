@@ -37,6 +37,11 @@ class ProgressFragment : Fragment() {
     }
 
     fun add(activity: AppCompatActivity, container: Int, addToBackStack: Boolean) {
+        // Check if activity is still alive before committing fragment
+        if (activity.isDestroyed || activity.isFinishing) {
+            return
+        }
+
         enterTransition = Slide(Gravity.BOTTOM)
             .addTarget(R.id.progress_fragment_container)
         val transaction = activity.supportFragmentManager
@@ -45,7 +50,8 @@ class ProgressFragment : Fragment() {
         if (addToBackStack) {
             transaction.addToBackStack(this.javaClass.name)
         }
-        transaction.commit()
+        // Use commitAllowingStateLoss to prevent crashes if activity state is saved
+        transaction.commitAllowingStateLoss()
     }
 
     fun add(
