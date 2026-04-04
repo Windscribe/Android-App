@@ -265,6 +265,17 @@ open class Windscribe : MultiDexApplication() {
     private fun runTrayMigrationEarly() {
         runBlocking {
             try {
+                // Ensure DataStore directory exists before accessing
+                val dataStoreDir = java.io.File(appContext.filesDir, "datastore")
+                if (!dataStoreDir.exists()) {
+                    logger.debug("Creating DataStore directory: ${dataStoreDir.absolutePath}")
+                    val created = dataStoreDir.mkdirs()
+                    if (!created && !dataStoreDir.exists()) {
+                        logger.error("Failed to create DataStore directory - disk full or permissions issue")
+                        return@runBlocking
+                    }
+                }
+
                 val dataStore = appContext.windscribeDataStore
                 val migration = TrayToDataStoreMigration(appContext, dataStore)
                 when (val result = migration.migrate()) {
@@ -283,6 +294,8 @@ open class Windscribe : MultiDexApplication() {
                         logger.error("Tray migration failed: ${result.message}")
                     }
                 }
+            } catch (e: java.io.IOException) {
+                logger.error("IOException during DataStore initialization - disk full or permissions issue: ${e.message}", e)
             } catch (e: Exception) {
                 logger.error("Unexpected error during Tray migration: ${e.message}", e)
             }
