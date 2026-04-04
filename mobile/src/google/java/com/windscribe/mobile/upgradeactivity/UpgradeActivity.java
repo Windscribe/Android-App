@@ -488,10 +488,10 @@ public class UpgradeActivity extends BaseActivity
     public void startPurchaseFlow(List<BillingFlowParams.ProductDetailsParams> productDetailsParams, String accountID) {
         BillingFlowParams.Builder builder = BillingFlowParams.newBuilder()
                 .setProductDetailsParamsList(productDetailsParams);
-        if (accountID != null) {
-            builder.setObfuscatedAccountId(accountID);
+        String obfuscatedId = accountID != null ? accountID : appContext.preference.getDeviceUuid();
+        if (obfuscatedId != null && !obfuscatedId.isEmpty()) {
+            builder.setObfuscatedAccountId(obfuscatedId);
         }
-        logger.info("Launching billing flow...");
         presenter.setPurchaseFlowState(PurchaseState.IN_PROCESS);
         googleBillingManager.launchBillingFlow(this, builder.build());
     }

@@ -67,6 +67,7 @@ class UpgradePresenterImpl @Inject constructor(
     private var mPushNotificationAction: PushNotificationAction? = null
     private var mobileBillingPlans: List<BillingPlans> = ArrayList()
     private var overriddenPlans: BillingPlanResponse.OverriddenPlans? = null
+    private var paymentToken: String? = null
     private val presenterLog = LoggerFactory.getLogger("billing")
 
     private suspend fun getUserSessionData(): UserSessionResponse {
@@ -138,27 +139,6 @@ class UpgradePresenterImpl @Inject constructor(
         }
     }
 
-    private fun launchPurchaseFlowWithAccountID(productDetailsParams: List<BillingFlowParams.ProductDetailsParams>) {
-        activityScope.launch(Dispatchers.IO) {
-            try {
-                val userSessionResponse = getUserSessionData()
-                val accountID = android.util.Base64.encodeToString(
-                    userSessionResponse.userID.toByteArray(Charsets.UTF_8),
-                    android.util.Base64.NO_WRAP or android.util.Base64.URL_SAFE
-                )
-                withContext(Dispatchers.Main) {
-                    presenterLog.info("Generated encrypted account ID.")
-                    upgradeView?.startPurchaseFlow(productDetailsParams, accountID)
-                }
-            } catch (_: Exception) {
-                withContext(Dispatchers.Main) {
-                    presenterLog.info("Failed to generate encrypted account ID.")
-                    upgradeView?.startPurchaseFlow(productDetailsParams, null)
-                }
-            }
-        }
-    }
-
     override fun onAmazonPurchaseHistoryError(error: String) {
         upgradeView?.hideProgressBar()
         upgradeView?.showBillingError(error)
@@ -224,7 +204,7 @@ class UpgradePresenterImpl @Inject constructor(
     override fun buyGoogleProduct(productDetailsParams: List<BillingFlowParams.ProductDetailsParams>?) {
         if (productDetailsParams != null) {
             presenterLog.info("Starting purchase flow...")
-            launchPurchaseFlowWithAccountID(productDetailsParams)
+            upgradeView?.startPurchaseFlow(productDetailsParams, paymentToken)
         } else {
             presenterLog.debug("sku returned null! This should not happen... Notify user to retry...")
             upgradeView?.showToast(
@@ -403,6 +383,7 @@ class UpgradePresenterImpl @Inject constructor(
         if (billingPlanResponse.plansList.isNotEmpty()) {
             mobileBillingPlans = billingPlanResponse.plansList
             overriddenPlans = billingPlanResponse.overriddenPlans
+            paymentToken = billingPlanResponse.paymentToken
             presenterLog.debug("Getting in app skus from billing plan...")
             for (billingPlan in mobileBillingPlans) {
                 presenterLog.debug("Billing plan: {}", billingPlan)
