@@ -389,6 +389,8 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
     val username = account.username
     val emailState = account.emailState
     val navController = LocalNavController.current
+    val context = LocalContext.current
+    val isHashedAccount = username.startsWith("0x")
 
     Column {
         Text(
@@ -406,8 +408,18 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
             modifier = Modifier
                 .background(
                     color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                    shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+                    shape = if (isHashedAccount) {
+                        RoundedCornerShape(12.dp)
+                    } else {
+                        RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+                    }
                 )
+                .hapticClickable {
+                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    val clip = android.content.ClipData.newPlainText("Username", username)
+                    clipboard.setPrimaryClip(clip)
+                    Toast.makeText(context, "Username copied to clipboard", Toast.LENGTH_SHORT).show()
+                }
                 .padding(14.dp)
         ) {
             Text(
@@ -420,13 +432,16 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 username,
-                style = font16.copy(color = MaterialTheme.colorScheme.preferencesSubtitleColor)
+                style = font16.copy(color = MaterialTheme.colorScheme.preferencesSubtitleColor),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
 
-        Spacer(modifier = Modifier.height(1.dp))
+        if (!isHashedAccount) {
+            Spacer(modifier = Modifier.height(1.dp))
 
-        // Email Section
+            // Email Section
         Column(
             modifier = Modifier
                 .background(
@@ -538,10 +553,11 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
             }
         }
 
-        if (emailState is EmailState.NoEmail) {
-            Spacer(modifier = Modifier.height(14.dp))
-            ActionButton("${stringResource(R.string.add_email)} (${stringResource(R.string.get_10_gb)})") {
-                navController.navigate(Screen.AddEmail.route)
+            if (emailState is EmailState.NoEmail) {
+                Spacer(modifier = Modifier.height(14.dp))
+                ActionButton("${stringResource(R.string.add_email)} (${stringResource(R.string.get_10_gb)})") {
+                    navController.navigate(Screen.AddEmail.route)
+                }
             }
         }
     }

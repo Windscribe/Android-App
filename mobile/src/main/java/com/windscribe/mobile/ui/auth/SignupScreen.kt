@@ -1,13 +1,12 @@
 package com.windscribe.mobile.ui.auth
 
-import NavBar
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.Image
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,13 +17,13 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.ripple
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,8 +33,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -43,24 +40,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.nav.LocalNavController
-import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.common.AppBackground
 import com.windscribe.mobile.ui.common.AppProgressBar
-import androidx.compose.ui.autofill.ContentType
-import com.windscribe.mobile.ui.common.AuthTextField
 import com.windscribe.mobile.ui.common.CaptchaDebugDialog
 import com.windscribe.mobile.ui.common.NextButton
-import com.windscribe.mobile.ui.common.TextButton
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 
@@ -78,6 +72,21 @@ fun SignupScreen(
     viewModel?.isAccountClaim = navController.previousBackStackEntry
         ?.savedStateHandle
         ?.get<Boolean>("isAccountClaim") ?: false
+
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let { viewModel?.onFileSelected(context, it) }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel?.triggerFilePicker?.collect { trigger ->
+            if (trigger) {
+                filePickerLauncher.launch("*/*")
+            }
+        }
+    }
+
     LaunchedEffect(signupState) {
         if (signupState is SignupState.Success) {
             navController.navigate(Screen.Home.route) {
@@ -91,6 +100,11 @@ fun SignupScreen(
                 navController.navigate(Screen.AllProtocolFailedDialog.route)
                 viewModel.clearDialog()
             }
+        }
+    }
+    LaunchedEffect(Unit) {
+        viewModel?.toastMessage?.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
         }
     }
     AppBackground {
@@ -124,210 +138,142 @@ private fun SignupCompactLayout(
     signupState: SignupState,
     viewModel: SignupViewModel? = null
 ) {
+    val context = LocalContext.current
+    val selectedAuthType by viewModel?.selectedAuthType?.collectAsState() ?: remember {
+        mutableStateOf(AuthType.STANDARD)
+    }
+    val accountHash by viewModel?.accountHash?.collectAsState() ?: remember {
+        mutableStateOf("")
+    }
+    val isBackupConfirmed by viewModel?.isBackupConfirmed?.collectAsState() ?: remember {
+        mutableStateOf(false)
+    }
+    val generatedUsername by viewModel?.generatedUsername?.collectAsState() ?: remember {
+        mutableStateOf("")
+    }
+    val generatedPassword by viewModel?.generatedPassword?.collectAsState() ?: remember {
+        mutableStateOf("")
+    }
     val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .imePadding()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        NavBar(stringResource(if (viewModel?.isAccountClaim == false) com.windscribe.vpn.R.string.text_sign_up else com.windscribe.vpn.R.string.sign_up)) {
-            navController.popBackStack()
-        }
-        Spacer(modifier = Modifier.height(16.dp))
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState),
-            verticalArrangement = Arrangement.Top
+                .weight(1f)
+                .verticalScroll(scrollState)
         ) {
-            SignupUsernameTextField(signupState, viewModel)
-            Spacer(modifier = Modifier.height(24.dp))
-            SignupPasswordTextField(signupState, viewModel)
-            Spacer(modifier = Modifier.height(8.dp))
-            Description(stringResource(com.windscribe.vpn.R.string.password_requirement))
             Spacer(modifier = Modifier.height(16.dp))
-            SignupEmailTextField(signupState, viewModel)
-            Spacer(modifier = Modifier.height(8.dp))
-            Description(stringResource(com.windscribe.vpn.R.string.email_description))
-            if (viewModel?.isAccountClaim == false) {
-                Spacer(modifier = Modifier.height(16.dp))
-                VoucherTextField(viewModel)
-                ExpandMenu(stringResource(com.windscribe.vpn.R.string.referred_by_someone)) {
-                    ReferralFeatures()
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ReferralUsernameTextField(viewModel)
+
+            // Header with title and tabs
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier.size(24.dp).clickable {
+                            navController.popBackStack()
+                        },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_back_arrow),
+                            contentDescription = stringResource(com.windscribe.vpn.R.string.back),
+                            tint = AppColors.white,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    Text(
+                        text = stringResource(com.windscribe.vpn.R.string.text_sign_up),
+                        style = font16.copy(fontWeight = FontWeight.SemiBold),
+                        color = AppColors.white
+                    )
+                }
+
+                AuthTabSelector(
+                    selectedTab = selectedAuthType,
+                    onTabSelected = { viewModel?.onAuthTypeChanged(it) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Conditional form rendering based on selected tab
+            when (selectedAuthType) {
+                AuthType.STANDARD -> {
+                    StandardSignupForm(
+                        isUsernameError = isError(signupState, AuthInputFields.Username),
+                        isPasswordError = isError(signupState, AuthInputFields.Password),
+                        isEmailError = isError(signupState, AuthInputFields.Email),
+                        generatedUsername = generatedUsername,
+                        generatedPassword = generatedPassword,
+                        onUsernameChange = { viewModel?.onUsernameChanged(it) },
+                        onPasswordChange = { viewModel?.onPasswordChanged(it) },
+                        onEmailChange = { viewModel?.onEmailChanged(it) },
+                        onVoucherChange = { viewModel?.onVoucherChanged(it) },
+                        onReferralUsernameChange = { viewModel?.onReferralUsernameChanged(it) },
+                        onGenerateUsername = { viewModel?.generateUsername() },
+                        onGeneratePassword = { viewModel?.generatePassword() }
+                    )
+                }
+                AuthType.HASHED -> {
+                    HashedSignupForm(
+                        accountHash = accountHash,
+                        isBackupConfirmed = isBackupConfirmed,
+                        onBackupConfirmedChanged = { viewModel?.onBackupConfirmedChanged(it) },
+                        onRegenerateHash = { viewModel?.generateAccountHash() },
+                        onUploadHash = { viewModel?.onUploadHashClick() },
+                        onDownloadHash = { viewModel?.onDownloadHashClick(context) },
+                        onCopyHash = {},
+                        onVoucherChange = { viewModel?.onVoucherChanged(it) },
+                        onLearnMoreClick = {}
+                    )
                 }
             }
+
             if (signupState is SignupState.Error) {
                 Spacer(modifier = Modifier.height(16.dp))
                 SignupErrorText(signupState.error)
             }
+
             Spacer(modifier = Modifier.height(16.dp))
+
             SignupHeroButton(viewModel)
-            Spacer(modifier = Modifier.height(8.dp))
-            if (viewModel?.isAccountClaim == true) {
-                TextButton(
-                    stringResource(com.windscribe.vpn.R.string.set_up_later),
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .navigationBarsPadding()
-                ) {
-                    navController.popBackStack()
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
         }
-    }
-}
 
-@Composable
-private fun SignupPasswordTextField(signupState: SignupState, viewModel: SignupViewModel? = null) {
-    AuthTextField(
-        hint = stringResource(com.windscribe.vpn.R.string.password),
-        placeHolder = stringResource(com.windscribe.vpn.R.string.enter_password),
-        isError = isError(signupState, AuthInputFields.Password),
-        modifier = Modifier.fillMaxWidth(),
-        isPassword = true,
-        autofillType = ContentType.Password,
-        onValueChange = {
-            viewModel?.onPasswordChanged(it)
-        })
-}
-
-@Composable
-private fun Description(text: String) {
-    Text(
-        text,
-        style = font12,
-        color = AppColors.white.copy(alpha = 0.50f),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 8.dp),
-        textAlign = TextAlign.Start
-    )
-}
-
-@Composable
-private fun ExpandMenu(text: String, content: @Composable () -> Unit = {}) {
-    val expanded = remember { mutableStateOf(false) }
-    val interactionSource = remember { MutableInteractionSource() }
-    val rotation by animateFloatAsState(
-        if (expanded.value) 180f else 0f,
-        label = "expandIconRotation"
-    )
-    Column {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        // Bottom "Already have account" link
+        Text(
+            text = stringResource(com.windscribe.vpn.R.string.already_have_account_log_in),
+            style = font16.copy(
+                fontWeight = FontWeight.Medium,
+                textDecoration = TextDecoration.Underline,
+                lineHeight = font16.fontSize * 1.5f
+            ),
+            color = AppColors.grayText,
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp)
-        ) {
-            Text(
-                text = text,
-                style = font16.copy(fontWeight = FontWeight.Bold),
-                color = AppColors.white.copy(alpha = 0.50f),
-            )
-            Image(
-                painter = painterResource(id = R.drawable.ic_expand),
-                contentDescription = stringResource(id = com.windscribe.vpn.R.string.image_description),
-                modifier = Modifier
-                    .size(32.dp)
-                    .rotate(rotation)
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = ripple(bounded = false, color = Color.White),
-                        onClick = { expanded.value = !expanded.value }
-                    ),
-                colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.50f))
-            )
-        }
-        if (expanded.value) {
-            content()
-        }
+                .padding(bottom = 16.dp)
+                .clickable {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Start.route)
+                    }
+                }
+        )
     }
-}
-
-@Composable
-private fun VoucherTextField(viewModel: SignupViewModel?) {
-    AuthTextField(
-        hint = stringResource(com.windscribe.vpn.R.string.voucher_code) + " " + stringResource(com.windscribe.vpn.R.string.optional),
-        isError = false,
-        modifier = Modifier.fillMaxWidth(),
-        onValueChange = {
-            viewModel?.onVoucherChanged(it)
-        })
-}
-
-@Composable
-private fun SignupUsernameTextField(signupState: SignupState, viewModel: SignupViewModel? = null) {
-    AuthTextField(
-        hint = stringResource(com.windscribe.vpn.R.string.username),
-        placeHolder = stringResource(com.windscribe.vpn.R.string.enter_username),
-        isError = isError(signupState, AuthInputFields.Username),
-        modifier = Modifier.fillMaxWidth(),
-        autofillType = ContentType.Username,
-        onValueChange = {
-            viewModel?.onUsernameChanged(it)
-        })
 }
 
 private fun isError(signupState: SignupState, field: AuthInputFields): Boolean {
     return (signupState as? SignupState.Error)?.error?.highlightedFields?.contains(field) ?: false
-}
-
-@Composable
-private fun SignupEmailTextField(signupState: SignupState, viewModel: SignupViewModel? = null) {
-    AuthTextField(
-        hint = stringResource(com.windscribe.vpn.R.string.email) + " " + stringResource(com.windscribe.vpn.R.string.optional),
-        placeHolder = stringResource(com.windscribe.vpn.R.string.enter_email),
-        isError = isError(signupState, AuthInputFields.Email),
-        modifier = Modifier.fillMaxWidth(),
-        autofillType = null,
-        onValueChange = {
-            viewModel?.onEmailChanged(it)
-        })
-}
-
-@Composable
-private fun ReferralUsernameTextField(viewModel: SignupViewModel?) {
-    AuthTextField(
-        hint = stringResource(com.windscribe.vpn.R.string.referral_username),
-        isError = false,
-        modifier = Modifier.fillMaxWidth(),
-        onValueChange = {
-            viewModel?.onReferralUsernameChanged(it)
-        })
-}
-
-@Composable
-private fun ReferralFeatures() {
-    Column {
-        ReferralFeature(stringResource(com.windscribe.vpn.R.string.first_reason_to_use_referral))
-        Spacer(modifier = Modifier.height(16.dp))
-        ReferralFeature(stringResource(com.windscribe.vpn.R.string.if_you_go_pro_they_ll_go_pro_too))
-    }
-}
-
-@Composable
-fun ReferralFeature(text: String) {
-    Row(
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_check),
-            contentDescription = text,
-            modifier = Modifier
-                .size(16.dp),
-        )
-        Text(
-            text,
-            style = font12.copy(textAlign = TextAlign.Start),
-            color = AppColors.white.copy(alpha = 0.50f),
-            modifier = Modifier.padding(start = 16.dp)
-        )
-    }
 }
 
 @Composable

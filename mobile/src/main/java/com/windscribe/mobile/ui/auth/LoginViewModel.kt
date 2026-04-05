@@ -1,5 +1,7 @@
 package com.windscribe.mobile.ui.auth
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.api.IApiCallManager
@@ -7,6 +9,7 @@ import com.windscribe.vpn.api.response.AuthToken
 import com.windscribe.vpn.api.response.UserLoginResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext.result
+import com.windscribe.vpn.commonutils.HashUtils
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.errormodel.SessionErrorHandler
@@ -23,6 +26,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
@@ -63,6 +67,15 @@ class LoginViewModel @Inject constructor(
     private val _twoFactorEnabled = MutableStateFlow(false)
     val twoFactorEnabled: StateFlow<Boolean> = _twoFactorEnabled.asStateFlow()
 
+    private val _selectedAuthType = MutableStateFlow(AuthType.STANDARD)
+    val selectedAuthType: StateFlow<AuthType> = _selectedAuthType.asStateFlow()
+
+    private val _accountHashDisplay = MutableStateFlow("")
+    val accountHashDisplay: StateFlow<String> = _accountHashDisplay.asStateFlow()
+
+    private val _triggerFilePicker = MutableSharedFlow<Boolean>(replay = 0)
+    val triggerFilePicker: SharedFlow<Boolean> = _triggerFilePicker
+
     private val _showAllBackupFailedDialog = MutableSharedFlow<Boolean>(replay = 0)
 
     val showAllBackupFailedDialog: SharedFlow<Boolean> = _showAllBackupFailedDialog
@@ -70,6 +83,7 @@ class LoginViewModel @Inject constructor(
     private var username = ""
     private var password = ""
     private var twoFactorCode = ""
+    private var accountHash = ""
     private val logger = LoggerFactory.getLogger("LoginScreen")
 
     fun onUsernameChanged(username: String) {
@@ -86,6 +100,34 @@ class LoginViewModel @Inject constructor(
         this.twoFactorCode = twoFactorCode
     }
 
+    fun onAuthTypeChanged(authType: AuthType) {
+        viewModelScope.launch {
+            _selectedAuthType.emit(authType)
+            updateState(LoginState.Idle)
+            _loginButtonEnabled.emit(false)
+            if (authType == AuthType.STANDARD) {
+                validateInput()
+            } else {
+                validateHashedInput()
+            }
+        }
+    }
+
+    fun onAccountHashChanged(hash: String) {
+        this.accountHash = hash
+        viewModelScope.launch {
+            _accountHashDisplay.emit(hash)
+        }
+        validateHashedInput()
+    }
+
+    private fun validateHashedInput() {
+        viewModelScope.launch {
+            updateState(LoginState.Idle)
+            _loginButtonEnabled.emit(accountHash.length >= 2)
+        }
+    }
+
     fun onCaptchaSolutionReceived(solution: CaptchaSolution) {
         viewModelScope.launch(Dispatchers.IO) {
             updateState(LoginState.LoggingIn("Logging in..."))
@@ -99,7 +141,38 @@ class LoginViewModel @Inject constructor(
         validateInput()
     }
 
-    fun onTwoFactorHintClicked() = toggleTwoFactor()
+    fun onTwoFactorHintClicked() {
+        viewModelScope.launch {
+            _twoFactorEnabled.emit(!_twoFactorEnabled.value)
+        }
+    }
+
+    fun onUploadHashClick() {
+        viewModelScope.launch {
+            _triggerFilePicker.emit(true)
+        }
+    }
+
+    fun onFileSelected(context: Context, uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                if (inputStream != null) {
+                    val hash = HashUtils.sha256FromInputStream(inputStream)
+                    accountHash = hash
+                    withContext(Dispatchers.Main) {
+                        _accountHashDisplay.emit(hash)
+                        validateHashedInput()
+                    }
+                    logger.info("Generated hash from file: ${hash.take(20)}...")
+                } else {
+                    logger.error("Failed to open input stream for file")
+                }
+            } catch (e: Exception) {
+                logger.error("Error hashing file: ${e.message}")
+            }
+        }
+    }
 
     fun loginButtonClick() {
         if (_loginState.value is LoginState.LoggingIn) return
@@ -115,13 +188,16 @@ class LoginViewModel @Inject constructor(
                 return@launch
             }
 
+            // For hashed login, use the hash as both username and password
+            if (_selectedAuthType.value == AuthType.HASHED) {
+                username = accountHash
+                password = accountHash
+            }
+
             startLoginProcess()
         }
     }
 
-    private fun toggleTwoFactor() {
-        viewModelScope.launch { _twoFactorEnabled.emit(!_twoFactorEnabled.value) }
-    }
 
     private fun isValidUsername() = username.length >= 2
     private fun isValidPassword() = password.length >= 2

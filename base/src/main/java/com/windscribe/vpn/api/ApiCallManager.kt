@@ -11,6 +11,8 @@ import com.windscribe.vpn.api.response.AuthToken
 import com.windscribe.vpn.api.response.BillingPlanResponse
 import com.windscribe.vpn.api.response.ClaimAccountResponse
 import com.windscribe.vpn.api.response.ClaimVoucherCodeResponse
+import com.windscribe.vpn.api.response.GeneratePasswordResponse
+import com.windscribe.vpn.api.response.GenerateUsernameResponse
 import com.windscribe.vpn.api.response.GenericResponseClass
 import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.api.response.GetMyIpResponse
@@ -713,6 +715,20 @@ open class ApiCallManager @Inject constructor(
             apiErrorResponse.errorCode = NetworkErrorCodes.ERROR_UNABLE_TO_REACH_API
             apiErrorResponse.errorMessage = e.message ?: ""
             GenericResponseClass(null, apiErrorResponse)
+        }
+    }
+
+    override suspend fun generateUsername(): GenericResponseClass<GenerateUsernameResponse?, ApiErrorResponse?> {
+        return suspendCancellableCoroutine { continuation ->
+            val hardcodedJson = """{"data": {"username": "LastSlateScoundrel", "success": 1}}"""
+            buildResponse(continuation, 200, hardcodedJson, GenerateUsernameResponse::class.java)
+        }
+    }
+
+    override suspend fun generatePassword(): GenericResponseClass<GeneratePasswordResponse?, ApiErrorResponse?> {
+        return suspendCancellableCoroutine { continuation ->
+            val hardcodedJson = """{"data": {"password": "SecurePass123", "success": 1}}"""
+            buildResponse(continuation, 200, hardcodedJson, GeneratePasswordResponse::class.java)
         }
     }
 }
