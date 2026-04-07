@@ -61,7 +61,6 @@ fun HashedSignupForm(
     onUploadHash: () -> Unit = {},
     onDownloadHash: () -> Unit = {},
     onCopyHash: () -> Unit = {},
-    onVoucherChange: (String) -> Unit = {},
     onLearnMoreClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -167,13 +166,6 @@ fun HashedSignupForm(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Voucher Code expandable
-        ExpandableSection(
-            text = stringResource(com.windscribe.vpn.R.string.got_voucher_code) + " " + stringResource(com.windscribe.vpn.R.string.optional)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         // Backup confirmation checkbox
         Row(
             modifier = Modifier
@@ -233,43 +225,6 @@ private fun ActionButton(
             contentDescription = contentDescription,
             tint = AppColors.white.copy(alpha = 0.5f),
             modifier = Modifier.size(24.dp)
-        )
-    }
-}
-
-@Composable
-private fun ExpandableSection(text: String) {
-    val expanded = remember { mutableStateOf(false) }
-    val interactionSource = remember { MutableInteractionSource() }
-    val rotation by animateFloatAsState(
-        if (expanded.value) 180f else 0f,
-        label = "expandIconRotation"
-    )
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = text,
-            style = font16.copy(fontWeight = FontWeight.Medium),
-            color = AppColors.white
-        )
-        Image(
-            painter = painterResource(id = R.drawable.ic_expand),
-            contentDescription = stringResource(id = com.windscribe.vpn.R.string.image_description),
-            modifier = Modifier
-                .size(24.dp)
-                .rotate(rotation)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = ripple(bounded = false, color = Color.White),
-                    onClick = { expanded.value = !expanded.value }
-                ),
-            colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.50f))
         )
     }
 }

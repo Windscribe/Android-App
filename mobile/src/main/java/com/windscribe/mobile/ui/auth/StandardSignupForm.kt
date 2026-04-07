@@ -98,6 +98,7 @@ fun StandardSignupForm(
                 isPassword = true,
                 autofillType = ContentType.Password,
                 initialValue = generatedPassword,
+                initialPasswordVisible = true,
                 trailingIcon = {
                     IconButton(onClick = onGeneratePassword) {
                         Icon(
@@ -117,6 +118,7 @@ fun StandardSignupForm(
                 placeholder = stringResource(com.windscribe.vpn.R.string.confirm_password),
                 isError = isPasswordError,
                 isPassword = true,
+                initialPasswordVisible = true,
                 onValueChange = {}
             )
         }
@@ -202,11 +204,12 @@ private fun SignupTextField(
     isPassword: Boolean = false,
     autofillType: ContentType? = null,
     initialValue: String = "",
+    initialPasswordVisible: Boolean = false,
     trailingIcon: (@Composable () -> Unit)? = null,
     onValueChange: (String) -> Unit
 ) {
     var text by remember(initialValue) { mutableStateOf(initialValue) }
-    var passwordVisible by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(initialPasswordVisible) }
 
     Column {
         // Label

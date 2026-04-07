@@ -236,7 +236,6 @@ private fun SignupCompactLayout(
                         onUploadHash = { viewModel?.onUploadHashClick() },
                         onDownloadHash = { viewModel?.onDownloadHashClick(context) },
                         onCopyHash = {},
-                        onVoucherChange = { viewModel?.onVoucherChanged(it) },
                         onLearnMoreClick = {}
                     )
                 }

@@ -608,6 +608,7 @@ last chosen location.</string>
     <string name="configuration">Configuration</string>
     <string name="standard">Standard</string>
     <string name="hashed">Hashed</string>
+    <string name="hash">Hash</string>
     <string name="account_hash">Account Hash</string>
     <string name="enter_account_hash_or_upload">Enter Account Hash or Upload</string>
     <string name="account_hash_description">This is your unique account hash, save it somewhere safe, you\'ll need it to login.</string>

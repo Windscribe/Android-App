@@ -52,6 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.NextButton
@@ -403,7 +404,7 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Username Row
+        // Username/Hash Row
         Row(
             modifier = Modifier
                 .background(
@@ -416,26 +417,44 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
                 )
                 .hapticClickable {
                     val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                    val clip = android.content.ClipData.newPlainText("Username", username)
+                    val clip = android.content.ClipData.newPlainText(if (isHashedAccount) "Hash" else "Username", username)
                     clipboard.setPrimaryClip(clip)
-                    Toast.makeText(context, "Username copied to clipboard", Toast.LENGTH_SHORT).show()
                 }
-                .padding(14.dp)
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                stringResource(R.string.username),
+                if (isHashedAccount) stringResource(R.string.hash) else stringResource(R.string.username),
                 style = font16.copy(
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primaryTextColor
                 )
             )
             Spacer(modifier = Modifier.weight(1f))
-            Text(
-                username,
-                style = font16.copy(color = MaterialTheme.colorScheme.preferencesSubtitleColor),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            if (isHashedAccount) {
+                // Display hash in two lines (34 chars total: 18 + 16)
+                val hashText = if (username.length > 18) {
+                    "${username.substring(0, 18)}\n${username.substring(18)}"
+                } else {
+                    username
+                }
+                Text(
+                    hashText,
+                    style = font16.copy(
+                        color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                        textAlign = TextAlign.End,
+                        lineHeight = 22.sp
+                    ),
+                    maxLines = 2
+                )
+            } else {
+                Text(
+                    username,
+                    style = font16.copy(color = MaterialTheme.colorScheme.preferencesSubtitleColor),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
 
         if (!isHashedAccount) {

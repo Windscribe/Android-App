@@ -7,9 +7,9 @@ import java.security.MessageDigest
 object HashUtils {
 
     /**
-     * Generate SHA256 hash from InputStream
+     * Generate SHA256 hash from InputStream (truncated to 128 bits)
      * @param inputStream The input stream to hash
-     * @return Hex string of SHA256 hash prefixed with "0x"
+     * @return Hex string of truncated SHA256 hash (32 hex chars) prefixed with "0x" = 34 chars total
      */
     fun sha256FromInputStream(inputStream: InputStream): String {
         val digest = MessageDigest.getInstance("SHA-256")
@@ -23,6 +23,7 @@ object HashUtils {
         }
 
         val hashBytes = digest.digest()
-        return "0x" + hashBytes.joinToString("") { "%02x".format(it) }
+        // Truncate to first 16 bytes (128 bits = 32 hex characters)
+        return "0x" + hashBytes.take(16).joinToString("") { "%02x".format(it) }
     }
 }
