@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -27,7 +29,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentDataType
 import androidx.compose.ui.autofill.ContentType
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -43,8 +48,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.room.util.TableInfo
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.common.AppBackground
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.vpn.constants.NetworkKeyConstants
@@ -150,7 +158,7 @@ private fun StandardTextField(
                     errorIndicatorColor = Color.Transparent,
                     cursorColor = AppColors.white,
                     disabledIndicatorColor = Color.Transparent,
-                    selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
+                    selectionColors = TextSelectionColors(
                         handleColor = AppColors.white,
                         backgroundColor = AppColors.white.copy(alpha = 0.3f)
                     )
@@ -173,7 +181,16 @@ private fun StandardTextField(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp)
+                    .height(48.dp)
+                    .drawBehind {
+                        // Bottom shadow effect: 0px 1px 0px 0px rgba(255,255,255,0.1)
+                        drawLine(
+                            color = Color.White.copy(alpha = 0.1f),
+                            start = Offset(0f, size.height),
+                            end = Offset(size.width, size.height),
+                            strokeWidth = 1f
+                        )
+                    }
                     .then(
                         if (isError) Modifier.border(
                             width = 1.dp,
@@ -185,12 +202,12 @@ private fun StandardTextField(
                         if (autofillType != null) {
                             Modifier.semantics {
                                 contentType = autofillType
-                                contentDataType = androidx.compose.ui.autofill.ContentDataType.Text
+                                contentDataType = ContentDataType.Text
                             }
                         } else if (isPassword) {
                             Modifier.semantics {
                                 contentType = ContentType.Password
-                                contentDataType = androidx.compose.ui.autofill.ContentDataType.Text
+                                contentDataType = ContentDataType.Text
                             }
                         } else Modifier
                     ),
@@ -296,7 +313,7 @@ private fun PasswordFieldWithForgotLink(
                     errorIndicatorColor = Color.Transparent,
                     cursorColor = AppColors.white,
                     disabledIndicatorColor = Color.Transparent,
-                    selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
+                    selectionColors = TextSelectionColors(
                         handleColor = AppColors.white,
                         backgroundColor = AppColors.white.copy(alpha = 0.3f)
                     )
@@ -317,7 +334,16 @@ private fun PasswordFieldWithForgotLink(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp)
+                    .height(48.dp)
+                    .drawBehind {
+                        // Bottom shadow effect: 0px 1px 0px 0px rgba(255,255,255,0.1)
+                        drawLine(
+                            color = Color.White.copy(alpha = 0.1f),
+                            start = Offset(0f, size.height),
+                            end = Offset(size.width, size.height),
+                            strokeWidth = 1f
+                        )
+                    }
                     .then(
                         if (isError) Modifier.border(
                             width = 1.dp,
@@ -327,13 +353,23 @@ private fun PasswordFieldWithForgotLink(
                     )
                     .semantics {
                         contentType = ContentType.Password
-                        contentDataType = androidx.compose.ui.autofill.ContentDataType.Text
+                        contentDataType = ContentDataType.Text
                     },
                 textStyle = font16.copy(
                     color = if (isError) AppColors.red else AppColors.white,
                     textAlign = TextAlign.Start
                 ),
             )
+        }
+    }
+}
+
+@Composable
+@Preview
+private fun StandardTextFieldPreview() {
+    AppBackground {
+        Column(modifier = Modifier.statusBarsPadding().padding(24.dp)) {
+            StandardTextField("Password", "Placeholder", false, false, onValueChange = {})
         }
     }
 }
