@@ -22,8 +22,8 @@ import com.windscribe.vpn.constants.NetworkKeyConstants
 
 @Composable
 fun IpActionResultDialog(
-    message: String?,
-    description: String? = null
+    message: String,
+    description: String
 ) {
     val navController = LocalNavController.current
     val activity = navController.context as? AppStartActivity
@@ -31,9 +31,9 @@ fun IpActionResultDialog(
         Spacer(Modifier.weight(1f))
         PopupHeroImage(R.drawable.garry_location_under_maintence)
         Spacer(modifier = Modifier.height(25.dp))
-        PopupTitle(message ?: "")
+        PopupTitle(message)
         Spacer(Modifier.height(25.dp))
-        PopupDescription(description ?: stringResource(com.windscribe.vpn.R.string.check_status_description))
+        PopupDescription(description)
         Spacer(Modifier.height(32.dp))
         PopupPrimaryActionButton(modifier = Modifier, stringResource(com.windscribe.vpn.R.string.check_location_status)) {
             activity?.openUrl(NetworkKeyConstants.NODE_STATUS_URL)
@@ -54,6 +54,6 @@ fun IpActionResultDialog(
 @MultiDevicePreview
 fun IpActionResultDialogPreview() {
     PreviewWithNav {
-        IpActionResultDialog("Could not rotate IP")
+        IpActionResultDialog("Could not rotate IP", "Try again later or go to our Status page for more info")
     }
 }

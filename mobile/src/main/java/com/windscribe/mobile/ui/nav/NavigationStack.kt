@@ -516,8 +516,8 @@ private fun NavGraphBuilder.addNavigationScreens() {
     composable(route = Screen.IpActionResult.route) {
         val navController = LocalNavController.current
         val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
-        val message = savedStateHandle?.get<String>("message") ?: ""
-        val description = savedStateHandle?.get<String>("description")
+        val message = savedStateHandle?.get<String>("message")!!
+        val description = savedStateHandle?.get<String>("description")!!
         IpActionResultDialog(message, description)
     }
 }
