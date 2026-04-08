@@ -26,6 +26,15 @@ fun RequestLocationPermissions(
     val navController = LocalNavController.current
     val permissionDialogType = remember { mutableStateOf(PermissionDialogType.None) }
     val permissionHelper = activity.permissionHelper
+
+    // Move string resources to composable body to survive recomposition
+    val missingPermissionTitle = stringResource(com.windscribe.vpn.R.string.missing_location_permission)
+    val missingPermissionDescription = stringResource(com.windscribe.vpn.R.string.location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time)
+    val openSettingsLabel = stringResource(com.windscribe.vpn.R.string.open_settings)
+    val locationDisclosureTitle = stringResource(com.windscribe.vpn.R.string.location_permission_disclosure_title)
+    val backgroundLocationDisclosureMessage = stringResource(com.windscribe.vpn.R.string.background_location_permission_disclosure_message)
+    val grantPermissionLabel = stringResource(com.windscribe.vpn.R.string.grant_permission)
+
     val showDialog = { data: DialogData, onConfirm: () -> Unit ->
         val callback = object : DialogCallback() {
             override fun onDismiss() {
@@ -42,11 +51,12 @@ fun RequestLocationPermissions(
         activity.viewmodel.setDialogCallback(data, callback)
         navController.navigate(Screen.OverlayDialog.route)
     }
-    val missingPermissionData =  DialogData(
+
+    val missingPermissionData = DialogData(
         R.drawable.ic_attention_icon,
-        stringResource(com.windscribe.vpn.R.string.missing_location_permission),
-        stringResource(com.windscribe.vpn.R.string.location_permission_is_required_to_use_this_feature_go_to_app_settings_permissions_location_and_select_allow_all_the_time),
-        stringResource(com.windscribe.vpn.R.string.open_settings)
+        missingPermissionTitle,
+        missingPermissionDescription,
+        openSettingsLabel
     )
     LaunchedEffect(Unit) {
         permissionHelper.backgroundCallback = { granted ->
@@ -101,16 +111,17 @@ fun RequestLocationPermissions(
 
 
     when (permissionDialogType.value) {
-        PermissionDialogType.BackgroundLocation -> showDialog(
-            DialogData(
+        PermissionDialogType.BackgroundLocation -> {
+            val backgroundLocationData = DialogData(
                 R.drawable.location_instruction_icon,
-                stringResource(com.windscribe.vpn.R.string.location_permission_disclosure_title),
-                stringResource(com.windscribe.vpn.R.string.background_location_permission_disclosure_message),
-                stringResource(com.windscribe.vpn.R.string.grant_permission),
+                locationDisclosureTitle,
+                backgroundLocationDisclosureMessage,
+                grantPermissionLabel,
                 iconAtBottom = true
             )
-        ) {
-            permissionHelper.backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            showDialog(backgroundLocationData) {
+                permissionHelper.backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            }
         }
 
         else -> {}
