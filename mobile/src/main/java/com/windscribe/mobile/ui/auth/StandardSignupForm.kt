@@ -2,9 +2,11 @@ package com.windscribe.mobile.ui.auth
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,30 +18,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.autofill.ContentType
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDataType
-import androidx.compose.ui.semantics.contentType
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -48,7 +44,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.windscribe.mobile.R
+import com.windscribe.mobile.ui.common.StyledTextField
+import com.windscribe.mobile.ui.common.StyledTextFieldWithActions
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font12
 import com.windscribe.mobile.ui.theme.font16
@@ -56,275 +55,306 @@ import com.windscribe.mobile.ui.theme.font16
 @Composable
 fun StandardSignupForm(
     modifier: Modifier = Modifier,
-    isUsernameError: Boolean = false,
-    isPasswordError: Boolean = false,
-    isEmailError: Boolean = false,
     generatedUsername: String = "",
     generatedPassword: String = "",
+    isUsernameError: Boolean = false,
+    isPasswordError: Boolean = false,
+    isConfirmPasswordError: Boolean = false,
+    isEmailError: Boolean = false,
     onUsernameChange: (String) -> Unit = {},
     onPasswordChange: (String) -> Unit = {},
+    onConfirmPasswordChange: (String) -> Unit = {},
     onEmailChange: (String) -> Unit = {},
     onVoucherChange: (String) -> Unit = {},
     onReferralUsernameChange: (String) -> Unit = {},
     onGenerateUsername: () -> Unit = {},
-    onGeneratePassword: () -> Unit = {}
+    onGeneratePassword: () -> Unit = {},
+    onEmailInfoClick: () -> Unit = {}
 ) {
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var voucher by remember { mutableStateOf("") }
+    var referralUsername by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    // Update username when generated
+    LaunchedEffect(generatedUsername) {
+        if (generatedUsername.isNotEmpty()) {
+            username = generatedUsername
+            onUsernameChange(generatedUsername)
+        }
+    }
+
+    // Update password and confirm password when generated
+    LaunchedEffect(generatedPassword) {
+        if (generatedPassword.isNotEmpty()) {
+            password = generatedPassword
+            confirmPassword = generatedPassword
+            onPasswordChange(generatedPassword)
+            onConfirmPasswordChange(generatedPassword)
+        }
+    }
+
     Column(modifier = modifier) {
+        // Username Field Label
+        FieldLabel(
+            text = stringResource(com.windscribe.vpn.R.string.choose_username),
+            isError = isUsernameError
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
         // Username Field with refresh icon
-        SignupTextField(
-            label = stringResource(com.windscribe.vpn.R.string.choose_username),
+        StyledTextFieldWithActions(
+            value = username,
+            onValueChange = {
+                username = it
+                onUsernameChange(it)
+            },
             placeholder = stringResource(com.windscribe.vpn.R.string.enter_username),
             isError = isUsernameError,
-            autofillType = ContentType.Username,
-            initialValue = generatedUsername,
-            trailingIcon = {
-                IconButton(onClick = onGenerateUsername) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_refresh),
-                        contentDescription = stringResource(com.windscribe.vpn.R.string.choose_username),
-                        tint = AppColors.white.copy(alpha = 0.50f)
-                    )
-                }
+            showRefreshButton = true,
+            onRefreshClick = onGenerateUsername,
+            imeAction = ImeAction.Next
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Password Section Label
+        FieldLabel(
+            text = stringResource(com.windscribe.vpn.R.string.choose_password),
+            isError = isPasswordError
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Password Field with visibility + refresh
+        StyledTextFieldWithActions(
+            value = password,
+            onValueChange = {
+                password = it
+                onPasswordChange(it)
             },
-            onValueChange = onUsernameChange
+            placeholder = stringResource(com.windscribe.vpn.R.string.enter_password),
+            isError = isPasswordError,
+            isPassword = true,
+            passwordVisible = passwordVisible,
+            onPasswordVisibilityToggle = { passwordVisible = !passwordVisible },
+            showRefreshButton = true,
+            onRefreshClick = onGeneratePassword,
+            keyboardType = KeyboardType.Password,
+            imeAction = ImeAction.Next
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Password Section
-        Column {
-            SignupTextField(
-                label = stringResource(com.windscribe.vpn.R.string.choose_password),
-                placeholder = stringResource(com.windscribe.vpn.R.string.enter_password),
-                isError = isPasswordError,
-                isPassword = true,
-                autofillType = ContentType.Password,
-                initialValue = generatedPassword,
-                initialPasswordVisible = true,
-                trailingIcon = {
-                    IconButton(onClick = onGeneratePassword) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_refresh),
-                            contentDescription = stringResource(com.windscribe.vpn.R.string.choose_password),
-                            tint = AppColors.white.copy(alpha = 0.50f)
-                        )
-                    }
-                },
-                onValueChange = onPasswordChange
-            )
+        // Confirm Password Field (no visibility toggle, syncs with main password visibility)
+        ConfirmPasswordField(
+            value = confirmPassword,
+            onValueChange = {
+                confirmPassword = it
+                onConfirmPasswordChange(it)
+            },
+            placeholder = stringResource(com.windscribe.vpn.R.string.confirm_password),
+            isError = isConfirmPasswordError,
+            passwordVisible = passwordVisible,
+            imeAction = ImeAction.Next
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-            SignupTextField(
-                label = null,
-                placeholder = stringResource(com.windscribe.vpn.R.string.confirm_password),
-                isError = isPasswordError,
-                isPassword = true,
-                initialPasswordVisible = true,
-                onValueChange = {}
+        // Email Field Label with Optional badge
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(com.windscribe.vpn.R.string.add_email),
+                style = font16.copy(fontWeight = FontWeight.Medium),
+                color = if (isEmailError) AppColors.red else AppColors.white
             )
+            OptionalBadge()
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Email Field with info icon
-        SignupTextField(
-            label = stringResource(com.windscribe.vpn.R.string.add_email) + " " + stringResource(com.windscribe.vpn.R.string.optional),
+        StyledTextFieldWithActions(
+            value = email,
+            onValueChange = {
+                email = it
+                onEmailChange(it)
+            },
             placeholder = stringResource(com.windscribe.vpn.R.string.enter_email_address),
             isError = isEmailError,
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_info_icon),
-                    contentDescription = stringResource(com.windscribe.vpn.R.string.email),
-                    tint = AppColors.white.copy(alpha = 0.50f),
-                    modifier = Modifier.size(24.dp)
-                )
-            },
-            onValueChange = onEmailChange
+            showInfoButton = true,
+            onInfoClick = onEmailInfoClick,
+            keyboardType = KeyboardType.Email,
+            imeAction = ImeAction.Next
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // Expandable sections
+        // Voucher Code - Expandable Section
         ExpandableSection(
-            text = stringResource(com.windscribe.vpn.R.string.got_voucher_code) + " " + stringResource(com.windscribe.vpn.R.string.optional)
+            text = stringResource(com.windscribe.vpn.R.string.got_voucher_code)
         ) {
             Spacer(modifier = Modifier.height(8.dp))
-            SignupTextField(
-                label = null,
+            StyledTextField(
+                value = voucher,
+                onValueChange = {
+                    voucher = it
+                    onVoucherChange(it)
+                },
                 placeholder = stringResource(com.windscribe.vpn.R.string.voucher_code),
-                isError = false,
-                onValueChange = onVoucherChange
+                imeAction = ImeAction.Next
             )
         }
 
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Referral - Expandable Section
         ExpandableSection(
-            text = stringResource(com.windscribe.vpn.R.string.referred_by_someone) + " " + stringResource(com.windscribe.vpn.R.string.optional)
+            text = stringResource(com.windscribe.vpn.R.string.referred_by_someone)
         ) {
-            Column {
-                Spacer(modifier = Modifier.height(8.dp))
-                ReferralFeature(stringResource(com.windscribe.vpn.R.string.first_reason_to_use_referral))
-                Spacer(modifier = Modifier.height(16.dp))
-                ReferralFeature(stringResource(com.windscribe.vpn.R.string.if_you_go_pro_they_ll_go_pro_too))
-                Spacer(modifier = Modifier.height(8.dp))
-                SignupTextField(
-                    label = null,
-                    placeholder = stringResource(com.windscribe.vpn.R.string.referral_username),
-                    isError = false,
-                    onValueChange = onReferralUsernameChange
-                )
-            }
+            Spacer(modifier = Modifier.height(8.dp))
+            StyledTextField(
+                value = referralUsername,
+                onValueChange = {
+                    referralUsername = it
+                    onReferralUsernameChange(it)
+                },
+                placeholder = stringResource(com.windscribe.vpn.R.string.referral_username),
+                imeAction = ImeAction.Done
+            )
         }
     }
 }
 
 @Composable
-private fun ReferralFeature(text: String) {
-    Row(
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+private fun FieldLabel(
+    text: String,
+    isError: Boolean = false
+) {
+    Text(
+        text = text,
+        style = font16.copy(fontWeight = FontWeight.Medium),
+        color = if (isError) AppColors.red else AppColors.white,
+        modifier = Modifier
+    )
+}
+
+@Composable
+private fun OptionalBadge() {
+    Box(
+        modifier = Modifier
+            .background(
+                color = AppColors.white.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(100.dp)
+            )
+            .padding(horizontal = 8.dp, vertical = 2.dp)
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_check),
-            contentDescription = text,
-            modifier = Modifier.size(16.dp),
-        )
         Text(
-            text,
-            style = font12.copy(textAlign = TextAlign.Start),
-            color = AppColors.white.copy(alpha = 0.50f),
-            modifier = Modifier.padding(start = 16.dp)
+            text = stringResource(com.windscribe.vpn.R.string.optional),
+            style = font12.copy(fontWeight = FontWeight.Medium),
+            color = AppColors.white.copy(alpha = 0.6f)
         )
     }
 }
 
 @Composable
-private fun SignupTextField(
-    label: String?,
+private fun ConfirmPasswordField(
+    value: String,
+    onValueChange: (String) -> Unit,
     placeholder: String,
     isError: Boolean,
-    isPassword: Boolean = false,
-    autofillType: ContentType? = null,
-    initialValue: String = "",
-    initialPasswordVisible: Boolean = false,
-    trailingIcon: (@Composable () -> Unit)? = null,
-    onValueChange: (String) -> Unit
+    passwordVisible: Boolean,
+    imeAction: ImeAction
 ) {
-    var text by remember(initialValue) { mutableStateOf(initialValue) }
-    var passwordVisible by remember { mutableStateOf(initialPasswordVisible) }
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
 
-    Column {
-        // Label
-        if (label != null) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp, start = 8.dp, end = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
+    val borderColor = when {
+        isError -> Color(0xFFFF7F7F)
+        isFocused -> AppColors.white
+        else -> AppColors.white.copy(alpha = 0.1f)
+    }
+
+    val textColor = if (isError) Color(0xFFFF7F7F) else AppColors.white
+    val placeholderColor = if (isError) Color(0xFFFF7F7F) else Color(0xFF898F9D)
+
+    Box {
+        TextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = {
                 Text(
-                    text = label,
-                    style = font16.copy(fontWeight = FontWeight.Medium),
-                    color = if (isError) AppColors.red else AppColors.white
-                )
-                if (isError) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_input_error_icon),
-                        contentDescription = label,
-                        tint = Color.Red,
-                    )
-                }
-            }
-        }
-
-        // Text Field
-        Box {
-            TextField(
-                value = text,
-                onValueChange = {
-                    text = it
-                    onValueChange(it)
-                },
-                isError = isError,
-                singleLine = true,
-                shape = RoundedCornerShape(9.dp),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.None,
-                    autoCorrectEnabled = false,
-                    imeAction = ImeAction.Done,
-                    keyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Text
-                ),
-                placeholder = {
-                    Text(
-                        text = placeholder,
-                        style = font16.copy(fontWeight = FontWeight.Normal),
-                        color = AppColors.grayText,
-                        textAlign = TextAlign.Start
-                    )
-                },
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = if (isError) AppColors.red else AppColors.white,
-                    unfocusedTextColor = if (isError) AppColors.red else AppColors.white,
-                    disabledTextColor = if (isError) AppColors.red else AppColors.white,
-                    unfocusedContainerColor = AppColors.white.copy(0.05f),
-                    focusedContainerColor = AppColors.white.copy(0.05f),
-                    disabledContainerColor = AppColors.white.copy(0.05f),
-                    errorContainerColor = AppColors.white.copy(0.05f),
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent,
-                    cursorColor = AppColors.white,
-                    disabledIndicatorColor = Color.Transparent,
-                    selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-                        handleColor = AppColors.white,
-                        backgroundColor = AppColors.white.copy(alpha = 0.3f)
-                    )
-                ),
-                visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
-                trailingIcon = trailingIcon,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .drawBehind {
-                        // Bottom shadow effect: 0px 1px 0px 0px rgba(255,255,255,0.1)
-                        drawLine(
-                            color = Color.White.copy(alpha = 0.1f),
-                            start = Offset(0f, size.height),
-                            end = Offset(size.width, size.height),
-                            strokeWidth = 1f
-                        )
-                    }
-                    .then(
-                        if (isError) Modifier.border(
-                            width = 1.dp,
-                            color = AppColors.red,
-                            shape = RoundedCornerShape(9.dp)
-                        ) else Modifier
-                    )
-                    .then(
-                        if (autofillType != null) {
-                            Modifier.semantics {
-                                contentType = autofillType
-                                contentDataType = androidx.compose.ui.autofill.ContentDataType.Text
-                            }
-                        } else if (isPassword) {
-                            Modifier.semantics {
-                                contentType = ContentType.Password
-                                contentDataType = androidx.compose.ui.autofill.ContentDataType.Text
-                            }
-                        } else Modifier
-                    ),
-                textStyle = font16.copy(
-                    color = if (isError) AppColors.red else AppColors.white,
+                    text = placeholder,
+                    style = font16,
+                    color = placeholderColor,
                     textAlign = TextAlign.Start
+                )
+            },
+            singleLine = true,
+            shape = RoundedCornerShape(9.dp),
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.None,
+                autoCorrectEnabled = false,
+                imeAction = imeAction,
+                keyboardType = KeyboardType.Password
+            ),
+            visualTransformation = if (!passwordVisible) {
+                PasswordVisualTransformation()
+            } else {
+                VisualTransformation.None
+            },
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = textColor,
+                unfocusedTextColor = textColor,
+                disabledTextColor = textColor,
+                errorTextColor = textColor,
+                unfocusedContainerColor = AppColors.white.copy(alpha = 0.05f),
+                focusedContainerColor = AppColors.white.copy(alpha = 0.05f),
+                disabledContainerColor = AppColors.white.copy(alpha = 0.05f),
+                errorContainerColor = AppColors.white.copy(alpha = 0.05f),
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                errorIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                cursorColor = AppColors.white,
+                selectionColors = TextSelectionColors(
+                    handleColor = AppColors.white,
+                    backgroundColor = AppColors.white.copy(alpha = 0.3f)
+                )
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = AppColors.white.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(9.dp)
+                )
+                .border(
+                    width = 1.dp,
+                    color = borderColor,
+                    shape = RoundedCornerShape(9.dp)
                 ),
-            )
-        }
+            textStyle = font16.copy(
+                color = textColor,
+                textAlign = TextAlign.Start,
+                lineHeight = 20.sp
+            ),
+            interactionSource = interactionSource
+        )
     }
 }
 
 @Composable
-private fun ExpandableSection(text: String, content: @Composable () -> Unit = {}) {
+private fun ExpandableSection(
+    text: String,
+    content: @Composable () -> Unit = {}
+) {
     val expanded = remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
     val rotation by animateFloatAsState(
@@ -336,7 +366,7 @@ private fun ExpandableSection(text: String, content: @Composable () -> Unit = {}
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp),
+                .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -345,19 +375,25 @@ private fun ExpandableSection(text: String, content: @Composable () -> Unit = {}
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 color = AppColors.white
             )
-            Image(
-                painter = painterResource(id = R.drawable.ic_expand),
-                contentDescription = stringResource(id = com.windscribe.vpn.R.string.image_description),
-                modifier = Modifier
-                    .size(24.dp)
-                    .rotate(rotation)
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = ripple(bounded = false, color = Color.White),
-                        onClick = { expanded.value = !expanded.value }
-                    ),
-                colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.50f))
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                OptionalBadge()
+                Image(
+                    painter = painterResource(id = R.drawable.ic_expand),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .rotate(rotation)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = ripple(bounded = false, color = Color.White),
+                            onClick = { expanded.value = !expanded.value }
+                        ),
+                    colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.50f))
+                )
+            }
         }
         if (expanded.value) {
             content()

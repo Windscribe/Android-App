@@ -213,7 +213,7 @@ private fun CustomTextField(
                         ) {
                             Icon(
                                 painter = painterResource(
-                                    id = if (passwordVisible) R.drawable.ic_hide_password else R.drawable.ic_show_password
+                                    id = if (passwordVisible) R.drawable.ic_eye_off else R.drawable.ic_eye
                                 ),
                                 contentDescription = "Toggle password visibility",
                                 tint = AppColors.white.copy(alpha = 0.50f)

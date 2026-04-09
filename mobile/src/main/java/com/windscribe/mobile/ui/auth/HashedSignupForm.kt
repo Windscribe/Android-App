@@ -55,8 +55,10 @@ import com.windscribe.mobile.ui.theme.font16
 fun HashedSignupForm(
     modifier: Modifier = Modifier,
     accountHash: String = "",
+    voucher: String = "",
     isBackupConfirmed: Boolean = false,
     onBackupConfirmedChanged: (Boolean) -> Unit = {},
+    onVoucherChange: (String) -> Unit = {},
     onRegenerateHash: () -> Unit = {},
     onUploadHash: () -> Unit = {},
     onDownloadHash: () -> Unit = {},
@@ -166,6 +168,21 @@ fun HashedSignupForm(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Voucher Code - Expandable Section
+        ExpandableSection(
+            text = stringResource(com.windscribe.vpn.R.string.got_voucher_code)
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
+            com.windscribe.mobile.ui.common.StyledTextField(
+                value = voucher,
+                onValueChange = onVoucherChange,
+                placeholder = stringResource(com.windscribe.vpn.R.string.voucher_code),
+                imeAction = androidx.compose.ui.text.input.ImeAction.Done
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         // Backup confirmation checkbox
         Row(
             modifier = Modifier
@@ -196,6 +213,75 @@ fun HashedSignupForm(
                 color = AppColors.white.copy(alpha = 0.8f)
             )
         }
+    }
+}
+
+@Composable
+private fun ExpandableSection(
+    text: String,
+    content: @Composable () -> Unit = {}
+) {
+    val expanded = remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
+    val rotation by animateFloatAsState(
+        if (expanded.value) 180f else 0f,
+        label = "expandIconRotation"
+    )
+
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = text,
+                style = font16.copy(fontWeight = FontWeight.Medium),
+                color = AppColors.white
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                OptionalBadge()
+                Image(
+                    painter = painterResource(id = R.drawable.ic_expand),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .rotate(rotation)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = ripple(bounded = false, color = Color.White),
+                            onClick = { expanded.value = !expanded.value }
+                        ),
+                    colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.50f))
+                )
+            }
+        }
+        if (expanded.value) {
+            content()
+        }
+    }
+}
+
+@Composable
+private fun OptionalBadge() {
+    Box(
+        modifier = Modifier
+            .background(
+                color = AppColors.white.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(100.dp)
+            )
+            .padding(horizontal = 8.dp, vertical = 2.dp)
+    ) {
+        Text(
+            text = stringResource(com.windscribe.vpn.R.string.optional),
+            style = font12.copy(fontWeight = FontWeight.Medium),
+            color = AppColors.white.copy(alpha = 0.6f)
+        )
     }
 }
 

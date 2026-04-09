@@ -54,7 +54,7 @@ import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.common.AppBackground
 import com.windscribe.mobile.ui.common.AppProgressBar
 import com.windscribe.mobile.ui.common.CaptchaDebugDialog
-import com.windscribe.mobile.ui.common.NextButton
+import com.windscribe.mobile.ui.common.PrimaryButton
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 
@@ -213,18 +213,20 @@ private fun SignupCompactLayout(
             when (selectedAuthType) {
                 AuthType.STANDARD -> {
                     StandardSignupForm(
+                        generatedUsername = generatedUsername,
+                        generatedPassword = generatedPassword,
                         isUsernameError = isError(signupState, AuthInputFields.Username),
                         isPasswordError = isError(signupState, AuthInputFields.Password),
                         isEmailError = isError(signupState, AuthInputFields.Email),
-                        generatedUsername = generatedUsername,
-                        generatedPassword = generatedPassword,
                         onUsernameChange = { viewModel?.onUsernameChanged(it) },
                         onPasswordChange = { viewModel?.onPasswordChanged(it) },
+                        onConfirmPasswordChange = { /* Handle confirm password */ },
                         onEmailChange = { viewModel?.onEmailChanged(it) },
                         onVoucherChange = { viewModel?.onVoucherChanged(it) },
                         onReferralUsernameChange = { viewModel?.onReferralUsernameChanged(it) },
                         onGenerateUsername = { viewModel?.generateUsername() },
-                        onGeneratePassword = { viewModel?.generatePassword() }
+                        onGeneratePassword = { viewModel?.generatePassword() },
+                        onEmailInfoClick = { /* Handle email info click */ }
                     )
                 }
                 AuthType.HASHED -> {
@@ -232,6 +234,7 @@ private fun SignupCompactLayout(
                         accountHash = accountHash,
                         isBackupConfirmed = isBackupConfirmed,
                         onBackupConfirmedChanged = { viewModel?.onBackupConfirmedChanged(it) },
+                        onVoucherChange = { viewModel?.onVoucherChanged(it) },
                         onRegenerateHash = { viewModel?.generateAccountHash() },
                         onUploadHash = { viewModel?.onUploadHashClick() },
                         onDownloadHash = { viewModel?.onDownloadHashClick(context) },
@@ -281,11 +284,14 @@ private fun SignupHeroButton(viewModel: SignupViewModel? = null) {
     val isButtonEnabled by viewModel?.signupButtonEnabled?.collectAsState() ?: remember {
         mutableStateOf(false)
     }
-    NextButton(
-        text = stringResource(com.windscribe.vpn.R.string.next), enabled = isButtonEnabled, onClick = {
+    PrimaryButton(
+        text = stringResource(com.windscribe.vpn.R.string.text_sign_up),
+        enabled = isButtonEnabled,
+        onClick = {
             keyboardController?.hide()
             viewModel?.signupButtonClick()
-        }, modifier = Modifier
+        },
+        modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
     )
