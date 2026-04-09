@@ -380,19 +380,25 @@ private fun ExpandableSection(
                 horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 OptionalBadge()
-                Image(
-                    painter = painterResource(id = R.drawable.ic_expand),
-                    contentDescription = null,
+                Box(
                     modifier = Modifier
                         .size(24.dp)
-                        .rotate(rotation)
                         .clickable(
                             interactionSource = interactionSource,
                             indication = ripple(bounded = false, color = Color.White),
                             onClick = { expanded.value = !expanded.value }
                         ),
-                    colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.50f))
-                )
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_expand),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .rotate(rotation),
+                        colorFilter = ColorFilter.tint(AppColors.white.copy(alpha = 0.50f))
+                    )
+                }
             }
         }
         if (expanded.value) {
