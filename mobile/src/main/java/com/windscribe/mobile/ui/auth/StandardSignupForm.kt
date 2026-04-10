@@ -1,5 +1,8 @@
 package com.windscribe.mobile.ui.auth
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -32,8 +35,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -148,7 +155,7 @@ fun StandardSignupForm(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Confirm Password Field (no visibility toggle, syncs with main password visibility)
+        // Confirm Password Field (with copy button)
         ConfirmPasswordField(
             value = confirmPassword,
             onValueChange = {
@@ -158,6 +165,7 @@ fun StandardSignupForm(
             placeholder = stringResource(com.windscribe.vpn.R.string.confirm_password),
             isError = isConfirmPasswordError,
             passwordVisible = passwordVisible,
+            passwordToCopy = password,
             imeAction = ImeAction.Next
         )
 
@@ -269,8 +277,10 @@ private fun ConfirmPasswordField(
     placeholder: String,
     isError: Boolean,
     passwordVisible: Boolean,
+    passwordToCopy: String,
     imeAction: ImeAction
 ) {
+    val context = LocalContext.current
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
@@ -294,6 +304,24 @@ private fun ConfirmPasswordField(
                     color = placeholderColor,
                     textAlign = TextAlign.Start
                 )
+            },
+            trailingIcon = {
+                IconButton(
+                    onClick = {
+                        if (passwordToCopy.isNotEmpty()) {
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            val clip = ClipData.newPlainText("Password", passwordToCopy)
+                            clipboard.setPrimaryClip(clip)
+                        }
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_copy),
+                        contentDescription = "Copy password",
+                        tint = AppColors.white,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             },
             singleLine = true,
             shape = RoundedCornerShape(9.dp),

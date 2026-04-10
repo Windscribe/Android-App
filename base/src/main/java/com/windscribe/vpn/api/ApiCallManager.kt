@@ -720,15 +720,19 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun generateUsername(): GenericResponseClass<GenerateUsernameResponse?, ApiErrorResponse?> {
         return suspendCancellableCoroutine { continuation ->
-            val hardcodedJson = """{"data": {"username": "LastSlateScoundrel", "success": 1}}"""
-            buildResponse(continuation, 200, hardcodedJson, GenerateUsernameResponse::class.java)
+            val callback = wsNetServerAPI.generateRandomUsername() { code, json ->
+                buildResponse(continuation, code, json, GenerateUsernameResponse::class.java)
+            }
+            continuation.invokeOnCancellation { callback.cancel() }
         }
     }
 
     override suspend fun generatePassword(): GenericResponseClass<GeneratePasswordResponse?, ApiErrorResponse?> {
         return suspendCancellableCoroutine { continuation ->
-            val hardcodedJson = """{"data": {"password": "SecurePass123", "success": 1}}"""
-            buildResponse(continuation, 200, hardcodedJson, GeneratePasswordResponse::class.java)
+            val callback = wsNetServerAPI.generateRandomPassword() { code, json ->
+                buildResponse(continuation, code, json, GeneratePasswordResponse::class.java)
+            }
+            continuation.invokeOnCancellation { callback.cancel() }
         }
     }
 }
