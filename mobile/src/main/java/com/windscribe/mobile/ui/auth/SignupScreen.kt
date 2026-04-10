@@ -1,5 +1,7 @@
 package com.windscribe.mobile.ui.auth
 
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -239,7 +241,10 @@ private fun SignupCompactLayout(
                         onUploadHash = { viewModel?.onUploadHashClick() },
                         onDownloadHash = { viewModel?.onDownloadHashClick(context) },
                         onCopyHash = {},
-                        onLearnMoreClick = {}
+                        onLearnMoreClick = {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://windscribe.net/knowledge-base/articles/hashed-login"))
+                            context.startActivity(intent)
+                        }
                     )
                 }
             }

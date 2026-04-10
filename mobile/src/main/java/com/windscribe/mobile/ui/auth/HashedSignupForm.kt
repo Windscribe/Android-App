@@ -5,10 +5,8 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -33,17 +31,25 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.windscribe.mobile.R
@@ -68,31 +74,48 @@ fun HashedSignupForm(
     val context = LocalContext.current
 
     Column(modifier = modifier) {
-        // Description text
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Top
-        ) {
-            Text(
-                text = stringResource(com.windscribe.vpn.R.string.account_hash_description) + " ",
-                style = font16.copy(
-                    fontWeight = FontWeight.Medium,
-                    lineHeight = font16.fontSize * 1.5f
-                ),
-                color = AppColors.grayText,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = stringResource(com.windscribe.vpn.R.string.learn_more),
-                style = font16.copy(
-                    fontWeight = FontWeight.Medium,
-                    lineHeight = font16.fontSize * 1.5f,
-                    textDecoration = TextDecoration.Underline
-                ),
-                color = AppColors.grayText,
-                modifier = Modifier.clickable { onLearnMoreClick() }
-            )
+        // Description text with inline "Learn more" link
+        val descriptionText = stringResource(com.windscribe.vpn.R.string.account_hash_description)
+        val learnMoreText = stringResource(com.windscribe.vpn.R.string.learn_more)
+
+        val annotatedString = buildAnnotatedString {
+            withStyle(
+                style = SpanStyle(
+                    color = AppColors.grayText,
+                    fontWeight = FontWeight.Medium
+                )
+            ) {
+                append(descriptionText)
+                append(" ")
+            }
+            withLink(
+                LinkAnnotation.Clickable(
+                    tag = "learn_more",
+                    linkInteractionListener = {
+                        onLearnMoreClick()
+                    }
+                )
+            ) {
+                withStyle(
+                    style = SpanStyle(
+                        color = AppColors.grayText,
+                        fontWeight = FontWeight.Medium,
+                        textDecoration = TextDecoration.Underline
+                    )
+                ) {
+                    append(learnMoreText)
+                }
+            }
         }
+
+        Text(
+            text = annotatedString,
+            style = font16.copy(
+                lineHeight = font16.fontSize * 1.5f,
+                textAlign = TextAlign.Start
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -104,20 +127,20 @@ fun HashedSignupForm(
                     color = AppColors.white.copy(alpha = 0.05f),
                     shape = RoundedCornerShape(8.dp)
                 )
-                .border(
-                    width = 2.dp,
-                    color = AppColors.white,
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .border(
-                    BorderStroke(
-                        width = 2.dp,
-                        brush = Brush.linearGradient(
-                            colors = listOf(AppColors.white, AppColors.white)
+                .drawBehind {
+                    val stroke = Stroke(
+                        width = 2.dp.toPx(),
+                        pathEffect = PathEffect.dashPathEffect(
+                            intervals = floatArrayOf(10f, 10f),
+                            phase = 0f
                         )
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                )
+                    )
+                    drawRoundRect(
+                        color = AppColors.white,
+                        style = stroke,
+                        cornerRadius = CornerRadius(8.dp.toPx())
+                    )
+                }
                 .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -210,6 +233,7 @@ fun HashedSignupForm(
                 style = font12.copy(
                     lineHeight = font12.fontSize * 1.5f
                 ),
+                textAlign = TextAlign.Start,
                 color = AppColors.white.copy(alpha = 0.8f)
             )
         }
@@ -246,7 +270,7 @@ private fun ExpandableSection(
                 horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 OptionalBadge()
-                androidx.compose.foundation.layout.Box(
+                Box(
                     modifier = Modifier
                         .size(24.dp)
                         .clickable(
@@ -315,7 +339,7 @@ private fun ActionButton(
         Icon(
             painter = painterResource(id = iconRes),
             contentDescription = contentDescription,
-            tint = AppColors.white.copy(alpha = 0.5f),
+            tint = AppColors.white,
             modifier = Modifier.size(24.dp)
         )
     }

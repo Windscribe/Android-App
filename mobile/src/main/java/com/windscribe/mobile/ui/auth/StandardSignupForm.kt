@@ -213,8 +213,6 @@ fun StandardSignupForm(
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
         // Referral - Expandable Section
         ExpandableSection(
             text = stringResource(com.windscribe.vpn.R.string.referred_by_someone)
