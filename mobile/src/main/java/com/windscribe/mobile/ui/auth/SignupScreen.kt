@@ -6,10 +6,14 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,8 +37,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -42,7 +50,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -134,6 +141,7 @@ fun SignupScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SignupCompactLayout(
     navController: NavController,
@@ -157,14 +165,17 @@ private fun SignupCompactLayout(
         mutableStateOf("")
     }
     val scrollState = rememberScrollState()
+    val density = LocalDensity.current
+    val ime = WindowInsets.ime
+    val imeHeight = ime.getBottom(density)
+    val isKeyboardVisible = imeHeight > 0
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding()
             .imePadding()
-            .padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 24.dp)
     ) {
         Column(
             modifier = Modifier
@@ -259,23 +270,37 @@ private fun SignupCompactLayout(
             SignupHeroButton(viewModel)
         }
 
-        // Bottom "Already have account" link
-        Text(
-            text = stringResource(com.windscribe.vpn.R.string.already_have_account_log_in),
-            style = font16.copy(
-                fontWeight = FontWeight.Medium,
-                textDecoration = TextDecoration.Underline,
-                lineHeight = font16.fontSize * 1.5f
-            ),
-            color = AppColors.grayText,
-            modifier = Modifier
-                .padding(bottom = 16.dp)
-                .clickable {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(Screen.Start.route)
-                    }
-                }
-        )
+        // Bottom "Already have account" link - Pinned to bottom, hide when keyboard is visible
+        if (!isKeyboardVisible) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(vertical = 16.dp)
+                    .clickable {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Start.route)
+                        }
+                    },
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(com.windscribe.vpn.R.string.already_have_account_log_in),
+                    style = font16.copy(
+                        fontWeight = FontWeight.Medium,
+                        lineHeight = font16.fontSize * 1.5f
+                    ),
+                    color = AppColors.grayText
+                )
+                Spacer(modifier = Modifier.size(2.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_chevron_right_small),
+                    contentDescription = null,
+                    tint = AppColors.grayText,
+                )
+            }
+        }
     }
 }
 
