@@ -12,17 +12,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -73,45 +77,29 @@ fun StyledTextField(
     val textColor = if (isError) Color(0xFFFF7F7F) else AppColors.white
     val placeholderColor = if (isError) Color(0xFFFF7F7F) else Color(0xFF898F9D)
 
-    Box {
-        TextField(
+    val customTextSelectionColors = TextSelectionColors(
+        handleColor = AppColors.white,
+        backgroundColor = AppColors.white.copy(alpha = 0.3f)
+    )
+
+    CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
+        BasicTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = {
-                Text(
-                    text = placeholder,
-                    style = font16,
-                    color = placeholderColor,
-                    textAlign = TextAlign.Start
-                )
-            },
             singleLine = true,
-            shape = RoundedCornerShape(9.dp),
+            textStyle = font16.copy(
+                color = textColor,
+                textAlign = TextAlign.Start,
+                lineHeight = 20.sp
+            ),
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.None,
                 autoCorrectEnabled = false,
                 imeAction = imeAction,
                 keyboardType = keyboardType
             ),
-            colors = TextFieldDefaults.colors(
-                focusedTextColor = textColor,
-                unfocusedTextColor = textColor,
-                disabledTextColor = textColor,
-                errorTextColor = textColor,
-                unfocusedContainerColor = AppColors.white.copy(alpha = 0.05f),
-                focusedContainerColor = AppColors.white.copy(alpha = 0.05f),
-                disabledContainerColor = AppColors.white.copy(alpha = 0.05f),
-                errorContainerColor = AppColors.white.copy(alpha = 0.05f),
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                errorIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
-                cursorColor = AppColors.white,
-                selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-                    handleColor = AppColors.white,
-                    backgroundColor = AppColors.white.copy(alpha = 0.3f)
-                )
-            ),
+            cursorBrush = SolidColor(AppColors.white),
+            interactionSource = interactionSource,
             modifier = modifier
                 .fillMaxWidth()
                 .background(
@@ -122,13 +110,24 @@ fun StyledTextField(
                     width = 1.dp,
                     color = borderColor,
                     shape = RoundedCornerShape(9.dp)
-                ),
-            textStyle = font16.copy(
-                color = textColor,
-                textAlign = TextAlign.Start,
-                lineHeight = 20.sp
-            ),
-            interactionSource = interactionSource
+                )
+                .padding(horizontal = 16.dp, vertical = 0.dp)
+                .height(48.dp),
+            decorationBox = { innerTextField ->
+                Box(
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    if (value.isEmpty()) {
+                        Text(
+                            text = placeholder,
+                            style = font16,
+                            color = placeholderColor,
+                            textAlign = TextAlign.Start
+                        )
+                    }
+                    innerTextField()
+                }
+            }
         )
     }
 }
@@ -171,7 +170,7 @@ fun StyledTextFieldPreview() {
         StyledTextField(
             value = activeText,
             onValueChange = { activeText = it },
-            placeholder = "Enter username"
+            placeholder = "Enter usernameygggg"
         )
 
         Spacer(modifier = Modifier.height(24.dp))
