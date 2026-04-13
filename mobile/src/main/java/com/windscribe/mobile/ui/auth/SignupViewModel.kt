@@ -82,6 +82,9 @@ class SignupViewModel @Inject constructor(
     private val _showAllBackupFailedDialog = MutableSharedFlow<Boolean>()
     val showAllBackupFailedDialog: SharedFlow<Boolean> = _showAllBackupFailedDialog
 
+    private val _showEmailInfoDialog = MutableStateFlow(false)
+    val showEmailInfoDialog: StateFlow<Boolean> = _showEmailInfoDialog.asStateFlow()
+
     private var username = ""
     private var password = ""
     private var email = ""
@@ -565,6 +568,18 @@ class SignupViewModel @Inject constructor(
     fun clearDialog() {
         viewModelScope.launch {
             _showAllBackupFailedDialog.emit(false)
+        }
+    }
+
+    fun onEmailInfoClick() {
+        viewModelScope.launch {
+            _showEmailInfoDialog.emit(true)
+        }
+    }
+
+    fun dismissEmailInfoDialog() {
+        viewModelScope.launch {
+            _showEmailInfoDialog.emit(false)
         }
     }
 }

@@ -80,6 +80,9 @@ class LoginViewModel @Inject constructor(
 
     val showAllBackupFailedDialog: SharedFlow<Boolean> = _showAllBackupFailedDialog
 
+    private val _showTwoFactorInfoDialog = MutableStateFlow(false)
+    val showTwoFactorInfoDialog: StateFlow<Boolean> = _showTwoFactorInfoDialog.asStateFlow()
+
     private var username = ""
     private var password = ""
     private var twoFactorCode = ""
@@ -143,7 +146,13 @@ class LoginViewModel @Inject constructor(
 
     fun onTwoFactorHintClicked() {
         viewModelScope.launch {
-            _twoFactorEnabled.emit(!_twoFactorEnabled.value)
+            _showTwoFactorInfoDialog.emit(true)
+        }
+    }
+
+    fun dismissTwoFactorInfoDialog() {
+        viewModelScope.launch {
+            _showTwoFactorInfoDialog.emit(false)
         }
     }
 

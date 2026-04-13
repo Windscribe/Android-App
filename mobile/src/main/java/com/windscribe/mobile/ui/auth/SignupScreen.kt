@@ -26,8 +26,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.window.Dialog
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
@@ -59,6 +67,7 @@ import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font12
+import com.windscribe.mobile.ui.theme.font14
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.common.AppBackground
 import com.windscribe.mobile.ui.common.AppProgressBar
@@ -66,6 +75,9 @@ import com.windscribe.mobile.ui.common.CaptchaDebugDialog
 import com.windscribe.mobile.ui.common.PrimaryButton
 import com.windscribe.mobile.ui.helper.MultiDevicePreview
 import com.windscribe.mobile.ui.helper.PreviewWithNav
+import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
+import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
+import com.windscribe.mobile.ui.theme.primaryTextColor
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -116,6 +128,11 @@ fun SignupScreen(
             Toast.makeText(context, message, Toast.LENGTH_LONG).show()
         }
     }
+
+    val showEmailInfoDialog by viewModel?.showEmailInfoDialog?.collectAsState() ?: remember {
+        mutableStateOf(false)
+    }
+
     AppBackground {
         SignupCompactLayout(navController, signupState, viewModel)
         val showProgressBar = signupState is SignupState.Registering
@@ -137,6 +154,10 @@ fun SignupScreen(
                         )
                     )
                 })
+        }
+
+        if (showEmailInfoDialog) {
+            EmailInfoDialog(onDismiss = { viewModel?.dismissEmailInfoDialog() })
         }
     }
 }
@@ -239,7 +260,7 @@ private fun SignupCompactLayout(
                         onReferralUsernameChange = { viewModel?.onReferralUsernameChanged(it) },
                         onGenerateUsername = { viewModel?.generateUsername() },
                         onGeneratePassword = { viewModel?.generatePassword() },
-                        onEmailInfoClick = { /* Handle email info click */ }
+                        onEmailInfoClick = { viewModel?.onEmailInfoClick() }
                     )
                 }
                 AuthType.HASHED -> {
@@ -344,6 +365,57 @@ private fun SignupErrorText(errorType: AuthError) {
             maxLines = 3,
             overflow = TextOverflow.Ellipsis
         )
+    }
+}
+
+@Composable
+private fun EmailInfoDialog(
+    onDismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.preferencesBackgroundColor,
+            tonalElevation = 0.dp,
+            modifier = Modifier.border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(12.dp)
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(top = 16.dp, bottom = 0.dp, start = 16.dp, end = 16.dp)
+                    .width(180.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = stringResource(com.windscribe.vpn.R.string.add_email),
+                    style = font16.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.primaryTextColor
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = stringResource(com.windscribe.vpn.R.string.email_description),
+                    style = font12.copy(lineHeight = font12.fontSize * 1.4f),
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.8f),
+                    textAlign = TextAlign.Start
+                )
+
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text(
+                        stringResource(com.windscribe.vpn.R.string.ok),
+                        style = font14.copy(fontWeight = FontWeight.Medium),
+                        color = MaterialTheme.colorScheme.primaryTextColor
+                    )
+                }
+            }
+        }
     }
 }
 

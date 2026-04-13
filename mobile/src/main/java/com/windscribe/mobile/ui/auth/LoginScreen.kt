@@ -15,6 +15,12 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.window.Dialog
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -70,7 +76,10 @@ import com.windscribe.mobile.ui.nav.LocalNavController
 import com.windscribe.mobile.ui.nav.Screen
 import com.windscribe.mobile.ui.theme.AppColors
 import com.windscribe.mobile.ui.theme.font12
+import com.windscribe.mobile.ui.theme.font14
 import com.windscribe.mobile.ui.theme.font16
+import com.windscribe.mobile.ui.theme.preferencesBackgroundColor
+import com.windscribe.mobile.ui.theme.primaryTextColor
 import com.windscribe.vpn.constants.NetworkKeyConstants
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
@@ -115,6 +124,11 @@ fun LoginScreen(
             }
         }
     }
+
+    val showTwoFactorInfoDialog by viewModel?.showTwoFactorInfoDialog?.collectAsState() ?: remember {
+        mutableStateOf(false)
+    }
+
     AppBackground {
         LoginCompactLayout(navController, loginState, viewModel)
         val showProgressBar = loginState is LoginState.LoggingIn
@@ -136,6 +150,10 @@ fun LoginScreen(
                         )
                     )
                 })
+        }
+
+        if (showTwoFactorInfoDialog) {
+            TwoFactorInfoDialog(onDismiss = { viewModel?.dismissTwoFactorInfoDialog() })
         }
     }
 }
@@ -275,6 +293,57 @@ fun ErrorText(errorType: AuthError) {
             maxLines = 3,
             overflow = TextOverflow.Ellipsis
         )
+    }
+}
+
+@Composable
+private fun TwoFactorInfoDialog(
+    onDismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.preferencesBackgroundColor,
+            tonalElevation = 0.dp,
+            modifier = Modifier.border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(12.dp)
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(top = 16.dp, bottom = 0.dp, start = 16.dp, end = 16.dp)
+                    .width(180.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = stringResource(com.windscribe.vpn.R.string.two_fa),
+                    style = font16.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.primaryTextColor
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = stringResource(com.windscribe.vpn.R.string.two_fa_description),
+                    style = font12.copy(lineHeight = font12.fontSize * 1.4f),
+                    color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.8f),
+                    textAlign = TextAlign.Start
+                )
+
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text(
+                        stringResource(com.windscribe.vpn.R.string.ok),
+                        style = font14.copy(fontWeight = FontWeight.Medium),
+                        color = MaterialTheme.colorScheme.primaryTextColor
+                    )
+                }
+            }
+        }
     }
 }
 
