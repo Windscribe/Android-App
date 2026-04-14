@@ -672,7 +672,7 @@ class ConnectionViewmodelImpl @Inject constructor(
                     val favourite = localdb.getFavouritesAsync().firstOrNull { it.id == city.id }
                     if (favourite?.pinnedIp != null && favourite.pinnedNodeIp != null) {
                         val nodes = localdb.getServersByDatacenter(city.id)
-                        val nodeExists = nodes.any { it.hostname == favourite.pinnedNodeIp }
+                        val nodeExists = nodes.any { WindUtilities.hostnamesMatch(it.hostname, favourite.pinnedNodeIp) }
                         if (!nodeExists) {
                             logger.warn("Pinned node IP ${favourite.pinnedNodeIp} not found in city ${city.id} nodes")
                             val errorMessage = resourceHelper.getString(com.windscribe.vpn.R.string.could_not_pin_ip)

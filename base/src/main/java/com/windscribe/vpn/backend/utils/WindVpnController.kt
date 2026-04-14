@@ -139,7 +139,7 @@ open class WindVpnController @Inject constructor(
         val forceNode = advanceParameterRepository.get().getForceNode()
         val nodes = localDbInterface.getServersByDatacenter(city.id)
         return if (forceNode != null && nodes.isNotEmpty() ) {
-            nodes.indexOfFirst { it.hostname == forceNode }
+            nodes.indexOfFirst { WindUtilities.hostnamesMatch(it.hostname, forceNode) }
         } else {
             -1
         }
@@ -154,12 +154,12 @@ open class WindVpnController @Inject constructor(
         val nodes = localDbInterface.getServersByDatacenter(city.id)
         val pinnedIp = localDbInterface.getFavouritesAsync()
             .firstOrNull { it.id == selectedCity && it.pinnedNodeIp != null }?.pinnedNodeIp
-        val pinnedNode = nodes.firstOrNull { it.hostname == pinnedIp }
+        val pinnedNode = nodes.firstOrNull { WindUtilities.hostnamesMatch(it.hostname, pinnedIp) }
         // Random node
         var randomIndex = Util.getRandomNode(lastUsedRandomIndex, attempt, nodes)
         // Node if hostname is provided to retry same hostname
         nodes.forEachIndexed { index, node ->
-            if (node.hostname == hostname) {
+            if (WindUtilities.hostnamesMatch(node.hostname, hostname)) {
                 randomIndex = index
             }
         }
