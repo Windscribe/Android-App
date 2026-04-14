@@ -463,6 +463,8 @@ internal fun BoxScope.NetworkInfoSheet(
     val showContextMenu by bridgeApiViewModel.ipContextMenuState.collectAsState()
     val isBridgeApiReady by bridgeApiViewModel.bridgeApiReady.collectAsState()
     val hideIp by homeViewmodel.hideIp.collectAsState()
+    val ipAddress by bridgeApiViewModel.ipState.collectAsState()
+    val context = LocalContext.current
     var showIpAndIcon by remember { mutableStateOf(true) }
 
     LaunchedEffect(showContextMenu.first) {
@@ -492,8 +494,16 @@ internal fun BoxScope.NetworkInfoSheet(
             if (!showContextMenu.first && showIpAndIcon) {
                 Box(
                     modifier = Modifier
-                        .pointerInput(Unit) {
+                        .pointerInput(hideIp) {
                             detectTapGestures(
+                                onTap = {
+                                    if (!hideIp) {
+                                        val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                        val clip = android.content.ClipData.newPlainText("IP Address", ipAddress)
+                                        clipboard.setPrimaryClip(clip)
+                                        Toast.makeText(context, "IP address copied to clipboard", Toast.LENGTH_SHORT).show()
+                                    }
+                                },
                                 onDoubleTap = {
                                     homeViewmodel.onHideIpClick()
                                 }

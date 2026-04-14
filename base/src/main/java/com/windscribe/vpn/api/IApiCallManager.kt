@@ -123,4 +123,6 @@ interface IApiCallManager {
     suspend fun unblockWgParams(): GenericResponseClass<UnblockWgResponse?, ApiErrorResponse?>
     suspend fun getLocations(): GenericResponseClass<LocationResponse?, ApiErrorResponse?>
     suspend fun getServers(backup: Int): GenericResponseClass<ServerResponse?, ApiErrorResponse?>
+    suspend fun generateUsername(): GenericResponseClass<GenerateUsernameResponse?, ApiErrorResponse?>
+    suspend fun generatePassword(): GenericResponseClass<GeneratePasswordResponse?, ApiErrorResponse?>
 }

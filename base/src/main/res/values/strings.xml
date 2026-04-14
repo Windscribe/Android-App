@@ -21,6 +21,8 @@
     <string name="login">Login</string>
     <string name="two_fa">2FA Code</string>
     <string name="two_fa_description">If enabled, use an authentication app to generate the code.</string>
+    <string name="two_fa_check_app_description">Check your preferred one-time password application for a code.</string>
+    <string name="enter_two_fa_code">Enter 2FA Code</string>
     <string name="forgot_password">Forgot Password?</string>
     <string name="next">Continue</string>
     <string name="sign_up_description">Safeguard your account, access your settings from any device and get more data.</string>
@@ -159,7 +161,7 @@
     <string name="add_email">Add Email</string>
     <string name="unlimited_data">Unlimited Data</string>
     <string name="preferences">Preferences</string>
-    <string name="optional">(Optional)</string>
+    <string name="optional">Optional</string>
     <string name="get_10_gb">Get 10GB/ Month</string>
     <string name="plans">Plans</string>
     <string name="pro">Pro</string>
@@ -604,4 +606,15 @@ last chosen location.</string>
     <string name="app_icon">App Icon</string>
     <string name="app_icon_description">Choose a different app icon for even more privacy</string>
     <string name="configuration">Configuration</string>
+    <string name="standard">Standard</string>
+    <string name="hashed">Hashed</string>
+    <string name="hash">Hash</string>
+    <string name="account_hash">Account Hash</string>
+    <string name="enter_account_hash_or_upload">Enter Account Hash or Upload</string>
+    <string name="account_hash_description">This is your unique account hash, save it somewhere safe, you\'ll need it to login.</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="enter_email_address">Enter Email Address</string>
+    <string name="got_voucher_code">Got Voucher Code?</string>
+    <string name="account_hash_backup_confirmation">I have backed up my account hash securely and understand that Windscribe will not be able to help me recover my account if I loose it.</string>
+    <string name="already_have_account_log_in">Already have an account? Log In</string>
 </resources>

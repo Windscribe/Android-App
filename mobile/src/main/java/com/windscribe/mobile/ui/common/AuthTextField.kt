@@ -133,7 +133,7 @@ fun AuthTextField(
                         ) {
                             Icon(
                                 painter = painterResource(
-                                    id = if (passwordVisible) R.drawable.ic_hide_password else R.drawable.ic_show_password
+                                    id = if (passwordVisible) R.drawable.ic_eye_off else R.drawable.ic_eye
                                 ),
                                 stringResource(id = com.windscribe.vpn.R.string.password),
                                 tint = AppColors.white.copy(alpha = 0.50f)
@@ -143,7 +143,6 @@ fun AuthTextField(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp)
                     .then(
                         if (isError) Modifier.border(
                             width = 1.dp,

@@ -1,5 +1,11 @@
 package com.windscribe.mobile.ui.auth
 
+import android.content.ContentValues
+import android.content.Context
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,6 +14,7 @@ import com.windscribe.vpn.api.response.AuthToken
 import com.windscribe.vpn.api.response.UserRegistrationResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext.result
+import com.windscribe.vpn.commonutils.HashUtils
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.errormodel.SessionErrorHandler
@@ -24,7 +31,9 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
+import java.io.File
 import javax.inject.Inject
 
 sealed class SignupState {
@@ -48,8 +57,33 @@ class SignupViewModel @Inject constructor(
     private val _signupButtonEnabled = MutableStateFlow(false)
     val signupButtonEnabled: StateFlow<Boolean> = _signupButtonEnabled.asStateFlow()
 
+    private val _selectedAuthType = MutableStateFlow(AuthType.STANDARD)
+    val selectedAuthType: StateFlow<AuthType> = _selectedAuthType.asStateFlow()
+
+    private val _accountHash = MutableStateFlow("")
+    val accountHash: StateFlow<String> = _accountHash.asStateFlow()
+
+    private val _isBackupConfirmed = MutableStateFlow(false)
+    val isBackupConfirmed: StateFlow<Boolean> = _isBackupConfirmed.asStateFlow()
+
+    private val _generatedUsername = MutableStateFlow("")
+    val generatedUsername: StateFlow<String> = _generatedUsername.asStateFlow()
+
+    private val _generatedPassword = MutableStateFlow("")
+    val generatedPassword: StateFlow<String> = _generatedPassword.asStateFlow()
+
+    private val _hashFileBytes = MutableStateFlow<ByteArray?>(null)
+    private val _triggerFilePicker = MutableSharedFlow<Boolean>(replay = 0)
+    val triggerFilePicker: SharedFlow<Boolean> = _triggerFilePicker
+
+    private val _toastMessage = MutableSharedFlow<String>(replay = 0)
+    val toastMessage: SharedFlow<String> = _toastMessage
+
     private val _showAllBackupFailedDialog = MutableSharedFlow<Boolean>()
     val showAllBackupFailedDialog: SharedFlow<Boolean> = _showAllBackupFailedDialog
+
+    private val _showEmailInfoDialog = MutableStateFlow(false)
+    val showEmailInfoDialog: StateFlow<Boolean> = _showEmailInfoDialog.asStateFlow()
 
     private var username = ""
     private var password = ""
@@ -84,6 +118,165 @@ class SignupViewModel @Inject constructor(
         validateInput()
     }
 
+    fun onAuthTypeChanged(authType: AuthType) {
+        viewModelScope.launch {
+            _selectedAuthType.emit(authType)
+            updateState(SignupState.Idle)
+            _signupButtonEnabled.emit(false)
+            if (authType == AuthType.HASHED) {
+                generateAccountHash()
+            } else {
+                validateInput()
+            }
+        }
+    }
+
+    fun onBackupConfirmedChanged(confirmed: Boolean) {
+        viewModelScope.launch {
+            _isBackupConfirmed.emit(confirmed)
+            validateHashedSignup()
+        }
+    }
+
+    fun generateAccountHash() {
+        viewModelScope.launch(Dispatchers.IO) {
+            // Generate random bytes for the hash file
+            val random = java.security.SecureRandom()
+            val bytes = ByteArray(1024) // 1KB random file
+            random.nextBytes(bytes)
+
+            // Generate SHA256 hash from the bytes
+            val hash = HashUtils.sha256FromInputStream(bytes.inputStream())
+
+            // Store both the file bytes and hash
+            _hashFileBytes.emit(bytes)
+            _accountHash.emit(hash)
+            validateHashedSignup()
+
+            logger.info("Generated hash file and hash: ${hash.take(20)}...")
+        }
+    }
+
+    fun onUploadHashClick() {
+        viewModelScope.launch {
+            _triggerFilePicker.emit(true)
+        }
+    }
+
+    fun onFileSelected(context: Context, uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                if (inputStream != null) {
+                    val bytes = inputStream.readBytes()
+                    val hash = HashUtils.sha256FromInputStream(bytes.inputStream())
+
+                    _hashFileBytes.emit(bytes)
+                    _accountHash.emit(hash)
+
+                    withContext(Dispatchers.Main) {
+                        validateHashedSignup()
+                    }
+                    logger.info("Generated hash from uploaded file: ${hash.take(20)}...")
+                } else {
+                    logger.error("Failed to open input stream for file")
+                }
+            } catch (e: Exception) {
+                logger.error("Error hashing file: ${e.message}")
+            }
+        }
+    }
+
+    fun onDownloadHashClick(context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val bytes = _hashFileBytes.value
+                if (bytes == null) {
+                    logger.error("No hash file bytes available to download")
+                    _toastMessage.emit("Error: No hash file to download")
+                    return@launch
+                }
+
+                val fileName = "windscribe_account_${System.currentTimeMillis()}.key"
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    // Use MediaStore for Android 10+
+                    val contentValues = ContentValues().apply {
+                        put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                        put(MediaStore.Downloads.MIME_TYPE, "application/octet-stream")
+                        put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                    }
+
+                    val uri = context.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                    if (uri != null) {
+                        context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                            outputStream.write(bytes)
+                        }
+                        logger.info("Hash file saved: $fileName")
+                        _toastMessage.emit("Account key saved to Downloads/$fileName")
+                    } else {
+                        logger.error("Failed to create file in Downloads")
+                        _toastMessage.emit("Error: Failed to save file")
+                    }
+                } else {
+                    // Use legacy file path for older Android
+                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    val file = File(downloadsDir, fileName)
+                    file.writeBytes(bytes)
+                    logger.info("Hash file saved: ${file.absolutePath}")
+                    _toastMessage.emit("Account key saved to Downloads/$fileName")
+                }
+            } catch (e: Exception) {
+                logger.error("Error saving hash file: ${e.message}")
+                _toastMessage.emit("Error: ${e.message}")
+            }
+        }
+    }
+
+    fun generateUsername() {
+        viewModelScope.launch {
+            val result = result<com.windscribe.vpn.api.response.GenerateUsernameResponse> {
+                apiCallManager.generateUsername()
+            }
+            when (result) {
+                is CallResult.Success -> {
+                    username = result.data.username
+                    _generatedUsername.emit(result.data.username)
+                    validateInput()
+                    logger.info("Generated username: $username")
+                }
+                is CallResult.Error -> {
+                    logger.error("Failed to generate username: ${result.errorMessage}")
+                }
+            }
+        }
+    }
+
+    fun generatePassword() {
+        viewModelScope.launch {
+            val result = result<com.windscribe.vpn.api.response.GeneratePasswordResponse> {
+                apiCallManager.generatePassword()
+            }
+            when (result) {
+                is CallResult.Success -> {
+                    password = result.data.password
+                    _generatedPassword.emit(result.data.password)
+                    validateInput()
+                    logger.info("Generated password")
+                }
+                is CallResult.Error -> {
+                    logger.error("Failed to generate password: ${result.errorMessage}")
+                }
+            }
+        }
+    }
+
+    private fun validateHashedSignup() {
+        viewModelScope.launch {
+            _signupButtonEnabled.emit(_accountHash.value.isNotEmpty() && _isBackupConfirmed.value)
+        }
+    }
+
     private fun isValidUsername() = username.length >= 2
     private fun isValidPassword() = password.length >= 2
 
@@ -95,6 +288,12 @@ class SignupViewModel @Inject constructor(
     }
 
     fun signupButtonClick() {
+        // For hashed signup, use the hash as both username and password
+        if (_selectedAuthType.value == AuthType.HASHED) {
+            username = _accountHash.value
+            password = _accountHash.value
+        }
+
         if (!WindUtilities.isOnline()) {
             logger.info("User is not connected to the internet.")
             viewModelScope.launch {
@@ -105,6 +304,16 @@ class SignupViewModel @Inject constructor(
             }
             return
         }
+
+        // Skip validation for hashed signup (hash is auto-generated and valid)
+        if (_selectedAuthType.value == AuthType.HASHED) {
+            viewModelScope.launch {
+                startSignupProcess()
+            }
+            return
+        }
+
+        // Standard signup validation
         if (username.isEmpty()) {
             updateState(
                 SignupState.Error(
@@ -151,6 +360,7 @@ class SignupViewModel @Inject constructor(
             )
             return
         }
+        // Standard signup - proceed with validation passed
         viewModelScope.launch {
             startSignupProcess()
         }
@@ -358,6 +568,18 @@ class SignupViewModel @Inject constructor(
     fun clearDialog() {
         viewModelScope.launch {
             _showAllBackupFailedDialog.emit(false)
+        }
+    }
+
+    fun onEmailInfoClick() {
+        viewModelScope.launch {
+            _showEmailInfoDialog.emit(true)
+        }
+    }
+
+    fun dismissEmailInfoDialog() {
+        viewModelScope.launch {
+            _showEmailInfoDialog.emit(false)
         }
     }
 }

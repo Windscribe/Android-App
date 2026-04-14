@@ -25,6 +25,7 @@ import com.windscribe.mobile.ui.auth.LoginViewModel
 import com.windscribe.mobile.ui.auth.NoEmailAttentionScreen
 import com.windscribe.mobile.ui.auth.SignupScreen
 import com.windscribe.mobile.ui.auth.SignupViewModel
+import com.windscribe.mobile.ui.auth.TwoFactorScreen
 import com.windscribe.mobile.ui.connection.AllProtocolFailedScreen
 import com.windscribe.mobile.ui.connection.BridgeApiViewModel
 import com.windscribe.mobile.ui.connection.ConnectionChangeScreen
@@ -115,6 +116,11 @@ private fun NavGraphBuilder.addNavigationScreens() {
     composable(route = Screen.Signup.route) {
         ViewModelRoute(SignupViewModel::class.java) {
             SignupScreen(null, it)
+        }
+    }
+    composable(route = Screen.TwoFactor.route) {
+        ViewModelRoute(LoginViewModel::class.java) {
+            TwoFactorScreen(it)
         }
     }
     composable(route = Screen.EmergencyConnect.route) {

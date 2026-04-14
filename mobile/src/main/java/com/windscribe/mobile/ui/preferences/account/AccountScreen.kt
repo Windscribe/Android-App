@@ -52,6 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.common.NextButton
@@ -389,6 +390,8 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
     val username = account.username
     val emailState = account.emailState
     val navController = LocalNavController.current
+    val context = LocalContext.current
+    val isHashedAccount = username.startsWith("0x")
 
     Column {
         Text(
@@ -401,32 +404,63 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Username Row
+        // Username/Hash Row
         Row(
             modifier = Modifier
                 .background(
                     color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
-                    shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+                    shape = if (isHashedAccount) {
+                        RoundedCornerShape(12.dp)
+                    } else {
+                        RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+                    }
                 )
-                .padding(14.dp)
+                .hapticClickable {
+                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    val clip = android.content.ClipData.newPlainText(if (isHashedAccount) "Hash" else "Username", username)
+                    clipboard.setPrimaryClip(clip)
+                }
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                stringResource(R.string.username),
+                if (isHashedAccount) stringResource(R.string.hash) else stringResource(R.string.username),
                 style = font16.copy(
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primaryTextColor
                 )
             )
             Spacer(modifier = Modifier.weight(1f))
-            Text(
-                username,
-                style = font16.copy(color = MaterialTheme.colorScheme.preferencesSubtitleColor)
-            )
+            if (isHashedAccount) {
+                // Display hash in two lines (34 chars total: 18 + 16)
+                val hashText = if (username.length > 18) {
+                    "${username.substring(0, 18)}\n${username.substring(18)}"
+                } else {
+                    username
+                }
+                Text(
+                    hashText,
+                    style = font16.copy(
+                        color = MaterialTheme.colorScheme.preferencesSubtitleColor,
+                        textAlign = TextAlign.End,
+                        lineHeight = 22.sp
+                    ),
+                    maxLines = 2
+                )
+            } else {
+                Text(
+                    username,
+                    style = font16.copy(color = MaterialTheme.colorScheme.preferencesSubtitleColor),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(1.dp))
+        if (!isHashedAccount) {
+            Spacer(modifier = Modifier.height(1.dp))
 
-        // Email Section
+            // Email Section
         Column(
             modifier = Modifier
                 .background(
@@ -538,10 +572,11 @@ private fun AccountInfo(viewModel: AccountViewModel? = null) {
             }
         }
 
-        if (emailState is EmailState.NoEmail) {
-            Spacer(modifier = Modifier.height(14.dp))
-            ActionButton("${stringResource(R.string.add_email)} (${stringResource(R.string.get_10_gb)})") {
-                navController.navigate(Screen.AddEmail.route)
+            if (emailState is EmailState.NoEmail) {
+                Spacer(modifier = Modifier.height(14.dp))
+                ActionButton("${stringResource(R.string.add_email)} (${stringResource(R.string.get_10_gb)})") {
+                    navController.navigate(Screen.AddEmail.route)
+                }
             }
         }
     }
