@@ -45,6 +45,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
@@ -73,7 +74,6 @@ fun CustomConfigItem(
     connectionViewModel: ConnectionViewmodel,
     configViewmodel: ConfigViewmodel,
 ) {
-    val iconSize = 48.dp
     val latencyState by viewModel.latencyListState.collectAsState()
     val latency by rememberUpdatedState(
         (latencyState as? ListState.Success)?.data?.find { it.id == item.id }?.time ?: -1
@@ -210,7 +210,7 @@ fun CustomConfigItem(
                 ) {
                     connectionViewModel.onConfigClick(item.config)
                 }
-                .padding(horizontal = 16.dp)
+                .padding(start = 4.dp, end = 8.dp)
                 .background(color = MaterialTheme.colorScheme.serverListBackgroundColor),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -219,14 +219,17 @@ fun CustomConfigItem(
                 contentDescription = "Custom config",
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverItemTextColor)
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = item.config.name,
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 modifier = Modifier.weight(1f),
                 color = MaterialTheme.colorScheme.serverItemTextColor,
-                textAlign = TextAlign.Start
+                textAlign = TextAlign.Start,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
+            Spacer(modifier = Modifier.width(12.dp))
             DataCenterLatencyIcon(latency)
         }
     }

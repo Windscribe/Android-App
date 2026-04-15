@@ -119,7 +119,7 @@ private fun SuccessView(
                     },
                     modifier = Modifier.weight(1.0f)
                 ) {
-                    LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize().padding(start = 16.dp)) {
+                    LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp)) {
                         item {
                             Text(
                                 text = stringResource(com.windscribe.vpn.R.string.custom_configs),
