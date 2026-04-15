@@ -1008,6 +1008,14 @@ class DataStorePreferenceHelper(
         get() = runBlocking { getInt(DataStoreKeys.CURRENT_STATUS_KEY, 0) }
         set(value) = setInt(DataStoreKeys.CURRENT_STATUS_KEY, value)
 
+    override var lastUpdateCheckTimestamp: Long
+        get() = runBlocking { getLong(DataStoreKeys.LAST_UPDATE_CHECK_TIMESTAMP, 0L) }
+        set(value) = setLong(DataStoreKeys.LAST_UPDATE_CHECK_TIMESTAMP, value)
+
+    override var lastUpdatePromptTimestamp: Long
+        get() = runBlocking { getLong(DataStoreKeys.LAST_UPDATE_PROMPT_TIMESTAMP, 0L) }
+        set(value) = setLong(DataStoreKeys.LAST_UPDATE_PROMPT_TIMESTAMP, value)
+
     override var rateDialogLastUpdateTime: String?
         get() = runBlocking {
             getString(

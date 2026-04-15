@@ -96,6 +96,7 @@ interface ApplicationComponent {
     val logRepository: LogRepository
     val bridgeApiRepository: BridgeApiRepository
     val unblockWgParamsRepository: UnblockWgParamsRepository
+    val checkUpdateRepository: CheckUpdateRepository
     val appIconCache: AppIconCache
 
     //Services

@@ -196,6 +196,8 @@ object DataStoreKeys {
     val IKEV2_CREDENTIALS = stringPreferencesKey(PreferencesKeyConstants.IKEV2_CREDENTIALS)
     val STATIC_IP_CREDENTIALS = stringPreferencesKey(PreferencesKeyConstants.STATIC_IP_CREDENTIAL)
 
+    val LAST_UPDATE_CHECK_TIMESTAMP = longPreferencesKey(PreferencesKeyConstants.LAST_UPDATE_CHECK_TIMESTAMP)
+    val LAST_UPDATE_PROMPT_TIMESTAMP = longPreferencesKey(PreferencesKeyConstants.LAST_UPDATE_PROMPT_TIMESTAMP)
     val SELECTED_UNBLOCK_WG_PARAM = stringPreferencesKey(PreferencesKeyConstants.SELECTED_UNBLOCK_WG_PARAM)
     val IPV6_MODE = stringPreferencesKey(PreferencesKeyConstants.IPV6_MODE)
 

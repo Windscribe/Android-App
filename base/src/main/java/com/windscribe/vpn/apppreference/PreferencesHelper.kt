@@ -153,6 +153,8 @@ interface PreferencesHelper {
     var purchasedItem: String?
     var amazonPurchasedItem: String?
     var rateDialogStatus: Int
+    var lastUpdateCheckTimestamp: Long
+    var lastUpdatePromptTimestamp: Long
     var rateDialogLastUpdateTime: String?
     var customIcon: String
     val customIconFlow: kotlinx.coroutines.flow.Flow<String>

@@ -92,6 +92,9 @@ interface ApplicationComponent {
     val unblockWgParamsRepository: UnblockWgParamsRepository
     val appIconCache: AppIconCache
 
+    val checkUpdateRepository: CheckUpdateRepository
+
+
     //Inject
     fun inject(app: Windscribe)
     fun inject(serverListWorker: ServerListWorker)
