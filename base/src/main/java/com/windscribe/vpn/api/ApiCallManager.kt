@@ -9,6 +9,7 @@ import com.windscribe.vpn.api.response.UnblockWgResponse
 import com.windscribe.vpn.api.response.ApiErrorResponse
 import com.windscribe.vpn.api.response.AuthToken
 import com.windscribe.vpn.api.response.BillingPlanResponse
+import com.windscribe.vpn.api.response.CheckUpdateResponse
 import com.windscribe.vpn.api.response.ClaimAccountResponse
 import com.windscribe.vpn.api.response.ClaimVoucherCodeResponse
 import com.windscribe.vpn.api.response.GeneratePasswordResponse
@@ -264,6 +265,25 @@ open class ApiCallManager @Inject constructor(
                 captchaTrailY
             ) { code, json ->
                 buildResponse(continuation, code, json, UserLoginResponse::class.java)
+            }
+            continuation.invokeOnCancellation { callback.cancel() }
+        }
+    }
+
+    override suspend fun checkUpdate(
+        appVersion: String,
+        appBuild: String,
+        osVersion: String
+    ): GenericResponseClass<CheckUpdateResponse?, ApiErrorResponse?> {
+        return suspendCancellableCoroutine { continuation ->
+            val callback = wsNetServerAPI.checkUpdate(
+                0,
+                appVersion,
+                appBuild,
+                osVersion,
+                ""
+            ) { code, json ->
+                buildResponse(continuation, code, json, CheckUpdateResponse::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
         }

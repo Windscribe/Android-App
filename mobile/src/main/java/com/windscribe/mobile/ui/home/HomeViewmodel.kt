@@ -9,6 +9,7 @@ import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.model.User
+import com.windscribe.vpn.repository.CheckUpdateRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +31,7 @@ sealed class HomeGoto {
     object ShareAppLink : HomeGoto()
     object LocationMaintenance : HomeGoto()
     data class EditCustomConfig(val id: Int, val connect: Boolean) : HomeGoto()
+    data class UpdateAvailable(val latestVersion: String?) : HomeGoto()
     object MainMenu : HomeGoto()
     object None : HomeGoto()
     data class IpActionError(val message: String, val description: String) : HomeGoto()
@@ -65,7 +67,8 @@ abstract class HomeViewmodel : ViewModel() {
 class HomeViewmodelImpl(
     private val vpnConnectionStateManager: VPNConnectionStateManager,
     private val userRepository: UserRepository,
-    private val preferences: PreferencesHelper
+    private val preferences: PreferencesHelper,
+    private val checkUpdateRepository: CheckUpdateRepository
 ) : HomeViewmodel() {
 
     private val _goto = MutableSharedFlow<HomeGoto>(replay = 0)
@@ -87,6 +90,7 @@ class HomeViewmodelImpl(
         fetchUserState()
         observeConnectionCount()
         observePreferences()
+        observeUpdateAvailable()
     }
 
     private fun observePreferences() {
@@ -98,6 +102,17 @@ class HomeViewmodelImpl(
         viewModelScope.launch(Dispatchers.IO) {
             preferences.isShowLocationHealthEnabledFlow.collectLatest { isEnabled ->
                 _showLocationLoad.value = isEnabled
+            }
+        }
+    }
+
+    private fun observeUpdateAvailable() {
+        viewModelScope.launch(Dispatchers.IO) {
+            checkUpdateRepository.updateAvailable.collectLatest { update ->
+                if (update != null && update.isUpdateAvailable && checkUpdateRepository.shouldShowPrompt()) {
+                    checkUpdateRepository.recordPromptShown()
+                    _goto.emit(HomeGoto.UpdateAvailable(update.latestVersion))
+                }
             }
         }
     }

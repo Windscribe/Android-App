@@ -44,6 +44,12 @@ interface IApiCallManager {
     ): GenericResponseClass<UserLoginResponse?, ApiErrorResponse?>
 
     suspend fun getWebSession(): GenericResponseClass<WebSession?, ApiErrorResponse?>
+    suspend fun checkUpdate(
+        appVersion: String,
+        appBuild: String,
+        osVersion: String
+    ): GenericResponseClass<CheckUpdateResponse?, ApiErrorResponse?>
+
     suspend fun recordAppInstall(): GenericResponseClass<String?, ApiErrorResponse?>
     suspend fun resendUserEmailAddress(extraParams: Map<String, String>? = null): GenericResponseClass<AddEmailResponse?, ApiErrorResponse?>
     suspend fun sendTicket(

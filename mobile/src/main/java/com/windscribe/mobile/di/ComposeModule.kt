@@ -70,6 +70,7 @@ import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.BridgeApiRepository
+import com.windscribe.vpn.repository.CheckUpdateRepository
 import com.windscribe.vpn.repository.FavouriteRepository
 import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LatencyRepository
@@ -126,7 +127,8 @@ class ComposeModule {
         deviceStateManager: DeviceStateManager,
         appIconManager: AppIconManager,
         unblockWgParamsRepository: UnblockWgParamsRepository,
-        appIconCache: AppIconCache
+        appIconCache: AppIconCache,
+        checkUpdateRepository: CheckUpdateRepository
     ): ViewModelProvider.Factory {
         return object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -201,7 +203,8 @@ class ComposeModule {
                     return HomeViewmodelImpl(
                         vpnConnectionStateManager,
                         userRepository,
-                        appPreferenceHelper
+                        appPreferenceHelper,
+                        checkUpdateRepository
                     ) as T
                 } else if (modelClass.isAssignableFrom(EditCustomConfigViewmodel::class.java)) {
                     return EditCustomConfigViewmodelImpl(localDbInterface, windVpnController) as T

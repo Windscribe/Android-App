@@ -9,6 +9,7 @@ import androidx.work.*
 import androidx.work.Constraints.Builder
 import androidx.work.ExistingPeriodicWorkPolicy.REPLACE
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.repository.CheckUpdateRepository
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.workers.worker.*
 import kotlinx.coroutines.CoroutineScope
@@ -26,7 +27,7 @@ import kotlin.jvm.java
  * Handles one off and periodic tasks for app.
  */
 @Singleton
-class WindScribeWorkManager(private val context: Context, private val scope: CoroutineScope, private val vpnConnectionStateManager: VPNConnectionStateManager, val preferencesHelper: PreferencesHelper) {
+class WindScribeWorkManager(private val context: Context, private val scope: CoroutineScope, private val vpnConnectionStateManager: VPNConnectionStateManager, val preferencesHelper: PreferencesHelper, private val checkUpdateRepository: CheckUpdateRepository) {
     private var foregroundSessionUpdateJob: Job? = null
     private var logger = LoggerFactory.getLogger("worker")
     fun onAppStart() {
@@ -42,6 +43,7 @@ class WindScribeWorkManager(private val context: Context, private val scope: Cor
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(NOTIFICATION_DAY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(NotificationWorker::class.java, DAYS))
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(SESSION_DAY_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(SessionWorker::class.java, DAYS))
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(UNBLOCK_WG_PARAMS_WORKER_KEY, REPLACE, createPeriodicWorkerRequest(UnblockWgParamsWorker::class.java, DAYS))
+        checkUpdateRepository.checkForUpdate()
         keepSessionUpdated()
     }
 

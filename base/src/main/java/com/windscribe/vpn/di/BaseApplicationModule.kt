@@ -55,6 +55,7 @@ import com.windscribe.vpn.repository.FavouriteRepository
 import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.LocationRepository
+import com.windscribe.vpn.repository.CheckUpdateRepository
 import com.windscribe.vpn.repository.NotificationRepository
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
@@ -704,10 +705,11 @@ open class BaseApplicationModule {
     fun providesWindScribeWorkManager(
         scope: CoroutineScope,
         vpnConnectionStateManager: VPNConnectionStateManager,
-        preferencesHelper: PreferencesHelper
+        preferencesHelper: PreferencesHelper,
+        checkUpdateRepository: CheckUpdateRepository
     ): WindScribeWorkManager {
         return WindScribeWorkManager(
-            windscribeApp, scope, vpnConnectionStateManager, preferencesHelper
+            windscribeApp, scope, vpnConnectionStateManager, preferencesHelper, checkUpdateRepository
         )
     }
 
