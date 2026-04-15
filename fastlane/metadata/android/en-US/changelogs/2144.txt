@@ -1,0 +1,2 @@
+v4.0(TV)
+* Serverlist v2 API to avoid unnecessary updates.
