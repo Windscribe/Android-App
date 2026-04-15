@@ -127,6 +127,16 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
                 preferenceChangeObserver.postEmailStatusChange()
             }
             handleAccountStatusChange(it)
+            handleTunnelRecovery()
+        }
+    }
+
+    private fun handleTunnelRecovery() {
+        val vpnState = vpnStateManager.state.value
+        if (vpnState.error?.error == com.windscribe.vpn.backend.VPNState.ErrorType.BrokenTunnel &&
+            preferencesHelper.globalUserConnectionPreference) {
+            logger.info("Reconnecting after tunnel recovery")
+            vpnController.connectAsync()
         }
     }
 

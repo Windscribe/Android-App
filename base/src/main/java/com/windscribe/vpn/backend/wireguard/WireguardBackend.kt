@@ -95,7 +95,7 @@ class WireguardBackend @Inject constructor(
         deviceStateManager = deviceStateManager,
         workManager = appContext.workManager,
         getService = { service },
-        disconnect = { disconnect(error = null) }
+        disconnect = { error -> disconnect(error = error) }
     )
 
     fun serviceCreated(vpnService: WireGuardWrapperService) {
