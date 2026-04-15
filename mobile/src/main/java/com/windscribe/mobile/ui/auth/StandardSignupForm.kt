@@ -68,6 +68,7 @@ fun StandardSignupForm(
     isPasswordError: Boolean = false,
     isConfirmPasswordError: Boolean = false,
     isEmailError: Boolean = false,
+    isReferralError: Boolean = false,
     onUsernameChange: (String) -> Unit = {},
     onPasswordChange: (String) -> Unit = {},
     onConfirmPasswordChange: (String) -> Unit = {},
@@ -225,7 +226,23 @@ fun StandardSignupForm(
         ExpandableSection(
             text = stringResource(com.windscribe.vpn.R.string.referred_by_someone)
         ) {
+            // Referral Benefits - BEFORE input field
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 8.dp)
+            ) {
+                ReferralBenefitItem(
+                    text = stringResource(com.windscribe.vpn.R.string.first_reason_to_use_referral)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                ReferralBenefitItem(
+                    text = stringResource(com.windscribe.vpn.R.string.second_reason_to_use_referral)
+                )
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
+
             StyledTextField(
                 value = referralUsername,
                 onValueChange = {
@@ -233,9 +250,69 @@ fun StandardSignupForm(
                     onReferralUsernameChange(it)
                 },
                 placeholder = stringResource(com.windscribe.vpn.R.string.referral_username),
+                isError = isReferralError,
                 imeAction = ImeAction.Done
             )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Error message or explanation text under input
+            if (isReferralError) {
+                Text(
+                    text = stringResource(com.windscribe.vpn.R.string.please_provide_email_first),
+                    style = font12.copy(
+                        fontWeight = FontWeight.Normal,
+                        lineHeight = font12.fontSize * 1.4f
+                    ),
+                    textAlign = TextAlign.Start,
+                    color = AppColors.red,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                )
+            } else {
+                Text(
+                    text = stringResource(com.windscribe.vpn.R.string.you_must_confirm_your_email_in_order_for_the_benefits_above_to_apply_to_you_and_the_referrer),
+                    style = font12.copy(
+                        fontWeight = FontWeight.Normal,
+                        lineHeight = font12.fontSize * 1.4f
+                    ),
+                    textAlign = TextAlign.Start,
+                    color = AppColors.grayText,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun ReferralBenefitItem(text: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_check),
+            contentDescription = null,
+            modifier = Modifier
+                .size(16.dp)
+                .padding(top = 2.dp),
+            tint = Color.Unspecified
+        )
+        Spacer(modifier = Modifier.size(8.dp))
+        Text(
+            text = text,
+            style = font12.copy(
+                fontWeight = FontWeight.Normal,
+                lineHeight = font12.fontSize * 1.4f
+            ),
+            textAlign = TextAlign.Start,
+            color = AppColors.grayText,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 

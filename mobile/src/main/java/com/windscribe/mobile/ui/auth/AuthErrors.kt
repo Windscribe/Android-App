@@ -5,8 +5,10 @@ import androidx.annotation.StringRes
 sealed class AuthInputFields {
     object Username : AuthInputFields()
     object Password : AuthInputFields()
+    object ConfirmPassword : AuthInputFields()
     object Email : AuthInputFields()
     object TwoFactor : AuthInputFields()
+    object Referral : AuthInputFields()
 }
 
 sealed class AuthError {

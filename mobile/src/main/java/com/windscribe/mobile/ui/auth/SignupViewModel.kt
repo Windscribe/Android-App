@@ -87,6 +87,7 @@ class SignupViewModel @Inject constructor(
 
     private var username = ""
     private var password = ""
+    private var confirmPassword = ""
     private var email = ""
     private var voucher = ""
     private var referralUsername = ""
@@ -100,6 +101,11 @@ class SignupViewModel @Inject constructor(
 
     fun onPasswordChanged(password: String) {
         this.password = password
+        validateInput()
+    }
+
+    fun onConfirmPasswordChanged(confirmPassword: String) {
+        this.confirmPassword = confirmPassword
         validateInput()
     }
 
@@ -282,8 +288,32 @@ class SignupViewModel @Inject constructor(
 
     private fun validateInput() {
         viewModelScope.launch {
-            _signupButtonEnabled.emit(isValidUsername() && isValidPassword())
-            updateState(SignupState.Idle)
+            // Check if referral username is entered without email
+            if (referralUsername.isNotEmpty() && email.isEmpty()) {
+                updateState(
+                    SignupState.Error(
+                        AuthError.LocalizedInputError(
+                            com.windscribe.vpn.R.string.please_provide_email_first,
+                            listOf(AuthInputFields.Referral)
+                        )
+                    )
+                )
+                _signupButtonEnabled.emit(false)
+            } else if (password.isNotEmpty() && confirmPassword.isNotEmpty() && password != confirmPassword) {
+                // Check if passwords match
+                updateState(
+                    SignupState.Error(
+                        AuthError.LocalizedInputError(
+                            com.windscribe.vpn.R.string.passwords_do_not_match,
+                            listOf(AuthInputFields.ConfirmPassword)
+                        )
+                    )
+                )
+                _signupButtonEnabled.emit(false)
+            } else {
+                _signupButtonEnabled.emit(isValidUsername() && isValidPassword())
+                updateState(SignupState.Idle)
+            }
         }
     }
 
@@ -331,6 +361,17 @@ class SignupViewModel @Inject constructor(
                     AuthError.LocalizedInputError(
                         com.windscribe.vpn.R.string.password_too_short,
                         listOf(AuthInputFields.Password)
+                    )
+                )
+            )
+            return
+        }
+        if (password != confirmPassword) {
+            updateState(
+                SignupState.Error(
+                    AuthError.LocalizedInputError(
+                        com.windscribe.vpn.R.string.passwords_do_not_match,
+                        listOf(AuthInputFields.ConfirmPassword)
                     )
                 )
             )
