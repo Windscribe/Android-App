@@ -215,16 +215,16 @@ class WindscribePresenterImpl @Inject constructor(
 
     private fun isUserEligibleForRatingApp(userSessionResponse: com.windscribe.vpn.api.response.UserSessionResponse): Boolean {
         val user = User(userSessionResponse)
-        val dataUsed = user.dataUsed.toDouble() / (1024 * 1024 * 1024)
-        return dataUsed >= 2.0 && elapsedTwoDayAfterLogin() && lastShownDays()
+        val dataUsed = user.dataUsed.toDouble() / (1024 * 1024)
+        return dataUsed >= 50.0 && hasMinimumLoginTime() && lastShownDays()
     }
 
-    private fun elapsedTwoDayAfterLogin(): Boolean {
+    private fun hasMinimumLoginTime(): Boolean {
         val milliSeconds1 = preferencesHelper.loginTime?.time ?: Date().time
         val milliSeconds2 = Date().time
         val periodSeconds = (milliSeconds2 - milliSeconds1) / 1000
         val elapsedDays = periodSeconds / 60 / 60 / 24
-        return elapsedDays.toInt() >= 2
+        return elapsedDays.toInt() >= 1
     }
 
     private fun lastShownDays(): Boolean {
@@ -232,7 +232,7 @@ class WindscribePresenterImpl @Inject constructor(
         return try {
             val difference = Date().time - time.toLong()
             val days = TimeUnit.DAYS.convert(difference, MILLISECONDS)
-            days > RateDialogConstants.MINIMUM_DAYS_TO_START
+            days > RateDialogConstants.MINIMUM_DAYS_TO_SHOW_AGAIN
         } catch (_: NumberFormatException) {
             true
         }

@@ -27,9 +27,9 @@ class WindscribeReviewManagerImpl(
         scope.launch {
             userRepository.userInfo.collectLatest {
                 delay(3000)
-                val dataUsed = it.dataUsed.toDouble() / (1024 * 1024 * 1024)
+                val dataUsed = it.dataUsed.toDouble() / (1024 * 1024)
                 // Check if user is eligible for review
-                if (dataUsed > 1.0 && daysSinceLogin() >= 2 && notAlreadyShown()) {
+                if (dataUsed > 50.0 && hasMinimumLoginTime() && notAlreadyShown()) {
                     reviewManager.requestReviewFlow().addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             val reviewInfo = task.result
@@ -51,11 +51,12 @@ class WindscribeReviewManagerImpl(
         }
     }
 
-    private fun daysSinceLogin(): Long {
+    private fun hasMinimumLoginTime(): Boolean {
         val milliSeconds1 = preferencesHelper.loginTime?.time ?: Date().time
         val milliSeconds2 = Date().time
         val periodSeconds = (milliSeconds2 - milliSeconds1) / 1000
-        return periodSeconds / 60 / 60 / 24
+        val daysSinceLogin = periodSeconds / 60 / 60 / 24
+        return daysSinceLogin >= 1
     }
 
     private fun notAlreadyShown(): Boolean {
