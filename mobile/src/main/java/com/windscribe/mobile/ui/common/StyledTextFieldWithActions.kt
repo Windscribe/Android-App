@@ -142,9 +142,9 @@ fun StyledTextFieldWithActions(
                             Icon(
                                 painter = painterResource(
                                     id = if (passwordVisible) {
-                                        R.drawable.ic_eye
-                                    } else {
                                         R.drawable.ic_eye_off
+                                    } else {
+                                        R.drawable.ic_eye
                                     }
                                 ),
                                 contentDescription = if (passwordVisible) "Hide password" else "Show password",

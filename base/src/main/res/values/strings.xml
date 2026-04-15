@@ -20,6 +20,7 @@
     <string name="fa_invalid_error">Invalid 2FA code</string>
     <string name="login">Login</string>
     <string name="two_fa">2FA Code</string>
+    <string name="add_two_fa">Add 2FA</string>
     <string name="two_fa_description">If enabled, use an authentication app to generate the code.</string>
     <string name="two_fa_check_app_description">Check your preferred one-time password application for a code.</string>
     <string name="enter_two_fa_code">Enter 2FA Code</string>

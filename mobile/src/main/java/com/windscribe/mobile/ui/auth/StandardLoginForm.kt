@@ -141,7 +141,7 @@ fun StandardLoginForm(
 
         // 2FA - Expandable Section
         ExpandableSection(
-            text = stringResource(com.windscribe.vpn.R.string.two_fa)
+            text = stringResource(com.windscribe.vpn.R.string.add_two_fa)
         ) {
             Spacer(modifier = Modifier.height(8.dp))
             StyledTextFieldWithActions(

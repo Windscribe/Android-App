@@ -318,7 +318,6 @@ private fun ConfirmPasswordField(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_copy),
                         contentDescription = "Copy password",
-                        tint = AppColors.white,
                         modifier = Modifier.size(24.dp)
                     )
                 }

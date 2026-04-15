@@ -237,8 +237,11 @@ fun LoginCompactLayout(
                 HashedLoginForm(
                     accountHash = accountHashDisplay,
                     isError = isError(loginState, AuthInputFields.Username),
+                    is2FAError = isError(loginState, AuthInputFields.TwoFactor),
                     onHashValueChange = { viewModel?.onAccountHashChanged(it) },
-                    onUploadClick = { viewModel?.onUploadHashClick() }
+                    onUploadClick = { viewModel?.onUploadHashClick() },
+                    on2FAChange = { viewModel?.onTwoFactorChanged(it) },
+                    on2FAInfoClick = { viewModel?.onTwoFactorHintClicked() }
                 )
             }
         }
