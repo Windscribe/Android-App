@@ -56,6 +56,7 @@ import com.windscribe.mobile.ui.common.DataCenterFavouriteIcon
 import com.windscribe.mobile.ui.common.DataCenterLatencyIcon
 import com.windscribe.mobile.ui.common.DataCenterIcon
 import com.windscribe.mobile.ui.common.DataCenterName
+import com.windscribe.mobile.ui.common.DataCenterNoP2PIcon
 import com.windscribe.mobile.ui.common.TenGIcon
 import com.windscribe.mobile.ui.common.healthColor
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
@@ -66,6 +67,8 @@ import com.windscribe.mobile.ui.theme.serverListBackgroundColor
 import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.serverlist.entity.Datacenter
+import com.windscribe.vpn.serverlist.entity.DatacenterStatus
+import com.windscribe.vpn.serverlist.entity.DatacenterStatusHelper
 
 private const val MIN_HEALTH_VALUE = 50
 
@@ -199,20 +202,21 @@ private fun DataCenterItem(
     homeViewmodel: HomeViewmodel
 ) {
     val favouriteState by viewModel.favouriteListState.collectAsState()
+    val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
     var isFavorite = false
     if (favouriteState is ListState.Success) {
         isFavorite = (favouriteState as ListState.Success).data.any { it.city.id == item.id }
     }
-    val dataCenterHealth by viewModel.observeAverageHealth(item.id).collectAsState(initial = MIN_HEALTH_VALUE)
+    val health by viewModel.observeAverageHealth(item.id).collectAsState(initial = MIN_HEALTH_VALUE)
     val latencyState by viewModel.latencyListState.collectAsState()
     val latency by rememberUpdatedState(
         if (latencyState is ListState.Success) {
             (latencyState as ListState.Success).data.find { it.id == item.id }?.time ?: -1
         } else -1
     )
-    val showLocationLoad by homeViewmodel.showLocationLoad.collectAsState()
-    val interactionSource = remember { MutableInteractionSource() }
     val serverCount by viewModel.observeDatacenterServerCount(item.id).collectAsState(initial = 0)
+    val isAvailable = DatacenterStatusHelper.getStatus(item, serverCount) == DatacenterStatus.Available
+    val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -224,18 +228,20 @@ private fun DataCenterItem(
                 viewModel.toggleSearch()
                 connectionViewModel.onCityClick(item)
             }
-            .padding(horizontal = 8.dp),
+            .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        DataCenterIcon(item, dataCenterHealth, showLocationLoad, serverCount)
+        DataCenterIcon(item, health, showLocationLoad, serverCount)
         Spacer(modifier = Modifier.width(8.dp))
         DataCenterName("${item.nodeName} ${item.nickName}", Modifier.weight(1f))
-        if (item.linkSpeed == 10000) {
-            TenGIcon()
+        if (item.p2p != 1) {
+            DataCenterNoP2PIcon()
             Spacer(modifier = Modifier.width(12.dp))
         }
-        DataCenterLatencyIcon(latency)
-        Spacer(modifier = Modifier.width(12.dp))
+        if (isAvailable) {
+            DataCenterLatencyIcon(latency)
+            Spacer(modifier = Modifier.width(12.dp))
+        }
         DataCenterFavouriteIcon(isFavorite) {
             viewModel.toggleFavorite(item)
         }

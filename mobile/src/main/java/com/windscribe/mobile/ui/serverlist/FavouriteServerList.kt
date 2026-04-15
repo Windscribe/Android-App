@@ -135,6 +135,7 @@ private fun ListItemView(
         } else -1
     )
     val requiresPro = DatacenterStatusHelper.requiresPro(item.city, serverCount)
+    val isAvailable = DatacenterStatusHelper.isAvailable(item.city, serverCount)
     val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = Modifier
@@ -163,8 +164,10 @@ private fun ListItemView(
                 color = MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.60f)
             )
         }
-        DataCenterLatencyIcon(latency)
-        Spacer(modifier = Modifier.width(12.dp))
+        if (isAvailable) {
+            DataCenterLatencyIcon(latency)
+            Spacer(modifier = Modifier.width(12.dp))
+        }
         DataCenterFavouriteIcon(true) {
             viewModel.deleteFavourite(item.id)
         }

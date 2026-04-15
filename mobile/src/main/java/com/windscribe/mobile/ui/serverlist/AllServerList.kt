@@ -77,6 +77,8 @@ import com.windscribe.mobile.ui.theme.serverListSecondaryColor
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.commonutils.FlagIconResource
 import com.windscribe.vpn.serverlist.entity.Datacenter
+import com.windscribe.vpn.serverlist.entity.DatacenterStatus
+import com.windscribe.vpn.serverlist.entity.DatacenterStatusHelper
 
 private const val MIN_HEALTH_VALUE = 50
 
@@ -532,6 +534,7 @@ private fun DataCenterItem(
         } else -1
     )
     val serverCount by viewModel.observeDatacenterServerCount(item.id).collectAsState(initial = 0)
+    val isAvailable = DatacenterStatusHelper.getStatus(item, serverCount) == DatacenterStatus.Available
     val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = Modifier
@@ -553,8 +556,10 @@ private fun DataCenterItem(
             DataCenterNoP2PIcon()
             Spacer(modifier = Modifier.width(12.dp))
         }
-        DataCenterLatencyIcon(latency)
-        Spacer(modifier = Modifier.width(12.dp))
+        if (isAvailable) {
+            DataCenterLatencyIcon(latency)
+            Spacer(modifier = Modifier.width(12.dp))
+        }
         DataCenterFavouriteIcon(isFavorite) {
             viewModel.toggleFavorite(item)
         }
