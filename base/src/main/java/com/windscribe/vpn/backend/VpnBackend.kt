@@ -14,6 +14,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.AdvanceParameterRepository
@@ -179,7 +180,7 @@ abstract class VpnBackend(
                 val selectedIp = preferencesHelper.selectedIp
                 val shouldCheckPinning = pinnedLocation?.second != null
                 val hasPinnedNodeMismatch =
-                    shouldCheckPinning && pinnedLocation.second != selectedIp
+                    shouldCheckPinning && !WindUtilities.hostnamesMatch(pinnedLocation.second, selectedIp)
                 val ip = pinnedLocation?.first
                 var ipPinningFailed = false
                 withTimeout(15_000) { // 15 seconds total timeout
