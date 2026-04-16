@@ -180,9 +180,11 @@ class UserRepository(
             localDbInterface.clearAllTables()
             appContext.activeActivity?.let {
                 val intent = appContext.applicationInterface.welcomeIntent
-                intent.addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                )
+                if (appContext.applicationInterface.isTV) {
+                    intent.addFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    )
+                }
                 it.startActivity(intent)
                 it.finish()
             }
