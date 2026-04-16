@@ -99,8 +99,10 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
                 logger.debug("User or account status changed.")
                 preferencesHelper.migrationRequired = true
                 wgConfigRepository.unregisterKey()
+            } else {
+                // Check if tunnel needs to reconnect any other reason then account status change
+                handleTunnelRecovery()
             }
-
             // Update server list when: server list changed, account changed, or migration required
             // All these cases set migrationRequired = true which forces full server refresh
             if (changed[0] || changed[2] || changed[3]) {
@@ -127,14 +129,13 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
                 preferenceChangeObserver.postEmailStatusChange()
             }
             handleAccountStatusChange(it)
-            handleTunnelRecovery()
         }
     }
 
     private fun handleTunnelRecovery() {
         val vpnState = vpnStateManager.state.value
         if (vpnState.error?.error == com.windscribe.vpn.backend.VPNState.ErrorType.BrokenTunnel &&
-            preferencesHelper.globalUserConnectionPreference) {
+            preferencesHelper.globalUserConnectionPreference && vpnState.status == com.windscribe.vpn.backend.VPNState.Status.Disconnected) {
             logger.info("Reconnecting after tunnel recovery")
             vpnController.connectAsync()
         }
