@@ -89,19 +89,18 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
 
     private fun updateIfRequired(changed: List<Boolean>, userSessionResponse: UserSessionResponse) {
         userRepository.reload(userSessionResponse) {
-            // Server list changed (ALC or location hash)
+            // Alc changed
             if (changed[0]) {
-                logger.debug("ALC or location hash changed")
+                logger.debug("ALC changed")
                 preferencesHelper.migrationRequired = true
+                wgConfigRepository.unregisterKey()
+                workManager.updateCredentialsUpdate()
             }
             // User or account status changed
             if (changed[2]) {
                 logger.debug("User or account status changed.")
                 preferencesHelper.migrationRequired = true
                 wgConfigRepository.unregisterKey()
-            } else {
-                // Check if tunnel needs to reconnect any other reason then account status change
-                handleTunnelRecovery()
             }
             // Update server list when: server list changed, account changed, or migration required
             // All these cases set migrationRequired = true which forces full server refresh
@@ -129,6 +128,9 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
                 preferenceChangeObserver.postEmailStatusChange()
             }
             handleAccountStatusChange(it)
+            if (!changed[0] && !changed[2] && !changed[3]){
+                handleTunnelRecovery()
+            }
         }
     }
 

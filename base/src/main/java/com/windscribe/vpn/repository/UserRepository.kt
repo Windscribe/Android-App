@@ -106,7 +106,6 @@ class UserRepository(
     fun whatChanged(userSessionResponse: UserSessionResponse): List<Boolean> {
         return user.value?.let {
             val newUser = User(userSessionResponse)
-            val locationHashChanged = it.locationHash != userSessionResponse.locationHash
             val alcListChanged = it.alcList != newUser.alcList
             val userStatusChanged = it.isPro != newUser.isPro
             val accountStatusChanged = it.accountStatus != newUser.accountStatus
@@ -115,11 +114,11 @@ class UserRepository(
             val emailStatusChanged = it.emailStatus != newUser.emailStatus
 
             // Only log if something actually changed
-            if (locationHashChanged || alcListChanged || sipChanged || userStatusChanged || accountStatusChanged || migrationRequired || emailStatusChanged) {
-                logger.debug("What changed: Server list: $locationHashChanged | Alc: $alcListChanged | Sip: $sipChanged | User Status: $userStatusChanged | Account Status: $accountStatusChanged | Migration: $migrationRequired | Email Status: $emailStatusChanged")
+            if (alcListChanged || sipChanged || userStatusChanged || accountStatusChanged || migrationRequired || emailStatusChanged) {
+                logger.debug("Alc: $alcListChanged | Sip: $sipChanged | User Status: $userStatusChanged | Account Status: $accountStatusChanged | Migration: $migrationRequired | Email Status: $emailStatusChanged")
             }
             return listOf(
-                alcListChanged or locationHashChanged,
+                alcListChanged,
                 sipChanged,
                 userStatusChanged or accountStatusChanged,
                 migrationRequired,
