@@ -354,6 +354,7 @@
     <string name="confirm_email_title">Confirm Email</string>
     <string name="back_uppercase">Back</string>
     <string name="Error">Error</string>
+    <string name="note">Note</string>
     <string name="text_account_set_up">Sign Up</string>
     <string name="xpress_login">Lazy Login</string>
     <string name="web_login_description">Go to <b>https://windscribe.com/lazy</b> on any device and enter the code below.</string>
