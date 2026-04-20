@@ -10,10 +10,10 @@ import com.windscribe.vpn.R
 import com.windscribe.vpn.Windscribe.Companion.appContext
 
 
-fun showRetryDialog(message: String, retryCallBack: () -> Unit, cancelCallBack: () -> Unit) {
+fun showRetryDialog(message: String, retryCallBack: () -> Unit, cancelCallBack: () -> Unit, title: String = appContext.getString(R.string.error)) {
     var autoDismiss = true
     safeDialog {
-        val builder = createDialogBuilder(it, message)
+        val builder = createDialogBuilder(it, message, title)
         val listener = { dialog: DialogInterface, which: Int ->
             autoDismiss = false
             dialog.dismiss()

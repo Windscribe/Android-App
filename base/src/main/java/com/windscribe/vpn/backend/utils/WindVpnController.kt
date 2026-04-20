@@ -491,7 +491,7 @@ open class WindVpnController @Inject constructor(
                             )
                         )
                     }
-                })
+                }, title = appContext.getString(R.string.note))
             }
 
             ERROR_UNABLE_TO_SELECT_WIRE_GUARD_IP, ERROR_WG_UNABLE_TO_GENERATE_PSK -> {
