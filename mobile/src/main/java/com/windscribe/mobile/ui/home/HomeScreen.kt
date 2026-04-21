@@ -7,6 +7,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -39,9 +40,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -149,8 +148,6 @@ private fun HandleGotoAction(
     val context = LocalContext.current
     val navController = LocalNavController.current
     var didNavigate = false
-    var showUpdateDialog by remember { mutableStateOf(false) }
-    var latestVersion by remember { mutableStateOf<String?>(null) }
     when (goto) {
         HomeGoto.Banned -> {
             val bannedData = AccountStatusDialogData(
@@ -230,8 +227,8 @@ private fun HandleGotoAction(
         }
 
         is HomeGoto.UpdateAvailable -> {
-            latestVersion = goto.latestVersion
-            showUpdateDialog = true
+            navController.currentBackStackEntry?.savedStateHandle?.set("latest_version", goto.latestVersion)
+            navController.navigate(Screen.UpdateAvailable.route)
             didNavigate = true
         }
 
@@ -247,43 +244,6 @@ private fun HandleGotoAction(
 
         HomeGoto.None -> {}
         null -> {}
-    }
-    if (showUpdateDialog) {
-        val message = latestVersion?.takeIf { it.isNotBlank() }
-            ?.let { "Windscribe version $it is now available." }
-            ?: "A new version of Windscribe is available."
-        AlertDialog(
-            onDismissRequest = { showUpdateDialog = false },
-            title = { Text("Update Available") },
-            text = { Text(message) },
-            confirmButton = {
-                TextButton(onClick = {
-                    showUpdateDialog = false
-                    val intent = Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("market://details?id=${context.packageName}")
-                    )
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    try {
-                        context.startActivity(intent)
-                    } catch (_: Exception) {
-                        val webIntent = Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse("https://play.google.com/store/apps/details?id=${context.packageName}")
-                        )
-                        webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        context.startActivity(webIntent)
-                    }
-                }) {
-                    Text("Update Now")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showUpdateDialog = false }) {
-                    Text("Update Later")
-                }
-            }
-        )
     }
 
     if (didNavigate) {

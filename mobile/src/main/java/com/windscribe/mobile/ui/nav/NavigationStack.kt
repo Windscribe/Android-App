@@ -43,6 +43,7 @@ import com.windscribe.mobile.ui.popup.EditCustomConfigViewmodel
 import com.windscribe.mobile.ui.popup.ExtraDataUseWarningScreen
 import com.windscribe.mobile.ui.popup.IpActionResultDialog
 import com.windscribe.mobile.ui.popup.LocationUnderMaintenanceScreen
+import com.windscribe.mobile.ui.popup.UpdateAvailableScreen
 import com.windscribe.mobile.ui.popup.NewsfeedScreen
 import com.windscribe.mobile.ui.popup.NewsfeedViewmodel
 import com.windscribe.mobile.ui.popup.OverlayDialogScreen
@@ -527,6 +528,12 @@ private fun NavGraphBuilder.addNavigationScreens() {
         if (message != null && description != null) {
             IpActionResultDialog(message, description)
         }
+    }
+    composable(route = Screen.UpdateAvailable.route) {
+        val navController = LocalNavController.current
+        val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
+        val latestVersion = savedStateHandle?.get<String?>("latest_version")
+        UpdateAvailableScreen(latestVersion)
     }
 }
 

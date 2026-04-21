@@ -45,4 +45,5 @@ sealed class Screen(val route: String) {
     
     object AllProtocolFailedDialog: Screen("all_protocol_failed_dialog")
     object IpActionResult: Screen("ip_action_result")
+    object UpdateAvailable: Screen("update_available")
 }

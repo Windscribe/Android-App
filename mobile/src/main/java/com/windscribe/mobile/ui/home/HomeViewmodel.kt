@@ -107,7 +107,7 @@ class HomeViewmodelImpl(
     }
 
     private fun observeUpdateAvailable() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             checkUpdateRepository.updateAvailable.collectLatest { update ->
                 if (update != null && update.isUpdateAvailable && checkUpdateRepository.shouldShowPrompt()) {
                     checkUpdateRepository.recordPromptShown()

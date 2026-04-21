@@ -620,4 +620,9 @@ last chosen location.</string>
     <string name="got_voucher_code">Got Voucher Code?</string>
     <string name="account_hash_backup_confirmation">I have backed up my account hash securely and understand that Windscribe will not be able to help me recover my account if I loose it.</string>
     <string name="already_have_account_log_in">Already have an account? Log In</string>
+    <string name="update_available">Update Available</string>
+    <string name="update_available_message">Windscribe version %s is now available.</string>
+    <string name="update_available_message_generic">A new version of Windscribe is available.</string>
+    <string name="update_now">Update Now</string>
+    <string name="update_later">Update Later</string>
 </resources>
