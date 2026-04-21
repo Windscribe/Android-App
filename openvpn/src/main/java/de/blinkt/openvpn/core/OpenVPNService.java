@@ -34,6 +34,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.windscribe.common.DNSDetails;
@@ -459,6 +460,11 @@ public abstract class OpenVPNService extends VpnService implements StateListener
 
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             addLollipopCMListener(); */
+    }
+
+    @Nullable
+    public DeviceStateReceiver getmDeviceStateReceiver() {
+        return mDeviceStateReceiver;
     }
 
     synchronized void unregisterDeviceStateReceiver() {

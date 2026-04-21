@@ -140,7 +140,7 @@ public class DeviceStateReceiver extends BroadcastReceiver implements ByteCountL
 
 
         if (ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())) {
-            networkStateChange(context);
+           // networkStateChange(context);
         } else if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
             boolean screenOffPause = prefs.getBoolean("screenoff", false);
 
