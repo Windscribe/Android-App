@@ -211,7 +211,7 @@ class UserRepository(
             return
         }
 
-        val configId = sessionResponse.amneziaWgConfigId
+        val configId = sessionResponse.serverInventory?.amneziaWgConfigId
 
         if (configId.isNullOrEmpty()) {
             // No recommendation - auto-disable

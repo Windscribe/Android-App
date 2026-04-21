@@ -6,6 +6,7 @@ package com.windscribe.vpn.api.response;
 
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -118,10 +119,6 @@ public class UserSessionResponse {
     @SerializedName("server_inventory")
     @Expose
     private ServerInventory serverInventory;
-
-    @SerializedName("amneziawg_config_id")
-    @Expose
-    private String amneziaWgConfigId = null;
 
     public List<String> getAlcList() {
         return alcList;
@@ -319,20 +316,13 @@ public class UserSessionResponse {
         this.userClass = userClass;
     }
 
+    @Nullable
     public ServerInventory getServerInventory() {
         return serverInventory;
     }
 
     public void setServerInventory(ServerInventory serverInventory) {
         this.serverInventory = serverInventory;
-    }
-
-    public String getAmneziaWgConfigId() {
-        return amneziaWgConfigId;
-    }
-
-    public void setAmneziaWgConfigId(String amneziaWgConfigId) {
-        this.amneziaWgConfigId = amneziaWgConfigId;
     }
 
     @NonNull

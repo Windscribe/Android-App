@@ -28,7 +28,11 @@ data class ServerInventory(
 
     @SerializedName("revision")
     @Expose
-    val revision: Long
+    val revision: Long,
+
+    @SerializedName("amneziawg_config_id")
+    @Expose
+    val amneziaWgConfigId: String? = null
 )
 
 @Keep
