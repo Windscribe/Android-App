@@ -80,10 +80,6 @@ class OpenVPNBackend @Inject constructor(
 
         connectionStateJob = scope.launch {
             openVpnTunnel.stateFlow.cancellable().collectLatest { state ->
-                if (isHandlingNetworkChange) {
-                    vpnLogger.info("Ignoring OpenVPN state change due to network change.")
-                    return@collectLatest
-                }
                 when (state) {
                     OpenVpnTunnel.State.DOWN -> {
                         if (!stickyDisconnectEvent && !reconnecting) {
@@ -92,10 +88,16 @@ class OpenVPNBackend @Inject constructor(
                         }
                     }
                     OpenVpnTunnel.State.CONNECTING -> {
+                        if (stateManager.state.value.status == VPNState.Status.Connected) {
+                            return@collectLatest
+                        }
                         stickyDisconnectEvent = false
                         updateState(VPNState(Connecting))
                     }
                     OpenVpnTunnel.State.CONNECTED -> {
+                        if (stateManager.state.value.status == VPNState.Status.Connected) {
+                            return@collectLatest
+                        }
                         stickyDisconnectEvent = false
                         testConnectivity()
                     }
