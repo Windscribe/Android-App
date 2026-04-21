@@ -7,6 +7,7 @@ package com.windscribe.vpn.backend.openvpn
 import android.content.Intent
 import android.os.Build
 import com.windscribe.vpn.Windscribe
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.ProtocolInformation
@@ -36,6 +37,7 @@ import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.wsnet.lib.WSNetBridgeAPI
+import org.strongswan.android.logic.StrongSwanApplication
 
 @Singleton
 class OpenVPNBackend @Inject constructor(
@@ -78,6 +80,10 @@ class OpenVPNBackend @Inject constructor(
 
         connectionStateJob = scope.launch {
             openVpnTunnel.stateFlow.cancellable().collectLatest { state ->
+                if (isHandlingNetworkChange) {
+                    vpnLogger.info("Ignoring OpenVPN state change due to network change.")
+                    return@collectLatest
+                }
                 when (state) {
                     OpenVpnTunnel.State.DOWN -> {
                         if (!stickyDisconnectEvent && !reconnecting) {
@@ -207,5 +213,11 @@ class OpenVPNBackend @Inject constructor(
 
     fun protect(fd: Int): Boolean {
         return service?.protect(fd) ?: false
+    }
+
+    override fun handleNetworkChange() {
+        if (active) {
+            (service as? OpenVPNService)?.getmDeviceStateReceiver()?.networkStateChange(appContext)
+        }
     }
 }

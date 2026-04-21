@@ -33,9 +33,6 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 import javax.inject.Singleton
 import com.wsnet.lib.WSNetBridgeAPI
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
-
 /**
  * Base class for Interfacing with VPN Modules.
  * */
@@ -58,7 +55,7 @@ abstract class VpnBackend(
     var protocolInformation: ProtocolInformation? = null
     var connectionId: UUID? = null
     var error: VPNState.Error? = null
-    private var isHandlingNetworkChange = false
+    var isHandlingNetworkChange = false
 
     private var connectivityTestJob: Job? = null
     private var networkInfoObserverJob: Job? = null
@@ -102,19 +99,23 @@ abstract class VpnBackend(
             vpnLogger.debug("Already handling network change, ignoring duplicate event.")
             return
         }
+        val isConnected = stateManager.isVPNConnected()
+        val autoConnectEnabled = preferencesHelper.autoConnect
+        val appInForeground = appContext.activeActivity != null
 
-        val vpnState = stateManager.state.value
-
-        // IMPORTANT: Protocol/port switching on network change requires autoConnect to be enabled
-        // This ensures we only auto-switch protocols when user has auto-connect features enabled
-        if (vpnState.status == VPNState.Status.Connected &&
-            preferencesHelper.autoConnect &&  // ← Protocol switching is an "auto" feature
-            networkInfo?.isAutoSecureOn == true &&
-            networkInfo.isPreferredOn &&
-            networkInfo.protocol != null &&
-            networkInfo.port != null
-        ) {
-
+        // Handle auto-secure OFF - always disconnect regardless of auto-connect setting
+        if (networkInfo?.isAutoSecureOn == false && isConnected) {
+            isHandlingNetworkChange = true
+            vpnLogger.info("Auto-secure OFF for ${networkInfo.networkName} - system disconnecting")
+            // System disconnect due to auto-secure OFF - don't whitelist
+            appContext.vpnController.disconnectAsync(error = null)
+            return
+        }
+        val isAutoSecureOn = networkInfo?.isAutoSecureOn == true
+        val isPreferredOn = networkInfo?.isPreferredOn ?: false
+        val hasProtocolConfig = networkInfo?.protocol != null && networkInfo.port != null
+        val shouldHandleProtocolSwitch = autoConnectEnabled || appInForeground
+        if (isConnected && shouldHandleProtocolSwitch && isAutoSecureOn && isPreferredOn && hasProtocolConfig) {
             val currentProtocol = protocolInformation?.protocol
             val currentPort = protocolInformation?.port
             val networkProtocol = networkInfo.protocol
@@ -122,16 +123,12 @@ abstract class VpnBackend(
 
             if (currentProtocol != networkProtocol || currentPort != networkPort) {
                 isHandlingNetworkChange = true
-                vpnLogger.debug("Network change detected while connected. Current: $currentProtocol:$currentPort, Required: $networkProtocol:$networkPort. Reconnecting with correct protocol/port...")
-                // System disconnect to change protocol - don't whitelist
-                appContext.vpnController.disconnectAsync(error = null)
+                vpnLogger.info("Protocol switch: $currentProtocol:$currentPort -> $networkProtocol:$networkPort")
+                // Reconnect
+                appContext.vpnController.connectAsync()
+            } else {
+               handleNetworkChange()
             }
-        }
-        if (networkInfo?.isAutoSecureOn == false && vpnState.status == VPNState.Status.Connected) {
-            isHandlingNetworkChange = true
-            vpnLogger.debug("Auto-secure OFF for ${networkInfo.networkName} - system disconnecting")
-            // System disconnect due to auto-secure OFF - don't whitelist
-            appContext.vpnController.disconnectAsync(error = null)
         }
     }
 
@@ -341,7 +338,7 @@ abstract class VpnBackend(
     abstract fun deactivate()
     abstract fun connect(protocolInformation: ProtocolInformation, connectionId: UUID)
     abstract suspend fun disconnect(error: VPNState.Error? = null)
-
+    open fun handleNetworkChange() {}
     companion object {
         var DISCONNECT_DELAY = 1000L
         var CONNECTING_WAIT = 30 * 1000L
