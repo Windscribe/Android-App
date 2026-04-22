@@ -171,34 +171,6 @@ androidapp/
 | **Networking** | wsnet (custom library) |
 | **Background Tasks** | WorkManager |
 
-### Architecture Pattern
-
-We follow **MVP (Model-View-Presenter)** with a twist:
-
-```
-UI Layer (Activity/Fragment)
-    ↓
-Presenter (Business Logic)
-    ↓
-Repository (Data Management)
-    ↓
-Data Sources (API/Database)
-```
-
-### Data Flow
-
-```
-App → ApiCallManager → wsnet → API Endpoints
-                              ↓
-                         Response
-                              ↓
-                        Repository
-                              ↓
-                           ViewModel
-                              ↓
-                             UI
-```
-
 ### Build Variants
 
 #### 🟢 Google Play (`google` flavor)
@@ -212,6 +184,8 @@ App → ApiCallManager → wsnet → API Endpoints
 - ❌ No payment processing
 - ❌ No push notifications
 - ✅ 100% open source friendly
+
+**For detailed architecture documentation, see [AGENTS.md](AGENTS.md)**
 
 ---
 
@@ -237,9 +211,6 @@ We use **ktlint** with default rules:
 # Auto-fix issues
 ./gradlew ktlintFormat
 ```
-
-### Java (Legacy) ☕
-Following [grandcentrix-AndroidCodeStyle](https://github.com/GCX-HCI/grandcentrix-AndroidCodeStyle)
 
 ### General Guidelines
 - ✅ Use Kotlin for all new code
@@ -300,45 +271,7 @@ git commit -m "feat: add awesome new feature"
 git push origin feature/awesome-new-feature
 ```
 
-### Common Development Tasks
-
-#### Adding a New VPN Feature
-1. Update `base` module for core functionality
-2. Modify `mobile`/`tv` UI as needed
-3. Add appropriate tests
-4. Update database schema if required
-
-#### Modifying UI
-- **Mobile**: Update Compose components
-- **TV**: Update XML layouts with data binding
-- Use existing design patterns
-
-#### API Changes
-- Update `wsnet` integration (no direct Retrofit!)
-- Add data models
-- Update Room entities if needed
-
----
-
-## 📋 Project Statistics
-
-### Code Distribution
-- **Base Module**: 65 Java files (mostly data models)
-- **Mobile Module**: 5 Java files (billing interfaces)
-- **TV Module**: 0 Java files (100% Kotlin! 🎉)
-- **Total Kotlin Files**: Majority of codebase
-- **Protocols Supported**: 6
-- **Countries Supported**: Global coverage
-
-### Module Details
-| Module | Purpose | Primary Language |
-|--------|---------|------------------|
-| base | Core logic | Kotlin + Java |
-| mobile | Phone/Tablet UI | Kotlin (Compose) |
-| tv | Android TV UI | Kotlin |
-| openvpn | Protocol impl | Native C + Kotlin |
-| strongswan | IKEv2 impl | Native + Kotlin |
-| wgtunnel | WireGuard, WSTunnel, Stunnel & ControlD | Go → Kotlin |
+**For detailed development workflows, see [SKILL.md](SKILL.md)**
 
 ---
 
@@ -353,83 +286,20 @@ Example: `3.72.123`
 
 ---
 
-## 🐛 Debugging Tips
-
-### Common Issues
-
-**Build fails with NDK errors?**
-```bash
-# Verify NDK installation
-echo $ANDROID_NDK_HOME
-
-# Clean and rebuild
-./gradlew clean
-./gradlew assembleDebug
-```
-
-**App crashes on VPN connection?**
-```bash
-# Check logs
-adb logcat -s "vpn" -v time
-
-# Look for protocol-specific logs
-adb logcat | grep -i wireguard
-```
-
-**Database migration issues?**
-```bash
-# Clear app data and reinstall
-adb uninstall com.windscribe.vpn
-./gradlew :mobile:assembleGoogleDebug
-adb install -r mobile/build/outputs/apk/google/debug/mobile-google-debug.apk
-```
-
----
-
-## 🧪 Testing
-
-### Running Tests
-```bash
-# All tests
-./gradlew test
-
-# Specific module
-./gradlew :base:test
-
-# Instrumented tests (requires emulator/device)
-./gradlew connectedAndroidTest
-
-# Test with coverage
-./gradlew testDebugUnitTestCoverage
-```
-
-### Writing Tests
-- Unit tests go in `src/test/`
-- Instrumented tests in `src/androidTest/`
-- Use MockK for mocking
-- Follow AAA pattern (Arrange, Act, Assert)
-
----
-
 ## 📚 Additional Resources
 
+- **[AGENTS.md](AGENTS.md)** — AI-friendly architecture reference
+- **[SKILL.md](SKILL.md)** — Development workflows and operational guides
+- **[docs/](docs/)** — Comprehensive documentation
+  - [docs/architecture/](docs/architecture/) — Architecture deep-dives
+  - [docs/features/](docs/features/) — Feature-specific documentation
+  - [docs/guides/](docs/guides/) — How-to guides
+  - [docs/workflows/](docs/workflows/) — Process documentation
 - [Android Developer Docs](https://developer.android.com/)
 - [Kotlin Documentation](https://kotlinlang.org/docs/home.html)
 - [Jetpack Compose](https://developer.android.com/jetpack/compose)
 - [Coroutines Guide](https://kotlinlang.org/docs/coroutines-guide.html)
 - [Room Database](https://developer.android.com/training/data-storage/room)
-
----
-
-## 🎓 Learning Path
-
-New to the codebase? Start here:
-
-1. 📖 Read `CLAUDE.md` for detailed architecture
-2. 🔍 Explore `base/api/` to understand networking
-3. 🎨 Check `mobile/` for Compose UI examples
-4. 🔌 Review protocol modules for VPN logic
-5. 🧪 Read existing tests to understand patterns
 
 ---
 
@@ -447,18 +317,6 @@ New to the codebase? Start here:
 Copyright (c) 2021 Windscribe Limited
 
 All rights reserved. This project is proprietary software developed by Windscribe Limited.
-
----
-
-## 🙏 Acknowledgments
-
-Built with ❤️ by the Windscribe team
-
-Special thanks to:
-- The Android Open Source Project
-- StrongSwan developers
-- WireGuard team
-- All our contributors!
 
 ---
 
