@@ -84,6 +84,7 @@ abstract class ServerViewModel : ViewModel() {
     abstract val searchListState: StateFlow<ListState<ServerListItem>>
     abstract val searchItemsExpandState: StateFlow<HashMap<String, Boolean>>
     abstract val refreshState: StateFlow<Boolean>
+    abstract val isPro: StateFlow<Boolean>
     abstract fun setSelectedType(type: ServerListType)
     abstract fun toggleFavorite(city: Datacenter)
     abstract fun deleteFavourite(id: Int)
@@ -104,7 +105,8 @@ class ServerViewModelImpl(
     private val staticIpRepository: StaticIpRepository,
     private val localDbInterface: LocalDbInterface,
     private val preferencesHelper: PreferencesHelper,
-    private val latencyRepository: LatencyRepository
+    private val latencyRepository: LatencyRepository,
+    private val userRepository: com.windscribe.vpn.repository.UserRepository
 ) : ServerViewModel() {
 
     private val _serverListState = MutableStateFlow<ListState<ServerListItem>>(ListState.Loading)
@@ -152,9 +154,21 @@ class ServerViewModelImpl(
     private val _refreshState = MutableStateFlow(false)
     override val refreshState: StateFlow<Boolean> = _refreshState
 
+    private val _isPro = MutableStateFlow(false)
+    override val isPro: StateFlow<Boolean> = _isPro
+
     init {
         fetchAllLists()
         observeSelectionPreference()
+        observeUserProStatus()
+    }
+
+    private fun observeUserProStatus() {
+        viewModelScope.launch(Dispatchers.IO) {
+            userRepository.userInfo.collectLatest { user ->
+                _isPro.value = user.isPro
+            }
+        }
     }
 
     private fun fetchAllLists() {
@@ -587,7 +601,7 @@ class ServerViewModelImpl(
                         // A region is premium if ALL its cities require Pro
                         cities.all { datacenter ->
                             val serverCount = state.data[datacenter.id]?.size ?: 0
-                            DatacenterStatusHelper.requiresPro(datacenter, serverCount)
+                            DatacenterStatusHelper.requiresPro(datacenter, serverCount, isPro.value)
                         }
                     }
                     else -> false

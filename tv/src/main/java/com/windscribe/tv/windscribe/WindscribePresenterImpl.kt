@@ -547,7 +547,8 @@ class WindscribePresenterImpl @Inject constructor(
         val serverCount = withContext(Dispatchers.IO) {
             localDbInterface.getServersByDatacenter(datacenterAndLocation.datacenter.id).size
         }
-        val status = DatacenterStatusHelper.getStatus(datacenterAndLocation.datacenter, serverCount)
+        val isPro = userRepository.user.value?.isPro ?: false
+        val status = DatacenterStatusHelper.getStatus(datacenterAndLocation.datacenter, serverCount, isPro)
 
         when (status) {
             DatacenterStatus.UnderMaintenance -> {

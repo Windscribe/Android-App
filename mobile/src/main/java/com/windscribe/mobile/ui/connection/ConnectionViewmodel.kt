@@ -633,7 +633,8 @@ class ConnectionViewmodelImpl @Inject constructor(
             try {
                 // Check datacenter status
                 val serverCount = localdb.getServersByDatacenter(city.id).size
-                val status = DatacenterStatusHelper.getStatus(city, serverCount)
+                val isPro = userRepository.user.value?.isPro ?: false
+                val status = DatacenterStatusHelper.getStatus(city, serverCount, isPro)
                 when (status) {
                     DatacenterStatus.UnderMaintenance -> {
                         _goto.emit(HomeGoto.LocationMaintenance)

@@ -20,8 +20,8 @@ import com.windscribe.vpn.serverlist.entity.DatacenterStatus
 import com.windscribe.vpn.serverlist.entity.DatacenterStatusHelper
 
 @Composable
-fun DataCenterIcon(city: Datacenter, health: Int, showLocationLoad: Boolean = false, serverCount: Int) {
-    val status = DatacenterStatusHelper.getStatus(city, serverCount)
+fun DataCenterIcon(city: Datacenter, health: Int, showLocationLoad: Boolean = false, serverCount: Int, isPro: Boolean) {
+    val status = DatacenterStatusHelper.getStatus(city, serverCount, isPro)
 
     when (status) {
         DatacenterStatus.UnderMaintenance -> {

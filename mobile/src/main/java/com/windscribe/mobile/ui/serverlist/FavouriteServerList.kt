@@ -134,8 +134,10 @@ private fun ListItemView(
             (latencyState as ListState.Success).data.find { it.id == item.id }?.time ?: -1
         } else -1
     )
-    val requiresPro = DatacenterStatusHelper.requiresPro(item.city, serverCount)
-    val isAvailable = DatacenterStatusHelper.isAvailable(item.city, serverCount)
+    val userState by homeViewmodel.userState.collectAsState()
+    val healthColor = healthColor(health)
+    val requiresPro = DatacenterStatusHelper.requiresPro(item.city, serverCount, userState is UserState.Pro)
+    val isAvailable = DatacenterStatusHelper.isAvailable(item.city, serverCount, userState is UserState.Pro)
     val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = Modifier

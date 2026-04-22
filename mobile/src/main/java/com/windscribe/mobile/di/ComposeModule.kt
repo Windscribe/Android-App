@@ -174,7 +174,8 @@ class ComposeModule {
                         staticIpRepository,
                         localDbInterface,
                         appPreferenceHelper,
-                        latencyRepository
+                        latencyRepository,
+                        userRepository
                     ) as T
                 } else if (modelClass.isAssignableFrom(ConnectionViewmodel::class.java)) {
                     return ConnectionViewmodelImpl(

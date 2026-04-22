@@ -53,8 +53,8 @@ class DetailViewAdapter(
             }
             // Determine datacenter status
             val serverCount = dataDetails.serverCountMap[city.id] ?: 0
-            val status = DatacenterStatusHelper.getStatus(city, serverCount)
-            val requiresPro = DatacenterStatusHelper.requiresPro(city, serverCount)
+            val status = DatacenterStatusHelper.getStatus(city, serverCount, isPremiumUser)
+            val requiresPro = DatacenterStatusHelper.requiresPro(city, serverCount, isPremiumUser)
 
             // Show pro icon if user is not premium and datacenter requires Pro
             if (isPremiumUser) {

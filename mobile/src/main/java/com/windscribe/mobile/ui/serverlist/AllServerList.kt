@@ -534,7 +534,8 @@ private fun DataCenterItem(
         } else -1
     )
     val serverCount by viewModel.observeDatacenterServerCount(item.id).collectAsState(initial = 0)
-    val isAvailable = DatacenterStatusHelper.getStatus(item, serverCount) == DatacenterStatus.Available
+    val isPro by viewModel.isPro.collectAsState()
+    val isAvailable = DatacenterStatusHelper.getStatus(item, serverCount, isPro) == DatacenterStatus.Available
     val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = Modifier
@@ -549,7 +550,7 @@ private fun DataCenterItem(
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        DataCenterIcon(item, health, showLocationLoad, serverCount)
+        DataCenterIcon(item, health, showLocationLoad, serverCount, isPro)
         Spacer(modifier = Modifier.width(8.dp))
         DataCenterName("${item.nodeName} ${item.nickName}", Modifier.weight(1f))
         if (item.p2p != 1) {
