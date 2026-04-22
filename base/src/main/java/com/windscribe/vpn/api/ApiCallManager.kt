@@ -200,8 +200,9 @@ open class ApiCallManager @Inject constructor(
         }
     }
 
-    override suspend fun getSessionGeneric(firebaseToken: String?, serverRevision: Long, backup: Int): GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> {
+    override suspend fun getSessionGeneric(firebaseToken: String?, backup: Int): GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> {
         checkSession()
+        val serverRevision = preferencesHelper.serverRevision
         return suspendCancellableCoroutine { continuation ->
             val callback = wsNetServerAPI.session(
                 preferencesHelper.sessionHash,

@@ -241,6 +241,7 @@ class UserRepository(
     fun prepareDashboard(firebaseToken: String?): Flow<UserDataState> = flow {
         preferenceHelper.loginTime = Date()
         emit(UserDataState.Loading("Getting session"))
+        unblockWgParamsRepository.update()
         try {
             val backup = preferenceHelper.getBackupParameter()
             val result = apiManager.getSessionGeneric(firebaseToken, backup = backup).callResult<UserSessionResponse>()

@@ -346,6 +346,9 @@ public class UserSessionResponse {
                 ", locationRevision='" + locationRevision + '\'' +
                 ", locationHash='" + locationHash + '\'' +
                 ", premiumExpiryDate='" + premiumExpiryDate + '\'' +
+                ", alcList=" + alcList +
+                ", sip=" + sip +
+                ", serverInventory=" + serverInventory +
                 '}';
     }
 }

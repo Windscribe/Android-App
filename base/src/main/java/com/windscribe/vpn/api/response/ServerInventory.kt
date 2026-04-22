@@ -32,7 +32,7 @@ data class ServerInventory(
 
     @SerializedName("amneziawg_config_id")
     @Expose
-    val amneziaWgConfigId: String? = null
+    var amneziaWgConfigId: String? = null
 )
 
 @Keep

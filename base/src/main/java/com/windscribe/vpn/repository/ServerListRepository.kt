@@ -111,7 +111,7 @@ class ServerListRepository @Inject constructor(
         } else {
             val backup = preferenceHelper.getBackupParameter()
             val sessionResult = result<UserSessionResponse> {
-                apiCallManager.getSessionGeneric(null, preferenceHelper.serverRevision, backup)
+                apiCallManager.getSessionGeneric(null, backup)
             }
             when (sessionResult) {
                 is CallResult.Success -> {

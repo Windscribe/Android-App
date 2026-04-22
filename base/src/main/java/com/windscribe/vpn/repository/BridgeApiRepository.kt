@@ -53,7 +53,9 @@ class BridgeApiRepository @Inject constructor(
         scope.launch {
           preferencesHelper.isProtocolTweaksEnabledFlow.collect {
               if (WSNet.isValid()) {
-                  wsnet.advancedParameters().isAPIExtraTLSPadding = it
+                  wsnet.advancedParameters()?.let { params ->
+                      params.isAPIExtraTLSPadding = it
+                  }
               }
           }
         }
