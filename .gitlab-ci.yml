@@ -112,10 +112,10 @@ stages:
     - apk add patch
     - fastlane updateBuildVersion
 
-    # Export version variables
-    - export VERSION_CODE=$(grep -E "appVersionCode = " build.gradle | sed 's/.*appVersionCode = //')
-    - export VERSION_NAME=${MAJOR}.${MINOR}.${VERSION_CODE}
-    - touch ${CHANGE_LOG_PATH}${VERSION_CODE}.txt
+    # Export version variables (don't export VERSION_CODE to allow TV to use +1 logic)
+    - MOBILE_VERSION_CODE=$(grep -E "appVersionCode = " build.gradle | sed 's/.*appVersionCode = //')
+    - export VERSION_NAME=${MAJOR}.${MINOR}.${MOBILE_VERSION_CODE}
+    - touch ${CHANGE_LOG_PATH}${MOBILE_VERSION_CODE}.txt
     - export ANDROID_NDK=$(ls -d $ANDROID_SDK_ROOT/ndk/*/ | head -n 1)
 
 #------------------------------------------------------------------------------
@@ -131,10 +131,10 @@ stages:
     # Keep existing build version from Play Store
     - fastlane keepBuildVersion
 
-    # Export version variables
-    - export VERSION_CODE=$(grep -E "appVersionCode = " build.gradle | sed 's/.*appVersionCode = //')
-    - export VERSION_NAME=${MAJOR}.${MINOR}.${VERSION_CODE}
-    - touch ${CHANGE_LOG_PATH}${VERSION_CODE}.txt
+    # Export version variables (don't export VERSION_CODE to allow TV to use +1 logic)
+    - MOBILE_VERSION_CODE=$(grep -E "appVersionCode = " build.gradle | sed 's/.*appVersionCode = //')
+    - export VERSION_NAME=${MAJOR}.${MINOR}.${MOBILE_VERSION_CODE}
+    - touch ${CHANGE_LOG_PATH}${MOBILE_VERSION_CODE}.txt
     - export ANDROID_NDK=$(ls -d $ANDROID_SDK_ROOT/ndk/*/ | head -n 1)
 
 #------------------------------------------------------------------------------
@@ -169,7 +169,6 @@ InternalAppSharing:
 
   script:
     # Store version info
-    - echo "VERSION_CODE=$VERSION_CODE" >> build.env
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
 
     # Build and upload to Internal App Sharing ONLY (quick test URLs)
@@ -198,7 +197,6 @@ StagingAppSharing:
     - export DEV=true
 
     # Store version info
-    - echo "VERSION_CODE=$VERSION_CODE" >> build.env
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
 
     # Build and upload to Internal App Sharing ONLY (quick test URLs)
@@ -223,7 +221,6 @@ PlayStoreInternal:
 
   script:
     # Store version info
-    - echo "VERSION_CODE=$VERSION_CODE" >> build.env
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
 
     # Build and upload to Play Store Internal Track
@@ -253,7 +250,6 @@ NexusPublic:
     - if [ "$DEV" == "true" ]; then NEXUS_SERVER=$NEXUS_SERVER_PRIVATE; fi
 
     # Store version info
-    - echo "VERSION_CODE=$VERSION_CODE" >> build.env
     - echo "VERSION_NAME=$VERSION_NAME" >> build.env
     - export DIRECTORY=${VERSION_NAME}
     - echo $NEXUS_SERVER
@@ -283,8 +279,10 @@ SlackNotification:
     - PlayStoreInternal
 
   script:
+    # Get mobile version code for changelog
+    - MOBILE_VERSION_CODE=$(grep -E "appVersionCode = " build.gradle | sed 's/.*appVersionCode = //')
     - export TITLE="Available on Play Store Release $VERSION_NAME"
-    - export CHANGE_LOG=$(cat $CHANGE_LOG_PATH${VERSION_CODE}.txt)
+    - export CHANGE_LOG=$(cat $CHANGE_LOG_PATH${MOBILE_VERSION_CODE}.txt)
     - export SPACE=$'\n\n'
     - export MESSAGE=$TITLE$SPACE$CHANGE_LOG
     - export PAYLOAD={\"text\":\"$MESSAGE\"}

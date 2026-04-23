@@ -92,8 +92,10 @@ end
 
     # Send Slack notification for Play Store release
     if ENV['SLACK_URL']
+      # Get mobile version code from build.gradle
+      mobile_version_code = File.read("../build.gradle").match(/appVersionCode = (\d+)/)[1]
       changelog_content = ""
-      changelog_file = "#{ENV['CHANGE_LOG_PATH']}#{ENV['VERSION_CODE']}.txt"
+      changelog_file = "#{ENV['CHANGE_LOG_PATH']}#{mobile_version_code}.txt"
 
       if File.exist?(changelog_file)
         changelog_content = File.read(changelog_file)
@@ -115,18 +117,26 @@ end
 
   desc "Upload to Internal App Sharing (quick test URLs for QA)"
   lane :publishToInternalAppSharing do
-    buildAndSign(task:"clean bundle")
+    buildAndSign(task:"clean mobile:bundle tv:bundle")
 
-    # Upload to Internal App Sharing for quick testing URLs
+    # Upload Mobile to Internal App Sharing
     mobile_share_url = upload_to_play_store_internal_app_sharing(
       package_name: ENV['PACKAGE_NAME'],
       aab: "mobile/build/outputs/bundle/googleRelease/mobile-google-release.aab"
     )
 
+    UI.success("📱 Mobile uploaded: #{mobile_share_url}")
+
+    # Small delay to ensure uploads are processed separately
+    sleep(2)
+
+    # Upload TV to Internal App Sharing
     tv_share_url = upload_to_play_store_internal_app_sharing(
       package_name: ENV['PACKAGE_NAME'],
       aab: "tv/build/outputs/bundle/googleRelease/tv-google-release.aab"
     )
+
+    UI.success("📺 TV uploaded: #{tv_share_url}")
 
     # Print Internal App Sharing URLs
     UI.success("✅ Internal App Sharing URLs (quick share):")
