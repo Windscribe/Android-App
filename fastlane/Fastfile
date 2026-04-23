@@ -70,11 +70,54 @@ end
   )
   end
 
-  desc "Publish app to play store (Internal channel)"
-  lane :publishToInternal do
+  desc "Upload to Play Store Internal Testing Track (official release channel)"
+  lane :publishToPlayStoreInternal do
     buildAndSign(task:"clean bundle")
 
-    # Upload to Internal App Sharing first (for quick testing URLs)
+    # Upload to Play Store Internal testing track
+    supply(
+      version_name: ENV['VERSION_NAME'],
+      track: "internal",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      aab_paths: Actions.lane_context[SharedValues::GRADLE_ALL_AAB_OUTPUT_PATHS],
+      mapping_paths: [
+        "mobile/build/outputs/mapping/googleRelease/mapping.txt",
+        "tv/build/outputs/mapping/googleRelease/mapping.txt"
+      ]
+    )
+
+    UI.success("✅ Published to Play Store Internal testing track")
+
+    # Send Slack notification for Play Store release
+    if ENV['SLACK_URL']
+      changelog_content = ""
+      changelog_file = "#{ENV['CHANGE_LOG_PATH']}#{ENV['VERSION_CODE']}.txt"
+
+      if File.exist?(changelog_file)
+        changelog_content = File.read(changelog_file)
+      end
+
+      slack(
+        message: "🚀 New version available on Play Store Internal Track",
+        slack_url: ENV['SLACK_URL'],
+        payload: {
+          "Version" => ENV['VERSION_NAME'],
+          "Track" => "Internal",
+          "Changelog" => changelog_content.empty? ? "No changelog provided" : changelog_content
+        },
+        default_payloads: [:git_branch, :git_author],
+        success: true
+      )
+    end
+  end
+
+  desc "Upload to Internal App Sharing (quick test URLs for QA)"
+  lane :publishToInternalAppSharing do
+    buildAndSign(task:"clean bundle")
+
+    # Upload to Internal App Sharing for quick testing URLs
     mobile_share_url = upload_to_play_store_internal_app_sharing(
       package_name: ENV['PACKAGE_NAME'],
       aab: "mobile/build/outputs/bundle/googleRelease/mobile-google-release.aab"
@@ -90,23 +133,7 @@ end
     UI.success("📱 Mobile: #{mobile_share_url}")
     UI.success("📺 TV: #{tv_share_url}")
 
-    # Then upload to Internal track (standard release process)
-    supply(
-      version_name: ENV['VERSION_NAME'],
-      track: "internal",
-      skip_upload_metadata: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true,
-      aab_paths: Actions.lane_context[SharedValues::GRADLE_ALL_AAB_OUTPUT_PATHS],
-      mapping_paths: [
-        "mobile/build/outputs/mapping/googleRelease/mapping.txt",
-        "tv/build/outputs/mapping/googleRelease/mapping.txt"
-      ]
-    )
-
-    UI.success("✅ Also published to Internal testing track")
-
-    # Send Slack notification with Internal App Sharing URLs
+    # Send Slack notification with quick test URLs
     if ENV['SLACK_URL']
       # Get last 5 commits
       commit_messages = changelog_from_git_commits(
@@ -116,19 +143,19 @@ end
       )
 
       slack(
-        message: "✅ New build uploaded to Google Play Internal",
+        message: "📦 New build available for testing (Internal App Sharing)",
         slack_url: ENV['SLACK_URL'],
         payload: {
           "Version" => ENV['VERSION_NAME'],
-          "Mobile URL" => mobile_share_url,
-          "TV URL" => tv_share_url,
+          "📱 Mobile URL" => mobile_share_url,
+          "📺 TV URL" => tv_share_url,
           "Recent Commits" => commit_messages
         },
         default_payloads: [:git_branch, :git_author],
         success: true
       )
     end
-end
+  end
 
  desc "Build Signed Apks for all modules."
  lane :buildReleaseApk do
