@@ -10,8 +10,9 @@
 #
 # Key Workflows:
 #   1. Internal App Sharing: Quick QA builds (auto-triggered on merge)
-#   2. Play Store Internal Track: Official internal releases (manual)
-#   3. Nexus Public: Production releases (tag-triggered)
+#   2. Staging App Sharing: Staging environment builds with DEV flag (manual)
+#   3. Play Store Internal Track: Official internal releases (manual)
+#   4. Nexus Public: Production releases (tag-triggered)
 #==============================================================================
 
 image: $CI_REGISTRY_IMAGE
@@ -151,10 +152,10 @@ stages:
 #==============================================================================
 
 #------------------------------------------------------------------------------
-# Internal App Sharing Upload (Automatic on merge)
+# Internal App Sharing Upload (Automatic on merge to develop/main)
 #------------------------------------------------------------------------------
 # Purpose: Quick QA builds with shareable URLs
-# Trigger: Automatic on successful merge to develop/main
+# Trigger: Automatic on successful merge to develop/main branches only
 # Output: AAB files + APK files + Quick test URLs
 # Slack: Notifies with download URLs
 #------------------------------------------------------------------------------
@@ -162,6 +163,9 @@ InternalAppSharing:
   extends: .build_with_version_keep
   stage: Deploy
   when: on_success
+  only:
+    - develop
+    - main
 
   script:
     # Store version info for dependent jobs
@@ -178,6 +182,44 @@ InternalAppSharing:
     # Upload to Nexus private channel
     - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${MOBILE_APK_PATH} "${NEXUS_SERVER_PRIVATE}${DIRECTORY}/windscribe-mobile.apk"
     - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${TV_APK_PATH} "${NEXUS_SERVER_PRIVATE}${DIRECTORY}/windscribe-tv.apk"
+
+  artifacts:
+    reports:
+      dotenv: build.env
+
+#------------------------------------------------------------------------------
+# Staging App Sharing Upload (Manual trigger with DEV override)
+#------------------------------------------------------------------------------
+# Purpose: Staging environment builds for pre-production testing
+# Trigger: Manual
+# Output: AAB files + APK files + Quick test URLs (with DEV=true)
+# Slack: Notifies with staging test URLs
+# Note: Uses DEV flag to override environment settings for staging
+#------------------------------------------------------------------------------
+StagingAppSharing:
+  extends: .build_with_version_keep
+  stage: Deploy
+  when: manual
+
+  script:
+    # Set DEV flag for staging environment
+    - export DEV=true
+
+    # Store version info for dependent jobs
+    - echo "VERSION_CODE=$VERSION_CODE" >> build.env
+    - echo "VERSION_NAME=$VERSION_NAME" >> build.env
+    - export DIRECTORY=${VERSION_NAME}
+
+    # Build and upload to Internal App Sharing (quick test URLs)
+    - fastlane publishToInternalAppSharing
+
+    # Build APKs for Nexus distribution
+    - fastlane buildReleaseApk
+
+    # Upload to Nexus (uses DEV override, points to staging/private server)
+    - if [ "$DEV" == "true" ]; then NEXUS_SERVER=$NEXUS_SERVER_PRIVATE; fi
+    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${MOBILE_APK_PATH} "${NEXUS_SERVER}${DIRECTORY}/windscribe-mobile-staging.apk"
+    - curl --retry 5 --show-error --fail -u "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" --cacert config/cacert.pem --upload-file ${TV_APK_PATH} "${NEXUS_SERVER}${DIRECTORY}/windscribe-tv-staging.apk"
 
   artifacts:
     reports:
