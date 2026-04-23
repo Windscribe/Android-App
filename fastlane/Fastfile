@@ -142,15 +142,29 @@ end
         merge_commit_filtering: "exclude_merges"
       )
 
+      # Build payload with MR/Issue info if available
+      payload_data = {
+        "Version" => ENV['VERSION_NAME'],
+        "📱 Mobile URL" => mobile_share_url,
+        "📺 TV URL" => tv_share_url,
+        "Recent Commits" => commit_messages
+      }
+
+      # Add MR info if available (triggered by merge)
+      if ENV['CI_MERGE_REQUEST_IID']
+        mr_url = "#{ENV['CI_PROJECT_URL']}/-/merge_requests/#{ENV['CI_MERGE_REQUEST_IID']}"
+        payload_data["Merge Request"] = "<#{mr_url}|!#{ENV['CI_MERGE_REQUEST_IID']} - #{ENV['CI_MERGE_REQUEST_TITLE']}>"
+      end
+
+      # Add pipeline info
+      if ENV['CI_PIPELINE_URL']
+        payload_data["Pipeline"] = "<#{ENV['CI_PIPELINE_URL']}|##{ENV['CI_PIPELINE_IID']}>"
+      end
+
       slack(
         message: "📦 New build available for testing (Internal App Sharing)",
         slack_url: ENV['SLACK_URL'],
-        payload: {
-          "Version" => ENV['VERSION_NAME'],
-          "📱 Mobile URL" => mobile_share_url,
-          "📺 TV URL" => tv_share_url,
-          "Recent Commits" => commit_messages
-        },
+        payload: payload_data,
         default_payloads: [:git_branch, :git_author],
         success: true
       )
