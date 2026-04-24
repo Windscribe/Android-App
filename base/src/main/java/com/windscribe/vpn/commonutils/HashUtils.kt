@@ -23,7 +23,7 @@ object HashUtils {
         }
 
         val hashBytes = digest.digest()
-        // Truncate to first 16 bytes (128 bits = 32 hex characters)
-        return "0x" + hashBytes.take(16).joinToString("") { "%02x".format(it) }
+        // Truncate to last 16 bytes (128 bits = 32 hex characters)
+        return "0x" + hashBytes.takeLast(16).joinToString("") { "%02x".format(it) }
     }
 }
