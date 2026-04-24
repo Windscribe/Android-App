@@ -211,7 +211,7 @@ fun StandardSignupForm(
             text = stringResource(com.windscribe.vpn.R.string.got_voucher_code)
         ) {
             Spacer(modifier = Modifier.height(8.dp))
-            StyledTextField(
+            StyledTextFieldWithActions(
                 value = voucher,
                 onValueChange = {
                     voucher = it
@@ -243,7 +243,7 @@ fun StandardSignupForm(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            StyledTextField(
+            StyledTextFieldWithActions(
                 value = referralUsername,
                 onValueChange = {
                     referralUsername = it
