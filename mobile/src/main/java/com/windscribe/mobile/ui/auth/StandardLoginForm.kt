@@ -74,7 +74,7 @@ fun StandardLoginForm(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Username Field
-        StyledTextField(
+        StyledTextFieldWithActions(
             value = username,
             onValueChange = {
                 username = it

@@ -144,8 +144,18 @@ fun HashedSignupForm(
                 .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
+            val displayHash = if (accountHash.isNotEmpty()) {
+                if (accountHash.length > 20) {
+                    accountHash.substring(0, 20) + "\n" + accountHash.substring(20)
+                } else {
+                    accountHash
+                }
+            } else {
+                "0x513b5d56ae30109e\n8cea7d7924ef15e0"
+            }
+
             Text(
-                text = accountHash.ifEmpty { "0x513b5d56ae30109e8ce\na7d7924ef15e0" },
+                text = displayHash,
                 style = font16.copy(
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
