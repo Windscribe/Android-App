@@ -110,7 +110,11 @@ class AntiCensorshipViewModelImpl(
                 preferencesHelper.isAntiCensorshipManualMode = true
             }
             if (changed){
-                serverListRepository.update()
+                try {
+                    serverListRepository.update()
+                } catch (e: Exception) {
+                    // Log error but don't crash - server list update can fail during navigation
+                }
             }
         }
     }
