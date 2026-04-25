@@ -358,8 +358,8 @@ class ServerViewModelImpl(
     private fun fetchFavouriteList() {
         viewModelScope.launch(Dispatchers.IO) {
             favouriteRepository.favourites.map { favourites ->
-                favourites.updateFavouriteCityNames().sortFavouriteCities().map { favWithCity ->
-                    val region = localDbInterface.getLocationById(favWithCity.city.regionID)
+                favourites.updateFavouriteCityNames().sortFavouriteCities().mapNotNull { favWithCity ->
+                    val region = localDbInterface.getLocationById(favWithCity.city.regionID) ?: return@mapNotNull null
                     FavouriteListItem(
                         favWithCity.city.id,
                         favWithCity.city,

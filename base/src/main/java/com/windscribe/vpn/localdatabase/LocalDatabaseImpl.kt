@@ -307,8 +307,10 @@ class LocalDatabaseImpl @Inject constructor(
         return serverDao.observeAllServers()
     }
 
-    override suspend fun getLocationById(locationId: Int): Location {
-        return locationDao.getRegionById(locationId)
+    override suspend fun getLocationById(locationId: Int): Location? {
+        return runCatching {
+            locationDao.getRegionById(locationId)
+        }.getOrNull()
     }
 
     override suspend fun getPingIpAndHost(id: Int): Pair<String, String>? {

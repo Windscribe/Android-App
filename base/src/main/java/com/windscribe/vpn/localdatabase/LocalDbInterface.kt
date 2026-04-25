@@ -81,6 +81,6 @@ interface LocalDbInterface {
     suspend fun deleteUnblockWgParams()
     suspend fun insertUnblockWgParams(unblockWgParams: List<UnBlockWgParam>)
     suspend fun getUnblockWgParams(): Flow<List<UnBlockWgParam>>
-    suspend fun getLocationById(locationId: Int): Location
+    suspend fun getLocationById(locationId: Int): Location?
     suspend fun getPingIpAndHost(id: Int): Pair<String, String>?
 }
