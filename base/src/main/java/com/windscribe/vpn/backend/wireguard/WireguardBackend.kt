@@ -43,7 +43,7 @@ import javax.inject.Singleton
 
 @Singleton
 class WireguardBackend @Inject constructor(
-    var backend: GoBackend,
+    private val backendLazy: Lazy<GoBackend>,
     var scope: CoroutineScope,
     var networkInfoManager: NetworkInfoManager,
     vpnStateManager: VPNConnectionStateManager,
@@ -74,6 +74,7 @@ class WireguardBackend @Inject constructor(
     private var connectionStateJob: Job? = null
     override var active = false
     private var wgErrorJob: Job? = null
+    private val backend: GoBackend by lazy { backendLazy.get() }
 
     private val testTunnel = WireGuardTunnel(
         name = appContext.getString(R.string.app_name), config = null, state = DOWN
