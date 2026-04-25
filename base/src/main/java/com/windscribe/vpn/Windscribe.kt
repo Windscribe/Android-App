@@ -156,7 +156,6 @@ open class Windscribe : MultiDexApplication() {
         reloadAfterMigration()
 
         preference.isNewApplicationInstance = true
-        WindContextWrapper.setAppLocale(this)
         setUpNewInstallation()
         initStrongswan()
         if (BuildConfig.APP_ID.isNotEmpty()) {
