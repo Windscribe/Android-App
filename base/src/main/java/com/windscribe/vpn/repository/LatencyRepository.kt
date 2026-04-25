@@ -260,11 +260,11 @@ class LatencyRepository @Inject constructor(
         val updatedPing = withTimeoutOrNull(500) {
             suspendCancellableCoroutine {
                 val pingType = advanceParameterRepository.pingType()
-                pingManager.ping(ip, host, pingType) { _, _, latency, _ ->
+                pingManager.ping(ip, "http://$ip:6464/latency", pingType) { _, _, latency, _ ->
                     ping.apply {
                         pingTime = latency
                     }
-                    it.resume(ping);
+                    it.resume(ping)
                 }
             }
         }

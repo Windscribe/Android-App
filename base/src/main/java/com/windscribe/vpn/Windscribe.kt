@@ -258,7 +258,7 @@ open class Windscribe : MultiDexApplication() {
     private var notificationIdsToMigrate: List<Int> = emptyList()
 
     private fun runTrayMigrationEarly() {
-        runBlocking {
+        runBlocking(Dispatchers.IO) {
             try {
                 // Ensure DataStore directory exists before accessing
                 val dataStoreDir = java.io.File(appContext.filesDir, "datastore")
