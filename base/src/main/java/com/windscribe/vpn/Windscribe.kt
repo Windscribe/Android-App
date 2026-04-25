@@ -52,8 +52,11 @@ import com.windscribe.vpn.workers.WindScribeWorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import org.slf4j.LoggerFactory
 import org.strongswan.android.logic.StrongSwanApplication
 import java.util.Locale
@@ -196,10 +199,8 @@ open class Windscribe : MultiDexApplication() {
         mockLocationManager.init()
         reviewManager.handleAppReview()
         appIconCache.preloadIcons(applicationScope)
+        updateLatenciesWhenNetworkAvailable()
         applicationScope.launch {
-            if (preference.sessionHash != null) {
-                workManager.updateNodeLatencies()
-            }
             if (preference.sessionHash != null && preference.autoConnect && canAccessNetworkName()) {
                 startAutoConnectService()
             }
@@ -314,6 +315,19 @@ open class Windscribe : MultiDexApplication() {
                     logger.info("Migrated $migratedCount notification read statuses")
                 } catch (e: Exception) {
                     logger.error("Error migrating notification read statuses: ${e.message}")
+                }
+            }
+        }
+    }
+
+    private fun updateLatenciesWhenNetworkAvailable() {
+        applicationScope.launch(Dispatchers.IO) {
+            if (preference.sessionHash != null) {
+                delay(2000)
+                if (deviceStateManager.isOnline.value) {
+                    workManager.updateNodeLatencies()
+                } else {
+                    logger.debug("Network not available after 2s delay, skipping latency update on startup")
                 }
             }
         }
