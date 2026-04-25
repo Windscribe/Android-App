@@ -1,18 +1,13 @@
 package com.windscribe.mobile.ui.preferences.anticensorship
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.model.DropDownStringItem
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
-import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.UnblockWgParamsRepository
-import com.windscribe.vpn.repository.UserRepository
-import kotlinx.coroutines.flow.MutableSharedFlow
+import com.windscribe.vpn.workers.WindScribeWorkManager
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -32,7 +27,7 @@ abstract class AntiCensorshipViewModel : ViewModel() {
 class AntiCensorshipViewModelImpl(
     private val preferencesHelper: PreferencesHelper,
     private val unblockWgParamsRepository: UnblockWgParamsRepository,
-    private val serverListRepository: ServerListRepository
+    private val workManager: WindScribeWorkManager
 ) : AntiCensorshipViewModel() {
 
     private val _protocolTweaksEnabled = MutableStateFlow(preferencesHelper.isProtocolTweaksEnabled)
@@ -110,11 +105,7 @@ class AntiCensorshipViewModelImpl(
                 preferencesHelper.isAntiCensorshipManualMode = true
             }
             if (changed){
-                try {
-                    serverListRepository.update()
-                } catch (e: Exception) {
-                    // Log error but don't crash - server list update can fail during navigation
-                }
+                workManager.updateServerList()
             }
         }
     }

@@ -220,7 +220,7 @@ class ComposeModule {
                 } else if (modelClass.isAssignableFrom(ConnectionViewModel::class.java)) {
                     return ConnectionViewModelImpl(preferencesHelper = appPreferenceHelper, api = apiCallManager, autoConnectionManager, vpnConnectionStateManager, proxyDNSManager, decoyTrafficController, portMapRepository) as T
                 } else if (modelClass.isAssignableFrom(com.windscribe.mobile.ui.preferences.anticensorship.AntiCensorshipViewModel::class.java)) {
-                    return com.windscribe.mobile.ui.preferences.anticensorship.AntiCensorshipViewModelImpl(appPreferenceHelper, unblockWgParamsRepository, serverListRepository) as T
+                    return com.windscribe.mobile.ui.preferences.anticensorship.AntiCensorshipViewModelImpl(appPreferenceHelper, unblockWgParamsRepository, workManager) as T
                 } else if (modelClass.isAssignableFrom(RobertViewModel::class.java)) {
                     return RobertViewModelImpl(apiCallManager, appPreferenceHelper) as T
                 } else if (modelClass.isAssignableFrom(LipstickViewmodel::class.java)) {
