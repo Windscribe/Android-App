@@ -50,17 +50,20 @@ class StaticIpRepository @Inject constructor(
         when (result) {
             is CallResult.Error -> {}
             is CallResult.Success -> {
-                val regions = result.data.let {
-                    val jsonObject = JSONObject(Gson().toJson(it))
-                    Gson().fromJson<List<StaticRegion>>(
-                        jsonObject.getJSONArray("static_ips").toString(),
-                        object : TypeToken<List<StaticRegion>?>() {}.type
-                    )
-                } ?: emptyList()
-                if (regions.isNotEmpty()) {
-                    regions[0].deviceName
-                }
-                localDbInterface.addStaticRegions(regions)
+                try {
+                    val regions = result.data.let {
+                        val jsonObject = JSONObject(Gson().toJson(it))
+                        if (jsonObject.has("static_ips")) {
+                            Gson().fromJson<List<StaticRegion>>(
+                                jsonObject.getJSONArray("static_ips").toString(),
+                                object : TypeToken<List<StaticRegion>?>() {}.type
+                            )
+                        } else {
+                            null
+                        }
+                    } ?: emptyList()
+                    localDbInterface.addStaticRegions(regions)
+                } catch (ignore : Exception) { }
             }
         }
     }
