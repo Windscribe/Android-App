@@ -53,7 +53,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
@@ -260,40 +259,49 @@ open class Windscribe : MultiDexApplication() {
 
     private fun runTrayMigrationEarly() {
         runBlocking(Dispatchers.IO) {
-            try {
-                // Ensure DataStore directory exists before accessing
-                val dataStoreDir = java.io.File(appContext.filesDir, "datastore")
-                if (!dataStoreDir.exists()) {
-                    logger.debug("Creating DataStore directory: ${dataStoreDir.absolutePath}")
-                    val created = dataStoreDir.mkdirs()
-                    if (!created && !dataStoreDir.exists()) {
-                        logger.error("Failed to create DataStore directory - disk full or permissions issue")
-                        return@runBlocking
-                    }
-                }
-
-                val dataStore = appContext.windscribeDataStore
-                val migration = TrayToDataStoreMigration(appContext, dataStore)
-                when (val result = migration.migrate()) {
-                    is MigrationResult.Success -> {
-                        logger.info("Tray migration completed: ${result.migratedCount} items migrated, ${result.errorCount} errors, ${result.unmigratedCount} not migrated")
-                        notificationIdsToMigrate = result.notificationIdsToMarkRead
-                        if (notificationIdsToMigrate.isNotEmpty()) {
-                            logger.info("Found ${notificationIdsToMigrate.size} notification read statuses to migrate later")
+            val migrationCompleted = withTimeoutOrNull(3_000) {
+                try {
+                    // Ensure DataStore directory exists before accessing
+                    val dataStoreDir = java.io.File(appContext.filesDir, "datastore")
+                    if (!dataStoreDir.exists()) {
+                        logger.debug("Creating DataStore directory: ${dataStoreDir.absolutePath}")
+                        val created = dataStoreDir.mkdirs()
+                        if (!created && !dataStoreDir.exists()) {
+                            logger.error("Failed to create DataStore directory - disk full or permissions issue")
+                            return@withTimeoutOrNull false
                         }
                     }
-                    is MigrationResult.AlreadyCompleted -> { }
-                    is MigrationResult.NoTrayData -> {
-                        logger.info("No Tray data to migrate (fresh install or already migrated)")
+
+                    val dataStore = appContext.windscribeDataStore
+                    val migration = TrayToDataStoreMigration(appContext, dataStore)
+                    when (val result = migration.migrate()) {
+                        is MigrationResult.Success -> {
+                            logger.info("Tray migration completed: ${result.migratedCount} items migrated, ${result.errorCount} errors, ${result.unmigratedCount} not migrated")
+                            notificationIdsToMigrate = result.notificationIdsToMarkRead
+                            if (notificationIdsToMigrate.isNotEmpty()) {
+                                logger.info("Found ${notificationIdsToMigrate.size} notification read statuses to migrate later")
+                            }
+                        }
+                        is MigrationResult.AlreadyCompleted -> { }
+                        is MigrationResult.NoTrayData -> {
+                            logger.info("No Tray data to migrate (fresh install or already migrated)")
+                        }
+                        is MigrationResult.Error -> {
+                            logger.error("Tray migration failed: ${result.message}")
+                        }
                     }
-                    is MigrationResult.Error -> {
-                        logger.error("Tray migration failed: ${result.message}")
-                    }
+                    true
+                } catch (e: java.io.IOException) {
+                    logger.error("IOException during DataStore initialization - disk full or permissions issue: ${e.message}", e)
+                    false
+                } catch (e: Exception) {
+                    logger.error("Unexpected error during Tray migration: ${e.message}", e)
+                    false
                 }
-            } catch (e: java.io.IOException) {
-                logger.error("IOException during DataStore initialization - disk full or permissions issue: ${e.message}", e)
-            } catch (e: Exception) {
-                logger.error("Unexpected error during Tray migration: ${e.message}", e)
+            }
+
+            if (migrationCompleted == null) {
+                logger.error("Tray migration timed out after 2s - continuing with app initialization to avoid ANR")
             }
         }
     }
