@@ -46,8 +46,8 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_overlay)
         onActivityLaunch()
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_overlay)
         setConstraints()
         supportFragmentManager.beginTransaction()
             .replace(R.id.BrowseRow, AllOverlayFragment(), "1")

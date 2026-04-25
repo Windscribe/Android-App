@@ -30,22 +30,13 @@ abstract class BaseActivity : AppCompatActivity() {
 
     protected fun setContentLayout(layoutID: Int) {
         coldLoad.set(true)
-        updateLanguage()
+        applyAppLocale()
         setContentView(layoutID)
     }
 
     protected fun onActivityLaunch() {
         coldLoad.set(true)
-        updateLanguage()
-    }
-
-    protected fun updateLanguage() {
-        val newLocale = appContext.getSavedLocale()
-        Locale.setDefault(newLocale)
-        val config = Configuration()
-        config.locale = newLocale
-        appContext.resources.updateConfiguration(config, baseContext.resources.displayMetrics)
-        resources.updateConfiguration(config, baseContext.resources.displayMetrics)
+        applyAppLocale()
     }
 
     fun activityScope(block: suspend CoroutineScope.() -> Unit) {
@@ -54,3 +45,20 @@ abstract class BaseActivity : AppCompatActivity() {
         }
     }
 }
+
+/**
+ * Extension function for AppCompatActivity to set app locale before setContentView.
+ * Use this in any TV activity's onCreate before calling setContentView.
+ */
+fun AppCompatActivity.applyAppLocale() {
+    val newLocale = appContext.getSavedLocale()
+    Locale.setDefault(newLocale)
+    val config = Configuration()
+    @Suppress("DEPRECATION")
+    config.locale = newLocale
+    @Suppress("DEPRECATION")
+    appContext.resources.updateConfiguration(config, resources.displayMetrics)
+    @Suppress("DEPRECATION")
+    resources.updateConfiguration(config, resources.displayMetrics)
+}
+

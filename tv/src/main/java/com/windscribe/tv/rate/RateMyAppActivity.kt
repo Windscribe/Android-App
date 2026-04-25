@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
+import com.windscribe.tv.base.applyAppLocale
 import com.windscribe.tv.databinding.ActivityRateMyAppBinding
 import com.windscribe.tv.di.ActivityModule
 import com.windscribe.vpn.constants.RateDialogConstants
@@ -27,6 +28,7 @@ class RateMyAppActivity : BaseActivity(), RateView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
+        applyAppLocale()
         binding = DataBindingUtil.setContentView(this, R.layout.activity_rate_my_app)
         setupUI()
     }

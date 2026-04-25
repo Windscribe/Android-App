@@ -34,8 +34,8 @@ class DetailActivity : BaseActivity(), DetailView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setActivityModule(ActivityModule(this, this)).inject(this)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_detail)
         onActivityLaunch()
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_detail)
         binding.detailRecycleView.setNumColumns(1)
         if (intent != null) {
             fragmentTag = intent.getStringExtra("fragment_tag")?.toInt() ?: 1
