@@ -1,13 +1,9 @@
 package com.windscribe.mobile.ui.home
 
 import NetworkNameSheet
-import ServerListScreen
-import android.R.attr.contentDescription
+import com.windscribe.mobile.ui.serverlist.ServerListScreen
 import android.annotation.SuppressLint
-import android.content.Intent
-import android.net.Uri
 import android.os.Build
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -75,9 +71,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImagePainter.State.Empty.painter
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.common.AnimatedIPAddress
 import com.windscribe.mobile.ui.common.AppConnectButton
@@ -106,11 +100,7 @@ import com.windscribe.mobile.ui.theme.font26
 import com.windscribe.mobile.ui.theme.font9
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.backend.Util
-import com.windscribe.vpn.model.User
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
-import kotlin.math.roundToInt
 
 @Composable
 fun HomeScreen(

@@ -1,4 +1,4 @@
-
+package com.windscribe.mobile.ui.serverlist
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -16,24 +16,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.ui.connection.BridgeApiViewModel
-import com.windscribe.mobile.ui.serverlist.AllServerList
-import com.windscribe.mobile.ui.serverlist.ConfigServerList
-import com.windscribe.mobile.ui.serverlist.FavouriteList
-import com.windscribe.mobile.ui.serverlist.ServerListNavigation
-import com.windscribe.mobile.ui.serverlist.StaticIPServerList
-import com.windscribe.mobile.ui.serverlist.ConfigViewmodel
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
 import com.windscribe.mobile.ui.home.HomeViewmodel
-import com.windscribe.mobile.ui.serverlist.ServerListType
-import com.windscribe.mobile.ui.serverlist.ServerViewModel
 import com.windscribe.mobile.ui.theme.serverListBackgroundColor
-import com.windscribe.vpn.repository.BridgeApiRepository
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -46,23 +38,42 @@ fun ServerListScreen(
     homeViewmodel: HomeViewmodel
 ) {
     val selectedType by viewModel.selectedServerListType.collectAsState()
+
     val pagerState = rememberPagerState(
         initialPage = 0,
         initialPageOffsetFraction = 0.0f,
         pageCount = { 4 },
     )
+
     val hapticFeedback by homeViewmodel.hapticFeedbackEnabled.collectAsState()
     val haptic = LocalHapticFeedback.current
-    LaunchedEffect(selectedType) {
-        if (hapticFeedback) {
-            haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-        }
-        pagerState.animateScrollToPage(selectedType.toPageIndex())
-    }
-    LaunchedEffect(pagerState.targetPage) {
-        viewModel.setSelectedType(pagerState.targetPage.toServerListType())
-    }
+
     val coroutineScope = rememberCoroutineScope()
+
+    /**
+     * ViewModel -> Pager (one-way, guarded)
+     */
+    LaunchedEffect(selectedType) {
+        val targetPage = selectedType.toPageIndex()
+
+        if (pagerState.currentPage != targetPage) {
+            if (hapticFeedback) {
+                haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+            }
+            pagerState.animateScrollToPage(targetPage)
+        }
+    }
+
+    /**
+     * Pager -> ViewModel (stable, no feedback loop)
+     */
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }
+            .collect { page ->
+                viewModel.setSelectedType(page.toServerListType())
+            }
+    }
+
     Box {
         Column(
             modifier = Modifier
@@ -71,11 +82,13 @@ fun ServerListScreen(
                 .padding(vertical = 8.dp),
             verticalArrangement = Arrangement.Top
         ) {
+
             HorizontalPager(
-                beyondViewportPageCount = 4,
                 state = pagerState,
-                modifier = Modifier.fillMaxSize(),
+                beyondViewportPageCount = 3,
+                modifier = Modifier.weight(1f)
             ) { pageIndex ->
+
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.TopStart
@@ -89,10 +102,11 @@ fun ServerListScreen(
                 }
             }
         }
+
         ServerListNavigation(
-            modifier = Modifier.offset(y = (-54.0f).dp),
+            modifier = Modifier.offset(y = (-54f).dp),
             viewModel = viewModel,
-            bridgeApiViewModel,
+            bridgeApiViewModel = bridgeApiViewModel,
             onTabSelected = { index ->
                 coroutineScope.launch {
                     viewModel.setSelectedType(index.toServerListType())
@@ -101,7 +115,6 @@ fun ServerListScreen(
         )
     }
 }
-
 
 private fun ServerListType.toPageIndex(): Int = when (this) {
     ServerListType.All -> 0

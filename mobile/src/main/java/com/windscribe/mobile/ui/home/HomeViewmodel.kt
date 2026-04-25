@@ -147,7 +147,11 @@ class HomeViewmodelImpl(
                     if (dataLeft < 0) {
                         dataLeft = 0
                     }
-                    val angle = (dataLeft.toFloat() / it.maxData.toFloat()) * 360f
+                    val angle = if (it.maxData > 0) {
+                        (dataLeft.toFloat() / it.maxData.toFloat()) * 360f
+                    } else {
+                        0f
+                    }
                     logger.info("Data left: $dataLeft, Angle: $angle Max: ${it.maxData}")
                     _userState.emit(
                         UserState.Free(
