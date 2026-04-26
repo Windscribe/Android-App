@@ -69,7 +69,6 @@ class LatencyRepository @Inject constructor(
                 try {
                     return@async getLatencyFromApi(pingIpAndHost.second, pingIpAndHost.first, pingTime)
                 } catch (e: Exception){
-                    logger.debug("Ping failed for datacenter ${city.id}: ${e.message}")
                     return@async pingTime.apply { setPingTime(-1) }
                 }
             }
@@ -86,7 +85,6 @@ class LatencyRepository @Inject constructor(
                 try {
                     return@async getLatencyFromApi(region.pingHost, region.staticIpNode.ip, pingTime)
                 } catch (e: Exception){
-                    logger.debug("Ping failed for static region ${region.id}: ${e.message}")
                     return@async pingTime.apply { setPingTime(-1) }
                 }
             }

@@ -203,6 +203,7 @@ open class Windscribe : MultiDexApplication() {
                 startAutoConnectService()
             }
         }
+        logger.info("Application startup finished.")
     }
 
     private fun initStrongswan() {
