@@ -37,15 +37,23 @@ class BridgeApiRepository @Inject constructor(
 
     private fun observeBridgeApi() {
         scope.launch {
-            val hasToken = wsnet.get().bridgeAPI().hasSessionToken()
-            if (hasToken && vpnConnectionStateManager.isVPNConnected()) {
-                checkAndEmitApiAvailability(ready = true)
+            try {
+                val hasToken = wsnet.get().bridgeAPI().hasSessionToken()
+                if (hasToken && vpnConnectionStateManager.isVPNConnected()) {
+                    checkAndEmitApiAvailability(ready = true)
+                }
+            } catch (e: Exception) {
+                // JNI reference may be invalid, ignore
             }
         }
-        wsnet.get().bridgeAPI().setApiAvailableCallback { ready ->
-            scope.launch {
-                checkAndEmitApiAvailability(ready)
+        try {
+            wsnet.get().bridgeAPI().setApiAvailableCallback { ready ->
+                scope.launch {
+                    checkAndEmitApiAvailability(ready)
+                }
             }
+        } catch (e: Exception) {
+            // JNI reference may be invalid, ignore
         }
     }
 

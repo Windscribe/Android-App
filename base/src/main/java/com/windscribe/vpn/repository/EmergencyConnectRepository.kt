@@ -26,22 +26,32 @@ class EmergencyConnectRepositoryImpl(private val wsNet: Lazy<WSNet>) : Emergency
         }
         return runCatching {
             suspendCancellableCoroutine { cont ->
-                val callback = wsNet.get().emergencyConnect().getIpEndpoints { ips ->
-                    val configs = ips.map { ipEndpoint ->
-                        val proto = if (ipEndpoint.protocol() == 0) "udp" else "tcp"
-                        OpenVPNConnectionInfo(
-                            wsNet.get().emergencyConnect().ovpnConfig(),
-                                ipEndpoint.ip(),
-                                ipEndpoint.port().toString(),
-                                proto,
-                            wsNet.get().emergencyConnect().username(),
-                            wsNet.get().emergencyConnect().password()
-                        )
-                    }.shuffled()
-                    cont.resume(configs)
-                }
-                cont.invokeOnCancellation {
-                    callback.cancel()
+                try {
+                    val callback = wsNet.get().emergencyConnect().getIpEndpoints { ips ->
+                        try {
+                            val configs = ips.map { ipEndpoint ->
+                                val proto = if (ipEndpoint.protocol() == 0) "udp" else "tcp"
+                                OpenVPNConnectionInfo(
+                                    wsNet.get().emergencyConnect().ovpnConfig(),
+                                        ipEndpoint.ip(),
+                                        ipEndpoint.port().toString(),
+                                        proto,
+                                    wsNet.get().emergencyConnect().username(),
+                                    wsNet.get().emergencyConnect().password()
+                                )
+                            }.shuffled()
+                            cont.resume(configs)
+                        } catch (e: Exception) {
+                            // JNI reference may be invalid
+                            cont.resume(emptyList())
+                        }
+                    }
+                    cont.invokeOnCancellation {
+                        callback.cancel()
+                    }
+                } catch (e: Exception) {
+                    // JNI reference may be invalid
+                    cont.resume(emptyList())
                 }
             }
         }

@@ -65,9 +65,13 @@ class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionMan
             state.collectLatest {
                 if (start.getAndSet(true)) {
                     logger.info("VPN state changed to ${it.status}")
-                    wsNet.get().setIsConnectedToVpnState(isVPNConnected())
-                    if (!isVPNConnected()) {
-                        wsNet.get().bridgeAPI().setConnectedState(false)
+                    try {
+                        wsNet.get().setIsConnectedToVpnState(isVPNConnected())
+                        if (!isVPNConnected()) {
+                            wsNet.get().bridgeAPI().setConnectedState(false)
+                        }
+                    } catch (e: Exception) {
+                        // JNI reference may be invalid, ignore
                     }
                 } else {
                     val logFile = Windscribe.appContext.resources.getString(

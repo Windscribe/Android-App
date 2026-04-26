@@ -258,12 +258,17 @@ class LatencyRepository @Inject constructor(
         }
         val updatedPing = withTimeoutOrNull(500) {
             suspendCancellableCoroutine {
-                val pingType = advanceParameterRepository.pingType()
-                wsNet.get().pingManager().ping(ip, "http://$ip:6464/latency", pingType) { _, _, latency, _ ->
-                    ping.apply {
-                        pingTime = latency
+                try {
+                    val pingType = advanceParameterRepository.pingType()
+                    wsNet.get().pingManager().ping(ip, "http://$ip:6464/latency", pingType) { _, _, latency, _ ->
+                        ping.apply {
+                            pingTime = latency
+                        }
+                        it.resume(ping)
                     }
-                    it.resume(ping)
+                } catch (e: Exception) {
+                    // JNI reference may be invalid, return error
+                    it.resume(ping.apply { pingTime = -1 })
                 }
             }
         }

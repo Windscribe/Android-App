@@ -195,13 +195,20 @@ class LocationRepository @Inject constructor(
         val pingType = advanceParameterRepository.pingType()
         return withTimeoutOrNull(500) {
             suspendCancellableCoroutine { continuation ->
-                val callback = wsNet.get().pingManager().ping(pingIpAndHost.first, pingIpAndHost.second, pingType) { _, _, latency, _ ->
-                    if (continuation.isActive) {
-                        continuation.resume(latency)
+                try {
+                    val callback = wsNet.get().pingManager().ping(pingIpAndHost.first, pingIpAndHost.second, pingType) { _, _, latency, _ ->
+                        if (continuation.isActive) {
+                            continuation.resume(latency)
+                        }
                     }
-                }
-                continuation.invokeOnCancellation {
-                    callback.cancel()
+                    continuation.invokeOnCancellation {
+                        callback.cancel()
+                    }
+                } catch (e: Exception) {
+                    // JNI reference may be invalid, return error
+                    if (continuation.isActive) {
+                        continuation.resume(-1)
+                    }
                 }
             }
         } ?: -1
