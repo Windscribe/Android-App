@@ -63,7 +63,12 @@ class AppLifeCycleObserver @Inject constructor(
                proxyDNSManager.stopControlD()
             }
         }
-        appContext.preference.wsNetSettings = wsNet.get().currentPersistentSettings()
+        // Only save WSNet settings if it's already initialized to avoid forcing initialization
+        if (WSNet.isValid()) {
+            appContext.preference.wsNetSettings = wsNet.get().currentPersistentSettings()
+        } else {
+            logger.warn("WSNet not initialized, not saving settings")
+        }
         // Clear whitelist when app goes to background
         deviceStateManager.setWhitelistedNetwork(null)
         logger.info("----------App going to background.--------\n")

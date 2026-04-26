@@ -28,8 +28,10 @@ class BridgeApiRepository @Inject constructor(
 
     init {
         scope.launch(Dispatchers.IO) {
-            observeBridgeApi()
-            observeAntiCensorshipStatus()
+            if (WSNet.isValid()) {
+                observeBridgeApi()
+                observeAntiCensorshipStatus()
+            }
         }
     }
 
