@@ -13,12 +13,12 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
-import com.windscribe.vpn.backend.VpnBackend.Companion.DISCONNECT_DELAY
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.wsnet.lib.WSNet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -31,7 +31,7 @@ import java.io.IOException
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
-import com.wsnet.lib.WSNetBridgeAPI
+import dagger.Lazy
 
 @Singleton
 class IKev2VpnBackend @Inject constructor(
@@ -41,11 +41,11 @@ class IKev2VpnBackend @Inject constructor(
         var preferencesHelper: PreferencesHelper,
         advanceParameterRepository: AdvanceParameterRepository,
         val proxyDNSManager: ProxyDNSManager,
-        private val apiManager: IApiCallManager,
+        apiManager: IApiCallManager,
         localDbInterface: LocalDbInterface,
-        bridgeAPI: WSNetBridgeAPI,
+        wsNet: Lazy<WSNet>,
         resourceHelper: ResourceHelper
-) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager, localDbInterface, bridgeAPI, resourceHelper) {
+) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager, localDbInterface, wsNet, resourceHelper) {
 
     var service: CharonVpnServiceWrapper? = null  // Direct reference like WireGuard
     private var connectionStateJob: Job? = null

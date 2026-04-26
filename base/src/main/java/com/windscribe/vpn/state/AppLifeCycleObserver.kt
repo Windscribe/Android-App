@@ -13,6 +13,7 @@ import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import com.wsnet.lib.WSNet
+import dagger.Lazy
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -30,7 +31,7 @@ class AppLifeCycleObserver @Inject constructor(
     private val networkInfoManager: NetworkInfoManager,
     private val vpnConnectionStateManager: VPNConnectionStateManager,
     private val proxyDNSManager: ProxyDNSManager,
-    private val wsNet: WSNet,
+    private val wsNet: Lazy<WSNet>,
     private val deviceStateManager: DeviceStateManager
 ) :
     LifecycleObserver {
@@ -62,7 +63,7 @@ class AppLifeCycleObserver @Inject constructor(
                proxyDNSManager.stopControlD()
             }
         }
-        appContext.preference.wsNetSettings = wsNet.currentPersistentSettings()
+        appContext.preference.wsNetSettings = wsNet.get().currentPersistentSettings()
         // Clear whitelist when app goes to background
         deviceStateManager.setWhitelistedNetwork(null)
         logger.info("----------App going to background.--------\n")

@@ -6,7 +6,7 @@ import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.wsnet.lib.WSNet
-import com.wsnet.lib.WSNetBridgeAPI
+import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,9 +17,8 @@ import javax.inject.Inject
 
 class BridgeApiRepository @Inject constructor(
     private val scope: CoroutineScope,
-    private val wsnet: WSNet,
+    private val wsnet: Lazy<WSNet>,
     private val preferencesHelper: PreferencesHelper,
-    private val bridgeAPI: WSNetBridgeAPI,
     private val locationRepository: LocationRepository,
     private val userRepository: UserRepository,
     private val vpnConnectionStateManager: VPNConnectionStateManager
@@ -36,13 +35,12 @@ class BridgeApiRepository @Inject constructor(
 
     private fun observeBridgeApi() {
         scope.launch {
-            val hasToken = bridgeAPI.hasSessionToken()
+            val hasToken = wsnet.get().bridgeAPI().hasSessionToken()
             if (hasToken && vpnConnectionStateManager.isVPNConnected()) {
                 checkAndEmitApiAvailability(ready = true)
             }
         }
-
-        bridgeAPI.setApiAvailableCallback { ready ->
+        wsnet.get().bridgeAPI().setApiAvailableCallback { ready ->
             scope.launch {
                 checkAndEmitApiAvailability(ready)
             }
@@ -53,7 +51,7 @@ class BridgeApiRepository @Inject constructor(
         scope.launch {
           preferencesHelper.isProtocolTweaksEnabledFlow.collect {
               if (WSNet.isValid()) {
-                  wsnet.advancedParameters()?.let { params ->
+                  wsnet.get().advancedParameters()?.let { params ->
                       params.isAPIExtraTLSPadding = it
                   }
               }

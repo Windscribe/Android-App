@@ -21,6 +21,7 @@ import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.wsnet.lib.WSNet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
@@ -32,7 +33,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
 import javax.inject.Singleton
-import com.wsnet.lib.WSNetBridgeAPI
+import dagger.Lazy
+
 /**
  * Base class for Interfacing with VPN Modules.
  * */
@@ -45,7 +47,7 @@ abstract class VpnBackend(
     private val advanceParameterRepository: AdvanceParameterRepository,
     private val apiManager: IApiCallManager,
     protected val localDbInterface: LocalDbInterface,
-    private val bridgeAPI: WSNetBridgeAPI,
+    private val wsnet: Lazy<WSNet>,
     private val resourceHelper: ResourceHelper
 ) {
 
@@ -184,12 +186,12 @@ abstract class VpnBackend(
                     // Initial delay before first attempt
                     delay(startDelay)
                     if (protocolInformation?.protocol == "wg") {
-                        bridgeAPI.setCurrentHost(selectedIp)
+                        wsnet.get().bridgeAPI().setCurrentHost(selectedIp)
                     } else {
-                        bridgeAPI.setCurrentHost("")
+                        wsnet.get().bridgeAPI().setCurrentHost("")
                     }
-                    bridgeAPI.setIgnoreSslErrors(true)
-                    bridgeAPI.setConnectedState(true)
+                    wsnet.get().bridgeAPI().setIgnoreSslErrors(true)
+                    wsnet.get().bridgeAPI().setConnectedState(true)
                     // Pin IP if available
                     if (ip != null) {
                         vpnLogger.info("Pinning IP: $ip for node: $selectedIp")
