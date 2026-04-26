@@ -33,22 +33,28 @@ class OverlayFocusAware : ConstraintLayout {
         var viewId: Int? = null
         if (direction == FOCUS_LEFT && contentIds.contains(focused.id)) {
             if (nextFocusLeftId == -1) {
-                viewId = headerIds[currentFragment]
+                // Ensure currentFragment is within bounds of headerIds array
+                if (currentFragment in headerIds.indices) {
+                    viewId = headerIds[currentFragment]
+                }
             }
         }
         if (direction == FOCUS_RIGHT && headerIds.contains(focused.id)) {
             if (nextFocusRightId == -1) {
-                viewId = contentIds[currentFragment]
+                // Ensure currentFragment is within bounds of contentIds array
+                if (currentFragment in contentIds.indices) {
+                    viewId = contentIds[currentFragment]
+                }
             }
         }
         headerIds.firstOrNull {
             it == focused.id
         }?.let {
             val index = headerIds.indexOf(it)
-            if (index in 0..2 && direction == FOCUS_DOWN) {
+            if (index in 0..1 && direction == FOCUS_DOWN) {
                 viewId = headerIds[index + 1]
             }
-            if (index in 1..3 && direction == FOCUS_UP) {
+            if (index in 1..2 && direction == FOCUS_UP) {
                 viewId = headerIds[index - 1]
             }
         }

@@ -80,7 +80,7 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
         }
         binding.headerItemStatic.setOnClickListener {
             onHeaderClick(
-                3,
+                2,
                 StaticIpFragment::class.java,
                 binding.headerItemStaticBar,
                 binding.headerItemStaticIcon,
