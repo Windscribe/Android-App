@@ -3,18 +3,16 @@
  */
 package com.windscribe.vpn.repository
 
-import android.R.attr.host
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.commonutils.WindUtilities
-import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.DatacenterAndLocation
 import com.windscribe.vpn.serverlist.entity.Server
-import com.wsnet.lib.WSNetPingManager
+import com.wsnet.lib.WSNet
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -38,7 +36,7 @@ class LocationRepository @Inject constructor(
     private val preferencesHelper: PreferencesHelper,
     private val localDbInterface: LocalDbInterface,
     private val userRepository: Lazy<UserRepository>,
-    private val pingManager: WSNetPingManager,
+    private val wsNet: Lazy<WSNet>,
     private val advanceParameterRepository: AdvanceParameterRepository
 ) {
     private val logger = LoggerFactory.getLogger("data")
@@ -197,7 +195,7 @@ class LocationRepository @Inject constructor(
         val pingType = advanceParameterRepository.pingType()
         return withTimeoutOrNull(500) {
             suspendCancellableCoroutine { continuation ->
-                val callback = pingManager.ping(pingIpAndHost.first, pingIpAndHost.second, pingType) { _, _, latency, _ ->
+                val callback = wsNet.get().pingManager().ping(pingIpAndHost.first, pingIpAndHost.second, pingType) { _, _, latency, _ ->
                     if (continuation.isActive) {
                         continuation.resume(latency)
                     }

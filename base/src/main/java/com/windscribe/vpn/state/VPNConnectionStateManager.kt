@@ -17,6 +17,8 @@ import com.windscribe.vpn.repository.UserRepository
 import com.wsnet.lib.WSNet
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -26,10 +28,9 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Singleton
-import com.wsnet.lib.WSNetBridgeAPI
 
 @Singleton
-class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionManager: AutoConnectionManager, val preferencesHelper: PreferencesHelper, val userRepository: Lazy<UserRepository>, private val wsNet: Lazy<WSNet>, val bridgeAPI: WSNetBridgeAPI) {
+class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionManager: AutoConnectionManager, val preferencesHelper: PreferencesHelper, val userRepository: Lazy<UserRepository>, private val wsNet: Lazy<WSNet>) {
     private val logger = LoggerFactory.getLogger("vpn")
 
     private val _events = MutableStateFlow(VPNState(Disconnected))
@@ -60,14 +61,14 @@ class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionMan
 
     init {
         val start = AtomicBoolean(false)
-        scope.launch {
+        scope.launch(Dispatchers.IO) {
             state.collectLatest {
-                wsNet.get().setIsConnectedToVpnState(isVPNConnected())
-                if (!isVPNConnected()) {
-                    bridgeAPI.setConnectedState(false)
-                }
                 if (start.getAndSet(true)) {
                     logger.info("VPN state changed to ${it.status}")
+                    wsNet.get().setIsConnectedToVpnState(isVPNConnected())
+                    if (!isVPNConnected()) {
+                        wsNet.get().bridgeAPI().setConnectedState(false)
+                    }
                 } else {
                     val logFile = Windscribe.appContext.resources.getString(
                         R.string.log_file_header,

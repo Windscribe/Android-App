@@ -26,7 +26,7 @@ import com.wireguard.android.backend.GoBackend
 import com.wireguard.android.backend.Tunnel.State.DOWN
 import com.wireguard.android.backend.Tunnel.State.TOGGLE
 import com.wireguard.android.backend.Tunnel.State.UP
-import com.wsnet.lib.WSNetBridgeAPI
+import com.wsnet.lib.WSNet
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,7 +56,7 @@ class WireguardBackend @Inject constructor(
     val wgLogger: WgLogger,
     val wgConfigRepository: com.windscribe.vpn.repository.WgConfigRepository,
     private val apiManager: IApiCallManager,
-    private val bridgeAPI: WSNetBridgeAPI,
+    wsNet: Lazy<WSNet>,
     resourceHelper: ResourceHelper
 ) : VpnBackend(
     scope,
@@ -66,7 +66,7 @@ class WireguardBackend @Inject constructor(
     advanceParameterRepository,
     apiManager,
     localDbInterface,
-    bridgeAPI,
+    wsNet,
     resourceHelper
 ) {
 
@@ -84,7 +84,7 @@ class WireguardBackend @Inject constructor(
         scope = scope,
         wgLogger = wgLogger,
         apiManager = apiManager,
-        bridgeAPI = bridgeAPI,
+        wsNet,
         preferencesHelper = preferencesHelper,
         deviceStateManager = deviceStateManager,
         getPinnedIpForSelectedCity = { getPinnedIpForSelectedCity() }

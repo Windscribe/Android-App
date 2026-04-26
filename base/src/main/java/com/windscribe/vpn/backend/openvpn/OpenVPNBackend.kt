@@ -23,6 +23,7 @@ import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.wireguard.android.backend.GoBackend
+import com.wsnet.lib.WSNet
 import de.blinkt.openvpn.core.ConnectionStatus
 import de.blinkt.openvpn.core.OpenVPNService
 import de.blinkt.openvpn.core.VpnStatus
@@ -36,8 +37,7 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
-import com.wsnet.lib.WSNetBridgeAPI
-import org.strongswan.android.logic.StrongSwanApplication
+import dagger.Lazy
 
 @Singleton
 class OpenVPNBackend @Inject constructor(
@@ -50,9 +50,9 @@ class OpenVPNBackend @Inject constructor(
     val proxyDNSManager: ProxyDNSManager,
     apiManager: IApiCallManager,
     localDbInterface: LocalDbInterface,
-    bridgeAPI: WSNetBridgeAPI,
+    wsNet: Lazy<WSNet>,
     resourceHelper: ResourceHelper
-) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager, localDbInterface, bridgeAPI, resourceHelper),
+) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager, localDbInterface, wsNet, resourceHelper),
     VpnStatus.StateListener, VpnStatus.ByteCountListener {
 
     override var active = false

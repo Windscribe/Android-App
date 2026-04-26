@@ -150,14 +150,14 @@ open class BaseApplicationModule {
     fun provideLatencyRepository(
         preferencesHelper: PreferencesHelper,
         localDbInterface: LocalDbInterface,
-        wsNet: WSNet,
+        wsNet: Lazy<WSNet>,
         vpnConnectionStateManager: Lazy<VPNConnectionStateManager>,
         advanceParameterRepository: AdvanceParameterRepository
     ): LatencyRepository {
         return LatencyRepository(
             preferencesHelper,
             localDbInterface,
-            wsNet.pingManager(),
+            wsNet,
             vpnConnectionStateManager,
             advanceParameterRepository
         )
@@ -361,7 +361,7 @@ open class BaseApplicationModule {
         preferencesHelper: PreferencesHelper,
         localDbInterface: LocalDbInterface,
         userRepository: Lazy<UserRepository>,
-        wsNet: WSNet,
+        wsNet: Lazy<WSNet>,
         advanceParameterRepository: AdvanceParameterRepository
     ): LocationRepository {
         return LocationRepository(
@@ -369,7 +369,7 @@ open class BaseApplicationModule {
             preferencesHelper,
             localDbInterface,
             userRepository,
-            wsNet.pingManager(),
+            wsNet,
             advanceParameterRepository
         )
     }
@@ -541,9 +541,9 @@ open class BaseApplicationModule {
     @Provides
     @Singleton
     fun providesApiCallManagerInterface(
-        wsNetServerAPI: WSNetServerAPI,
+        wsNetServerAPI: Lazy<WSNetServerAPI>,
         preferencesHelper: PreferencesHelper,
-        bridgeAPI: WSNetBridgeAPI
+        bridgeAPI: Lazy<WSNetBridgeAPI>
     ): IApiCallManager {
         return ApiCallManager(
             wsNetServerAPI,
@@ -576,7 +576,7 @@ open class BaseApplicationModule {
         networkInfoManager: NetworkInfoManager,
         vpnConnectionStateManager: VPNConnectionStateManager,
         proxyDNSManager: ProxyDNSManager,
-        wsNet: WSNet,
+        wsNet: Lazy<WSNet>,
         deviceStateManager: DeviceStateManager
     ): AppLifeCycleObserver {
         return AppLifeCycleObserver(
@@ -692,11 +692,10 @@ open class BaseApplicationModule {
         autoConnectionManager: AutoConnectionManager,
         preferencesHelper: PreferencesHelper,
         userRepository: Lazy<UserRepository>,
-        wsNet: Lazy<WSNet>,
-        bridgeAPI: WSNetBridgeAPI
+        wsNet: Lazy<WSNet>
     ): VPNConnectionStateManager {
         return VPNConnectionStateManager(
-            scope, autoConnectionManager, preferencesHelper, userRepository, wsNet, bridgeAPI
+            scope, autoConnectionManager, preferencesHelper, userRepository, wsNet
         )
     }
 
@@ -756,8 +755,8 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun providesEmergencyConnectRepository(wsNet: WSNet): EmergencyConnectRepository {
-        return EmergencyConnectRepositoryImpl(wsNet.emergencyConnect())
+    fun providesEmergencyConnectRepository(wsNet: Lazy<WSNet>): EmergencyConnectRepository {
+        return EmergencyConnectRepositoryImpl(wsNet)
     }
 
     @Provides

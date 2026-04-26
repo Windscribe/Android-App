@@ -2,7 +2,8 @@ package com.windscribe.vpn.repository
 
 import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.model.OpenVPNConnectionInfo
-import com.wsnet.lib.WSNetEmergencyConnect
+import com.wsnet.lib.WSNet
+import dagger.Lazy
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
@@ -13,7 +14,7 @@ interface EmergencyConnectRepository {
 /**
  * Implementation of emergency connect repository.
  */
-class EmergencyConnectRepositoryImpl(private val emergencyConnect: WSNetEmergencyConnect) : EmergencyConnectRepository {
+class EmergencyConnectRepositoryImpl(private val wsNet: Lazy<WSNet>) : EmergencyConnectRepository {
 
     /** Get emergency connect profiles.
      * @return
@@ -25,16 +26,16 @@ class EmergencyConnectRepositoryImpl(private val emergencyConnect: WSNetEmergenc
         }
         return runCatching {
             suspendCancellableCoroutine { cont ->
-                val callback = emergencyConnect.getIpEndpoints { ips ->
+                val callback = wsNet.get().emergencyConnect().getIpEndpoints { ips ->
                     val configs = ips.map { ipEndpoint ->
                         val proto = if (ipEndpoint.protocol() == 0) "udp" else "tcp"
                         OpenVPNConnectionInfo(
-                                emergencyConnect.ovpnConfig(),
+                            wsNet.get().emergencyConnect().ovpnConfig(),
                                 ipEndpoint.ip(),
                                 ipEndpoint.port().toString(),
                                 proto,
-                                emergencyConnect.username(),
-                                emergencyConnect.password()
+                            wsNet.get().emergencyConnect().username(),
+                            wsNet.get().emergencyConnect().password()
                         )
                     }.shuffled()
                     cont.resume(configs)

@@ -13,7 +13,8 @@ import com.windscribe.vpn.serverlist.entity.PingTime
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.services.ping.Ping
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import com.wsnet.lib.WSNetPingManager
+import com.wsnet.lib.WSNet
+import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -40,7 +41,7 @@ import kotlin.time.toDuration
 class LatencyRepository @Inject constructor(
         private val preferencesHelper: PreferencesHelper,
         private val localDbInterface: LocalDbInterface,
-        private val pingManager: WSNetPingManager,
+        private val wsNet: Lazy<WSNet>,
         private val vpnConnectionStateManager: dagger.Lazy<VPNConnectionStateManager>,
         private val advanceParameterRepository: AdvanceParameterRepository
 ) {
@@ -68,7 +69,6 @@ class LatencyRepository @Inject constructor(
                 try {
                     return@async getLatencyFromApi(pingIpAndHost.second, pingIpAndHost.first, pingTime)
                 } catch (e: Exception){
-                    logger.debug("Ping failed for datacenter ${city.id}: ${e.message}")
                     return@async pingTime.apply { setPingTime(-1) }
                 }
             }
@@ -85,7 +85,6 @@ class LatencyRepository @Inject constructor(
                 try {
                     return@async getLatencyFromApi(region.pingHost, region.staticIpNode.ip, pingTime)
                 } catch (e: Exception){
-                    logger.debug("Ping failed for static region ${region.id}: ${e.message}")
                     return@async pingTime.apply { setPingTime(-1) }
                 }
             }
@@ -260,7 +259,7 @@ class LatencyRepository @Inject constructor(
         val updatedPing = withTimeoutOrNull(500) {
             suspendCancellableCoroutine {
                 val pingType = advanceParameterRepository.pingType()
-                pingManager.ping(ip, "http://$ip:6464/latency", pingType) { _, _, latency, _ ->
+                wsNet.get().pingManager().ping(ip, "http://$ip:6464/latency", pingType) { _, _, latency, _ ->
                     ping.apply {
                         pingTime = latency
                     }

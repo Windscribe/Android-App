@@ -5,7 +5,8 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.state.DeviceStateManager
-import com.wsnet.lib.WSNetBridgeAPI
+import com.wsnet.lib.WSNet
+import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -19,7 +20,7 @@ class PinIpRecovery(
     private val scope: CoroutineScope,
     private val wgLogger: WgLogger,
     private val apiManager: IApiCallManager,
-    private val bridgeAPI: WSNetBridgeAPI,
+    private val wsNet: Lazy<WSNet>,
     private val preferencesHelper: PreferencesHelper,
     private val deviceStateManager: DeviceStateManager,
     private val getPinnedIpForSelectedCity: suspend () -> Pair<String, String>?
@@ -113,10 +114,10 @@ class PinIpRecovery(
 
             // Set bridge API state on main thread
             withContext(Dispatchers.Main) {
-                bridgeAPI.setConnectedState(false)
-                bridgeAPI.setCurrentHost(selectedIp)
-                bridgeAPI.setIgnoreSslErrors(true)
-                bridgeAPI.setConnectedState(true)
+                wsNet.get().bridgeAPI().setConnectedState(false)
+                wsNet.get().bridgeAPI().setCurrentHost(selectedIp)
+                wsNet.get().bridgeAPI().setIgnoreSslErrors(true)
+                wsNet.get().bridgeAPI().setConnectedState(true)
             }
 
             // Call pin IP API
