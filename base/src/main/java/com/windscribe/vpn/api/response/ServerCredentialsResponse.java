@@ -42,12 +42,19 @@ public class ServerCredentialsResponse {
         this.userNameEncoded = userNameEncoded;
     }
 
+    private static String mask(String value) {
+        if (value == null || value.isEmpty()) return "****";
+        if (value.length() <= 4) return "****";
+        int maskedLength = value.length() - 4;
+        return "*".repeat(maskedLength) + value.substring(value.length() - 4);
+    }
+
     @NotNull
     @Override
     public String toString() {
         return "ServerCredentialsResponse{" +
-                "userNameEncoded='" + userNameEncoded + '\'' +
-                ", passwordEncoded='" + passwordEncoded + '\'' +
+                "userNameEncoded='" + mask(userNameEncoded) + '\'' +
+                ", passwordEncoded='" + mask(passwordEncoded) + '\'' +
                 '}';
     }
 }
