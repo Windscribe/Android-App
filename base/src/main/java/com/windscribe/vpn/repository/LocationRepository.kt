@@ -193,32 +193,15 @@ class LocationRepository @Inject constructor(
 
     private suspend fun pingCity(city: Datacenter): Int {
         val pingIpAndHost = localDbInterface.getPingIpAndHost(city.id) ?: return -1
-        val pingType = advanceParameterRepository.pingType()
-        return withTimeoutOrNull(500) {
-            suspendCancellableCoroutine { continuation ->
-                val pingManager = wsNetWrapper.safePingManager()
-                if (pingManager == null) {
-                    if (continuation.isActive) {
-                        continuation.resume(-1)
-                    }
-                    return@suspendCancellableCoroutine
-                }
-                try {
-                    val callback = pingManager.ping(pingIpAndHost.first, pingIpAndHost.second, pingType) { _, _, latency, _ ->
-                        if (continuation.isActive) {
-                            continuation.resume(latency)
-                        }
-                    }
-                    continuation.invokeOnCancellation {
-                        callback.cancel()
-                    }
-                } catch (e: Exception) {
-                    if (continuation.isActive) {
-                        continuation.resume(-1)
-                    }
-                }
-            }
-        } ?: -1
+        // Use native ICMP ping instead of WSNet ping to avoid JNI crashes
+        return try {
+            val inetAddress = java.net.Inet4Address.getByName(pingIpAndHost.first)
+            val ping = com.windscribe.vpn.services.ping.Ping()
+            val timeMs = ping.run(inetAddress, 500)
+            timeMs.toInt()
+        } catch (e: Exception) {
+            -1
+        }
     }
 
     private fun ipAvailable(ip: String?, nodes: List<Server>): Boolean {

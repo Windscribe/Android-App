@@ -64,15 +64,8 @@ class LatencyRepository @Inject constructor(
         return CoroutineScope(context).async {
             val pingTime = getPingTime(city.getId(), city.regionID, false, true)
             val pingIpAndHost = localDbInterface.getPingIpAndHost(city.id) ?: return@async null
-            if (appContext.isRegionRestricted) {
-                return@async getLatency(pingTime.ip, pingTime)
-            } else {
-                try {
-                    return@async getLatencyFromApi(pingIpAndHost.second, pingIpAndHost.first, pingTime)
-                } catch (e: Exception){
-                    return@async pingTime.apply { setPingTime(-1) }
-                }
-            }
+            // Use native ICMP ping instead of WSNet ping to avoid JNI crashes
+            return@async getLatency(pingIpAndHost.first, pingTime)
         }
     }
 
@@ -80,15 +73,8 @@ class LatencyRepository @Inject constructor(
         val context = currentCoroutineContext()
         return CoroutineScope(context).async {
             val pingTime = getPingTime(region.id, region.ipId, isStatic = true, isPro = true)
-            if (appContext.isRegionRestricted) {
-                return@async getLatency(region.staticIpNode.ip, pingTime)
-            } else {
-                try {
-                    return@async getLatencyFromApi(region.pingHost, region.staticIpNode.ip, pingTime)
-                } catch (e: Exception){
-                    return@async pingTime.apply { setPingTime(-1) }
-                }
-            }
+            // Use native ICMP ping instead of WSNet ping to avoid JNI crashes
+            return@async getLatency(region.staticIpNode.ip, pingTime)
         }
     }
 
