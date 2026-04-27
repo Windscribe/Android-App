@@ -5,8 +5,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.state.DeviceStateManager
-import com.wsnet.lib.WSNet
-import dagger.Lazy
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -20,7 +19,7 @@ class PinIpRecovery(
     private val scope: CoroutineScope,
     private val wgLogger: WgLogger,
     private val apiManager: IApiCallManager,
-    private val wsNet: Lazy<WSNet>,
+    private val wsNetWrapper: WSNetWrapper,
     private val preferencesHelper: PreferencesHelper,
     private val deviceStateManager: DeviceStateManager,
     private val getPinnedIpForSelectedCity: suspend () -> Pair<String, String>?
@@ -114,15 +113,11 @@ class PinIpRecovery(
 
             // Set bridge API state on main thread
             withContext(Dispatchers.Main) {
-                if (WSNet.isValid()) {
-                    try {
-                        wsNet.get().bridgeAPI().setConnectedState(false)
-                        wsNet.get().bridgeAPI().setCurrentHost(selectedIp)
-                        wsNet.get().bridgeAPI().setIgnoreSslErrors(true)
-                        wsNet.get().bridgeAPI().setConnectedState(true)
-                    } catch (e: Exception) {
-                        // JNI reference may be invalid, ignore
-                    }
+                wsNetWrapper.safeBridgeAPI()?.let { bridgeAPI ->
+                    bridgeAPI.setConnectedState(false)
+                    bridgeAPI.setCurrentHost(selectedIp)
+                    bridgeAPI.setIgnoreSslErrors(true)
+                    bridgeAPI.setConnectedState(true)
                 }
             }
 

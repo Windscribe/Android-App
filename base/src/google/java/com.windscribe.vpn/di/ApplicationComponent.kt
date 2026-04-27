@@ -24,6 +24,7 @@ import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.mocklocation.MockLocationManager
 import com.windscribe.vpn.repository.*
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.services.firebasecloud.WindscribeCloudMessaging
 import com.windscribe.vpn.state.*
@@ -98,6 +99,7 @@ interface ApplicationComponent {
     val unblockWgParamsRepository: UnblockWgParamsRepository
     val checkUpdateRepository: CheckUpdateRepository
     val appIconCache: AppIconCache
+    val wsNetWrapper: WSNetWrapper
 
     //Services
 

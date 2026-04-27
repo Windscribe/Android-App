@@ -30,6 +30,8 @@ import com.windscribe.vpn.backend.ikev2.StrongswanCertificateManager.init
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.cache.AppIconCache
+import com.windscribe.vpn.commonutils.WindUtilities
+import com.windscribe.vpn.constants.ExtraConstants
 import com.windscribe.vpn.debug.MainThreadWatchdog
 import com.windscribe.vpn.di.ActivityComponent
 import com.windscribe.vpn.di.ApplicationComponent
@@ -197,7 +199,31 @@ open class Windscribe : MultiDexApplication() {
         mockLocationManager.init()
         reviewManager.handleAppReview()
         appIconCache.preloadIcons(applicationScope)
-        updateLatenciesWhenNetworkAvailable()
+
+        // Initialize WSNet in background after DI is ready
+        applicationScope.launch(Dispatchers.IO) {
+            val wrapper = applicationComponent.wsNetWrapper
+            if (preference.deviceUuid == null) {
+                preference.deviceUuid = java.util.UUID.randomUUID().toString()
+            }
+            val systemLanguageCode = if (VERSION.SDK_INT >= VERSION_CODES.N) {
+                resources.configuration.locales.get(0).language.substring(0..1)
+            } else {
+                resources.configuration.locale.language.substring(0..1)
+            }
+            wrapper.initialize(
+                if (applicationInterface.isTV) "android-tv" else "android",
+                WindUtilities.getVersionName(),
+                preference.deviceUuid ?: "",
+                "2.6.0",
+                "4",
+                BuildConfig.DEV,
+                systemLanguageCode,
+                preference.wsNetSettings,
+                true,
+                ExtraConstants.AMNEZIA_WG_VERSION
+            )
+        }
         applicationScope.launch {
             if (preference.sessionHash != null && preference.autoConnect && canAccessNetworkName()) {
                 startAutoConnectService()
@@ -328,18 +354,6 @@ open class Windscribe : MultiDexApplication() {
         }
     }
 
-    private fun updateLatenciesWhenNetworkAvailable() {
-        applicationScope.launch(Dispatchers.IO) {
-            if (preference.sessionHash != null) {
-                delay(2000)
-                if (deviceStateManager.isOnline.value) {
-                    workManager.updateNodeLatencies()
-                } else {
-                    logger.debug("Network not available after 2s delay, skipping latency update on startup")
-                }
-            }
-        }
-    }
 
     private fun setUpNewInstallation() {
         if (preference.newInstallation == null) {

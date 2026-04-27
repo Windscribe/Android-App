@@ -10,7 +10,9 @@ import androidx.work.Constraints.Builder
 import androidx.work.ExistingPeriodicWorkPolicy.REPLACE
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.repository.CheckUpdateRepository
+import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import com.windscribe.vpn.workers.worker.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -27,9 +29,34 @@ import kotlin.jvm.java
  * Handles one off and periodic tasks for app.
  */
 @Singleton
-class WindScribeWorkManager(private val context: Context, private val scope: CoroutineScope, private val vpnConnectionStateManager: VPNConnectionStateManager, val preferencesHelper: PreferencesHelper, private val checkUpdateRepository: CheckUpdateRepository) {
+class WindScribeWorkManager(
+    private val context: Context,
+    private val scope: CoroutineScope,
+    private val vpnConnectionStateManager: VPNConnectionStateManager,
+    val preferencesHelper: PreferencesHelper,
+    private val checkUpdateRepository: CheckUpdateRepository,
+    private val wsNetWrapper: WSNetWrapper,
+    private val deviceStateManager: DeviceStateManager
+) {
     private var foregroundSessionUpdateJob: Job? = null
     private var logger = LoggerFactory.getLogger("worker")
+
+    init {
+        // Update latencies when WSNet is ready and network is available
+        scope.launch {
+            wsNetWrapper.isReady.collect { isReady ->
+                if (isReady && preferencesHelper.sessionHash != null) {
+                    delay(2000)
+                    if (deviceStateManager.isOnline.value) {
+                        updateNodeLatencies()
+                    } else {
+                        logger.debug("Network not available after 2s delay, skipping latency update on startup")
+                    }
+                }
+            }
+        }
+    }
+
     fun onAppStart() {
         if (preferencesHelper.sessionHash == null) return
         // One time

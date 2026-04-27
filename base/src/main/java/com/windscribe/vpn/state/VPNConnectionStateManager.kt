@@ -15,6 +15,7 @@ import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.repository.UserRepository
 import com.wsnet.lib.WSNet
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Singleton
 
 @Singleton
-class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionManager: AutoConnectionManager, val preferencesHelper: PreferencesHelper, val userRepository: Lazy<UserRepository>, private val wsNet: Lazy<WSNet>) {
+class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionManager: AutoConnectionManager, val preferencesHelper: PreferencesHelper, val userRepository: Lazy<UserRepository>, private val wsNetWrapper: WSNetWrapper) {
     private val logger = LoggerFactory.getLogger("vpn")
 
     private val _events = MutableStateFlow(VPNState(Disconnected))
@@ -65,14 +66,10 @@ class VPNConnectionStateManager(val scope: CoroutineScope, val autoConnectionMan
             state.collectLatest {
                 if (start.getAndSet(true)) {
                     logger.info("VPN state changed to ${it.status}")
-                    if (WSNet.isValid()) {
-                        try {
-                            wsNet.get().setIsConnectedToVpnState(isVPNConnected())
-                            if (!isVPNConnected()) {
-                                wsNet.get().bridgeAPI().setConnectedState(false)
-                            }
-                        } catch (e: Exception) {
-                            // JNI reference may be invalid, ignore
+                    wsNetWrapper.withWSNet { wsNet ->
+                        wsNet.setIsConnectedToVpnState(isVPNConnected())
+                        if (!isVPNConnected()) {
+                            wsNet.bridgeAPI().setConnectedState(false)
                         }
                     }
                 } else {

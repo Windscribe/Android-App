@@ -21,6 +21,7 @@ import com.windscribe.vpn.decoytraffic.DecoyTrafficController
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.mocklocation.MockLocationManager
 import com.windscribe.vpn.repository.*
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.services.ReceiptValidator
 import com.windscribe.vpn.services.sso.GoogleSignInManager
@@ -91,9 +92,8 @@ interface ApplicationComponent {
     val bridgeApiRepository: BridgeApiRepository
     val unblockWgParamsRepository: UnblockWgParamsRepository
     val appIconCache: AppIconCache
-
     val checkUpdateRepository: CheckUpdateRepository
-
+    val wsNetWrapper: WSNetWrapper
 
     //Inject
     fun inject(app: Windscribe)

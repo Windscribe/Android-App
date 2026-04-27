@@ -13,6 +13,7 @@ import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.DatacenterAndLocation
 import com.windscribe.vpn.serverlist.entity.Server
 import com.wsnet.lib.WSNet
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -36,7 +37,7 @@ class LocationRepository @Inject constructor(
     private val preferencesHelper: PreferencesHelper,
     private val localDbInterface: LocalDbInterface,
     private val userRepository: Lazy<UserRepository>,
-    private val wsNet: Lazy<WSNet>,
+    private val wsNetWrapper: WSNetWrapper,
     private val advanceParameterRepository: AdvanceParameterRepository
 ) {
     private val logger = LoggerFactory.getLogger("data")
@@ -193,13 +194,17 @@ class LocationRepository @Inject constructor(
     private suspend fun pingCity(city: Datacenter): Int {
         val pingIpAndHost = localDbInterface.getPingIpAndHost(city.id) ?: return -1
         val pingType = advanceParameterRepository.pingType()
-        if (!WSNet.isValid()) {
-            return -1
-        }
         return withTimeoutOrNull(500) {
             suspendCancellableCoroutine { continuation ->
+                val pingManager = wsNetWrapper.safePingManager()
+                if (pingManager == null) {
+                    if (continuation.isActive) {
+                        continuation.resume(-1)
+                    }
+                    return@suspendCancellableCoroutine
+                }
                 try {
-                    val callback = wsNet.get().pingManager().ping(pingIpAndHost.first, pingIpAndHost.second, pingType) { _, _, latency, _ ->
+                    val callback = pingManager.ping(pingIpAndHost.first, pingIpAndHost.second, pingType) { _, _, latency, _ ->
                         if (continuation.isActive) {
                             continuation.resume(latency)
                         }

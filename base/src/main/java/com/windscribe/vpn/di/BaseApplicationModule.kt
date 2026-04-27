@@ -48,6 +48,7 @@ import com.windscribe.vpn.localdatabase.WindscribeDatabase
 import com.windscribe.vpn.mocklocation.MockLocationManager
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.AdvanceParameterRepositoryImpl
+import com.windscribe.vpn.repository.BridgeApiRepository
 import com.windscribe.vpn.repository.ConnectionDataRepository
 import com.windscribe.vpn.repository.EmergencyConnectRepository
 import com.windscribe.vpn.repository.EmergencyConnectRepositoryImpl
@@ -83,12 +84,14 @@ import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.state.WindscribeReviewManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import com.wireguard.android.backend.GoBackend
-import com.wsnet.lib.WSNet
 import com.wsnet.lib.WSNetServerAPI
+import com.wsnet.lib.WSNetBridgeAPI
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -97,8 +100,6 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
-import com.wsnet.lib.WSNetBridgeAPI
-
 @Module
 open class BaseApplicationModule {
     private val logger = LoggerFactory.getLogger("wsnet")
@@ -150,14 +151,14 @@ open class BaseApplicationModule {
     fun provideLatencyRepository(
         preferencesHelper: PreferencesHelper,
         localDbInterface: LocalDbInterface,
-        wsNet: Lazy<WSNet>,
+        wsNetWrapper: WSNetWrapper,
         vpnConnectionStateManager: Lazy<VPNConnectionStateManager>,
         advanceParameterRepository: AdvanceParameterRepository
     ): LatencyRepository {
         return LatencyRepository(
             preferencesHelper,
             localDbInterface,
-            wsNet,
+            wsNetWrapper,
             vpnConnectionStateManager,
             advanceParameterRepository
         )
@@ -202,8 +203,8 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun provideDeviceStateManager(scope: CoroutineScope): DeviceStateManager {
-        return DeviceStateManager(scope)
+    fun provideDeviceStateManager(scope: CoroutineScope, wsNetWrapper: WSNetWrapper): DeviceStateManager {
+        return DeviceStateManager(scope, wsNetWrapper)
     }
 
     @Provides
@@ -361,7 +362,7 @@ open class BaseApplicationModule {
         preferencesHelper: PreferencesHelper,
         localDbInterface: LocalDbInterface,
         userRepository: Lazy<UserRepository>,
-        wsNet: Lazy<WSNet>,
+        wsNetWrapper: WSNetWrapper,
         advanceParameterRepository: AdvanceParameterRepository
     ): LocationRepository {
         return LocationRepository(
@@ -369,7 +370,7 @@ open class BaseApplicationModule {
             preferencesHelper,
             localDbInterface,
             userRepository,
-            wsNet,
+            wsNetWrapper,
             advanceParameterRepository
         )
     }
@@ -554,8 +555,8 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun providesBridgeApi(wsNet: WSNet): WSNetBridgeAPI {
-        return wsNet.bridgeAPI()
+    fun providesBridgeApi(wrapper: WSNetWrapper): WSNetBridgeAPI {
+        return wrapper.getBridgeAPI()
     }
 
     @Provides
@@ -576,7 +577,7 @@ open class BaseApplicationModule {
         networkInfoManager: NetworkInfoManager,
         vpnConnectionStateManager: VPNConnectionStateManager,
         proxyDNSManager: ProxyDNSManager,
-        wsNet: Lazy<WSNet>,
+        wsNetWrapper: WSNetWrapper,
         deviceStateManager: DeviceStateManager
     ): AppLifeCycleObserver {
         return AppLifeCycleObserver(
@@ -584,7 +585,7 @@ open class BaseApplicationModule {
             networkInfoManager,
             vpnConnectionStateManager,
             proxyDNSManager,
-            wsNet,
+            wsNetWrapper,
             deviceStateManager
         )
     }
@@ -692,10 +693,10 @@ open class BaseApplicationModule {
         autoConnectionManager: AutoConnectionManager,
         preferencesHelper: PreferencesHelper,
         userRepository: Lazy<UserRepository>,
-        wsNet: Lazy<WSNet>
+        wsNetWrapper: WSNetWrapper
     ): VPNConnectionStateManager {
         return VPNConnectionStateManager(
-            scope, autoConnectionManager, preferencesHelper, userRepository, wsNet
+            scope, autoConnectionManager, preferencesHelper, userRepository, wsNetWrapper
         )
     }
 
@@ -705,10 +706,12 @@ open class BaseApplicationModule {
         scope: CoroutineScope,
         vpnConnectionStateManager: VPNConnectionStateManager,
         preferencesHelper: PreferencesHelper,
-        checkUpdateRepository: CheckUpdateRepository
+        checkUpdateRepository: CheckUpdateRepository,
+        wsNetWrapper: WSNetWrapper,
+        deviceStateManager: DeviceStateManager
     ): WindScribeWorkManager {
         return WindScribeWorkManager(
-            windscribeApp, scope, vpnConnectionStateManager, preferencesHelper, checkUpdateRepository
+            windscribeApp, scope, vpnConnectionStateManager, preferencesHelper, checkUpdateRepository, wsNetWrapper, deviceStateManager
         )
     }
 
@@ -755,70 +758,32 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun providesEmergencyConnectRepository(wsNet: Lazy<WSNet>): EmergencyConnectRepository {
-        return EmergencyConnectRepositoryImpl(wsNet)
+    fun providesEmergencyConnectRepository(wsNetWrapper: WSNetWrapper): EmergencyConnectRepository {
+        return EmergencyConnectRepositoryImpl(wsNetWrapper)
     }
 
     @Provides
     @Singleton
     fun providesAdvanceParameterRepository(
         scope: CoroutineScope,
-        preferencesHelper: PreferencesHelper
-    ): AdvanceParameterRepository {
-        return AdvanceParameterRepositoryImpl(scope, preferencesHelper)
-    }
-
-    @Provides
-    @Singleton
-    fun providesWsNetServerApi(wsNet: WSNet): WSNetServerAPI {
-        return wsNet.serverAPI()
-    }
-
-    @Provides
-    @Singleton
-    fun providesWsNet(
         preferencesHelper: PreferencesHelper,
-        deviceStateManager: DeviceStateManager,
-        advanceParameterRepository: AdvanceParameterRepository
-    ): WSNet {
-        if (preferencesHelper.deviceUuid == null) {
-            preferencesHelper.deviceUuid = UUID.randomUUID().toString()
-        }
-        val systemLanguageCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            appContext.resources.configuration.locales.get(0).language.substring(0..1)
-        } else {
-            appContext.resources.configuration.locale.language.substring(0..1)
-        }
-        WSNet.initialize(
-            getPlatformName(),
-            getPlatformName(),
-            WindUtilities.getVersionName(),
-            preferencesHelper.deviceUuid ?: "",
-            "2.6.0",
-            "4",
-            DEV,
-            systemLanguageCode,
-            preferencesHelper.wsNetSettings,
-            { log -> logWsNetMessage(log) },
-            true,
-            ExtraConstants.AMNEZIA_WG_VERSION
-        )
-        advanceParameterRepository.getCountryOverride()?.let { override ->
-            WSNet.instance().advancedParameters().setCountryOverrideValue(override)
-        }
-        deviceStateManager.updateNetworkStatus()
-        WSNet.instance().advancedParameters().isAPIExtraTLSPadding =
-            preferencesHelper.isProtocolTweaksEnabled
-        return WSNet.instance()
+        wsNetWrapper: WSNetWrapper
+    ): AdvanceParameterRepository {
+        return AdvanceParameterRepositoryImpl(scope, preferencesHelper, wsNetWrapper)
     }
 
-    private fun getPlatformName(): String {
-        return if (appContext.applicationInterface.isTV) {
-            "android-tv"
-        } else {
-            "android"
-        }
+    @Provides
+    @Singleton
+    fun providesWsNetServerApi(wrapper: WSNetWrapper): WSNetServerAPI {
+        return wrapper.getServerAPI()
     }
+
+    @Provides
+    @Singleton
+    fun providesWSNetWrapper(): WSNetWrapper {
+        return WSNetWrapper()
+    }
+
     @Provides
     @Singleton
     fun providesDynamicShortcutManager(
@@ -872,23 +837,5 @@ open class BaseApplicationModule {
         apiCallManager: IApiCallManager
     ): com.windscribe.vpn.repository.LogRepository {
         return com.windscribe.vpn.repository.LogRepository(preferencesHelper, apiCallManager)
-    }
-
-    /**
-     * Parses wsnet nested JSON and extracts the actual message.
-     * Input: {"tm":"...","lvl":"debug","mod":"wsnet","msg":"{"tm": "...", "lvl": "info", "mod": "wsnet", "msg": "actual message"}"}
-     * Output: actual message
-     */
-    private fun logWsNetMessage(log: String) {
-        try {
-            if (!log.contains("6464/latency")) {
-                val outerMsg = log.substringAfter("\"msg\":\"").substringBeforeLast("\"}")
-                val unescaped = outerMsg.replace("\\\"", "\"")
-                val actualMsg = unescaped.substringAfter("\"msg\": \"").substringBeforeLast("\"")
-                if (actualMsg.isNotEmpty()) {
-                    logger.debug(actualMsg)
-                }
-            }
-        } catch (_ : Exception) { }
     }
 }

@@ -22,11 +22,11 @@ import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import com.wireguard.android.backend.GoBackend
 import com.wireguard.android.backend.Tunnel.State.DOWN
 import com.wireguard.android.backend.Tunnel.State.TOGGLE
 import com.wireguard.android.backend.Tunnel.State.UP
-import com.wsnet.lib.WSNet
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,7 +56,7 @@ class WireguardBackend @Inject constructor(
     val wgLogger: WgLogger,
     val wgConfigRepository: com.windscribe.vpn.repository.WgConfigRepository,
     private val apiManager: IApiCallManager,
-    wsNet: Lazy<WSNet>,
+    wsNetWrapper: WSNetWrapper,
     resourceHelper: ResourceHelper
 ) : VpnBackend(
     scope,
@@ -66,7 +66,7 @@ class WireguardBackend @Inject constructor(
     advanceParameterRepository,
     apiManager,
     localDbInterface,
-    wsNet,
+    wsNetWrapper,
     resourceHelper
 ) {
 
@@ -84,7 +84,7 @@ class WireguardBackend @Inject constructor(
         scope = scope,
         wgLogger = wgLogger,
         apiManager = apiManager,
-        wsNet,
+        wsNetWrapper,
         preferencesHelper = preferencesHelper,
         deviceStateManager = deviceStateManager,
         getPinnedIpForSelectedCity = { getPinnedIpForSelectedCity() }

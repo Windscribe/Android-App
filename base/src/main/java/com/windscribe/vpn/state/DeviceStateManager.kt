@@ -21,6 +21,7 @@ import android.os.Build
 import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
 import com.wsnet.lib.WSNet
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -47,7 +48,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class DeviceStateManager @Inject constructor(
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
+    private val wsNetWrapper: WSNetWrapper
 ) {
 
     private val logger = LoggerFactory.getLogger("device-state-manager")
@@ -81,6 +83,17 @@ class DeviceStateManager @Inject constructor(
 
     // Job for WSNet status update collector (to prevent multiple collectors)
     private var networkStatusUpdateJob: Job? = null
+
+    init {
+        // Update WSNet network status when it becomes ready
+        scope.launch {
+            wsNetWrapper.isReady.collect { isReady ->
+                if (isReady) {
+                    updateNetworkStatus()
+                }
+            }
+        }
+    }
 
     /**
      * Initializes the device state manager and starts monitoring network and screen state.
@@ -476,24 +489,16 @@ class DeviceStateManager @Inject constructor(
         }
     }
 
-    fun updateNetworkStatus() {
+    private fun updateNetworkStatus() {
         if (networkStatusUpdateJob?.isActive == true) return
 
         networkStatusUpdateJob = scope.launch {
             isOnline.collect { online ->
                 withContext(Dispatchers.Main) {
-                    try {
-                        if (WSNet.isValid()) {
-                            WSNet.instance().setConnectivityState(online)
-                        }
-                    } catch (e: Exception) {
-                        logger.error("WSNet setConnectivityState failed: ${e.message}")
+                    wsNetWrapper.withWSNet { wsNet ->
+                        wsNet.setConnectivityState(online)
                     }
                 }
-                // COMMENTED OUT: This was causing app to restart when network comes online
-                // if (online) {
-                //     context?.let { enqueueWork(it) }
-                // }
             }
         }
     }

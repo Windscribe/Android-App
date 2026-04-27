@@ -14,6 +14,7 @@ import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.services.ping.Ping
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.wsnet.lib.WSNet
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -41,8 +42,8 @@ import kotlin.time.toDuration
 class LatencyRepository @Inject constructor(
         private val preferencesHelper: PreferencesHelper,
         private val localDbInterface: LocalDbInterface,
-        private val wsNet: Lazy<WSNet>,
-        private val vpnConnectionStateManager: dagger.Lazy<VPNConnectionStateManager>,
+        private val wsNetWrapper: WSNetWrapper,
+        private val vpnConnectionStateManager: Lazy<VPNConnectionStateManager>,
         private val advanceParameterRepository: AdvanceParameterRepository
 ) {
     enum class LatencyType {
@@ -256,14 +257,16 @@ class LatencyRepository @Inject constructor(
         if (host == null) {
             return ping.apply { pingTime = -1 }
         }
-        if (!WSNet.isValid()) {
-            return ping.apply { pingTime = -1 }
-        }
         val updatedPing = withTimeoutOrNull(500) {
             suspendCancellableCoroutine {
+                val pingManager = wsNetWrapper.safePingManager()
+                if (pingManager == null) {
+                    it.resume(ping.apply { pingTime = -1 })
+                    return@suspendCancellableCoroutine
+                }
                 try {
                     val pingType = advanceParameterRepository.pingType()
-                    wsNet.get().pingManager().ping(ip, "http://$ip:6464/latency", pingType) { _, _, latency, _ ->
+                    pingManager.ping(ip, "http://$ip:6464/latency", pingType) { _, _, latency, _ ->
                         ping.apply {
                             pingTime = latency
                         }

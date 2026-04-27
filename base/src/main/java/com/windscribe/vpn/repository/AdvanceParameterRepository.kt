@@ -1,6 +1,7 @@
 package com.windscribe.vpn.repository
 
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import com.windscribe.vpn.constants.AdvanceParamKeys.FORCE_NODE
 import com.windscribe.vpn.constants.AdvanceParamKeys.SERVER_LIST_COUNTRY_OVERRIDE
 import com.windscribe.vpn.constants.AdvanceParamKeys.SHOW_STRONG_SWAN_LOG
@@ -28,13 +29,29 @@ interface AdvanceParameterRepository {
 
 class AdvanceParameterRepositoryImpl(
     val scope: CoroutineScope,
-    val preferencesHelper: PreferencesHelper
+    val preferencesHelper: PreferencesHelper,
+    val wsNetWrapper: WSNetWrapper
 ) : AdvanceParameterRepository {
     private val _params = MutableStateFlow(mapOf<String, String>())
     val params: StateFlow<Map<String, String>> = _params
 
     init {
         reload()
+        // Apply advanced parameters when WSNet is ready
+        scope.launch {
+            wsNetWrapper.isReady.collect { isReady ->
+                if (isReady) {
+                    applyAdvancedParameters()
+                }
+            }
+        }
+    }
+
+    private fun applyAdvancedParameters() {
+        wsNetWrapper.configureAdvancedParameters(
+            getCountryOverride(),
+            preferencesHelper.isProtocolTweaksEnabled
+        )
     }
 
     override fun reload() {

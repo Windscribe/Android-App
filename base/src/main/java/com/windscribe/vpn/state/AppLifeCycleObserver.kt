@@ -13,6 +13,7 @@ import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import com.wsnet.lib.WSNet
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import dagger.Lazy
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +32,7 @@ class AppLifeCycleObserver @Inject constructor(
     private val networkInfoManager: NetworkInfoManager,
     private val vpnConnectionStateManager: VPNConnectionStateManager,
     private val proxyDNSManager: ProxyDNSManager,
-    private val wsNet: Lazy<WSNet>,
+    private val wsNetWrapper: WSNetWrapper,
     private val deviceStateManager: DeviceStateManager
 ) :
     LifecycleObserver {
@@ -64,12 +65,8 @@ class AppLifeCycleObserver @Inject constructor(
             }
         }
         // Only save WSNet settings if it's already initialized to avoid forcing initialization
-        if (WSNet.isValid()) {
-            try {
-                appContext.preference.wsNetSettings = wsNet.get().currentPersistentSettings()
-            } catch (e: Exception) {
-                // JNI reference may be invalid, ignore
-            }
+        wsNetWrapper.withWSNet { wsNet ->
+            appContext.preference.wsNetSettings = wsNet.currentPersistentSettings()
         }
         // Clear whitelist when app goes to background
         deviceStateManager.setWhitelistedNetwork(null)

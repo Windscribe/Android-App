@@ -21,7 +21,7 @@ import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import com.wsnet.lib.WSNet
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
@@ -33,7 +33,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
 import javax.inject.Singleton
-import dagger.Lazy
 
 /**
  * Base class for Interfacing with VPN Modules.
@@ -47,7 +46,7 @@ abstract class VpnBackend(
     private val advanceParameterRepository: AdvanceParameterRepository,
     private val apiManager: IApiCallManager,
     protected val localDbInterface: LocalDbInterface,
-    private val wsnet: Lazy<WSNet>,
+    private val wsNetWrapper: WSNetWrapper,
     private val resourceHelper: ResourceHelper
 ) {
 
@@ -185,18 +184,14 @@ abstract class VpnBackend(
                 withTimeout(15_000) { // 15 seconds total timeout
                     // Initial delay before first attempt
                     delay(startDelay)
-                    if (WSNet.isValid()) {
-                        try {
-                            if (protocolInformation?.protocol == "wg") {
-                                wsnet.get().bridgeAPI().setCurrentHost(selectedIp)
-                            } else {
-                                wsnet.get().bridgeAPI().setCurrentHost("")
-                            }
-                            wsnet.get().bridgeAPI().setIgnoreSslErrors(true)
-                            wsnet.get().bridgeAPI().setConnectedState(true)
-                        } catch (e: Exception) {
-                            // JNI reference may be invalid, ignore
+                    wsNetWrapper.safeBridgeAPI()?.let { bridgeAPI ->
+                        if (protocolInformation?.protocol == "wg") {
+                            bridgeAPI.setCurrentHost(selectedIp)
+                        } else {
+                            bridgeAPI.setCurrentHost("")
                         }
+                        bridgeAPI.setIgnoreSslErrors(true)
+                        bridgeAPI.setConnectedState(true)
                     }
                     // Pin IP if available
                     if (ip != null) {

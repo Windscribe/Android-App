@@ -18,7 +18,7 @@ import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.state.VPNConnectionStateManager
-import com.wsnet.lib.WSNet
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -31,7 +31,6 @@ import java.io.IOException
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
-import dagger.Lazy
 
 @Singleton
 class IKev2VpnBackend @Inject constructor(
@@ -43,9 +42,9 @@ class IKev2VpnBackend @Inject constructor(
         val proxyDNSManager: ProxyDNSManager,
         apiManager: IApiCallManager,
         localDbInterface: LocalDbInterface,
-        wsNet: Lazy<WSNet>,
+        wsNetWrapper: WSNetWrapper,
         resourceHelper: ResourceHelper
-) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager, localDbInterface, wsNet, resourceHelper) {
+) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager, localDbInterface, wsNetWrapper, resourceHelper) {
 
     var service: CharonVpnServiceWrapper? = null  // Direct reference like WireGuard
     private var connectionStateJob: Job? = null

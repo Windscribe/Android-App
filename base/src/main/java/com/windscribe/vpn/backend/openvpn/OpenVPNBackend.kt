@@ -22,8 +22,8 @@ import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import com.wireguard.android.backend.GoBackend
-import com.wsnet.lib.WSNet
 import de.blinkt.openvpn.core.ConnectionStatus
 import de.blinkt.openvpn.core.OpenVPNService
 import de.blinkt.openvpn.core.VpnStatus
@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
-import dagger.Lazy
 
 @Singleton
 class OpenVPNBackend @Inject constructor(
@@ -50,9 +49,9 @@ class OpenVPNBackend @Inject constructor(
     val proxyDNSManager: ProxyDNSManager,
     apiManager: IApiCallManager,
     localDbInterface: LocalDbInterface,
-    wsNet: Lazy<WSNet>,
+    wsNetWrapper: WSNetWrapper,
     resourceHelper: ResourceHelper
-) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager, localDbInterface, wsNet, resourceHelper),
+) : VpnBackend(scope, vpnStateManager, preferencesHelper, networkInfoManager, advanceParameterRepository, apiManager, localDbInterface, wsNetWrapper, resourceHelper),
     VpnStatus.StateListener, VpnStatus.ByteCountListener {
 
     override var active = false

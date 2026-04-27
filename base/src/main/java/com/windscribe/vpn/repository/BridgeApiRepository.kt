@@ -6,6 +6,8 @@ import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.wsnet.lib.WSNet
+import com.windscribe.vpn.wsnet.WSNetWrapper
+import com.wsnet.lib.WSNetBridgeAPI
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +19,7 @@ import javax.inject.Inject
 
 class BridgeApiRepository @Inject constructor(
     private val scope: CoroutineScope,
-    private val wsnet: Lazy<WSNet>,
+    private val wsNetWrapper: WSNetWrapper,
     private val preferencesHelper: PreferencesHelper,
     private val locationRepository: LocationRepository,
     private val userRepository: UserRepository,
@@ -25,21 +27,29 @@ class BridgeApiRepository @Inject constructor(
 ) {
     private val _apiAvailable = MutableStateFlow(false)
     val apiAvailable = _apiAvailable.asSharedFlow()
+    private var observerInitialized = false
 
     init {
         scope.launch(Dispatchers.IO) {
-            if (WSNet.isValid()) {
-                observeBridgeApi()
-                observeAntiCensorshipStatus()
+            // Wait for WSNet to be ready before setting up observers
+            wsNetWrapper.isReady.collect { isReady ->
+                if (isReady && !observerInitialized) {
+                    observerInitialized = true
+                    // Now we're guaranteed WSNet is ready, set up observers
+                    val bridgeAPI = wsNetWrapper.safeBridgeAPI()
+                    if (bridgeAPI != null) {
+                        observeBridgeApi(bridgeAPI)
+                    }
+                    observeAntiCensorshipStatus()
+                }
             }
         }
     }
 
-    private fun observeBridgeApi() {
-        if (!WSNet.isValid()) return
+    private fun observeBridgeApi(bridgeAPI: WSNetBridgeAPI) {
         scope.launch {
             try {
-                val hasToken = wsnet.get().bridgeAPI().hasSessionToken()
+                val hasToken = bridgeAPI.hasSessionToken()
                 if (hasToken && vpnConnectionStateManager.isVPNConnected()) {
                     checkAndEmitApiAvailability(ready = true)
                 }
@@ -48,7 +58,7 @@ class BridgeApiRepository @Inject constructor(
             }
         }
         try {
-            wsnet.get().bridgeAPI().setApiAvailableCallback { ready ->
+            bridgeAPI.setApiAvailableCallback { ready ->
                 scope.launch {
                     checkAndEmitApiAvailability(ready)
                 }
@@ -61,13 +71,9 @@ class BridgeApiRepository @Inject constructor(
     private fun observeAntiCensorshipStatus() {
         scope.launch {
           preferencesHelper.isProtocolTweaksEnabledFlow.collect {
-              if (WSNet.isValid()) {
-                  try {
-                      wsnet.get().advancedParameters()?.let { params ->
-                          params.isAPIExtraTLSPadding = it
-                      }
-                  } catch (e: Exception) {
-                      // JNI reference may be invalid, ignore
+              wsNetWrapper.withWSNet { wsNet ->
+                  wsNet.advancedParameters()?.let { params ->
+                      params.isAPIExtraTLSPadding = it
                   }
               }
           }
@@ -78,15 +84,7 @@ class BridgeApiRepository @Inject constructor(
         if (ready) {
             // Call native method on Main thread where JNI environment is properly attached
             val settings = withContext(Dispatchers.Main) {
-                try {
-                    if (WSNet.isValid()) {
-                        WSNet.instance().currentPersistentSettings()
-                    } else {
-                        null
-                    }
-                } catch (e: Exception) {
-                    null
-                }
+                wsNetWrapper.withWSNet { it.currentPersistentSettings() }
             }
             settings?.let {
                 appContext.preference.wsNetSettings = it
