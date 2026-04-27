@@ -185,17 +185,18 @@ abstract class VpnBackend(
                 withTimeout(15_000) { // 15 seconds total timeout
                     // Initial delay before first attempt
                     delay(startDelay)
-                    try {
-                        if (protocolInformation?.protocol == "wg") {
-                            wsnet.get().bridgeAPI().setCurrentHost(selectedIp)
-                        } else {
-                            wsnet.get().bridgeAPI().setCurrentHost("")
+                    if (WSNet.isValid()) {
+                        try {
+                            if (protocolInformation?.protocol == "wg") {
+                                wsnet.get().bridgeAPI().setCurrentHost(selectedIp)
+                            } else {
+                                wsnet.get().bridgeAPI().setCurrentHost("")
+                            }
+                            wsnet.get().bridgeAPI().setIgnoreSslErrors(true)
+                            wsnet.get().bridgeAPI().setConnectedState(true)
+                        } catch (e: Exception) {
+                            // JNI reference may be invalid, ignore
                         }
-                        wsnet.get().bridgeAPI().setIgnoreSslErrors(true)
-                        wsnet.get().bridgeAPI().setConnectedState(true)
-                    } catch (e: Exception) {
-                        // JNI reference may be invalid, ignore
-                        vpnLogger.debug("Failed to set bridge API state: ${e.message}")
                     }
                     // Pin IP if available
                     if (ip != null) {

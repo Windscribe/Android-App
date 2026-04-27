@@ -26,6 +26,10 @@ class EmergencyConnectRepositoryImpl(private val wsNet: Lazy<WSNet>) : Emergency
         }
         return runCatching {
             suspendCancellableCoroutine { cont ->
+                if (!WSNet.isValid()) {
+                    cont.resume(emptyList())
+                    return@suspendCancellableCoroutine
+                }
                 try {
                     val callback = wsNet.get().emergencyConnect().getIpEndpoints { ips ->
                         try {
@@ -42,7 +46,6 @@ class EmergencyConnectRepositoryImpl(private val wsNet: Lazy<WSNet>) : Emergency
                             }.shuffled()
                             cont.resume(configs)
                         } catch (e: Exception) {
-                            // JNI reference may be invalid
                             cont.resume(emptyList())
                         }
                     }
@@ -50,7 +53,6 @@ class EmergencyConnectRepositoryImpl(private val wsNet: Lazy<WSNet>) : Emergency
                         callback.cancel()
                     }
                 } catch (e: Exception) {
-                    // JNI reference may be invalid
                     cont.resume(emptyList())
                 }
             }

@@ -36,6 +36,7 @@ class BridgeApiRepository @Inject constructor(
     }
 
     private fun observeBridgeApi() {
+        if (!WSNet.isValid()) return
         scope.launch {
             try {
                 val hasToken = wsnet.get().bridgeAPI().hasSessionToken()
@@ -78,7 +79,11 @@ class BridgeApiRepository @Inject constructor(
             // Call native method on Main thread where JNI environment is properly attached
             val settings = withContext(Dispatchers.Main) {
                 try {
-                    WSNet.instance().currentPersistentSettings()
+                    if (WSNet.isValid()) {
+                        WSNet.instance().currentPersistentSettings()
+                    } else {
+                        null
+                    }
                 } catch (e: Exception) {
                     null
                 }

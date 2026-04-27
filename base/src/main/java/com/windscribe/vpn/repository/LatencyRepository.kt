@@ -256,6 +256,9 @@ class LatencyRepository @Inject constructor(
         if (host == null) {
             return ping.apply { pingTime = -1 }
         }
+        if (!WSNet.isValid()) {
+            return ping.apply { pingTime = -1 }
+        }
         val updatedPing = withTimeoutOrNull(500) {
             suspendCancellableCoroutine {
                 try {
@@ -267,7 +270,6 @@ class LatencyRepository @Inject constructor(
                         it.resume(ping)
                     }
                 } catch (e: Exception) {
-                    // JNI reference may be invalid, return error
                     it.resume(ping.apply { pingTime = -1 })
                 }
             }

@@ -65,9 +65,11 @@ class AppLifeCycleObserver @Inject constructor(
         }
         // Only save WSNet settings if it's already initialized to avoid forcing initialization
         if (WSNet.isValid()) {
-            appContext.preference.wsNetSettings = wsNet.get().currentPersistentSettings()
-        } else {
-            logger.warn("WSNet not initialized, not saving settings")
+            try {
+                appContext.preference.wsNetSettings = wsNet.get().currentPersistentSettings()
+            } catch (e: Exception) {
+                // JNI reference may be invalid, ignore
+            }
         }
         // Clear whitelist when app goes to background
         deviceStateManager.setWhitelistedNetwork(null)

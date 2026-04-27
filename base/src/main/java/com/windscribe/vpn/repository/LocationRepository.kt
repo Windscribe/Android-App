@@ -193,6 +193,9 @@ class LocationRepository @Inject constructor(
     private suspend fun pingCity(city: Datacenter): Int {
         val pingIpAndHost = localDbInterface.getPingIpAndHost(city.id) ?: return -1
         val pingType = advanceParameterRepository.pingType()
+        if (!WSNet.isValid()) {
+            return -1
+        }
         return withTimeoutOrNull(500) {
             suspendCancellableCoroutine { continuation ->
                 try {
@@ -205,7 +208,6 @@ class LocationRepository @Inject constructor(
                         callback.cancel()
                     }
                 } catch (e: Exception) {
-                    // JNI reference may be invalid, return error
                     if (continuation.isActive) {
                         continuation.resume(-1)
                     }

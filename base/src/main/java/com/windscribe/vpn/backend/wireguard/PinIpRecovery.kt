@@ -114,14 +114,15 @@ class PinIpRecovery(
 
             // Set bridge API state on main thread
             withContext(Dispatchers.Main) {
-                try {
-                    wsNet.get().bridgeAPI().setConnectedState(false)
-                    wsNet.get().bridgeAPI().setCurrentHost(selectedIp)
-                    wsNet.get().bridgeAPI().setIgnoreSslErrors(true)
-                    wsNet.get().bridgeAPI().setConnectedState(true)
-                } catch (e: Exception) {
-                    // JNI reference may be invalid, ignore
-                    vpnLogger.debug("Failed to set bridge API state: ${e.message}")
+                if (WSNet.isValid()) {
+                    try {
+                        wsNet.get().bridgeAPI().setConnectedState(false)
+                        wsNet.get().bridgeAPI().setCurrentHost(selectedIp)
+                        wsNet.get().bridgeAPI().setIgnoreSslErrors(true)
+                        wsNet.get().bridgeAPI().setConnectedState(true)
+                    } catch (e: Exception) {
+                        // JNI reference may be invalid, ignore
+                    }
                 }
             }
 
