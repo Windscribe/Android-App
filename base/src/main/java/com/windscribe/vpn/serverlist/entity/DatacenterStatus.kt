@@ -52,7 +52,7 @@ object DatacenterStatusHelper {
         return when {
             // If user is free and location is pro-only, always show Pro status
             // (even if it's also under maintenance - upgrade is more important message)
-            !isPro && datacenter.pro == 1 -> DatacenterStatus.Pro
+            !isPro && datacenter.pro == 1 && !hasServers -> DatacenterStatus.Pro
 
             // Pro required: enabled but no servers available
             datacenter.status == 1 && !hasServers -> DatacenterStatus.Pro
