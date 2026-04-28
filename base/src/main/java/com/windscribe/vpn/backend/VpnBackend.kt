@@ -186,7 +186,7 @@ abstract class VpnBackend(
                     delay(startDelay)
                     wsNetWrapper.safeBridgeAPI()?.let { bridgeAPI ->
                         if (protocolInformation?.protocol == "wg") {
-                            bridgeAPI.setCurrentHost(selectedIp)
+                            bridgeAPI.setCurrentHost(selectedIp ?: "")
                         } else {
                             bridgeAPI.setCurrentHost("")
                         }

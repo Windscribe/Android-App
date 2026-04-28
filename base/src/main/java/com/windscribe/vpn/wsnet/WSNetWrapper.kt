@@ -84,16 +84,23 @@ class WSNetWrapper {
 
     /**
      * Configure WSNet advanced parameters after initialization.
+     * Should be called from Main thread to ensure proper JNI environment.
      */
     fun configureAdvancedParameters(
         countryOverride: String?,
         isProtocolTweaksEnabled: Boolean
     ) {
         withWSNet { wsNet ->
-            countryOverride?.let { override ->
-                wsNet.advancedParameters().setCountryOverrideValue(override)
+            try {
+                wsNet.advancedParameters()?.let { params ->
+                    countryOverride?.let { override ->
+                        params.setCountryOverrideValue(override)
+                    }
+                    params.isAPIExtraTLSPadding = isProtocolTweaksEnabled
+                }
+            } catch (e: Exception) {
+                logger.error("Failed to configure advanced parameters: ${e.message}", e)
             }
-            wsNet.advancedParameters().isAPIExtraTLSPadding = isProtocolTweaksEnabled
         }
     }
 

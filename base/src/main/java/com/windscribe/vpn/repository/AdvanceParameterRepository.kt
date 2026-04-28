@@ -11,9 +11,11 @@ import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_TEST_ATTEMPTS
 import com.windscribe.vpn.constants.AdvanceParamKeys.TUNNEL_TEST_RETRY_DELAY
 import com.windscribe.vpn.constants.AdvanceParamKeys.USE_ICMP_PINGS
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 interface AdvanceParameterRepository {
     fun reload()
@@ -41,7 +43,9 @@ class AdvanceParameterRepositoryImpl(
         scope.launch {
             wsNetWrapper.isReady.collect { isReady ->
                 if (isReady) {
-                    applyAdvancedParameters()
+                    withContext(Dispatchers.Main) {
+                        applyAdvancedParameters()
+                    }
                 }
             }
         }
