@@ -109,14 +109,21 @@ public class ConfigFile implements Serializable {
         this.remember = remember;
     }
 
+    private static String mask(String value) {
+        if (value == null || value.isEmpty()) return "****";
+        if (value.length() <= 4) return "****";
+        int maskedLength = value.length() - 4;
+        return "*".repeat(maskedLength) + value.substring(value.length() - 4);
+    }
+
     @NonNull
     @Override
     public String toString() {
         return "ConfigFile{" +
                 "primaryKey=" + primaryKey +
-                ", content='" + content + '\'' +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
+                ", content='[redacted]'" +
+                ", username='" + mask(username) + '\'' +
+                ", password='" + mask(password) + '\'' +
                 ", remember=" + remember +
                 ", type=" + type +
                 ", name='" + name + '\'' +
