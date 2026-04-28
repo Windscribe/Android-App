@@ -15,7 +15,7 @@ buildscript {
     //Android
     ext.leanBack = "1.0.0"
     ext.material = "1.12.0"
-    ext.appCompat = "1.6.1"
+    ext.appCompat = "1.7.1"
     ext.navigation = "2.5.3"
     ext.archLifecycle = '2.6.1'
     ext.coroutinesCore = "1.7.3"

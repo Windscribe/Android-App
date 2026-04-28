@@ -30,21 +30,25 @@ class WindscribeReviewManagerImpl(
                 val dataUsed = it.dataUsed.toDouble() / (1024 * 1024)
                 // Check if user is eligible for review
                 if (dataUsed > 50.0 && hasMinimumLoginTime() && notAlreadyShown()) {
-                    reviewManager.requestReviewFlow().addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            val reviewInfo = task.result
-                            logger.debug("Launching review flow.")
-                            appContext.activeActivity?.let { activity ->
-                                val flow = reviewManager.launchReviewFlow(activity, reviewInfo)
-                                flow.addOnCompleteListener { _ ->
-                                    preferencesHelper.rateDialogLastUpdateTime = Date().time.toString()
-                                    logger.debug("Review flow completed.")
+                    try {
+                        reviewManager.requestReviewFlow().addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val reviewInfo = task.result
+                                logger.debug("Launching review flow.")
+                                appContext.activeActivity?.let { activity ->
+                                    val flow = reviewManager.launchReviewFlow(activity, reviewInfo)
+                                    flow.addOnCompleteListener { _ ->
+                                        preferencesHelper.rateDialogLastUpdateTime = Date().time.toString()
+                                        logger.debug("Review flow completed.")
+                                    }
                                 }
-                            }
 
-                        } else {
-                            logger.error("Error requesting review flow", task.exception)
+                            } else {
+                                logger.error("Error requesting review flow", task.exception)
+                            }
                         }
+                    } catch (e: Exception) {
+                        logger.error("Failed to initialize review flow", e)
                     }
                 }
             }

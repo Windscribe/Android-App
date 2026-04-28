@@ -226,7 +226,7 @@ open class WindVpnController @Inject constructor(
         )
         val vpnParameters = VPNParameters(
             node.ip,
-            node.ip,
+            node.ip2,
             node.ip2,
             node.ip3,
             node.hostname,
