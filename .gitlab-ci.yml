@@ -1,3 +1,15 @@
+include:
+  - project: 'shared/strix-ci-template'
+    file: 'strix-scan.yml'
+
+strix-scan-quick:
+  stage: Test
+strix-scan-standard:
+  stage: Test
+strix-scan-mr-diff:
+  stage: Test
+
+
 #==============================================================================
 # Windscribe Android CI/CD Pipeline
 #==============================================================================
