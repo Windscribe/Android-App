@@ -234,6 +234,12 @@ class ConnectionViewmodelImpl @Inject constructor(
                 _isProtocolTweaksEnabled.value = preferences.isProtocolTweaksEnabled
             }
         }
+        // Also observe session changes for Auto mode API recommendations
+        viewModelScope.launch(Dispatchers.IO) {
+            userRepository.userInfo.collectLatest { user ->
+                _isProtocolTweaksEnabled.value = preferences.isProtocolTweaksEnabled
+            }
+        }
         viewModelScope.launch(Dispatchers.IO) {
             preferences.backgroundAspectRatioOptionFlow.collectLatest { ratio ->
                 _aspectRatio.value = ratio
