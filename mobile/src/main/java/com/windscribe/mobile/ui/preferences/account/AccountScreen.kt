@@ -59,6 +59,7 @@ import com.windscribe.mobile.ui.common.NextButton
 import com.windscribe.mobile.ui.common.PreferenceBackground
 import com.windscribe.mobile.ui.common.PreferenceProgressBar
 import com.windscribe.mobile.ui.common.openUrl
+import com.windscribe.mobile.ui.common.safeStartActivity
 import com.windscribe.mobile.ui.connection.ToastMessage
 import com.windscribe.mobile.ui.helper.PreviewWithNav
 import com.windscribe.mobile.ui.helper.hapticClickable
@@ -850,7 +851,7 @@ private fun HandleGoto(viewModel: AccountViewModel?) {
             is AccountGoTo.Upgrade -> {
                 val startIntent = UpgradeActivity.getStartIntent(activity)
                 startIntent.putExtra(PROMO_EXTRA, (goto as AccountGoTo.Upgrade).promoAction)
-                activity?.startActivity(startIntent)
+                activity?.safeStartActivity(startIntent)
             }
             else -> {}
         }

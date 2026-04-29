@@ -1,5 +1,6 @@
 package com.windscribe.mobile.ui.common
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -11,6 +12,7 @@ import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.serverlist.ServerListItem
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.serverlist.entity.Datacenter
+import org.slf4j.LoggerFactory
 
 fun healthColor(health: Int): Int {
     return if (health < 60) {
@@ -32,6 +34,41 @@ fun getLatencyBar(time: Int): Int {
     }
 }
 
+/**
+ * Safely start an activity, catching SecurityException when app is in background.
+ * Use this for all activity launches from Compose UI.
+ */
+fun Context.safeStartActivity(intent: Intent, onError: (() -> Unit)? = null) {
+    try {
+        startActivity(intent)
+    } catch (e: SecurityException) {
+        val logger = LoggerFactory.getLogger("ui")
+        logger.error("Cannot start activity from background: ${e.message}", e)
+        onError?.invoke()
+    } catch (e: Exception) {
+        val logger = LoggerFactory.getLogger("ui")
+        logger.error("Failed to start activity: ${e.message}", e)
+        onError?.invoke()
+    }
+}
+
+/**
+ * Safely start an activity from an Activity context.
+ */
+fun Activity.safeStartActivity(intent: Intent, onError: (() -> Unit)? = null) {
+    try {
+        startActivity(intent)
+    } catch (e: SecurityException) {
+        val logger = LoggerFactory.getLogger("ui")
+        logger.error("Cannot start activity from background: ${e.message}", e)
+        onError?.invoke()
+    } catch (e: Exception) {
+        val logger = LoggerFactory.getLogger("ui")
+        logger.error("Failed to start activity: ${e.message}", e)
+        onError?.invoke()
+    }
+}
+
 fun Context.openUrl(path: String) {
     val url = if (path.startsWith("https://") || path.startsWith("http://")) {
         path
@@ -40,7 +77,9 @@ fun Context.openUrl(path: String) {
     }
     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
     if (intent.resolveActivity(packageManager) != null) {
-        startActivity(intent)
+        safeStartActivity(intent) {
+            Toast.makeText(this, "Cannot open browser from background", Toast.LENGTH_SHORT).show()
+        }
     } else {
         Toast.makeText(this, "No browser found", Toast.LENGTH_SHORT).show()
     }
