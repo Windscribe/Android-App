@@ -260,7 +260,9 @@ open class Windscribe : MultiDexApplication() {
             } else {
                 resources.configuration.locale.language
             }
-            return systemLanguageCode == "ru"
+            // Censored countries: Belarus, Iran, Russia, Turkey, China
+            val censoredCountries = setOf("be", "fa", "ru", "tr", "zh")
+            return censoredCountries.contains(systemLanguageCode)
         }
 
     fun getSavedLocale(): Locale {

@@ -14,6 +14,7 @@ import com.windscribe.mobile.ui.home.HomeGoto
 import com.windscribe.mobile.ui.serverlist.ServerListItem
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.apppreference.isProtocolTweaksEnabled
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.Util
@@ -126,7 +127,7 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract val shouldAnimateIp: StateFlow<Boolean>
     abstract val networkInfoState: StateFlow<NetworkInfoState>
     abstract val bestLocation: StateFlow<ServerListItem?>
-    abstract val isAntiCensorshipEnabled: StateFlow<Boolean>
+    abstract val isProtocolTweaksEnabled: StateFlow<Boolean>
     abstract val isPreferredProtocolEnabled: StateFlow<Boolean>
     abstract val isDecoyTrafficEnabled: StateFlow<Boolean>
     abstract val aspectRatio: StateFlow<Int>
@@ -179,8 +180,8 @@ class ConnectionViewmodelImpl @Inject constructor(
     override val toastMessage: StateFlow<ToastMessage> = _toastMessage
     private val _bestLocation = MutableStateFlow<ServerListItem?>(null)
     override val bestLocation: StateFlow<ServerListItem?> = _bestLocation
-    private val _isAntiCensorshipEnabled = MutableStateFlow(preferences.isProtocolTweaksEnabled)
-    override val isAntiCensorshipEnabled: StateFlow<Boolean> = _isAntiCensorshipEnabled
+    private val _isProtocolTweaksEnabled = MutableStateFlow(preferences.isProtocolTweaksEnabled)
+    override val isProtocolTweaksEnabled: StateFlow<Boolean> = _isProtocolTweaksEnabled
     private val _isPreferredProtocolEnabled = MutableStateFlow(false)
     override val isPreferredProtocolEnabled: StateFlow<Boolean> = _isPreferredProtocolEnabled
     private val _isDecoyTrafficEnabled = MutableStateFlow(false)
@@ -228,8 +229,9 @@ class ConnectionViewmodelImpl @Inject constructor(
 
     private fun fetchUserPreferences() {
         viewModelScope.launch(Dispatchers.IO) {
-            preferences.isProtocolTweaksEnabledFlow.collectLatest { isEnabled ->
-                _isAntiCensorshipEnabled.value = isEnabled
+            preferences.protocolTweaksModeFlow.collectLatest { mode ->
+                // Update the boolean state based on the mode using the extension property
+                _isProtocolTweaksEnabled.value = preferences.isProtocolTweaksEnabled
             }
         }
         viewModelScope.launch(Dispatchers.IO) {

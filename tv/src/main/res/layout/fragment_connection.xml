@@ -351,33 +351,44 @@
 
 
         <com.windscribe.tv.serverlist.customviews.PreferenceItem
-            android:id="@+id/protocol_tweaks_on"
+            android:id="@+id/protocol_tweaks_auto"
             style="@style/preference_item"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/reg_24dp"
-            android:text="@string/on"
+            android:text="@string/auto"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/title_protocol_tweaks" />
 
 
         <com.windscribe.tv.serverlist.customviews.PreferenceItem
-            android:id="@+id/protocol_tweaks_off"
+            android:id="@+id/protocol_tweaks_manual"
             style="@style/preference_item"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/reg_24dp"
-            android:text="@string/off"
-            app:layout_constraintBottom_toBottomOf="@id/protocol_tweaks_on"
-            app:layout_constraintStart_toEndOf="@id/protocol_tweaks_on"
-            app:layout_constraintTop_toTopOf="@id/protocol_tweaks_on" />
+            android:text="@string/manual"
+            app:layout_constraintBottom_toBottomOf="@id/protocol_tweaks_auto"
+            app:layout_constraintStart_toEndOf="@id/protocol_tweaks_auto"
+            app:layout_constraintTop_toTopOf="@id/protocol_tweaks_auto" />
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/protocol_tweaks_disabled"
+            style="@style/preference_item"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:text="@string/disabled"
+            app:layout_constraintBottom_toBottomOf="@id/protocol_tweaks_manual"
+            app:layout_constraintStart_toEndOf="@id/protocol_tweaks_manual"
+            app:layout_constraintTop_toTopOf="@id/protocol_tweaks_manual" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/protocol_tweaks_preset_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/protocol_tweaks_on">
+            app:layout_constraintTop_toBottomOf="@id/protocol_tweaks_auto">
 
             <TextView
                 android:id="@+id/titleAmneziaPreset"
@@ -443,6 +454,37 @@
             app:layout_constraintBottom_toBottomOf="@id/server_routing_regular"
             app:layout_constraintStart_toEndOf="@id/server_routing_regular"
             app:layout_constraintTop_toTopOf="@id/server_routing_regular" />
+
+        <TextView
+            android:id="@+id/title_extra_tls_padding"
+            style="@style/preference_item_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:text="@string/extra_tls_padding"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/server_routing_auto" />
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/extra_tls_padding_on"
+            style="@style/preference_item"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/reg_24dp"
+            android:text="@string/on"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/title_extra_tls_padding" />
+
+        <com.windscribe.tv.serverlist.customviews.PreferenceItem
+            android:id="@+id/extra_tls_padding_off"
+            style="@style/preference_item"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/reg_24dp"
+            android:text="@string/off"
+            app:layout_constraintBottom_toBottomOf="@id/extra_tls_padding_on"
+            app:layout_constraintStart_toEndOf="@id/extra_tls_padding_on"
+            app:layout_constraintTop_toTopOf="@id/extra_tls_padding_on" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

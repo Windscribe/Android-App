@@ -2,6 +2,7 @@ package com.windscribe.vpn.backend.openvpn
 
 import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.Windscribe.Companion.appContext
+import com.windscribe.vpn.apppreference.isProtocolTweaksEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -33,14 +34,14 @@ class ProxyTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBacke
                val logFile = File(appContext.filesDir, PROXY_LOG).path
                tunnelLib.initialise(BuildConfig.DEV, logFile)
                logger.debug("Running proxy on local port: $localPort")
+               val protocolTweaksEnabled = appContext.preference.isProtocolTweaksEnabled
                if (isWSTunnel) {
                    val remote =
                        "wss://$ip:$port/$PROXY_TUNNEL_PROTOCOL/$PROXY_TUNNEL_ADDRESS/$WS_TUNNEL_PORT"
-                   tunnelLib.startProxy(":$localPort", remote, 1, mtu, false)
+                   tunnelLib.startProxy(":$localPort", remote, 1, mtu, protocolTweaksEnabled)
                } else {
                    val remote = "https://$ip:$port"
-                   val antiCensorship = appContext.preference.isProtocolTweaksEnabled
-                   tunnelLib.startProxy(":$localPort", remote, 2, mtu, antiCensorship)
+                   tunnelLib.startProxy(":$localPort", remote, 2, mtu, protocolTweaksEnabled)
                }
                logger.debug("Exiting tunnel proxy.")
            }

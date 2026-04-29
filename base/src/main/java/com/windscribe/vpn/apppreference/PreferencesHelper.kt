@@ -16,7 +16,8 @@ interface PreferencesHelper {
     // Reactive Flow properties for observed preferences
     val isHapticFeedbackEnabledFlow: kotlinx.coroutines.flow.Flow<Boolean>
     val isShowLocationHealthEnabledFlow: kotlinx.coroutines.flow.Flow<Boolean>
-    val isProtocolTweaksEnabledFlow: kotlinx.coroutines.flow.Flow<Boolean>
+    val protocolTweaksModeFlow: kotlinx.coroutines.flow.Flow<String>
+    val extraTlsPaddingEnabledFlow: kotlinx.coroutines.flow.Flow<Boolean>
     val backgroundAspectRatioOptionFlow: kotlinx.coroutines.flow.Flow<Int>
     val selectionFlow: kotlinx.coroutines.flow.Flow<String>
 
@@ -104,7 +105,7 @@ interface PreferencesHelper {
     var isDecoyTrafficOn: Boolean
     var isAntiCensorshipManualMode: Boolean
     var serverRoutingMode: String
-    var isProtocolTweaksEnabled: Boolean
+    var protocolTweaksMode: String
     var wgLocalParams: WgLocalParams?
     var wgRegisteredKey: String?
     var autoConnect: Boolean
@@ -160,4 +161,35 @@ interface PreferencesHelper {
     val customIconFlow: kotlinx.coroutines.flow.Flow<String>
     var selectedUnblockWgParam: String?
     var ipv6Mode: String
+
+    var extraTlsPaddingEnabled: Boolean
 }
+
+/**
+ * Helper extension property to check if protocol tweaks is effectively enabled.
+ * Returns true if mode is MANUAL or if mode is AUTO and API suggests it should be enabled.
+ */
+val PreferencesHelper.isProtocolTweaksEnabled: Boolean
+    get() = when (protocolTweaksMode) {
+        PreferencesKeyConstants.PROTOCOL_TWEAKS_MANUAL -> true
+        PreferencesKeyConstants.PROTOCOL_TWEAKS_DISABLED -> false
+        PreferencesKeyConstants.PROTOCOL_TWEAKS_AUTO -> {
+            // In Auto mode, check if API has recommended a config
+            // If amneziaWgConfigId is present in session, it means API recommends enabling
+            val sessionJson = getSession
+            if (!sessionJson.isNullOrEmpty()) {
+                try {
+                    val session = com.google.gson.Gson().fromJson(
+                        sessionJson,
+                        com.windscribe.vpn.api.response.UserSessionResponse::class.java
+                    )
+                    !session.serverInventory?.amneziaWgConfigId.isNullOrEmpty()
+                } catch (e: Exception) {
+                    false
+                }
+            } else {
+                false
+            }
+        }
+        else -> false
+    }

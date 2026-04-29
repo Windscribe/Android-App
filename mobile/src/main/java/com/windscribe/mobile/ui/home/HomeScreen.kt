@@ -346,13 +346,13 @@ private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         ConnectionStatus(state)
-        val antiCensorshipEnabled by connectionViewmodel.isAntiCensorshipEnabled.collectAsState()
+        val protocolTweaksEnabled by connectionViewmodel.isProtocolTweaksEnabled.collectAsState()
         val showDecoyTraffic = state is ConnectionUIState.Connected && isDecoyTrafficEnabled
 
         // Add initial spacing
-        Spacer(modifier = Modifier.width(if (antiCensorshipEnabled || showDecoyTraffic) 4.dp else 12.dp))
+        Spacer(modifier = Modifier.width(if (protocolTweaksEnabled || showDecoyTraffic) 4.dp else 12.dp))
 
-        if (antiCensorshipEnabled) {
+        if (protocolTweaksEnabled) {
             Image(
                 painter = painterResource(if (state is ConnectionUIState.Connected) R.drawable.ic_anti_censorship_enabled else R.drawable.ic_anti_censorship_disabled),
                 contentDescription = null,

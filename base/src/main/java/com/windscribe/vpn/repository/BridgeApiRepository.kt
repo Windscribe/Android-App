@@ -40,7 +40,7 @@ class BridgeApiRepository @Inject constructor(
                     if (bridgeAPI != null) {
                         observeBridgeApi(bridgeAPI)
                     }
-                    observeAntiCensorshipStatus()
+                    observeExtraTlsPaddingStatus()
                 }
             }
         }
@@ -68,12 +68,12 @@ class BridgeApiRepository @Inject constructor(
         }
     }
 
-    private fun observeAntiCensorshipStatus() {
+    private fun observeExtraTlsPaddingStatus() {
         scope.launch {
-          preferencesHelper.isProtocolTweaksEnabledFlow.collect {
+          preferencesHelper.extraTlsPaddingEnabledFlow.collect { enabled ->
               wsNetWrapper.withWSNet { wsNet ->
                   wsNet.advancedParameters()?.let { params ->
-                      params.isAPIExtraTLSPadding = it
+                      params.isAPIExtraTLSPadding = enabled
                   }
               }
           }

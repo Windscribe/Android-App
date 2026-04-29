@@ -126,8 +126,7 @@ object DataStoreKeys {
     val ANTI_CENSORSHIP_MANUAL_MODE =
         booleanPreferencesKey(PreferencesKeyConstants.ANTI_CENSORSHIP_MANUAL_MODE)
     val SERVER_ROUTING_MODE = stringPreferencesKey(PreferencesKeyConstants.SERVER_ROUTING_MODE)
-    val PROTOCOL_TWEAKS_ENABLED =
-        booleanPreferencesKey(PreferencesKeyConstants.PROTOCOL_TWEAKS_ENABLED)
+    val PROTOCOL_TWEAKS_MODE = stringPreferencesKey(PreferencesKeyConstants.PROTOCOL_TWEAKS_MODE)
     val AUTO_SECURE_NEW_NETWORKS =
         booleanPreferencesKey(PreferencesKeyConstants.AUTO_SECURE_NEW_NETWORKS)
     val GPS_SPOOF_SETTING = booleanPreferencesKey(PreferencesKeyConstants.GPS_SPOOF_SETTING)
@@ -200,6 +199,7 @@ object DataStoreKeys {
     val LAST_UPDATE_PROMPT_TIMESTAMP = longPreferencesKey(PreferencesKeyConstants.LAST_UPDATE_PROMPT_TIMESTAMP)
     val SELECTED_UNBLOCK_WG_PARAM = stringPreferencesKey(PreferencesKeyConstants.SELECTED_UNBLOCK_WG_PARAM)
     val IPV6_MODE = stringPreferencesKey(PreferencesKeyConstants.IPV6_MODE)
+    val EXTRA_TLS_PADDING = booleanPreferencesKey(PreferencesKeyConstants.EXTRA_TLS_PADDING)
 
     // OpenVPN Server Config (base64 encoded config)
     val OPEN_VPN_SERVER_CONFIG =

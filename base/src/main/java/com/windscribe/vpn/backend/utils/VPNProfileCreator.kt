@@ -16,6 +16,7 @@ import com.windscribe.common.getDNSDetails
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.apppreference.isProtocolTweaksEnabled
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.Util

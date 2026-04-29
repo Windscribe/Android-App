@@ -164,20 +164,33 @@ class SettingsPresenterImp @Inject constructor(
         }
     }
 
-    override fun onProtocolTweaksOnClicked() {
-        if (!preferencesHelper.isProtocolTweaksEnabled) {
-            preferencesHelper.isProtocolTweaksEnabled = true
+    override fun onProtocolTweaksModeSelected(mode: String) {
+        preferencesHelper.protocolTweaksMode = mode
+
+        // Mark as manually configured only if not Auto
+        if (mode != PreferencesKeyConstants.PROTOCOL_TWEAKS_AUTO) {
             preferencesHelper.isAntiCensorshipManualMode = true
-            settingView.setProtocolTweaksMode(true)
+        }
+
+        settingView.setProtocolTweaksMode(mode)
+
+        // Only show Amnezia preset adapter when Manual mode is selected
+        if (mode == PreferencesKeyConstants.PROTOCOL_TWEAKS_MANUAL) {
             setAmneziaPresetAdapter()
         }
     }
 
-    override fun onProtocolTweaksOffClicked() {
-        if (preferencesHelper.isProtocolTweaksEnabled) {
-            preferencesHelper.isProtocolTweaksEnabled = false
-            preferencesHelper.isAntiCensorshipManualMode = true
-            settingView.setProtocolTweaksMode(false)
+    override fun onExtraTlsPaddingOnClicked() {
+        if (!preferencesHelper.extraTlsPaddingEnabled) {
+            preferencesHelper.extraTlsPaddingEnabled = true
+            settingView.setExtraTlsPaddingMode(true)
+        }
+    }
+
+    override fun onExtraTlsPaddingOffClicked() {
+        if (preferencesHelper.extraTlsPaddingEnabled) {
+            preferencesHelper.extraTlsPaddingEnabled = false
+            settingView.setExtraTlsPaddingMode(false)
         }
     }
 
@@ -564,9 +577,10 @@ class SettingsPresenterImp @Inject constructor(
         settingView.setLanTrafficMode(if (allowLanTraffic) LAN_ALLOW else LAN_BLOCK)
         val allowBootStart = preferencesHelper.autoStartOnBoot
         settingView.setBootStartMode(if (allowBootStart) BOOT_ALLOW else BOOT_BLOCK)
-        settingView.setProtocolTweaksMode(preferencesHelper.isProtocolTweaksEnabled)
+        settingView.setProtocolTweaksMode(preferencesHelper.protocolTweaksMode)
+        settingView.setExtraTlsPaddingMode(preferencesHelper.extraTlsPaddingEnabled)
         settingView.setServerRoutingMode(preferencesHelper.serverRoutingMode)
-        if (preferencesHelper.isProtocolTweaksEnabled) {
+        if (preferencesHelper.protocolTweaksMode == PreferencesKeyConstants.PROTOCOL_TWEAKS_MANUAL) {
             setAmneziaPresetAdapter()
         }
         settingView.setCustomDNS(preferencesHelper.dnsMode == DNS_MODE_CUSTOM)

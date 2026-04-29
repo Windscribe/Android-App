@@ -12,6 +12,7 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.utils.WindVpnController
@@ -203,37 +204,27 @@ class UserRepository(
     }
 
     /**
-     * Auto-enables/disables Amnezia based on server recommendation (if not in manual mode)
+     * Auto-enables/disables Amnezia based on server recommendation (only in Auto mode)
      */
     private suspend fun handleAmneziaAutoEnable(sessionResponse: UserSessionResponse) {
-        // Skip if user has manually configured anti-censorship settings
-        if (preferenceHelper.isAntiCensorshipManualMode) {
+        // Only apply autoconfiguration if in Auto mode
+        if (preferenceHelper.protocolTweaksMode != PreferencesKeyConstants.PROTOCOL_TWEAKS_AUTO) {
             return
         }
-
         val configId = sessionResponse.serverInventory?.amneziaWgConfigId
-
         if (configId.isNullOrEmpty()) {
-            // No recommendation - auto-disable
-            if (preferenceHelper.isProtocolTweaksEnabled) {
-                logger.info("Auto-disabling Protocol Tweaks - no server recommendation")
-                preferenceHelper.isProtocolTweaksEnabled = false
-            }
+            // No recommendation - remains in Auto mode but effectively disabled
+            logger.info("Auto mode: No server recommendation for Protocol Tweaks")
         } else {
-            // Server recommends a config - try to find and auto-enable it by ID
+            // Server recommends a config - try to find and select it by ID
             val params = unblockWgParamsRepository.unblockWgParams.value
             val matchingPreset = params.firstOrNull { it.id == configId }
 
             if (matchingPreset != null) {
-                logger.info("Auto-enabling Protocol Tweaks with preset ID: ${matchingPreset.id}, title: ${matchingPreset.title}")
-                preferenceHelper.isProtocolTweaksEnabled = true
+                logger.info("Auto mode: Selecting preset ID: ${matchingPreset.id}, title: ${matchingPreset.title}")
                 unblockWgParamsRepository.setSelectedUnblockWgParam(matchingPreset.id)
             } else {
-                logger.warn("Server recommended config_id '$configId' not found in presets")
-                if (preferenceHelper.isProtocolTweaksEnabled) {
-                    logger.info("Auto-disabling Protocol Tweaks - recommended preset not found")
-                    preferenceHelper.isProtocolTweaksEnabled = false
-                }
+                logger.warn("Auto mode: Server recommended config_id '$configId' not found in presets")
             }
         }
     }

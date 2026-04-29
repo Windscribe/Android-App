@@ -60,9 +60,19 @@ class DataStorePreferenceHelper(
             preferences[DataStoreKeys.SHOW_LOCATION_HEALTH] ?: false
         }.distinctUntilChanged()
 
-    override val isProtocolTweaksEnabledFlow: Flow<Boolean>
+    override val protocolTweaksModeFlow: Flow<String>
         get() = dataStore.data.map { preferences ->
-            preferences[DataStoreKeys.PROTOCOL_TWEAKS_ENABLED] ?: appContext.isRegionRestricted
+            preferences[DataStoreKeys.PROTOCOL_TWEAKS_MODE]
+                ?: if (appContext.isRegionRestricted) {
+                    PreferencesKeyConstants.PROTOCOL_TWEAKS_AUTO
+                } else {
+                    PreferencesKeyConstants.PROTOCOL_TWEAKS_AUTO
+                }
+        }.distinctUntilChanged()
+
+    override val extraTlsPaddingEnabledFlow: Flow<Boolean>
+        get() = dataStore.data.map { preferences ->
+            preferences[DataStoreKeys.EXTRA_TLS_PADDING] ?: appContext.isRegionRestricted
         }.distinctUntilChanged()
 
     override val backgroundAspectRatioOptionFlow: Flow<Int>
@@ -598,9 +608,14 @@ class DataStorePreferenceHelper(
         }
         set(value) = setString(DataStoreKeys.SERVER_ROUTING_MODE, value)
 
-    override var isProtocolTweaksEnabled: Boolean
-        get() = runBlocking { getBoolean(DataStoreKeys.PROTOCOL_TWEAKS_ENABLED, false) }
-        set(value) = setBoolean(DataStoreKeys.PROTOCOL_TWEAKS_ENABLED, value)
+    override var protocolTweaksMode: String
+        get() = runBlocking {
+            getString(
+                DataStoreKeys.PROTOCOL_TWEAKS_MODE,
+                PreferencesKeyConstants.PROTOCOL_TWEAKS_AUTO
+            )
+        }
+        set(value) = setString(DataStoreKeys.PROTOCOL_TWEAKS_MODE, value)
 
     override var fakeTrafficVolume: FakeTrafficVolume
         get() = runBlocking {
@@ -1050,4 +1065,10 @@ class DataStorePreferenceHelper(
             else -> -1  // Auto
         }
     }
+
+    override var extraTlsPaddingEnabled: Boolean
+        get() = runBlocking { getBoolean(DataStoreKeys.EXTRA_TLS_PADDING, appContext.isRegionRestricted) }
+        set(value) {
+            setBoolean(DataStoreKeys.EXTRA_TLS_PADDING, value)
+        }
 }

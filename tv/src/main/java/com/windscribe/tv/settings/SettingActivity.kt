@@ -142,12 +142,16 @@ class SettingActivity :
         presenter.onBlockLanClicked()
     }
 
-    override fun onProtocolTweaksOnClicked() {
-        presenter.onProtocolTweaksOnClicked()
+    override fun onProtocolTweaksModeSelected(mode: String) {
+        presenter.onProtocolTweaksModeSelected(mode)
     }
 
-    override fun onProtocolTweaksOffClicked() {
-        presenter.onProtocolTweaksOffClicked()
+    override fun onExtraTlsPaddingOnClicked() {
+        presenter.onExtraTlsPaddingOnClicked()
+    }
+
+    override fun onExtraTlsPaddingOffClicked() {
+        presenter.onExtraTlsPaddingOffClicked()
     }
 
     override fun onServerRoutingAutoClicked() {
@@ -306,8 +310,12 @@ class SettingActivity :
         }
     }
 
-    override fun setProtocolTweaksMode(enabled: Boolean) {
-        (fragment as? ConnectionFragment)?.setProtocolTweaksMode(enabled)
+    override fun setProtocolTweaksMode(mode: String) {
+        (fragment as? ConnectionFragment)?.setProtocolTweaksMode(mode)
+    }
+
+    override fun setExtraTlsPaddingMode(enabled: Boolean) {
+        (fragment as? ConnectionFragment)?.setExtraTlsPaddingMode(enabled)
     }
 
     override fun setServerRoutingMode(mode: String) {

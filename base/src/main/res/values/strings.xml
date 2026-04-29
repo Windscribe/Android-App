@@ -503,6 +503,8 @@ last chosen location.</string>
     <string name="anti_censorship_explainer">Connect to the VPN even in hostile environment</string>
     <string name="protocol_tweaks">Protocol Tweaks</string>
     <string name="protocol_tweaks_description">Protocol-level changes made to WireGuard, OpenVPN, and Stealth protocols.</string>
+    <string name="extra_tls_padding">Large TLS</string>
+    <string name="extra_tls_padding_description">Artificially enlarge TLS packets, helps to circumvent censorship in some cases</string>
     <string name="server_routing">Server Routing</string>
     <string name="server_routing_description">Increases latency, but improves chances of being able to connect.</string>
     <string name="regular">Regular</string>

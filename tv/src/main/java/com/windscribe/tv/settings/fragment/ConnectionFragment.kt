@@ -256,11 +256,21 @@ class ConnectionFragment : Fragment() {
             listener?.onIpStackEgressIpv4OnlyClicked()
         }
 
-        binding.protocolTweaksOn.setOnClickListener {
-            listener?.onProtocolTweaksOnClicked()
+        binding.protocolTweaksAuto.setOnClickListener {
+            listener?.onProtocolTweaksModeSelected(com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTOCOL_TWEAKS_AUTO)
         }
-        binding.protocolTweaksOff.setOnClickListener {
-            listener?.onProtocolTweaksOffClicked()
+        binding.protocolTweaksManual.setOnClickListener {
+            listener?.onProtocolTweaksModeSelected(com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTOCOL_TWEAKS_MANUAL)
+        }
+        binding.protocolTweaksDisabled.setOnClickListener {
+            listener?.onProtocolTweaksModeSelected(com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTOCOL_TWEAKS_DISABLED)
+        }
+
+        binding.extraTlsPaddingOn.setOnClickListener {
+            listener?.onExtraTlsPaddingOnClicked()
+        }
+        binding.extraTlsPaddingOff.setOnClickListener {
+            listener?.onExtraTlsPaddingOffClicked()
         }
 
         binding.serverRoutingAuto.setOnClickListener {
@@ -315,16 +325,38 @@ class ConnectionFragment : Fragment() {
         }
     }
 
-    fun setProtocolTweaksMode(enabled: Boolean) {
+    fun setProtocolTweaksMode(mode: String) {
+        when (mode) {
+            com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTOCOL_TWEAKS_AUTO -> {
+                binding.protocolTweaksAuto.setState(State.MenuButtonState.Selected)
+                binding.protocolTweaksManual.setState(State.MenuButtonState.NotSelected)
+                binding.protocolTweaksDisabled.setState(State.MenuButtonState.NotSelected)
+                TransitionManager.beginDelayedTransition(binding.connectionParent)
+                binding.protocolTweaksPresetView.visibility = View.GONE
+            }
+            com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTOCOL_TWEAKS_MANUAL -> {
+                binding.protocolTweaksManual.setState(State.MenuButtonState.Selected)
+                binding.protocolTweaksAuto.setState(State.MenuButtonState.NotSelected)
+                binding.protocolTweaksDisabled.setState(State.MenuButtonState.NotSelected)
+                binding.protocolTweaksPresetView.visibility = View.VISIBLE
+            }
+            com.windscribe.vpn.apppreference.PreferencesKeyConstants.PROTOCOL_TWEAKS_DISABLED -> {
+                binding.protocolTweaksDisabled.setState(State.MenuButtonState.Selected)
+                binding.protocolTweaksAuto.setState(State.MenuButtonState.NotSelected)
+                binding.protocolTweaksManual.setState(State.MenuButtonState.NotSelected)
+                TransitionManager.beginDelayedTransition(binding.connectionParent)
+                binding.protocolTweaksPresetView.visibility = View.GONE
+            }
+        }
+    }
+
+    fun setExtraTlsPaddingMode(enabled: Boolean) {
         if (enabled) {
-            binding.protocolTweaksOn.setState(State.MenuButtonState.Selected)
-            binding.protocolTweaksOff.setState(State.MenuButtonState.NotSelected)
-            binding.protocolTweaksPresetView.visibility = View.VISIBLE
+            binding.extraTlsPaddingOn.setState(State.MenuButtonState.Selected)
+            binding.extraTlsPaddingOff.setState(State.MenuButtonState.NotSelected)
         } else {
-            binding.protocolTweaksOff.setState(State.MenuButtonState.Selected)
-            binding.protocolTweaksOn.setState(State.MenuButtonState.NotSelected)
-            TransitionManager.beginDelayedTransition(binding.connectionParent)
-            binding.protocolTweaksPresetView.visibility = View.GONE
+            binding.extraTlsPaddingOff.setState(State.MenuButtonState.Selected)
+            binding.extraTlsPaddingOn.setState(State.MenuButtonState.NotSelected)
         }
     }
 

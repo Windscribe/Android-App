@@ -46,8 +46,10 @@ import kotlinx.coroutines.delay
 @Composable
 fun AntiCensorshipScreen(viewModel: AntiCensorshipViewModel? = null) {
     val navController = LocalNavController.current
-    val protocolTweaksEnabled by viewModel?.protocolTweaksEnabled?.collectAsState()
-        ?: remember { mutableStateOf(false) }
+    val protocolTweaksModes by viewModel?.protocolTweaksModes?.collectAsState()
+        ?: remember { mutableStateOf(emptyList()) }
+    val selectedProtocolTweaksMode by viewModel?.selectedProtocolTweaksMode?.collectAsState()
+        ?: remember { mutableStateOf("auto") }
     val serverRoutingModes by viewModel?.serverRoutingModes?.collectAsState()
         ?: remember { mutableStateOf(emptyList()) }
     val selectedServerRouting by viewModel?.selectedServerRouting?.collectAsState()
@@ -56,6 +58,8 @@ fun AntiCensorshipScreen(viewModel: AntiCensorshipViewModel? = null) {
         ?: remember { mutableStateOf(emptyList()) }
     val selectedPreset by viewModel?.selectedPreset?.collectAsState()
         ?: remember { mutableStateOf("") }
+    val extraTlsPaddingEnabled by viewModel?.extraTlsPaddingEnabled?.collectAsState()
+        ?: remember { mutableStateOf(true) }
 
     val scrollState = rememberScrollState()
 
@@ -79,7 +83,8 @@ fun AntiCensorshipScreen(viewModel: AntiCensorshipViewModel? = null) {
             ) {
                 // Protocol Tweaks Section
                 ProtocolTweaksSection(
-                    protocolTweaksEnabled,
+                    protocolTweaksModes,
+                    selectedProtocolTweaksMode,
                     amneziaPresets,
                     selectedPreset,
                     viewModel
@@ -91,6 +96,14 @@ fun AntiCensorshipScreen(viewModel: AntiCensorshipViewModel? = null) {
                 ServerRoutingSection(
                     serverRoutingModes,
                     selectedServerRouting,
+                    viewModel
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Extra TLS Padding Section
+                ExtraTlsPaddingSection(
+                    extraTlsPaddingEnabled,
                     viewModel
                 )
             }
@@ -120,30 +133,33 @@ private fun ScreenDescription() {
 
 @Composable
 private fun ProtocolTweaksSection(
-    enabled: Boolean,
+    modes: List<DropDownStringItem>,
+    selectedMode: String,
     presets: List<DropDownStringItem>,
     selectedPreset: String,
     viewModel: AntiCensorshipViewModel?
 ) {
-    val shape = if (enabled) {
-        RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
-    } else {
-        RoundedCornerShape(size = 12.dp)
-    }
+    val isManualMode = selectedMode == "manual"
 
-    presets.forEach {
-        Log.i("tagger", "preset: ${it.key} ${it.label} $selectedPreset")
-    }
     Column {
-        SwitchItemView(
-            title = com.windscribe.vpn.R.string.protocol_tweaks,
-            icon = R.drawable.ic_anti_censorship_icon,
+        // Protocol Tweaks Mode Dropdown
+        CustomDropDown(
+            com.windscribe.vpn.R.string.protocol_tweaks,
+            modes,
+            selectedMode,
             description = com.windscribe.vpn.R.string.protocol_tweaks_description,
-            enabled,
-            shape = shape,
-            onSelect = { viewModel?.onProtocolTweaksToggled() }
-        )
-        if (enabled) {
+            textAlign = TextAlign.Start,
+            shape = if (isManualMode) {
+                RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+            } else {
+                RoundedCornerShape(12.dp)
+            },
+        ) {
+            viewModel?.onProtocolTweaksModeSelected(it.key)
+        }
+
+        // Amnezia Preset Dropdown (only shown when Manual mode is selected)
+        if (isManualMode && presets.isNotEmpty()) {
             Spacer(modifier = Modifier.height(1.dp))
             CustomDropDown(
                 com.windscribe.vpn.R.string.amnezia_preset,
@@ -156,6 +172,21 @@ private fun ProtocolTweaksSection(
             }
         }
     }
+}
+
+@Composable
+private fun ExtraTlsPaddingSection(
+    enabled: Boolean,
+    viewModel: AntiCensorshipViewModel?
+) {
+    SwitchItemView(
+        title = com.windscribe.vpn.R.string.extra_tls_padding,
+        icon = R.drawable.ic_anti_censorship_icon,
+        description = com.windscribe.vpn.R.string.extra_tls_padding_description,
+        enabled,
+        shape = RoundedCornerShape(12.dp),
+        onSelect = { viewModel?.onExtraTlsPaddingToggled() }
+    )
 }
 
 @Composable

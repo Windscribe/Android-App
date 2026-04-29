@@ -54,7 +54,7 @@ class AdvanceParameterRepositoryImpl(
     private fun applyAdvancedParameters() {
         wsNetWrapper.configureAdvancedParameters(
             getCountryOverride(),
-            preferencesHelper.isProtocolTweaksEnabled
+            preferencesHelper.extraTlsPaddingEnabled
         )
     }
 

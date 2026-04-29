@@ -119,8 +119,13 @@ object PreferencesKeyConstants {
     const val AMNEZIA_PRESET = "amnezia_preset"
     const val ANTI_CENSORSHIP_MANUAL_MODE = "anti_censorship_manual_mode"
     const val SERVER_ROUTING_MODE = "server_routing_mode"
-    const val PROTOCOL_TWEAKS_ENABLED = "protocol_tweaks_enabled"
+    const val PROTOCOL_TWEAKS_MODE = "protocol_tweaks_mode"
     const val AUTO_CONNECT = "auto_connect"
+
+    // Protocol Tweaks Mode values
+    const val PROTOCOL_TWEAKS_AUTO = "auto"
+    const val PROTOCOL_TWEAKS_MANUAL = "manual"
+    const val PROTOCOL_TWEAKS_DISABLED = "disabled"
 
     // Server Routing Mode values
     const val SERVER_ROUTING_AUTO = "auto"
@@ -168,4 +173,6 @@ object PreferencesKeyConstants {
     const val IPV6_MODE = "ipv6_mode"
     const val IPV6_MODE_IPV4_ONLY = "ipv4"
     const val IPV6_MODE_AUTO = "auto"
+
+    const val EXTRA_TLS_PADDING = "extra_tls_padding"
 }
