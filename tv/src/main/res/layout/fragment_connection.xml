@@ -367,7 +367,7 @@
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/reg_24dp"
-            android:text="@string/manual"
+            android:text="@string/on"
             app:layout_constraintBottom_toBottomOf="@id/protocol_tweaks_auto"
             app:layout_constraintStart_toEndOf="@id/protocol_tweaks_auto"
             app:layout_constraintTop_toTopOf="@id/protocol_tweaks_auto" />
@@ -378,7 +378,7 @@
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/reg_24dp"
-            android:text="@string/disabled"
+            android:text="@string/off"
             app:layout_constraintBottom_toBottomOf="@id/protocol_tweaks_manual"
             app:layout_constraintStart_toEndOf="@id/protocol_tweaks_manual"
             app:layout_constraintTop_toTopOf="@id/protocol_tweaks_manual" />

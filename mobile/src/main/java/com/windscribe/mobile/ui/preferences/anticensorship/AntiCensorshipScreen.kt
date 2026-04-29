@@ -139,7 +139,7 @@ private fun ProtocolTweaksSection(
     selectedPreset: String,
     viewModel: AntiCensorshipViewModel?
 ) {
-    val isManualMode = selectedMode == "manual"
+    val isEnabledMode = selectedMode == "manual"
 
     Column {
         // Protocol Tweaks Mode Dropdown
@@ -149,7 +149,7 @@ private fun ProtocolTweaksSection(
             selectedMode,
             description = com.windscribe.vpn.R.string.protocol_tweaks_description,
             textAlign = TextAlign.Start,
-            shape = if (isManualMode) {
+            shape = if (isEnabledMode) {
                 RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
             } else {
                 RoundedCornerShape(12.dp)
@@ -158,8 +158,8 @@ private fun ProtocolTweaksSection(
             viewModel?.onProtocolTweaksModeSelected(it.key)
         }
 
-        // Amnezia Preset Dropdown (only shown when Manual mode is selected)
-        if (isManualMode && presets.isNotEmpty()) {
+        // Amnezia Preset Dropdown (only shown when Enabled mode is selected)
+        if (isEnabledMode && presets.isNotEmpty()) {
             Spacer(modifier = Modifier.height(1.dp))
             CustomDropDown(
                 com.windscribe.vpn.R.string.amnezia_preset,

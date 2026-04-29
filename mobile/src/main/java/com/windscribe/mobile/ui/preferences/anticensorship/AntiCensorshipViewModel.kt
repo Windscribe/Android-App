@@ -36,7 +36,7 @@ class AntiCensorshipViewModelImpl(
     private val _protocolTweaksModes = MutableStateFlow(
         listOf(
             DropDownStringItem(PreferencesKeyConstants.PROTOCOL_TWEAKS_AUTO, "Auto"),
-            DropDownStringItem(PreferencesKeyConstants.PROTOCOL_TWEAKS_MANUAL, "Manual"),
+            DropDownStringItem(PreferencesKeyConstants.PROTOCOL_TWEAKS_MANUAL, "Enabled"),
             DropDownStringItem(PreferencesKeyConstants.PROTOCOL_TWEAKS_DISABLED, "Disabled")
         )
     )

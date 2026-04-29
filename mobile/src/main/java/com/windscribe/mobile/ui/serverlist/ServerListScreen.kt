@@ -65,10 +65,10 @@ fun ServerListScreen(
     }
 
     /**
-     * Pager -> ViewModel (stable, no feedback loop)
+     * Pager -> ViewModel (only when settled, prevents feedback loop)
      */
     LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }
+        snapshotFlow { pagerState.settledPage }
             .collect { page ->
                 viewModel.setSelectedType(page.toServerListType())
             }

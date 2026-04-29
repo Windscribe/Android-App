@@ -30,8 +30,8 @@ Dropdown with 3 options
 - If API recommends a configuration, it's automatically applied
 - If no recommendation, no obfuscation is used
 
-#### Manual
-- You explicitly choose an obfuscation configuration
+#### Enabled
+- You explicitly enable protocol obfuscation
 - Shows additional "Configuration" dropdown with 10 presets
 - Full control over which Amnezia preset is used
 - Prevents automatic changes from API
