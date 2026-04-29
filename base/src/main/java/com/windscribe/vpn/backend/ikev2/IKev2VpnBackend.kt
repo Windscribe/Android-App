@@ -13,10 +13,11 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
 import com.windscribe.vpn.backend.VPNState.Status.Disconnected
 import com.windscribe.vpn.backend.VpnBackend
+import com.windscribe.vpn.backend.ikev2.StrongswanCertificateManager.init
+import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.state.NetworkInfoManager
-import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.wsnet.WSNetWrapper
 import kotlinx.coroutines.CoroutineScope
@@ -26,9 +27,10 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.strongswan.android.logic.CharonVpnService
+import org.strongswan.android.logic.StrongSwanApplication
 import java.io.File
 import java.io.IOException
-import java.util.*
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -56,9 +58,25 @@ class IKev2VpnBackend @Inject constructor(
     // Sticky flag to prevent initial DOWN state from triggering disconnect (like WireGuard)
     private var stickyDisconnectEvent = false
 
+    private var strongswanInitialized = false
+
     fun serviceCreated(charonVpnServiceWrapper: CharonVpnServiceWrapper) {
         vpnLogger.info("IKEv2 service created.")
         service = charonVpnServiceWrapper
+        initStrongswan()
+    }
+
+    private fun initStrongswan() {
+        if (strongswanInitialized) {
+            vpnLogger.debug("StrongSwan already initialized, skipping.")
+            return
+        }
+
+        vpnLogger.info("Initializing StrongSwan for the first time.")
+        StrongSwanApplication.setContext(appContext)
+        StrongSwanApplication.setService(CharonVpnServiceWrapper::class.java)
+        init(appContext)
+        strongswanInitialized = true
     }
 
     fun serviceDestroyed() {

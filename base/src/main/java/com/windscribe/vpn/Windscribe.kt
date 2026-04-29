@@ -159,7 +159,6 @@ open class Windscribe : MultiDexApplication() {
 
         preference.isNewApplicationInstance = true
         setUpNewInstallation()
-        initStrongswan()
         if (BuildConfig.APP_ID.isNotEmpty()) {
             firebaseManager.initialise()
         }
@@ -230,12 +229,6 @@ open class Windscribe : MultiDexApplication() {
             }
         }
         logger.info("Application startup finished.")
-    }
-
-    private fun initStrongswan() {
-        StrongSwanApplication.setContext(applicationContext)
-        StrongSwanApplication.setService(CharonVpnServiceWrapper::class.java)
-        init(this)
     }
 
     fun getLanguageCode(selectedLanguage: String): String {
