@@ -38,6 +38,7 @@ import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.commonutils.ResourceHelper
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.ConnectionDataRepository
+import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.LogRepository
@@ -65,7 +66,6 @@ abstract class PresenterModule {
             windscribeView: WindscribeView,
             activityScope: CoroutineScope,
             preferencesHelper: PreferencesHelper,
-            apiCallManager: IApiCallManager,
             localDbInterface: LocalDbInterface,
             userRepository: UserRepository,
             serverListRepository: ServerListRepository,
@@ -75,17 +75,18 @@ abstract class PresenterModule {
             vpnController: com.windscribe.vpn.backend.utils.WindVpnController,
             workManager: WindScribeWorkManager,
             deviceStateManager: DeviceStateManager,
-            resourceHelper: ResourceHelper
+            resourceHelper: ResourceHelper,
+            ipRepository: IpRepository
         ): WindscribePresenter {
             return WindscribePresenterImpl(
                 windscribeView,
                 activityScope,
                 preferencesHelper,
-                apiCallManager,
                 localDbInterface,
                 userRepository,
                 serverListRepository,
                 locationRepository,
+                ipRepository,
                 autoConnectionManager,
                 vpnConnectionStateManager,
                 vpnController,

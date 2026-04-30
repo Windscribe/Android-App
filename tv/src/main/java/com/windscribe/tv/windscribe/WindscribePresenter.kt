@@ -20,6 +20,7 @@ interface WindscribePresenter {
     fun onMenuButtonClicked()
     suspend fun observeVPNState()
     suspend fun observeUserState()
+    suspend fun observeIpAddress()
     suspend fun observeConnectedProtocol()
     suspend fun observeServerList()
     suspend fun observeSelectedLocation()

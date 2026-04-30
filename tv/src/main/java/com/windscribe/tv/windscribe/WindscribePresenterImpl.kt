@@ -38,8 +38,9 @@ import com.windscribe.vpn.errormodel.WindError
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.PopupNotificationTable
 import com.windscribe.vpn.model.User
-import com.windscribe.vpn.repository.CallResult
+import com.windscribe.vpn.repository.IpRepository
 import com.windscribe.vpn.repository.LocationRepository
+import com.windscribe.vpn.repository.RepositoryState
 import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.serverlist.entity.*
@@ -64,11 +65,11 @@ class WindscribePresenterImpl @Inject constructor(
     var windscribeView: WindscribeView,
     private val activityScope: CoroutineScope,
     private val preferencesHelper: PreferencesHelper,
-    private val apiCallManager: IApiCallManager,
     private val localDbInterface: LocalDbInterface,
     private val userRepository: UserRepository,
     private val serverListRepository: ServerListRepository,
     private val locationRepository: LocationRepository,
+    private val ipRepository: IpRepository,
     private val autoConnectionManager: AutoConnectionManager,
     private val vpnConnectionStateManager: VPNConnectionStateManager,
     private val vpnController: WindVpnController,
@@ -89,9 +90,7 @@ class WindscribePresenterImpl @Inject constructor(
             lastVPNState = vpnState.status
             when (vpnState.status) {
                 VPNState.Status.Connected -> {
-                    vpnState.ip?.let {
-                        vpnConnected(it)
-                    }
+                    vpnConnected()
                 }
                 VPNState.Status.Connecting -> vpnConnecting()
                 VPNState.Status.Disconnected -> vpnDisconnected()
@@ -107,6 +106,21 @@ class WindscribePresenterImpl @Inject constructor(
         userRepository.userInfo.collectLatest {
             setAccountStatus(it)
             setUserStatus(it)
+        }
+    }
+
+    override suspend fun observeIpAddress() {
+        ipRepository.state.collectLatest { state ->
+            when (state) {
+                is RepositoryState.Success -> {
+                    windscribeView.setIpAddress(state.data)
+                }
+                is RepositoryState.Error -> {
+                    logger.debug("Error fetching IP address: ${state.error}")
+                    windscribeView.setIpAddress("---.---.---.---")
+                }
+                is RepositoryState.Loading -> { }
+            }
         }
     }
 
@@ -256,13 +270,6 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override fun init() {
-        val ipAddress = preferencesHelper.userIP
-        if (ipAddress != null && vpnConnectionStateManager.isVPNActive()) {
-            windscribeView.setIpAddress(ipAddress)
-        }
-        if (!vpnConnectionStateManager.isVPNActive()) {
-            setIPAddress()
-        }
         windscribeView.startSessionServiceScheduler()
         serverListUpdate.set(false)
         setSelectedLocation()
@@ -344,12 +351,9 @@ class WindscribePresenterImpl @Inject constructor(
 
    override suspend fun observeNetworkEvents() {
        deviceStateManager.isOnline.collect { isOnline ->
-           if (!isOnline) {
-               logger.debug("Network state changed & vpn is not active, getting ip address...")
-               setIPAddress()
-               if (WindUtilities.isOnline() && !vpnConnectionStateManager.isVPNActive() && preferencesHelper.pingTestRequired) {
-                   workManager.updateNodeLatencies()
-               }
+           if (!isOnline && WindUtilities.isOnline() && !vpnConnectionStateManager.isVPNActive() && preferencesHelper.pingTestRequired) {
+               logger.debug("Network state changed, updating node latencies...")
+               workManager.updateNodeLatencies()
            }
        }
     }
@@ -397,11 +401,6 @@ class WindscribePresenterImpl @Inject constructor(
             return
         }
         windscribeView.setupLayoutDisconnected()
-        windscribeView.networkInfo?.let {
-            if (it.isConnected) {
-                setIPAddress()
-            }
-        }
     }
 
     private fun vpnDisconnecting() {
@@ -414,8 +413,7 @@ class WindscribePresenterImpl @Inject constructor(
         windscribeView.setupLayoutDisconnecting()
     }
 
-    private fun vpnConnected(ip: String) {
-        windscribeView.setIpAddress(ip.trim())
+    private fun vpnConnected() {
         logger.info("Connection with the server is established.")
         windscribeView.startVpnConnectedAnimation(
             resourceHelper.getString(com.windscribe.vpn.R.string.ON),
@@ -631,35 +629,6 @@ class WindscribePresenterImpl @Inject constructor(
                     windscribeView.openNewsFeedActivity(true, notification.notificationId)
                 }
             }
-        }
-    }
-
-    private fun setIPAddress() {
-        if (WindUtilities.isOnline()) {
-            activityScope.launch(Dispatchers.IO) {
-                val result = result<GetMyIpResponse> {
-                    apiCallManager.getApiIp()
-                }
-                withContext(Dispatchers.Main) {
-                    when (result) {
-                        is CallResult.Success -> {
-                            if (validIpAddress(result.data.userIp)) {
-                                windscribeView.setIpAddress(getModifiedIpAddress(result.data.userIp.trim { it <= ' ' }))
-                            } else {
-                                logger.info("Server returned error response when getting user ip")
-                                windscribeView.setIpAddress("---.---.---.---")
-                            }
-                        }
-                        is CallResult.Error -> {
-                            logger.debug("Network call to get ip failed: ${result.errorMessage}")
-                            windscribeView.setIpAddress("---.---.---.---")
-                        }
-                    }
-                }
-            }
-        } else {
-            logger.debug("Network is not available. Ip update failed...")
-            windscribeView.setIpAddress("---.---.---.---")
         }
     }
 
