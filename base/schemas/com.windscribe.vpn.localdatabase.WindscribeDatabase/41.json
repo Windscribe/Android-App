@@ -1,0 +1,939 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 41,
+    "identityHash": "f39646ca0f9c7eb274548843be7446a7",
+    "entities": [
+      {
+        "tableName": "ping_results",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`node_name` TEXT NOT NULL, `node_parent_index` INTEGER NOT NULL, `node_ping_time` INTEGER, PRIMARY KEY(`node_name`))",
+        "fields": [
+          {
+            "fieldPath": "mNodeName",
+            "columnName": "node_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mNodeParentIndex",
+            "columnName": "node_parent_index",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mNodePingTime",
+            "columnName": "node_ping_time",
+            "affinity": "INTEGER",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "node_name"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "user_account_info",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`account_status` INTEGER, `is_premium` INTEGER, `user_name` TEXT NOT NULL, PRIMARY KEY(`user_name`))",
+        "fields": [
+          {
+            "fieldPath": "accountStatus",
+            "columnName": "account_status",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isPremium",
+            "columnName": "is_premium",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "userName",
+            "columnName": "user_name",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "user_name"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "server_status_update",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`server_status` INTEGER, `user_name` TEXT NOT NULL, PRIMARY KEY(`user_name`))",
+        "fields": [
+          {
+            "fieldPath": "serverStatus",
+            "columnName": "server_status",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "userName",
+            "columnName": "user_name",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "user_name"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "notification_table",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`notification_id` INTEGER NOT NULL, `popup_status` INTEGER, `user_name` TEXT, PRIMARY KEY(`notification_id`))",
+        "fields": [
+          {
+            "fieldPath": "notificationId",
+            "columnName": "notification_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "popUpStatus",
+            "columnName": "popup_status",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "userName",
+            "columnName": "user_name",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "notification_id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "Location",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`primaryKey` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `country_code` TEXT, `region_id` INTEGER NOT NULL, `name` TEXT, `short_name` TEXT, `sort_order` INTEGER NOT NULL, `continent` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "primaryKey",
+            "columnName": "primaryKey",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "countryCode",
+            "columnName": "country_code",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "region_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "shortName",
+            "columnName": "short_name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sortOrder",
+            "columnName": "sort_order",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "continent",
+            "columnName": "continent",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "primaryKey"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_Location_region_id",
+            "unique": true,
+            "columnNames": [
+              "region_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Location_region_id` ON `${TABLE_NAME}` (`region_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "Datacenter",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`city_id` INTEGER NOT NULL, `primaryKey` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `region_id` INTEGER NOT NULL, `gps` TEXT, `iata` TEXT, `link_speed` INTEGER NOT NULL, `nick` TEXT, `city` TEXT, `ovpn_x509` TEXT, `p2p` INTEGER NOT NULL, `pro` INTEGER NOT NULL, `wg_pubkey` TEXT, `status` INTEGER NOT NULL, `tz` TEXT, `wg_endpoint` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "city_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "primaryKey",
+            "columnName": "primaryKey",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "region_id",
+            "columnName": "region_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coordinates",
+            "columnName": "gps",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "iata",
+            "columnName": "iata",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "linkSpeed",
+            "columnName": "link_speed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nickName",
+            "columnName": "nick",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nodeName",
+            "columnName": "city",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ovpnX509",
+            "columnName": "ovpn_x509",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "p2p",
+            "columnName": "p2p",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pro",
+            "columnName": "pro",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pubKey",
+            "columnName": "wg_pubkey",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tz",
+            "columnName": "tz",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "wgEndpoint",
+            "columnName": "wg_endpoint",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "primaryKey"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "Server",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`server_id` INTEGER NOT NULL, `hostname` TEXT NOT NULL, `ip` TEXT NOT NULL, `ip2` TEXT NOT NULL, `ip3` TEXT NOT NULL, `datacenter_id` INTEGER NOT NULL, `weight` INTEGER NOT NULL, `health` INTEGER NOT NULL, `ipv6` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`server_id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "server_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hostname",
+            "columnName": "hostname",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ip",
+            "columnName": "ip",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ip2",
+            "columnName": "ip2",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ip3",
+            "columnName": "ip3",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "datacenterId",
+            "columnName": "datacenter_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weight",
+            "columnName": "weight",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "health",
+            "columnName": "health",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ipv6",
+            "columnName": "ipv6",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "server_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_Server_server_id",
+            "unique": true,
+            "columnNames": [
+              "server_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Server_server_id` ON `${TABLE_NAME}` (`server_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "Favourite",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`favourite_id` INTEGER NOT NULL, `pinned_ip` TEXT, `pinned_node_ip` TEXT, PRIMARY KEY(`favourite_id`))",
+        "fields": [
+          {
+            "fieldPath": "Id",
+            "columnName": "favourite_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pinnedIp",
+            "columnName": "pinned_ip",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pinnedNodeIp",
+            "columnName": "pinned_node_ip",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "favourite_id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "PingTime",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`static` INTEGER NOT NULL, `ping_time` INTEGER NOT NULL, `ping_id` INTEGER NOT NULL, `isPro` INTEGER NOT NULL, `region_id` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `ip` TEXT, PRIMARY KEY(`ping_id`))",
+        "fields": [
+          {
+            "fieldPath": "isStatic",
+            "columnName": "static",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pingTime",
+            "columnName": "ping_time",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ping_id",
+            "columnName": "ping_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pro",
+            "columnName": "isPro",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "regionId",
+            "columnName": "region_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ip",
+            "columnName": "ip",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "ping_id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "StaticRegion",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cityName` TEXT, `countryCode` TEXT, `deviceName` TEXT, `id` INTEGER, `ipId` INTEGER, `name` TEXT, `ovpnX509` TEXT, `serverId` INTEGER, `shortName` TEXT, `staticIp` TEXT, `type` TEXT, `wgIp` TEXT, `wgPubKey` TEXT, `pingHost` TEXT, `status` INTEGER, `gps` TEXT, `passwordEncoded` TEXT, `userNameEncoded` TEXT, `nodecityName` TEXT, `nodednsHostname` TEXT, `nodehostname` TEXT, `nodeip` TEXT, `nodeip2` TEXT, `nodeip3` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "cityName",
+            "columnName": "cityName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "countryCode",
+            "columnName": "countryCode",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deviceName",
+            "columnName": "deviceName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ipId",
+            "columnName": "ipId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ovpnX509",
+            "columnName": "ovpnX509",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "serverId",
+            "columnName": "serverId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "shortName",
+            "columnName": "shortName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "staticIp",
+            "columnName": "staticIp",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "wgIp",
+            "columnName": "wgIp",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "wgPubKey",
+            "columnName": "wgPubKey",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pingHost",
+            "columnName": "pingHost",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "coordinates",
+            "columnName": "gps",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "credentials.passwordEncoded",
+            "columnName": "passwordEncoded",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "credentials.userNameEncoded",
+            "columnName": "userNameEncoded",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nodeStatic.cityName",
+            "columnName": "nodecityName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nodeStatic.dnsHostname",
+            "columnName": "nodednsHostname",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nodeStatic.hostname",
+            "columnName": "nodehostname",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nodeStatic.ip",
+            "columnName": "nodeip",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nodeStatic.ip2",
+            "columnName": "nodeip2",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nodeStatic.ip3",
+            "columnName": "nodeip3",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "Network_Info",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`is_auto_secure` INTEGER NOT NULL, `is_preferred` INTEGER NOT NULL, `networkName` TEXT NOT NULL, `port` TEXT, `protocol` TEXT, PRIMARY KEY(`networkName`))",
+        "fields": [
+          {
+            "fieldPath": "isAutoSecureOn",
+            "columnName": "is_auto_secure",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isPreferredOn",
+            "columnName": "is_preferred",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "networkName",
+            "columnName": "networkName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "port",
+            "columnName": "port",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "protocol",
+            "columnName": "protocol",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "networkName"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "ConfigFile",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`primary_key` INTEGER NOT NULL, `Content` TEXT, `name` TEXT, `password` TEXT, `remember` INTEGER NOT NULL, `username` TEXT, PRIMARY KEY(`primary_key`))",
+        "fields": [
+          {
+            "fieldPath": "primaryKey",
+            "columnName": "primary_key",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "content",
+            "columnName": "Content",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "password",
+            "columnName": "password",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "remember",
+            "columnName": "remember",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "username",
+            "columnName": "username",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "primary_key"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "WindNotification",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `date` INTEGER NOT NULL, `message` TEXT NOT NULL, `perm_free` INTEGER NOT NULL, `perm_pro` INTEGER NOT NULL, `title` TEXT NOT NULL, `popup` INTEGER NOT NULL, `isRead` INTEGER NOT NULL, `pcpID` TEXT, `promoCode` TEXT, `type` TEXT, `label` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "notificationId",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notificationDate",
+            "columnName": "date",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notificationMessage",
+            "columnName": "message",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notificationPermFree",
+            "columnName": "perm_free",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notificationPermPro",
+            "columnName": "perm_pro",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notificationTitle",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "popUp",
+            "columnName": "popup",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isRead",
+            "columnName": "isRead",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "action.pcpID",
+            "columnName": "pcpID",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "action.promoCode",
+            "columnName": "promoCode",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "action.type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "action.label",
+            "columnName": "label",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "UnBlockWgParam",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `countries` TEXT NOT NULL, `Jc` INTEGER NOT NULL, `Jmin` INTEGER NOT NULL, `Jmax` INTEGER NOT NULL, `S1` INTEGER NOT NULL, `S2` INTEGER NOT NULL, `S3` INTEGER NOT NULL, `S4` INTEGER NOT NULL, `H1` TEXT NOT NULL, `H2` TEXT NOT NULL, `H3` TEXT NOT NULL, `H4` TEXT NOT NULL, `I1` TEXT NOT NULL, `I2` TEXT NOT NULL, `I3` TEXT NOT NULL, `I4` TEXT NOT NULL, `I5` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "countries",
+            "columnName": "countries",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "jc",
+            "columnName": "Jc",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "jMin",
+            "columnName": "Jmin",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "jMax",
+            "columnName": "Jmax",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "s1",
+            "columnName": "S1",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "s2",
+            "columnName": "S2",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "s3",
+            "columnName": "S3",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "s4",
+            "columnName": "S4",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "h1",
+            "columnName": "H1",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "h2",
+            "columnName": "H2",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "h3",
+            "columnName": "H3",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "h4",
+            "columnName": "H4",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "i1",
+            "columnName": "I1",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "i2",
+            "columnName": "I2",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "i3",
+            "columnName": "I3",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "i4",
+            "columnName": "I4",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "i5",
+            "columnName": "I5",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f39646ca0f9c7eb274548843be7446a7')"
+    ]
+  }
+}
