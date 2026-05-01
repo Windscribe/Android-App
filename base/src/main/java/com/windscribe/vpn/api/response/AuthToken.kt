@@ -8,7 +8,11 @@ import com.google.gson.annotations.SerializedName
 data class AuthToken(
     @SerializedName("token") @Expose val token: String,
     @SerializedName("captcha") @Expose val captcha: Captcha? = null
-)
+) {
+    override fun toString(): String {
+        return "AuthToken(token=[REDACTED], captcha=$captcha)"
+    }
+}
 @Keep
 data class Captcha(
     @SerializedName("background") @Expose val background: String? = null,

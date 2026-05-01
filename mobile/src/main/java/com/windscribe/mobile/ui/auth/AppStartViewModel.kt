@@ -72,7 +72,7 @@ class AppStartViewModelImpl @Inject constructor(
         viewModelScope.launch {
             googleSignInManager.getToken(data) { token, error ->
                 if (token != null) {
-                    logger.debug("Received sso token: $token")
+                    logger.debug("Received sso token from Google")
                     ssoLogin(token = token)
                 } else if (error != null) {
                     logger.debug("Failed to get sso token from google: $error")
@@ -95,7 +95,7 @@ class AppStartViewModelImpl @Inject constructor(
                 }
 
                 is CallResult.Success -> {
-                    logger.info("Sso login successful: ${result.data}")
+                    logger.info("Sso login successful")
                     handleSuccessfulSsoLogin(result.data.sessionAuth)
                 }
             }
