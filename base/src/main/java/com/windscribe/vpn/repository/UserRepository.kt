@@ -179,14 +179,19 @@ class UserRepository(
             preferenceHelper.clearAllData()
             localDbInterface.clearAllTables()
             appContext.activeActivity?.let {
-                val intent = appContext.applicationInterface.welcomeIntent
-                if (appContext.applicationInterface.isTV) {
-                    intent.addFlags(
-                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    )
+                try {
+                    val intent = appContext.applicationInterface.welcomeIntent
+                    if (appContext.applicationInterface.isTV) {
+                        intent.addFlags(
+                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        )
+                    }
+                    it.startActivity(intent)
+                    it.finish()
+                } catch (e: Exception) {
+                    logger.error("Failed to start welcome activity: ${e.message}")
+                    it.finish()
                 }
-                it.startActivity(intent)
-                it.finish()
             }
         }
     }
