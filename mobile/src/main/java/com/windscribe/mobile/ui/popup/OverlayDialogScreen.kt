@@ -165,6 +165,8 @@ fun OverlayDialogScreen(appStartActivityViewModel: AppStartActivityViewModel? = 
 fun OverlayDialogIconTopPreview() {
     val mockViewModel = object : AppStartActivityViewModel() {
         override val hapticFeedback = kotlinx.coroutines.flow.MutableStateFlow(false)
+        override val showEncryptionWarning = kotlinx.coroutines.flow.MutableStateFlow(false)
+        override fun acknowledgeEncryptionWarning() {}
         override fun enableDecoyTraffic() {}
         override fun enableGpsSpoofing() {}
         override fun setConnectionCallback(
@@ -194,6 +196,8 @@ fun OverlayDialogIconTopPreview() {
 fun OverlayDialogIconBottomPhonePreview() {
     val mockViewModel = object : AppStartActivityViewModel() {
         override val hapticFeedback = kotlinx.coroutines.flow.MutableStateFlow(false)
+        override val showEncryptionWarning = kotlinx.coroutines.flow.MutableStateFlow(false)
+        override fun acknowledgeEncryptionWarning() {}
         override fun enableDecoyTraffic() {}
         override fun enableGpsSpoofing() {}
         override fun setConnectionCallback(
@@ -223,6 +227,8 @@ fun OverlayDialogIconBottomPhonePreview() {
 fun OverlayDialogIconBottomSmallPhonePreview() {
     val mockViewModel = object : AppStartActivityViewModel() {
         override val hapticFeedback = kotlinx.coroutines.flow.MutableStateFlow(false)
+        override val showEncryptionWarning = kotlinx.coroutines.flow.MutableStateFlow(false)
+        override fun acknowledgeEncryptionWarning() {}
         override fun enableDecoyTraffic() {}
         override fun enableGpsSpoofing() {}
         override fun setConnectionCallback(
@@ -252,6 +258,8 @@ fun OverlayDialogIconBottomSmallPhonePreview() {
 fun OverlayDialogIconBottomLargePhonePreview() {
     val mockViewModel = object : AppStartActivityViewModel() {
         override val hapticFeedback = kotlinx.coroutines.flow.MutableStateFlow(false)
+        override val showEncryptionWarning = kotlinx.coroutines.flow.MutableStateFlow(false)
+        override fun acknowledgeEncryptionWarning() {}
         override fun enableDecoyTraffic() {}
         override fun enableGpsSpoofing() {}
         override fun setConnectionCallback(
@@ -281,6 +289,8 @@ fun OverlayDialogIconBottomLargePhonePreview() {
 fun OverlayDialogIconBottomTabletPreview() {
     val mockViewModel = object : AppStartActivityViewModel() {
         override val hapticFeedback = kotlinx.coroutines.flow.MutableStateFlow(false)
+        override val showEncryptionWarning = kotlinx.coroutines.flow.MutableStateFlow(false)
+        override fun acknowledgeEncryptionWarning() {}
         override fun enableDecoyTraffic() {}
         override fun enableGpsSpoofing() {}
         override fun setConnectionCallback(
