@@ -12,7 +12,7 @@ replace github.com/gorilla/websocket => github.com/Windscribe/wstunnel/websocket
 
 require (
 	github.com/Control-D-Inc/ctrld v1.5.0
-	github.com/Windscribe/wstunnel v1.0.2-0.20250204211052-c191d6e13771
+	github.com/Windscribe/wstunnel v1.0.6
 	github.com/amnezia-vpn/amneziawg-go v0.2.16
 	github.com/spf13/cobra v1.9.1
 	golang.org/x/sys v0.35.0
@@ -32,7 +32,6 @@ require (
 	github.com/dblohm7/wingoes v0.0.0-20240119213807-a09d6be7affa // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/gaukas/godicttls v0.0.3 // indirect
 	github.com/go-json-experiment/json v0.0.0-20231102232822-2e55bd4e08b0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
@@ -81,7 +80,7 @@ require (
 	github.com/prometheus/prom2json v1.3.3 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.57.1 // indirect
-	github.com/refraction-networking/utls v1.3.2 // indirect
+	github.com/refraction-networking/utls v1.8.2 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rs/zerolog v1.28.0 // indirect
 	github.com/spakin/awk v1.0.0 // indirect
