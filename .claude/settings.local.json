@@ -82,7 +82,8 @@
       "Bash(for i in 0 1 2 3 4 5 6 7 8 9)",
       "Bash(do magick anim_frame_0$i.png -resize 512x1024! anim_frame_0$i_resized.png)",
       "Bash(magick anim_frame_10.png -resize 512x1024! anim_frame_10_resized.png)",
-      "Bash(magick anim_frame_11.png -resize 512x1024! anim_frame_11_resized.png)"
+      "Bash(magick anim_frame_11.png -resize 512x1024! anim_frame_11_resized.png)",
+      "Bash(git checkout -b strix)"
     ],
     "deny": [],
     "ask": []

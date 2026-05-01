@@ -92,6 +92,13 @@ class AppStartActivity : AppCompatActivity() {
         val extras = intent?.extras ?: return
         val type = extras.getString("type") ?: return
 
+        // Security check: Verify the intent is from a trusted source
+        if (!isIntentSecure(intent)) {
+            // Log the security violation attempt (optional)
+            android.util.Log.w("AppStartActivity", "Rejected untrusted intent with type: $type")
+            return
+        }
+
         when (type) {
             "promo" -> {
                 val pcpid = extras.getString("pcpid")
@@ -118,6 +125,35 @@ class AppStartActivity : AppCompatActivity() {
                 appContext.workManager.updateSession()
             }
         }
+    }
+
+    private fun isIntentSecure(intent: Intent): Boolean {
+        // Allow if the intent has our signature-protected permission
+        val permissionName = "com.windscribe.mobile.permission.INTERNAL_INTENT"
+
+        // Check if the calling package has the permission (only our app can have signature permission)
+        if (callingActivity != null) {
+            try {
+                val callingPackage = callingActivity!!.packageName
+                val pm = packageManager
+                val result = pm.checkPermission(permissionName, callingPackage)
+                if (result == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    return true
+                }
+            } catch (e: Exception) {
+                // Permission check failed
+            }
+        }
+
+        // Additional check: Allow if intent came from a PendingIntent created by our app
+        // PendingIntents from notifications will have the creator UID matching our app
+        val creatorPackage = intent.getStringExtra("android.intent.extra.REFERRER_NAME")
+        if (creatorPackage == packageName) {
+            return true
+        }
+
+        // Reject all other intents (including external app intents)
+        return false
     }
 
     private fun setLanguage() {

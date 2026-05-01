@@ -164,6 +164,11 @@
         </activity-alias>
     </application>
 
+    <!-- Custom signature-protected permission for internal intents -->
+    <permission
+        android:name="com.windscribe.mobile.permission.INTERNAL_INTENT"
+        android:protectionLevel="signature" />
+
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
