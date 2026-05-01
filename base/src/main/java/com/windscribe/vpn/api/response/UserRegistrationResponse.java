@@ -115,4 +115,22 @@ public class UserRegistrationResponse {
     public boolean isInGhostMode() {
         return getUsername().equals("na");
     }
+
+    @Override
+    public String toString() {
+        return "UserRegistrationResponse{" +
+                "session_auth_hash=[REDACTED]" +
+                ", username='" + username + '\'' +
+                ", user_id='" + userId + '\'' +
+                ", traffic_used='" + trafficUsed + '\'' +
+                ", traffic_max='" + trafficMax + '\'' +
+                ", status='" + userAccountStatus + '\'' +
+                ", billing_plan_id='" + billingPlanId + '\'' +
+                ", is_premium='" + isPremium + '\'' +
+                ", reg_date='" + regDate + '\'' +
+                ", loc_rev='" + locRev + '\'' +
+                ", loc_hash='" + locationHash + '\'' +
+                ", secure_links_secret=[REDACTED]" +
+                '}';
+    }
 }

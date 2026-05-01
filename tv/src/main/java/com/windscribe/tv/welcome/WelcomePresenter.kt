@@ -8,6 +8,7 @@ interface WelcomePresenter {
     fun onBackPressed()
     fun onDestroy()
     fun onGenerateCodeClick()
+    fun onActivityCreated()
     fun startAccountClaim(
         username: String,
         password: String,

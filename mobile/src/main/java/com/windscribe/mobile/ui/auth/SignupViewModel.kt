@@ -423,7 +423,7 @@ class SignupViewModel @Inject constructor(
             }
 
             is CallResult.Success -> {
-                logger.info("Received auth token: ${authResult.data.token}")
+                logger.info("Received auth token successfully")
                 handleAuthToken(authResult.data)
             }
         }

@@ -39,6 +39,8 @@ abstract class AppStartActivityViewModel : ViewModel() {
     var dialogData: DialogData? = null
 
     abstract val hapticFeedback: StateFlow<Boolean>
+    abstract val showEncryptionWarning: StateFlow<Boolean>
+    abstract fun acknowledgeEncryptionWarning()
     abstract fun enableDecoyTraffic()
     abstract fun enableGpsSpoofing()
     abstract fun setConnectionCallback(
@@ -54,17 +56,31 @@ class AppStartActivityViewModelImpl(val preferencesHelper: PreferencesHelper, va
     AppStartActivityViewModel() {
     private var _hapticFeedback = MutableStateFlow(preferencesHelper.isHapticFeedbackEnabled)
     override val hapticFeedback: StateFlow<Boolean> = _hapticFeedback
+
+    private val _showEncryptionWarning = MutableStateFlow(false)
+    override val showEncryptionWarning: StateFlow<Boolean> = _showEncryptionWarning
+
     private val logger = LoggerFactory.getLogger("ui")
 
     init {
         observePreferences()
         recordInstall()
+        checkEncryptionStatus()
     }
 
     private fun observePreferences() {
         viewModelScope.launch {
             preferencesHelper.isHapticFeedbackEnabledFlow.collectLatest { isEnabled ->
                 _hapticFeedback.value = isEnabled
+            }
+        }
+    }
+
+    private fun checkEncryptionStatus() {
+        viewModelScope.launch {
+            preferencesHelper.secureStorageEncryptionFlow.collectLatest { encrypted ->
+                _showEncryptionWarning.value = encrypted == false &&
+                                               !preferencesHelper.hasAcknowledgedEncryptionWarning
             }
         }
     }
@@ -111,5 +127,10 @@ class AppStartActivityViewModelImpl(val preferencesHelper: PreferencesHelper, va
 
     override fun enableGpsSpoofing() {
         preferencesHelper.isGpsSpoofingOn = true
+    }
+
+    override fun acknowledgeEncryptionWarning() {
+        _showEncryptionWarning.value = false
+        preferencesHelper.hasAcknowledgedEncryptionWarning = true
     }
 }

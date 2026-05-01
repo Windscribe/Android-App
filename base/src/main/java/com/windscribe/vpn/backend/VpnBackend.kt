@@ -190,7 +190,7 @@ abstract class VpnBackend(
                         } else {
                             bridgeAPI.setCurrentHost("")
                         }
-                        bridgeAPI.setIgnoreSslErrors(true)
+                        bridgeAPI.setIgnoreSslErrors(false)
                         bridgeAPI.setConnectedState(true)
                     }
                     // Pin IP if available

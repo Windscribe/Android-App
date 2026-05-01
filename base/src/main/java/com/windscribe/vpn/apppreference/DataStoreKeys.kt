@@ -201,6 +201,9 @@ object DataStoreKeys {
     val IPV6_MODE = stringPreferencesKey(PreferencesKeyConstants.IPV6_MODE)
     val EXTRA_TLS_PADDING = booleanPreferencesKey(PreferencesKeyConstants.EXTRA_TLS_PADDING)
 
+    // Security
+    val ENCRYPTION_WARNING_ACKNOWLEDGED = booleanPreferencesKey(PreferencesKeyConstants.ENCRYPTION_WARNING_ACKNOWLEDGED)
+
     // OpenVPN Server Config (base64 encoded config)
     val OPEN_VPN_SERVER_CONFIG =
         stringPreferencesKey(PreferencesKeyConstants.OPEN_VPN_SERVER_CONFIG)

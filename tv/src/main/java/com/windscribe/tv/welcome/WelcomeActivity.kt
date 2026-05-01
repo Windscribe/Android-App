@@ -5,6 +5,7 @@ package com.windscribe.tv.welcome
 
 import android.Manifest
 import android.R.attr.fragment
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -38,6 +39,7 @@ import com.windscribe.tv.welcome.fragment.TwoFactorFragment
 import com.windscribe.tv.welcome.fragment.WelcomeActivityCallback
 import com.windscribe.tv.welcome.fragment.WelcomeFragment
 import com.windscribe.tv.windscribe.WindscribeActivity
+import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import java.io.File
 import javax.inject.Inject
@@ -60,6 +62,7 @@ class WelcomeActivity :
         onActivityLaunch()
         registerFragmentChangeListener()
         addStartFragment()
+        presenter.onActivityCreated()
     }
 
     override fun onDestroy() {
@@ -316,6 +319,18 @@ class WelcomeActivity :
 
     override fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showEncryptionWarning() {
+        AlertDialog.Builder(this)
+            .setTitle(getString(com.windscribe.vpn.R.string.security_notice))
+            .setMessage(getString(com.windscribe.vpn.R.string.encryption_unavailable_warning))
+            .setPositiveButton(getString(com.windscribe.vpn.R.string.i_understand)) { dialog, _ ->
+                appContext.preference.hasAcknowledgedEncryptionWarning = true
+                dialog.dismiss()
+            }
+            .setCancelable(false)
+            .show()
     }
 
     override fun updateCurrentProcess(currentCall: String) {

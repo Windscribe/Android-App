@@ -13,9 +13,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -25,6 +25,7 @@ import com.windscribe.mobile.di.DaggerComposeComponent
 import com.windscribe.mobile.ui.helper.PermissionHelper
 import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.mobile.ui.nav.Screen
+import com.windscribe.mobile.ui.popup.EncryptionWarningDialog
 import com.windscribe.mobile.ui.theme.AndroidTheme
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -78,6 +79,14 @@ class AppStartActivity : AppCompatActivity() {
                     } else {
                         NavigationStack(Screen.Start)
                     }
+                    val showWarning by viewmodel.showEncryptionWarning.collectAsState()
+                    if (showWarning) {
+                        EncryptionWarningDialog(
+                            onAcknowledge = {
+                                viewmodel.acknowledgeEncryptionWarning()
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -91,6 +100,13 @@ class AppStartActivity : AppCompatActivity() {
     private fun handleIntent(intent: Intent?) {
         val extras = intent?.extras ?: return
         val type = extras.getString("type") ?: return
+
+        // Security check: Verify the intent is from a trusted source
+        if (!isIntentSecure(intent)) {
+            // Log the security violation attempt (optional)
+            android.util.Log.w("AppStartActivity", "Rejected untrusted intent with type: $type")
+            return
+        }
 
         when (type) {
             "promo" -> {
@@ -118,6 +134,35 @@ class AppStartActivity : AppCompatActivity() {
                 appContext.workManager.updateSession()
             }
         }
+    }
+
+    private fun isIntentSecure(intent: Intent): Boolean {
+        // Allow if the intent has our signature-protected permission
+        val permissionName = "com.windscribe.mobile.permission.INTERNAL_INTENT"
+
+        // Check if the calling package has the permission (only our app can have signature permission)
+        if (callingActivity != null) {
+            try {
+                val callingPackage = callingActivity!!.packageName
+                val pm = packageManager
+                val result = pm.checkPermission(permissionName, callingPackage)
+                if (result == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    return true
+                }
+            } catch (e: Exception) {
+                // Permission check failed
+            }
+        }
+
+        // Additional check: Allow if intent came from a PendingIntent created by our app
+        // PendingIntents from notifications will have the creator UID matching our app
+        val creatorPackage = intent.getStringExtra("android.intent.extra.REFERRER_NAME")
+        if (creatorPackage == packageName) {
+            return true
+        }
+
+        // Reject all other intents (including external app intents)
+        return false
     }
 
     private fun setLanguage() {

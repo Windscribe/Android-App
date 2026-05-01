@@ -22,8 +22,8 @@ import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.WgLocalParams
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -1071,4 +1071,11 @@ class DataStorePreferenceHelper(
         set(value) {
             setBoolean(DataStoreKeys.EXTRA_TLS_PADDING, value)
         }
+
+    override val secureStorageEncryptionFlow: StateFlow<Boolean?>
+        get() = securePreferences.encryptionAvailable
+
+    override var hasAcknowledgedEncryptionWarning: Boolean
+        get() = runBlocking { getBoolean(DataStoreKeys.ENCRYPTION_WARNING_ACKNOWLEDGED, false) }
+        set(value) = setBooleanSync(DataStoreKeys.ENCRYPTION_WARNING_ACKNOWLEDGED, value)
 }

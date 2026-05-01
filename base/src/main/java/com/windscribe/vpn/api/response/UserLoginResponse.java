@@ -147,7 +147,7 @@ public class UserLoginResponse {
     @Override
     public String toString() {
         return "UserLoginResponse{" +
-                "session_auth_hash=" + sessionAuthHash +
+                "session_auth_hash=[REDACTED]" +
                 ", username='" + userName + '\'' +
                 ", user_id='" + userID + '\'' +
                 ", traffic_used='" + trafficUsed + '\'' +

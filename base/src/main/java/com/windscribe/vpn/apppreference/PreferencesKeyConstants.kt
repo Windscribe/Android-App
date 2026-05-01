@@ -173,6 +173,6 @@ object PreferencesKeyConstants {
     const val IPV6_MODE = "ipv6_mode"
     const val IPV6_MODE_IPV4_ONLY = "ipv4"
     const val IPV6_MODE_AUTO = "auto"
-
     const val EXTRA_TLS_PADDING = "extra_tls_padding"
+    const val ENCRYPTION_WARNING_ACKNOWLEDGED = "encryption_warning_acknowledged"
 }

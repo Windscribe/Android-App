@@ -69,6 +69,14 @@ class WelcomePresenterImpl @Inject constructor(
         xpressVerificationJob?.cancel()
     }
 
+    override fun onActivityCreated() {
+        val encryptionStatus = preferencesHelper.secureStorageEncryptionFlow.value
+        if (encryptionStatus == false && !preferencesHelper.hasAcknowledgedEncryptionWarning) {
+            logger.warn("SECURITY: Encrypted storage unavailable - showing warning dialog")
+            welcomeView.showEncryptionWarning()
+        }
+    }
+
     override fun exportLog() {
         val src = File(logRepository.getDebugFilePath())
         welcomeView.launchShareIntent(src)

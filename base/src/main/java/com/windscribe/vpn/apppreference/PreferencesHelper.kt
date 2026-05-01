@@ -8,6 +8,7 @@ import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
 import com.windscribe.vpn.decoytraffic.FakeTrafficVolume
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.repository.WgLocalParams
+import kotlinx.coroutines.flow.StateFlow
 import java.util.Date
 import javax.inject.Singleton
 
@@ -163,6 +164,8 @@ interface PreferencesHelper {
     var ipv6Mode: String
 
     var extraTlsPaddingEnabled: Boolean
+    val secureStorageEncryptionFlow: StateFlow<Boolean?>
+    var hasAcknowledgedEncryptionWarning: Boolean
 }
 
 /**

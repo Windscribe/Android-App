@@ -627,4 +627,6 @@ last chosen location.</string>
     <string name="update_available_message_generic">A new version of Windscribe is available.</string>
     <string name="update_now">Update Now</string>
     <string name="update_later">Update Later</string>
+    <string name="security_notice">Security Notice</string>
+    <string name="encryption_unavailable_warning">Your device does not support encrypted credential storage. Session tokens and VPN keys will be stored with reduced security.\n\nFor maximum security, avoid using this device on untrusted networks or if rooted.</string>
 </resources>
