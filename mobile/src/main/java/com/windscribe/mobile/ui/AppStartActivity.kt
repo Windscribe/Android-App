@@ -13,9 +13,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -25,6 +25,7 @@ import com.windscribe.mobile.di.DaggerComposeComponent
 import com.windscribe.mobile.ui.helper.PermissionHelper
 import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.mobile.ui.nav.Screen
+import com.windscribe.mobile.ui.popup.EncryptionWarningDialog
 import com.windscribe.mobile.ui.theme.AndroidTheme
 import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -77,6 +78,14 @@ class AppStartActivity : AppCompatActivity() {
                         NavigationStack(Screen.Home)
                     } else {
                         NavigationStack(Screen.Start)
+                    }
+                    val showWarning by viewmodel.showEncryptionWarning.collectAsState()
+                    if (showWarning) {
+                        EncryptionWarningDialog(
+                            onAcknowledge = {
+                                viewmodel.acknowledgeEncryptionWarning()
+                            }
+                        )
                     }
                 }
             }
