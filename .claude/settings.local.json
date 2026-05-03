@@ -85,7 +85,22 @@
       "Bash(magick anim_frame_11.png -resize 512x1024! anim_frame_11_resized.png)",
       "Bash(git checkout -b strix)",
       "Bash(find ~/Downloads -maxdepth 1 -type f ( -name \"*vulnerab*\" -o -name \"*vuln*\" -o -name \"*security*\" -o -name \"*CVE*\" ) -mtime -30)",
-      "Bash(find /Users/gindersingh/Documents/Apps/gitlab/androidapp -name \"AndroidManifest.xml\" -path \"*/src/main/*\" -exec grep -l \"provider\" {} ;)"
+      "Bash(find /Users/gindersingh/Documents/Apps/gitlab/androidapp -name \"AndroidManifest.xml\" -path \"*/src/main/*\" -exec grep -l \"provider\" {} ;)",
+      "Bash(nm -D /tmp/aab_extract_2192/base/lib/arm64-v8a/libwg-go.so)",
+      "Bash(readelf -S /tmp/aab_extract_2192/base/lib/arm64-v8a/libwg-go.so)",
+      "Bash(nm /tmp/aab_extract_2192/base/lib/arm64-v8a/libwg-go.so)",
+      "Bash(nm /tmp/aab_extract_2192/BUNDLE-METADATA/com.android.tools.build.debugsymbols/arm64-v8a/libwg-go.so.sym)",
+      "Bash(objdump -t /tmp/aab_extract_2192/BUNDLE-METADATA/com.android.tools.build.debugsymbols/arm64-v8a/libwg-go.so.sym)",
+      "Bash(nm -n /tmp/aab_extract_2192/BUNDLE-METADATA/com.android.tools.build.debugsymbols/arm64-v8a/libwg-go.so.sym)",
+      "Bash(awk '$1 <= \"\"\"\"0000000000496e08\"\"\"\" {prev=$0} $1 > \"\"\"\"0000000000496e08\"\"\"\" {print prev; print $0; exit}')",
+      "Bash(awk 'BEGIN{target=\"\"\"\"0x496e08\"\"\"\"} {addr=\"\"\"\"0x\"\"\"\"$1} addr<=target {prev=$0} addr>target && !found {print \"\"\"\"Before: \"\"\"\" prev; print \"\"\"\"Target: 0x496e08\"\"\"\"; print \"\"\"\"After:  \"\"\"\" $0; found=1; exit}')",
+      "Bash(printf \"Crash offset: 0x496e08 (%d decimal)\\n\" 0x496e08)",
+      "Bash(printf \"Second crash offset: 0x2f707c (%d decimal)\\n\" 0x2f707c)",
+      "Bash(nm -n /tmp/aab_extract_2192/BUNDLE-METADATA/com.android.tools.build.debugsymbols/armeabi-v7a/libwg-go.so.sym)",
+      "Bash(awk '$1 <= \"\"\"\"002f707c\"\"\"\" {prev=$0} $1 > \"\"\"\"002f707c\"\"\"\" && !printed {print prev; print \"\"\"\"CRASH -> 0x2f707c\"\"\"\"; print $0; printed=1; exit}')",
+      "Bash(awk '$1==\"\"\"\"002f7058\"\"\"\" || $1==\"\"\"\"002f7124\"\"\"\" {print}')",
+      "Bash(nm /tmp/aab_extract_2192/BUNDLE-METADATA/com.android.tools.build.debugsymbols/armeabi-v7a/libwg-go.so.sym)",
+      "Bash(rm /Users/gindersingh/Documents/Apps/gitlab/androidapp/wgtunnel/tools/libwg-go/cd.h)"
     ],
     "deny": [],
     "ask": []

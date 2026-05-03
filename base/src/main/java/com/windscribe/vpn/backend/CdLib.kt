@@ -18,7 +18,15 @@ class CdLib {
         }
     }
 
-    external fun startCd(cuid: String, homeDir: String, proto: String, logPath: String)
+    external fun startCd(
+        cuid: String,
+        homeDir: String,
+        proto: String,
+        logPath: String,
+        hostName: String,
+        lanIp: String,
+        macAddress: String
+    )
     external fun stopCd(restart: Boolean, pin: Int): Int
     external fun isCdRunning(): Boolean
 
