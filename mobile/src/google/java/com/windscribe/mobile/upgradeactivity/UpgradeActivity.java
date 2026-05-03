@@ -85,7 +85,13 @@ public class UpgradeActivity extends BaseActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setActivityModule(new ActivityModule(this, this)).inject(this);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_upgrade);
+        try {
+            binding = DataBindingUtil.setContentView(this, R.layout.activity_upgrade);
+        } catch (Exception e) {
+            logger.error("Failed to inflate upgrade activity layout: " + e.getMessage(), e);
+            finish();
+            return;
+        }
         setContentLayout(false);
         addClickListeners();
         deactivatePlans();
