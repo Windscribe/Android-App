@@ -15,7 +15,9 @@ class PhoneApplication : Windscribe(), Windscribe.ApplicationInterface {
     override fun onCreate() {
         applicationInterface = this
         super.onCreate()
-        setTheme()
+        try {
+            setTheme()
+        } catch (e: Exception) { }
     }
 
     /**
