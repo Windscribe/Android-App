@@ -84,7 +84,8 @@
       "Bash(magick anim_frame_10.png -resize 512x1024! anim_frame_10_resized.png)",
       "Bash(magick anim_frame_11.png -resize 512x1024! anim_frame_11_resized.png)",
       "Bash(git checkout -b strix)",
-      "Bash(find ~/Downloads -maxdepth 1 -type f ( -name \"*vulnerab*\" -o -name \"*vuln*\" -o -name \"*security*\" -o -name \"*CVE*\" ) -mtime -30)"
+      "Bash(find ~/Downloads -maxdepth 1 -type f ( -name \"*vulnerab*\" -o -name \"*vuln*\" -o -name \"*security*\" -o -name \"*CVE*\" ) -mtime -30)",
+      "Bash(find /Users/gindersingh/Documents/Apps/gitlab/androidapp -name \"AndroidManifest.xml\" -path \"*/src/main/*\" -exec grep -l \"provider\" {} ;)"
     ],
     "deny": [],
     "ask": []
