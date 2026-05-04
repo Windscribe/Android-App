@@ -74,8 +74,6 @@ class VpnBackendHolder(
             }
             activeBackend = getBackend()
             activeBackend?.let {
-                // Set reconnecting flag from preferences before connecting
-                it.reconnecting = preferenceHelper.isReconnecting
                 it.activate()
                 it.connect(protocolInformation, connectionId)
             } ?: kotlin.run {
