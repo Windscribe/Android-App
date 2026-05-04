@@ -139,6 +139,8 @@ class SessionWorker(context: Context, workerParams: WorkerParameters) : Coroutin
         if (vpnState.error?.error == com.windscribe.vpn.backend.VPNState.ErrorType.BrokenTunnel &&
             preferencesHelper.globalUserConnectionPreference && vpnState.status == com.windscribe.vpn.backend.VPNState.Status.Disconnected) {
             logger.info("Reconnecting after tunnel recovery")
+            // Set reconnecting flag so connectivity test failure doesn't disconnect in background
+            preferencesHelper.isReconnecting = true
             vpnController.connectAsync()
         }
     }

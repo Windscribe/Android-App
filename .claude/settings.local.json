@@ -118,7 +118,8 @@
       "Bash(git show ed90a380 --stat --format=\"%h %ad %s%n%b\" --date=short)",
       "Bash(git log --all --since=\"2026-03-01\" --until=\"2026-03-07\" --oneline --date=short --pretty=format:\"%h %ad %s\")",
       "Bash(git log v3.98 --since=\"2026-02-15\" --until=\"2026-03-07\" --oneline --date=short --pretty=format:\"%h %ad %s\")",
-      "Bash(git show b269446e --stat --format=\"%h %ad %s%n%b\" --date=short)"
+      "Bash(git show b269446e --stat --format=\"%h %ad %s%n%b\" --date=short)",
+      "Read(///**)"
     ],
     "deny": [],
     "ask": []
