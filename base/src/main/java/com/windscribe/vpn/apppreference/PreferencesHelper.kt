@@ -101,6 +101,7 @@ interface PreferencesHelper {
     var isNewApplicationInstance: Boolean
     var isPackageSizeModeAuto: Boolean
     var isReconnecting: Boolean
+    var lastDisconnectionError: String?
     var isShowLocationHealthEnabled: Boolean
     var isStartedByAlwaysOn: Boolean
     var isDecoyTrafficOn: Boolean

@@ -1,7 +1,9 @@
 package main
 
-// #include <cd.h>
+// #cgo LDFLAGS: -llog
+// #include <android/log.h>
 import "C"
+
 import (
 	"github.com/Control-D-Inc/ctrld/cmd/cli"
 )
@@ -21,20 +23,34 @@ func NewController() *Controller {
 }
 
 //export StartCd
-func StartCd(CdUID string, HomeDir string, UpstreamProto string, logLevel int, logPath string) {
+func StartCd(CdUID string, HomeDir string, UpstreamProto string, logLevel int, logPath string, hostName string, lanIp string, macAddress string) {
+	defer func() {
+		if r := recover(); r != nil {
+			tag := cstring("ControlD/Panic")
+			logger := AndroidLogger{level: C.ANDROID_LOG_ERROR, tag: tag}
+			logger.Printf("StartCd panic recovered: %v", r)
+			// Clean up controller on panic to prevent invalid state
+			if controller != nil && controller.stopCh != nil {
+				close(controller.stopCh)
+				controller.stopCh = nil
+			}
+			controller = nil
+		}
+	}()
+
 	if controller != nil {
 		return
 	}
 	controller = NewController()
 	callback := cli.AppCallback{
 		HostName: func() string {
-			return C.GoString(C.getMetaData(C.CString("getHostName")))
+			return hostName
 		},
 		LanIp: func() string {
-			return C.GoString(C.getMetaData(C.CString("getLanIP")))
+			return lanIp
 		},
 		MacAddress: func() string {
-			return C.GoString(C.getMetaData(C.CString("getMacAddress")))
+			return macAddress
 		},
 		Exit: func(err string) {
 
@@ -55,6 +71,20 @@ func StartCd(CdUID string, HomeDir string, UpstreamProto string, logLevel int, l
 
 //export StopCd
 func StopCd(restart bool, pin int64) int {
+	defer func() {
+		if r := recover(); r != nil {
+			tag := cstring("ControlD/Panic")
+			logger := AndroidLogger{level: C.ANDROID_LOG_ERROR, tag: tag}
+			logger.Printf("StopCd panic recovered: %v", r)
+			// Ensure cleanup even on panic
+			if controller != nil && controller.stopCh != nil {
+				close(controller.stopCh)
+				controller.stopCh = nil
+			}
+			controller = nil
+		}
+	}()
+
 	if controller == nil {
 		return 0
 	}

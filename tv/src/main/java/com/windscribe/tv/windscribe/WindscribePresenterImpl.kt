@@ -110,6 +110,7 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override suspend fun observeIpAddress() {
+        ipRepository.update()
         ipRepository.state.collectLatest { state ->
             when (state) {
                 is RepositoryState.Success -> {

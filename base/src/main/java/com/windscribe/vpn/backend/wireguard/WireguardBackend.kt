@@ -183,6 +183,8 @@ class WireguardBackend @Inject constructor(
 
     override suspend fun disconnect(error: VPNState.Error?) {
         this.error = error
+        // Save disconnection error to persistent preferences for tunnel recovery
+        preferencesHelper.lastDisconnectionError = error?.error?.name
         if (proxyDNSManager.invalidConfig) {
             proxyDNSManager.stopControlD()
         }

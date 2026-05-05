@@ -294,6 +294,8 @@ abstract class VpnBackend(
 
     open fun connectivityTestPassed(ip: String) {
         vpnLogger.info("Connectivity test successful: $ip")
+        // Clear disconnection error on successful connection
+        preferencesHelper.lastDisconnectionError = null
         updateState(VPNState(VPNState.Status.Connected, ip = ip))
         mainScope.launch {
             delay(500)
@@ -304,8 +306,12 @@ abstract class VpnBackend(
     private fun failedConnectivityTest() {
         connectivityTestJob = null
         connectionJob?.cancel()
-        // If app is in foreground, try other protocols.
-        if (reconnecting.not()) {
+
+        // Check if this is a tunnel recovery reconnection
+        val isTunnelRecovery = preferencesHelper.lastDisconnectionError == VPNState.ErrorType.BrokenTunnel.name
+
+        // If app is in foreground or not a tunnel recovery, try other protocols.
+        if (reconnecting.not() && !isTunnelRecovery) {
             mainScope.launch {
                 vpnLogger.info("Connectivity test failed.")
                 disconnect(
@@ -316,7 +322,7 @@ abstract class VpnBackend(
                 )
             }
         } else {
-            vpnLogger.info("Connectivity test failed in background.")
+            vpnLogger.info("Connectivity test failed in background (tunnel recovery or reconnecting).")
             // Consider it connected and will fetch ip on app launch.
             preferencesHelper.userIP = null
             updateState(VPNState(VPNState.Status.Connected))

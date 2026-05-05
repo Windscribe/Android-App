@@ -10,7 +10,8 @@ struct go_string {
 
 extern void
 StartCd(struct go_string cdUID, struct go_string homeDir, struct go_string upstreamProto,
-        int logLevel, struct go_string logPath);
+        int logLevel, struct go_string logPath, struct go_string hostName,
+        struct go_string lanIp, struct go_string macAddress);
 
 extern int StopCd(bool restart, int pin);
 
@@ -18,7 +19,8 @@ extern bool IsCdRunning();
 
 JNIEXPORT void JNICALL
 Java_com_windscribe_vpn_backend_CdLib_startCd(JNIEnv *env, jobject thiz, jstring cuid,
-                                              jstring homeDir, jstring proto, jstring logPath) {
+                                              jstring homeDir, jstring proto, jstring logPath,
+                                              jstring hostName, jstring lanIp, jstring macAddress) {
 
     const char *proto_str = (*env)->GetStringUTFChars(env, proto, 0);
     int const proto_size = (*env)->GetStringUTFLength(env, proto);
@@ -48,8 +50,33 @@ Java_com_windscribe_vpn_backend_CdLib_startCd(JNIEnv *env, jobject thiz, jstring
             .n = logPath_size
     };
 
-    StartCd(cuid_go_str, homeDir_go_str, proto_go_str, 3, logPath_go_str);
+    const char *hostName_str = (*env)->GetStringUTFChars(env, hostName, 0);
+    int const hostName_size = (*env)->GetStringUTFLength(env, hostName);
+    struct go_string hostName_go_str = {
+            .str = hostName_str,
+            .n = hostName_size
+    };
 
+    const char *lanIp_str = (*env)->GetStringUTFChars(env, lanIp, 0);
+    int const lanIp_size = (*env)->GetStringUTFLength(env, lanIp);
+    struct go_string lanIp_go_str = {
+            .str = lanIp_str,
+            .n = lanIp_size
+    };
+
+    const char *macAddress_str = (*env)->GetStringUTFChars(env, macAddress, 0);
+    int const macAddress_size = (*env)->GetStringUTFLength(env, macAddress);
+    struct go_string macAddress_go_str = {
+            .str = macAddress_str,
+            .n = macAddress_size
+    };
+
+    StartCd(cuid_go_str, homeDir_go_str, proto_go_str, 3, logPath_go_str,
+            hostName_go_str, lanIp_go_str, macAddress_go_str);
+
+    (*env)->ReleaseStringUTFChars(env, macAddress, macAddress_str);
+    (*env)->ReleaseStringUTFChars(env, lanIp, lanIp_str);
+    (*env)->ReleaseStringUTFChars(env, hostName, hostName_str);
     (*env)->ReleaseStringUTFChars(env, logPath, logPath_str);
     (*env)->ReleaseStringUTFChars(env, homeDir, homeDir_str);
     (*env)->ReleaseStringUTFChars(env, cuid, cuid_str);
@@ -65,74 +92,4 @@ Java_com_windscribe_vpn_backend_CdLib_stopCd(JNIEnv *env, jobject thiz, jboolean
 JNIEXPORT jboolean JNICALL
 Java_com_windscribe_vpn_backend_CdLib_isCdRunning(JNIEnv *env, jobject thiz) {
     return IsCdRunning();
-}
-
-JavaVM *jvm;
-jclass wsLibClass;
-jobject wsLibInstance;
-
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
-    jvm = vm;
-    JNIEnv *env;
-    if ((*jvm)->AttachCurrentThread(jvm, (JNIEnv **) &env, NULL) != JNI_OK) {
-        return JNI_ERR;
-    }
-    jclass cls = (*env)->FindClass(env, "com/windscribe/vpn/backend/CdLib");
-    if (cls == NULL) {
-        return JNI_ERR;
-    }
-
-    wsLibClass = (jclass) (*env)->NewGlobalRef(env, cls);
-    if (wsLibClass == NULL) {
-        return JNI_ERR;
-    }
-    jmethodID constructor = (*env)->GetMethodID(env, wsLibClass, "<init>", "()V");
-    if (constructor == NULL) {
-        return JNI_ERR;
-    }
-
-    jobject instance = (*env)->NewObject(env, wsLibClass, constructor);
-    if (instance == NULL) {
-        return JNI_ERR;
-    }
-
-    wsLibInstance = (*env)->NewGlobalRef(env, instance);
-    (*env)->DeleteLocalRef(env, instance);
-    (*env)->DeleteLocalRef(env, cls);
-
-    return JNI_VERSION_1_6;
-}
-
-const char *getMetaData(const char *key) {
-    JNIEnv *env;
-    if ((*jvm)->AttachCurrentThread(jvm, (JNIEnv **) &env, NULL) != JNI_OK) {
-        return "";
-    }
-    if (wsLibInstance == NULL) {
-        (*jvm)->DetachCurrentThread(jvm);
-        return "";
-    }
-    jmethodID mid = (*env)->GetMethodID(env, wsLibClass, key, "()Ljava/lang/String;");
-    if (mid == NULL) {
-        (*jvm)->DetachCurrentThread(jvm);
-        return "";
-    }
-    jstring jresult = (jstring) (*env)->CallObjectMethod(env, wsLibInstance, mid);
-
-    if (jresult == NULL) {
-        (*jvm)->DetachCurrentThread(jvm);
-        return "";
-    }
-    const char *c_str = (*env)->GetStringUTFChars(env, jresult, NULL);
-    if (c_str == NULL) {
-        (*env)->DeleteLocalRef(env, jresult);
-        (*jvm)->DetachCurrentThread(jvm);
-        return "";
-    }
-    char *result = strdup(c_str);
-    (*env)->ReleaseStringUTFChars(env, jresult, c_str);
-    (*env)->DeleteLocalRef(env, jresult);
-    (*jvm)->DetachCurrentThread(jvm);
-
-    return result;
 }
