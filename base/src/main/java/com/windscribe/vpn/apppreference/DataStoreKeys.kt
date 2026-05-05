@@ -74,6 +74,7 @@ object DataStoreKeys {
         booleanPreferencesKey(PreferencesKeyConstants.IS_CONNECTING_TO_STATIC_IP)
     val CONNECTION_RETRY_ENABLED =
         booleanPreferencesKey(PreferencesKeyConstants.CONNECTION_RETRY_ENABLED)
+    val LAST_DISCONNECTION_ERROR = stringPreferencesKey("last_disconnection_error")
     val STARTED_BY_ALWAYS_ON = booleanPreferencesKey(PreferencesKeyConstants.STARTED_BY_ALWAYS_ON)
     val LAST_CONNECTION_USING_SPLIT =
         booleanPreferencesKey(PreferencesKeyConstants.LAST_CONNECTION_USING_SPLIT)

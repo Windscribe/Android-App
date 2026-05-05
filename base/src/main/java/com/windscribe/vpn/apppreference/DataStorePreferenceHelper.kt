@@ -560,6 +560,10 @@ class DataStorePreferenceHelper(
         get() = runBlocking { getBoolean(DataStoreKeys.CONNECTION_RETRY_ENABLED, false) }
         set(value) = setBoolean(DataStoreKeys.CONNECTION_RETRY_ENABLED, value)
 
+    override var lastDisconnectionError: String?
+        get() = runBlocking { getString(DataStoreKeys.LAST_DISCONNECTION_ERROR, "").takeIf { it.isNotEmpty() } }
+        set(value) = setStringSync(DataStoreKeys.LAST_DISCONNECTION_ERROR, value)  // SYNC - critical for tunnel recovery
+
     override var isStartedByAlwaysOn: Boolean
         get() = runBlocking { getBoolean(DataStoreKeys.STARTED_BY_ALWAYS_ON, false) }
         set(value) = setBoolean(DataStoreKeys.STARTED_BY_ALWAYS_ON, value)

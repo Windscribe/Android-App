@@ -109,7 +109,16 @@ class ProxyDNSManager(
             isRunning.set(true)
             logger.debug("Started ControlD.")
             // we are providing config file in home dir instead of UID
-            cdLib.startCd("", homeDir, "doh", logPath)
+            // Pass device info directly to avoid JNI callbacks from Go goroutines
+            cdLib.startCd(
+                "",
+                homeDir,
+                "doh",
+                logPath,
+                cdLib.getHostName(),
+                cdLib.getLanIP(),
+                cdLib.getMacAddress()
+            )
             logger.debug("ControlD stopped.")
             isRunning.set(false)
         }

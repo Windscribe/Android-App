@@ -12,6 +12,7 @@ import com.windscribe.vpn.workers.WindScribeWorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
@@ -34,12 +35,17 @@ class TunnelHealthCheck(
     private val isHealthCheckRunning = AtomicBoolean(false)
     private var lastExternalCheckTime: Long? = null
     private var externalCheckFailureCount: Int = 0
+    private var tunnelCheckFailureCount: Int = 0
     private var endpointHost: String? = null
 
     companion object {
         private const val HANDSHAKE_TIMEOUT_MS = 180_000L
+        private const val HANDSHAKE_GRACE_PERIOD_MS = 10_000L
         private val EXTERNAL_CHECK_BACKOFF_INTERVALS = longArrayOf(5_000L, 10_000L, 20_000L, 30_000L, 60_000L)
-        private const val CONNECTIVITY_CHECK_TIMEOUT_MS = 2000
+        private const val CONNECTIVITY_CHECK_TIMEOUT_MS = 5000
+        private const val TUNNEL_CHECK_RETRIES = 3
+        private const val TUNNEL_CHECK_RETRY_DELAY_MS = 2000L
+        private const val REQUIRED_CONSECUTIVE_FAILURES = 3
     }
 
     fun start(profileContent: String) {
@@ -60,6 +66,7 @@ class TunnelHealthCheck(
             wgLogger.handshakeReceivedEvent.collect {
                 lastHandshakeTimestamp = System.currentTimeMillis()
                 externalCheckFailureCount = 0
+                tunnelCheckFailureCount = 0
             }
         }
 
@@ -79,6 +86,7 @@ class TunnelHealthCheck(
         lastHandshakeTimestamp = null
         lastExternalCheckTime = null
         externalCheckFailureCount = 0
+        tunnelCheckFailureCount = 0
         isHealthCheckRunning.set(false)
     }
 
@@ -91,7 +99,7 @@ class TunnelHealthCheck(
             val lastHandshake = lastHandshakeTimestamp ?: return
             val timeSinceHandshake = System.currentTimeMillis() - lastHandshake
 
-            if (timeSinceHandshake < HANDSHAKE_TIMEOUT_MS) {
+            if (timeSinceHandshake < HANDSHAKE_TIMEOUT_MS + HANDSHAKE_GRACE_PERIOD_MS) {
                 return
             }
 
@@ -101,13 +109,20 @@ class TunnelHealthCheck(
 
             logger.warn("Handshake timeout exceeded: ${timeSinceHandshake}ms since last successful handshake (device is online)")
 
-            val hasTunnelConnectivity = checkConnectivity(bypassTunnel = false)
+            val hasTunnelConnectivity = checkConnectivityWithRetry(bypassTunnel = false)
             if (hasTunnelConnectivity) {
+                tunnelCheckFailureCount = 0
                 logger.info("Tunnel connectivity check PASSED: Traffic flowing despite handshake timeout. Tunnel is healthy.")
                 return
             }
 
-            logger.warn("Tunnel connectivity check FAILED: No traffic passing through tunnel")
+            tunnelCheckFailureCount++
+            logger.warn("Tunnel connectivity check FAILED (${tunnelCheckFailureCount}/${REQUIRED_CONSECUTIVE_FAILURES}): No traffic passing through tunnel")
+
+            if (tunnelCheckFailureCount < REQUIRED_CONSECUTIVE_FAILURES) {
+                logger.info("Not triggering recovery yet - waiting for ${REQUIRED_CONSECUTIVE_FAILURES - tunnelCheckFailureCount} more consecutive failure(s)")
+                return
+            }
 
             val lastCheck = lastExternalCheckTime
             val now = System.currentTimeMillis()
@@ -147,6 +162,23 @@ class TunnelHealthCheck(
         } finally {
             isHealthCheckRunning.set(false)
         }
+    }
+
+    private suspend fun checkConnectivityWithRetry(bypassTunnel: Boolean, retries: Int = TUNNEL_CHECK_RETRIES): Boolean {
+        repeat(retries) { attempt ->
+            if (attempt > 0) {
+                logger.debug("Retrying connectivity check (attempt ${attempt + 1}/$retries) after ${TUNNEL_CHECK_RETRY_DELAY_MS}ms delay")
+                delay(TUNNEL_CHECK_RETRY_DELAY_MS)
+            }
+            if (checkConnectivity(bypassTunnel)) {
+                if (attempt > 0) {
+                    logger.info("Connectivity check PASSED on retry attempt ${attempt + 1}")
+                }
+                return true
+            }
+        }
+        logger.warn("Connectivity check FAILED after $retries attempts")
+        return false
     }
 
     private suspend fun checkConnectivity(bypassTunnel: Boolean): Boolean {
