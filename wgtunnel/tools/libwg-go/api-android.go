@@ -52,6 +52,7 @@ type TunnelHandle struct {
 }
 
 var tunnelHandles map[int32]TunnelHandle
+var tunnelHandlesMutex sync.RWMutex
 var signalHandlerOnce sync.Once
 
 func init() {
@@ -141,28 +142,35 @@ func wgTurnOn(interfaceName string, tunFd int32, settings string, customTun bool
 	logger.Verbosef("Device started")
 
 	var i int32
+	tunnelHandlesMutex.Lock()
 	for i = 0; i < math.MaxInt32; i++ {
 		if _, exists := tunnelHandles[i]; !exists {
 			break
 		}
 	}
 	if i == math.MaxInt32 {
+		tunnelHandlesMutex.Unlock()
 		logger.Errorf("Unable to find empty handle")
 		uapiFile.Close()
 		device.Close()
 		return -1
 	}
 	tunnelHandles[i] = TunnelHandle{device: device, uapi: uapi}
+	tunnelHandlesMutex.Unlock()
 	return i
 }
 
 //export wgTurnOff
 func wgTurnOff(tunnelHandle int32) {
+	tunnelHandlesMutex.Lock()
 	handle, ok := tunnelHandles[tunnelHandle]
 	if !ok {
+		tunnelHandlesMutex.Unlock()
 		return
 	}
 	delete(tunnelHandles, tunnelHandle)
+	tunnelHandlesMutex.Unlock()
+
 	if handle.uapi != nil {
 		handle.uapi.Close()
 	}
@@ -171,7 +179,9 @@ func wgTurnOff(tunnelHandle int32) {
 
 //export wgGetSocketV4
 func wgGetSocketV4(tunnelHandle int32) int32 {
+	tunnelHandlesMutex.RLock()
 	handle, ok := tunnelHandles[tunnelHandle]
+	tunnelHandlesMutex.RUnlock()
 	if !ok {
 		return -1
 	}
@@ -188,7 +198,9 @@ func wgGetSocketV4(tunnelHandle int32) int32 {
 
 //export wgGetSocketV6
 func wgGetSocketV6(tunnelHandle int32) int32 {
+	tunnelHandlesMutex.RLock()
 	handle, ok := tunnelHandles[tunnelHandle]
+	tunnelHandlesMutex.RUnlock()
 	if !ok {
 		return -1
 	}
@@ -205,7 +217,9 @@ func wgGetSocketV6(tunnelHandle int32) int32 {
 
 //export wgGetConfig
 func wgGetConfig(tunnelHandle int32) *C.char {
+	tunnelHandlesMutex.RLock()
 	handle, ok := tunnelHandles[tunnelHandle]
+	tunnelHandlesMutex.RUnlock()
 	if !ok {
 		return nil
 	}
