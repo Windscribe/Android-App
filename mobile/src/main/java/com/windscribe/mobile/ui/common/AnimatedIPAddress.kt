@@ -179,21 +179,31 @@ private fun AnimatedDigit(
         contentAlignment = Alignment.Center
     ) {
         val currentValue = animatedValue.value
-        val currentFloor = currentValue.toInt()
-        val delta = currentValue - currentFloor
 
-        Text(
-            text = (currentFloor % 10).toString(),
-            style = style,
-            color = color,
-            modifier = Modifier.offset(y = (-delta * itemHeight).dp)
-        )
+        // Guard against NaN values which can occur during animation lifecycle
+        if (currentValue.isNaN() || currentValue.isInfinite()) {
+            Text(
+                text = targetDigit.toString(),
+                style = style,
+                color = color
+            )
+        } else {
+            val currentFloor = currentValue.toInt()
+            val delta = currentValue - currentFloor
 
-        Text(
-            text = ((currentFloor + 1) % 10).toString(),
-            style = style,
-            color = color,
-            modifier = Modifier.offset(y = ((1 - delta) * itemHeight).dp)
-        )
+            Text(
+                text = (currentFloor % 10).toString(),
+                style = style,
+                color = color,
+                modifier = Modifier.offset(y = (-delta * itemHeight).dp)
+            )
+
+            Text(
+                text = ((currentFloor + 1) % 10).toString(),
+                style = style,
+                color = color,
+                modifier = Modifier.offset(y = ((1 - delta) * itemHeight).dp)
+            )
+        }
     }
 }

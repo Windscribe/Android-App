@@ -198,7 +198,15 @@ fun CustomConfigItem(
         // Foreground (swipeable content)
         Row(
             modifier = Modifier
-                .offset { IntOffset(offsetX.value.roundToInt(), 0) }
+                .offset {
+                    // Guard against NaN values in swipe offset
+                    val offset = offsetX.value
+                    if (offset.isNaN() || offset.isInfinite()) {
+                        IntOffset.Zero
+                    } else {
+                        IntOffset(offset.roundToInt(), 0)
+                    }
+                }
                 .fillMaxWidth()
                 .height(48.dp)
                 .clickable(
