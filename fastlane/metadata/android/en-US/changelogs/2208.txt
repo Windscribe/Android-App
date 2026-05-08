@@ -1,0 +1,5 @@
+v4.0(Mobile)
+* Serverlist v2 API to avoid unnecessary updates.
+* Added hashed login & signup functionality.
+* Added Random username & Password generator
+* Updated UI for Login & SignUp.
