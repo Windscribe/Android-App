@@ -68,7 +68,11 @@ fun RequestLocationPermissions(
                         data = Uri.fromParts("package", activity.packageName, null)
                     }
                     intent.resolveActivity(activity.packageManager)?.let {
-                        activity.startActivity(intent)
+                        try {
+                            activity.startActivity(intent)
+                        } catch (e: SecurityException) {
+                            // Settings activity not accessible on this device
+                        }
                     }
                 }
             }
@@ -87,7 +91,11 @@ fun RequestLocationPermissions(
                         data = Uri.fromParts("package", activity.packageName, null)
                     }
                     intent.resolveActivity(activity.packageManager)?.let {
-                        activity.startActivity(intent)
+                        try {
+                            activity.startActivity(intent)
+                        } catch (e: SecurityException) {
+                            // Settings activity not accessible on this device
+                        }
                     }
                 }
             }
