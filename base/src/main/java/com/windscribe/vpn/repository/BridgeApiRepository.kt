@@ -29,6 +29,12 @@ class BridgeApiRepository @Inject constructor(
     val apiAvailable = _apiAvailable.asSharedFlow()
     private var observerInitialized = false
 
+    // Keep strong reference to prevent Java GC from collecting the object while
+    // native code holds a callback with WeakGlobalRef. Without this, the callback
+    // can crash with "accessed deleted WeakGlobal" error when invoked.
+    @Volatile
+    private var bridgeAPIRef: WSNetBridgeAPI? = null
+
     init {
         scope.launch(Dispatchers.IO) {
             // Wait for WSNet to be ready before setting up observers
@@ -47,6 +53,8 @@ class BridgeApiRepository @Inject constructor(
     }
 
     private fun observeBridgeApi(bridgeAPI: WSNetBridgeAPI) {
+        // Store strong reference to prevent GC while callback is registered
+        bridgeAPIRef = bridgeAPI
         scope.launch {
             try {
                 val hasToken = bridgeAPI.hasSessionToken()
