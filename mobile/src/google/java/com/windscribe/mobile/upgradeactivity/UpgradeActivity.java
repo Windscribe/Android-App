@@ -151,7 +151,7 @@ public class UpgradeActivity extends BaseActivity
             this.selectedProductDetails = productDetails;
             BillingFlowParams.ProductDetailsParams.Builder builder = BillingFlowParams.ProductDetailsParams.newBuilder();
             builder.setProductDetails(productDetails);
-            if (productDetails.getSubscriptionOfferDetails() != null) {
+            if (productDetails.getSubscriptionOfferDetails() != null && !productDetails.getSubscriptionOfferDetails().isEmpty()) {
                 String offerToken = productDetails
                         .getSubscriptionOfferDetails()
                         .get(0)
@@ -415,7 +415,7 @@ public class UpgradeActivity extends BaseActivity
 
     @Override
     public void onPurchaseSuccessful(@Nullable List<Purchase> purchases) {
-        if (purchases != null) {
+        if (purchases != null && !purchases.isEmpty()) {
             Purchase purchase = purchases.get(0);
             if (selectedProductDetails != null && selectedProductDetails.getOneTimePurchaseOfferDetails() != null) {
                 googleBillingManager.InAppConsume(purchase);

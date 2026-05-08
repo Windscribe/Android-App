@@ -727,14 +727,6 @@ class ConnectionViewmodelImpl @Inject constructor(
                     return@launch
                 }
 
-                // Check Pro subscription (required)
-                val isPro = userRepository.user.value?.isPro ?: false
-                if (!isPro) {
-                    logger.info("Static IP requires Pro subscription")
-                    _goto.emit(HomeGoto.Upgrade)
-                    return@launch
-                }
-
                 // Check internet connectivity
                 if (!WindUtilities.isOnline()) {
                     logger.info("Error: no internet available.")

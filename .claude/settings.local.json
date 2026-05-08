@@ -120,7 +120,17 @@
       "Bash(git log v3.98 --since=\"2026-02-15\" --until=\"2026-03-07\" --oneline --date=short --pretty=format:\"%h %ad %s\")",
       "Bash(git show b269446e --stat --format=\"%h %ad %s%n%b\" --date=short)",
       "Read(///**)",
-      "Bash(git apply ~/Downloads/wireguard-concurrent-map-fix.patch)"
+      "Bash(git apply ~/Downloads/wireguard-concurrent-map-fix.patch)",
+      "Bash(unzip -l ~/Downloads/2204.apk)",
+      "Bash(unzip -qo ~/Downloads/2204.apk lib/arm64-v8a/libwg-go.so -d /tmp/apk_2204)",
+      "Bash(nm -n /tmp/apk_2204/lib/arm64-v8a/libwg-go.so)",
+      "Bash(awk '$1 <= \"\"\"\"00000000004c0a08\"\"\"\" {prev=$0} $1 > \"\"\"\"00000000004c0a08\"\"\"\" && !printed {print \"\"\"\"Symbol before crash:\\n  \"\"\"\" prev; print \"\"\"\"\\n→ CRASH at 0x4c0a08 ←\\n\"\"\"\"; print \"\"\"\"Symbol after crash:\\n  \"\"\"\" $0; printed=1; exit}')",
+      "Bash(awk '$1 <= \"\"\"\"00000000004c0a08\"\"\"\" {prev=$0} $1 > \"\"\"\"00000000004c0a08\"\"\"\" && !printed {print \"\"\"\"Symbol before crash:\\n  \"\"\"\" prev; print \"\"\"\"\\nCRASH at 0x4c0a08\\n\"\"\"\"; print \"\"\"\"Symbol after crash:\\n  \"\"\"\" $0; printed=1; exit}')",
+      "Bash(awk 'BEGIN{target=\"\"\"\"00000000004c0a08\"\"\"\"} $1<=target {prev=$0} $1>target && !found {print prev; print \"\"\"\"CRASH -> 0x4c0a08\"\"\"\"; print $0; found=1; exit}')",
+      "Bash(nm /tmp/apk_2204/lib/arm64-v8a/libwg-go.so)",
+      "Bash(nm -n /tmp/aab_2204/BUNDLE-METADATA/com.android.tools.build.debugsymbols/arm64-v8a/libwg-go.so.sym)",
+      "Bash(awk 'BEGIN{target=\"\"\"\"00000000004c0a08\"\"\"\"; found=0} {addr=$1} addr<=target {prev=$0} addr>target && !found {print prev; print \"\"\"\"CRASH -> 0x4c0a08\"\"\"\"; print $0; found=1; exit}')",
+      "Bash(cat /Users/gindersingh/Downloads/wsnet/src/api/bridgeapi/bridgeapi_impl.h)"
     ],
     "deny": [],
     "ask": []
