@@ -27,6 +27,10 @@ public class NetworkUtils {
 
                 NetworkCapabilities nc = conn.getNetworkCapabilities(network);
 
+                // NetworkCapabilities can be null if the network disconnected
+                if (nc == null)
+                    continue;
+
                 // Skip VPN networks like ourselves
                 if (nc.hasTransport(NetworkCapabilities.TRANSPORT_VPN))
                     continue;
