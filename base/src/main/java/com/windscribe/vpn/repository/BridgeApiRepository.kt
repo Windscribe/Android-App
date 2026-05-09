@@ -13,6 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -29,11 +30,13 @@ class BridgeApiRepository @Inject constructor(
     val apiAvailable = _apiAvailable.asSharedFlow()
     private var observerInitialized = false
 
-    // Keep strong reference to prevent Java GC from collecting the object while
-    // native code holds a callback with WeakGlobalRef. Without this, the callback
-    // can crash with "accessed deleted WeakGlobal" error when invoked.
+    // Keep strong reference to prevent Java GC from collecting the object
     @Volatile
     private var bridgeAPIRef: WSNetBridgeAPI? = null
+
+    // Keep strong reference to the callback lambda to prevent GC from collecting it
+    @Volatile
+    private var apiCallback: ((Boolean) -> Unit)? = null
 
     init {
         scope.launch(Dispatchers.IO) {
@@ -61,17 +64,23 @@ class BridgeApiRepository @Inject constructor(
                 if (hasToken && vpnConnectionStateManager.isVPNConnected()) {
                     checkAndEmitApiAvailability(ready = true)
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // JNI reference may be invalid, ignore
             }
         }
-        try {
-            bridgeAPI.setApiAvailableCallback { ready ->
+
+        // Store callback as strong reference to prevent GC while native code holds it
+        apiCallback = { ready ->
+            if (scope.isActive) {  // Check if scope still valid before launching
                 scope.launch {
                     checkAndEmitApiAvailability(ready)
                 }
             }
-        } catch (e: Exception) {
+        }
+
+        try {
+            bridgeAPI.setApiAvailableCallback(apiCallback!!)
+        } catch (_: Exception) {
             // JNI reference may be invalid, ignore
         }
     }
