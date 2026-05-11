@@ -10,9 +10,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import org.slf4j.LoggerFactory
 
 class PinIpRecovery(
@@ -110,6 +112,18 @@ class PinIpRecovery(
             }
 
             vpnLogger.info("Attempting IP pinning for recovery: pinnedIp=$pinnedIp, selectedIp=$selectedIp")
+
+            // Wait for WSNet to be fully initialized before calling bridge API
+            // This prevents crashes when WSNet's native code isn't ready yet
+            if (!wsNetWrapper.isReady.value) {
+                vpnLogger.debug("Waiting for WSNet to be fully ready...")
+                withTimeoutOrNull(5000) {
+                    wsNetWrapper.isReady.first { it }
+                } ?: run {
+                    vpnLogger.warn("WSNet not ready after 5s, skipping bridge API call")
+                    return
+                }
+            }
 
             // Set bridge API state on main thread
             withContext(Dispatchers.Main) {
