@@ -27,8 +27,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -184,6 +186,18 @@ abstract class VpnBackend(
                 withTimeout(15_000) { // 15 seconds total timeout
                     // Initial delay before first attempt
                     delay(startDelay)
+
+                    // Wait for WSNet to be fully initialized before calling bridge API
+                    // This prevents crashes when WSNet's native code isn't ready yet
+                    if (!wsNetWrapper.isReady.value) {
+                        vpnLogger.debug("Waiting for WSNet to be fully ready...")
+                        withTimeoutOrNull(5000) {
+                            wsNetWrapper.isReady.first { it }
+                        } ?: run {
+                            vpnLogger.warn("WSNet not ready after 5s, skipping bridge API call")
+                        }
+                    }
+
                     wsNetWrapper.safeBridgeAPI()?.let { bridgeAPI ->
                         if (protocolInformation?.protocol == "wg") {
                             bridgeAPI.setCurrentHost(selectedIp ?: "")
