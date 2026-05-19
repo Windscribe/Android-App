@@ -615,4 +615,7 @@
     <string name="app_icon">أيقونة التطبيق</string>
     <string name="app_icon_description">اختر أيقونة تطبيق مختلفة لمزيد من الخصوصية</string>
     <string name="configuration">التكوين</string>
+    <string name="force_upgrade_title">التحديث مطلوب</string>
+    <string name="force_upgrade_message">إصدار Windscribe هذا لم يعد مدعوماً. يرجى التحديث للاستمرار في استخدام التطبيق.</string>
+    <string name="force_upgrade_message_with_version">إصدار Windscribe هذا لم يعد مدعوماً. يرجى التحديث إلى %s للاستمرار في استخدام التطبيق.</string>
 </resources>

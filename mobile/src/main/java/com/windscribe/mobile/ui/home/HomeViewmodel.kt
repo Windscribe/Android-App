@@ -11,6 +11,7 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.CheckUpdateRepository
 import com.windscribe.vpn.repository.UserRepository
+import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.util.Locale
@@ -31,7 +33,7 @@ sealed class HomeGoto {
     object ShareAppLink : HomeGoto()
     object LocationMaintenance : HomeGoto()
     data class EditCustomConfig(val id: Int, val connect: Boolean) : HomeGoto()
-    data class UpdateAvailable(val latestVersion: String?) : HomeGoto()
+    data class UpdateAvailable(val latestVersion: String?, val force: Boolean = false) : HomeGoto()
     object MainMenu : HomeGoto()
     object None : HomeGoto()
     data class IpActionError(val message: String, val description: String) : HomeGoto()
@@ -68,7 +70,8 @@ class HomeViewmodelImpl(
     private val vpnConnectionStateManager: VPNConnectionStateManager,
     private val userRepository: UserRepository,
     private val preferences: PreferencesHelper,
-    private val checkUpdateRepository: CheckUpdateRepository
+    private val checkUpdateRepository: CheckUpdateRepository,
+    private val appLifeCycleObserver: AppLifeCycleObserver
 ) : HomeViewmodel() {
 
     private val _goto = MutableSharedFlow<HomeGoto>(replay = 0)
@@ -109,9 +112,24 @@ class HomeViewmodelImpl(
     private fun observeUpdateAvailable() {
         viewModelScope.launch {
             checkUpdateRepository.updateAvailable.collectLatest { update ->
-                if (update != null && update.isUpdateAvailable && checkUpdateRepository.shouldShowPrompt()) {
+                if (update == null || !update.isUpdateAvailable) return@collectLatest
+                // Force bypasses the soft-prompt rate limit.
+                if (update.isForceUpgrade) {
+                    _goto.emit(HomeGoto.UpdateAvailable(update.latestVersion, force = true))
+                    return@collectLatest
+                }
+                if (checkUpdateRepository.shouldShowPrompt()) {
                     checkUpdateRepository.recordPromptShown()
-                    _goto.emit(HomeGoto.UpdateAvailable(update.latestVersion))
+                    _goto.emit(HomeGoto.UpdateAvailable(update.latestVersion, force = false))
+                }
+            }
+        }
+        // Re-present the force gate on every foreground while force is still asserted.
+        viewModelScope.launch {
+            appLifeCycleObserver.appActivationState.drop(1).collectLatest {
+                val update = checkUpdateRepository.updateAvailable.value ?: return@collectLatest
+                if (update.isUpdateAvailable && update.isForceUpgrade) {
+                    _goto.emit(HomeGoto.UpdateAvailable(update.latestVersion, force = true))
                 }
             }
         }

@@ -615,4 +615,7 @@ Konum verileriniz cihazınızda kalır ve yalnızca yukarıdaki özellikler içi
     <string name="app_icon">Uygulama Simgesi</string>
     <string name="app_icon_description">Daha fazla gizlilik için farklı bir uygulama simgesi seçin</string>
     <string name="configuration">Yapılandırma</string>
+    <string name="force_upgrade_title">Güncelleme Gerekli</string>
+    <string name="force_upgrade_message">Windscribe’ın bu sürümü artık desteklenmiyor. Uygulamayı kullanmaya devam etmek için lütfen güncelleyin.</string>
+    <string name="force_upgrade_message_with_version">Windscribe’ın bu sürümü artık desteklenmiyor. Uygulamayı kullanmaya devam etmek için lütfen %s sürümüne güncelleyin.</string>
 </resources>

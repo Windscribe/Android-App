@@ -615,4 +615,7 @@ I tuoi dati sulla posizione rimangono sul tuo dispositivo e vengono utilizzati e
     <string name="app_icon">Icona app</string>
     <string name="app_icon_description">Scegli un\'icona app diversa per ancora più privacy</string>
     <string name="configuration">Configurazione</string>
+    <string name="force_upgrade_title">Aggiornamento richiesto</string>
+    <string name="force_upgrade_message">Questa versione di Windscribe non è più supportata. Aggiorna per continuare a utilizzare l’app.</string>
+    <string name="force_upgrade_message_with_version">Questa versione di Windscribe non è più supportata. Aggiorna alla versione %s per continuare a utilizzare l’app.</string>
 </resources>

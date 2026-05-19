@@ -217,8 +217,19 @@ private fun HandleGotoAction(
         }
 
         is HomeGoto.UpdateAvailable -> {
-            navController.currentBackStackEntry?.savedStateHandle?.set("latest_version", goto.latestVersion)
-            navController.navigate(Screen.UpdateAvailable.route)
+            navController.currentBackStackEntry?.savedStateHandle?.apply {
+                set("latest_version", goto.latestVersion)
+                set("force_upgrade", goto.force)
+            }
+            // Foreground re-trigger can fire repeatedly — keep at most one instance.
+            if (goto.force) {
+                navController.navigate(Screen.UpdateAvailable.route) {
+                    popUpTo(Screen.UpdateAvailable.route) { inclusive = true }
+                    launchSingleTop = true
+                }
+            } else {
+                navController.navigate(Screen.UpdateAvailable.route)
+            }
             didNavigate = true
         }
 

@@ -533,7 +533,8 @@ private fun NavGraphBuilder.addNavigationScreens() {
         val navController = LocalNavController.current
         val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
         val latestVersion = savedStateHandle?.get<String?>("latest_version")
-        UpdateAvailableScreen(latestVersion)
+        val force = savedStateHandle?.get<Boolean>("force_upgrade") ?: false
+        UpdateAvailableScreen(latestVersion, force)
     }
 }
 

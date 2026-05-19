@@ -619,4 +619,7 @@ Ihre Standortdaten bleiben auf Ihrem Gerät und werden ausschließlich für die 
     <string name="app_icon">App-Symbol</string>
     <string name="app_icon_description">Wählen Sie ein anderes App-Symbol für noch mehr Privatsphäre</string>
     <string name="configuration">Konfiguration</string>
+    <string name="force_upgrade_title">Update erforderlich</string>
+    <string name="force_upgrade_message">Diese Version von Windscribe wird nicht mehr unterstützt. Bitte aktualisieren Sie, um die App weiter zu nutzen.</string>
+    <string name="force_upgrade_message_with_version">Diese Version von Windscribe wird nicht mehr unterstützt. Bitte aktualisieren Sie auf %s, um die App weiter zu nutzen.</string>
 </resources>

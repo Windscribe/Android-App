@@ -615,4 +615,7 @@ Dữ liệu vị trí của bạn vẫn ở trên thiết bị của bạn và c
     <string name="app_icon">Biểu tượng ứng dụng</string>
     <string name="app_icon_description">Chọn biểu tượng ứng dụng khác để có thêm quyền riêng tư</string>
     <string name="configuration">Cấu hình</string>
+    <string name="force_upgrade_title">Yêu cầu cập nhật</string>
+    <string name="force_upgrade_message">Phiên bản Windscribe này không còn được hỗ trợ. Vui lòng cập nhật để tiếp tục sử dụng ứng dụng.</string>
+    <string name="force_upgrade_message_with_version">Phiên bản Windscribe này không còn được hỗ trợ. Vui lòng cập nhật lên %s để tiếp tục sử dụng ứng dụng.</string>
 </resources>
