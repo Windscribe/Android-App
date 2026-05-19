@@ -83,6 +83,7 @@ import com.windscribe.vpn.repository.UnblockWgParamsRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.services.sso.GoogleSignInManager
+import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
@@ -128,7 +129,8 @@ class ComposeModule {
         appIconManager: AppIconManager,
         unblockWgParamsRepository: UnblockWgParamsRepository,
         appIconCache: AppIconCache,
-        checkUpdateRepository: CheckUpdateRepository
+        checkUpdateRepository: CheckUpdateRepository,
+        appLifeCycleObserver: AppLifeCycleObserver
     ): ViewModelProvider.Factory {
         return object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -205,7 +207,8 @@ class ComposeModule {
                         vpnConnectionStateManager,
                         userRepository,
                         appPreferenceHelper,
-                        checkUpdateRepository
+                        checkUpdateRepository,
+                        appLifeCycleObserver
                     ) as T
                 } else if (modelClass.isAssignableFrom(EditCustomConfigViewmodel::class.java)) {
                     return EditCustomConfigViewmodelImpl(localDbInterface, windVpnController) as T

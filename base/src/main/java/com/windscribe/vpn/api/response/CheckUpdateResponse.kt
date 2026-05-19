@@ -27,8 +27,15 @@ data class CheckUpdateResponse(
 
     @SerializedName("update_url")
     @Expose
-    val updateUrl: String? = null
+    val updateUrl: String? = null,
+
+    @SerializedName("force_upgrade")
+    @Expose
+    val forceUpgrade: Int = 0
 ) {
     val isUpdateAvailable: Boolean
         get() = updateNeededFlag == 1
+
+    val isForceUpgrade: Boolean
+        get() = forceUpgrade == 1
 }

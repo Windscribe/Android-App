@@ -618,4 +618,7 @@
     <string name="app_icon">অ্যাপ আইকন</string>
     <string name="app_icon_description">আরও গোপনীয়তার জন্য একটি ভিন্ন অ্যাপ আইকন চয়ন করুন</string>
     <string name="configuration">কনফিগারেশন</string>
+    <string name="force_upgrade_title">আপডেট প্রয়োজন</string>
+    <string name="force_upgrade_message">Windscribe-এর এই সংস্করণটি আর সমর্থিত নয়। অ্যাপটি ব্যবহার চালিয়ে যেতে দয়া করে আপডেট করুন।</string>
+    <string name="force_upgrade_message_with_version">Windscribe-এর এই সংস্করণটি আর সমর্থিত নয়। অ্যাপটি ব্যবহার চালিয়ে যেতে দয়া করে %s-এ আপডেট করুন।</string>
 </resources>

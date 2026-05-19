@@ -620,4 +620,7 @@
     <string name="app_icon">应用图标</string>
     <string name="app_icon_description">选择不同的应用图标以获得更多隐私</string>
     <string name="configuration">配置</string>
+    <string name="force_upgrade_title">需要更新</string>
+    <string name="force_upgrade_message">此版本的 Windscribe 不再受支持。请更新以继续使用此应用。</string>
+    <string name="force_upgrade_message_with_version">此版本的 Windscribe 不再受支持。请更新至 %s 以继续使用此应用。</string>
 </resources>

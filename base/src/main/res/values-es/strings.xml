@@ -615,4 +615,7 @@ Sus datos de ubicación permanecen en su dispositivo y se utilizan únicamente p
     <string name="app_icon">Icono de la aplicación</string>
     <string name="app_icon_description">Elija un icono de aplicación diferente para aún más privacidad</string>
     <string name="configuration">Configuración</string>
+    <string name="force_upgrade_title">Actualización requerida</string>
+    <string name="force_upgrade_message">Esta versión de Windscribe ya no es compatible. Actualiza para seguir usando la aplicación.</string>
+    <string name="force_upgrade_message_with_version">Esta versión de Windscribe ya no es compatible. Actualiza a %s para seguir usando la aplicación.</string>
 </resources>

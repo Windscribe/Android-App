@@ -615,4 +615,7 @@ Twoje dane lokalizacyjne pozostają na urządzeniu i są używane wyłącznie do
     <string name="app_icon">Ikona aplikacji</string>
     <string name="app_icon_description">Wybierz inną ikonę aplikacji dla jeszcze większej prywatności</string>
     <string name="configuration">Konfiguracja</string>
+    <string name="force_upgrade_title">Wymagana aktualizacja</string>
+    <string name="force_upgrade_message">Ta wersja Windscribe nie jest już obsługiwana. Zaktualizuj, aby nadal korzystać z aplikacji.</string>
+    <string name="force_upgrade_message_with_version">Ta wersja Windscribe nie jest już obsługiwana. Zaktualizuj do wersji %s, aby nadal korzystać z aplikacji.</string>
 </resources>

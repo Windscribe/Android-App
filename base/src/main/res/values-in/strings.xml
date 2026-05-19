@@ -615,4 +615,7 @@ Data lokasi Anda tetap di perangkat Anda dan hanya digunakan untuk fitur di atas
     <string name="app_icon">Ikon Aplikasi</string>
     <string name="app_icon_description">Pilih ikon aplikasi yang berbeda untuk privasi yang lebih baik</string>
     <string name="configuration">Konfigurasi</string>
+    <string name="force_upgrade_title">Pembaruan Diperlukan</string>
+    <string name="force_upgrade_message">Versi Windscribe ini tidak lagi didukung. Silakan perbarui untuk terus menggunakan aplikasi.</string>
+    <string name="force_upgrade_message_with_version">Versi Windscribe ini tidak lagi didukung. Silakan perbarui ke %s untuk terus menggunakan aplikasi.</string>
 </resources>

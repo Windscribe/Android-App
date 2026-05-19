@@ -616,4 +616,7 @@
     <string name="app_icon">Значок додатка</string>
     <string name="app_icon_description">Виберіть інший значок додатка для ще більшої конфіденційності</string>
     <string name="configuration">Конфігурація</string>
+    <string name="force_upgrade_title">Потрібне оновлення</string>
+    <string name="force_upgrade_message">Ця версія Windscribe більше не підтримується. Будь ласка, оновіть, щоб продовжувати використовувати додаток.</string>
+    <string name="force_upgrade_message_with_version">Ця версія Windscribe більше не підтримується. Будь ласка, оновіть до %s, щоб продовжувати використовувати додаток.</string>
 </resources>

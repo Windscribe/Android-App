@@ -615,4 +615,7 @@
     <string name="app_icon">앱 아이콘</string>
     <string name="app_icon_description">더 많은 개인정보 보호를 위해 다른 앱 아이콘 선택</string>
     <string name="configuration">구성</string>
+    <string name="force_upgrade_title">업데이트 필요</string>
+    <string name="force_upgrade_message">이 버전의 Windscribe는 더 이상 지원되지 않습니다. 앱을 계속 사용하려면 업데이트하세요.</string>
+    <string name="force_upgrade_message_with_version">이 버전의 Windscribe는 더 이상 지원되지 않습니다. 앱을 계속 사용하려면 %s(으)로 업데이트하세요.</string>
 </resources>

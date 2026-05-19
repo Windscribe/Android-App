@@ -615,4 +615,7 @@ Vos données de localisation restent sur votre appareil et sont utilisées uniqu
     <string name="reset_password">Réinitialiser le mot de passe</string>
     <string name="password_reset_email_sent">Si vous avez fourni un e-mail lors de l\'inscription, vous recevrez bientôt un lien de réinitialisation du mot de passe. Assurez-vous de vérifier votre dossier Spam.</string>
     <string name="configuration">Configuration</string>
+    <string name="force_upgrade_title">Mise à jour requise</string>
+    <string name="force_upgrade_message">Cette version de Windscribe n’est plus prise en charge. Veuillez mettre à jour pour continuer à utiliser l’application.</string>
+    <string name="force_upgrade_message_with_version">Cette version de Windscribe n’est plus prise en charge. Veuillez mettre à jour vers %s pour continuer à utiliser l’application.</string>
 </resources>

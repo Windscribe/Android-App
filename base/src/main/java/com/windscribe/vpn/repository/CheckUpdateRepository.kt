@@ -64,7 +64,12 @@ class CheckUpdateRepository @Inject constructor(
             }
             when (result) {
                 is CallResult.Success -> {
-                    logger.info("Update check result: available=${result.data.isUpdateAvailable}, version=${result.data.latestVersion}")
+                    logger.info("Update check result: available=${result.data.isUpdateAvailable}, force=${result.data.isForceUpgrade}, version=${result.data.latestVersion}")
+                    // On force, clear the 24h cooldown so the next cold launch
+                    // re-arms the gate even if the user force-quit the app.
+                    if (result.data.isUpdateAvailable && result.data.isForceUpgrade) {
+                        preferencesHelper.lastUpdateCheckTimestamp = 0L
+                    }
                     _updateAvailable.value = result.data
                 }
                 is CallResult.Error -> {
