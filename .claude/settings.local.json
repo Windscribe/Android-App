@@ -130,7 +130,9 @@
       "Bash(nm /tmp/apk_2204/lib/arm64-v8a/libwg-go.so)",
       "Bash(nm -n /tmp/aab_2204/BUNDLE-METADATA/com.android.tools.build.debugsymbols/arm64-v8a/libwg-go.so.sym)",
       "Bash(awk 'BEGIN{target=\"\"\"\"00000000004c0a08\"\"\"\"; found=0} {addr=$1} addr<=target {prev=$0} addr>target && !found {print prev; print \"\"\"\"CRASH -> 0x4c0a08\"\"\"\"; print $0; found=1; exit}')",
-      "Bash(cat /Users/gindersingh/Downloads/wsnet/src/api/bridgeapi/bridgeapi_impl.h)"
+      "Bash(cat /Users/gindersingh/Downloads/wsnet/src/api/bridgeapi/bridgeapi_impl.h)",
+      "Bash(xmllint --noout /Users/gindersingh/Documents/Apps/gitlab/androidapp/base/src/main/res/values-ko/strings.xml)",
+      "Bash(git log *)"
     ],
     "deny": [],
     "ask": []
