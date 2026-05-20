@@ -217,7 +217,7 @@
     <string name="general">일반</string>
     <string name="connection">연결</string>
     <string name="debug">디버그</string>
-    <string name="help_me">도움이 필요하세요.</string>
+    <string name="help_me">도와주세요!</string>
     <string name="logout">로그아웃</string>
     <string name="preference">환경 설정</string>
     <string name="logout_alert_description">Windscribe에서 로그아웃하시겠습니까?</string>
