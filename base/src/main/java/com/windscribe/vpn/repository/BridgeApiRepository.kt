@@ -17,7 +17,9 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class BridgeApiRepository @Inject constructor(
     private val scope: CoroutineScope,
     private val wsNetWrapper: WSNetWrapper,
