@@ -626,6 +626,9 @@
     <string name="update_available_message_generic">Windscribe의 새 버전이 출시되었습니다.</string>
     <string name="update_now">지금 업데이트</string>
     <string name="update_later">나중에 업데이트</string>
+    <string name="force_upgrade_title">업데이트가 필요합니다</string>
+    <string name="force_upgrade_message">이 버전의 Windscribe는 더 이상 지원되지 않습니다. 앱을 계속 사용하시려면 업데이트해 주세요.</string>
+    <string name="force_upgrade_message_with_version">이 버전의 Windscribe는 더 이상 지원되지 않습니다. 앱을 계속 사용하시려면 %s(으)로 업데이트해 주세요.</string>
     <string name="security_notice">보안 공지</string>
     <string name="encryption_unavailable_warning">이 기기는 암호화된 자격 증명 저장소를 지원하지 않습니다. 세션 토큰과 VPN 키가 낮은 보안 수준으로 저장됩니다.\n\n최대한의 보안을 위해 신뢰할 수 없는 네트워크나 루팅된 기기에서는 이 기기를 사용하지 마세요.</string>
 </resources>
