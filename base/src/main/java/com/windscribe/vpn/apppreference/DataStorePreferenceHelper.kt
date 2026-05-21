@@ -862,8 +862,10 @@ class DataStorePreferenceHelper(
     }
 
     override fun getDefaultProtoInfo(): Pair<String, String> {
-        if (isSuggested()) {
-            return Pair(suggestedProtocol!!, suggestedPort!!)
+        val protocol = suggestedProtocol
+        val port = suggestedPort
+        if (protocol != null && port != null) {
+            return Pair(protocol, port)
         }
         return Pair(PreferencesKeyConstants.PROTO_WIRE_GUARD, DEFAULT_WIRE_GUARD_PORT)
     }
