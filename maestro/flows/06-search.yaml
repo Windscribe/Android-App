@@ -1,0 +1,35 @@
+appId: com.windscribe.vpn
+tags:
+  - vpn
+  - native
+  - ui
+---
+# Verifies the server list search: open, type a location, see results, close.
+- launchApp:
+    clearState: true
+- runFlow:
+    file: ../subflows/login.yaml
+    env:
+      EMAIL: "${TEST_EMAIL}"
+      PASSWORD: "${TEST_PASSWORD}"
+
+# Open search
+- tapOn:
+    id: "search_open"
+- assertVisible:
+    id: "search_overlay"
+
+# Type a known location
+- tapOn:
+    id: "search_input"
+- inputText: "United States"
+
+# Results should appear (at least one location row visible)
+- assertVisible:
+    text: "United States"
+
+# Close search
+- tapOn:
+    id: "search_close"
+- assertNotVisible:
+    id: "search_overlay"
