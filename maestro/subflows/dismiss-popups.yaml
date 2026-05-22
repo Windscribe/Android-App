@@ -1,0 +1,8 @@
+appId: com.windscribe.vpn
+---
+# Dismisses preferred-protocol and battery-optimization popups in any order.
+# Both can appear back-to-back after a connect, so we sweep twice.
+- runFlow: ./dismiss-battery-optimization-popup.yaml
+- runFlow: ./dismiss-preferred-protocol-popup.yaml
+- runFlow: ./dismiss-battery-optimization-popup.yaml
+- runFlow: ./dismiss-preferred-protocol-popup.yaml
