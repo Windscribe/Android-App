@@ -28,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -55,16 +56,18 @@ fun ConfigServerList(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? -> uri?.let { configViewmodel.loadConfigFile(context, it) } }
 
-    when (state) {
-        is ListState.Loading -> ProgressIndicator()
-        is ListState.Error -> ErrorView(filePickerLauncher)
-        is ListState.Success -> SuccessView(
-            (state as ListState.Success).data,
-            filePickerLauncher,
-            viewModel,
-            connectionViewModel,
-            configViewmodel
-        )
+    Box(modifier = Modifier.testTag("server_list_config").fillMaxSize()) {
+        when (state) {
+            is ListState.Loading -> ProgressIndicator()
+            is ListState.Error -> ErrorView(filePickerLauncher)
+            is ListState.Success -> SuccessView(
+                (state as ListState.Success).data,
+                filePickerLauncher,
+                viewModel,
+                connectionViewModel,
+                configViewmodel
+            )
+        }
     }
 }
 

@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -43,6 +44,7 @@ fun ProtocolItemView(timeleft: Int = 0, procolInfo: ProtocolInformation, onSelec
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .testTag("protocol_${procolInfo.protocol}")
             .border(width = 1.dp ,color = borderColor, shape = RoundedCornerShape(8.dp))
             .background(color.copy(alpha = 0.1f), shape = RoundedCornerShape(8.dp))
             .clickable{

@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
@@ -75,6 +76,7 @@ fun StandardLoginForm(
 
         // Username Field
         StyledTextFieldWithActions(
+            modifier = Modifier.testTag("login_username_field"),
             value = username,
             onValueChange = {
                 username = it
@@ -123,6 +125,7 @@ fun StandardLoginForm(
 
         // Password Field with visibility toggle
         StyledTextFieldWithActions(
+            modifier = Modifier.testTag("login_password_field"),
             value = password,
             onValueChange = {
                 password = it

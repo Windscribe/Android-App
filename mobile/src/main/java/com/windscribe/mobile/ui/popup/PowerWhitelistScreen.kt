@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
@@ -113,22 +114,25 @@ fun PowerWhitelistScreen(viewmodel: PowerWhitelistViewmodel?) {
                     )
                     filePickerLauncher.launch(intent)
                 }, modifier = Modifier
+                    .testTag("battery_grant_permission")
                     .fillMaxWidth()
                     .padding(top = 32.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            TextButton(onClick = {
-                viewmodel?.onLaterClicked()
-            }) {
+            TextButton(
+                onClick = { viewmodel?.onLaterClicked() },
+                modifier = Modifier.testTag("battery_maybe_later")
+            ) {
                 Text(
                     stringResource(id = com.windscribe.vpn.R.string.may_be_later),
                     style = font16,
                     color = AppColors.white.copy(alpha = 0.50f)
                 )
             }
-            TextButton(onClick = {
-                viewmodel?.onNeverAskAgainClicked()
-            }) {
+            TextButton(
+                onClick = { viewmodel?.onNeverAskAgainClicked() },
+                modifier = Modifier.testTag("battery_dont_ask_again")
+            ) {
                 Text(
                     stringResource(id = com.windscribe.vpn.R.string.never_aks_again_for_permission),
                     style = font16,

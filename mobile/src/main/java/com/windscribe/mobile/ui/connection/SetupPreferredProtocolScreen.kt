@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -51,6 +52,7 @@ fun SetupPreferredProtocolScreen(appStartActivityViewModel: AppStartActivityView
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .testTag("preferred_protocol_screen")
             .background(color = AppColors.deepBlue)
             .clickable(enabled = false) {}) {
         Column(
@@ -84,7 +86,7 @@ fun SetupPreferredProtocolScreen(appStartActivityViewModel: AppStartActivityView
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
             Spacer(modifier = Modifier.padding(top = 24.dp))
-            NextButton(Modifier, text = stringResource(com.windscribe.vpn.R.string.set_as_preferred), enabled = true) {
+            NextButton(Modifier.testTag("preferred_protocol_set"), text = stringResource(com.windscribe.vpn.R.string.set_as_preferred), enabled = true) {
                 if (!isNavigating) {
                     isNavigating = true
                     appStartActivityViewModel.autoConnectionModeCallback?.onSetAsPreferredClicked()
@@ -99,7 +101,8 @@ fun SetupPreferredProtocolScreen(appStartActivityViewModel: AppStartActivityView
                         navController.popBackStack()
                     }
                 },
-                enabled = !isNavigating
+                enabled = !isNavigating,
+                modifier = Modifier.testTag("preferred_protocol_cancel")
             ) {
                 Text(
                     stringResource(com.windscribe.vpn.R.string.cancel),

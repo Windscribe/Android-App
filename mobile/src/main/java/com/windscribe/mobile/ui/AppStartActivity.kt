@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -73,7 +75,10 @@ class AppStartActivity : AppCompatActivity() {
         }
         setContent {
             AndroidTheme(isDark) {
-                Box(modifier = Modifier.fillMaxSize()) {
+                @OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .semantics { testTagsAsResourceId = true }) {
                     if (appContext.preference.sessionHash != null) {
                         NavigationStack(Screen.Home)
                     } else {

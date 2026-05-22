@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
@@ -48,7 +49,7 @@ fun AppConnectButton(connectionViewmodel: ConnectionViewmodel) {
         connectionViewmodel.onHapticFeedbackHandled()
     }
     val state by connectionViewmodel.connectionUIState.collectAsState()
-    Box(modifier = Modifier.size(95.dp).clickable(
+    Box(modifier = Modifier.size(95.dp).testTag("home_connect_button").clickable(
         interactionSource = remember { MutableInteractionSource() },
         indication = null
     ) {

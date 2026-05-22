@@ -27,6 +27,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -181,6 +182,7 @@ fun ServerListNavigation(
                     painter = painterResource(if (isSelected) tab.filledIcon else tab.unfilledIcon),
                     contentDescription = null,
                     modifier = Modifier
+                        .testTag("tab_${tab.type.name.lowercase()}")
                         .graphicsLayer(
                             scaleX = scale,
                             scaleY = scale
@@ -203,9 +205,11 @@ fun ServerListNavigation(
             Image(
                 painter = painterResource(R.drawable.ic_location_search),
                 contentDescription = null,
-                modifier = Modifier.hapticClickable() {
-                    viewModel.toggleSearch()
-                },
+                modifier = Modifier
+                    .testTag("search_open")
+                    .hapticClickable() {
+                        viewModel.toggleSearch()
+                    },
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor.copy(alpha = 0.70f))
             )
         }

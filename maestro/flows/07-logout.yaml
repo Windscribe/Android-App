@@ -1,0 +1,26 @@
+appId: com.windscribe.vpn
+tags:
+  - vpn
+  - native
+  - auth
+---
+# Opens preferences from the home screen hamburger, taps logout,
+# and verifies the app returns to the welcome screen.
+- launchApp:
+    clearState: false
+
+# Open main menu from home screen
+- tapOn:
+    id: "main_menu_button"
+- assertVisible:
+    id: "main_menu_screen"
+
+# Tap logout
+- tapOn:
+    id: "logout_button"
+
+# App navigates back to welcome screen — wait up to 10s
+- extendedWaitUntil:
+    visible:
+      id: "welcome_login_button"
+    timeout: 10000

@@ -1,0 +1,10 @@
+appId: com.windscribe.vpn
+---
+- runFlow:
+    when:
+      visible: ".*ALLOW.*"
+    file: subflows/allow-system-dialog.yaml
+- runFlow:
+    when:
+      visible: ".*\bOK\b.*"
+    file: subflows/allow-system-dialog.yaml

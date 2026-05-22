@@ -1,0 +1,85 @@
+appId: com.windscribe.vpn
+tags:
+  - vpn
+  - native
+  - protocols
+---
+# Cycles through WireGuard, IKEv2, and OpenVPN UDP, connecting on each.
+# Exercises libwg-go.so, libcharon.so, and libopenvpn.so in a single run.
+# This is the flow most likely to surface native-side regressions before release.
+#
+# Protocol identifiers below match PreferencesKeyConstants:
+#   wg, ikev2, udp, tcp, stunnel, wstunnel
+- launchApp:
+    clearState: false
+
+# --- WireGuard (libwg-go.so) ---
+- tapOn:
+    id: "protocol_switcher"
+- tapOn:
+    id: "protocol_wg"
+# Selecting WG may trigger AutoConnectionManager, which shows a key-limit
+# dialog if the account has too many registered keys. Dismiss it before
+# trying to interact with home.
+- runFlow: ../subflows/dismiss-wg-key-popup.yaml
+# After the key-limit dialog is dismissed, the VPN backend retries WG. If that
+# retry fails, AutoConnectionManager re-shows ConnectionChangeScreen; tap WG
+# again to recover.
+- tapOn:
+    id: "protocol_wg"
+    optional: true
+- runFlow: ../subflows/dismiss-wg-key-popup.yaml
+# AutoConnectionManager connects WG and then navigates to SetupPreferredProtocolScreen.
+# By the time that screen appears, WG is already connected. Dismiss any popups, then
+# assert connected, disconnect, and assert disconnected.
+- runFlow: ../subflows/dismiss-popups.yaml
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_connected"
+    timeout: 10000
+- tapOn:
+    id: "home_connect_button"
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_disconnected"
+    timeout: 15000
+
+# --- IKEv2 (libcharon.so) ---
+- tapOn:
+    id: "protocol_switcher"
+- tapOn:
+    id: "protocol_ikev2"
+- tapOn:
+    id: "home_connect_button"
+- runFlow: ../subflows/allow-system-dialog.yaml
+- runFlow: ../subflows/dismiss-popups.yaml
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_connected"
+    timeout: 10000
+- tapOn:
+    id: "home_connect_button"
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_disconnected"
+    timeout: 15000
+
+# --- OpenVPN UDP (libopenvpn.so) ---
+- tapOn:
+    id: "protocol_switcher"
+- tapOn:
+    id: "protocol_udp"
+- tapOn:
+    id: "home_connect_button"
+- runFlow: ../subflows/allow-system-dialog.yaml
+- runFlow: ../subflows/dismiss-popups.yaml
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_connected"
+    timeout: 10000
+- tapOn:
+    id: "home_connect_button"
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_disconnected"
+    timeout: 15000

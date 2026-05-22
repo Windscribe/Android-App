@@ -1,0 +1,15 @@
+appId: com.windscribe.vpn
+tags:
+  - login
+---
+# Logs in with real staging credentials and verifies we land on the home screen.
+# Pass credentials in via the runner: maestro test -e TEST_EMAIL=... -e TEST_PASSWORD=...
+# (run.sh handles this automatically by sourcing maestro/.env).
+- launchApp:
+    clearState: true
+- runFlow:
+    file: ../subflows/login.yaml
+    env:
+      EMAIL: "${TEST_EMAIL}"
+      PASSWORD: "${TEST_PASSWORD}"
+# Session is now established — subsequent flows reuse it without re-logging in.
