@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -60,6 +61,7 @@ fun StaticIPServerList(
     val state by viewModel.staticListState.collectAsState()
     val activity = LocalContext.current as AppStartActivity
     val isRefreshing by viewModel.refreshState.collectAsState()
+    Box(modifier = Modifier.testTag("server_list_static").fillMaxSize()) {
     when (state) {
         is ListState.Loading -> {
             ProgressIndicator()
@@ -123,6 +125,7 @@ fun StaticIPServerList(
             }
         }
     }
+    } // Box server_list_static
 }
 
 @Composable

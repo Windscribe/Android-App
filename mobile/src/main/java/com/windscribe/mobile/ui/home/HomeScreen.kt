@@ -698,9 +698,11 @@ private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Home
             Image(
                 painter = painterResource(R.drawable.ic_ham_button),
                 contentDescription = null,
-                modifier = Modifier.hapticClickable() {
-                    homeViewmodel.onMainMenuClick()
-                }
+                modifier = Modifier
+                    .testTag("main_menu_button")
+                    .hapticClickable() {
+                        homeViewmodel.onMainMenuClick()
+                    }
             )
             Spacer(modifier = Modifier.width(12.dp))
             Image(

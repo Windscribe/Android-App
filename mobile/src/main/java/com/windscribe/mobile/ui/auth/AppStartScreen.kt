@@ -42,6 +42,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -279,6 +280,7 @@ private fun LoginButton() {
             navController.navigate(Screen.Login.route)
         },
         Modifier
+            .testTag("welcome_login_button")
             .height(48.dp)
             .fillMaxWidth()
             .border(1.dp, AppColors.white.copy(alpha = 0.30f), RoundedCornerShape(24.dp)),

@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -63,6 +64,7 @@ fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionVie
     val state by viewModel.favouriteListState.collectAsState()
     val lazyListState = rememberLazyListState()
     HandleScrollHaptic(lazyListState, homeViewmodel)
+    Box(modifier = Modifier.testTag("server_list_fav").fillMaxSize()) {
     when (state) {
         is ListState.Loading -> ProgressIndicator()
 
@@ -116,6 +118,7 @@ fun FavouriteList(viewModel: ServerViewModel, connectionViewmodel: ConnectionVie
             }
         }
     }
+    } // Box server_list_fav
 }
 
 @Composable

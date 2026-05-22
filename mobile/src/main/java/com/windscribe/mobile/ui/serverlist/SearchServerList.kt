@@ -47,6 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
 import com.windscribe.mobile.ui.helper.hapticClickable
@@ -81,6 +82,7 @@ fun SearchServerList(viewModel: ServerViewModel, connectionViewModel: Connection
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .testTag("search_overlay")
             .background(MaterialTheme.colorScheme.serverListBackgroundColor)
             .statusBarsPadding().clickable {  }
     ) {
@@ -299,6 +301,7 @@ private fun SearchListNavigation(viewModel: ServerViewModel, homeViewmodel: Home
                 value = query,
                 onValueChange = viewModel::onQueryTextChange,
                 modifier = Modifier
+                    .testTag("search_input")
                     .weight(1f)
                     .fillMaxHeight(),
                 textStyle = font16.copy(textAlign = TextAlign.Start, color = MaterialTheme.colorScheme.serverListSecondaryColor),
@@ -323,10 +326,12 @@ private fun SearchListNavigation(viewModel: ServerViewModel, homeViewmodel: Home
             Image(
                 painter = painterResource(R.drawable.ic_search_location_close),
                 contentDescription = "Search",
-                modifier = Modifier.hapticClickable() {
-                    viewModel.clearSearch()
-                    viewModel.toggleSearch()
-                },
+                modifier = Modifier
+                    .testTag("search_close")
+                    .hapticClickable() {
+                        viewModel.clearSearch()
+                        viewModel.toggleSearch()
+                    },
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor)
             )
         }

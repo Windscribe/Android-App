@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -49,7 +50,7 @@ fun MainMenuScreen(viewModel: MainMenuViewModel? = null, homeViewModel: HomeView
     val navController = LocalNavController.current
     val showProgress by viewModel?.showProgress?.collectAsState() ?: remember { mutableStateOf(false) }
     PreferenceBackground {
-        Column(modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
+        Column(modifier = Modifier.testTag("main_menu_screen").padding(vertical = 16.dp, horizontal = 16.dp)) {
             PreferencesNavBar(stringResource(R.string.preferences)) {
                 navController.popBackStack()
             }
@@ -177,6 +178,7 @@ private fun LogoutItem(viewModel: MainMenuViewModel?, homeViewmodel: HomeViewmod
         Modifier
             .fillMaxWidth()
             .height(44.dp)
+            .testTag("logout_button")
             .background(
                 color = AppColors.yellow.copy(0.05f),
                 shape = RoundedCornerShape(size = 12.dp)
