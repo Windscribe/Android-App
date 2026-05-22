@@ -7,12 +7,7 @@ tags:
 # Opens preferences from the home screen hamburger, taps logout,
 # and verifies the app returns to the welcome screen.
 - launchApp:
-    clearState: true
-- runFlow:
-    file: ../subflows/login.yaml
-    env:
-      EMAIL: "${TEST_EMAIL}"
-      PASSWORD: "${TEST_PASSWORD}"
+    clearState: false
 
 # Open main menu from home screen
 - tapOn:

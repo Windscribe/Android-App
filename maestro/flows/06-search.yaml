@@ -6,12 +6,7 @@ tags:
 ---
 # Verifies the server list search: open, type a location, see results, close.
 - launchApp:
-    clearState: true
-- runFlow:
-    file: ../subflows/login.yaml
-    env:
-      EMAIL: "${TEST_EMAIL}"
-      PASSWORD: "${TEST_PASSWORD}"
+    clearState: false
 
 # Open search
 - tapOn:

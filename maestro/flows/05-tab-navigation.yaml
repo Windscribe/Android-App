@@ -8,12 +8,7 @@ tags:
 # Tab icon IDs: tab_all, tab_fav, tab_static, tab_config (ServerListNavigation.kt)
 # List root IDs: server_list_all, server_list_fav, server_list_static, server_list_config
 - launchApp:
-    clearState: true
-- runFlow:
-    file: ../subflows/login.yaml
-    env:
-      EMAIL: "${TEST_EMAIL}"
-      PASSWORD: "${TEST_PASSWORD}"
+    clearState: false
 
 # All (default on launch)
 - assertVisible:

@@ -11,12 +11,7 @@ tags:
 # Protocol identifiers below match PreferencesKeyConstants:
 #   wg, ikev2, udp, tcp, stunnel, wstunnel
 - launchApp:
-    clearState: true
-- runFlow:
-    file: ../subflows/login.yaml
-    env:
-      EMAIL: "${TEST_EMAIL}"
-      PASSWORD: "${TEST_PASSWORD}"
+    clearState: false
 
 # --- WireGuard (libwg-go.so) ---
 - tapOn:
@@ -37,8 +32,7 @@ tags:
 # AutoConnectionManager connects WG and then navigates to SetupPreferredProtocolScreen.
 # By the time that screen appears, WG is already connected. Dismiss any popups, then
 # assert connected, disconnect, and assert disconnected.
-- runFlow: ../subflows/dismiss-preferred-protocol-popup.yaml
-- runFlow: ../subflows/dismiss-battery-optimization-popup.yaml
+- runFlow: ../subflows/dismiss-popups.yaml
 - extendedWaitUntil:
     visible:
       id: "connection_status_connected"
@@ -57,8 +51,8 @@ tags:
     id: "protocol_ikev2"
 - tapOn:
     id: "home_connect_button"
-- runFlow: ../subflows/dismiss-preferred-protocol-popup.yaml
-- runFlow: ../subflows/dismiss-battery-optimization-popup.yaml
+- runFlow: ../subflows/allow-system-dialog.yaml
+- runFlow: ../subflows/dismiss-popups.yaml
 - extendedWaitUntil:
     visible:
       id: "connection_status_connected"
@@ -77,8 +71,8 @@ tags:
     id: "protocol_udp"
 - tapOn:
     id: "home_connect_button"
-- runFlow: ../subflows/dismiss-preferred-protocol-popup.yaml
-- runFlow: ../subflows/dismiss-battery-optimization-popup.yaml
+- runFlow: ../subflows/allow-system-dialog.yaml
+- runFlow: ../subflows/dismiss-popups.yaml
 - extendedWaitUntil:
     visible:
       id: "connection_status_connected"

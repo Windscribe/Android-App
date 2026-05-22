@@ -12,3 +12,4 @@ tags:
     env:
       EMAIL: "${TEST_EMAIL}"
       PASSWORD: "${TEST_PASSWORD}"
+# Session is now established — subsequent flows reuse it without re-logging in.
