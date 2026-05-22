@@ -1,0 +1,23 @@
+appId: com.windscribe.vpn
+---
+# Logs in using credentials passed in via runFlow env:
+#   - runFlow:
+#       file: ../subflows/login.yaml
+#       env:
+#         EMAIL: ${TEST_EMAIL}
+#         PASSWORD: ${TEST_PASSWORD}
+# Assumes the app is on the start/login screen.
+- tapOn: "Log In"
+- tapOn:
+    id: "login_username_field"
+- inputText: "${EMAIL}"
+- tapOn:
+    id: "login_password_field"
+- inputText: "${PASSWORD}"
+- hideKeyboard
+- tapOn:
+    id: "login_submit_button"
+- extendedWaitUntil:
+    visible:
+      id: "home_connect_button"
+    timeout: 15000

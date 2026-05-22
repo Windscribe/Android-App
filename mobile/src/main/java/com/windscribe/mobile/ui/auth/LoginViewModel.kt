@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.windscribe.vpn.BuildConfig
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.AuthToken
 import com.windscribe.vpn.api.response.UserLoginResponse
@@ -252,6 +253,11 @@ class LoginViewModel @Inject constructor(
 
     private suspend fun startLoginProcess() {
         logger.info("Trying to log in with provided credentials...")
+        if (BuildConfig.DEV) {
+            logger.info("DEV build: skipping auth-token step to bypass captcha for E2E tests.")
+            handleAuthToken(AuthToken(token = "", captcha = null))
+            return
+        }
         val authResult = result<AuthToken> { apiCallManager.authTokenLogin(username, false) }
         when (authResult) {
             is CallResult.Error -> {

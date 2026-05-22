@@ -63,6 +63,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -407,7 +408,8 @@ private fun ConnectionStatusSheet(connectionViewmodel: ConnectionViewmodel) {
                 .size(24.dp)
                 .hapticClickable() {
                     connectionViewmodel.onProtocolChangeClick()
-                },
+                }
+                .testTag("protocol_switcher"),
             contentScale = ContentScale.None,
             colorFilter = ColorFilter.tint(containerColor.copy(alpha = 0.4f))
         )
@@ -572,8 +574,14 @@ internal fun BoxScope.NetworkInfoSheet(
 private fun ConnectionStatus(connectionUIState: ConnectionUIState) {
     val containerColor =
         if (connectionUIState is ConnectionUIState.Connected) AppColors.mintGreen else AppColors.white
+    val stateTag = when (connectionUIState) {
+        is ConnectionUIState.Connected -> "connection_status_connected"
+        is ConnectionUIState.Connecting -> "connection_status_connecting"
+        else -> "connection_status_disconnected"
+    }
     Box(
         modifier = Modifier
+            .testTag(stateTag)
             .border(
                 width = 1.dp,
                 color = containerColor.copy(alpha = 0.10f),

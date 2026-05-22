@@ -1,0 +1,8 @@
+appId: com.windscribe.vpn
+---
+# Dismisses the "Set X as preferred protocol?" screen (SetupPreferredProtocolScreen.kt).
+# testTag: preferred_protocol_cancel on the Cancel TextButton.
+# Optional — not shown on every protocol connection.
+- tapOn:
+    id: "preferred_protocol_cancel"
+    optional: true

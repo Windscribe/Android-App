@@ -27,3 +27,6 @@
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Maestro local env (real credentials)
+maestro/.env

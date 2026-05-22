@@ -1,0 +1,48 @@
+appId: com.windscribe.vpn
+tags:
+  - vpn
+  - native
+---
+# Connects, verifies tunnel is up, disconnects.
+# Exercises the live VPN data plane (libwg-go / libcharon / libopenvpn depending on selected protocol).
+# This is the flow that surfaces native-side regressions before release.
+- launchApp:
+    clearState: true
+- runFlow:
+    file: ../subflows/login.yaml
+    env:
+      EMAIL: "${TEST_EMAIL}"
+      PASSWORD: "${TEST_PASSWORD}"
+
+# Initial state: home screen with the connect button visible.
+- assertVisible:
+    id: "home_connect_button"
+
+# Tap connect. The first connect will trigger Android's VPN consent system dialog;
+# config.yaml's onFlowStart hook handles dismissing it by tapping "Allow / OK".
+- tapOn:
+    id: "home_connect_button"
+
+# Occasionally wireguard-go reports a key error on first connect and shows a
+# key-regen popup. Dismiss it if it appears; no-op otherwise.
+- runFlow: ../subflows/dismiss-wg-key-popup.yaml
+
+# Wait for the connected state (ON badge in ConnectionStatus composable).
+# Long timeout because we are hitting real infrastructure (DNS, handshake, route install).
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_connected"
+    timeout: 30000
+
+# Hold briefly so a human watching can see it. Also gives the tunnel time to
+# carry actual traffic, which is what stresses the native path.
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Disconnect and verify we are back to a disconnected state (OFF badge).
+- tapOn:
+    id: "home_connect_button"
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_disconnected"
+    timeout: 15000
