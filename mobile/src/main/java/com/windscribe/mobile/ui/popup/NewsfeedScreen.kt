@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -76,6 +77,7 @@ fun NewsfeedScreen(viewModel: NewsfeedViewmodel? = null, homeViewmodel: HomeView
     AppBackground {
         Column(
             modifier = Modifier
+                .testTag("newsfeed_screen")
                 .background(AppColors.charcoalBlue)
                 .fillMaxSize()
                 .navigationBarsPadding()
@@ -188,14 +190,17 @@ private fun NotificationItem(
     )
 
     Column(
-        modifier = Modifier.background(
-            if (expanded.value) AppColors.white.copy(alpha = 0.08f) else Color.Transparent,
-            shape
-        )
+        modifier = Modifier
+            .testTag("newsfeed_item")
+            .background(
+                if (expanded.value) AppColors.white.copy(alpha = 0.08f) else Color.Transparent,
+                shape
+            )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
+                .testTag("newsfeed_item_header")
                 .hapticClickable() {
                     expanded.value = !expanded.value
                 }
@@ -213,10 +218,12 @@ private fun NotificationItem(
             Image(
                 painter = painterResource(R.drawable.ic_expand_small),
                 contentDescription = null,
-                modifier =Modifier.graphicsLayer {
-                    rotationZ = rotationAngle
-                    alpha = if (expanded.value) 1f else 0.4f
-                }.hapticClickable() { expanded.value = !expanded.value }
+                modifier = Modifier
+                    .testTag("newsfeed_item_chevron")
+                    .graphicsLayer {
+                        rotationZ = rotationAngle
+                        alpha = if (expanded.value) 1f else 0.4f
+                    }.hapticClickable() { expanded.value = !expanded.value }
             )
         }
         Text(
@@ -243,7 +250,9 @@ private fun ExpandedNotificationContent(notification: NewsfeedItem, viewModel: N
         style = font14.copy(fontWeight = FontWeight.Normal),
         color = AppColors.white,
         textAlign = TextAlign.Start,
-        modifier = Modifier.padding(start = 16.dp, bottom = 8.dp, end = 16.dp)
+        modifier = Modifier
+            .testTag("newsfeed_item_body")
+            .padding(start = 16.dp, bottom = 8.dp, end = 16.dp)
     )
     notification.action.getLabel()?.let { label ->
         ActionButtonLighter(
