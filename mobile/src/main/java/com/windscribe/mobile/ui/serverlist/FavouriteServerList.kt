@@ -146,6 +146,7 @@ private fun ListItemView(
         modifier = Modifier
             .fillMaxWidth()
             .height(48.dp)
+            .testTag("fav_item")
             .clickable(
                 interactionSource,
                 indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)
@@ -173,7 +174,7 @@ private fun ListItemView(
             DataCenterLatencyIcon(latency)
             Spacer(modifier = Modifier.width(12.dp))
         }
-        DataCenterFavouriteIcon(true) {
+        DataCenterFavouriteIcon(true, testTag = "fav_remove_icon") {
             viewModel.deleteFavourite(item.id)
         }
     }

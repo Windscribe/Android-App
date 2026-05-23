@@ -464,6 +464,7 @@ private fun ExpandableListItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
+                .testTag("country_row")
                 .clickable(interactionSource, indication = ripple(bounded = true, color = MaterialTheme.colorScheme.serverListSecondaryColor)) {
                     onExpandChange(!expanded)
                 }
@@ -490,6 +491,7 @@ private fun ExpandableListItem(
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.serverListSecondaryColor),
                 alpha = if (expanded) 1f else 0.4f,
                 modifier = Modifier
+                    .testTag("country_chevron")
                     .size(32.dp)
                     .padding(8.dp)
                     .clickable(
@@ -562,7 +564,7 @@ private fun DataCenterItem(
             DataCenterLatencyIcon(latency)
             Spacer(modifier = Modifier.width(12.dp))
         }
-        DataCenterFavouriteIcon(isFavorite) {
+        DataCenterFavouriteIcon(isFavorite, testTag = "fav_icon") {
             viewModel.toggleFavorite(item)
         }
     }
