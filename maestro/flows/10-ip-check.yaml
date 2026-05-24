@@ -1,0 +1,11 @@
+appId: com.windscribe.vpn
+tags:
+  - vpn
+  - native
+---
+# Connects and stays connected. run.sh captures IP_AFTER, then calls 10-ip-disconnect.yaml.
+
+- launchApp:
+    clearState: false
+
+- runFlow: ../subflows/connect.yaml

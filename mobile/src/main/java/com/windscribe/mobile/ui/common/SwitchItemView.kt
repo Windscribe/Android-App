@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -79,17 +80,17 @@ fun SwitchItemView(
                 Image(
                     painter = painterResource(id = R.drawable.ic_toggle_button_on),
                     contentDescription = null,
-                    modifier = Modifier.clickable {
-                        onSelect(!enabled)
-                    }
+                    modifier = Modifier
+                        .testTag("toggle_on")
+                        .clickable { onSelect(!enabled) }
                 )
             } else {
                 Image(
                     painter = painterResource(id = R.drawable.ic_toggle_button_off),
                     contentDescription = null,
-                    modifier = Modifier.clickable {
-                        onSelect(!enabled)
-                    }
+                    modifier = Modifier
+                        .testTag("toggle_off")
+                        .clickable { onSelect(!enabled) }
                 )
             }
         }

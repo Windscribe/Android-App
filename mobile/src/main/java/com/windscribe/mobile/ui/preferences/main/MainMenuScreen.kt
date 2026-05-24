@@ -131,6 +131,7 @@ private fun MainMenuItem(
     val hapticFeedbackEnabled by viewModel?.hapticFeedbackEnabled?.collectAsState() ?: remember { mutableStateOf(false) }
     Row(
         Modifier
+            .testTag("menu_item_$nextRoute")
             .fillMaxWidth()
             .height(44.dp)
             .background(

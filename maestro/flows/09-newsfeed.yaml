@@ -1,0 +1,78 @@
+appId: com.windscribe.vpn
+tags:
+  - vpn
+  - ui
+---
+# Opens the newsfeed. The first unread item is auto-expanded by the app.
+# We assert it is already expanded, then expand each subsequent item in turn,
+# then collapse them all.
+
+- launchApp:
+    clearState: false
+
+- assertVisible:
+    id: "home_connect_button"
+
+# ── Step 1: Open newsfeed ─────────────────────────────────────────────────────
+
+- tapOn:
+    id: "newsfeed_open"
+
+- assertVisible:
+    id: "newsfeed_screen"
+
+# ── Step 2: Verify items are present ─────────────────────────────────────────
+
+- assertVisible:
+    id: "newsfeed_item"
+    index: 0
+
+# ── Step 3: First unread item is auto-expanded — assert body already visible ──
+
+- assertVisible:
+    id: "newsfeed_item_body"
+    index: 0
+
+# ── Step 4: Expand item 2 (tap its header, assert body appears) ───────────────
+
+- tapOn:
+    id: "newsfeed_item_header"
+    index: 1
+
+- assertVisible:
+    id: "newsfeed_item_body"
+    index: 1
+
+# ── Step 5: Expand item 3 ─────────────────────────────────────────────────────
+
+- tapOn:
+    id: "newsfeed_item_header"
+    index: 2
+
+- assertVisible:
+    id: "newsfeed_item_body"
+    index: 2
+
+# ── Step 6: Collapse all — tap each chevron, assert body gone ─────────────────
+# Collapse from bottom up so indices don't shift as items close.
+
+- tapOn:
+    id: "newsfeed_item_chevron"
+    index: 2
+- assertNotVisible:
+    id: "newsfeed_item_body"
+    index: 2
+
+- tapOn:
+    id: "newsfeed_item_chevron"
+    index: 1
+- assertNotVisible:
+    id: "newsfeed_item_body"
+    index: 1
+
+- tapOn:
+    id: "newsfeed_item_chevron"
+    index: 0
+- assertNotVisible:
+    id: "newsfeed_item_body"
+    index: 0

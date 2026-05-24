@@ -709,6 +709,7 @@ private fun Header(connectionViewmodel: ConnectionViewmodel, homeViewmodel: Home
                 painter = painterResource(R.drawable.logo_home),
                 contentDescription = null,
                 modifier = Modifier
+                    .testTag("newsfeed_open")
                     .height(18.dp)
                     .clickable {
                         navController.navigate(Screen.Newsfeed.route)

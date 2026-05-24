@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -76,6 +77,7 @@ fun SplitTunnelScreen(viewModel: SplitTunnelViewModel? = null) {
     PreferenceBackground {
         Column(
             modifier = Modifier
+                .testTag("split_tunnel_screen")
                 .padding(vertical = 16.dp, horizontal = 16.dp)
                 .navigationBarsPadding()
         ) {
@@ -164,6 +166,7 @@ private fun Search(viewModel: SplitTunnelViewModel? = null) {
                     viewModel?.onQueryTextChange(it)
                 },
                 modifier = Modifier
+                    .testTag("split_tunnel_search")
                     .weight(1f)
                     .fillMaxHeight(),
                 textStyle = font16.copy(textAlign = TextAlign.Start, color = MaterialTheme.colorScheme.primaryTextColor),
@@ -239,6 +242,7 @@ private fun Apps(viewModel: SplitTunnelViewModel? = null) {
             Spacer(modifier = Modifier.height(1.dp))
             Row(
                 modifier = Modifier
+                    .testTag("app_row_${app.appName}")
                     .fillMaxWidth()
                     .height(48.dp)
                     .background(

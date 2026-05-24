@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.windscribe.mobile.R
@@ -21,9 +22,10 @@ import com.windscribe.mobile.ui.theme.expandedServerItemTextColor
 import com.windscribe.mobile.ui.theme.serverItemTextColor
 
 @Composable
-fun DataCenterFavouriteIcon(isFavorite: Boolean, onClick: () -> Unit) {
+fun DataCenterFavouriteIcon(isFavorite: Boolean, testTag: String = "", onClick: () -> Unit) {
+    val tagModifier = if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier
     Box(
-        modifier = Modifier
+        modifier = tagModifier
             .size(32.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },

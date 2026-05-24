@@ -1,0 +1,42 @@
+appId: com.windscribe.vpn
+tags:
+  - vpn
+  - native
+---
+# Sets up split tunneling in Inclusive mode.
+# In Inclusive mode only selected apps go through the VPN.
+# Windscribe is auto-added when Inclusive is selected.
+# adb shell (system) bypasses the tunnel — so system IP stays unchanged while connected.
+
+- launchApp:
+    clearState: false
+
+- assertVisible:
+    id: "home_connect_button"
+
+- tapOn:
+    id: "main_menu_button"
+- assertVisible:
+    id: "main_menu_screen"
+- tapOn:
+    id: "menu_item_connection"
+- tapOn:
+    id: "connection_item_split_tunnel"
+- assertVisible:
+    id: "split_tunnel_screen"
+
+- tapOn:
+    id: "toggle_off"
+- assertVisible:
+    id: "toggle_on"
+
+- tapOn:
+    id: "dropdown_selector"
+- tapOn:
+    text: "Inclusive"
+
+- back
+- back
+- back
+- assertVisible:
+    id: "home_connect_button"
