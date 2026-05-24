@@ -1,0 +1,117 @@
+appId: com.windscribe.vpn
+tags:
+  - vpn
+  - native
+---
+# Tests split tunneling in Exclusive mode with Windscribe selected.
+# In Exclusive mode, selected apps bypass the VPN tunnel.
+# So when Windscribe itself is selected, its IP check goes outside the tunnel —
+# meaning the IP should remain unchanged even while connected.
+
+- launchApp:
+    clearState: false
+
+- assertVisible:
+    id: "home_connect_button"
+
+# ── Step 1: Navigate to Split Tunneling ───────────────────────────────────────
+
+- tapOn:
+    id: "main_menu_button"
+- assertVisible:
+    id: "main_menu_screen"
+- tapOn:
+    id: "menu_item_connection"
+- tapOn:
+    id: "connection_item_split_tunnel"
+- assertVisible:
+    id: "split_tunnel_screen"
+
+# ── Step 2: Enable split tunneling ────────────────────────────────────────────
+
+- tapOn:
+    id: "toggle_off"
+- assertVisible:
+    id: "toggle_on"
+
+# ── Step 3: Set mode to Exclusive ─────────────────────────────────────────────
+
+- tapOn:
+    id: "dropdown_selector"
+- tapOn:
+    text: "Exclusive"
+
+# ── Step 4: Find and select Windscribe from the app list ─────────────────────
+
+- tapOn:
+    id: "split_tunnel_search"
+- inputText: "Windscribe"
+- tapOn:
+    id: "app_row_Windscribe"
+
+# ── Step 5: Go back to home screen ────────────────────────────────────────────
+
+- back
+- back
+- back
+- back
+- assertVisible:
+    id: "home_connect_button"
+
+# ── Step 6: Capture IP before connecting ─────────────────────────────────────
+
+- evalScript:
+    script: |
+      output.ipBefore = maestro.shell('adb shell curl -s https://checkip.amazonaws.com').trim();
+
+# ── Step 7: Connect ───────────────────────────────────────────────────────────
+
+- tapOn:
+    id: "home_connect_button"
+- runFlow: ../subflows/allow-system-dialog.yaml
+- runFlow: ../subflows/dismiss-popups.yaml
+- runFlow: ../subflows/dismiss-wg-key-popup.yaml
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_connected"
+    timeout: 30000
+
+# ── Step 8: Capture IP after connecting ──────────────────────────────────────
+
+- evalScript:
+    script: |
+      output.ipAfter = maestro.shell('adb shell curl -s https://checkip.amazonaws.com').trim();
+
+# ── Step 9: Assert IP did NOT change (Windscribe bypasses tunnel) ─────────────
+
+- evalScript:
+    script: |
+      if (output.ipBefore !== output.ipAfter) {
+        throw new Error('IP changed but should not have! Windscribe is excluded from tunnel. Before: ' + output.ipBefore + ' After: ' + output.ipAfter);
+      }
+
+# ── Step 10: Disconnect ───────────────────────────────────────────────────────
+
+- tapOn:
+    id: "home_connect_button"
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_disconnected"
+    timeout: 15000
+
+# ── Step 11: Disable split tunneling (clean up) ───────────────────────────────
+
+- tapOn:
+    id: "main_menu_button"
+- tapOn:
+    id: "menu_item_connection"
+- tapOn:
+    id: "connection_item_split_tunnel"
+- tapOn:
+    id: "toggle_on"
+- assertVisible:
+    id: "toggle_off"
+- back
+- back
+- back
+- back

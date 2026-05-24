@@ -45,7 +45,6 @@ MAESTRO_ENV_ARGS=()
 [[ -n "${TEST_PASSWORD:-}" ]] && MAESTRO_ENV_ARGS+=(-e "TEST_PASSWORD=$TEST_PASSWORD")
 
 if [[ $# -eq 0 ]]; then
-  # Explicit order so flows run 01→07 regardless of filesystem ordering.
   exec maestro test "${MAESTRO_ENV_ARGS[@]}" \
     "$SCRIPT_DIR/flows/01-launch.yaml" \
     "$SCRIPT_DIR/flows/02-login.yaml" \
@@ -55,6 +54,8 @@ if [[ $# -eq 0 ]]; then
     "$SCRIPT_DIR/flows/06-search.yaml" \
     "$SCRIPT_DIR/flows/08-favourites.yaml" \
     "$SCRIPT_DIR/flows/09-newsfeed.yaml" \
+    "$SCRIPT_DIR/flows/10-ip-check.yaml" \
+    "$SCRIPT_DIR/flows/11-split-tunnel.yaml" \
     "$SCRIPT_DIR/flows/07-logout.yaml"
 else
   exec maestro test "${MAESTRO_ENV_ARGS[@]}" "$@"

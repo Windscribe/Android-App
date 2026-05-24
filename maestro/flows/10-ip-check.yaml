@@ -1,0 +1,55 @@
+appId: com.windscribe.vpn
+tags:
+  - vpn
+  - native
+---
+# Verifies that the device IP address changes after connecting to the VPN.
+# Fetches public IP via the device's curl before and after connect,
+# then asserts the two IPs differ.
+
+- launchApp:
+    clearState: false
+
+- assertVisible:
+    id: "home_connect_button"
+
+# ── Step 1: Get IP before connecting ─────────────────────────────────────────
+
+- evalScript:
+    script: |
+      output.ipBefore = maestro.shell('adb shell curl -s https://checkip.amazonaws.com').trim();
+
+# ── Step 2: Connect ───────────────────────────────────────────────────────────
+
+- tapOn:
+    id: "home_connect_button"
+- runFlow: ../subflows/allow-system-dialog.yaml
+- runFlow: ../subflows/dismiss-popups.yaml
+- runFlow: ../subflows/dismiss-wg-key-popup.yaml
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_connected"
+    timeout: 30000
+
+# ── Step 3: Get IP after connecting ──────────────────────────────────────────
+
+- evalScript:
+    script: |
+      output.ipAfter = maestro.shell('adb shell curl -s https://checkip.amazonaws.com').trim();
+
+# ── Step 4: Assert IPs differ ────────────────────────────────────────────────
+
+- evalScript:
+    script: |
+      if (output.ipBefore === output.ipAfter) {
+        throw new Error('IP did not change! Before: ' + output.ipBefore + ' After: ' + output.ipAfter);
+      }
+
+# ── Step 5: Disconnect ────────────────────────────────────────────────────────
+
+- tapOn:
+    id: "home_connect_button"
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_disconnected"
+    timeout: 15000
