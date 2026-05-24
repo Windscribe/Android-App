@@ -53,6 +53,7 @@ import com.windscribe.mobile.ui.theme.font14
 import com.windscribe.mobile.ui.theme.font16
 import com.windscribe.mobile.ui.theme.preferencesSubtitleColor
 import com.windscribe.mobile.ui.theme.primaryTextColor
+import androidx.compose.ui.platform.testTag
 import com.windscribe.vpn.R
 import com.windscribe.vpn.api.response.RobertFilter
 import com.windscribe.vpn.constants.FeatureExplainer
@@ -70,7 +71,7 @@ fun RobertScreen(viewModel: RobertViewModel? = null) {
         ?: remember { mutableStateOf(false) }
     PreferenceBackground {
         Column(
-            modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp).navigationBarsPadding(),
+            modifier = Modifier.testTag("robert_screen").padding(vertical = 16.dp, horizontal = 16.dp).navigationBarsPadding(),
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
         ) {
             PreferencesNavBar(stringResource(R.string.robert)) {
@@ -183,6 +184,7 @@ private fun Filters(filters: List<RobertFilter>, viewModel: RobertViewModel?, mo
             Spacer(modifier = Modifier.height(8.dp))
             Row(
                 modifier = Modifier
+                    .testTag("robert_filter_${filters[index].id}")
                     .background(
                         color = MaterialTheme.colorScheme.primaryTextColor.copy(alpha = 0.05f),
                         shape = RoundedCornerShape(size = 12.dp)
@@ -224,25 +226,23 @@ private fun Filters(filters: List<RobertFilter>, viewModel: RobertViewModel?, mo
                     Image(
                         painter = painterResource(id = com.windscribe.mobile.R.drawable.ic_toggle_button_on),
                         contentDescription = null,
-                        modifier = Modifier.clickable {
-                            isEnabled = !isEnabled
-                            viewModel?.onFilterSettingChanged(
-                                filters[index],
-                                if (isEnabled) 1 else 0
-                            )
-                        }
+                        modifier = Modifier
+                            .testTag("robert_toggle_on_${filters[index].id}")
+                            .clickable {
+                                isEnabled = !isEnabled
+                                viewModel?.onFilterSettingChanged(filters[index], if (isEnabled) 1 else 0)
+                            }
                     )
                 } else {
                     Image(
                         painter = painterResource(id = com.windscribe.mobile.R.drawable.ic_toggle_button_off),
                         contentDescription = null,
-                        modifier = Modifier.clickable {
-                            isEnabled = !isEnabled
-                            viewModel?.onFilterSettingChanged(
-                                filters[index],
-                                if (isEnabled) 1 else 0
-                            )
-                        }
+                        modifier = Modifier
+                            .testTag("robert_toggle_off_${filters[index].id}")
+                            .clickable {
+                                isEnabled = !isEnabled
+                                viewModel?.onFilterSettingChanged(filters[index], if (isEnabled) 1 else 0)
+                            }
                     )
                 }
             }

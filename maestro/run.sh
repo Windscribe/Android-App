@@ -56,6 +56,7 @@ if [[ $# -eq 0 ]]; then
     "$SCRIPT_DIR/flows/09-newsfeed.yaml" \
     "$SCRIPT_DIR/flows/10-ip-check.yaml" \
     "$SCRIPT_DIR/flows/11-split-tunnel.yaml" \
+    "$SCRIPT_DIR/flows/12-robert-dns.yaml" \
     "$SCRIPT_DIR/flows/07-logout.yaml"
 else
   exec maestro test "${MAESTRO_ENV_ARGS[@]}" "$@"
