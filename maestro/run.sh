@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
-# Convenience wrapper: source maestro/.env and run all flows.
+# Convenience wrapper: build debug APK, install it, then run Maestro flows.
 # Usage:
-#   ./maestro/run.sh                       # run every flow under maestro/flows/
-#   ./maestro/run.sh maestro/flows/01-launch.yaml   # run a single flow
-#   ./maestro/run.sh --include-tags=smoke           # filter by tag
+#   ./maestro/run.sh                                 # build + install + run all flows
+#   ./maestro/run.sh --skip-build                    # skip build, use already-installed APK
+#   ./maestro/run.sh maestro/flows/01-launch.yaml    # build + install + run single flow
+#   ./maestro/run.sh --skip-build maestro/flows/01-launch.yaml
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 ENV_FILE="$SCRIPT_DIR/.env"
 
 if [[ ! -f "$ENV_FILE" ]]; then
@@ -44,7 +46,32 @@ MAESTRO_ENV_ARGS=()
 [[ -n "${TEST_EMAIL:-}" ]]    && MAESTRO_ENV_ARGS+=(-e "TEST_EMAIL=$TEST_EMAIL")
 [[ -n "${TEST_PASSWORD:-}" ]] && MAESTRO_ENV_ARGS+=(-e "TEST_PASSWORD=$TEST_PASSWORD")
 
-if [[ $# -eq 0 ]]; then
+# ── Build & install ───────────────────────────────────────────────────────────
+SKIP_BUILD=false
+FLOW_ARGS=()
+for arg in "$@"; do
+  if [[ "$arg" == "--skip-build" ]]; then
+    SKIP_BUILD=true
+  else
+    FLOW_ARGS+=("$arg")
+  fi
+done
+
+if [[ "$SKIP_BUILD" == false ]]; then
+  echo "Building google debug APK..."
+  cd "$REPO_DIR"
+  ./gradlew :mobile:assembleGoogleDebug --no-daemon -q
+  APK_PATH=$(find mobile/build/outputs/apk/google/debug -name "*.apk" | head -1)
+  if [[ -z "$APK_PATH" ]]; then
+    echo "error: APK not found after build."
+    exit 1
+  fi
+  echo "Installing $APK_PATH..."
+  "$ADB" install -r "$APK_PATH"
+  echo "Installed."
+fi
+
+if [[ ${#FLOW_ARGS[@]} -eq 0 ]]; then
   exec maestro test "${MAESTRO_ENV_ARGS[@]}" \
     "$SCRIPT_DIR/flows/01-launch.yaml" \
     "$SCRIPT_DIR/flows/02-login.yaml" \
@@ -59,5 +86,5 @@ if [[ $# -eq 0 ]]; then
     "$SCRIPT_DIR/flows/12-robert-dns.yaml" \
     "$SCRIPT_DIR/flows/07-logout.yaml"
 else
-  exec maestro test "${MAESTRO_ENV_ARGS[@]}" "$@"
+  exec maestro test "${MAESTRO_ENV_ARGS[@]}" "${FLOW_ARGS[@]}"
 fi
