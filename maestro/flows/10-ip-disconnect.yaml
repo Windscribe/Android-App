@@ -1,14 +1,7 @@
 appId: com.windscribe.vpn
-tags:
-  - vpn
-  - native
 ---
-# Connects, verifies tunnel is up, disconnects.
-
-- launchApp:
-    clearState: false
-
-- runFlow: ../subflows/connect.yaml
+# Disconnects. Called by run.sh after capturing IP_AFTER.
+# No launchApp — app is still running from 10-ip-check.yaml.
 
 - tapOn:
     id: "home_connect_button"

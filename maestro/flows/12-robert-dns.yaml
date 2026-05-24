@@ -3,13 +3,10 @@ tags:
   - vpn
   - native
 ---
-# Tests that R.O.B.E.R.T. DNS blocking works when connected.
-# Steps:
-#   1. Navigate to ROBERT, turn all filters OFF, then turn the 3rd filter ON (block).
-#   2. Resolve facebook.com DNS while disconnected — should succeed.
-#   3. Connect to VPN.
-#   4. Resolve facebook.com DNS while connected — should fail (blocked by ROBERT).
-#   5. Disconnect, clean up by turning the 3rd filter back OFF.
+# Tests ROBERT DNS blocking.
+# run.sh captures DNS_BEFORE (disconnected), then this flow connects and
+# enables social filter, run.sh captures DNS_AFTER (connected + blocked),
+# then calls 12-robert-dns-cleanup.yaml.
 
 - launchApp:
     clearState: false
@@ -17,120 +14,25 @@ tags:
 - assertVisible:
     id: "home_connect_button"
 
-# ── Step 1: Navigate to ROBERT ────────────────────────────────────────────────
+# ── Connect ───────────────────────────────────────────────────────────────────
+
+- runFlow: ../subflows/connect.yaml
+
+# ── Enable social filter ──────────────────────────────────────────────────────
 
 - tapOn:
     id: "main_menu_button"
-- assertVisible:
-    id: "main_menu_screen"
 - tapOn:
     id: "menu_item_robert"
 - assertVisible:
     id: "robert_screen"
-
-# ── Step 2: Turn ALL filters OFF ─────────────────────────────────────────────
-# Tap any toggle_on to disable it. Repeat for all 8 filters using optional taps.
-
-- tapOn:
-    id: "robert_toggle_on_malware"
-    optional: true
-- tapOn:
-    id: "robert_toggle_on_ads"
-    optional: true
-- tapOn:
-    id: "robert_toggle_on_social"
-    optional: true
-- tapOn:
-    id: "robert_toggle_on_porn"
-    optional: true
-- tapOn:
-    id: "robert_toggle_on_gambling"
-    optional: true
-- tapOn:
-    id: "robert_toggle_on_fakenews"
-    optional: true
-- tapOn:
-    id: "robert_toggle_on_competitors"
-    optional: true
-- tapOn:
-    id: "robert_toggle_on_cryptominers"
-    optional: true
-
-# Wait for API calls to settle after toggling
-- waitForAnimationToEnd:
-    timeout: 3000
-
-# ── Step 3: Enable the 3rd filter (social) ───────────────────────────────────
-
 - tapOn:
     id: "robert_toggle_off_social"
 - assertVisible:
     id: "robert_toggle_on_social"
-
-# Wait for API to confirm
-- waitForAnimationToEnd:
-    timeout: 3000
-
-# ── Step 4: Go back to home ───────────────────────────────────────────────────
-
-- back
-- back
-- assertVisible:
-    id: "home_connect_button"
-
-# ── Step 5: DNS check while disconnected — should resolve ────────────────────
-
-- evalScript:
-    script: |
-      var result = maestro.shell('adb shell nslookup facebook.com 2>&1').trim();
-      output.dnsBeforeConnect = result;
-      if (result.indexOf('Address') === -1 && result.indexOf('address') === -1) {
-        throw new Error('DNS should resolve before connecting but failed: ' + result);
-      }
-
-# ── Step 6: Connect ───────────────────────────────────────────────────────────
-
-- tapOn:
-    id: "home_connect_button"
-- runFlow: ../subflows/allow-system-dialog.yaml
-- runFlow: ../subflows/dismiss-popups.yaml
-- runFlow: ../subflows/dismiss-wg-key-popup.yaml
-- extendedWaitUntil:
-    visible:
-      id: "connection_status_connected"
-    timeout: 30000
-
-# ── Step 7: DNS check while connected — should be blocked ────────────────────
-
-- evalScript:
-    script: |
-      var result = maestro.shell('adb shell nslookup facebook.com 2>&1').trim();
-      output.dnsAfterConnect = result;
-      var resolved = result.indexOf('Address') !== -1 || result.indexOf('address') !== -1;
-      if (resolved) {
-        throw new Error('DNS should be blocked by ROBERT but resolved: ' + result);
-      }
-
-# ── Step 8: Disconnect ────────────────────────────────────────────────────────
-
-- tapOn:
-    id: "home_connect_button"
-- extendedWaitUntil:
-    visible:
-      id: "connection_status_disconnected"
-    timeout: 15000
-
-# ── Step 9: Clean up — turn social filter back OFF ───────────────────────────
-
-- tapOn:
-    id: "main_menu_button"
-- tapOn:
-    id: "menu_item_robert"
-- tapOn:
-    id: "robert_toggle_on_social"
-- assertVisible:
-    id: "robert_toggle_off_social"
 - waitForAnimationToEnd:
     timeout: 3000
 - back
 - back
+- assertVisible:
+    id: "home_connect_button"

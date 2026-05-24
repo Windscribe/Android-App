@@ -1,0 +1,23 @@
+appId: com.windscribe.vpn
+---
+# Disables social filter after ROBERT DNS test.
+
+- launchApp:
+    clearState: false
+
+- tapOn:
+    id: "main_menu_button"
+- assertVisible:
+    id: "main_menu_screen"
+- tapOn:
+    id: "menu_item_robert"
+- assertVisible:
+    id: "robert_screen"
+- tapOn:
+    id: "robert_toggle_on_social"
+- assertVisible:
+    id: "robert_toggle_off_social"
+- waitForAnimationToEnd:
+    timeout: 3000
+- back
+- back

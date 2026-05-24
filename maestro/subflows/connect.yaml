@@ -1,0 +1,16 @@
+appId: com.windscribe.vpn
+---
+# Connects to VPN and asserts connected state.
+# Caller is responsible for disconnecting.
+
+- assertVisible:
+    id: "home_connect_button"
+- tapOn:
+    id: "home_connect_button"
+- runFlow: allow-system-dialog.yaml
+- runFlow: dismiss-popups.yaml
+- runFlow: dismiss-wg-key-popup.yaml
+- extendedWaitUntil:
+    visible:
+      id: "connection_status_connected"
+    timeout: 30000
