@@ -74,6 +74,7 @@ class WireguardBackend @Inject constructor(
     private var connectionStateJob: Job? = null
     override var active = false
     private var wgErrorJob: Job? = null
+    private var captureLogsJob: Job? = null
     private val backend: GoBackend by lazy { backendLazy.get() }
 
     private val testTunnel = WireGuardTunnel(
@@ -136,7 +137,8 @@ class WireguardBackend @Inject constructor(
         }
         vpnLogger.info("WireGuard backend activated.")
         active = true
-        scope.launch {
+        captureLogsJob?.cancel()
+        captureLogsJob = scope.launch {
             wgLogger.captureLogs(appContext)
         }
         pinIpRecovery.start()
@@ -149,6 +151,8 @@ class WireguardBackend @Inject constructor(
         pinIpRecovery.stop()
         tunnelHealthCheck.stop()
         wgLogger.stopCapture()
+        captureLogsJob?.cancel()
+        captureLogsJob = null
         stopNetworkInfoObserver()
         active = false
         vpnLogger.debug("WireGuard backend deactivated.")
