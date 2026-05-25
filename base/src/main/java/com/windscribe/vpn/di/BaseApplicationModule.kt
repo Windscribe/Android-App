@@ -151,16 +151,16 @@ open class BaseApplicationModule {
     fun provideLatencyRepository(
         preferencesHelper: PreferencesHelper,
         localDbInterface: LocalDbInterface,
-        wsNetWrapper: WSNetWrapper,
         vpnConnectionStateManager: Lazy<VPNConnectionStateManager>,
-        advanceParameterRepository: AdvanceParameterRepository
+        pinger: com.windscribe.vpn.services.ping.Pinger,
+        deviceStateManager: DeviceStateManager
     ): LatencyRepository {
         return LatencyRepository(
             preferencesHelper,
             localDbInterface,
-            wsNetWrapper,
             vpnConnectionStateManager,
-            advanceParameterRepository
+            pinger,
+            deviceStateManager.isOnline
         )
     }
 
@@ -362,17 +362,21 @@ open class BaseApplicationModule {
         preferencesHelper: PreferencesHelper,
         localDbInterface: LocalDbInterface,
         userRepository: Lazy<UserRepository>,
-        wsNetWrapper: WSNetWrapper,
-        advanceParameterRepository: AdvanceParameterRepository
+        pinger: com.windscribe.vpn.services.ping.Pinger
     ): LocationRepository {
         return LocationRepository(
             scope,
             preferencesHelper,
             localDbInterface,
             userRepository,
-            wsNetWrapper,
-            advanceParameterRepository
+            pinger
         )
+    }
+
+    @Provides
+    @Singleton
+    fun providePinger(): com.windscribe.vpn.services.ping.Pinger {
+        return com.windscribe.vpn.services.ping.IcmpPinger()
     }
 
     @Provides
@@ -565,9 +569,16 @@ open class BaseApplicationModule {
         scope: CoroutineScope,
         preferencesHelper: PreferencesHelper,
         apiCallManager: IApiCallManager,
-        vpnConnectionStateManager: VPNConnectionStateManager
+        vpnConnectionStateManager: VPNConnectionStateManager,
+        deviceStateManager: DeviceStateManager
     ): IpRepository {
-        return IpRepository(scope, preferencesHelper, apiCallManager, vpnConnectionStateManager)
+        return IpRepository(
+            scope,
+            preferencesHelper,
+            apiCallManager,
+            vpnConnectionStateManager,
+            deviceStateManager.isOnline
+        )
     }
 
     @Provides

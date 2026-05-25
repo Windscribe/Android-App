@@ -22,6 +22,7 @@ import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -128,7 +129,7 @@ class AccountViewModelImpl(
 
     private fun loadAccountInfo() {
         viewModelScope.launch(Dispatchers.IO) {
-            userRepository.userInfo.collect {
+            userRepository.user.filterNotNull().collect {
                 _isGhostAccount.value = it.isGhost
                 val emailState = when (it.emailStatus) {
                     User.EmailStatus.NoEmail -> NoEmail

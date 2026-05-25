@@ -50,6 +50,7 @@ import com.windscribe.vpn.workers.WindScribeWorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -103,7 +104,7 @@ class WindscribePresenterImpl @Inject constructor(
     }
 
     override suspend fun observeUserState() {
-        userRepository.userInfo.collectLatest {
+        userRepository.user.filterNotNull().collectLatest {
             setAccountStatus(it)
             setUserStatus(it)
         }

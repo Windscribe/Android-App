@@ -14,6 +14,7 @@ import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -155,7 +156,7 @@ class HomeViewmodelImpl(
 
     private fun fetchUserState() {
         viewModelScope.launch {
-            userRepository.userInfo.collectLatest {
+            userRepository.user.filterNotNull().collectLatest {
                 if (it.isPro) {
                     _userState.emit(UserState.Pro)
                 } else if (it.maxData == -1L) {

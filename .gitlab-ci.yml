@@ -160,6 +160,46 @@ stages:
     - extras fastlane || (apk --no-cache add ruby ruby-dev && gem install fastlane --force)
 
 #==============================================================================
+# TEST JOBS
+#==============================================================================
+
+#------------------------------------------------------------------------------
+# Unit Tests
+#------------------------------------------------------------------------------
+# Purpose: Run JVM unit tests across :base, :openvpn, :wgtunnel (172 tests).
+# Trigger: Merge requests targeting develop or main.
+# Output: HTML test reports + JUnit XML (visible inline in the MR "Tests" tab).
+# Blocks deploys: yes — failure of this job fails the Test stage, preventing
+#                 any Deploy-stage jobs from running.
+#------------------------------------------------------------------------------
+UnitTests:
+  stage: Test
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && ($CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main")'
+
+  before_script:
+    - export GRADLE_USER_HOME=$(pwd)/.gradle
+    - chmod +x ./gradlew
+
+  script:
+    - ./gradlew
+        :base:testFdroidDebugUnitTest
+        :openvpn:testSkeletonDebugUnitTest
+        :wgtunnel:testDebugUnitTest
+        --continue
+        --stacktrace
+
+  artifacts:
+    when: always   # upload reports even on failure so they're inspectable
+    expire_in: 1 week
+    paths:
+      - "**/build/reports/tests/**"
+      - "**/build/test-results/**"
+    reports:
+      junit:
+        - "**/build/test-results/test*UnitTest/TEST-*.xml"
+
+#==============================================================================
 # DEPLOYMENT JOBS
 #==============================================================================
 

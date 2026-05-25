@@ -6,6 +6,7 @@ import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.LogRepository
 import com.windscribe.vpn.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -38,7 +39,7 @@ class HelpViewModelImpl(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            userRepository.userInfo.collectLatest {
+            userRepository.user.filterNotNull().collectLatest {
                 _isUserPro.emit(it.isPro)
             }
         }

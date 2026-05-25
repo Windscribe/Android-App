@@ -32,7 +32,7 @@ interface SettingsPresenter {
     fun setupLayoutForGeneralTab()
     fun showLayoutBasedOnUserType()
     fun updateUserDataFromApi()
-    fun observeUserData(settingsActivity: SettingActivity)
+    suspend fun observeUserData()
     fun onProtocolTweaksModeSelected(mode: String)
     fun onExtraTlsPaddingOnClicked()
     fun onExtraTlsPaddingOffClicked()
