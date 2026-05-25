@@ -51,6 +51,8 @@ import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
@@ -483,8 +485,8 @@ class SettingsPresenterImp @Inject constructor(
         }
     }
 
-    override fun observeUserData(settingsActivity: SettingActivity) {
-        userRepository.user.observe(settingsActivity, this::setAccountInfo)
+    override suspend fun observeUserData() {
+        userRepository.user.filterNotNull().collect { setAccountInfo(it) }
     }
 
     private fun setAccountInfo(user: User) {

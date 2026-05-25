@@ -3,6 +3,7 @@ package com.windscribe.mobile.ui.popup
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.repository.UserRepository
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,7 +29,7 @@ class SharedLinkViewmodelImpl(private val userRepository: UserRepository) :
 
     private fun fetchUserState() {
         viewModelScope.launch {
-            userRepository.userInfo.collect {
+            userRepository.user.filterNotNull().collect {
                 _userName.emit(it.userName)
             }
         }

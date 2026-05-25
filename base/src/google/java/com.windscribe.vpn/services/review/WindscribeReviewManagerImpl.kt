@@ -9,6 +9,7 @@ import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.WindscribeReviewManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
@@ -25,7 +26,7 @@ class WindscribeReviewManagerImpl(
     private val logger = LoggerFactory.getLogger("state")
     override fun handleAppReview() {
         scope.launch {
-            userRepository.userInfo.collectLatest {
+            userRepository.user.filterNotNull().collectLatest {
                 delay(3000)
                 val dataUsed = it.dataUsed.toDouble() / (1024 * 1024)
                 // Check if user is eligible for review

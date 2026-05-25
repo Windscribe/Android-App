@@ -46,6 +46,7 @@ import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -236,7 +237,7 @@ class ConnectionViewmodelImpl @Inject constructor(
         }
         // Also observe session changes for Auto mode API recommendations
         viewModelScope.launch(Dispatchers.IO) {
-            userRepository.userInfo.collectLatest { user ->
+            userRepository.user.filterNotNull().collectLatest { user ->
                 _isProtocolTweaksEnabled.value = preferences.isProtocolTweaksEnabled
             }
         }

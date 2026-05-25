@@ -5,7 +5,6 @@
 package com.windscribe.vpn.repository
 
 import android.content.Intent
-import androidx.lifecycle.MutableLiveData
 import androidx.work.WorkManager
 import com.google.gson.Gson
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -22,10 +21,10 @@ import com.windscribe.vpn.model.User
 import com.windscribe.vpn.services.sso.GoogleSignInManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
@@ -54,10 +53,9 @@ class UserRepository(
     private val googleSignInManager: GoogleSignInManager,
     private val unblockWgParamsRepository: UnblockWgParamsRepository
 ) {
-    var user = MutableLiveData<User>()
+    private val _user = MutableStateFlow<User?>(null)
+    val user: StateFlow<User?> = _user.asStateFlow()
     private val logger = LoggerFactory.getLogger("data")
-    private val _userInfo = MutableSharedFlow<User>(replay = 1)
-    val userInfo: SharedFlow<User> = _userInfo
 
     init {
         reload()
@@ -66,12 +64,13 @@ class UserRepository(
     fun reload(
         response: UserSessionResponse? = null, callback: (suspend (user: User) -> Unit)? = null
     ) {
-        scope.launch(Dispatchers.IO) {
+        // No explicit Dispatchers.IO — applicationScope already runs on IO in production,
+        // and tests need the scope's dispatcher so advanceUntilIdle drains the launch.
+        scope.launch {
             response?.let {
                 preferenceHelper.getSession = Gson().toJson(it)
                 val newUser = User(it)
-                user.postValue(newUser)
-                _userInfo.emit(newUser)
+                _user.value = newUser
                 preferenceHelper.userStatus = if (newUser.isPro) 1 else 0
                 preferenceHelper.userName = newUser.userName
                 // Amnezia auto-enable logic
@@ -82,25 +81,11 @@ class UserRepository(
                     val cachedSessionResponse = preferenceHelper.getSession
                     val userSession =
                         Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
-                    user.postValue(User(userSession))
-                    _userInfo.emit(User(userSession))
+                    _user.value = User(userSession)
                 } catch (_: Exception) {
                     logger.info("No user is logged in.")
                 }
             }
-        }
-    }
-
-    fun synchronizedReload() {
-        try {
-            logger.debug("Loading user info from cache")
-            val cachedSessionResponse = preferenceHelper.getSession
-            val userSession =
-                Gson().fromJson(cachedSessionResponse, UserSessionResponse::class.java)
-            user.postValue(User(userSession))
-            _userInfo.tryEmit(User(userSession))
-        } catch (_: Exception) {
-            logger.info("No user is logged in.")
         }
     }
 

@@ -351,13 +351,13 @@ class WireguardUtilTest {
         val phpOctet2 = 64 or ((v ushr 16) and 0xFF)
         val phpOctet3 = (v ushr 8) and 0xFF
         val phpOctet4 = v and 0xFF
-        val phpIP = "100.$phpOctet2.$phpOctet3.$phpOctet4"
+        // generateWireguardIP() returns CIDR-formatted "IP/32" — that's the contract
+        // (used directly in WireGuard config Address= lines). Match the suffix here.
+        val phpIP = "100.$phpOctet2.$phpOctet3.$phpOctet4/32"
 
         // Kotlin approach: use our implementation
         val kotlinIP = WireguardUtil.generateWireguardIP(publicKey, cidr)
 
         assertEquals("Kotlin implementation should match PHP server", phpIP, kotlinIP)
-        println("PHP approach: $phpIP")
-        println("Kotlin approach: $kotlinIP")
     }
 }

@@ -22,6 +22,7 @@ import com.windscribe.vpn.serverlist.entity.ServerMapState
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -165,7 +166,7 @@ class ServerViewModelImpl(
 
     private fun observeUserProStatus() {
         viewModelScope.launch(Dispatchers.IO) {
-            userRepository.userInfo.collectLatest { user ->
+            userRepository.user.filterNotNull().collectLatest { user ->
                 _isPro.value = user.isPro
             }
         }

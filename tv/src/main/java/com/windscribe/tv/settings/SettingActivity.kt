@@ -229,7 +229,7 @@ class SettingActivity :
         }
         if (fragment is AccountFragment) {
             presenter.showLayoutBasedOnUserType()
-            presenter.observeUserData(this)
+            activityScope { presenter.observeUserData() }
             presenter.updateUserDataFromApi()
         }
         if (fragment is DebugFragment) {

@@ -12,8 +12,7 @@ import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.serverlist.entity.Datacenter
 import com.windscribe.vpn.serverlist.entity.DatacenterAndLocation
 import com.windscribe.vpn.serverlist.entity.Server
-import com.wsnet.lib.WSNet
-import com.windscribe.vpn.wsnet.WSNetWrapper
+import com.windscribe.vpn.services.ping.Pinger
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -37,8 +36,7 @@ class LocationRepository @Inject constructor(
     private val preferencesHelper: PreferencesHelper,
     private val localDbInterface: LocalDbInterface,
     private val userRepository: Lazy<UserRepository>,
-    private val wsNetWrapper: WSNetWrapper,
-    private val advanceParameterRepository: AdvanceParameterRepository
+    private val pinger: Pinger
 ) {
     private val logger = LoggerFactory.getLogger("data")
     private var _selectedCityEvents = MutableStateFlow(preferencesHelper.selectedCity)
@@ -89,14 +87,20 @@ class LocationRepository @Inject constructor(
         }
     }
 
+    private fun currentSourceType(): SelectedLocationType = when {
+        preferencesHelper.isConnectingToConfigured -> SelectedLocationType.CustomConfiguredProfile
+        preferencesHelper.isConnectingToStaticIp -> SelectedLocationType.StaticIp
+        else -> SelectedLocationType.CityLocation
+    }
+
     suspend fun isNodeAvailable(): Boolean {
-        if (WindUtilities.getSourceTypeBlocking() == SelectedLocationType.CityLocation) {
-            return runCatching {
+        return if (currentSourceType() == SelectedLocationType.CityLocation) {
+            runCatching {
                 val nodes = localDbInterface.getServersByDatacenter(preferencesHelper.selectedCity)
                 ipAvailable(preferencesHelper.selectedIp, nodes)
             }.getOrDefault(false)
         } else {
-            return true
+            true
         }
     }
 
@@ -193,15 +197,7 @@ class LocationRepository @Inject constructor(
 
     private suspend fun pingCity(city: Datacenter): Int {
         val pingIpAndHost = localDbInterface.getPingIpAndHost(city.id) ?: return -1
-        // Use native ICMP ping instead of WSNet ping to avoid JNI crashes
-        return try {
-            val inetAddress = java.net.Inet4Address.getByName(pingIpAndHost.first)
-            val ping = com.windscribe.vpn.services.ping.Ping()
-            val timeMs = ping.run(inetAddress, 500)
-            timeMs.toInt()
-        } catch (e: Exception) {
-            -1
-        }
+        return pinger.ping(pingIpAndHost.first, 500)
     }
 
     private fun ipAvailable(ip: String?, nodes: List<Server>): Boolean {
@@ -232,7 +228,7 @@ class LocationRepository @Inject constructor(
     }
 
     private suspend fun isLocationValid(id: Int, userPro: Int): Boolean {
-        val locationSourceType = WindUtilities.getSourceTypeBlocking()
+        val locationSourceType = currentSourceType()
         return when {
             locationSourceType === SelectedLocationType.StaticIp -> {
                 isStaticIpAvailable(id)
@@ -255,7 +251,7 @@ class LocationRepository @Inject constructor(
 
     fun getSelectedCityAndRegion(): DatacenterAndLocation? {
         val selectedCityId = preferencesHelper.selectedCity
-        if (selectedCityId == -1 || WindUtilities.getSourceTypeBlocking() != SelectedLocationType.CityLocation) {
+        if (selectedCityId == -1 || currentSourceType() != SelectedLocationType.CityLocation) {
             return null
         }
         return runCatching {

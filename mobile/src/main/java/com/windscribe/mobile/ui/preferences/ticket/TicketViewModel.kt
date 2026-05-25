@@ -11,6 +11,7 @@ import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserRepository
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -57,7 +58,7 @@ class TicketViewModelImpl(val userRepository: UserRepository, val api: IApiCallM
 
     init {
         viewModelScope.launch {
-            userRepository.userInfo.collect {
+            userRepository.user.filterNotNull().collect {
                 logger.info("User info: ${it.email}")
                 _email.value = it.email ?: ""
                 username = it.userName
