@@ -24,7 +24,9 @@ import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.Lazy
 import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -55,6 +57,9 @@ class AutoConnectionManager(
 ) {
 
     private var continuation: CancellableContinuation<Boolean>? = null
+
+    @Volatile
+    private var attemptJob: Job? = null
     private val logger = LoggerFactory.getLogger("vpn")
     var listOfProtocols = ThreadSafeList<ProtocolInformation>()
     private var manualProtocol: ProtocolInformation? = null
@@ -123,15 +128,18 @@ class AutoConnectionManager(
         attempt: Int = 0,
         protocolInformation: ProtocolInformation? = null
     ): VPNState {
-        return runBlocking {
-            val newConnectionId = UUID.randomUUID()
-            vpnController.get().connect(
-                connectionId = newConnectionId,
-                protocolInformation = protocolInformation,
-                attempt = attempt
-            )
-            val vpnState = vpnConnectionStateManager.get().state
-                .first {
+        attemptJob?.cancel()
+        return try {
+            runBlocking {
+                attemptJob = coroutineContext[Job]
+                val newConnectionId = UUID.randomUUID()
+                vpnController.get().connect(
+                    connectionId = newConnectionId,
+                    protocolInformation = protocolInformation,
+                    attempt = attempt
+                )
+                val vpnState = vpnConnectionStateManager.get().state
+                    .first {
                     if (it.connectionId == newConnectionId) {
                         if (it.error?.error == VPNState.ErrorType.AuthenticationError) {
                             logger.debug("Updating user auth credentials.")
@@ -183,8 +191,16 @@ class AutoConnectionManager(
                     protocolInformation = protocolInformation
                 )
             }
-
-            vpnState
+                vpnState
+            }
+        } catch (_: CancellationException) {
+            logger.debug("Connection attempt cancelled by a newer attempt.")
+            VPNState(
+                status = VPNState.Status.Disconnected,
+                error = VPNState.Error(error = VPNState.ErrorType.UserDisconnect)
+            )
+        } finally {
+            if (attemptJob?.isActive != true) attemptJob = null
         }
     }
 

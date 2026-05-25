@@ -49,7 +49,7 @@ class ProxyTunnelManager(val scope: CoroutineScope, val vpnBackend: OpenVPNBacke
                logger.debug("Running protect.")
                delay(1500)
                while (tunnelLib.socketFd() == -1) {
-                   Thread.sleep(100)
+                   delay(100)
                }
                val socketFd = tunnelLib.socketFd()
                logger.debug("Protecting WSTunnel Socket Fd: $socketFd")
