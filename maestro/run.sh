@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 # Runs Maestro UI tests for the Windscribe Android app.
+#
+# Required env vars: TEST_EMAIL, TEST_PASSWORD
+# Optional env vars: TEST_VIDEO=true|false  (default: true) — record one MP4 per flow via adb screenrecord
+#
 # Usage:
 #   ./maestro/run.sh                                  # build + install + run all flows
 #   ./maestro/run.sh --skip-build                     # skip build, use already-installed APK
@@ -10,14 +14,11 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-ENV_FILE="$SCRIPT_DIR/.env"
 
 # ── Env & tools ───────────────────────────────────────────────────────────────
 
-[[ ! -f "$ENV_FILE" ]] && { echo "error: $ENV_FILE not found."; exit 1; }
-
-# shellcheck disable=SC1090
-set -a; source "$ENV_FILE"; set +a
+[[ -z "${TEST_EMAIL:-}" || -z "${TEST_PASSWORD:-}" ]] \
+  && { echo "error: TEST_EMAIL and TEST_PASSWORD must be set in the environment."; exit 1; }
 
 if ! command -v maestro >/dev/null 2>&1; then
   [[ -x "$HOME/.maestro/bin/maestro" ]] \
@@ -25,13 +26,30 @@ if ! command -v maestro >/dev/null 2>&1; then
     || { echo "error: maestro not on PATH. Install: curl -Ls https://get.maestro.mobile.dev | bash"; exit 1; }
 fi
 
-ADB="${ADB:-$HOME/Library/Android/sdk/platform-tools/adb}"
-[[ ! -x "$ADB" ]] && ADB=adb
+# Resolve a real adb. Defeat any shell alias by ignoring `command -v adb`
+# unless it points to an executable file.
+ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
+if [[ -x "${ADB:-}" ]]; then
+  :
+elif [[ -x "$ANDROID_HOME/platform-tools/adb" ]]; then
+  ADB="$ANDROID_HOME/platform-tools/adb"
+elif command -v adb >/dev/null 2>&1 && [[ -x "$(command -v adb)" ]]; then
+  ADB="$(command -v adb)"
+else
+  echo "error: adb not found. Install platform-tools or set ADB=/path/to/adb."; exit 1
+fi
+
+# Maestro spawns its own adb via PATH — put the real platform-tools dir first
+# so it doesn't pick up a broken alias or a stale Android Studio path.
+export PATH="$(dirname "$ADB"):$PATH"
+
 "$ADB" devices | awk 'NR>1 && $2=="device"' | grep -q . || { echo "error: no Android device attached."; exit 1; }
 
-MAESTRO_ENV_ARGS=()
-[[ -n "${TEST_EMAIL:-}" ]]    && MAESTRO_ENV_ARGS+=(-e "TEST_EMAIL=$TEST_EMAIL")
-[[ -n "${TEST_PASSWORD:-}" ]] && MAESTRO_ENV_ARGS+=(-e "TEST_PASSWORD=$TEST_PASSWORD")
+MAESTRO_ENV_ARGS=(-e "TEST_EMAIL=$TEST_EMAIL" -e "TEST_PASSWORD=$TEST_PASSWORD")
+
+TEST_VIDEO="${TEST_VIDEO:-true}"
+VIDEO_DIR="$REPO_DIR/maestro-reports/videos"
+[[ "$TEST_VIDEO" == "true" ]] && mkdir -p "$VIDEO_DIR"
 
 # ── Parse args ────────────────────────────────────────────────────────────────
 
@@ -44,9 +62,9 @@ done
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 build_and_install() {
-  echo "Building google debug APK..."
+  echo "Building google debug APK (arm64-v8a only)..."
   cd "$REPO_DIR"
-  ./gradlew :mobile:assembleGoogleDebug --no-daemon -q
+  ./gradlew :mobile:assembleGoogleDebug -PabiFilter=arm64-v8a --no-daemon -q
   local APK
   APK=$(find mobile/build/outputs/apk/google/debug -name "*.apk" | head -1)
   [[ -z "$APK" ]] && { echo "error: APK not found."; exit 1; }
@@ -56,7 +74,29 @@ build_and_install() {
 }
 
 run_flows() {
-  maestro test "${MAESTRO_ENV_ARGS[@]}" "$@" || SUITE_EXIT=1
+  if [[ "$TEST_VIDEO" != "true" ]]; then
+    maestro test "${MAESTRO_ENV_ARGS[@]}" "$@" || SUITE_EXIT=1
+    return
+  fi
+
+  # Record each flow to its own MP4 (screenrecord caps at 3 min per file).
+  local rec_pids=() local_names=() i=0
+  for flow in "$@"; do
+    local name; name="$(basename "$flow" .yaml)"
+    local device_path="/sdcard/maestro-${name}.mp4"
+    "$ADB" shell "rm -f $device_path" >/dev/null 2>&1 || true
+    "$ADB" shell screenrecord --bit-rate 2000000 "$device_path" >/dev/null 2>&1 &
+    rec_pids[i]=$!
+    local_names[i]="$name"
+    i=$((i + 1))
+
+    maestro test "${MAESTRO_ENV_ARGS[@]}" "$flow" || SUITE_EXIT=1
+
+    "$ADB" shell pkill -INT screenrecord >/dev/null 2>&1 || true
+    wait "${rec_pids[i-1]}" 2>/dev/null || true
+    "$ADB" pull "$device_path" "$VIDEO_DIR/${name}.mp4" >/dev/null 2>&1 || true
+    "$ADB" shell "rm -f $device_path" >/dev/null 2>&1 || true
+  done
 }
 
 get_public_ip() {
@@ -115,7 +155,11 @@ check_ip_changed() {
 [[ "$SKIP_BUILD" == false ]] && build_and_install
 
 # Single flow mode
-[[ ${#FLOW_ARGS[@]} -gt 0 ]] && exec maestro test "${MAESTRO_ENV_ARGS[@]}" "${FLOW_ARGS[@]}"
+if [[ ${#FLOW_ARGS[@]} -gt 0 ]]; then
+  SUITE_EXIT=0
+  run_flows "${FLOW_ARGS[@]}"
+  exit $SUITE_EXIT
+fi
 
 # Full suite
 SUITE_EXIT=0

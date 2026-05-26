@@ -20,6 +20,11 @@ android {
     namespace = "com.wireguard.tunnel"
     defaultConfig {
         minSdk = 21
+        (project.findProperty("abiFilter") as String?)
+            ?.split(",")
+            ?.map { it.trim() }
+            ?.filter { it.isNotEmpty() }
+            ?.let { ndk.abiFilters += it }
     }
     externalNativeBuild {
         cmake {
