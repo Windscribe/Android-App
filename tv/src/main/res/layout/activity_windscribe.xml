@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2021 Windscribe Limited.
   -->
-<layout>
-
-    <com.windscribe.tv.serverlist.customviews.FocusAwareConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.windscribe.tv.serverlist.customviews.FocusAwareConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/cl_windscribe_main"
@@ -452,4 +450,3 @@
             app:layout_constraintTop_toTopOf="@id/guideline_min" />
 
     </com.windscribe.tv.serverlist.customviews.FocusAwareConstraintLayout>
-</layout>

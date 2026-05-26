@@ -5,6 +5,7 @@
 package com.windscribe.vpn.serverlist.entity;
 
 import androidx.annotation.Keep;
+import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
@@ -18,9 +19,11 @@ public class Favourite {
     @ColumnInfo(name = "favourite_id")
     private int Id;
 
+    @Nullable
     @ColumnInfo(name = "pinned_ip")
     private String pinnedIp;
 
+    @Nullable
     @ColumnInfo(name = "pinned_node_ip")
     private String pinnedNodeIp;
 

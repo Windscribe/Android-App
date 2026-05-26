@@ -5,11 +5,11 @@
 package com.windscribe.vpn.workers.worker
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import com.google.gson.Gson
-import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.api.response.UserSessionResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
@@ -26,47 +26,28 @@ import com.windscribe.vpn.repository.WgConfigRepository
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import javax.inject.Inject
 
-class SessionWorker(context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
+@HiltWorker
+class SessionWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted workerParams: WorkerParameters,
+    private val preferencesHelper: PreferencesHelper,
+    private val userRepository: UserRepository,
+    private val apiCallManager: IApiCallManager,
+    private val workManager: WindScribeWorkManager,
+    private val localDbInterface: LocalDbInterface,
+    private val preferenceChangeObserver: PreferenceChangeObserver,
+    private val locationRepository: LocationRepository,
+    private val wgConfigRepository: WgConfigRepository,
+    private val vpnController: WindVpnController,
+    private val vpnStateManager: VPNConnectionStateManager
+) : CoroutineWorker(context, workerParams) {
 
     val logger: Logger = LoggerFactory.getLogger("worker")
-
-    @Inject
-    lateinit var preferencesHelper: PreferencesHelper
-
-    @Inject
-    lateinit var userRepository: UserRepository
-
-    @Inject
-    lateinit var apiCallManager: IApiCallManager
-
-    @Inject
-    lateinit var workManager: WindScribeWorkManager
-
-    @Inject
-    lateinit var localDbInterface: LocalDbInterface
-
-    @Inject
-    lateinit var preferenceChangeObserver: PreferenceChangeObserver
-
-    @Inject
-    lateinit var locationRepository: LocationRepository
-
-    @Inject
-    lateinit var wgConfigRepository: WgConfigRepository
-
-    @Inject
-    lateinit var vpnController: WindVpnController
-
-    @Inject
-    lateinit var vpnStateManager: VPNConnectionStateManager
-
-    init {
-        appContext.applicationComponent.inject(this)
-    }
 
     override suspend fun doWork(): Result {
         if (!userRepository.loggedIn()) return Result.failure()

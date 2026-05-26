@@ -9,7 +9,6 @@ import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
-import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.autoconnection.AutoConnectionManager
 import com.windscribe.vpn.backend.VPNState
@@ -23,6 +22,7 @@ import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class AutoConnectService : Service() {
 
     @Inject
@@ -75,7 +76,8 @@ class AutoConnectService : Service() {
             NotificationConstants.AUTO_CONNECT_SERVICE_NOTIFICATION_ID,
             ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
         )
-        appContext.serviceComponent.inject(this)
+        // Must precede field use below: Hilt populates @Inject fields in super.onCreate().
+        super.onCreate()
         // Replace placeholder with full notification now that DI is complete.
         startForegroundSafely(
             windNotificationBuilder,
@@ -114,8 +116,6 @@ class AutoConnectService : Service() {
                 }
             }
         }
-
-        super.onCreate()
     }
 
     override fun onDestroy() {

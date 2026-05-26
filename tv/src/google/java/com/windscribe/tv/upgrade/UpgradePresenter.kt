@@ -8,11 +8,14 @@ import com.amazon.device.iap.model.PurchaseResponse
 import com.android.billingclient.api.BillingFlowParams.ProductDetailsParams
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
+import com.windscribe.tv.upgrade.UpgradeView
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.billing.AmazonPurchase
 import com.windscribe.vpn.billing.PurchaseState
+import kotlinx.coroutines.CoroutineScope
 
 interface UpgradePresenter {
+    fun bind(view: UpgradeView, scope: CoroutineScope)
     fun checkBillingProcessStatus()
     fun onAmazonPurchaseHistoryError(error: String)
     fun onAmazonPurchaseHistorySuccess(amazonPurchases: List<AmazonPurchase>)

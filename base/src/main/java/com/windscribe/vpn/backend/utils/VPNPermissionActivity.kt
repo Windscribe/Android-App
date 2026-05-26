@@ -5,8 +5,8 @@
 package com.windscribe.vpn.backend.utils
 
 import android.Manifest
-import android.app.Activity
 import android.content.ActivityNotFoundException
+import androidx.activity.ComponentActivity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.VpnService
@@ -23,6 +23,7 @@ import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.DynamicShortcutManager.Companion.QUICK_CONNECT_ACTION_KEY
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import dagger.hilt.android.AndroidEntryPoint
 import de.blinkt.openvpn.core.Preferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -31,7 +32,8 @@ import java.io.IOException
 import java.util.*
 import javax.inject.Inject
 
-class VPNPermissionActivity : Activity() {
+@AndroidEntryPoint
+class VPNPermissionActivity : ComponentActivity() {
 
     private var cmFixed = false
     private val logger = LoggerFactory.getLogger("vpn")
@@ -58,7 +60,6 @@ class VPNPermissionActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_launch)
-        appContext.activityComponent.inject(this)
         if (intent.hasExtra("protocolInformation")) {
             protocolInformation =
                     intent.getSerializableExtra("protocolInformation") as ProtocolInformation

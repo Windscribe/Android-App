@@ -1,6 +1,7 @@
 package com.windscribe.vpn.workers.worker
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.gson.Gson
@@ -15,19 +16,18 @@ import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.BillingConstants
 import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.repository.CallResult
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import org.slf4j.LoggerFactory
-import javax.inject.Inject
 
-class AmazonPendingReceiptValidator(appContext: Context, params: WorkerParameters) : CoroutineWorker(appContext, params) {
+@HiltWorker
+class AmazonPendingReceiptValidator @AssistedInject constructor(
+    @Assisted appContext: Context,
+    @Assisted params: WorkerParameters,
+    private val apiManager: IApiCallManager,
+    private val preferencesHelper: PreferencesHelper
+) : CoroutineWorker(appContext, params) {
     private val logger = LoggerFactory.getLogger("billing")
-    @Inject
-    lateinit var apiManager: IApiCallManager
-    @Inject
-    lateinit var preferencesHelper: PreferencesHelper
-
-    init {
-        Windscribe.appContext.applicationComponent.inject(this)
-    }
 
     override suspend fun doWork(): Result {
         val state = preferencesHelper.purchaseFlowState

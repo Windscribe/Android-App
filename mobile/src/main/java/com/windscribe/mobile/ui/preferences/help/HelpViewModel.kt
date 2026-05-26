@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.LogRepository
 import com.windscribe.vpn.repository.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +28,8 @@ sealed class SendLogState {
     object Failure : SendLogState()
 }
 
-class HelpViewModelImpl(
+@HiltViewModel
+class HelpViewModelImpl @Inject constructor(
     val userRepository: UserRepository,
     val logRepository: LogRepository
 ) : HelpViewModel() {

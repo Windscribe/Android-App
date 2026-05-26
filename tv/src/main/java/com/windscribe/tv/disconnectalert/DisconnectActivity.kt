@@ -8,13 +8,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import com.windscribe.tv.R
 import com.windscribe.tv.base.applyAppLocale
 import com.windscribe.tv.databinding.ActivityDisconnectBinding
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.Timer
 import java.util.TimerTask
 
+@AndroidEntryPoint
 class DisconnectActivity : AppCompatActivity() {
 
     private var timer: Timer? = null
@@ -24,7 +25,8 @@ class DisconnectActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         applyAppLocale()
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_disconnect)
+        binding = ActivityDisconnectBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         binding.disconnectAlertContent.text = intent.getStringExtra("message")
         binding.title.text = intent.getStringExtra("title")
         val mHandler = Handler()

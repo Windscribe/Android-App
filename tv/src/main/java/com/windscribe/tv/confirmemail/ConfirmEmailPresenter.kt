@@ -3,7 +3,11 @@
  */
 package com.windscribe.tv.confirmemail
 
+import com.windscribe.tv.confirmemail.ConfirmEmailView
+import kotlinx.coroutines.CoroutineScope
+
 interface ConfirmEmailPresenter {
+    fun bind(view: ConfirmEmailView, scope: CoroutineScope)
     fun init()
     val isUserPro: Boolean
     fun onDestroy()

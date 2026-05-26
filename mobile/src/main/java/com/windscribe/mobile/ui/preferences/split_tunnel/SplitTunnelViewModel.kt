@@ -11,6 +11,8 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.commonutils.SortByName
 import com.windscribe.vpn.commonutils.SortBySelected
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +35,8 @@ abstract class SplitTunnelViewModel : ViewModel() {
     open fun onShowSystemAppsToggle() {}
 }
 
-class SplitTunnelViewModelImpl(
+@HiltViewModel
+class SplitTunnelViewModelImpl @Inject constructor(
     val preferenceHelper: PreferencesHelper,
     override val appIconCache: AppIconCache
 ) : SplitTunnelViewModel() {

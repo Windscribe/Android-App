@@ -2,6 +2,8 @@ package com.windscribe.mobile.ui.preferences.icons
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -14,7 +16,10 @@ abstract class CustomIconsViewModel : ViewModel() {
     abstract fun dismissDialog()
 }
 
-class CustomIconsViewModelImpl(val appIconManager: AppIconManager) : CustomIconsViewModel() {
+@HiltViewModel
+class CustomIconsViewModelImpl @Inject constructor(
+    val appIconManager: AppIconManager
+) : CustomIconsViewModel() {
     val _icons: MutableStateFlow<Map<String, AppIcon>> = MutableStateFlow(mapOf())
     override val icons: StateFlow<Map<String, AppIcon>> = _icons
 

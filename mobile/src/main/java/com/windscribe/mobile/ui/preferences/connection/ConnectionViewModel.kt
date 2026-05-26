@@ -27,6 +27,8 @@ import com.windscribe.vpn.exceptions.WindScribeException
 import com.windscribe.vpn.localdatabase.tables.UnBlockWgParam
 import com.windscribe.vpn.repository.UnblockWgParamsRepository
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -96,7 +98,8 @@ data class PortMapItem(
     val use: String
 )
 
-class ConnectionViewModelImpl(
+@HiltViewModel
+class ConnectionViewModelImpl @Inject constructor(
     val preferencesHelper: PreferencesHelper,
     val api: IApiCallManager,
     val autoConnectionManager: AutoConnectionManager,

@@ -5,6 +5,9 @@ import android.content.Context
 import android.content.pm.PackageManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.ExtraConstants
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 
 data class AppIcon(
@@ -18,7 +21,11 @@ enum class AppIconCategory {
     Discreet, Windscribe, Other
 }
 
-class AppIconManager(val context: Context, val preferenceManager: PreferencesHelper) {
+@Singleton
+class AppIconManager @Inject constructor(
+    @ApplicationContext val context: Context,
+    val preferenceManager: PreferencesHelper
+) {
     var appIcons = mapOf<String, AppIcon>()
     private val _selectedIcon = MutableStateFlow<AppIcon?>(null)
     val selectedAppIcon = _selectedIcon

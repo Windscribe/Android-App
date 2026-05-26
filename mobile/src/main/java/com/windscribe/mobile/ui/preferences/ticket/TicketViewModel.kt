@@ -10,6 +10,8 @@ import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,8 +40,10 @@ sealed class SubmitTicketState {
     data class Error(val message: String) : SubmitTicketState()
 }
 
-class TicketViewModelImpl(val userRepository: UserRepository, val api: IApiCallManager) :
-    TicketViewModel() {
+@HiltViewModel
+class TicketViewModelImpl @Inject constructor(
+    val userRepository: UserRepository, val api: IApiCallManager
+) : TicketViewModel() {
     private val _buttonEnabled = MutableStateFlow(false)
     override val buttonEnabled: StateFlow<Boolean> = _buttonEnabled
     private val _submitTicketState = MutableStateFlow<SubmitTicketState>(SubmitTicketState.Idle)

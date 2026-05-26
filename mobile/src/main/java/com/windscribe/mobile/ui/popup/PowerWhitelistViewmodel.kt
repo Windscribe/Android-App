@@ -3,6 +3,8 @@ package com.windscribe.mobile.ui.popup
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.apppreference.PreferencesHelper
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,8 +18,10 @@ abstract class PowerWhitelistViewmodel : ViewModel() {
     abstract val shouldExit: StateFlow<Boolean>
 }
 
-class PowerWhitelistViewmodelImpl(private val preferenceHelper: PreferencesHelper) :
-    PowerWhitelistViewmodel() {
+@HiltViewModel
+class PowerWhitelistViewmodelImpl @Inject constructor(
+    private val preferenceHelper: PreferencesHelper
+) : PowerWhitelistViewmodel() {
     private val _shouldExit = MutableStateFlow(false)
     override val shouldExit = _shouldExit.asStateFlow()
     private val logger = LoggerFactory.getLogger("basic")

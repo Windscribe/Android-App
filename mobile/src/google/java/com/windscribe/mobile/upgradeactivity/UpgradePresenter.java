@@ -19,7 +19,11 @@ import com.windscribe.vpn.billing.PurchaseState;
 import java.util.List;
 import java.util.Map;
 
+import kotlinx.coroutines.CoroutineScope;
+
 public interface UpgradePresenter {
+
+    void bind(UpgradeView view, CoroutineScope scope);
 
     void checkBillingProcessStatus();
 

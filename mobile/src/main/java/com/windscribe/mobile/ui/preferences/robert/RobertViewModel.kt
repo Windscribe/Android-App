@@ -18,6 +18,8 @@ import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.constants.NetworkKeyConstants
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.repository.CallResult
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,7 +48,8 @@ sealed class RobertFilterState {
     data class Failure(val error: String) : RobertFilterState()
 }
 
-class RobertViewModelImpl(
+@HiltViewModel
+class RobertViewModelImpl @Inject constructor(
     val apiCallManager: IApiCallManager,
     val preferencesHelper: PreferencesHelper
 ) : RobertViewModel() {

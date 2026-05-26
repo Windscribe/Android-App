@@ -11,6 +11,8 @@ import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.repository.CallResult
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,8 +54,11 @@ abstract class AppStartActivityViewModel : ViewModel() {
     abstract fun setDialogCallback(data: DialogData, dialogCallback: DialogCallback)
 }
 
-class AppStartActivityViewModelImpl(val preferencesHelper: PreferencesHelper, val apiCalManager: IApiCallManager) :
-    AppStartActivityViewModel() {
+@HiltViewModel
+class AppStartActivityViewModelImpl @Inject constructor(
+    val preferencesHelper: PreferencesHelper,
+    val apiCalManager: IApiCallManager
+) : AppStartActivityViewModel() {
     private var _hapticFeedback = MutableStateFlow(preferencesHelper.isHapticFeedbackEnabled)
     override val hapticFeedback: StateFlow<Boolean> = _hapticFeedback
 

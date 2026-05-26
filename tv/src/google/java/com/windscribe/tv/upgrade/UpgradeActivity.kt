@@ -20,7 +20,6 @@ import com.windscribe.tv.confirmemail.ConfirmActivity
 import com.windscribe.tv.customview.CustomDialog
 import com.windscribe.tv.customview.ErrorFragment
 import com.windscribe.tv.customview.ProgressFragment
-import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.email.AddEmailActivity
 import com.windscribe.tv.upgrade.PlansFragment.Companion.newInstance
 import com.windscribe.tv.welcome.WelcomeActivity
@@ -29,10 +28,13 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.billing.*
 import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
+import dagger.hilt.android.AndroidEntryPoint
+import androidx.lifecycle.lifecycleScope
 import okhttp3.internal.toImmutableList
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
     enum class BillingType(val value: String) {
         Google("android"), Amazon("amazon")
@@ -57,8 +59,8 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
     private var selectedProductDetails: ProductDetails? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setActivityModule(ActivityModule(this, this)).inject(this)
         setContentLayout(R.layout.activity_upgrade)
+        presenter.bind(this, lifecycleScope)
         logger.info("OnCreate: Upgrade Activity")
         showProgressBar("Loading Billing Plans...")
         if (intent.hasExtra(PROMO_EXTRA)) {

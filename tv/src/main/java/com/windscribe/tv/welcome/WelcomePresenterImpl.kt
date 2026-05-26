@@ -47,8 +47,6 @@ import java.util.regex.Pattern
 import javax.inject.Inject
 
 class WelcomePresenterImpl @Inject constructor(
-    private val welcomeView: WelcomeView,
-    private val activityScope: CoroutineScope,
     private val preferencesHelper: PreferencesHelper,
     private val apiCallManager: IApiCallManager,
     private val firebaseManager: FirebaseManager,
@@ -61,9 +59,16 @@ class WelcomePresenterImpl @Inject constructor(
     private val resourceHelper: ResourceHelper,
     private val logRepository: LogRepository,
 ) : WelcomePresenter {
+    private lateinit var welcomeView: WelcomeView
+    private lateinit var activityScope: CoroutineScope
     private var isRegistration = false
     private var xpressVerificationJob: Job? = null
     private val logger = LoggerFactory.getLogger("basic")
+
+    override fun bind(view: WelcomeView, scope: CoroutineScope) {
+        this.welcomeView = view
+        this.activityScope = scope
+    }
 
     override fun onDestroy() {
         xpressVerificationJob?.cancel()

@@ -350,9 +350,7 @@ mobile/src/main/java/com/windscribe/mobile/
 │   └── ... (all Compose screens)
 ├── nav/
 │   ├── Screen.kt                  # Route definitions
-│   └── NavigationStack.kt         # NavHost setup
-├── di/
-│   └── ComposeModule.kt           # ViewModel factories
+│   └── NavigationStack.kt         # NavHost setup; resolves @HiltViewModels via hiltViewModel()
 └── viewmodel/
     ├── HomeViewModel.kt
     ├── LocationsViewModel.kt
@@ -387,7 +385,8 @@ fun NavigationStack() {
 
 **State Management**:
 ```kotlin
-class HomeViewModel(
+@HiltViewModel
+class HomeViewModel @Inject constructor(
     private val serverListRepository: ServerListRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow<HomeState>(HomeState.Loading)
@@ -419,7 +418,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
 
 **Architecture**: MVP with XML layouts
 
-**UI Framework**: XML + Data Binding
+**UI Framework**: XML + View Binding
 
 ### Structure
 

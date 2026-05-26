@@ -6,6 +6,8 @@ import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.serverlist.entity.ConfigFile
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,7 +37,8 @@ sealed class EditConfigState {
     object Error : EditConfigState()
 }
 
-class EditCustomConfigViewmodelImpl(
+@HiltViewModel
+class EditCustomConfigViewmodelImpl @Inject constructor(
     private val localDbInterface: LocalDbInterface,
     private val vpnController: WindVpnController
 ) :

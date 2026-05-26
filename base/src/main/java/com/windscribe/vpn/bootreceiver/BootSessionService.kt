@@ -7,14 +7,15 @@ package com.windscribe.vpn.bootreceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.JobIntentWorkAroundService
-import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.ShortcutStateManager
+import dagger.hilt.android.AndroidEntryPoint
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class BootSessionService : JobIntentWorkAroundService() {
 
     @Inject
@@ -31,7 +32,6 @@ class BootSessionService : JobIntentWorkAroundService() {
     override fun onCreate() {
         super.onCreate()
         stateBoolean.set(true)
-        appContext.serviceComponent.inject(this)
     }
 
     override fun onHandleWork(intent: Intent) {

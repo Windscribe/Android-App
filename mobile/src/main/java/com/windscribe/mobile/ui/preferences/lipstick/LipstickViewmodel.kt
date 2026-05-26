@@ -22,6 +22,7 @@ import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelHelper.getSoundO
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.repository.ServerListRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -68,6 +69,7 @@ abstract class LipstickViewmodel : ViewModel() {
     abstract val selectedAppIcon: StateFlow<Int>
 }
 
+@HiltViewModel
 class LipstickViewmodelImpl @Inject constructor(
     private val preferenceHelper: PreferencesHelper,
     private val serverListRepository: ServerListRepository,

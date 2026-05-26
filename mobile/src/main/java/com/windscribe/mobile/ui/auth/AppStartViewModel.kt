@@ -14,6 +14,7 @@ import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.services.FirebaseManager
 import com.windscribe.vpn.services.sso.GoogleSignInManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,6 +42,7 @@ abstract class AppStartViewModel : ViewModel() {
     abstract fun onSignIntentLaunch()
 }
 
+@HiltViewModel
 class AppStartViewModelImpl @Inject constructor(
     private val preferencesHelper: PreferencesHelper,
     private val api: IApiCallManager,

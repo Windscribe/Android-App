@@ -13,8 +13,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.NestedScrollView
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.windscribe.tv.R
 import com.windscribe.tv.adapter.InstalledAppsAdapter
 import com.windscribe.tv.base.BaseActivity
@@ -22,8 +22,8 @@ import com.windscribe.tv.base.applyAppLocale
 import com.windscribe.tv.confirmemail.ConfirmActivity
 import com.windscribe.tv.customview.CustomDialog
 import com.windscribe.tv.databinding.ActivitySettingBinding
-import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.email.AddEmailActivity
+import dagger.hilt.android.AndroidEntryPoint
 import com.windscribe.tv.listeners.SettingsFragmentListener
 import com.windscribe.tv.moredata.GetMoreDataActivity
 import com.windscribe.tv.serverlist.customviews.State
@@ -36,6 +36,7 @@ import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class SettingActivity :
     BaseActivity(),
     SettingView,
@@ -56,9 +57,10 @@ class SettingActivity :
     private var fragment: Fragment? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setActivityModule(ActivityModule(this, this)).inject(this)
+        presenter.bind(this, lifecycleScope)
         onActivityLaunch()
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_setting)
+        binding = ActivitySettingBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         initFragment()
         binding.scrollView.setOnScrollChangeListener { _: NestedScrollView?, _: Int, _: Int, _: Int, _: Int ->
             if (fragment is GeneralFragment) {
@@ -229,7 +231,7 @@ class SettingActivity :
         }
         if (fragment is AccountFragment) {
             presenter.showLayoutBasedOnUserType()
-            activityScope { presenter.observeUserData() }
+            presenter.observeUserData(this)
             presenter.updateUserDataFromApi()
         }
         if (fragment is DebugFragment) {

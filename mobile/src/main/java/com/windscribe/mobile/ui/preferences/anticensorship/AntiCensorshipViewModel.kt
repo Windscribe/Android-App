@@ -7,6 +7,8 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.repository.UnblockWgParamsRepository
 import com.windscribe.vpn.workers.WindScribeWorkManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -27,7 +29,8 @@ abstract class AntiCensorshipViewModel : ViewModel() {
     abstract fun refreshPreferences()
 }
 
-class AntiCensorshipViewModelImpl(
+@HiltViewModel
+class AntiCensorshipViewModelImpl @Inject constructor(
     private val preferencesHelper: PreferencesHelper,
     private val unblockWgParamsRepository: UnblockWgParamsRepository,
     private val workManager: WindScribeWorkManager

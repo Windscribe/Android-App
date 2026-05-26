@@ -27,7 +27,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 
 import com.amazon.device.iap.model.Product;
@@ -37,7 +36,6 @@ import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.QueryProductDetailsParams;
 import com.windscribe.mobile.R;
 import com.windscribe.mobile.databinding.ActivityUpgradeBinding;
-import com.windscribe.mobile.di.ActivityModule;
 import com.windscribe.mobile.utils.UiUtil;
 import com.windscribe.vpn.api.response.PushNotificationAction;
 import com.windscribe.vpn.billing.AmazonBillingManager;
@@ -57,7 +55,10 @@ import java.util.Locale;
 import javax.inject.Inject;
 
 import kotlin.Pair;
+import dagger.hilt.android.AndroidEntryPoint;
+import androidx.lifecycle.LifecycleOwnerKt;
 
+@AndroidEntryPoint
 public class UpgradeActivity extends BaseActivity
         implements UpgradeView {
 
@@ -84,9 +85,10 @@ public class UpgradeActivity extends BaseActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setActivityModule(new ActivityModule(this, this)).inject(this);
+        presenter.bind(this, LifecycleOwnerKt.getLifecycleScope(this));
         try {
-            binding = DataBindingUtil.setContentView(this, R.layout.activity_upgrade);
+            binding = ActivityUpgradeBinding.inflate(getLayoutInflater());
+            setContentView(binding.getRoot());
         } catch (Exception e) {
             logger.error("Failed to inflate upgrade activity layout: " + e.getMessage(), e);
             finish();

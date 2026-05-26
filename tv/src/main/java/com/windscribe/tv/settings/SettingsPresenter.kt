@@ -3,7 +3,10 @@
  */
 package com.windscribe.tv.settings
 
+import kotlinx.coroutines.CoroutineScope
+
 interface SettingsPresenter {
+    fun bind(view: SettingView, scope: CoroutineScope)
     val isUserInGhostMode: Boolean
     val isUserPro: Boolean
     fun onAddEmailClicked()
@@ -32,7 +35,7 @@ interface SettingsPresenter {
     fun setupLayoutForGeneralTab()
     fun showLayoutBasedOnUserType()
     fun updateUserDataFromApi()
-    suspend fun observeUserData()
+    fun observeUserData(settingsActivity: SettingActivity)
     fun onProtocolTweaksModeSelected(mode: String)
     fun onExtraTlsPaddingOnClicked()
     fun onExtraTlsPaddingOffClicked()

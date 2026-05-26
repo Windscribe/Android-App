@@ -166,7 +166,7 @@ androidapp/
 | **Language** | Kotlin (primary), Java (legacy) |
 | **UI** | Jetpack Compose (Mobile), XML (TV) |
 | **Async** | Coroutines + Kotlin Flows |
-| **DI** | Dagger 2 |
+| **DI** | Hilt |
 | **Database** | Room |
 | **Networking** | wsnet (custom library) |
 | **Background Tasks** | WorkManager |

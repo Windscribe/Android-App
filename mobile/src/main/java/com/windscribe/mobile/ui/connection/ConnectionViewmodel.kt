@@ -44,6 +44,7 @@ import com.windscribe.vpn.serverlist.entity.ConfigFile
 import com.windscribe.vpn.serverlist.entity.StaticRegion
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filterNotNull
@@ -149,6 +150,7 @@ abstract class ConnectionViewmodel : ViewModel() {
     abstract fun onIpAnimationComplete()
 }
 
+@HiltViewModel
 class ConnectionViewmodelImpl @Inject constructor(
     private val appScope: CoroutineScope,
     private val vpnConnectionStateManager: VPNConnectionStateManager,

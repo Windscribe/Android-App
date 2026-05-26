@@ -14,8 +14,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.toColorInt
 import com.windscribe.mobile.R
-import com.windscribe.mobile.di.ActivityComponent
-import com.windscribe.mobile.di.ActivityModule
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import java.util.Locale
@@ -73,15 +71,6 @@ abstract class BaseActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
         }
-    }
-
-    protected fun setActivityModule(activityModule: ActivityModule?): ActivityComponent {
-        return com.windscribe.mobile.di.DaggerActivityComponent.builder()
-            .activityModule(activityModule)
-            .applicationComponent(
-                Windscribe.Companion.appContext
-                    .applicationComponent
-            ).build()
     }
 
     protected fun setContentLayout(setTheme: Boolean = true) {

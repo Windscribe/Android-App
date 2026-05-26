@@ -9,20 +9,21 @@ import android.view.View
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.databinding.DataBindingUtil
 import com.bumptech.glide.Glide
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.databinding.ActivityDetailBinding
-import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.disconnectalert.DisconnectActivity.Companion.getIntent
 import com.windscribe.tv.serverlist.adapters.DetailViewAdapter
 import com.windscribe.tv.serverlist.overlay.LoadState
 import com.windscribe.tv.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import org.slf4j.LoggerFactory
+import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class DetailActivity : BaseActivity(), DetailView {
     private lateinit var binding: ActivityDetailBinding
 
@@ -33,9 +34,10 @@ class DetailActivity : BaseActivity(), DetailView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setActivityModule(ActivityModule(this, this)).inject(this)
+        presenter.bind(this, lifecycleScope)
         onActivityLaunch()
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_detail)
+        binding = ActivityDetailBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         binding.detailRecycleView.setNumColumns(1)
         if (intent != null) {
             fragmentTag = intent.getStringExtra("fragment_tag")?.toInt() ?: 1

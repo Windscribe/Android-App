@@ -5,24 +5,22 @@
 package com.windscribe.vpn.workers.worker
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.ApiCallManager
 import com.windscribe.vpn.api.response.GenericSuccess
 import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.repository.CallResult
-import javax.inject.Inject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 
-class RobertSyncWorker(context: Context, workerParameters: WorkerParameters) :
-    CoroutineWorker(context, workerParameters) {
-
-    @Inject
-    lateinit var apiManager: ApiCallManager
-
-    init {
-        appContext.applicationComponent.inject(this)
-    }
+@HiltWorker
+class RobertSyncWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted workerParameters: WorkerParameters,
+    private val apiManager: ApiCallManager
+) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
         return try {

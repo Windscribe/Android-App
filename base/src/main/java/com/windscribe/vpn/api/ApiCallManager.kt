@@ -37,9 +37,7 @@ import com.windscribe.vpn.api.response.XPressLoginVerifyResponse
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.constants.NetworkErrorCodes
 import com.windscribe.vpn.exceptions.WindScribeException
-import com.wsnet.lib.WSNetBridgeAPI
-import com.wsnet.lib.WSNetServerAPI
-import dagger.Lazy
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -52,17 +50,17 @@ import kotlin.coroutines.resume
 
 @Singleton
 open class ApiCallManager @Inject constructor(
-    private val wsNetServerAPI: Lazy<WSNetServerAPI>,
-    val preferencesHelper: PreferencesHelper,
-    private val bridgeAPI: Lazy<WSNetBridgeAPI>
+    private val wsNetWrapper: WSNetWrapper,
+    val preferencesHelper: PreferencesHelper
 ) : IApiCallManager {
 
     private val logger = LoggerFactory.getLogger("basic")
 
     override suspend fun getWebSession(): GenericResponseClass<WebSession?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().webSession(preferencesHelper.sessionHash) { code, json ->
+            val callback = api.webSession(preferencesHelper.sessionHash) { code, json ->
                 buildResponse(continuation, code, json, WebSession::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -71,9 +69,10 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun addUserEmailAddress(email: String): GenericResponseClass<AddEmailResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
             val callback =
-                wsNetServerAPI.get().addEmail(preferencesHelper.sessionHash, email) { code, json ->
+                api.addEmail(preferencesHelper.sessionHash, email) { code, json ->
                     buildResponse(continuation, code, json, AddEmailResponse::class.java)
                 }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -81,8 +80,9 @@ open class ApiCallManager @Inject constructor(
     }
 
     override suspend fun getIp(): GenericResponseClass<String?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().pingTest(5000)  { code, json ->
+            val callback = api.pingTest(5000)  { code, json ->
                 buildResponse(continuation, code, json, String::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -90,8 +90,9 @@ open class ApiCallManager @Inject constructor(
     }
 
     override suspend fun getApiIp(): GenericResponseClass<GetMyIpResponse?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().myIP  { code, json ->
+            val callback = api.myIP  { code, json ->
                 buildResponse(continuation, code, json, GetMyIpResponse::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -105,8 +106,9 @@ open class ApiCallManager @Inject constructor(
         voucherCode: String?
     ): GenericResponseClass<ClaimAccountResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().claimAccount(
+            val callback = api.claimAccount(
                 preferencesHelper.sessionHash,
                 username,
                 password,
@@ -122,8 +124,9 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun getNotifications(pcpID: String?): GenericResponseClass<NewsFeedNotification?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().notifications(
+            val callback = api.notifications(
                 preferencesHelper.sessionHash, pcpID
                     ?: ""
             ) { code, json ->
@@ -135,8 +138,9 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun getPortMap(): GenericResponseClass<PortMapResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().portMap(
+            val callback = api.portMap(
                 preferencesHelper.sessionHash,
                 5,
                 arrayOf("wstunnel")
@@ -149,9 +153,10 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun getServerConfig(): GenericResponseClass<String?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
             val callback =
-                wsNetServerAPI.get().serverConfigs(preferencesHelper.sessionHash) { code, json ->
+                api.serverConfigs(preferencesHelper.sessionHash) { code, json ->
                     buildResponse(continuation, code, json, String::class.java)
                 }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -160,8 +165,9 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun getServerCredentials(extraParams: Map<String, String>?): GenericResponseClass<ServerCredentialsResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().serverCredentials(
+            val callback = api.serverCredentials(
                 preferencesHelper.sessionHash,
                 true
             ) { code, json ->
@@ -173,8 +179,9 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun getServerCredentialsForIKev2(extraParams: Map<String, String>?): GenericResponseClass<ServerCredentialsResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().serverCredentials(
+            val callback = api.serverCredentials(
                 preferencesHelper.sessionHash,
                 false
             ) { code, json ->
@@ -190,8 +197,9 @@ open class ApiCallManager @Inject constructor(
         alcList: Array<String>,
         overriddenCountryCode: String?
     ): GenericResponseClass<String?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().serverLocations(
+            val callback = api.serverLocations(
                 overriddenCountryCode
                     ?: "", locHash, isPro, alcList
             ) { code, json ->
@@ -204,8 +212,9 @@ open class ApiCallManager @Inject constructor(
     override suspend fun getSessionGeneric(firebaseToken: String?, backup: Int): GenericResponseClass<UserSessionResponse?, ApiErrorResponse?> {
         checkSession()
         val serverRevision = preferencesHelper.serverRevision
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().session(
+            val callback = api.session(
                 preferencesHelper.sessionHash,
                 "",
                 firebaseToken ?: "", serverRevision, backup
@@ -218,8 +227,9 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun getLocations(): GenericResponseClass<LocationResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().getLocations(preferencesHelper.sessionHash) { code, json ->
+            val callback = api.getLocations(preferencesHelper.sessionHash) { code, json ->
                 buildResponse(continuation, code, json, LocationResponse::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -228,8 +238,9 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun getServers(backup: Int): GenericResponseClass<ServerResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().getServers(preferencesHelper.sessionHash, backup) { code, json ->
+            val callback = api.getServers(preferencesHelper.sessionHash, backup) { code, json ->
                 buildResponse(continuation, code, json, ServerResponse::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -238,9 +249,10 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun getStaticIpList(deviceID: String?): GenericResponseClass<StaticIPResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
             val callback =
-                wsNetServerAPI.get().staticIps(preferencesHelper.sessionHash, 2) { code, json ->
+                api.staticIps(preferencesHelper.sessionHash, 2) { code, json ->
                     buildResponse(continuation, code, json, StaticIPResponse::class.java)
                 }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -256,8 +268,9 @@ open class ApiCallManager @Inject constructor(
         captchaTrailX: FloatArray,
         captchaTrailY: FloatArray
     ): GenericResponseClass<UserLoginResponse?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().login(
+            val callback = api.login(
                 username,
                 password,
                 twoFa ?: "",
@@ -277,8 +290,9 @@ open class ApiCallManager @Inject constructor(
         appBuild: String,
         osVersion: String
     ): GenericResponseClass<CheckUpdateResponse?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().checkUpdate(
+            val callback = api.checkUpdate(
                 0,
                 appVersion,
                 appBuild,
@@ -292,8 +306,9 @@ open class ApiCallManager @Inject constructor(
     }
 
     override suspend fun recordAppInstall(): GenericResponseClass<String?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().recordInstall(false) { code, json ->
+            val callback = api.recordInstall(false) { code, json ->
                 buildResponse(continuation, code, json, String::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -310,8 +325,9 @@ open class ApiCallManager @Inject constructor(
         channel: String
     ): GenericResponseClass<TicketResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().sendSupportTicket(
+            val callback = api.sendSupportTicket(
                 supportEmail,
                 supportName,
                 supportSubject,
@@ -337,8 +353,9 @@ open class ApiCallManager @Inject constructor(
         captchaTrailX: FloatArray,
         captchaTrailY: FloatArray
     ): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().signup(
+            val callback = api.signup(
                 username,
                 password,
                 referringUsername ?: "",
@@ -358,8 +375,9 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun claimVoucherCode(voucherCode: String): GenericResponseClass<ClaimVoucherCodeResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().claimVoucherCode(
+            val callback = api.claimVoucherCode(
                 preferencesHelper.sessionHash,
                 voucherCode
             ) { code, json ->
@@ -370,8 +388,9 @@ open class ApiCallManager @Inject constructor(
     }
 
     override suspend fun signUpUsingToken(token: String): GenericResponseClass<UserRegistrationResponse?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().signupUsingToken(token) { code, json ->
+            val callback = api.signupUsingToken(token) { code, json ->
                 buildResponse(continuation, code, json, UserRegistrationResponse::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -386,8 +405,9 @@ open class ApiCallManager @Inject constructor(
         amazonUserId: String
     ): GenericResponseClass<GenericSuccess?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().verifyPayment(
+            val callback = api.verifyPayment(
                 preferencesHelper.sessionHash,
                 purchaseToken,
                 gpPackageName,
@@ -403,8 +423,9 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun verifyExpressLoginCode(loginCode: String): GenericResponseClass<VerifyExpressLoginResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().verifyTvLoginCode(
+            val callback = api.verifyTvLoginCode(
                 preferencesHelper.sessionHash,
                 loginCode
             ) { code, json ->
@@ -415,8 +436,9 @@ open class ApiCallManager @Inject constructor(
     }
 
     override suspend fun generateXPressLoginCode(): GenericResponseClass<XPressLoginCodeResponse?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().getXpressLoginCode { code, json ->
+            val callback = api.getXpressLoginCode { code, json ->
                 buildResponse(continuation, code, json, XPressLoginCodeResponse::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -427,9 +449,10 @@ open class ApiCallManager @Inject constructor(
         loginCode: String,
         signature: String
     ): GenericResponseClass<XPressLoginVerifyResponse?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
             val callback =
-                wsNetServerAPI.get().verifyXpressLoginCode(loginCode, signature) { code, json ->
+                api.verifyXpressLoginCode(loginCode, signature) { code, json ->
                     buildResponse(continuation, code, json, XPressLoginVerifyResponse::class.java)
                 }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -441,8 +464,9 @@ open class ApiCallManager @Inject constructor(
         log: String
     ): GenericResponseClass<GenericSuccess?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().debugLog(username, log) { code, json ->
+            val callback = api.debugLog(username, log) { code, json ->
                 buildResponse(continuation, code, json, GenericSuccess::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -451,9 +475,10 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun postPromoPaymentConfirmation(pcpID: String): GenericResponseClass<GenericSuccess?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
             val callback =
-                wsNetServerAPI.get().postBillingCpid(preferencesHelper.sessionHash, pcpID) { code, json ->
+                api.postBillingCpid(preferencesHelper.sessionHash, pcpID) { code, json ->
                     buildResponse(continuation, code, json, GenericSuccess::class.java)
                 }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -465,8 +490,9 @@ open class ApiCallManager @Inject constructor(
         status: Int
     ): GenericResponseClass<GenericSuccess?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().setRobertFilter(
+            val callback = api.setRobertFilter(
                 preferencesHelper.sessionHash,
                 id,
                 status
@@ -479,8 +505,9 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun syncRobert(): GenericResponseClass<GenericSuccess?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().syncRobert(preferencesHelper.sessionHash) { code, json ->
+            val callback = api.syncRobert(preferencesHelper.sessionHash) { code, json ->
                 buildResponse(continuation, code, json, GenericSuccess::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -489,9 +516,10 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun getRobertFilters(): GenericResponseClass<RobertFilterResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
             val callback =
-                wsNetServerAPI.get().getRobertFilters(preferencesHelper.sessionHash) { code, json ->
+                api.getRobertFilters(preferencesHelper.sessionHash) { code, json ->
                     buildResponse(continuation, code, json, RobertFilterResponse::class.java)
                 }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -500,9 +528,10 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun deleteSession(): GenericResponseClass<GenericSuccess?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
             val callback =
-                wsNetServerAPI.get().deleteSession(preferencesHelper.sessionHash) { code, json ->
+                api.deleteSession(preferencesHelper.sessionHash) { code, json ->
                     buildResponse(continuation, code, json, GenericSuccess::class.java)
                 }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -514,8 +543,9 @@ open class ApiCallManager @Inject constructor(
         deleteOldestKey: Boolean
     ): GenericResponseClass<WgInitResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().wgConfigsInit(
+            val callback = api.wgConfigsInit(
                 preferencesHelper.sessionHash,
                 clientPublicKey,
                 deleteOldestKey,
@@ -528,9 +558,10 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun resendUserEmailAddress(extraParams: Map<String, String>?): GenericResponseClass<AddEmailResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
             val callback =
-                wsNetServerAPI.get().confirmEmail(preferencesHelper.sessionHash) { code, json ->
+                api.confirmEmail(preferencesHelper.sessionHash) { code, json ->
                     buildResponse(continuation, code, json, AddEmailResponse::class.java)
                 }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -539,8 +570,9 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun getBillingPlans(promo: String?): GenericResponseClass<BillingPlanResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().mobileBillingPlans(
+            val callback = api.mobileBillingPlans(
                 preferencesHelper.sessionHash, "google", promo
                     ?: "", 3
             ) { code, json ->
@@ -554,8 +586,9 @@ open class ApiCallManager @Inject constructor(
         provider: String,
         token: String
     ): GenericResponseClass<SsoResponse?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().sso(provider, token) { code, json ->
+            val callback = api.sso(provider, token) { code, json ->
                 buildResponse(continuation, code, json, SsoResponse::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -563,8 +596,9 @@ open class ApiCallManager @Inject constructor(
     }
 
     override suspend fun authTokenLogin(username: String, useAsciiCaptcha: Boolean): GenericResponseClass<AuthToken?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().authTokenLogin(username,useAsciiCaptcha) { code, json ->
+            val callback = api.authTokenLogin(username,useAsciiCaptcha) { code, json ->
                 buildResponse(continuation, code, json, AuthToken::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -572,8 +606,9 @@ open class ApiCallManager @Inject constructor(
     }
 
     override suspend fun authTokenSignup(username: String, useAsciiCaptcha: Boolean): GenericResponseClass<AuthToken?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().authTokenSignup(username,useAsciiCaptcha) { code, json ->
+            val callback = api.authTokenSignup(username,useAsciiCaptcha) { code, json ->
                 buildResponse(continuation, code, json, AuthToken::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -581,8 +616,9 @@ open class ApiCallManager @Inject constructor(
     }
 
     override suspend fun rotateIp(): GenericResponseClass<String?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitBridgeAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = bridgeAPI.get().rotateIp() { code, json ->
+            val callback = api.rotateIp() { code, json ->
                 buildResponse(continuation, code, json, String::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -590,8 +626,9 @@ open class ApiCallManager @Inject constructor(
     }
 
     override suspend fun pinIp(ip: String?): GenericResponseClass<String?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitBridgeAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = bridgeAPI.get().pinIp(ip ?: "") { code, json ->
+            val callback = api.pinIp(ip ?: "") { code, json ->
                 buildResponse(continuation, code, json, String::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -599,8 +636,9 @@ open class ApiCallManager @Inject constructor(
     }
 
     override suspend fun passwordRecovery(email: String?): GenericResponseClass<GenericSuccess?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().passwordRecovery(email) { code, json ->
+            val callback = api.passwordRecovery(email) { code, json ->
                 buildResponse(continuation, code, json, GenericSuccess::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -609,8 +647,9 @@ open class ApiCallManager @Inject constructor(
 
     override suspend fun unblockWgParams(): GenericResponseClass<UnblockWgResponse?, ApiErrorResponse?> {
         checkSession()
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().amneziawgUnblockParams(preferencesHelper.sessionHash) { code, json ->
+            val callback = api.amneziawgUnblockParams(preferencesHelper.sessionHash) { code, json ->
                 buildResponse(continuation, code, json, UnblockWgResponse::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -741,8 +780,9 @@ open class ApiCallManager @Inject constructor(
     }
 
     override suspend fun generateUsername(): GenericResponseClass<GenerateUsernameResponse?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().generateRandomUsername() { code, json ->
+            val callback = api.generateRandomUsername() { code, json ->
                 buildResponse(continuation, code, json, GenerateUsernameResponse::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }
@@ -750,8 +790,9 @@ open class ApiCallManager @Inject constructor(
     }
 
     override suspend fun generatePassword(): GenericResponseClass<GeneratePasswordResponse?, ApiErrorResponse?> {
+        val api = wsNetWrapper.awaitServerAPI()
         return suspendCancellableCoroutine { continuation ->
-            val callback = wsNetServerAPI.get().generateRandomPassword() { code, json ->
+            val callback = api.generateRandomPassword() { code, json ->
                 buildResponse(continuation, code, json, GeneratePasswordResponse::class.java)
             }
             continuation.invokeOnCancellation { callback.cancel() }

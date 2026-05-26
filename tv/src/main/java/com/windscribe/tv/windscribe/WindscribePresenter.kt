@@ -4,9 +4,12 @@
 
 package com.windscribe.tv.windscribe
 
+import com.windscribe.tv.windscribe.WindscribeView
 import com.windscribe.vpn.api.response.ServerCredentialsResponse
+import kotlinx.coroutines.CoroutineScope
 
 interface WindscribePresenter {
+    fun bind(view: WindscribeView, scope: CoroutineScope)
 
     fun connectWithSelectedStaticIp(regionID: Int, serverCredentialsResponse: ServerCredentialsResponse)
     fun connectWithSelectedLocation(cityID: Int)

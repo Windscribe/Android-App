@@ -15,6 +15,8 @@ import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.NetworkInfoManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,7 +42,8 @@ abstract class NetworkDetailViewModel : ViewModel() {
 }
 
 
-class NetworkDetailViewModelImpl(
+@HiltViewModel
+class NetworkDetailViewModelImpl @Inject constructor(
     val localDbInterface: LocalDbInterface,
     val api: IApiCallManager,
     val preferencesHelper: PreferencesHelper,

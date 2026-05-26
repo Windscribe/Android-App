@@ -18,6 +18,7 @@ import com.windscribe.vpn.backend.VPNState.Status.*
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.ShortcutStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -25,6 +26,7 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
+@AndroidEntryPoint
 @RequiresApi(api = VERSION_CODES.N)
 class VpnTileService : TileService() {
 
@@ -49,7 +51,6 @@ class VpnTileService : TileService() {
 
     override fun onCreate() {
         super.onCreate()
-        appContext.serviceComponent.inject(this)
     }
 
     override fun onClick() {

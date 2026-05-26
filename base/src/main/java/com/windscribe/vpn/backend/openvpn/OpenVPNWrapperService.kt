@@ -6,7 +6,6 @@ package com.windscribe.vpn.backend.openvpn
 
 import android.content.Intent
 import android.net.VpnService
-import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.Util
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
@@ -21,10 +20,12 @@ import de.blinkt.openvpn.VpnProfile
 import de.blinkt.openvpn.core.ConnectionStatus
 import de.blinkt.openvpn.core.OpenVPNService
 import de.blinkt.openvpn.core.VpnStatus
+import dagger.hilt.android.AndroidEntryPoint
 import de.blinkt.openvpn.core.VpnStatus.StateListener
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class OpenVPNWrapperService : OpenVPNService(), StateListener {
 
     @Inject
@@ -50,13 +51,12 @@ class OpenVPNWrapperService : OpenVPNService(), StateListener {
     override fun onCreate() {
         logger.debug("OpenVPNWrapperService onCreate()")
         startForegroundImmediately(NotificationConstants.SERVICE_NOTIFICATION_ID)
-        Windscribe.appContext.serviceComponent.inject(this)
+        super.onCreate()
         startForegroundSafely(
             windNotificationBuilder,
             NotificationConstants.SERVICE_NOTIFICATION_ID,
             Connecting
         )
-        super.onCreate()
         openVPNBackend.serviceCreated(this)
         VpnStatus.addStateListener(this)
     }

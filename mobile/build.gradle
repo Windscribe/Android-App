@@ -4,11 +4,13 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'kotlin-kapt'
+    id 'com.google.devtools.ksp'
     id 'org.jetbrains.kotlin.plugin.compose' version "2.0.0"
+    id 'dagger.hilt.android.plugin'
 }
 apply from: "$rootDir/config/config.gradle"
 apply from: "$rootDir/depedencycheck.gradle"
+
 
 android {
     namespace 'com.windscribe.mobile'
@@ -20,7 +22,6 @@ android {
     }
     buildFeatures {
         buildConfig = true
-        dataBinding = true
     }
 
     compileSdkVersion rootProject.appCompiledSdk
@@ -99,9 +100,13 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
     //Core Module
     implementation project(path: ':base')
-    //Kapt
-    kapt "androidx.room:room-compiler:$room"
-    kapt "com.google.dagger:dagger-compiler:$dagger"
+    // Hilt
+    implementation "com.google.dagger:hilt-android:$hiltVersion"
+    ksp "com.google.dagger:hilt-compiler:$hiltVersion"
+    implementation "androidx.hilt:hilt-work:1.2.0"
+    ksp "androidx.hilt:hilt-compiler:1.2.0"
+    // hilt-navigation-compose for hiltViewModel<VM>() in Compose (Phase 5).
+    implementation "androidx.hilt:hilt-navigation-compose:1.2.0"
     implementation "androidx.test.espresso:espresso-intents:3.5.1"
     implementation 'androidx.test.uiautomator:uiautomator:2.2.0'
     implementation "androidx.core:core-splashscreen:1.2.0"

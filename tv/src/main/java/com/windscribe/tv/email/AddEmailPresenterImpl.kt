@@ -17,12 +17,18 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 class AddEmailPresenterImpl @Inject constructor(
-    private var addEmailView: AddEmailView,
-    private var activityScope: CoroutineScope,
     private var apiCallManager: IApiCallManager,
     private var resourceHelper: ResourceHelper
 ) : AddEmailPresenter {
     private val logger = LoggerFactory.getLogger("basic")
+    private lateinit var addEmailView: AddEmailView
+    private lateinit var activityScope: CoroutineScope
+
+    override fun bind(view: AddEmailView, scope: CoroutineScope) {
+        this.addEmailView = view
+        this.activityScope = scope
+    }
+
     override fun onDestroy() {
         // Coroutine scope will be cancelled by the activity
     }

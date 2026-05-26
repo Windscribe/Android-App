@@ -4,7 +4,6 @@
 
 package com.windscribe.vpn.backend.wireguard
 
-import androidx.databinding.BaseObservable
 import com.wireguard.android.backend.Tunnel
 import com.wireguard.config.Config
 import kotlinx.coroutines.flow.Flow
@@ -14,7 +13,7 @@ class WireGuardTunnel internal constructor(
         private var name: String,
         config: Config?,
         state: Tunnel.State
-) : BaseObservable(), Tunnel {
+) : Tunnel {
 
     override fun getName() = name
 

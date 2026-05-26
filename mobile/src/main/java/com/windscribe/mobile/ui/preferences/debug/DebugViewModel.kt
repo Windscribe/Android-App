@@ -6,6 +6,8 @@ import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.repository.AdvanceParameterRepository
 import com.windscribe.vpn.repository.LogRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,8 +19,10 @@ abstract class DebugViewModel : ViewModel() {
     abstract val debugLog: StateFlow<List<String>>
 }
 
-class DebugViewModelImpl(val logRepository: LogRepository) :
-    DebugViewModel() {
+@HiltViewModel
+class DebugViewModelImpl @Inject constructor(
+    val logRepository: LogRepository
+) : DebugViewModel() {
     private val _showProgress = MutableStateFlow(false)
     override val showProgress: StateFlow<Boolean> = _showProgress
     private val _debugLog = MutableStateFlow(emptyList<String>())

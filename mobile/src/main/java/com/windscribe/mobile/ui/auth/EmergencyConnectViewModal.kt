@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -20,6 +21,7 @@ enum class EmergencyConnectUIState {
     Connected,
     Disconnected
 }
+@HiltViewModel
 class EmergencyConnectViewModal @Inject constructor(
     private val scope: CoroutineScope,
     private val windVpnController: WindVpnController,

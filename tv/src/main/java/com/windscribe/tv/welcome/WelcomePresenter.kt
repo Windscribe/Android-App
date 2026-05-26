@@ -3,7 +3,11 @@
  */
 package com.windscribe.tv.welcome
 
+import com.windscribe.tv.welcome.WelcomeView
+import kotlinx.coroutines.CoroutineScope
+
 interface WelcomePresenter {
+    fun bind(view: WelcomeView, scope: CoroutineScope)
     fun exportLog()
     fun onBackPressed()
     fun onDestroy()

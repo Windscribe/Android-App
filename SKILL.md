@@ -98,8 +98,9 @@ abstract class NewFeatureViewModel : ViewModel() {
     abstract fun performAction()
 }
 
-// Implementation with dependencies
-class NewFeatureViewModelImpl(
+// Implementation with dependencies (Hilt constructs it)
+@HiltViewModel
+class NewFeatureViewModelImpl @Inject constructor(
     private val preferencesHelper: PreferencesHelper,
     private val repository: SomeRepository
 ) : NewFeatureViewModel() {
@@ -134,32 +135,24 @@ sealed class NewFeatureState {
 }
 ```
 
-**Step 5: Wire up Dagger Factory**
+**Step 5: Resolve the ViewModel in the Navigation Graph**
+
+No DI module wiring is needed — Hilt builds the `@HiltViewModel` from its
+`@Inject constructor`. Just request it inside the screen's `composable { }` block
+in `NavigationStack.kt`:
 
 ```kotlin
-// mobile/src/main/java/com/windscribe/mobile/di/ComposeModule.kt
-@Module
-class ComposeModule {
-    @Provides
-    fun getViewModelFactory(
-        preferencesHelper: PreferencesHelper,
-        repository: SomeRepository
-        // ... other dependencies
-    ): ViewModelProvider.Factory {
-        return object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                // Existing ViewModels...
-
-                if (modelClass.isAssignableFrom(NewFeatureViewModel::class.java)) {
-                    return NewFeatureViewModelImpl(preferencesHelper, repository) as T
-                }
-
-                throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
-            }
-        }
+// mobile/src/main/java/com/windscribe/mobile/ui/nav/NavigationStack.kt
+composable(route = Screen.NewFeature.route, /* transitions */) {
+    ViewModelRoute(NewFeatureViewModelImpl::class.java) { viewModel ->
+        NewFeatureScreen(viewModel)
     }
 }
 ```
+
+`ViewModelRoute` calls `hiltViewModel()` under the hood. Any new dependency you
+add to the constructor just needs to be provided somewhere in the Hilt graph
+(usually already true for repositories/helpers).
 
 **Step 6: Navigate to Screen**
 
@@ -925,9 +918,9 @@ git push origin feature/my-feature
 7. **Follow MVP architecture**
    - Activity/Fragment (View) → Presenter/ViewModel → Repository → API/Database
 
-8. **Inject via Dagger**
+8. **Inject via Hilt**
    - No manual `new` for singletons or core classes
-   - Use `@Inject` constructor or `@Provides` methods
+   - Use `@Inject` constructor or `@Provides` methods in an `@InstallIn` module
 
 9. **Write tests**
    - Unit tests for business logic (repositories, managers)

@@ -8,9 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.windscribe.tv.di.ActivityComponent
-import com.windscribe.tv.di.ActivityModule
-import com.windscribe.tv.di.DaggerActivityComponent
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
@@ -19,14 +16,6 @@ import kotlinx.coroutines.launch
 
 abstract class BaseActivity : AppCompatActivity() {
     val coldLoad = AtomicBoolean()
-
-    protected fun setActivityModule(activityModule: ActivityModule?): ActivityComponent {
-        return DaggerActivityComponent.builder().activityModule(activityModule)
-            .applicationComponent(
-                appContext
-                    .applicationComponent
-            ).build()
-    }
 
     protected fun setContentLayout(layoutID: Int) {
         coldLoad.set(true)
