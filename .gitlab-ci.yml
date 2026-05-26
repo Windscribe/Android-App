@@ -27,7 +27,7 @@ strix-scan-mr-diff:
 #   4. Nexus Public: Public APK distribution (tag-triggered)
 #==============================================================================
 
-image: $CI_REGISTRY_IMAGE
+image: $BASE_CI_IMAGE
 
 #------------------------------------------------------------------------------
 # Global Variables
@@ -198,6 +198,69 @@ UnitTests:
     reports:
       junit:
         - "**/build/test-results/test*UnitTest/TEST-*.xml"
+
+#------------------------------------------------------------------------------
+# Maestro UI Tests — Build arm64 debug APK against staging (Manual)
+#------------------------------------------------------------------------------
+MaestroBuildApk:
+  extends: .base_android_setup
+  stage: Test
+  when: manual
+  script:
+    - export DEV=true
+    - ./gradlew :mobile:assembleGoogleDebug -PabiFilter=arm64-v8a --no-daemon
+    - mkdir -p maestro-artifacts
+    - cp $(find mobile/build/outputs/apk/google/debug -name "*.apk" | head -1) maestro-artifacts/mobile-google-debug.apk
+  artifacts:
+    name: "maestro-apk-$CI_COMMIT_SHORT_SHA"
+    expire_in: 1 day
+    paths:
+      - maestro-artifacts/mobile-google-debug.apk
+
+#------------------------------------------------------------------------------
+# Maestro UI Tests — Run on arm64 macOS runner (auto after MaestroBuildApk)
+#------------------------------------------------------------------------------
+MaestroUITests:
+  stage: Test
+  tags:
+    - arm64
+  needs:
+    - job: MaestroBuildApk
+      artifacts: true
+  variables:
+    AVD_NAME: "ws_test_avd"
+    APK_PATH: "maestro-artifacts/mobile-google-debug.apk"
+  before_script:
+    - export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
+    - export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$HOME/.maestro/bin:$PATH"
+    - export JAVA_HOME="$(/usr/libexec/java_home -v 17)"
+  script:
+    - adb kill-server >/dev/null 2>&1 || true
+    - pkill -f "qemu-system.*-avd $AVD_NAME" || true
+    - adb start-server
+    - nohup emulator -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -no-snapshot -wipe-data -gpu swiftshader_indirect -accel on > emulator.log 2>&1 &
+    - adb wait-for-device
+    - |
+      elapsed=0
+      until test "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1"; do
+        if test "$elapsed" -ge 300; then echo "emulator did not boot within 300s"; tail -50 emulator.log; exit 1; fi
+        sleep 3; elapsed=$((elapsed + 3))
+      done
+    - adb install -r "$APK_PATH"
+    - caffeinate -dimsu ./maestro/run.sh --skip-build
+  after_script:
+    - export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
+    - export PATH="$ANDROID_HOME/platform-tools:$PATH"
+    - adb -s emulator-5554 emu kill || true
+    - pkill -f "qemu-system.*-avd $AVD_NAME" || true
+    - mkdir -p maestro-reports
+    - cp -R "$HOME/.maestro/tests" maestro-reports/ 2>/dev/null || true
+  artifacts:
+    when: always
+    expire_in: 1 day
+    paths:
+      - emulator.log
+      - maestro-reports/**
 
 #==============================================================================
 # DEPLOYMENT JOBS

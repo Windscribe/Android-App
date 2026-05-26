@@ -124,7 +124,11 @@ android {
         abi {
             isEnable = true
             reset()
-            include("x86", "x86_64", "armeabi-v7a", "arm64-v8a")
+            val requested = (project.findProperty("abiFilter") as String?)
+                ?.split(",")
+                ?.map { it.trim() }
+                ?.filter { it.isNotEmpty() }
+            include(*(requested ?: listOf("x86", "x86_64", "armeabi-v7a", "arm64-v8a")).toTypedArray())
             isUniversalApk = true
         }
     }

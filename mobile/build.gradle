@@ -31,6 +31,11 @@ android {
         versionName System.getenv().getOrDefault("VERSION_NAME", rootProject.appVersionName)
         versionCode System.getenv("VERSION_CODE")?.toInteger() ?: rootProject.appVersionCode
         vectorDrawables.useSupportLibrary = true
+        if (project.hasProperty("abiFilter")) {
+            ndk {
+                abiFilters project.property("abiFilter").toString().split(",")
+            }
+        }
     }
 
     buildTypes {

@@ -4,7 +4,7 @@ tags:
 ---
 # Logs in with real staging credentials and verifies we land on the home screen.
 # Pass credentials in via the runner: maestro test -e TEST_EMAIL=... -e TEST_PASSWORD=...
-# (run.sh handles this automatically by sourcing maestro/.env).
+# (run.sh forwards TEST_EMAIL / TEST_PASSWORD from the environment automatically).
 - launchApp:
     clearState: true
 - runFlow:
