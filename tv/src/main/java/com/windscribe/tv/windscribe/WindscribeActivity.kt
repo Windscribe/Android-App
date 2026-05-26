@@ -20,14 +20,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
-import androidx.databinding.DataBindingUtil
 import com.bumptech.glide.Glide
 import com.windscribe.tv.R
 import com.windscribe.tv.R.*
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.customview.ErrorPrimaryFragment
 import com.windscribe.tv.databinding.ActivityWindscribeBinding
-import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.news.NewsFeedActivity
 import com.windscribe.tv.rate.RateMyAppActivity
 import com.windscribe.tv.serverlist.adapters.ServerAdapter
@@ -47,8 +45,11 @@ import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import org.slf4j.LoggerFactory
+import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintLayout.OnWindowResizeListener {
 
     @Inject
@@ -75,8 +76,9 @@ class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintL
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setActivityModule(ActivityModule(this, this)).inject(this)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_windscribe)
+        windscribePresenter.bind(this, lifecycleScope)
+        binding = ActivityWindscribeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         onActivityLaunch()
         setViews()
         registerDataChangeObserver()

@@ -8,11 +8,30 @@ import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.FragmentType
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import com.windscribe.vpn.autoconnection.ProtocolInformation
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
+import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
-class PhoneApplication : Windscribe(), Windscribe.ApplicationInterface {
+@HiltAndroidApp
+class PhoneApplication : Windscribe(), Windscribe.ApplicationInterface, androidx.work.Configuration.Provider {
+
+    @Inject
+    lateinit var hiltWorkerFactory: HiltWorkerFactory
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(hiltWorkerFactory)
+            .build()
+
     override fun onCreate() {
+        // Set the static Windscribe.appContext BEFORE super.onCreate() so the
+        // Hilt-generated Hilt_PhoneApplication.onCreate() (which runs first
+        // and triggers eager singleton construction via hiltInternalInject)
+        // can safely access appContext from singleton init blocks.
+        appContext = this
         applicationInterface = this
         super.onCreate()
         try {

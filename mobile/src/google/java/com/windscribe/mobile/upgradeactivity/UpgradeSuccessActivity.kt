@@ -1,8 +1,6 @@
 package com.windscribe.mobile.upgradeactivity
 
 import android.os.Bundle
-import androidx.databinding.DataBindingUtil
-import com.windscribe.mobile.R
 import com.windscribe.mobile.databinding.ActivityUpgradeSuccessBinding
 import com.windscribe.vpn.constants.NetworkKeyConstants
 
@@ -11,7 +9,8 @@ class UpgradeSuccessActivity: BaseActivity() {
     private lateinit var binding: ActivityUpgradeSuccessBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_upgrade_success);
+        binding = ActivityUpgradeSuccessBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         setContentLayout(false)
         addClickListeners()
     }

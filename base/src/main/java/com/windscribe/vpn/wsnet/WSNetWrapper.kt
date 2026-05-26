@@ -1,5 +1,6 @@
 package com.windscribe.vpn.wsnet
 
+import android.util.Log
 import com.wsnet.lib.WSNet
 import com.wsnet.lib.WSNetBridgeAPI
 import com.wsnet.lib.WSNetPingManager
@@ -7,8 +8,10 @@ import com.wsnet.lib.WSNetServerAPI
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Singleton
 
 /**
  * Thread-safe wrapper around WSNet that manages initialization state and provides safe access.
@@ -135,21 +138,16 @@ class WSNetWrapper {
     }
 
     /**
-     * Get the bridge API, blocking until WSNet is initialized if needed.
-     * Should only be called through Dagger Lazy injection.
+     * Suspend until WSNet is initialized, then return the bridge API.
+     * Safe to call from the main thread.
      */
-    fun getBridgeAPI(): WSNetBridgeAPI {
-        // Block until initialized (for Dagger providers)
-        while (!isInitialized()) {
-            Thread.sleep(50)
+    suspend fun awaitBridgeAPI(): WSNetBridgeAPI {
+        if (!_isReady.value) {
+            logger.debug("awaitBridgeAPI: waiting for WSNet init")
         }
+        isReady.first { it }
         val wsNet = wsNetInstance ?: throw IllegalStateException("WSNet not initialized")
-        return try {
-            wsNet.bridgeAPI()
-        } catch (e: Exception) {
-            logger.error("Failed to get bridgeAPI: ${e.message}")
-            throw e
-        }
+        return wsNet.bridgeAPI()
     }
 
     /**
@@ -167,21 +165,16 @@ class WSNetWrapper {
     }
 
     /**
-     * Get the server API, blocking until WSNet is initialized if needed.
-     * Should only be called through Dagger Lazy injection.
+     * Suspend until WSNet is initialized, then return the server API.
+     * Safe to call from the main thread.
      */
-    fun getServerAPI(): WSNetServerAPI {
-        // Block until initialized (for Dagger providers)
-        while (!isInitialized()) {
-            Thread.sleep(50)
+    suspend fun awaitServerAPI(): WSNetServerAPI {
+        if (!_isReady.value) {
+            logger.debug("awaitServerAPI: waiting for WSNet init")
         }
+        isReady.first { it }
         val wsNet = wsNetInstance ?: throw IllegalStateException("WSNet not initialized")
-        return try {
-            wsNet.serverAPI()
-        } catch (e: Exception) {
-            logger.error("Failed to get serverAPI: ${e.message}")
-            throw e
-        }
+        return wsNet.serverAPI()
     }
 
     /**

@@ -13,7 +13,6 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.URLSpan
 import android.view.View
-import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.windscribe.tv.R
@@ -22,14 +21,16 @@ import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.base.applyAppLocale
 import com.windscribe.tv.customview.CustomDialog
 import com.windscribe.tv.databinding.ActivityNewsFeedBinding
-import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.upgrade.UpgradeActivity
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
 import com.windscribe.vpn.localdatabase.tables.NewsfeedAction
 import org.slf4j.LoggerFactory
+import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class NewsFeedActivity : BaseActivity(), NewsFeedView {
     @JvmField
     @Inject
@@ -44,9 +45,10 @@ class NewsFeedActivity : BaseActivity(), NewsFeedView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setActivityModule(ActivityModule(this, this)).inject(this)
+        presenter.bind(this, lifecycleScope)
         applyAppLocale()
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_news_feed)
+        binding = ActivityNewsFeedBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         setupUI()
     }
 

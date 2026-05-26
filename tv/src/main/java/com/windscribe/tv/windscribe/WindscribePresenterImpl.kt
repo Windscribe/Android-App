@@ -10,7 +10,6 @@ import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.view.View
 import com.windscribe.tv.R.color
-import com.windscribe.tv.di.PerActivity
 import com.windscribe.tv.serverlist.adapters.ServerAdapter
 import com.windscribe.tv.sort.ByLatency
 import com.windscribe.tv.sort.ByRegionName
@@ -50,8 +49,8 @@ import com.windscribe.vpn.workers.WindScribeWorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
@@ -61,10 +60,7 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
-@PerActivity
 class WindscribePresenterImpl @Inject constructor(
-    var windscribeView: WindscribeView,
-    private val activityScope: CoroutineScope,
     private val preferencesHelper: PreferencesHelper,
     private val localDbInterface: LocalDbInterface,
     private val userRepository: UserRepository,
@@ -78,6 +74,14 @@ class WindscribePresenterImpl @Inject constructor(
     private val deviceStateManager: DeviceStateManager,
     private val resourceHelper: ResourceHelper
 ) : WindscribePresenter, ConnectionStateAnimationListener {
+
+    private lateinit var windscribeView: WindscribeView
+    private lateinit var activityScope: CoroutineScope
+
+    override fun bind(view: WindscribeView, scope: CoroutineScope) {
+        this.windscribeView = view
+        this.activityScope = scope
+    }
 
     private val logger = LoggerFactory.getLogger("basic")
     private var canQuit = false

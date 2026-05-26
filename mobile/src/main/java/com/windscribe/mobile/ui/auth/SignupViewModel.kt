@@ -24,6 +24,7 @@ import com.windscribe.vpn.repository.UserDataState
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.repository.getNetworkError
 import com.windscribe.vpn.services.FirebaseManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,6 +45,7 @@ sealed class SignupState {
     data class Error(val error: AuthError) : SignupState()
 }
 
+@HiltViewModel
 class SignupViewModel @Inject constructor(
     private val apiCallManager: IApiCallManager,
     private val preferenceHelper: PreferencesHelper,

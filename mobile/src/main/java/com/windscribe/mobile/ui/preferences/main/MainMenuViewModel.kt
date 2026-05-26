@@ -3,6 +3,8 @@ package com.windscribe.mobile.ui.preferences.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.repository.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -13,7 +15,10 @@ abstract class MainMenuViewModel : ViewModel() {
     abstract val showProgress: StateFlow<Boolean>
 }
 
-class MainMenuViewModelImpl(val userRepository: UserRepository) : MainMenuViewModel() {
+@HiltViewModel
+class MainMenuViewModelImpl @Inject constructor(
+    val userRepository: UserRepository
+) : MainMenuViewModel() {
     override val showReferData: Boolean
         get() = userRepository.user.value?.isPro == false
 

@@ -84,12 +84,12 @@ import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.state.WindscribeReviewManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import com.wireguard.android.backend.GoBackend
-import com.wsnet.lib.WSNetServerAPI
-import com.wsnet.lib.WSNetBridgeAPI
 import com.windscribe.vpn.wsnet.WSNetWrapper
 import dagger.Lazy
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ConnectionPool
@@ -101,21 +101,19 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
 @Module
+@InstallIn(SingletonComponent::class)
 open class BaseApplicationModule {
     private val logger = LoggerFactory.getLogger("wsnet")
 
-    open lateinit var windscribeApp: Windscribe
+    // Migration note: `windscribeApp` field removed. Each @Provides that needs
+    // the application instance now takes it as a parameter. Hilt auto-binds
+    // `Application`; the legacy Dagger graph gets it via `provideApplication`
+    // in the subclass `ApplicationModule` (google / fdroid flavors).
 
     @Provides
     @Singleton
-    fun provideAlarmManager(): AlarmManager {
-        return windscribeApp.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    }
-
-    @Provides
-    @Singleton
-    fun provideApp(): Windscribe {
-        return windscribeApp
+    fun provideAlarmManager(app: Windscribe): AlarmManager {
+        return app.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     }
 
     @Provides
@@ -180,8 +178,8 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(): WindscribeDatabase {
-        return Room.databaseBuilder(windscribeApp, WindscribeDatabase::class.java, "wind_db")
+    fun provideDatabase(app: Windscribe): WindscribeDatabase {
+        return Room.databaseBuilder(app, WindscribeDatabase::class.java, "wind_db")
             .fallbackToDestructiveMigration().addCallback(object : RoomDatabase.Callback() {
                 override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
                     logger.debug("No migration found for old database. Reconstructing from scratch.")
@@ -215,8 +213,8 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun provideGoBackend(): GoBackend {
-        return GoBackend(WireguardContextWrapper(windscribeApp.applicationContext))
+    fun provideGoBackend(app: Windscribe): GoBackend {
+        return GoBackend(WireguardContextWrapper(app.applicationContext))
     }
 
     @Provides
@@ -319,8 +317,8 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun provideDataStore(): androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> {
-        return windscribeApp.windscribeDataStore
+    fun provideDataStore(app: Windscribe): androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> {
+        return app.windscribeDataStore
     }
 
     @Provides
@@ -546,21 +544,10 @@ open class BaseApplicationModule {
     @Provides
     @Singleton
     fun providesApiCallManagerInterface(
-        wsNetServerAPI: Lazy<WSNetServerAPI>,
-        preferencesHelper: PreferencesHelper,
-        bridgeAPI: Lazy<WSNetBridgeAPI>
+        wsNetWrapper: WSNetWrapper,
+        preferencesHelper: PreferencesHelper
     ): IApiCallManager {
-        return ApiCallManager(
-            wsNetServerAPI,
-            preferencesHelper,
-            bridgeAPI
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun providesBridgeApi(wrapper: WSNetWrapper): WSNetBridgeAPI {
-        return wrapper.getBridgeAPI()
+        return ApiCallManager(wsNetWrapper, preferencesHelper)
     }
 
     @Provides
@@ -604,8 +591,8 @@ open class BaseApplicationModule {
     @Provides
     @Singleton
     @Named("ApplicationContext")
-    fun providesApplicationContext(): Context {
-        return windscribeApp
+    fun providesApplicationContext(app: Windscribe): Context {
+        return app
     }
 
     @Provides
@@ -616,12 +603,13 @@ open class BaseApplicationModule {
     @Provides
     @Singleton
     fun providesMockLocationController(
+        app: Windscribe,
         coroutineScope: CoroutineScope,
         vpnConnectionStateManager: VPNConnectionStateManager,
         preferencesHelper: PreferencesHelper
     ): MockLocationManager {
         return MockLocationManager(
-            windscribeApp, coroutineScope, vpnConnectionStateManager, preferencesHelper
+            app, coroutineScope, vpnConnectionStateManager, preferencesHelper
         )
     }
 
@@ -687,8 +675,8 @@ open class BaseApplicationModule {
 
     @Provides
     @Singleton
-    fun providesSecurePreference(): SecurePreferences {
-        return SecurePreferences(windscribeApp)
+    fun providesSecurePreference(app: Windscribe): SecurePreferences {
+        return SecurePreferences(app)
     }
 
     @Provides
@@ -714,6 +702,7 @@ open class BaseApplicationModule {
     @Provides
     @Singleton
     fun providesWindScribeWorkManager(
+        app: Windscribe,
         scope: CoroutineScope,
         vpnConnectionStateManager: VPNConnectionStateManager,
         preferencesHelper: PreferencesHelper,
@@ -722,7 +711,7 @@ open class BaseApplicationModule {
         deviceStateManager: DeviceStateManager
     ): WindScribeWorkManager {
         return WindScribeWorkManager(
-            windscribeApp, scope, vpnConnectionStateManager, preferencesHelper, checkUpdateRepository, wsNetWrapper, deviceStateManager
+            app, scope, vpnConnectionStateManager, preferencesHelper, checkUpdateRepository, wsNetWrapper, deviceStateManager
         )
     }
 
@@ -781,12 +770,6 @@ open class BaseApplicationModule {
         wsNetWrapper: WSNetWrapper
     ): AdvanceParameterRepository {
         return AdvanceParameterRepositoryImpl(scope, preferencesHelper, wsNetWrapper)
-    }
-
-    @Provides
-    @Singleton
-    fun providesWsNetServerApi(wrapper: WSNetWrapper): WSNetServerAPI {
-        return wrapper.getServerAPI()
     }
 
     @Provides

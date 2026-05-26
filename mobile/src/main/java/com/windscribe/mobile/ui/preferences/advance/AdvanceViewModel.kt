@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.repository.AdvanceParameterRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +22,8 @@ abstract class AdvanceViewModel : ViewModel() {
     abstract fun updateParams(params: String)
 }
 
-class AdvanceViewModelImpl(
+@HiltViewModel
+class AdvanceViewModelImpl @Inject constructor(
     val preferencesHelper: PreferencesHelper,
     val advanceParameterRepository: AdvanceParameterRepository
 ) : AdvanceViewModel() {

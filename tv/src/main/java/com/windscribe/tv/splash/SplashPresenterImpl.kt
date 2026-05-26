@@ -27,8 +27,6 @@ import java.util.Date
 import javax.inject.Inject
 
 class SplashPresenterImpl @Inject constructor(
-    private var splashView: SplashView,
-    private var activityScope: CoroutineScope,
     private var preferencesHelper: PreferencesHelper,
     private var apiCallManager: IApiCallManager,
     private var localDbInterface: LocalDbInterface,
@@ -40,6 +38,13 @@ class SplashPresenterImpl @Inject constructor(
     private var staticIpRepository: StaticIpRepository
 ) : SplashPresenter {
     private val logger = LoggerFactory.getLogger("basic")
+    private lateinit var splashView: SplashView
+    private lateinit var activityScope: CoroutineScope
+
+    override fun bind(view: SplashView, scope: CoroutineScope) {
+        this.splashView = view
+        this.activityScope = scope
+    }
 
     override fun onDestroy() {
         // Coroutine scope will be cancelled by the activity

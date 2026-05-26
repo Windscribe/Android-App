@@ -3,6 +3,8 @@ package com.windscribe.mobile.ui.popup
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.repository.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,8 +18,10 @@ abstract class SharedLinkViewmodel : ViewModel() {
     abstract val userName: StateFlow<String>
 }
 
-class SharedLinkViewmodelImpl(private val userRepository: UserRepository) :
-    SharedLinkViewmodel() {
+@HiltViewModel
+class SharedLinkViewmodelImpl @Inject constructor(
+    private val userRepository: UserRepository
+) : SharedLinkViewmodel() {
     private val _shouldExit = MutableStateFlow(false)
     override val shouldExit = _shouldExit.asStateFlow()
     private val _userName = MutableStateFlow("")

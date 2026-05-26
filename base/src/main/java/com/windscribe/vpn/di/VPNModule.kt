@@ -15,10 +15,13 @@ import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.Lazy
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import javax.inject.Singleton
 
 @Module
+@InstallIn(SingletonComponent::class)
 class VPNModule {
     @Provides
     @Singleton

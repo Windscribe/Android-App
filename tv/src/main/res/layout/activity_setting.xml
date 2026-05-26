@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2021 Windscribe Limited.
   -->
-<layout>
-
-    <com.windscribe.tv.serverlist.customviews.SettingFocusAware xmlns:android="http://schemas.android.com/apk/res/android"
+<com.windscribe.tv.serverlist.customviews.SettingFocusAware xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/parent"
         android:layout_width="match_parent"
@@ -207,4 +205,3 @@
         </androidx.core.widget.NestedScrollView>
 
     </com.windscribe.tv.serverlist.customviews.SettingFocusAware>
-</layout>

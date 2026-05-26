@@ -18,12 +18,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import com.windscribe.mobile.R
-import com.windscribe.mobile.di.ComposeComponent
-import com.windscribe.mobile.di.DaggerComposeComponent
 import com.windscribe.mobile.ui.helper.PermissionHelper
 import com.windscribe.mobile.ui.nav.NavigationStack
 import com.windscribe.mobile.ui.nav.Screen
@@ -33,21 +31,17 @@ import com.windscribe.mobile.upgradeactivity.UpgradeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants.DARK_THEME
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
 import androidx.core.graphics.toColorInt
 
+@AndroidEntryPoint
 class AppStartActivity : AppCompatActivity() {
-    lateinit var di: ComposeComponent
-    lateinit var viewmodel: AppStartActivityViewModel
+    private val viewmodelImpl: AppStartActivityViewModelImpl by viewModels()
+    val viewmodel: AppStartActivityViewModel get() = viewmodelImpl
     lateinit var navController: NavController
     lateinit var permissionHelper: PermissionHelper
     override fun onCreate(savedInstanceState: Bundle?) {
-        val applicationComponent = appContext.applicationComponent
-        di = DaggerComposeComponent.builder()
-            .applicationComponent(applicationComponent)
-            .build()
-        viewmodel =
-            ViewModelProvider(this, di.getViewModelFactory())[AppStartActivityViewModel::class.java]
         permissionHelper = PermissionHelper(this)
         val isDark = appContext.preference.selectedTheme == DARK_THEME
         if (isDark) {

@@ -18,14 +18,20 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 class NewsFeedPresenterImpl @Inject constructor(
-    private val newsFeedView: NewsFeedView,
-    private val activityScope: CoroutineScope,
     private val preferencesHelper: PreferencesHelper,
     private val notificationRepository: NotificationRepository
 ) : NewsFeedPresenter, NewsFeedAdapter.NewsFeedListener {
+    private lateinit var newsFeedView: NewsFeedView
+    private lateinit var activityScope: CoroutineScope
     private var newsFeedAdapter: NewsFeedAdapter? = null
     private var notificationList: List<WindNotification>? = null
     private val logger = LoggerFactory.getLogger("basic")
+
+    override fun bind(view: NewsFeedView, scope: CoroutineScope) {
+        this.newsFeedView = view
+        this.activityScope = scope
+    }
+
     override fun onDestroy() {
         // Coroutine scope will be cancelled by the activity
     }

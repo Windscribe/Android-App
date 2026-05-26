@@ -18,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import com.windscribe.mobile.ui.AppStartActivity
 import com.windscribe.mobile.ui.auth.AppStartScreen
 import com.windscribe.mobile.ui.auth.AppStartViewModel
+import com.windscribe.mobile.ui.auth.AppStartViewModelImpl
 import com.windscribe.mobile.ui.auth.EmergencyConnectScreen
 import com.windscribe.mobile.ui.auth.EmergencyConnectViewModal
 import com.windscribe.mobile.ui.auth.LoginScreen
@@ -28,18 +29,22 @@ import com.windscribe.mobile.ui.auth.SignupViewModel
 import com.windscribe.mobile.ui.auth.TwoFactorScreen
 import com.windscribe.mobile.ui.connection.AllProtocolFailedScreen
 import com.windscribe.mobile.ui.connection.BridgeApiViewModel
+import com.windscribe.mobile.ui.connection.BridgeApiViewModelImpl
 import com.windscribe.mobile.ui.connection.ConnectionChangeScreen
 import com.windscribe.mobile.ui.connection.ConnectionViewmodel
+import com.windscribe.mobile.ui.connection.ConnectionViewmodelImpl
 import com.windscribe.mobile.ui.connection.DebugLogSentScreen
 import com.windscribe.mobile.ui.connection.ManualModeFailedScreen
 import com.windscribe.mobile.ui.connection.SetupPreferredProtocolScreen
 import com.windscribe.mobile.ui.home.HomeScreen
 import com.windscribe.mobile.ui.home.HomeViewmodel
+import com.windscribe.mobile.ui.home.HomeViewmodelImpl
 import com.windscribe.mobile.ui.model.AccountStatusDialogData
 import com.windscribe.mobile.ui.popup.AccountStatusScreen
 import com.windscribe.mobile.ui.popup.AllProtocolFailedDialogScreen
 import com.windscribe.mobile.ui.popup.EditCustomConfigScreen
 import com.windscribe.mobile.ui.popup.EditCustomConfigViewmodel
+import com.windscribe.mobile.ui.popup.EditCustomConfigViewmodelImpl
 import com.windscribe.mobile.ui.popup.ExtraDataUseWarningScreen
 import com.windscribe.mobile.ui.popup.IpActionResultDialog
 import com.windscribe.mobile.ui.popup.LocationUnderMaintenanceScreen
@@ -49,43 +54,63 @@ import com.windscribe.mobile.ui.popup.NewsfeedViewmodel
 import com.windscribe.mobile.ui.popup.OverlayDialogScreen
 import com.windscribe.mobile.ui.popup.PowerWhitelistScreen
 import com.windscribe.mobile.ui.popup.PowerWhitelistViewmodel
+import com.windscribe.mobile.ui.popup.PowerWhitelistViewmodelImpl
 import com.windscribe.mobile.ui.popup.ShareLinkScreen
 import com.windscribe.mobile.ui.popup.SharedLinkViewmodel
+import com.windscribe.mobile.ui.popup.SharedLinkViewmodelImpl
 import com.windscribe.mobile.ui.preferences.about.AboutScreen
 import com.windscribe.mobile.ui.preferences.account.AccountScreen
 import com.windscribe.mobile.ui.preferences.account.AccountViewModel
+import com.windscribe.mobile.ui.preferences.account.AccountViewModelImpl
 import com.windscribe.mobile.ui.preferences.advance.AdvanceScreen
 import com.windscribe.mobile.ui.preferences.advance.AdvanceViewModel
+import com.windscribe.mobile.ui.preferences.advance.AdvanceViewModelImpl
+import com.windscribe.mobile.ui.preferences.anticensorship.AntiCensorshipViewModelImpl
 import com.windscribe.mobile.ui.preferences.connection.ConnectionScreen
 import com.windscribe.mobile.ui.preferences.connection.ConnectionViewModel
+import com.windscribe.mobile.ui.preferences.connection.ConnectionViewModelImpl
 import com.windscribe.mobile.ui.preferences.debug.DebugScreen
 import com.windscribe.mobile.ui.preferences.debug.DebugViewModel
+import com.windscribe.mobile.ui.preferences.debug.DebugViewModelImpl
 import com.windscribe.mobile.ui.preferences.email.AddEmailScreen
 import com.windscribe.mobile.ui.preferences.email.ConfirmEmailScreen
 import com.windscribe.mobile.ui.preferences.email.EmailViewModel
+import com.windscribe.mobile.ui.preferences.email.EmailViewModelImpl
 import com.windscribe.mobile.ui.preferences.general.GeneralScreen
 import com.windscribe.mobile.ui.preferences.general.GeneralViewModel
+import com.windscribe.mobile.ui.preferences.general.GeneralViewModelImpl
 import com.windscribe.mobile.ui.preferences.gps_spoofing.GpsSpoofing
 import com.windscribe.mobile.ui.preferences.help.HelpScreen
 import com.windscribe.mobile.ui.preferences.help.HelpViewModel
+import com.windscribe.mobile.ui.preferences.help.HelpViewModelImpl
 import com.windscribe.mobile.ui.preferences.icons.CustomIconsScreen
 import com.windscribe.mobile.ui.preferences.icons.CustomIconsViewModel
+import com.windscribe.mobile.ui.preferences.icons.CustomIconsViewModelImpl
 import com.windscribe.mobile.ui.preferences.lipstick.LipstickViewmodel
+import com.windscribe.mobile.ui.preferences.lipstick.LipstickViewmodelImpl
 import com.windscribe.mobile.ui.preferences.lipstick.LookAndFeelScreen
 import com.windscribe.mobile.ui.preferences.main.MainMenuScreen
 import com.windscribe.mobile.ui.preferences.main.MainMenuViewModel
+import com.windscribe.mobile.ui.preferences.main.MainMenuViewModelImpl
 import com.windscribe.mobile.ui.preferences.network_details.NetworkDetailScreen
 import com.windscribe.mobile.ui.preferences.network_details.NetworkDetailViewModel
+import com.windscribe.mobile.ui.preferences.network_details.NetworkDetailViewModelImpl
 import com.windscribe.mobile.ui.preferences.network_options.NetworkOptionsScreen
 import com.windscribe.mobile.ui.preferences.network_options.NetworkOptionsViewModel
+import com.windscribe.mobile.ui.preferences.network_options.NetworkOptionsViewModelImpl
 import com.windscribe.mobile.ui.preferences.robert.RobertScreen
 import com.windscribe.mobile.ui.preferences.robert.RobertViewModel
+import com.windscribe.mobile.ui.preferences.robert.RobertViewModelImpl
 import com.windscribe.mobile.ui.preferences.split_tunnel.SplitTunnelScreen
 import com.windscribe.mobile.ui.preferences.split_tunnel.SplitTunnelViewModel
+import com.windscribe.mobile.ui.preferences.split_tunnel.SplitTunnelViewModelImpl
 import com.windscribe.mobile.ui.preferences.ticket.TicketScreen
 import com.windscribe.mobile.ui.preferences.ticket.TicketViewModel
+import com.windscribe.mobile.ui.preferences.ticket.TicketViewModelImpl
 import com.windscribe.mobile.ui.serverlist.ConfigViewmodel
+import com.windscribe.mobile.ui.serverlist.ConfigViewmodelImpl
 import com.windscribe.mobile.ui.serverlist.ServerViewModel
+import com.windscribe.mobile.ui.serverlist.ServerViewModelImpl
 
 val LocalNavController = staticCompositionLocalOf<NavController> {
     error("No NavController provided")
@@ -105,7 +130,7 @@ fun NavigationStack(startDestination: Screen) {
 
 private fun NavGraphBuilder.addNavigationScreens() {
     composable(route = Screen.Start.route) {
-        ViewModelRoute(AppStartViewModel::class.java) {
+        ViewModelRoute(AppStartViewModelImpl::class.java) {
             AppStartScreen(null, it)
         }
     }
@@ -146,7 +171,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
             slideOutHorizontally(targetOffsetX = { -it })
         }
     ) {
-        val homeViewModel = getViewModel(HomeViewmodel::class.java)
+        val homeViewModel: HomeViewmodel = getViewModel(HomeViewmodelImpl::class.java)
         ViewModelRoute(NewsfeedViewmodel::class.java) {
             NewsfeedScreen(it, homeViewModel)
         }
@@ -165,8 +190,8 @@ private fun NavGraphBuilder.addNavigationScreens() {
             slideOutHorizontally(targetOffsetX = { -it })
         }
     ) {
-        val homeViewModel = getViewModel(HomeViewmodel::class.java)
-        ViewModelRoute(MainMenuViewModel::class.java) {
+        val homeViewModel: HomeViewmodel = getViewModel(HomeViewmodelImpl::class.java)
+        ViewModelRoute(MainMenuViewModelImpl::class.java) {
             MainMenuScreen(it, homeViewModel)
         }
     }
@@ -184,7 +209,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
             slideOutHorizontally(targetOffsetX = { -it })
         }
     ) {
-        ViewModelRoute(GeneralViewModel::class.java) {
+        ViewModelRoute(GeneralViewModelImpl::class.java) {
             GeneralScreen(it)
         }
     }
@@ -202,7 +227,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
             slideOutHorizontally(targetOffsetX = { -it })
         }
     ) {
-        ViewModelRoute(AccountViewModel::class.java) {
+        ViewModelRoute(AccountViewModelImpl::class.java) {
             AccountScreen(it)
         }
     }
@@ -220,7 +245,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
             slideOutHorizontally(targetOffsetX = { -it })
         }
     ) {
-        ViewModelRoute(ConnectionViewModel::class.java) {
+        ViewModelRoute(ConnectionViewModelImpl::class.java) {
             ConnectionScreen(it)
         }
     }
@@ -238,7 +263,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
             slideOutHorizontally(targetOffsetX = { -it })
         }
     ) {
-        ViewModelRoute(com.windscribe.mobile.ui.preferences.anticensorship.AntiCensorshipViewModel::class.java) {
+        ViewModelRoute(AntiCensorshipViewModelImpl::class.java) {
             com.windscribe.mobile.ui.preferences.anticensorship.AntiCensorshipScreen(it)
         }
     }
@@ -256,7 +281,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
             slideOutHorizontally(targetOffsetX = { -it })
         }
     ) {
-        ViewModelRoute(RobertViewModel::class.java) {
+        ViewModelRoute(RobertViewModelImpl::class.java) {
             RobertScreen(it)
         }
     }
@@ -274,7 +299,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
             slideOutHorizontally(targetOffsetX = { -it })
         }
     ) {
-        ViewModelRoute(LipstickViewmodel::class.java) {
+        ViewModelRoute(LipstickViewmodelImpl::class.java) {
             LookAndFeelScreen(it)
         }
     }
@@ -292,7 +317,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
             slideOutHorizontally(targetOffsetX = { -it })
         }
     ) {
-        ViewModelRoute(HelpViewModel::class.java) {
+        ViewModelRoute(HelpViewModelImpl::class.java) {
             HelpScreen(it)
         }
     }
@@ -312,7 +337,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
     ) { AboutScreen() }
     composable(route = Screen.PowerWhitelist.route) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            ViewModelRoute(PowerWhitelistViewmodel::class.java) { PowerWhitelistScreen(it) }
+            ViewModelRoute(PowerWhitelistViewmodelImpl::class.java) { PowerWhitelistScreen(it) }
         }
     }
     composable(route = Screen.Ticket.route,
@@ -329,7 +354,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
             slideOutHorizontally(targetOffsetX = { -it })
         }
     ) {
-        ViewModelRoute(TicketViewModel::class.java) {
+        ViewModelRoute(TicketViewModelImpl::class.java) {
             TicketScreen(it)
         }
     }
@@ -347,7 +372,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
             slideOutHorizontally(targetOffsetX = { -it })
         }
     ) {
-        ViewModelRoute(AdvanceViewModel::class.java) {
+        ViewModelRoute(AdvanceViewModelImpl::class.java) {
             AdvanceScreen(it)
         }
     }
@@ -365,7 +390,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
             slideOutHorizontally(targetOffsetX = { -it })
         }
     ) {
-        ViewModelRoute(DebugViewModel::class.java) {
+        ViewModelRoute(DebugViewModelImpl::class.java) {
             DebugScreen(it)
         }
     }
@@ -383,7 +408,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
             slideOutHorizontally(targetOffsetX = { -it })
         }
     ) {
-        ViewModelRoute(SplitTunnelViewModel::class.java) {
+        ViewModelRoute(SplitTunnelViewModelImpl::class.java) {
             SplitTunnelScreen(it)
         }
     }
@@ -401,7 +426,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
             slideOutHorizontally(targetOffsetX = { -it })
         }
     ) {
-        ViewModelRoute(NetworkOptionsViewModel::class.java) {
+        ViewModelRoute(NetworkOptionsViewModelImpl::class.java) {
             NetworkOptionsScreen(it)
         }
     }
@@ -422,7 +447,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
         val navController = LocalNavController.current
         val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
         val data = savedStateHandle?.get<String>("network_name")
-        ViewModelRoute(NetworkDetailViewModel::class.java) {
+        ViewModelRoute(NetworkDetailViewModelImpl::class.java) {
             data?.let { networkName ->
                 it.setNetworkName(networkName)
             }
@@ -443,12 +468,12 @@ private fun NavGraphBuilder.addNavigationScreens() {
             slideOutHorizontally(targetOffsetX = { -it })
         }
     ) {
-        ViewModelRoute(CustomIconsViewModel::class.java) {
+        ViewModelRoute(CustomIconsViewModelImpl::class.java) {
             CustomIconsScreen(it)
         }
     }
     composable(route = Screen.ShareLink.route) {
-        ViewModelRoute(SharedLinkViewmodel::class.java) {
+        ViewModelRoute(SharedLinkViewmodelImpl::class.java) {
             ShareLinkScreen(it)
         }
     }
@@ -460,7 +485,7 @@ private fun NavGraphBuilder.addNavigationScreens() {
     }
     composable(route = Screen.LocationUnderMaintenance.route) { LocationUnderMaintenanceScreen() }
     composable(route = Screen.EditCustomConfig.route) {
-        val viewModel = getViewModel(EditCustomConfigViewmodel::class.java)
+        val viewModel: EditCustomConfigViewmodel = getViewModel(EditCustomConfigViewmodelImpl::class.java)
         val navController = LocalNavController.current
         val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
         val id = savedStateHandle?.get<Int>("config_id")
@@ -510,12 +535,12 @@ private fun NavGraphBuilder.addNavigationScreens() {
         GpsSpoofing(activity.viewmodel)
     }
     composable(route = Screen.AddEmail.route) {
-        ViewModelRoute(EmailViewModel::class.java) {
+        ViewModelRoute(EmailViewModelImpl::class.java) {
             AddEmailScreen(it)
         }
     }
     composable(route = Screen.ConfirmEmail.route) {
-        ViewModelRoute(EmailViewModel::class.java) {
+        ViewModelRoute(EmailViewModelImpl::class.java) {
             it.emailAdded = true
             ConfirmEmailScreen(it)
         }
@@ -540,40 +565,28 @@ private fun NavGraphBuilder.addNavigationScreens() {
 
 @Composable
 private fun AddHomeScreenRoute() {
-    val composeComponent = (LocalContext.current as? AppStartActivity)?.di
-    val viewModels = composeComponent?.let {
-        ViewModels(
-            serverViewModel = viewModel(factory = it.getViewModelFactory()),
-            connectionViewModel = viewModel(factory = it.getViewModelFactory()),
-            configViewModel = viewModel(factory = it.getViewModelFactory()),
-            homeViewModel = viewModel(factory = it.getViewModelFactory()),
-            bridgeApiViewModel = viewModel(factory = it.getViewModelFactory())
-        )
-    }
+    val serverViewModel: ServerViewModel = androidx.hilt.navigation.compose.hiltViewModel<ServerViewModelImpl>()
+    val connectionViewModel: ConnectionViewmodel = androidx.hilt.navigation.compose.hiltViewModel<ConnectionViewmodelImpl>()
+    val configViewModel: ConfigViewmodel = androidx.hilt.navigation.compose.hiltViewModel<ConfigViewmodelImpl>()
+    val homeViewModel: HomeViewmodel = androidx.hilt.navigation.compose.hiltViewModel<HomeViewmodelImpl>()
+    val bridgeApiViewModel: BridgeApiViewModel = androidx.hilt.navigation.compose.hiltViewModel<BridgeApiViewModelImpl>()
     Log.i("AppStartViewModel", "Adding home screen.")
-    viewModels?.let {
-        HomeScreen(it.serverViewModel, it.connectionViewModel, it.configViewModel, it.homeViewModel, it.bridgeApiViewModel)
-    } ?: HomeScreen(null, null, null, null, null)
+    HomeScreen(serverViewModel, connectionViewModel, configViewModel, homeViewModel, bridgeApiViewModel)
 }
 
 @Composable
 private inline fun <reified VM : ViewModel> ViewModelRoute(
-    viewModelClass: Class<VM>,
+    @Suppress("UNUSED_PARAMETER") viewModelClass: Class<VM>,
     content: @Composable (VM) -> Unit
 ) {
-    val viewModel: VM = getViewModel(viewModelClass)
+    val viewModel: VM = androidx.hilt.navigation.compose.hiltViewModel()
     content(viewModel)
 }
 
 @Composable
-private inline fun <reified VM : ViewModel> getViewModel(viewModelClass: Class<VM>): VM {
-    val composeComponent = (LocalContext.current as? AppStartActivity)?.di
-    return if (composeComponent != null) {
-        viewModel(factory = composeComponent.getViewModelFactory())
-    } else {
-        viewModel(modelClass = viewModelClass)
-    }
-}
+private inline fun <reified VM : ViewModel> getViewModel(
+    @Suppress("UNUSED_PARAMETER") viewModelClass: Class<VM>
+): VM = androidx.hilt.navigation.compose.hiltViewModel()
 
 data class ViewModels(
     val serverViewModel: ServerViewModel,

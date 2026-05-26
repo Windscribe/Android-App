@@ -7,7 +7,6 @@ package com.windscribe.vpn.backend.wireguard
 import android.content.Intent
 import android.net.VpnService
 import com.windscribe.common.DNSDetails
-import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.backend.ProxyDNSManager
 import com.windscribe.vpn.backend.VPNState.Status.Connecting
@@ -18,10 +17,12 @@ import com.windscribe.vpn.backend.utils.startForegroundSafely
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.ShortcutStateManager
 import com.wireguard.android.backend.GoBackend
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class WireGuardWrapperService : GoBackend.VpnService() {
 
     @Inject
@@ -48,14 +49,13 @@ class WireGuardWrapperService : GoBackend.VpnService() {
         // Promote to foreground IMMEDIATELY before DI to prevent
         // ForegroundServiceDidNotStartInTimeException on slow devices.
         startForegroundImmediately(NotificationConstants.SERVICE_NOTIFICATION_ID)
-        Windscribe.appContext.serviceComponent.inject(this)
+        super.onCreate()
         // Replace placeholder with full notification now that DI is complete.
         startForegroundSafely(
             windNotificationBuilder,
             NotificationConstants.SERVICE_NOTIFICATION_ID,
             Connecting
         )
-        super.onCreate()
         wireguardBackend.serviceCreated(this)
     }
 

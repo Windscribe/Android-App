@@ -314,7 +314,7 @@ class WindNotificationBuilder @Inject constructor(
  * Extension function to safely call startForeground immediately after DI injection
  * to prevent ForegroundServiceDidNotStartInTimeException.
  *
- * This should be called in Service.onCreate() right after appContext.serviceComponent.inject(this)
+ * This should be called in Service.onCreate() right after super.onCreate() (Hilt injects there)
  * to ensure the service enters foreground mode before Android's ~5-10s timeout.
  *
  * @param notificationBuilder The injected WindNotificationBuilder (must be initialized via DI first)

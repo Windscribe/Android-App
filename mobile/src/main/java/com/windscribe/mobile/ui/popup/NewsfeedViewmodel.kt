@@ -17,6 +17,7 @@ import java.io.Serializable
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
 
@@ -48,6 +49,7 @@ sealed class NewsfeedState {
 
 data class NewsfeedArguments(val showPopUp: Boolean, val popUpId: Int, val pcpID: String?): Serializable
 
+@HiltViewModel
 class NewsfeedViewmodel @Inject constructor(
     backgroundScope: CoroutineScope,
     private val repository: NotificationRepository,

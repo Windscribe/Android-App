@@ -16,6 +16,7 @@ import com.windscribe.vpn.serverlist.entity.Favourite
 import com.windscribe.mobile.ui.home.HomeGoto
 import com.windscribe.vpn.backend.utils.SelectedLocationType
 import com.windscribe.vpn.commonutils.WindUtilities
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,6 +47,7 @@ abstract class BridgeApiViewModel : ViewModel() {
     abstract fun onGoToHandled()
 }
 
+@HiltViewModel
 class BridgeApiViewModelImpl @Inject constructor(
     private val bridgeApiRepository: BridgeApiRepository,
     private val locationRepository: LocationRepository,

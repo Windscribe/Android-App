@@ -19,6 +19,7 @@ import com.windscribe.vpn.backend.utils.startForegroundImmediately
 import com.windscribe.vpn.backend.utils.startForegroundSafely
 import com.windscribe.vpn.constants.NotificationConstants
 import com.windscribe.vpn.state.ShortcutStateManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
@@ -26,6 +27,7 @@ import org.strongswan.android.data.VpnProfile
 import org.strongswan.android.logic.CharonVpnService
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class CharonVpnServiceWrapper : CharonVpnService() {
 
     companion object {
@@ -59,14 +61,13 @@ class CharonVpnServiceWrapper : CharonVpnService() {
     override fun onCreate() {
         logger.debug("CharonVpnServiceWrapper onCreate()")
         startForegroundImmediately(NotificationConstants.SERVICE_NOTIFICATION_ID)
-        appContext.serviceComponent.inject(this)
+        super.onCreate()
         startForegroundSafely(
             windNotificationBuilder,
             NotificationConstants.SERVICE_NOTIFICATION_ID,
             Connecting
         )
         Log.i("GoLog", "Setting service")
-        super.onCreate()
         iKev2VpnBackend.serviceCreated(this)
     }
 

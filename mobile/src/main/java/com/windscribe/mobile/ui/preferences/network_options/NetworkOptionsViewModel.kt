@@ -7,6 +7,8 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.tables.NetworkInfo
 import com.windscribe.vpn.state.NetworkInfoManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +23,8 @@ abstract class NetworkOptionsViewModel : ViewModel() {
     abstract fun onAutoSecureChanged()
 }
 
-class NetworkOptionsViewModelImpl(
+@HiltViewModel
+class NetworkOptionsViewModelImpl @Inject constructor(
     val preferenceHelper: PreferencesHelper,
     val networkInfoManager: NetworkInfoManager,
     val localDbInterface: LocalDbInterface

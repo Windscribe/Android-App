@@ -28,8 +28,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 class DetailsPresenterImp @Inject constructor(
-    private val detailView: DetailView,
-    private val activityScope: CoroutineScope,
     private val localDbInterface: LocalDbInterface,
     private val preferencesHelper: PreferencesHelper,
     private val resourceHelper: ResourceHelper,
@@ -37,7 +35,15 @@ class DetailsPresenterImp @Inject constructor(
     private val serverListRepository: ServerListRepository
 ) : DetailPresenter, DetailListener {
     private val logger = LoggerFactory.getLogger("basic")
+    private lateinit var detailView: DetailView
+    private lateinit var activityScope: CoroutineScope
     private var detailViewAdapter: DetailViewAdapter? = null
+
+    override fun bind(view: DetailView, scope: CoroutineScope) {
+        this.detailView = view
+        this.activityScope = scope
+    }
+
     override fun onDestroy() {
         logger.debug("Destroying detail presenter")
         // Coroutine scope will be cancelled by the activity

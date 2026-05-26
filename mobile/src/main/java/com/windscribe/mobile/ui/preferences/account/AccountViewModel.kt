@@ -20,6 +20,8 @@ import com.windscribe.vpn.model.User
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.workers.WindScribeWorkManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
@@ -102,7 +104,8 @@ abstract class AccountViewModel : ViewModel() {
     open fun onDialogDismiss() {}
 }
 
-class AccountViewModelImpl(
+@HiltViewModel
+class AccountViewModelImpl @Inject constructor(
     val userRepository: UserRepository,
     val api: IApiCallManager,
     val workManager: WindScribeWorkManager,

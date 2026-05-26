@@ -10,20 +10,18 @@ import com.google.firebase.messaging.RemoteMessage
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.backend.utils.WindVpnController
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class WindscribeCloudMessaging : FirebaseMessagingService() {
 
     @Inject
     lateinit var vpnController: WindVpnController
     private val logger: Logger = LoggerFactory.getLogger("fcm")
-    override fun onCreate() {
-        super.onCreate()
-        appContext.applicationComponent.inject(this)
-    }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)

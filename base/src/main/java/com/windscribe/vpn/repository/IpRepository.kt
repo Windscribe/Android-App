@@ -41,7 +41,10 @@ class IpRepository(
             }
         ).onStart {
             emit(RepositoryEvent.Refresh)
-        }.mapLatest {
+        }.mapLatest { event ->
+            if (event is RepositoryEvent.ForceRefresh) {
+                return@mapLatest refreshIp()
+            }
             when (vpnConnectionStateManager.state.value.status) {
                 VPNState.Status.Connected -> {
                     loadIpFromStorage()
@@ -64,7 +67,7 @@ class IpRepository(
 
     fun update() {
         scope.launch {
-            events.emit(RepositoryEvent.Refresh)
+            events.emit(RepositoryEvent.ForceRefresh)
         }
     }
 

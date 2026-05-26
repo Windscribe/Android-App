@@ -13,6 +13,8 @@ import com.windscribe.vpn.repository.CheckUpdateRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -67,7 +69,8 @@ abstract class HomeViewmodel : ViewModel() {
     abstract fun onHideNetworkNameClick()
 }
 
-class HomeViewmodelImpl(
+@HiltViewModel
+class HomeViewmodelImpl @Inject constructor(
     private val vpnConnectionStateManager: VPNConnectionStateManager,
     private val userRepository: UserRepository,
     private val preferences: PreferencesHelper,

@@ -9,18 +9,19 @@ import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import androidx.databinding.DataBindingUtil
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.confirmemail.ConfirmActivity
 import com.windscribe.tv.customview.ProgressFragment.Companion.instance
 import com.windscribe.tv.databinding.ActivityAddEmailAddressBinding
-import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.windscribe.WindscribeActivity
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import org.slf4j.LoggerFactory
+import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class AddEmailActivity : BaseActivity(), AddEmailView {
 
     @Inject
@@ -32,8 +33,9 @@ class AddEmailActivity : BaseActivity(), AddEmailView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setActivityModule(ActivityModule(this, this)).inject(this)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_add_email_address)
+        presenter.bind(this, lifecycleScope)
+        binding = ActivityAddEmailAddressBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         onActivityLaunch()
         setupUI()
     }

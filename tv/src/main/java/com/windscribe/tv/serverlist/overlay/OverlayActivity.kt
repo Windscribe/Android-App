@@ -10,7 +10,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.res.ResourcesCompat
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.transition.AutoTransition
 import androidx.transition.Slide
@@ -18,7 +17,6 @@ import androidx.transition.TransitionManager
 import com.windscribe.tv.R
 import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.databinding.ActivityOverlayBinding
-import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.disconnectalert.DisconnectActivity.Companion.getIntent
 import com.windscribe.tv.serverlist.adapters.FavouriteAdapter
 import com.windscribe.tv.serverlist.adapters.ServerAdapter
@@ -30,9 +28,12 @@ import com.windscribe.tv.serverlist.fragments.StaticIpFragment
 import com.windscribe.tv.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import org.slf4j.LoggerFactory
+import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlin.jvm.java
 
+@AndroidEntryPoint
 class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
     private lateinit var binding: ActivityOverlayBinding
 
@@ -45,9 +46,10 @@ class OverlayActivity : BaseActivity(), OverlayView, OverlayListener {
     private val logger = LoggerFactory.getLogger("basic")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setActivityModule(ActivityModule(this, this)).inject(this)
+        presenter.bind(this, lifecycleScope)
         onActivityLaunch()
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_overlay)
+        binding = ActivityOverlayBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         setConstraints()
         supportFragmentManager.beginTransaction()
             .replace(R.id.BrowseRow, AllOverlayFragment(), "1")

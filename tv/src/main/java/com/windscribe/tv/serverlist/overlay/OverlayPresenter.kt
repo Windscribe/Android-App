@@ -3,7 +3,11 @@
  */
 package com.windscribe.tv.serverlist.overlay
 
+import com.windscribe.tv.serverlist.overlay.OverlayView
+import kotlinx.coroutines.CoroutineScope
+
 interface OverlayPresenter {
+    fun bind(view: OverlayView, scope: CoroutineScope)
     fun onDestroy()
     suspend fun observeStaticRegions()
     suspend fun observeAllLocations()

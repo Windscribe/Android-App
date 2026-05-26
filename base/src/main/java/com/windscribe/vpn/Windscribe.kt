@@ -33,13 +33,7 @@ import com.windscribe.vpn.cache.AppIconCache
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.constants.ExtraConstants
 import com.windscribe.vpn.debug.MainThreadWatchdog
-import com.windscribe.vpn.di.ActivityComponent
-import com.windscribe.vpn.di.ApplicationComponent
-import com.windscribe.vpn.di.ApplicationModule
-import com.windscribe.vpn.di.DaggerActivityComponent
-import com.windscribe.vpn.di.DaggerApplicationComponent
-import com.windscribe.vpn.di.DaggerServiceComponent
-import com.windscribe.vpn.di.ServiceComponent
+import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.localdatabase.WindscribeDatabase
 import com.windscribe.vpn.mocklocation.MockLocationManager
 import com.windscribe.vpn.services.FirebaseManager
@@ -51,6 +45,7 @@ import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.state.WindscribeReviewManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
+import com.windscribe.vpn.wsnet.WSNetWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -131,29 +126,26 @@ open class Windscribe : MultiDexApplication() {
     @Inject
     lateinit var appIconCache: AppIconCache
 
-    lateinit var applicationComponent: ApplicationComponent
-    lateinit var activityComponent: ActivityComponent
-    lateinit var serviceComponent: ServiceComponent
+    @Inject
+    lateinit var wsNetWrapper: WSNetWrapper
+
+    @Inject
+    lateinit var localDbInterface: LocalDbInterface
 
     override fun onCreate() {
         if (BuildConfig.DEV) {
             setupStrictMode()
             MainThreadWatchdog().start()
         }
-        super.onCreate()
+        // Must precede super.onCreate(): Hilt-constructed singletons read appContext from init blocks.
         appContext = this
+        super.onCreate()
         // Ensure notification channel exists before any service can start.
         // This must happen before DI so foreground services can post immediately.
         com.windscribe.vpn.backend.utils.ForegroundServiceHelper.ensureNotificationChannel(this)
         registerForegroundActivityObserver()
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         runTrayMigrationEarly()
-        applicationComponent = getApplicationModuleComponent()
-        applicationComponent.inject(this)
-        activityComponent = DaggerActivityComponent.builder()
-            .applicationComponent(applicationComponent)
-            .build()
-        serviceComponent = serviceComponent()
         ProcessLifecycleOwner.get().lifecycle.addObserver(appLifeCycleObserver)
         reloadAfterMigration()
 
@@ -201,7 +193,6 @@ open class Windscribe : MultiDexApplication() {
 
         // Initialize WSNet in background after DI is ready
         applicationScope.launch(Dispatchers.IO) {
-            val wrapper = applicationComponent.wsNetWrapper
             if (preference.deviceUuid == null) {
                 preference.deviceUuid = java.util.UUID.randomUUID().toString()
             }
@@ -210,7 +201,7 @@ open class Windscribe : MultiDexApplication() {
             } else {
                 resources.configuration.locale.language.substring(0..1)
             }
-            wrapper.initialize(
+            wsNetWrapper.initialize(
                 if (applicationInterface.isTV) "android-tv" else "android",
                 WindUtilities.getVersionName(),
                 preference.deviceUuid ?: "",
@@ -335,7 +326,7 @@ open class Windscribe : MultiDexApplication() {
                     var migratedCount = 0
                     for (notificationId in notificationIdsToMigrate) {
                         try {
-                            applicationComponent.localDbInterface.markNotificationAsRead(notificationId)
+                            localDbInterface.markNotificationAsRead(notificationId)
                             migratedCount++
                         } catch (e: Exception) {
                             logger.debug("Notification $notificationId not found in database, skipping")
@@ -402,17 +393,6 @@ open class Windscribe : MultiDexApplication() {
         lateinit var appContext: Windscribe
 
         var applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    }
-
-    open fun getApplicationModuleComponent(): ApplicationComponent {
-        return DaggerApplicationComponent.builder()
-            .applicationModule(ApplicationModule(this)).build()
-    }
-
-    private fun serviceComponent(): ServiceComponent {
-        return DaggerServiceComponent.builder()
-            .applicationComponent(applicationComponent)
-            .build()
     }
 
     override fun onLowMemory() {

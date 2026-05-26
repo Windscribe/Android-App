@@ -13,11 +13,27 @@ import com.windscribe.vpn.Windscribe.ApplicationInterface
 import com.windscribe.vpn.autoconnection.AutoConnectionModeCallback
 import com.windscribe.vpn.autoconnection.FragmentType
 import com.windscribe.vpn.autoconnection.ProtocolConnectionStatus
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import com.windscribe.vpn.autoconnection.ProtocolInformation
+import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
-class TVApplication : Windscribe(), ApplicationInterface {
+@HiltAndroidApp
+class TVApplication : Windscribe(), ApplicationInterface, Configuration.Provider {
+
+    @Inject
+    lateinit var hiltWorkerFactory: HiltWorkerFactory
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(hiltWorkerFactory)
+            .build()
+
 
     override fun onCreate() {
+        // Set static appContext BEFORE super.onCreate(); see PhoneApplication for rationale.
+        appContext = this
         applicationInterface = this
         super.onCreate()
         setTheme()

@@ -18,7 +18,6 @@ import android.widget.Toast
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GravityCompat
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
@@ -27,7 +26,6 @@ import com.windscribe.tv.base.BaseActivity
 import com.windscribe.tv.customview.ErrorFragment
 import com.windscribe.tv.customview.ProgressFragment
 import com.windscribe.tv.databinding.ActivityWelcomeBinding
-import com.windscribe.tv.di.ActivityModule
 import com.windscribe.tv.email.AddEmailActivity
 import com.windscribe.tv.welcome.fragment.CaptchaFragment
 import com.windscribe.tv.welcome.fragment.ForgotPasswordFragment
@@ -42,8 +40,11 @@ import com.windscribe.tv.windscribe.WindscribeActivity
 import com.windscribe.vpn.Windscribe.Companion.appContext
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import java.io.File
+import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class WelcomeActivity :
     BaseActivity(),
     FragmentCallback,
@@ -57,8 +58,9 @@ class WelcomeActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setActivityModule(ActivityModule(this, this)).inject(this)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_welcome)
+        presenter.bind(this, lifecycleScope)
+        binding = ActivityWelcomeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         onActivityLaunch()
         registerFragmentChangeListener()
         addStartFragment()

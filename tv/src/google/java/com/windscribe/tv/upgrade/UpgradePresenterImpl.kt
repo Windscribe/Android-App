@@ -55,8 +55,6 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 class UpgradePresenterImpl @Inject constructor(
-    private var upgradeView: UpgradeView,
-    private val activityScope: CoroutineScope,
     private val preferencesHelper: PreferencesHelper,
     private val apiCallManager: IApiCallManager,
     private val localDbInterface: LocalDbInterface,
@@ -65,11 +63,18 @@ class UpgradePresenterImpl @Inject constructor(
     private val connectionDataRepository: ConnectionDataRepository,
     private val serverListRepository: ServerListRepository
 ) : UpgradePresenter {
+    private lateinit var upgradeView: UpgradeView
+    private lateinit var activityScope: CoroutineScope
     private var mPurchase: Purchase? = null
     private var notificationAction: PushNotificationAction? = null
     private var mobileBillingPlans: List<BillingPlans> = ArrayList()
     private var paymentToken: String? = null
     private val logger = LoggerFactory.getLogger("basic")
+
+    override fun bind(view: UpgradeView, scope: CoroutineScope) {
+        this.upgradeView = view
+        this.activityScope = scope
+    }
 
     private suspend fun getUserSessionData(): UserSessionResponse {
         val result = result<UserSessionResponse> {
@@ -713,8 +718,7 @@ class UpgradePresenterImpl @Inject constructor(
 
                 // Update connection data
                 connectionDataRepository.update()
-
-                // Update server list
+                preferencesHelper.migrationRequired = true
                 serverListRepository.update()
 
                 // Update user status

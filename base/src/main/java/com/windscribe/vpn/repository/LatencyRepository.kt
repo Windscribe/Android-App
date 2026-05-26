@@ -68,6 +68,7 @@ class LatencyRepository @Inject constructor(
     }
 
     suspend fun updateAllServerLatencies(): Boolean {
+        if (skipPing) return false
         val currentIp = preferencesHelper.userIP
         val validPings = localDbInterface.getAllPingsAsync().filter {
             val isSameIp = currentIp != null && currentIp == it.ip
@@ -106,6 +107,7 @@ class LatencyRepository @Inject constructor(
     }
 
     suspend fun updateFavouriteCityLatencies(): Boolean {
+        if (skipPing) return false
         val cities = localDbInterface.getFavouritesAsync().mapNotNull {
             runCatching { localDbInterface.getDatacenterByIDAsync(it.id) }.getOrNull()
         }
@@ -117,6 +119,7 @@ class LatencyRepository @Inject constructor(
     }
 
     suspend fun updateStaticIpLatency(): Boolean {
+        if (skipPing) return false
         val regions = localDbInterface.getAllStaticRegions()
         val pingJobs = regions.map { pingJobAsync(it) }
         return runCatching {
@@ -126,9 +129,9 @@ class LatencyRepository @Inject constructor(
     }
 
     suspend fun updateConfigLatencies(): Boolean {
+        if (skipPing) return false
         return runCatching {
             val results = localDbInterface.getAllConfigs().map { configFile ->
-                if (skipPing) throw Exception("ping skipped")
                 val hostname: String? = if (WireGuardVpnProfile.validConfig(configFile.content)) {
                     WireGuardVpnProfile.getHostName(configFile.content)
                 } else {

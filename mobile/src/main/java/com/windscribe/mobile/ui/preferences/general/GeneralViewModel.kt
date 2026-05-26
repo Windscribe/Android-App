@@ -9,6 +9,8 @@ import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.WindUtilities
 import com.windscribe.vpn.apppreference.PreferencesKeyConstants
 import com.windscribe.vpn.repository.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -33,7 +35,8 @@ abstract class GeneralViewModel : ViewModel() {
     abstract val versionName: String
 }
 
-class GeneralViewModelImpl(
+@HiltViewModel
+class GeneralViewModelImpl @Inject constructor(
     private val preferenceHelper: PreferencesHelper, private val userRepository: UserRepository
 ) : GeneralViewModel() {
 

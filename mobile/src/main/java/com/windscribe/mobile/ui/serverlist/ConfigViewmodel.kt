@@ -10,6 +10,7 @@ import com.windscribe.vpn.backend.openvpn.OpenVPNConfigParser
 import com.windscribe.vpn.localdatabase.LocalDbInterface
 import com.windscribe.vpn.repository.LatencyRepository
 import com.windscribe.vpn.serverlist.entity.ConfigFile
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
@@ -22,6 +23,7 @@ abstract class ConfigViewmodel : ViewModel() {
     abstract fun deleteCustomConfig(config: ConfigFile)
 }
 
+@HiltViewModel
 class ConfigViewmodelImpl @Inject constructor(
     private val localDb: LocalDbInterface,
     private val latencyRepository: LatencyRepository

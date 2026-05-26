@@ -3,7 +3,6 @@
  */
 package com.windscribe.tv.confirmemail
 
-import com.windscribe.tv.di.PerActivity
 import com.windscribe.vpn.api.IApiCallManager
 import com.windscribe.vpn.apppreference.PreferencesHelper
 import com.windscribe.vpn.commonutils.Ext.result
@@ -17,15 +16,19 @@ import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
-@PerActivity
 class ConfirmEmailPresenterImp @Inject constructor(
-    private var confirmEmailView: ConfirmEmailView,
-    private var activityScope: CoroutineScope,
     private var preferencesHelper: PreferencesHelper,
     private var apiCallManager: IApiCallManager,
     private var resourceHelper: ResourceHelper
 ) : ConfirmEmailPresenter {
     private val logger = LoggerFactory.getLogger("basic")
+    private lateinit var confirmEmailView: ConfirmEmailView
+    private lateinit var activityScope: CoroutineScope
+
+    override fun bind(view: ConfirmEmailView, scope: CoroutineScope) {
+        this.confirmEmailView = view
+        this.activityScope = scope
+    }
 
     override fun onDestroy() {
         // Coroutine scope will be cancelled by the activity

@@ -7,7 +7,6 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import com.windscribe.tv.adapter.InstalledAppsAdapter
 import com.windscribe.tv.adapter.InstalledAppsData
-import com.windscribe.tv.di.PerActivity
 import com.windscribe.tv.settings.fragment.AccountFragment
 import com.windscribe.tv.sort.SortByName
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -51,7 +50,7 @@ import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -63,10 +62,7 @@ import java.util.Collections
 import java.util.Locale
 import javax.inject.Inject
 
-@PerActivity
 class SettingsPresenterImp @Inject constructor(
-    private var settingView: SettingView,
-    private val activityScope: CoroutineScope,
     private val preferencesHelper: PreferencesHelper,
     private val resourceHelper: ResourceHelper,
     private val apiCallManager: IApiCallManager,
@@ -81,6 +77,14 @@ class SettingsPresenterImp @Inject constructor(
     private val appIconCache: com.windscribe.vpn.cache.AppIconCache,
     private val serverListRepository: ServerListRepository
 ) : SettingsPresenter, InstalledAppsAdapter.InstalledAppListener {
+    private lateinit var settingView: SettingView
+    private lateinit var activityScope: CoroutineScope
+
+    override fun bind(view: SettingView, scope: CoroutineScope) {
+        this.settingView = view
+        this.activityScope = scope
+    }
+
     private val installedAppList: MutableList<InstalledAppsData> = ArrayList()
     private var installedAppsAdapter: InstalledAppsAdapter? = null
     private val logger = LoggerFactory.getLogger("basic")
@@ -485,8 +489,10 @@ class SettingsPresenterImp @Inject constructor(
         }
     }
 
-    override suspend fun observeUserData() {
-        userRepository.user.filterNotNull().collect { setAccountInfo(it) }
+    override fun observeUserData(settingsActivity: SettingActivity) {
+        activityScope.launch {
+            userRepository.user.filterNotNull().collectLatest { setAccountInfo(it) }
+        }
     }
 
     private fun setAccountInfo(user: User) {

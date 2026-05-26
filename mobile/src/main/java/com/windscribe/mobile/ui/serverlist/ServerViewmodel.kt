@@ -20,6 +20,8 @@ import com.windscribe.vpn.serverlist.entity.Favourite
 import com.windscribe.vpn.serverlist.entity.Location
 import com.windscribe.vpn.serverlist.entity.ServerMapState
 import com.windscribe.vpn.serverlist.entity.StaticRegion
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
@@ -100,7 +102,8 @@ abstract class ServerViewModel : ViewModel() {
     abstract fun observeRegionPremiumStatus(cities: List<Datacenter>): Flow<Boolean>
 }
 
-class ServerViewModelImpl(
+@HiltViewModel
+class ServerViewModelImpl @Inject constructor(
     private val serverRepository: ServerListRepository,
     private val favouriteRepository: FavouriteRepository,
     private val staticIpRepository: StaticIpRepository,

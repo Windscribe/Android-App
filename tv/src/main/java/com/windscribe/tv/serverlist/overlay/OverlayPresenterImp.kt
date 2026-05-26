@@ -40,8 +40,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 class OverlayPresenterImp @Inject constructor(
-    private var overlayView: OverlayView,
-    private val activityScope: CoroutineScope,
     private val localDbInterface: LocalDbInterface,
     private val preferencesHelper: PreferencesHelper,
     private val resourceHelper: ResourceHelper,
@@ -50,11 +48,19 @@ class OverlayPresenterImp @Inject constructor(
     private val staticIpRepository: StaticIpRepository,
     private val latencyRepository: LatencyRepository
 ) : OverlayPresenter, DatacenterClickListener {
+    private lateinit var overlayView: OverlayView
+    private lateinit var activityScope: CoroutineScope
     private var favouriteAdapter: FavouriteAdapter? = null
     private var serverAdapter: ServerAdapter? = null
     private var staticIpAdapter: StaticIpAdapter? = null
     private var windAdapter: ServerAdapter? = null
     private val logger = LoggerFactory.getLogger("basic")
+
+    override fun bind(view: OverlayView, scope: CoroutineScope) {
+        this.overlayView = view
+        this.activityScope = scope
+    }
+
     override fun onDestroy() {
         logger.debug("Destroying Overlay presenter.")
         favouriteAdapter = null

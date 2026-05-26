@@ -12,6 +12,8 @@ import com.windscribe.vpn.commonutils.Ext.result
 import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.workers.WindScribeWorkManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +31,8 @@ abstract class EmailViewModel : ViewModel() {
     abstract val pro: StateFlow<Boolean>
 }
 
-class EmailViewModelImpl(
+@HiltViewModel
+class EmailViewModelImpl @Inject constructor(
     val api: IApiCallManager,
     val userRepository: UserRepository,
     val workManager: WindScribeWorkManager

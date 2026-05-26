@@ -26,6 +26,7 @@ import dagger.Lazy
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +37,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.io.File
@@ -204,9 +206,10 @@ class AutoConnectionManager(
         }
     }
 
-    suspend fun connectInForeground() = suspendCancellableCoroutine<Boolean> { it ->
+    suspend fun connectInForeground() = withContext(Dispatchers.IO) {
+        suspendCancellableCoroutine<Boolean> { it ->
         stop()
-        this.continuation = it
+        this@AutoConnectionManager.continuation = it
         isEnabled = true
         val connectionResult = connectionAttempt()
         if (connectionResult.status == VPNState.Status.Connected) {
@@ -243,11 +246,13 @@ class AutoConnectionManager(
                 engageAutomaticMode()
             }
         }
+        }
     }
 
-    suspend fun changeProtocolInForeground() = suspendCancellableCoroutine<Boolean> { it ->
+    suspend fun changeProtocolInForeground() = withContext(Dispatchers.IO) {
+        suspendCancellableCoroutine<Boolean> { it ->
         isEnabled = true
-        this.continuation = it
+        this@AutoConnectionManager.continuation = it
         if (isEnabled) {
             if (WindUtilities.isOnline().not()) {
                 logger.debug("No internet detected. existing.")
@@ -260,6 +265,7 @@ class AutoConnectionManager(
                 }
                 engageConnectionChangeMode()
             }
+        }
         }
     }
 
