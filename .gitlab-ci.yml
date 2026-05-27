@@ -125,7 +125,7 @@ stages:
     - fastlane updateBuildVersion
 
     # Export version variables (don't export VERSION_CODE to allow TV to use +1 logic)
-    - MOBILE_VERSION_CODE=$(grep -E "appVersionCode = " build.gradle | sed 's/.*appVersionCode = //')
+    - MOBILE_VERSION_CODE=$(grep -E 'extra\["appVersionCode"\] = ' build.gradle.kts | sed 's/.*= //')
     - export VERSION_NAME=${MAJOR}.${MINOR}.${MOBILE_VERSION_CODE}
     - touch ${CHANGE_LOG_PATH}${MOBILE_VERSION_CODE}.txt
     - export ANDROID_NDK=$(ls -d $ANDROID_SDK_ROOT/ndk/*/ | head -n 1)
@@ -144,7 +144,7 @@ stages:
     - fastlane keepBuildVersion
 
     # Export version variables (don't export VERSION_CODE to allow TV to use +1 logic)
-    - MOBILE_VERSION_CODE=$(grep -E "appVersionCode = " build.gradle | sed 's/.*appVersionCode = //')
+    - MOBILE_VERSION_CODE=$(grep -E 'extra\["appVersionCode"\] = ' build.gradle.kts | sed 's/.*= //')
     - export VERSION_NAME=${MAJOR}.${MINOR}.${MOBILE_VERSION_CODE}
     - touch ${CHANGE_LOG_PATH}${MOBILE_VERSION_CODE}.txt
     - export ANDROID_NDK=$(ls -d $ANDROID_SDK_ROOT/ndk/*/ | head -n 1)
@@ -396,7 +396,7 @@ SlackNotification:
 
   script:
     # Get mobile version code for changelog
-    - MOBILE_VERSION_CODE=$(grep -E "appVersionCode = " build.gradle | sed 's/.*appVersionCode = //')
+    - MOBILE_VERSION_CODE=$(grep -E 'extra\["appVersionCode"\] = ' build.gradle.kts | sed 's/.*= //')
     - export TITLE="Available on Play Store Release $VERSION_NAME"
     - export CHANGE_LOG=$(cat $CHANGE_LOG_PATH${MOBILE_VERSION_CODE}.txt)
     - export SPACE=$'\n\n'
