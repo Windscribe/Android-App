@@ -211,10 +211,11 @@ class ServerViewModelImpl @Inject constructor(
             repositoryFlow = serverRepository.locationAndDatacenters,
             transform = { locations ->
                 locations
-                    .map { location ->
+                    .mapNotNull { location ->
+                        val region = location.location ?: return@mapNotNull null
                         ServerListItem(
-                            id = location.location.id,
-                            region = location.location,
+                            id = region.id,
+                            region = region,
                             datacenters = location.datacenters.updateCityNames().sortCities(),
                         )
                     }
@@ -363,7 +364,7 @@ class ServerViewModelImpl @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             favouriteRepository.favourites.map { favourites ->
                 favourites.updateFavouriteCityNames().sortFavouriteCities().mapNotNull { favWithCity ->
-                    val region = localDbInterface.getLocationById(favWithCity.city.regionID) ?: return@mapNotNull null
+                    val region = localDbInterface.getLocationById(favWithCity.city.region_id) ?: return@mapNotNull null
                     FavouriteListItem(
                         favWithCity.city.id,
                         favWithCity.city,
@@ -383,7 +384,7 @@ class ServerViewModelImpl @Inject constructor(
             stateFlow = _staticListState,
             repositoryFlow = staticIpRepository.regions,
             transform = { regions ->
-                regions.map { StaticListItem(it.id, it) }.sortStaticRegions()
+                regions.map { StaticListItem(it.id ?: 0, it) }.sortStaticRegions()
             },
             errorMessage = "Failed to load static IPs"
         )
@@ -394,7 +395,7 @@ class ServerViewModelImpl @Inject constructor(
             stateFlow = _configListState,
             repositoryFlow = localDbInterface.getConfigs(),
             transform = { configs ->
-                configs.map { ConfigListItem(it.getPrimaryKey(), it) }.sortConfigs()
+                configs.map { ConfigListItem(it.primaryKey, it) }.sortConfigs()
             },
             errorMessage = "Failed to load custom configs"
         )
@@ -490,7 +491,7 @@ class ServerViewModelImpl @Inject constructor(
             val updatedList = sortedItems.mapNotNull { it.filterIfContains(query) }
             val searchItems = if (updatedList.size < items.size) updatedList else items
             _searchItemsExpandState.value =
-                HashMap(searchItems.associate { it.region.name to true })
+                HashMap(searchItems.associate { it.region.name.orEmpty() to true })
             _searchListState.emit(ListState.Success(searchItems))
         }
     }
@@ -503,13 +504,13 @@ class ServerViewModelImpl @Inject constructor(
         val lowerKeyword = keyword.lowercase(Locale.getDefault())
 
         val filteredCities = datacenters.filter {
-            it.nickName.lowercase(Locale.getDefault()).contains(lowerKeyword) ||
-                    it.nodeName.lowercase(Locale.getDefault()).contains(lowerKeyword)
+            it.nickName.orEmpty().lowercase(Locale.getDefault()).contains(lowerKeyword) ||
+                    it.nodeName.orEmpty().lowercase(Locale.getDefault()).contains(lowerKeyword)
         }
 
         return when {
             filteredCities.isNotEmpty() -> copy(datacenters = filteredCities)
-            region.name.lowercase(Locale.getDefault()).contains(lowerKeyword) -> this
+            region.name.orEmpty().lowercase(Locale.getDefault()).contains(lowerKeyword) -> this
             else -> null
         }
     }
@@ -517,10 +518,10 @@ class ServerViewModelImpl @Inject constructor(
     private fun ServerListItem.startsWithKeyword(keyword: String): Boolean {
         val lowerKeyword = keyword.lowercase(Locale.getDefault())
 
-        return region.name.lowercase(Locale.getDefault()).startsWith(lowerKeyword) ||
+        return region.name.orEmpty().lowercase(Locale.getDefault()).startsWith(lowerKeyword) ||
                 datacenters.any {
-                    it.nickName.lowercase(Locale.getDefault()).startsWith(lowerKeyword) ||
-                            it.nodeName.lowercase(Locale.getDefault()).startsWith(lowerKeyword)
+                    it.nickName.orEmpty().lowercase(Locale.getDefault()).startsWith(lowerKeyword) ||
+                            it.nodeName.orEmpty().lowercase(Locale.getDefault()).startsWith(lowerKeyword)
                 }
     }
 

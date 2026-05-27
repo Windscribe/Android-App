@@ -1,6 +1,6 @@
 package com.windscribe.mobile.ui.popup
 
-import android.text.Html
+import androidx.core.text.HtmlCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.windscribe.vpn.api.response.PushNotificationAction
@@ -113,10 +113,10 @@ class NewsfeedViewmodel @Inject constructor(
                 }
             }
 
-            val htmlBody = Html.fromHtml(message).toString().trim()
+            val htmlBody = HtmlCompat.fromHtml(message, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim()
             return NewsfeedItem(
                 id = notification.notificationId,
-                title = Html.fromHtml(notification.notificationTitle)
+                title = HtmlCompat.fromHtml(notification.notificationTitle, HtmlCompat.FROM_HTML_MODE_LEGACY)
                     .toString(),
                 message = htmlBody,
                 date = formatDate(notification.notificationDate),
@@ -144,9 +144,9 @@ class NewsfeedViewmodel @Inject constructor(
                 val body = message.replace(linkRegex, "").trim()
                 return NewsfeedItem(
                     id = notification.notificationId,
-                    title = Html.fromHtml(notification.notificationTitle.uppercase(Locale.getDefault()))
+                    title = HtmlCompat.fromHtml(notification.notificationTitle.uppercase(Locale.getDefault()), HtmlCompat.FROM_HTML_MODE_LEGACY)
                         .toString(),
-                    message = Html.fromHtml(body).toString().trim(),
+                    message = HtmlCompat.fromHtml(body, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim(),
                     date = formatDate(notification.notificationDate),
                     action = Action.Url(label, url)
                 )
@@ -154,10 +154,10 @@ class NewsfeedViewmodel @Inject constructor(
         }
 
         // Priority 3: No action
-        val htmlBody = Html.fromHtml(message).toString().trim()
+        val htmlBody = HtmlCompat.fromHtml(message, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim()
         return NewsfeedItem(
             id = notification.notificationId,
-            title = Html.fromHtml(notification.notificationTitle)
+            title = HtmlCompat.fromHtml(notification.notificationTitle, HtmlCompat.FROM_HTML_MODE_LEGACY)
                 .toString(),
             message = htmlBody,
             date = formatDate(notification.notificationDate),

@@ -127,6 +127,10 @@ class WindScribeWorkManager(
         WorkManager.getInstance(context).enqueueUniqueWork(CREDENTIALS_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(CredentialsWorker::class.java))
     }
 
+    fun connectOnBoot() {
+        WorkManager.getInstance(context).enqueueUniqueWork(BOOT_WORKER_KEY, ExistingWorkPolicy.REPLACE, createOneTimeWorkerRequest(BootWorker::class.java))
+    }
+
     fun updateStaticIpList() {
         WorkManager.getInstance(context).enqueueUniqueWork(
             STATIC_IP_WORKER_KEY,
@@ -170,6 +174,7 @@ class WindScribeWorkManager(
         const val SERVER_LIST_WORKER_KEY = "com.windscribe.vpn.server_list"
         const val STATIC_IP_WORKER_KEY = "com.windscribe.vpn.static_ip"
         const val CREDENTIALS_WORKER_KEY = "com.windscribe.vpn.credentials"
+        const val BOOT_WORKER_KEY = "com.windscribe.vpn.boot"
         const val PENDING_GOGGLE_RECEIPT_WORKER_KEY = "com.windscribe.vpn.pendingGoogleReceipts"
         const val PENDING_AMAZON_RECEIPT_WORKER_KEY = "com.windscribe.vpn.pendingAmazonReceipts"
         const val LATENCY_WORKER_KEY = "com.windscribe.vpn.latencyWorker"

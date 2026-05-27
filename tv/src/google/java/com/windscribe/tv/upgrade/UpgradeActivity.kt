@@ -8,7 +8,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import com.amazon.device.iap.model.Product
-import com.amazon.device.iap.model.PurchaseResponse
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingFlowParams.ProductDetailsParams
 import com.android.billingclient.api.ProductDetails
@@ -29,7 +28,11 @@ import com.windscribe.vpn.api.response.PushNotificationAction
 import com.windscribe.vpn.billing.*
 import com.windscribe.vpn.constants.ExtraConstants.PROMO_EXTRA
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.launch
 import okhttp3.internal.toImmutableList
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -264,81 +267,75 @@ class UpgradeActivity : BaseActivity(), UpgradeView, BillingFragmentCallback {
         finish()
     }
 
-    private fun initAmazonBillingLifecycleListeners() {
-        amazonBillingManager.onBillingSetUpSuccess?.observe(this) {
-            logger.info("Billing client connected successfully...")
-            presenter.onBillingSetupSuccessful()
+    private fun <T> SharedFlow<T>.collectOnStart(block: (T) -> Unit) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                collect { block(it) }
+            }
         }
-        amazonBillingManager.onProductsResponseSuccess?.observe(
-            this
-        ) { products: Map<String, Product> ->
+    }
+
+    private fun initAmazonBillingLifecycleListeners() {
+        // onBillingSetUpSuccess is a StateFlow seeded with false; only react once it flips to true.
+        amazonBillingManager.onBillingSetUpSuccess.collectOnStart { setUp ->
+            if (setUp) {
+                logger.info("Billing client connected successfully...")
+                presenter.onBillingSetupSuccessful()
+            }
+        }
+        amazonBillingManager.onProductsResponseSuccess.collectOnStart { products ->
             presenter.onProductDataResponse(products)
         }
-        amazonBillingManager.onProductsResponseFailure?.observe(
-            this
-        ) { presenter.onProductResponseFailure() }
-        amazonBillingManager.onPurchaseResponseSuccess?.observe(this) { purchaseResponse: PurchaseResponse ->
-            presenter.onPurchaseResponse(
-                purchaseResponse
-            )
+        amazonBillingManager.onProductsResponseFailure.collectOnStart {
+            presenter.onProductResponseFailure()
         }
-        amazonBillingManager.onPurchaseResponseFailure?.observe(this) { requestStatus: PurchaseResponse.RequestStatus ->
-            presenter.onPurchaseResponseFailure(
-                requestStatus
-            )
+        amazonBillingManager.onPurchaseResponseSuccess.collectOnStart { purchaseResponse ->
+            presenter.onPurchaseResponse(purchaseResponse)
         }
-        amazonBillingManager.onAmazonPurchaseHistorySuccess?.observe(
-            this
-        ) { purchases: List<AmazonPurchase> ->
+        amazonBillingManager.onPurchaseResponseFailure.collectOnStart { requestStatus ->
+            presenter.onPurchaseResponseFailure(requestStatus)
+        }
+        amazonBillingManager.onAmazonPurchaseHistorySuccess.collectOnStart { purchases ->
             presenter.onAmazonPurchaseHistorySuccess(purchases)
         }
-        amazonBillingManager.onAmazonPurchaseHistoryError?.observe(this) { error: String ->
-            presenter.onAmazonPurchaseHistoryError(
-                error
-            )
+        amazonBillingManager.onAmazonPurchaseHistoryError.collectOnStart { error ->
+            presenter.onAmazonPurchaseHistoryError(error)
         }
     }
 
     private fun initBillingLifecycleListeners() {
-        googleBillingManager.onBillingSetUpSuccess?.observe(this) {
+        googleBillingManager.onBillingSetUpSuccess.collectOnStart {
             logger.info("Billing client connected successfully...")
             presenter.onBillingSetupSuccessful()
         }
-        googleBillingManager.onBillingSetupFailure?.observe(this) { code: Int ->
+        googleBillingManager.onBillingSetupFailure.collectOnStart { code ->
             logger.info("Billing client set up failure...")
             presenter.onBillingSetupFailed(code)
         }
-        googleBillingManager.onProductConsumeSuccess?.observe(this) { purchase: Purchase ->
+        googleBillingManager.onProductConsumeSuccess.collectOnStart { purchase ->
             logger.info("Product consumption successful...")
             showToast(resources.getString(com.windscribe.vpn.R.string.purchase_successful))
             presenter.onPurchaseConsumed(purchase)
         }
-        googleBillingManager.onProductConsumeFailure?.observe(
-            this
-        ) { customPurchase: CustomPurchase ->
+        googleBillingManager.onProductConsumeFailure.collectOnStart { customPurchase ->
             logger.debug("Product consumption failed...")
             presenter.onConsumeFailed(
                 customPurchase.responseCode,
                 customPurchase.purchase
             )
         }
-        googleBillingManager.purchaseUpdateEvent?.observe(
-            this
-        ) { customPurchases: CustomPurchases ->
+        googleBillingManager.purchaseUpdateEvent.collectOnStart { customPurchases ->
             logger.info("Purchase updated...")
             presenter.onPurchaseUpdated(
                 customPurchases.responseCode,
                 customPurchases.purchase
             )
         }
-        googleBillingManager.querySkuDetailEvent?.observe(
-            this
-        ) { customProductDetails: CustomProductDetails ->
-            presenter
-                .onSkuDetailsReceived(
-                    customProductDetails.billingResult.responseCode,
-                    customProductDetails.productDetails.toImmutableList()
-                )
+        googleBillingManager.querySkuDetailEvent.collectOnStart { customProductDetails ->
+            presenter.onSkuDetailsReceived(
+                customProductDetails.billingResult.responseCode,
+                customProductDetails.productDetails.toImmutableList()
+            )
         }
     }
 

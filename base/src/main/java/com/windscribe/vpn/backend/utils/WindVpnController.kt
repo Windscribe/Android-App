@@ -173,7 +173,7 @@ open class WindVpnController @Inject constructor(
             if (pinnedNode != null && attempt == 0) pinnedNode else nodes[randomIndex]
         logger.debug("{}", selectedNode)
         lastUsedRandomIndex = randomIndex
-        val coordinatesArray = city.coordinates.split(",".toRegex()).toTypedArray()
+        val coordinatesArray = (city.coordinates ?: "").split(",".toRegex()).toTypedArray()
         val ikev2Ip = selectedNode.ip
         val udpIp = selectedNode.ip2
         val tcpIp = selectedNode.ip2
@@ -182,14 +182,14 @@ open class WindVpnController @Inject constructor(
         val publicKey = city.pubKey
         val location = LastSelectedLocation(
             city.id,
-            city.nodeName,
-            city.nickName,
-            cityAndRegion.location.countryCode,
+            city.nodeName ?: "",
+            city.nickName ?: "",
+            cityAndRegion.location?.countryCode,
             coordinatesArray[0],
             coordinatesArray[1]
         )
         val vpnParameters =
-            VPNParameters(ikev2Ip, udpIp, tcpIp, stealthIp, hostname, publicKey, city.ovpnX509, selectedNode.ipv6 == 1)
+            VPNParameters(ikev2Ip, udpIp, tcpIp, stealthIp, hostname, publicKey ?: "", city.ovpnX509 ?: "", selectedNode.ipv6 == 1)
         when (config.protocol) {
             PROTO_IKev2 -> {
                 return vpnProfileCreator.createIkEV2Profile(
@@ -216,22 +216,22 @@ open class WindVpnController @Inject constructor(
     ): String {
         val staticRegion = localDbInterface.getStaticRegionByIDAsync(staticId)
             ?: throw Exception("Static IP location not found.")
-        val node = staticRegion.staticIpNode
+        val node = staticRegion.getStaticIpNode()
         appContext.preference.staticIpCredentials = staticRegion.credentials
         val coordinatesArray = staticRegion.coordinates?.split(",".toRegex())?.toTypedArray()
         val location = LastSelectedLocation(
-            staticRegion.id, staticRegion.cityName, staticRegion.staticIp, staticRegion.countryCode,
+            staticRegion.id ?: 0, staticRegion.cityName ?: "", staticRegion.staticIp ?: "", staticRegion.countryCode,
             coordinatesArray?.get(0),
             coordinatesArray?.get(1)
         )
         val vpnParameters = VPNParameters(
-            node.ip,
-            node.ip2,
-            node.ip2,
-            node.ip3,
-            node.hostname,
-            staticRegion.wgPubKey,
-            staticRegion.ovpnX509
+            node?.ip ?: "",
+            node?.ip2 ?: "",
+            node?.ip2 ?: "",
+            node?.ip3 ?: "",
+            node?.hostname ?: "",
+            staticRegion.wgPubKey ?: "",
+            staticRegion.ovpnX509 ?: ""
         )
         when (protocolInformation.protocol) {
             PROTO_IKev2 -> {
@@ -547,6 +547,9 @@ open class WindVpnController @Inject constructor(
                 it.status != Connected
             }.collect { state ->
                 logger.debug("$connectionAttempt ${state.status}")
+                if (connectionAttempt > 0 && state.error?.error == VPNState.ErrorType.UserDisconnect) {
+                    return@collect
+                }
                 if (state.status == Disconnected && connectionAttempt < connectionInfo.size) {
                     val text = appContext.resources.getString(R.string.connecting)
                     callback(text)

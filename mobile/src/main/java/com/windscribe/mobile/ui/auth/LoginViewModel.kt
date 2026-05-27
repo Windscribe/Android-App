@@ -248,7 +248,7 @@ class LoginViewModel @Inject constructor(
 
             is CallResult.Success -> {
                 logger.info("User signup in successfully.")
-                handleSuccessfulLogin(result.data.sessionAuthHash)
+                handleSuccessfulLogin(result.data.sessionAuthHash ?: "")
             }
         }
     }
@@ -318,7 +318,7 @@ class LoginViewModel @Inject constructor(
 
                 is CallResult.Success -> {
                     logger.info("User signup in successfully.")
-                    handleSuccessfulLogin(result.data.sessionAuthHash)
+                    handleSuccessfulLogin(result.data.sessionAuthHash ?: "")
                 }
             }
         }

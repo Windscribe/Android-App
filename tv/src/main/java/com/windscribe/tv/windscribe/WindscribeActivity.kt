@@ -42,7 +42,6 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.VPNState.Status.*
 import com.windscribe.vpn.constants.ExtraConstants
 import com.windscribe.vpn.constants.NotificationConstants
-import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import org.slf4j.LoggerFactory
 import androidx.lifecycle.lifecycleScope
@@ -51,9 +50,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class WindscribeActivity : BaseActivity(), WindscribeView, FocusAwareConstraintLayout.OnWindowResizeListener {
-
-    @Inject
-    lateinit var preferenceChangeObserver: PreferenceChangeObserver
 
     @Inject
     lateinit var windscribePresenter: WindscribePresenter

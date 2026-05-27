@@ -355,7 +355,7 @@ class AutoConnectionManager(
             val protocol = appSupportedProtocolOrder.firstOrNull {
                 it.protocol == networkInfo.protocol
             }
-            protocol?.port = networkInfo.port
+            networkInfo.port?.let { protocol?.port = it }
             protocol?.let {
                 preferredProtocol = Pair(networkInfo.networkName, protocol)
             }

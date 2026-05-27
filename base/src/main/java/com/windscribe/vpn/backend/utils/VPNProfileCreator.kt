@@ -345,16 +345,16 @@ class VPNProfileCreator @Inject constructor(
     }
 
     fun createVpnProfileFromConfig(configFile: ConfigFile): Pair<String, ProtocolInformation> {
-        val content = configFile.content
+        val content = configFile.content ?: ""
         return if (WindUtilities.getConfigType(content) == WIRE_GUARD) {
             Pair(
                     createVpnProfileFromWireGuardConfig(configFile),
-                    Util.getProtocolInformationFromWireguardConfig(configFile.content)
+                    Util.getProtocolInformationFromWireguardConfig(content)
             )
         } else {
             Pair(
                     createVpnProfileFromOpenVpnConfig(configFile),
-                    Util.getProtocolInformationFromOpenVPNConfig(configFile.content)
+                    Util.getProtocolInformationFromOpenVPNConfig(content)
             )
         }
     }
@@ -404,7 +404,7 @@ class VPNProfileCreator @Inject constructor(
         }
         logger.info("Adding location meta data to profile.")
         val lastSelectedLocation =
-                LastSelectedLocation(configFile.getPrimaryKey(), nickName = configFile.name)
+                LastSelectedLocation(configFile.primaryKey, nickName = configFile.name ?: "")
         saveSelectedLocation(lastSelectedLocation)
         profile.writeConfigFile(appContext)
         if (preferencesHelper.splitTunnelToggle){
@@ -480,7 +480,7 @@ class VPNProfileCreator @Inject constructor(
             throw e
         }
         val lastSelectedLocation =
-                LastSelectedLocation(configFile.getPrimaryKey(), nickName = configFile.name)
+                LastSelectedLocation(configFile.primaryKey, nickName = configFile.name ?: "")
         saveSelectedLocation(lastSelectedLocation)
         if (preferencesHelper.isProtocolTweaksEnabled) {
             saveProfile(WireGuardVpnProfile(config.toWgQuickString()))
@@ -737,8 +737,8 @@ class VPNProfileCreator @Inject constructor(
         val mUsername: String
         val mPassword: String
         if (preferencesHelper.isConnectingToStaticIp) {
-            mUsername = serverCredentials.userNameEncoded
-            mPassword = serverCredentials.passwordEncoded
+            mUsername = serverCredentials.userNameEncoded ?: ""
+            mPassword = serverCredentials.passwordEncoded ?: ""
         } else {
             mUsername = String(
                     Base64
@@ -757,8 +757,8 @@ class VPNProfileCreator @Inject constructor(
         val username: String
         val password: String
         if (preferencesHelper.isConnectingToStaticIp) {
-            username = credentials.userNameEncoded
-            password = credentials.passwordEncoded
+            username = credentials.userNameEncoded ?: ""
+            password = credentials.passwordEncoded ?: ""
         } else {
             username = String(Base64.decode(credentials.userNameEncoded, Base64.DEFAULT))
             password = String(Base64.decode(credentials.passwordEncoded, Base64.DEFAULT))

@@ -353,7 +353,9 @@ abstract class VpnBackend(
             it.id == selectedCity
         }
         if (favourite == null) return null
-        return Pair(favourite.pinnedIp, favourite.pinnedNodeIp)
+        val pinnedIp = favourite.pinnedIp ?: return null
+        val pinnedNodeIp = favourite.pinnedNodeIp ?: return null
+        return Pair(pinnedIp, pinnedNodeIp)
     }
 
     abstract var active: Boolean

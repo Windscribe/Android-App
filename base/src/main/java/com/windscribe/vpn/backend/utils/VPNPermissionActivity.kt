@@ -5,6 +5,8 @@
 package com.windscribe.vpn.backend.utils
 
 import android.Manifest
+import android.app.Activity.RESULT_CANCELED
+import android.app.Activity.RESULT_OK
 import android.content.ActivityNotFoundException
 import androidx.activity.ComponentActivity
 import android.content.Intent
@@ -12,6 +14,7 @@ import android.content.pm.PackageManager
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import com.windscribe.vpn.R.layout
 import com.windscribe.vpn.Windscribe
 import com.windscribe.vpn.Windscribe.Companion.appContext
@@ -56,6 +59,17 @@ class VPNPermissionActivity : ComponentActivity() {
     lateinit var protocolInformation: ProtocolInformation
 
     lateinit var connectionId: UUID
+
+    private val vpnPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            onVpnPermissionResult(result.resultCode)
+        }
+
+    private val notificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            vpnBackendHolder.connect(protocolInformation, connectionId)
+            finish()
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,52 +120,36 @@ class VPNPermissionActivity : ComponentActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == START_VPN_PROFILE) {
-            if (resultCode == RESULT_OK) {
-                logger.info("User granted VPN Permission.")
-                if (isNotificationsEnabled()) {
+    private fun onVpnPermissionResult(resultCode: Int) {
+        if (resultCode == RESULT_OK) {
+            logger.info("User granted VPN Permission.")
+            if (isNotificationsEnabled()) {
+                vpnBackendHolder.connect(protocolInformation, connectionId)
+                finish()
+            } else {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                } else {
                     vpnBackendHolder.connect(protocolInformation, connectionId)
                     finish()
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        requestPermissions(
-                                arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION
-                        )
-                    } else {
-                        vpnBackendHolder.connect(protocolInformation, connectionId)
+                }
+            }
+        } else if (resultCode == RESULT_CANCELED) {
+            logger.info("User denied VPN permission.")
+            showErrorDialog(this,
+                "Windscribe requires VPN permission to configure VPN. " +
+                        "Sometimes you may see this error if another VPN app is configured as 'Always on VPN'. " +
+                        "Please turn off 'Always on' in all profiles.") {
+                scope.launch {
+                    try {
+                        vpnController.disconnectAsync()
+                    } catch (e: Exception) {
+                        logger.error("Failed to disconnect VPN: ${e.message}")
+                    } finally {
                         finish()
                     }
                 }
-            } else if (resultCode == RESULT_CANCELED) {
-                logger.info("User denied VPN permission.")
-                showErrorDialog(this,
-                    "Windscribe requires VPN permission to configure VPN. " +
-                            "Sometimes you may see this error if another VPN app is configured as 'Always on VPN'. " +
-                            "Please turn off 'Always on' in all profiles.") {
-                    scope.launch {
-                        try {
-                            vpnController.disconnectAsync()
-                        } catch (e: Exception) {
-                            logger.error("Failed to disconnect VPN: ${e.message}")
-                        } finally {
-                            finish()
-                        }
-                    }
-                }
             }
-        }
-    }
-
-
-    override fun onRequestPermissionsResult(
-            requestCode: Int, permissions: Array<out String>, grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == NOTIFICATION) {
-            vpnBackendHolder.connect(protocolInformation, connectionId)
-            finish()
         }
     }
 
@@ -174,14 +172,14 @@ class VPNPermissionActivity : ComponentActivity() {
         fixDevTun()
         if (intent != null) {
             try {
-                startActivityForResult(intent, START_VPN_PROFILE)
+                vpnPermissionLauncher.launch(intent)
             } catch (ane: ActivityNotFoundException) {
                 scope.launch { vpnController.disconnectAsync() }
                 logger.debug("Device image does not support vpn.")
             }
         } else {
             logger.info("Already has VPN permission.")
-            onActivityResult(START_VPN_PROFILE, RESULT_OK, null)
+            onVpnPermissionResult(RESULT_OK)
         }
     }
 
@@ -209,10 +207,5 @@ class VPNPermissionActivity : ComponentActivity() {
         } catch (_: InterruptedException) {
         } catch (_: IOException) {
         }
-    }
-
-    companion object {
-        private const val START_VPN_PROFILE = 70
-        private const val NOTIFICATION = 71
     }
 }

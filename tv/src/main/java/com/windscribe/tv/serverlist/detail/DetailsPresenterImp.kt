@@ -190,9 +190,9 @@ class DetailsPresenterImp @Inject constructor(
 
                 withContext(Dispatchers.Main) {
                     detailView.setCountryFlagBackground(
-                        FlagIconResource.getFlag(cities.location.countryCode)
+                        FlagIconResource.getFlag(cities.location?.countryCode)
                     )
-                    detailView.setTitle(cities.location.name)
+                    detailView.setTitle(cities.location?.name ?: "")
                     detailView.setCount("" + cities.datacenters.size)
                 }
             } catch (e: Throwable) {

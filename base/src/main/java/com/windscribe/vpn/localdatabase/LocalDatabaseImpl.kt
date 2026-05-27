@@ -27,7 +27,6 @@ import com.windscribe.vpn.serverlist.entity.Location
 import com.windscribe.vpn.serverlist.entity.LocationAndDatacenters
 import com.windscribe.vpn.serverlist.entity.Server
 import com.windscribe.vpn.serverlist.entity.StaticRegion
-import com.windscribe.vpn.state.PreferenceChangeObserver
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -47,7 +46,6 @@ class LocalDatabaseImpl @Inject constructor(
     private val locationAndDatacentersDao: LocationAndDatacentersDao,
     private val networkInfoDao: NetworkInfoDao,
     private val serverStatusDao: ServerStatusDao,
-    private val preferenceChangeObserver: PreferenceChangeObserver,
     private val windNotificationDao: WindNotificationDao,
     private val unblockWgDao: UnblockWgDao
 ) : LocalDbInterface {
@@ -191,10 +189,6 @@ class LocalDatabaseImpl @Inject constructor(
 
     override fun getNetwork(networkName: String): NetworkInfo? {
         return networkInfoDao.getNetwork(networkName)
-    }
-
-    override fun insertOrUpdateServerUpdateStatusTable(serverStatusUpdateTable: ServerStatusUpdateTable) {
-        preferenceChangeObserver.postCityServerChange()
     }
 
     override fun getDatacenterAndLocation(datacenterId: Int): DatacenterAndLocation? {

@@ -1,0 +1,47 @@
+plugins {
+    id("com.android.library")
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+android {
+    namespace = "org.strongswan.android"
+    compileSdk = 34
+    ndkVersion = "27.2.12479018"
+
+    defaultConfig {
+        minSdk = 21
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
+    }
+
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    sourceSets {
+        getByName("main") {
+            jniLibs.srcDirs("libs")
+        }
+    }
+}
+
+dependencies {
+    implementation(project(":common"))
+    implementation("androidx.appcompat:appcompat:1.4.2")
+    implementation("androidx.preference:preference:1.2.0")
+    implementation("com.google.android.material:material:${libs.versions.material.get()}")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+}

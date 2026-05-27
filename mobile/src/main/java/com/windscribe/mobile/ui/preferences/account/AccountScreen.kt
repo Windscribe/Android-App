@@ -713,7 +713,7 @@ private fun PlanInfo(viewModel: AccountViewModel? = null) {
                 textColor = AppColors.cyberBlue,
                 backgroundColor = AppColors.cyberBlue.copy(alpha = 0.05f)
             ) {
-                activity?.startActivity(UpgradeActivity.getStartIntent(activity))
+                activity?.let { it.startActivity(UpgradeActivity.getStartIntent(it)) }
             }
         }
     }
@@ -848,10 +848,10 @@ private fun HandleGoto(viewModel: AccountViewModel?) {
                 (goto as AccountGoTo.Error).message,
                 Toast.LENGTH_SHORT
             ).show()
-            is AccountGoTo.Upgrade -> {
-                val startIntent = UpgradeActivity.getStartIntent(activity)
+            is AccountGoTo.Upgrade -> activity?.let {
+                val startIntent = UpgradeActivity.getStartIntent(it)
                 startIntent.putExtra(PROMO_EXTRA, (goto as AccountGoTo.Upgrade).promoAction)
-                activity?.safeStartActivity(startIntent)
+                it.safeStartActivity(startIntent)
             }
             else -> {}
         }

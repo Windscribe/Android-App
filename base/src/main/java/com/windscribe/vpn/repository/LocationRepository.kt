@@ -111,9 +111,9 @@ class LocationRepository @Inject constructor(
             val region = localDbInterface.getLocationIdFromDatacenterAsync(selectedCity)
             val cities = localDbInterface.getAllDatacentersAsync(region)
             val city =  cities.random()
-            if (localDbInterface.getServersByDatacenter(city.getId()).isNotEmpty()) {
-                logger.debug("Found sister city${city.getId()}")
-                city.getId()
+            if (localDbInterface.getServersByDatacenter(city.id).isNotEmpty()) {
+                logger.debug("Found sister city${city.id}")
+                city.id
             } else {
                 throw Exception("No servers available in sister datacenter")
             }
@@ -126,7 +126,7 @@ class LocationRepository @Inject constructor(
     private suspend fun getLowestPingLocation(): Int {
         val pingId = localDbInterface.getLowestPingIdAsync()
         val city = localDbInterface.getDatacenterByIDAsync(pingId)
-        return city.getId()
+        return city.id
     }
 
     private suspend fun getRandomLocation(): Int {
@@ -160,7 +160,7 @@ class LocationRepository @Inject constructor(
             val timeDifference = abs(userOffsetMinutes - cityOffsetMinutes)
             val tzScore = when {
                 city.tz == userTimeZone.id -> 3
-                city.tz.contains("/") -> 2
+                city.tz?.contains("/") == true -> 2
                 else -> 1
             }
             CityWithTimeDiff(city, timeDifference, tzScore)

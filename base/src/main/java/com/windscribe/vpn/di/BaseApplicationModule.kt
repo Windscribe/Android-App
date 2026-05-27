@@ -78,7 +78,6 @@ import com.windscribe.vpn.state.AppLifeCycleObserver
 import com.windscribe.vpn.state.DeviceStateManager
 import com.windscribe.vpn.state.DynamicShortcutManager
 import com.windscribe.vpn.state.NetworkInfoManager
-import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.ShortcutStateManager
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.state.WindscribeReviewManager
@@ -242,7 +241,6 @@ open class BaseApplicationModule {
         locationAndDatacentersDao: LocationAndDatacentersDao,
         networkInfoDao: NetworkInfoDao,
         serverStatusDao: ServerStatusDao,
-        preferenceChangeObserver: PreferenceChangeObserver,
         windNotificationDao: WindNotificationDao,
         unblockWgDao: UnblockWgDao
     ): LocalDbInterface {
@@ -260,7 +258,6 @@ open class BaseApplicationModule {
             locationAndDatacentersDao,
             networkInfoDao,
             serverStatusDao,
-            preferenceChangeObserver,
             windNotificationDao,
             unblockWgDao
         )
@@ -383,7 +380,6 @@ open class BaseApplicationModule {
         scope: CoroutineScope,
         apiCallManager: IApiCallManager,
         localDbInterface: LocalDbInterface,
-        preferenceChangeObserver: PreferenceChangeObserver,
         userRepository: Lazy<UserRepository>,
         preferencesHelper: PreferencesHelper,
         favouriteRepository: FavouriteRepository
@@ -392,7 +388,6 @@ open class BaseApplicationModule {
             scope,
             apiCallManager,
             localDbInterface,
-            preferenceChangeObserver,
             userRepository,
             preferencesHelper,
             favouriteRepository
@@ -677,12 +672,6 @@ open class BaseApplicationModule {
     @Singleton
     fun providesSecurePreference(app: Windscribe): SecurePreferences {
         return SecurePreferences(app)
-    }
-
-    @Provides
-    @Singleton
-    fun providesUserDataObserver(): PreferenceChangeObserver {
-        return PreferenceChangeObserver()
     }
 
     @Provides

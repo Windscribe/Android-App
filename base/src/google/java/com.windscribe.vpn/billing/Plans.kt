@@ -16,7 +16,7 @@ open class WindscribeInAppProduct(
 
     fun getSkus(): List<String> {
         return billingPlans.map {
-            it.extId
+            it.extId ?: ""
         }
     }
 
@@ -77,14 +77,14 @@ open class WindscribeInAppProduct(
     fun getUsdPrice(sku: String): String {
         return billingPlans.first {
             it.extId == sku
-        }.planPrice
+        }.planPrice ?: ""
     }
 
     fun getPromoStickerLabel(sku: String): String {
         val plan = billingPlans.first {
             it.extId == sku
         }
-        return plan.planName
+        return plan.planName ?: ""
     }
 
     fun getPlanName(sku: String): CharSequence? {

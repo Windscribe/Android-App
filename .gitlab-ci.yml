@@ -184,6 +184,7 @@ UnitTests:
   script:
     - ./gradlew
         :base:testFdroidDebugUnitTest
+        :base:testGoogleDebugUnitTest
         :openvpn:testSkeletonDebugUnitTest
         :wgtunnel:testDebugUnitTest
         --continue

@@ -163,7 +163,7 @@ androidapp/
 
 | Layer | Technology |
 |-------|-----------|
-| **Language** | Kotlin (primary), Java (legacy) |
+| **Language** | Kotlin (100% of app modules; vendored native VPN modules are C/C++/Go/Java) |
 | **UI** | Jetpack Compose (Mobile), XML (TV) |
 | **Async** | Coroutines + Kotlin Flows |
 | **DI** | Hilt |
@@ -234,8 +234,8 @@ We ❤️ contributions! Here's how to get started:
   - Keep it clean and readable
 
 2. **Kotlin First, Always**
-  - We're migrating from Java to Kotlin
-  - New code MUST be in Kotlin
+  - The app modules (base/mobile/tv) are 100% Kotlin — keep them that way
+  - New code MUST be in Kotlin (no new Java files)
   - Use coroutines and flows
 
 3. **Respect the Module Hierarchy**

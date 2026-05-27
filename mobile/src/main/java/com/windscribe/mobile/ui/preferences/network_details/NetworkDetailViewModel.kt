@@ -90,7 +90,7 @@ class NetworkDetailViewModelImpl @Inject constructor(
             if (portMapResult.isSuccess) {
                 val portMap = portMapResult.getOrNull()
                 portMap?.portmap?.map {
-                    PortMapItem(ProtoItem(it.protocol, it.heading), it.ports, it.use)
+                    PortMapItem(ProtoItem(it.protocol ?: "", it.heading ?: ""), it.ports ?: emptyList(), it.use ?: "")
                 }?.let {
                     portMapItems.addAll(it)
                     buildProtocolInfo()
@@ -230,9 +230,9 @@ class NetworkDetailViewModelImpl @Inject constructor(
                 _ports.value = newPorts.map { port -> DropDownStringItem(port, port) }
                 
                 // If current port is not valid for new protocol, select first available port
-                if (!isValidPort(it.protocol, it.port) && newPorts.isNotEmpty()) {
+                if (!isValidPort(it.protocol ?: "", it.port ?: "") && newPorts.isNotEmpty()) {
                     it.port = newPorts.first()
-                    _selectedPort.value = it.port
+                    _selectedPort.value = it.port ?: ""
                 }
                 
                 withContext(Dispatchers.IO) {

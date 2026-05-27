@@ -207,7 +207,7 @@ class DetailViewAdapter(
     private fun getPingTime(city: Datacenter): Int {
         for (pingTime in dataDetails.pingTimes) {
             if (city.id == pingTime.ping_id) {
-                return pingTime.getPingTime()
+                return pingTime.pingTime
             }
         }
         return -1

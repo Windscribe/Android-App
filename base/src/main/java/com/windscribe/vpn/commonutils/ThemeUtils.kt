@@ -5,6 +5,7 @@ package com.windscribe.vpn.commonutils
 
 import android.content.Context
 import android.util.TypedValue
+import androidx.core.content.ContextCompat
 
 object ThemeUtils {
     @JvmStatic
@@ -12,7 +13,7 @@ object ThemeUtils {
         val tv = TypedValue()
         val found = context.theme.resolveAttribute(attributeResId, tv, true)
         val id = if (found) tv.resourceId else defaultValue
-        return context.resources.getColor(id)
+        return ContextCompat.getColor(context, id)
     }
 
     @JvmStatic

@@ -6,6 +6,7 @@ import com.windscribe.vpn.backend.VPNState
 import com.windscribe.vpn.backend.utils.WindVpnController
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -71,6 +72,7 @@ class EmergencyConnectViewModal @Inject constructor(
     }
 
     private fun connect() {
+        connectingJob?.cancel()
         connectingJob = scope.launch {
             _uiState.emit(EmergencyConnectUIState.Connecting)
             windVpnController.connectUsingEmergencyProfile { progress ->
@@ -78,6 +80,10 @@ class EmergencyConnectViewModal @Inject constructor(
             }.onSuccess {
                 logger.info("Successfully connected to emergency server.")
             }.onFailure {
+                if (it is CancellationException) {
+                    logger.debug("Emergency connect cancelled.")
+                    return@onFailure
+                }
                 logger.error("Failure to connect using emergency vpn profiles: $it")
                 _uiState.emit(EmergencyConnectUIState.Disconnected)
                 error.emit(it.message ?: "Failed to connect using emergency vpn profile.")

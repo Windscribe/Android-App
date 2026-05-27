@@ -100,7 +100,7 @@ class ConfigViewmodelImpl @Inject constructor(
                 logger.warn("Error fetching max primary key, using default value.")
                 20001
             }
-            configFile.setPrimaryKey(nextPrimaryKey)
+            configFile.primaryKey = nextPrimaryKey
             runCatching {
                 localDb.addConfigSync(configFile)
                 logger.info("Config added successfully to database.")
@@ -114,7 +114,7 @@ class ConfigViewmodelImpl @Inject constructor(
     override fun deleteCustomConfig(config: ConfigFile) {
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
-                localDb.deleteCustomConfig(config.getPrimaryKey())
+                localDb.deleteCustomConfig(config.primaryKey)
                 logger.info("Config deleted successfully from database.")
             }.onFailure {
                 logger.error("Error deleting config file: ${it.message}")

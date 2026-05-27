@@ -28,7 +28,6 @@ import com.windscribe.vpn.repository.ServerListRepository
 import com.windscribe.vpn.repository.StaticIpRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.services.FirebaseManager
-import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,7 +53,6 @@ class WelcomePresenterImpl @Inject constructor(
     private val staticIpRepository: StaticIpRepository,
     private val connectionDataRepository: ConnectionDataRepository,
     private val serverListRepository: ServerListRepository,
-    private val preferenceChangeObserver: PreferenceChangeObserver,
     private val workManager: WindScribeWorkManager,
     private val resourceHelper: ResourceHelper,
     private val logRepository: LogRepository,
@@ -102,7 +100,7 @@ class WelcomePresenterImpl @Inject constructor(
                     is CallResult.Success -> {
                         welcomeView.prepareUiForApiCallFinished()
                         logger.debug("Successfully generated XPress login code.")
-                        welcomeView.setSecretCode(result.data.xPressLoginCode)
+                        welcomeView.setSecretCode(result.data.xPressLoginCode ?: "")
                         startXPressLoginCodeVerifier(result.data)
                     }
                     is CallResult.Error -> {
@@ -402,8 +400,8 @@ class WelcomePresenterImpl @Inject constructor(
                 val result = withTimeoutOrNull(20000) {
                     result<XPressLoginVerifyResponse> {
                         apiCallManager.verifyXPressLoginCode(
-                            xPressLoginCodeResponse.xPressLoginCode,
-                            xPressLoginCodeResponse.signature
+                            xPressLoginCodeResponse.xPressLoginCode ?: "",
+                            xPressLoginCodeResponse.signature ?: ""
                         )
                     }
                 }
@@ -543,8 +541,6 @@ class WelcomePresenterImpl @Inject constructor(
                 // Update static IPs
                 updateStaticIps()
 
-                // Post city server change and update user data
-                preferenceChangeObserver.postCityServerChange()
                 userRepository.reload()
 
                 // Success - navigate to appropriate screen
@@ -564,7 +560,6 @@ class WelcomePresenterImpl @Inject constructor(
                 logger.error("Prepare data: {}", throwable.message)
                 try {
                     // Fallback: try to complete with basic setup
-                    preferenceChangeObserver.postCityServerChange()
                     userRepository.reload()
 
                     withContext(Dispatchers.Main) {

@@ -46,7 +46,6 @@ interface LocalDbInterface {
     fun getPopupNotificationsAsFlow(userName: String): Flow<List<PopupNotificationTable>>
     suspend fun getServerStatus(username: String): ServerStatusUpdateTable
     suspend fun getStaticRegionByIDAsync(id: Int): StaticRegion?
-    fun insertOrUpdateServerUpdateStatusTable(serverStatusUpdateTable: ServerStatusUpdateTable)
     suspend fun insertOrUpdateStatus(serverStatusUpdateTable: ServerStatusUpdateTable)
     suspend fun insertOrUpdateStatusAsync(serverStatusUpdateTable: ServerStatusUpdateTable)
     suspend fun insertWindNotifications(windNotifications: List<WindNotification>)

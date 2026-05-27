@@ -97,8 +97,8 @@ class LatencyRepositoryTest {
     ): PingTime = PingTime().apply {
         ping_id = id
         this.ip = ip
-        setUpdatedAt(updatedAt)
-        setPingTime(pingTime)
+        this.updatedAt = updatedAt
+        this.pingTime = pingTime
     }
 
     // ---------- updateAllServerLatencies: filter logic ----------
@@ -280,12 +280,12 @@ class LatencyRepositoryTest {
         val region1 = mockk<StaticRegion> {
             every { id } returns 100
             every { ipId } returns 1
-            every { staticIpNode } returns mockk { every { ip } returns "static-1" }
+            every { getStaticIpNode() } returns mockk { every { ip } returns "static-1" }
         }
         val region2 = mockk<StaticRegion> {
             every { id } returns 200
             every { ipId } returns 2
-            every { staticIpNode } returns mockk { every { ip } returns "static-2" }
+            every { getStaticIpNode() } returns mockk { every { ip } returns "static-2" }
         }
         coEvery { db.getAllStaticRegions() } returns listOf(region1, region2)
 
@@ -308,7 +308,7 @@ class LatencyRepositoryTest {
         val region = mockk<StaticRegion> {
             every { id } returns 100
             every { ipId } returns 1
-            every { staticIpNode } returns mockk { every { ip } returns "static-1" }
+            every { getStaticIpNode() } returns mockk { every { ip } returns "static-1" }
         }
         coEvery { db.getAllStaticRegions() } returns listOf(region)
 
