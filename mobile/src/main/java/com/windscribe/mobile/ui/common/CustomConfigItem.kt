@@ -79,7 +79,7 @@ fun CustomConfigItem(
         (latencyState as? ListState.Success)?.data?.find { it.id == item.id }?.time ?: -1
     )
     val isOpenVPN =
-        WindUtilities.getConfigType(item.config.content) == WindUtilities.ConfigType.OpenVPN
+        WindUtilities.getConfigType(item.config.content ?: "") == WindUtilities.ConfigType.OpenVPN
     val icon = if (isOpenVPN) R.drawable.configsovpn else R.drawable.configswg
     val interactionSource = remember { MutableInteractionSource() }
     val editInteractionSource = remember { MutableInteractionSource() }
@@ -229,7 +229,7 @@ fun CustomConfigItem(
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = item.config.name,
+                text = item.config.name ?: "",
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 modifier = Modifier.weight(1f),
                 color = MaterialTheme.colorScheme.serverItemTextColor,

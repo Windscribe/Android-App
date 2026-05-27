@@ -46,7 +46,7 @@ class FavouriteAdapter(
                 latencyView.text = latencyView.resources.getString(com.windscribe.vpn.R.string.ping_time, pingTime)
             }
             // Determine datacenter status
-            val serverCount = serverListData.serverCountMap[city.getId()] ?: 0
+            val serverCount = serverListData.serverCountMap[city.id] ?: 0
             val status = DatacenterStatusHelper.getStatus(city, serverCount, isPremiumUser)
             val requiresPro = DatacenterStatusHelper.requiresPro(city, serverCount, isPremiumUser)
 
@@ -147,7 +147,7 @@ class FavouriteAdapter(
     }
 
     override fun getItemId(position: Int): Long {
-        return locations[position].getId().toLong()
+        return locations[position].id.toLong()
     }
 
     override fun onBindViewHolder(favouriteHolder: FavouriteHolder, i: Int) {
@@ -167,8 +167,8 @@ class FavouriteAdapter(
 
     private fun getPingTime(city: Datacenter): Int {
         for (pingTime in serverListData.pingTimes) {
-            if (city.getId() == pingTime.ping_id) {
-                return pingTime.getPingTime()
+            if (city.id == pingTime.ping_id) {
+                return pingTime.pingTime
             }
         }
         return -1
@@ -176,7 +176,7 @@ class FavouriteAdapter(
 
     private fun hasServersForCity(city: Datacenter): Boolean {
         // Check if there are servers available for this city (datacenter)
-        val serverCount = serverListData.serverCountMap[city.getId()] ?: 0
+        val serverCount = serverListData.serverCountMap[city.id] ?: 0
         return serverCount > 0
     }
 

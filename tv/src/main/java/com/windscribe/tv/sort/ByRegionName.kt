@@ -8,6 +8,6 @@ import java.util.Comparator
 
 class ByRegionName : Comparator<LocationAndDatacenters> {
     override fun compare(o1: LocationAndDatacenters, o2: LocationAndDatacenters): Int {
-        return o1.location.name.compareTo(o2.location.name)
+        return o1.location?.name.orEmpty().compareTo(o2.location?.name.orEmpty())
     }
 }

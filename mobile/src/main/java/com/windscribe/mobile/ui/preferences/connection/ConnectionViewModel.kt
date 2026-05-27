@@ -192,7 +192,7 @@ class ConnectionViewModelImpl @Inject constructor(
             if (portMapResult.isSuccess) {
                 val portMap = portMapResult.getOrNull()
                 portMap?.portmap?.map {
-                    PortMapItem(ProtoItem(it.protocol, it.heading), it.ports, it.use)
+                    PortMapItem(ProtoItem(it.protocol ?: "", it.heading ?: ""), it.ports ?: emptyList(), it.use ?: "")
                 }?.let {
                     portMapItems.addAll(it)
                     buildProtocolInfo()

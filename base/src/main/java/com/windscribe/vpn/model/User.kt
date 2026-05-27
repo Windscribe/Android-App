@@ -30,31 +30,25 @@ class User(private val sessionResponse: UserSessionResponse) {
     val isOurIp: Boolean
         get() = sessionResponse.ourIp != null && sessionResponse.ourIp == 0
     val locationRevision: String
-        get() = sessionResponse.locationRevision
+        get() = sessionResponse.locationRevision ?: ""
     val locationHash: String
-        get() = sessionResponse.locationHash
+        get() = sessionResponse.locationHash ?: ""
     val email: String?
         get() = sessionResponse.userEmail
     val userName: String
-        get() = if (sessionResponse.userName == null) "na" else sessionResponse.userName
+        get() = sessionResponse.userName ?: "na"
     val sipCount: Int
-        get() {
-            return if (sessionResponse.sip != null) {
-                sessionResponse.sip.count
-            } else {
-                0
-            }
-        }
+        get() = sessionResponse.sip?.count ?: 0
     val dataUsed: Long
         get() {
-            return sessionResponse.trafficUsed.toLong()
+            return sessionResponse.trafficUsed?.toLong() ?: 0L
         }
     val maxData: Long
-        get() = sessionResponse.trafficMax.toLong()
+        get() = sessionResponse.trafficMax?.toLong() ?: 0L
     val isPro: Boolean
         get() = sessionResponse.isPremium == 1
     val userStatusInt: Int
-        get() = sessionResponse.isPremium
+        get() = sessionResponse.isPremium ?: 0
     val dataLeft: Float
         get() {
             if (dataUsed > maxData) {
@@ -114,7 +108,7 @@ class User(private val sessionResponse: UserSessionResponse) {
     val daysRegisteredSince: Long
         get() {
             val registrationDate = sessionResponse.registrationDate
-            val difference = Date().time - registrationDate.toLong() * 1000L
+            val difference = Date().time - (registrationDate?.toLong() ?: 0L) * 1000L
             return TimeUnit.DAYS.convert(difference, TimeUnit.MILLISECONDS)
         }
 

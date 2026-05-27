@@ -23,7 +23,6 @@ import com.windscribe.vpn.repository.CallResult
 import com.windscribe.vpn.repository.LocationRepository
 import com.windscribe.vpn.repository.UserRepository
 import com.windscribe.vpn.repository.WgConfigRepository
-import com.windscribe.vpn.state.PreferenceChangeObserver
 import com.windscribe.vpn.state.VPNConnectionStateManager
 import com.windscribe.vpn.workers.WindScribeWorkManager
 import dagger.assisted.Assisted
@@ -40,7 +39,6 @@ class SessionWorker @AssistedInject constructor(
     private val apiCallManager: IApiCallManager,
     private val workManager: WindScribeWorkManager,
     private val localDbInterface: LocalDbInterface,
-    private val preferenceChangeObserver: PreferenceChangeObserver,
     private val locationRepository: LocationRepository,
     private val wgConfigRepository: WgConfigRepository,
     private val vpnController: WindVpnController,
@@ -102,11 +100,6 @@ class SessionWorker @AssistedInject constructor(
             if (storedSipCount != it.sipCount || (it.sipCount > 0 && hasStaticCredential == null)) {
                 logger.debug("Static ip changed.")
                 workManager.updateStaticIpList()
-            }
-            // Email status changed
-            if (changed[4]) {
-                logger.debug("Email status changed.")
-                preferenceChangeObserver.postEmailStatusChange()
             }
             handleAccountStatusChange(it)
             if (!changed[0] && !changed[2] && !changed[3]){

@@ -680,9 +680,9 @@ class SettingsPresenterImp @Inject constructor(
 
     private fun getProtocolFromHeading(portMapResponse: PortMapResponse?, heading: String): String {
         portMapResponse?.let {
-            for (map in it.portmap) {
+            for (map in it.portmap ?: emptyList()) {
                 if (map.heading == heading) {
-                    return map.protocol
+                    return map.protocol ?: PROTO_IKev2
                 }
             }
         }
@@ -793,9 +793,9 @@ class SettingsPresenterImp @Inject constructor(
         portMapRepository.getPortMapWithCallback { portMapResponse ->
             val protocol = getProtocolFromHeading(portMapResponse, heading)
             val savedPort = getSavedPort(protocol)
-            for (portMap in portMapResponse.portmap) {
+            for (portMap in portMapResponse.portmap ?: emptyList()) {
                 if (portMap.protocol == protocol) {
-                    settingView.setupPortMapAdapter(savedPort, portMap.ports)
+                    settingView.setupPortMapAdapter(savedPort, portMap.ports ?: emptyList())
                 }
             }
         }
@@ -806,24 +806,24 @@ class SettingsPresenterImp @Inject constructor(
             var selectedPortMap: PortMap? = null
             val protocols: MutableList<String> = ArrayList()
             var wireGuardHeading: String? = null
-            for (portMap in portMapResponse.portmap) {
+            for (portMap in portMapResponse.portmap ?: emptyList()) {
                 if (portMap.protocol == savedProtocol) {
                     selectedPortMap = portMap
                 }
                 if (portMap.protocol == PROTO_WIRE_GUARD) {
                     wireGuardHeading = portMap.heading
                 } else {
-                    protocols.add(portMap.heading)
+                    protocols.add(portMap.heading ?: "")
                 }
             }
             // Add WireGuard at the front if found
             wireGuardHeading?.let {
                 protocols.add(0, it)
             }
-            selectedPortMap = selectedPortMap ?: portMapResponse.portmap[0]
+            selectedPortMap = selectedPortMap ?: portMapResponse.portmap?.firstOrNull()
             selectedPortMap?.let {
-                settingView.setupProtocolAdapter(it.heading, protocols)
-                setPortMapAdapter(it.heading)
+                settingView.setupProtocolAdapter(it.heading ?: "", protocols)
+                setPortMapAdapter(it.heading ?: "")
             }
         }
     }

@@ -262,8 +262,8 @@ class ConnectionViewmodelImpl @Inject constructor(
                     saveLastLocation(bestDatacenterAndLocation)
                     _bestLocation.emit(
                         ServerListItem(
-                            bestDatacenterAndLocation.location.id,
-                            bestDatacenterAndLocation.location,
+                            bestDatacenterAndLocation.location!!.id,
+                            bestDatacenterAndLocation.location!!,
                             listOf(bestDatacenterAndLocation.datacenter)
                         )
                     )
@@ -285,12 +285,12 @@ class ConnectionViewmodelImpl @Inject constructor(
     }
 
     private fun saveLastLocation(location: DatacenterAndLocation) {
-        val coordinatesArray = location.datacenter.coordinates.split(",".toRegex()).toTypedArray()
+        val coordinatesArray = (location.datacenter.coordinates ?: "").split(",".toRegex()).toTypedArray()
         val lastLocation = LastSelectedLocation(
             location.datacenter.id,
-            location.datacenter.nodeName,
-            location.datacenter.nickName,
-            location.location.countryCode,
+            location.datacenter.nodeName ?: "",
+            location.datacenter.nickName ?: "",
+            location.location?.countryCode,
             coordinatesArray[0],
             coordinatesArray[1]
         )
@@ -301,9 +301,9 @@ class ConnectionViewmodelImpl @Inject constructor(
 
     private fun saveLastLocation(staticRegion: StaticRegion) {
         val lastLocation = LastSelectedLocation(
-            staticRegion.id,
-            staticRegion.cityName,
-            staticRegion.staticIp,
+            staticRegion.id ?: 0,
+            staticRegion.cityName ?: "",
+            staticRegion.staticIp ?: "",
             staticRegion.countryCode,
             "",
             ""
@@ -315,7 +315,7 @@ class ConnectionViewmodelImpl @Inject constructor(
 
     private fun saveLastLocation(config: ConfigFile) {
         val lastLocation =
-            LastSelectedLocation(config.getPrimaryKey(), "Custom Config", config.name, "", "", "")
+            LastSelectedLocation(config.primaryKey, "Custom Config", config.name ?: "", "", "", "")
         Util.saveSelectedLocation(lastLocation)
         locationRepository.setSelectedCity(lastLocation.cityId)
         lastLocationState.value = lastLocation
@@ -779,14 +779,14 @@ class ConnectionViewmodelImpl @Inject constructor(
                 }
 
                 // Setup config connection
-                locationRepository.setSelectedCity(config.getPrimaryKey())
+                locationRepository.setSelectedCity(config.primaryKey)
                 saveLastLocation(config)
                 preferences.globalUserConnectionPreference = true
                 preferences.isConnectingToStaticIp = false
                 preferences.isConnectingToConfigured = true
-                val type = WindUtilities.getConfigType(config.content)
+                val type = WindUtilities.getConfigType(config.content ?: "")
                 if (type == WindUtilities.ConfigType.OpenVPN && (config.username.isNullOrEmpty() || config.password.isNullOrEmpty())) {
-                    _goto.emit(HomeGoto.EditCustomConfig(config.getPrimaryKey(), true))
+                    _goto.emit(HomeGoto.EditCustomConfig(config.primaryKey, true))
                     return@launch
                 } else {
                     vpnController.connectAsync()
@@ -831,8 +831,8 @@ class ConnectionViewmodelImpl @Inject constructor(
                 try {
                     _bestLocation.emit(
                         ServerListItem(
-                            bestDatacenterAndLocation.location.id,
-                            bestDatacenterAndLocation.location,
+                            bestDatacenterAndLocation.location!!.id,
+                            bestDatacenterAndLocation.location!!,
                             listOf(bestDatacenterAndLocation.datacenter)
                         )
                     )

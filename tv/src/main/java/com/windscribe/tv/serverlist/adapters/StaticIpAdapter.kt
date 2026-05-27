@@ -34,7 +34,7 @@ class StaticIpAdapter(
         fun bind(region: StaticRegion) {
             nodeNameLabel.text = region.cityName
             nodeNickNameLabel.text = region.countryCode
-            val pingTime = getPingTime(region.id)
+            val pingTime = getPingTime(region.id ?: 0)
             if (pingTime == -1) {
                 latencyView.text = ""
             } else {
@@ -118,7 +118,7 @@ class StaticIpAdapter(
     private fun getPingTime(id: Int): Int {
         for (pingTime in dataDetails.pingTimes) {
             if (id == pingTime.ping_id) {
-                return pingTime.getPingTime()
+                return pingTime.pingTime
             }
         }
         return -1

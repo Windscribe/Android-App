@@ -21,7 +21,6 @@ import com.windscribe.vpn.serverlist.entity.Location
 import com.windscribe.vpn.serverlist.entity.LocationAndDatacenters
 import com.windscribe.vpn.serverlist.entity.Server
 import com.windscribe.vpn.serverlist.entity.ServerMapState
-import com.windscribe.vpn.state.PreferenceChangeObserver
 import dagger.Lazy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -57,7 +56,6 @@ class ServerListRepository @Inject constructor(
     private val scope: CoroutineScope,
     private val apiCallManager: IApiCallManager,
     private val localDbInterface: LocalDbInterface,
-    private val preferenceChangeObserver: PreferenceChangeObserver,
     private val userRepository: Lazy<UserRepository>,
     private val preferenceHelper: PreferencesHelper,
     private val favouriteRepository: FavouriteRepository
@@ -145,9 +143,9 @@ class ServerListRepository @Inject constructor(
         scope.launch(Dispatchers.IO) {
             try {
                 val customLocationData = CustomLocationsData(regions.mapNotNull { region ->
-                    if (region.location == null) return@mapNotNull null
-                    val cities = region.datacenters.map { CustomCity(it.id, it.nodeName, it.nickName) }
-                    return@mapNotNull CustomRegion(region.location.id, region.location.name, cities)
+                    val location = region.location ?: return@mapNotNull null
+                    val cities = region.datacenters.map { CustomCity(it.id, it.nodeName ?: "", it.nickName ?: "") }
+                    return@mapNotNull CustomRegion(location.id, location.name ?: "", cities)
                 })
                 val json = Gson().toJson(customLocationData)
                 _locationJsonToExport.value = json
@@ -314,7 +312,6 @@ class ServerListRepository @Inject constructor(
                     localDbInterface.deleteAllServers()
                     localDbInterface.addServers(servers)
                     preferenceHelper.serverRevision = serverResponse.revision
-                    preferenceChangeObserver.postCityServerChange()
                     load()
                     CallResult.Success(Unit)
                 } catch (e: Exception) {
@@ -368,7 +365,6 @@ class ServerListRepository @Inject constructor(
                 }
                 // Update revision
                 preferenceHelper.serverRevision = serverInventory.revision
-                preferenceChangeObserver.postCityServerChange()
                 load()
             }
             else -> {

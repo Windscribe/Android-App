@@ -159,7 +159,7 @@ class UpgradePresenterImpl @Inject constructor(
             try {
                 val userSessionResponse = getUserSessionData()
                 val accountID = android.util.Base64.encodeToString(
-                    userSessionResponse.userID.toByteArray(Charsets.UTF_8),
+                    (userSessionResponse.userID ?: "").toByteArray(Charsets.UTF_8),
                     android.util.Base64.NO_WRAP or android.util.Base64.URL_SAFE
                 )
                 withContext(Dispatchers.Main) {
@@ -490,13 +490,13 @@ class UpgradePresenterImpl @Inject constructor(
 
     private fun billingResponseToSkuList(billingPlanResponse: BillingPlanResponse): List<String> {
         val inAppSkuList: MutableList<String> = ArrayList()
-        if (billingPlanResponse.plansList.isNotEmpty()) {
-            mobileBillingPlans = billingPlanResponse.plansList
+        if (!billingPlanResponse.plansList.isNullOrEmpty()) {
+            mobileBillingPlans = billingPlanResponse.plansList ?: emptyList()
             paymentToken = billingPlanResponse.paymentToken
             logger.debug("Getting in app skus from billing plan...")
             for (billingPlan in mobileBillingPlans) {
                 logger.debug("Billing plan: {}", billingPlan)
-                inAppSkuList.add(billingPlan.extId)
+                inAppSkuList.add(billingPlan.extId ?: "")
             }
         }
         return inAppSkuList
@@ -692,7 +692,7 @@ class UpgradePresenterImpl @Inject constructor(
         try {
             val userSessionResponse = getUserSessionData()
             val userStatusTable = UserStatusTable(
-                userSessionResponse.userName,
+                userSessionResponse.userName ?: "na",
                 userSessionResponse.isPremium,
                 userSessionResponse.userAccountStatus
             )

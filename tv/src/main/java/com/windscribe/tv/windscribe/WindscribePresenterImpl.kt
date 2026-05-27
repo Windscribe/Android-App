@@ -462,9 +462,9 @@ class WindscribePresenterImpl @Inject constructor(
                 if (selectedLocation == null) {
                     selectedLocation = LastSelectedLocation(
                         bestLocationDeferred.datacenter.id,
-                        bestLocationDeferred.datacenter.nodeName,
-                        bestLocationDeferred.datacenter.nickName,
-                        bestLocationDeferred.location.countryCode,
+                        bestLocationDeferred.datacenter.nodeName ?: "",
+                        bestLocationDeferred.datacenter.nickName ?: "",
+                        bestLocationDeferred.location?.countryCode,
                         "",
                         ""
                     )
@@ -581,8 +581,8 @@ class WindscribePresenterImpl @Inject constructor(
         preferencesHelper.isConnectingToStaticIp = false
         selectedLocation = LastSelectedLocation(
             datacenterAndLocation.datacenter.id,
-            datacenterAndLocation.datacenter.nodeName,
-            datacenterAndLocation.datacenter.nickName, datacenterAndLocation.location.countryCode
+            datacenterAndLocation.datacenter.nodeName ?: "",
+            datacenterAndLocation.datacenter.nickName ?: "", datacenterAndLocation.location?.countryCode
         )
         selectedLocation?.let {
             Util.saveSelectedLocation(it)
@@ -601,8 +601,8 @@ class WindscribePresenterImpl @Inject constructor(
             // Saving static IP credentials
             preferencesHelper.staticIpCredentials = serverCredentialsResponse
             selectedLocation = LastSelectedLocation(
-                staticRegion.id, staticRegion.cityName,
-                staticRegion.staticIp, staticRegion.countryCode
+                staticRegion.id ?: 0, staticRegion.cityName ?: "",
+                staticRegion.staticIp ?: "", staticRegion.countryCode
             )
             selectedLocation?.let {
                 Util.saveSelectedLocation(it)
@@ -643,8 +643,8 @@ class WindscribePresenterImpl @Inject constructor(
         var index = 0
         for (city in cities) {
             for (pingTime in dataDetails.pingTimes) {
-                if (pingTime.id == city.id) {
-                    total += pingTime.getPingTime()
+                if (pingTime.ping_id == city.id) {
+                    total += pingTime.pingTime
                     index++
                 }
             }

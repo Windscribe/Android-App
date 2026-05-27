@@ -173,9 +173,9 @@ private fun ListItemView(
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            DataCenterName(item.staticItem.cityName, Modifier.padding(0.dp))
+            DataCenterName(item.staticItem.cityName ?: "", Modifier.padding(0.dp))
             Text(
-                text = item.staticItem.staticIp,
+                text = item.staticItem.staticIp ?: "",
                 style = font12.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.expandedServerItemTextColor,
                 textAlign = TextAlign.Start

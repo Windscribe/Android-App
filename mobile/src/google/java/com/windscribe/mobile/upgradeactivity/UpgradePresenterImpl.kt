@@ -386,14 +386,14 @@ class UpgradePresenterImpl @Inject constructor(
 
     private fun billingResponseToSkuList(billingPlanResponse: BillingPlanResponse): List<String> {
         val inAppSkuList: MutableList<String> = ArrayList()
-        if (billingPlanResponse.plansList.isNotEmpty()) {
-            mobileBillingPlans = billingPlanResponse.plansList
+        if (!billingPlanResponse.plansList.isNullOrEmpty()) {
+            mobileBillingPlans = billingPlanResponse.plansList ?: emptyList()
             overriddenPlans = billingPlanResponse.overriddenPlans
             paymentToken = billingPlanResponse.paymentToken
             presenterLog.debug("Getting in app skus from billing plan...")
             for (billingPlan in mobileBillingPlans) {
                 presenterLog.debug("Billing plan: {}", billingPlan)
-                inAppSkuList.add(billingPlan.extId)
+                inAppSkuList.add(billingPlan.extId ?: "")
             }
         }
         return inAppSkuList

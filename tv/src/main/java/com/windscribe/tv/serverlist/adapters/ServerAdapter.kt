@@ -62,9 +62,9 @@ class ServerAdapter(
         private var group: LocationAndDatacenters? = null
         fun bind(group: LocationAndDatacenters) {
             this.group = group
-            textView.text = group.location.name
+            textView.text = group.location?.name
             imageBackground.visibility = View.VISIBLE
-            val countryCode = group.location.countryCode
+            val countryCode = group.location?.countryCode
             Glide.with(itemView).load(FlagIconResource.getFlag(countryCode)).into(imageView)
         }
 
@@ -108,8 +108,8 @@ class ServerAdapter(
 
         init {
             itemView.setOnClickListener {
-                group?.let {
-                    listener?.onGroupSelected(it.location)
+                group?.location?.let {
+                    listener?.onGroupSelected(it)
                 }
             }
             itemView.onFocusChangeListener =

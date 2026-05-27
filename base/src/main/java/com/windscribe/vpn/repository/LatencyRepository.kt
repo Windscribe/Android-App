@@ -53,7 +53,7 @@ class LatencyRepository @Inject constructor(
     private suspend fun pingJobAsync(city: Datacenter): Deferred<PingTime?> {
         val context = currentCoroutineContext()
         return CoroutineScope(context).async {
-            val pingTime = newPingTime(city.getId(), city.regionID, isStatic = false, isPro = true)
+            val pingTime = newPingTime(city.id, city.region_id, isStatic = false, isPro = true)
             val pingIpAndHost = localDbInterface.getPingIpAndHost(city.id) ?: return@async null
             getLatency(pingIpAndHost.first, pingTime)
         }
@@ -62,8 +62,8 @@ class LatencyRepository @Inject constructor(
     private suspend fun pingJobAsync(region: StaticRegion): Deferred<PingTime> {
         val context = currentCoroutineContext()
         return CoroutineScope(context).async {
-            val pingTime = newPingTime(region.id, region.ipId, isStatic = true, isPro = true)
-            getLatency(region.staticIpNode.ip, pingTime)
+            val pingTime = newPingTime(region.id ?: 0, region.ipId ?: 0, isStatic = true, isPro = true)
+            getLatency(region.getStaticIpNode()?.ip, pingTime)
         }
     }
 
@@ -76,7 +76,7 @@ class LatencyRepository @Inject constructor(
                 .toDuration(DurationUnit.MILLISECONDS).inWholeMinutes <= MINIMUM_PING_VALIDATION_MINUTES
             val isPingValid = it.pingTime != -1
             isSameIp && isWithinTimeLimit && isPingValid
-        }.map { it.id }
+        }.map { it.ping_id }
         val citiesToPing = localDbInterface.getPingableDatacenters()
             .filter { !validPings.contains(it.id) }
         logger.debug("Requesting latency for ${citiesToPing.count()} cities.")
@@ -132,12 +132,12 @@ class LatencyRepository @Inject constructor(
         if (skipPing) return false
         return runCatching {
             val results = localDbInterface.getAllConfigs().map { configFile ->
-                val hostname: String? = if (WireGuardVpnProfile.validConfig(configFile.content)) {
-                    WireGuardVpnProfile.getHostName(configFile.content)
+                val hostname: String? = if (WireGuardVpnProfile.validConfig(configFile.content ?: "")) {
+                    WireGuardVpnProfile.getHostName(configFile.content ?: "")
                 } else {
-                    Util.getHostNameFromOpenVPNConfig(configFile.content)
+                    Util.getHostNameFromOpenVPNConfig(configFile.content ?: "")
                 }
-                val pingTime = newPingTime(configFile.getPrimaryKey(), 0, isStatic = false, isPro = false)
+                val pingTime = newPingTime(configFile.primaryKey, 0, isStatic = false, isPro = false)
                 getLatency(hostname, pingTime)
             }.onEach { localDbInterface.addPing(it) }
             updateLatencyEvent(results, LatencyType.Config)
@@ -158,19 +158,19 @@ class LatencyRepository @Inject constructor(
         return PingTime().apply {
             ping_id = id
             pro = isPro
-            setRegionId(regionId)
-            setStatic(isStatic)
-            setUpdatedAt(System.currentTimeMillis())
-            preferencesHelper.userIP?.let { setIp(it) }
+            this.regionId = regionId
+            this.isStatic = isStatic
+            updatedAt = System.currentTimeMillis()
+            preferencesHelper.userIP?.let { ip = it }
         }
     }
 
     private suspend fun getLatency(host: String?, pingTime: PingTime): PingTime {
         if (host == null) {
-            pingTime.setPingTime(-1)
+            pingTime.pingTime = -1
             return pingTime
         }
-        pingTime.setPingTime(pinger.ping(host, PING_TIMEOUT_MS))
+        pingTime.pingTime = pinger.ping(host, PING_TIMEOUT_MS)
         return pingTime
     }
 }

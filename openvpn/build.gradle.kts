@@ -199,9 +199,9 @@ dependencies {
     dependencies.add("uiImplementation", "com.google.android.material:material:$materialVersion")
     dependencies.add("uiImplementation", "androidx.webkit:webkit:1.2.0")
 */
-    testImplementation("junit:junit:${rootProject.extra["JUnit"]}")
+    testImplementation("junit:junit:${libs.versions.junit.get()}")
     testImplementation("org.mockito:mockito-core:5.12.0")
     testImplementation("org.robolectric:robolectric:4.13")
-    testImplementation("androidx.test:core:${rootProject.extra["testCore"]}")
+    testImplementation("androidx.test:core:1.5.0")
     implementation(project(":common"))
 }

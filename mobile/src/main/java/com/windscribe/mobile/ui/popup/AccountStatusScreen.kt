@@ -37,7 +37,7 @@ fun AccountStatusScreen(data: AccountStatusDialogData) {
         Spacer(Modifier.height(32.dp))
         if (data.showPrimaryButton) {
             PopupPrimaryActionButton(modifier = Modifier, data.primaryText) {
-                activity?.startActivity(UpgradeActivity.getStartIntent(activity))
+                activity?.let { it.startActivity(UpgradeActivity.getStartIntent(it)) }
                 navController.popBackStack()
             }
             Spacer(modifier = Modifier.height(16.dp))

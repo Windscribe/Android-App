@@ -4,7 +4,7 @@
 
 **Repository**: ws/client/androidapp (GitLab)
 **Purpose**: Windscribe VPN application for Android devices (phones, tablets, Android TV)
-**Tech Stack**: Kotlin (primary), Java (legacy), Jetpack Compose (mobile UI), XML (TV UI), Native C/C++/Go (protocols)
+**Tech Stack**: Kotlin (100% of base/mobile/tv), Jetpack Compose (mobile UI), XML (TV UI), Native C/C++/Go (vendored protocol modules)
 **Owner**: Windscribe Engineering Team
 **Platform**: Android API 21+ (Lollipop and above)
 
@@ -279,15 +279,16 @@ class ApiCallManager(private val wsNetServerAPI: WSNetServerAPI) : IApiCallManag
 @Inject lateinit var serverListRepository: ServerListRepository
 ```
 
-### 5. Coroutines + Flows (RxJava Fully Removed)
+### 5. Coroutines + Flows
 
 **Async Operations**: 100% Kotlin coroutines + Flows.
 
 **Patterns**:
 - `suspend fun` for one-shot async operations
-- `Flow<T>` for streams (replacing RxJava `Observable`)
-- `SharedFlow<T>` for hot streams (replacing `BehaviorSubject`)
-- `StateFlow<T>` for state (replacing `BehaviorSubject` with initial value)
+- `Flow<T>` for streams
+- `SharedFlow<T>` for hot streams; one-shot events use `MutableSharedFlow(replay = 0)` (e.g. the
+  billing managers' purchase events)
+- `StateFlow<T>` for state
 
 **Example**:
 ```kotlin
@@ -353,15 +354,12 @@ class BillingManagerImpl : BillingManager {
 }
 ```
 
-### 8. Migration Status: Java → Kotlin
+### 8. Language: Kotlin
 
-**Current State**:
-- **TV Module**: 100% Kotlin ✅
-- **Mobile Module**: ~95% Kotlin (5 Java files — billing interfaces)
-- **Base Module**: ~85% Kotlin (65 Java files — data models, API responses)
-- **Target**: 100% Kotlin (ongoing migration)
+`base`, `mobile`, and `tv` are 100% Kotlin. The only Java in the repo is the vendored native VPN
+backend modules (`openvpn`, `strongswan`, `wgtunnel`), which are upstream-sourced and out of scope.
 
-**Rule**: ALL new code MUST be in Kotlin. No new Java files.
+**Rule**: ALL code is Kotlin. No new Java files.
 
 ### 9. UI Architecture: Compose (Mobile) vs XML (TV)
 
@@ -373,7 +371,7 @@ class BillingManagerImpl : BillingManager {
 **TV**: XML layouts + view binding
 - Activity-based navigation
 - Traditional MVP pattern
-- ViewModels with LiveData (being migrated to StateFlow)
+- State exposed via `StateFlow`/`SharedFlow` (no LiveData)
 
 ### 10. Protocol Connection Flow
 
@@ -432,7 +430,7 @@ UI observes ViewModel.state via StateFlow
 UI updates (new server list displayed)
 ```
 
-**Code Example** (from CLAUDE.md):
+**Code Example**:
 ```kotlin
 // ViewModel
 class LocationsViewModel(
@@ -766,7 +764,7 @@ sqlite> SELECT * FROM Region LIMIT 5;
 
 ### Never
 - Create circular module dependencies (mobile/tv → base → protocols, NOT base → mobile)
-- Use RxJava (fully removed, use coroutines/flows)
+- Use RxJava (use coroutines/flows instead)
 - Call APIs directly (use ApiCallManager → wsnet)
 - Skip database migrations (will crash on upgrade)
 - Modify protocol modules without testing all 6 protocols
@@ -791,6 +789,6 @@ sqlite> SELECT * FROM Region LIMIT 5;
 
 ---
 
-**Last Updated**: 2026-04-22
+**Last Updated**: 2026-05-27
 **Maintained By**: Engineering Team
 **Next Review**: Post-feature additions or major architecture changes

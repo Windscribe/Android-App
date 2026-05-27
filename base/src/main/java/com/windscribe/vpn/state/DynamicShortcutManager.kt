@@ -111,9 +111,9 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
                     Pair(
                         LastSelectedLocation(
                             datacenterAndLocation.datacenter.id,
-                            serverListRepository.getCustomCityName(datacenterAndLocation.datacenter.id) ?: datacenterAndLocation.datacenter.nodeName,
-                            serverListRepository.getCustomCityNickName(datacenterAndLocation.datacenter.id) ?: datacenterAndLocation.datacenter.nickName,
-                            datacenterAndLocation.location.countryCode,
+                            serverListRepository.getCustomCityName(datacenterAndLocation.datacenter.id) ?: datacenterAndLocation.datacenter.nodeName ?: "",
+                            serverListRepository.getCustomCityNickName(datacenterAndLocation.datacenter.id) ?: datacenterAndLocation.datacenter.nickName ?: "",
+                            datacenterAndLocation.location?.countryCode,
                         ), LocationTypeInt.City
                     )
                 }
@@ -121,7 +121,7 @@ class DynamicShortcutManager(private val context: Context, private val scope: Co
                 SelectedLocationType.StaticIp -> {
                     val staticRegion = db.getStaticRegionByIDAsync(id) ?: throw Exception("Static region not found")
                     Pair(
-                        LastSelectedLocation(id, staticRegion.cityName, staticRegion.staticIp, staticRegion.countryCode),
+                        LastSelectedLocation(id, staticRegion.cityName ?: "", staticRegion.staticIp ?: "", staticRegion.countryCode),
                         LocationTypeInt.Static
                     )
                 }

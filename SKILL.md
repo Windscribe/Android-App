@@ -413,13 +413,19 @@ fun `connectWithNewFeature applies configuration when enabled`() {
 
 **Step 1: Update Entity**
 
+Room entities live in `base/src/main/java/com/windscribe/vpn/serverlist/entity/` (server-list
+entities like `Location`, `Datacenter`, `StaticRegion`, `PingTime`) and
+`.../localdatabase/tables/` (e.g. `NetworkInfo`, `UserStatusTable`). They are plain Kotlin
+classes with mutable `var` properties + defaults (NOT `data class`) so Room keeps its no-arg
+constructor + setters.
+
 ```kotlin
-// base/src/main/java/com/windscribe/vpn/localdatabase/entities/SomeEntity.kt
+// base/src/main/java/com/windscribe/vpn/localdatabase/tables/SomeEntity.kt
 @Entity(tableName = "SomeEntity")
-data class SomeEntity(
-    @PrimaryKey val id: Int,
-    val existingField: String,
-    val newField: String = ""  // NEW FIELD
+class SomeEntity(
+    @PrimaryKey var id: Int = 0,
+    var existingField: String? = null,
+    var newField: String = ""  // NEW FIELD
 )
 ```
 
@@ -428,44 +434,45 @@ data class SomeEntity(
 ```kotlin
 // base/src/main/java/com/windscribe/vpn/localdatabase/WindscribeDatabase.kt
 @Database(
-    entities = [Region::class, City::class, SomeEntity::class],
+    entities = [Location::class, Datacenter::class, SomeEntity::class],
     version = 42,  // INCREMENT THIS
     exportSchema = true
 )
+@Singleton
 abstract class WindscribeDatabase : RoomDatabase() {
-    // ...
+    // abstract DAO accessors...
 }
 ```
 
-**Step 3: Add Migration**
+**Step 3: Add the Migration**
+
+Migrations live in a standalone `object Migrations` (Kotlin), one `val` per step:
 
 ```kotlin
-// base/src/main/java/com/windscribe/vpn/localdatabase/WindscribeDatabase.kt
-companion object {
-    val MIGRATION_41_42 = object : Migration(41, 42) {
+// base/src/main/java/com/windscribe/vpn/localdatabase/Migrations.kt
+object Migrations {
+    val migration_41_42: Migration = object : Migration(41, 42) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL(
                 "ALTER TABLE SomeEntity ADD COLUMN newField TEXT NOT NULL DEFAULT ''"
             )
         }
     }
-
-    fun getInstance(context: Context): WindscribeDatabase {
-        return Room.databaseBuilder(
-            context,
-            WindscribeDatabase::class.java,
-            "windscribe.db"
-        )
-        .addMigrations(
-            // ... existing migrations
-            MIGRATION_41_42
-        )
-        .build()
-    }
+    // ... existing migration_X_Y vals
 }
 ```
 
-**Step 4: Test Migration**
+**Step 4: Register it where the database is built** (Hilt `@Provides`, NOT a companion `getInstance`):
+
+```kotlin
+// base/src/main/java/com/windscribe/vpn/di/BaseApplicationModule.kt
+Room.databaseBuilder(app, WindscribeDatabase::class.java, "wind_db")
+    // ... existing .addMigrations(...) chain
+    .addMigrations(Migrations.migration_41_42)
+    .build()
+```
+
+**Step 5: Test Migration**
 
 ```kotlin
 // base/src/androidTest/java/com/windscribe/vpn/localdatabase/MigrationTest.kt
@@ -482,7 +489,7 @@ fun migrate41To42() {
     db.close()
 
     // Run migration
-    helper.runMigrationsAndValidate("test.db", 42, true, MIGRATION_41_42)
+    helper.runMigrationsAndValidate("test.db", 42, true, Migrations.migration_41_42)
 
     // Verify new column exists
     val migratedDb = helper.runMigrationsAndValidate("test.db", 42, true, MIGRATION_41_42)
@@ -887,14 +894,14 @@ git push origin feature/my-feature
 ### Always
 
 1. **Use Kotlin** for ALL new code
-   - No new Java files
-   - Convert Java to Kotlin when modifying legacy code (if substantial change)
+   - No new Java files (base/mobile/tv are already 100% Kotlin)
+   - The only Java left is the vendored native VPN modules (openvpn/strongswan/wgtunnel) — leave them alone unless updating upstream
 
 2. **Use coroutines/flows** for async operations
    - `suspend fun` for one-shot async
    - `Flow<T>` for streams
    - `StateFlow<T>` for state
-   - NO RxJava (fully removed)
+   - NO RxJava
 
 3. **Use wsnet** for API calls
    - NEVER use Retrofit/OkHttp directly
@@ -965,7 +972,7 @@ git push origin feature/my-feature
 
 ### When Unsure
 
-1. **Check [CLAUDE.md](CLAUDE.md)** for architectural patterns
+1. **Check [AGENTS.md](AGENTS.md)** for architectural patterns
 2. **Check [docs/guides/](docs/guides/)** for step-by-step workflows
 3. **Search codebase** for existing examples
    ```bash
@@ -1023,14 +1030,16 @@ override fun onNetworkChanged(newNetwork: Network) {
 **Solution**: Add migration for EVERY schema change
 
 ```kotlin
-// ALWAYS add migration when incrementing version
-@Database(version = 42)  // Incremented from 41
-abstract class WindscribeDatabase {
-    companion object {
-        val MIGRATION_41_42 = object : Migration(41, 42) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                // Migration SQL here
-            }
+// ALWAYS add migration when incrementing version.
+// Version lives on @Database; the migration step goes in the Migrations object,
+// and is registered in BaseApplicationModule's Room.databaseBuilder(...).addMigrations(...).
+@Database(version = 42)  // Incremented from 41 (in WindscribeDatabase.kt)
+abstract class WindscribeDatabase : RoomDatabase()
+
+object Migrations {
+    val migration_41_42: Migration = object : Migration(41, 42) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            // Migration SQL here
         }
     }
 }
@@ -1063,5 +1072,5 @@ val state by viewModel.state.collectAsState()
 
 ---
 
-**Last Updated**: 2026-04-22
+**Last Updated**: 2026-05-27
 **Maintained By**: Engineering Team

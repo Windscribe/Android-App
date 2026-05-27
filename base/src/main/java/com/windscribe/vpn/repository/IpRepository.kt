@@ -80,7 +80,7 @@ class IpRepository(
                 loadIpFromStorage()
             }
             is CallResult.Success -> {
-                val ipAddress = getModifiedIpAddress(result.data.userIp.trim())
+                val ipAddress = getModifiedIpAddress(result.data.userIp?.trim() ?: "")
                 preferenceHelper.userIP = ipAddress
                 RepositoryState.Success(ipAddress)
             }

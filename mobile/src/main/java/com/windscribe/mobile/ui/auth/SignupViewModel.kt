@@ -248,8 +248,8 @@ class SignupViewModel @Inject constructor(
             }
             when (result) {
                 is CallResult.Success -> {
-                    username = result.data.username
-                    _generatedUsername.emit(result.data.username)
+                    username = result.data.username ?: ""
+                    _generatedUsername.emit(result.data.username ?: "")
                     validateInput()
                     logger.info("Generated username: $username")
                 }
@@ -267,8 +267,8 @@ class SignupViewModel @Inject constructor(
             }
             when (result) {
                 is CallResult.Success -> {
-                    password = result.data.password
-                    _generatedPassword.emit(result.data.password)
+                    password = result.data.password ?: ""
+                    _generatedPassword.emit(result.data.password ?: "")
                     validateInput()
                     logger.info("Generated password")
                 }
@@ -480,7 +480,7 @@ class SignupViewModel @Inject constructor(
 
                 is CallResult.Success -> {
                     logger.info("User signup in successfully.")
-                    handleSuccessfulSignup(result.data.sessionAuthHash)
+                    handleSuccessfulSignup(result.data.sessionAuthHash ?: "")
                 }
             }
         }
@@ -515,7 +515,7 @@ class SignupViewModel @Inject constructor(
 
             is CallResult.Success -> {
                 logger.info("User signup in successfully.")
-                handleSuccessfulSignup(result.data.sessionAuthHash)
+                handleSuccessfulSignup(result.data.sessionAuthHash ?: "")
             }
         }
     }

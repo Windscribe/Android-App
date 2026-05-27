@@ -111,10 +111,10 @@ fun SearchServerList(viewModel: ServerViewModel, connectionViewModel: Connection
                             connectionViewModel,
                             homeViewmodel,
                             item,
-                            expanded = expandedStates[item.region.name] ?: false,
+                            expanded = expandedStates[item.region.name.orEmpty()] ?: false,
                             onExpandChange = {
                                 viewModel.onExpandStateChanged(
-                                    item.region.name,
+                                    item.region.name.orEmpty(),
                                     it
                                 )
                             }
@@ -161,7 +161,7 @@ private fun LocationItem(
             )
             Spacer(modifier = Modifier.size(16.dp))
             Text(
-                text = item.region.name,
+                text = item.region.name ?: "",
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 modifier = Modifier.weight(1f),
                 color = if (expanded) MaterialTheme.colorScheme.serverListSecondaryColor else MaterialTheme.colorScheme.serverListSecondaryColor.copy(0.70f),

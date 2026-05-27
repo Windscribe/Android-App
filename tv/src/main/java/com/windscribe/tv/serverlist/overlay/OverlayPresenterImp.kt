@@ -98,13 +98,14 @@ class OverlayPresenterImp @Inject constructor(
 
     override fun onStaticIpClick(staticIp: StaticRegion) {
         logger.debug("Selected static Ip to connect.")
-        if(staticIp.credentials == null) {
+        val credentials = staticIp.credentials
+        if(credentials == null) {
             overlayView.showToast("No credentials found for static IP")
             return
         }
         overlayView.onStaticSelected(
-            staticIp.id, staticIp.credentials.userNameEncoded,
-            staticIp.credentials.passwordEncoded
+            staticIp.id ?: 0, credentials.userNameEncoded ?: "",
+            credentials.passwordEncoded ?: ""
         )
     }
 
@@ -387,8 +388,8 @@ class OverlayPresenterImp @Inject constructor(
         var index = 0
         for (city in cities) {
             for (pingTime in dataDetails.pingTimes) {
-                if (pingTime.id == city.id) {
-                    total += pingTime.getPingTime()
+                if (pingTime.ping_id == city.id) {
+                    total += pingTime.pingTime
                     index++
                 }
             }

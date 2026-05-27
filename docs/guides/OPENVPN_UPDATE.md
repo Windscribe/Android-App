@@ -590,7 +590,7 @@ strings $LIB_PATH | grep "OpenVPN 2"
 ```bash
 # Update version numbers in this file
 # Update OPENVPN_UPDATE_GUIDE.md
-# Update project CLAUDE.md if needed
+# Update project AGENTS.md if needed
 # Update UDP_STUFFING_PATCH_APPLIED.md status
 ```
 
@@ -1090,7 +1090,7 @@ echo "OpenVPN:" && grep "PRODUCT_VERSION" openvpn/src/main/cpp/openvpn/version.m
 - **Root Guide**: `OPENVPN_UPDATE_GUIDE.md`
 - **Patch Status**: `UDP_STUFFING_PATCH_APPLIED.md`
 - **Patch Instructions**: `apply_remaining_udp_patch.md`
-- **Architecture**: `CLAUDE.md`
+- **Architecture**: `AGENTS.md`
 
 ### External Resources
 - **ics-openvpn**: https://github.com/schwabe/ics-openvpn

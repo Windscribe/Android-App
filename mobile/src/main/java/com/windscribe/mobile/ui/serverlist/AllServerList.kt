@@ -144,8 +144,8 @@ fun AllServerList(
                                     homeViewmodel,
                                     serverListViewModel = viewModel,
                                     item,
-                                    expanded = expandedStates[item.region.name] == true,
-                                    onExpandChange = { expandedStates[item.region.name] = it }
+                                    expanded = expandedStates[item.region.name.orEmpty()] == true,
+                                    onExpandChange = { expandedStates[item.region.name.orEmpty()] = it }
                                 )
                             }
                         }
@@ -479,7 +479,7 @@ private fun ExpandableListItem(
             )
             Spacer(modifier = Modifier.size(16.dp))
             Text(
-                text = item.region.name,
+                text = item.region.name ?: "",
                 style = font16.copy(fontWeight = FontWeight.Medium),
                 modifier = Modifier.weight(1f),
                 color = if (expanded) MaterialTheme.colorScheme.expandedServerItemTextColor else MaterialTheme.colorScheme.serverItemTextColor,
