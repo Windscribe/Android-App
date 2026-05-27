@@ -20,10 +20,10 @@ end
        tv_version = mobile_version + 1
      end
 
-     # Update root build.gradle appVersionCode (mobile uses this directly, TV adds +1)
-     gradle_file = File.read("../build.gradle")
-     gradle_file.gsub!(/appVersionCode = \d+/, "appVersionCode = #{mobile_version}")
-     File.write("../build.gradle", gradle_file)
+     # Update root build.gradle.kts appVersionCode (mobile uses this directly, TV adds +1)
+     gradle_file = File.read("../build.gradle.kts")
+     gradle_file.gsub!(/extra\["appVersionCode"\] = \d+/, "extra[\"appVersionCode\"] = #{mobile_version}")
+     File.write("../build.gradle.kts", gradle_file)
 
      UI.success("✅ Updated appVersionCode to #{mobile_version} (TV will be #{tv_version})")
   end
@@ -43,10 +43,10 @@ end
          tv_version = mobile_version + 1
        end
 
-       # Update root build.gradle appVersionCode (mobile uses this directly, TV adds +1)
-       gradle_file = File.read("../build.gradle")
-       gradle_file.gsub!(/appVersionCode = \d+/, "appVersionCode = #{mobile_version}")
-       File.write("../build.gradle", gradle_file)
+       # Update root build.gradle.kts appVersionCode (mobile uses this directly, TV adds +1)
+       gradle_file = File.read("../build.gradle.kts")
+       gradle_file.gsub!(/extra\["appVersionCode"\] = \d+/, "extra[\"appVersionCode\"] = #{mobile_version}")
+       File.write("../build.gradle.kts", gradle_file)
 
        UI.success("✅ Kept appVersionCode at #{mobile_version} (TV will be #{tv_version})")
     end
@@ -92,8 +92,8 @@ end
 
     # Send Slack notification for Play Store release
     if ENV['SLACK_URL']
-      # Get mobile version code from build.gradle
-      mobile_version_code = File.read("../build.gradle").match(/appVersionCode = (\d+)/)[1]
+      # Get mobile version code from build.gradle.kts
+      mobile_version_code = File.read("../build.gradle.kts").match(/extra\["appVersionCode"\] = (\d+)/)[1]
       changelog_content = ""
       changelog_file = "#{ENV['CHANGE_LOG_PATH']}#{mobile_version_code}.txt"
 
